@@ -3029,6 +3029,9 @@ model HiringPosting {
   publishedAt         DateTime?
   notificationEnabled Boolean   @default(true)
   authorUserId        String? // 작성자 (Supabase user id — 관계 미연결 스냅샷)
+  appliedTemplateName String? // 마지막 저장/적용 상세 템플릿 이름 스냅샷 (표시용)
+  appliedTemplateId   String? // 마지막 저장/적용 템플릿 id (덮어쓰기 대상 — FK 미연결 스냅샷)
+  appliedTemplateAt   DateTime? // 마지막 저장/적용 시각 (표시용)
 
   space        Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   positions    HiringPostingPosition[]

@@ -34,6 +34,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Editor } from '@/components/sc/editor/editor'
+import { cn } from '@/lib/utils'
+import { BUTTON_DEFAULT_COLOR, BUTTON_PRESET_COLORS } from '@/lib/hiring/button-color'
 import { AutoSaveIndicator } from './autosave-indicator'
 import { getPostingAssetPublicUrl, type WizardContentData } from './build-types'
 import { buttonDataSchema, type ButtonData } from '@/lib/validations/hiring-posts'
@@ -47,11 +49,26 @@ type TemplateItem = {
   _count: { contents: number }
 }
 
+type AppliedTemplate = {
+  id: string | null
+  name: string
+  at: string | null
+}
+
 type Props = {
   postingId: string
   contents: WizardContentData[]
   positions: { id: string; name: string }[]
+  appliedTemplate: AppliedTemplate | null
   onChange: (contents: WizardContentData[]) => void
+}
+
+// "2026. 7. 12. 오후 2:11" 형식
+function formatTemplateAt(at: string | null): string | null {
+  if (!at) return null
+  const d = new Date(at)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
 const CONTENT_TYPE_META: Record<ContentType, { icon: typeof Type; label: string }> = {
@@ -61,7 +78,13 @@ const CONTENT_TYPE_META: Record<ContentType, { icon: typeof Type; label: string 
   positions: { icon: Briefcase, label: '직무 정보' },
 }
 
-export function ContentBlockEditor({ postingId, contents, positions, onChange }: Props) {
+export function ContentBlockEditor({
+  postingId,
+  contents,
+  positions,
+  appliedTemplate,
+  onChange,
+}: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [templateName, setTemplateName] = useState('')
@@ -76,6 +99,10 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
   const [templates, setTemplates] = useState<TemplateItem[] | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [applyingTemplate, setApplyingTemplate] = useState(false)
+  // 마지막 저장/적용 템플릿 정보 (서버 스냅샷 + 클라이언트 즉시 갱신)
+  const [templateInfo, setTemplateInfo] = useState<AppliedTemplate | null>(appliedTemplate)
+  // 저장 모드: 현재 템플릿 덮어쓰기 vs 새 템플릿
+  const [saveMode, setSaveMode] = useState<'overwrite' | 'new'>('new')
 
   const hasPositionsBlock = contents.some((c) => c.contentType === 'positions')
 
@@ -178,22 +205,47 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
     return patchContent(contentId, { data })
   }
 
+  function openSaveDialog() {
+    // 현재 템플릿이 있으면 덮어쓰기 기본 + 이름 프리필
+    if (templateInfo?.id) {
+      setSaveMode('overwrite')
+      setTemplateName(templateInfo.name)
+    } else {
+      setSaveMode('new')
+      setTemplateName('')
+    }
+    setSaveDialogOpen(true)
+  }
+
   async function handleSaveTemplate() {
-    if (!templateName.trim()) {
+    const name = templateName.trim()
+    if (!name) {
       toast.error('템플릿 이름을 입력하세요')
       return
     }
+    const overwriteId = saveMode === 'overwrite' ? (templateInfo?.id ?? null) : null
     setSavingTemplate(true)
     try {
       const res = await fetch('/api/hiring-posts/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: templateName.trim(), postingId }),
+        body: JSON.stringify({
+          name,
+          postingId,
+          ...(overwriteId ? { templateId: overwriteId } : {}),
+        }),
       })
+      if (res.status === 404 && overwriteId) {
+        throw new Error('원본 템플릿이 삭제되었습니다 — 새 템플릿으로 저장하세요')
+      }
       if (!res.ok) throw new Error('템플릿 저장에 실패했습니다')
+      const { template } = await res.json()
+      setTemplateInfo({ id: template.id, name, at: new Date().toISOString() })
       setTemplateName('')
       setSaveDialogOpen(false)
-      toast.success('현재 상세를 템플릿으로 저장했습니다')
+      toast.success(
+        overwriteId ? '템플릿을 덮어썼습니다' : '현재 상세를 새 템플릿으로 저장했습니다'
+      )
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '템플릿 저장에 실패했습니다')
     } finally {
@@ -229,6 +281,10 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
       if (!res.ok) throw new Error('템플릿 적용에 실패했습니다')
       const { contents: next } = await res.json()
       onChange(next)
+      const applied = templates?.find((t) => t.id === selectedTemplateId)
+      setTemplateInfo(
+        applied ? { id: applied.id, name: applied.name, at: new Date().toISOString() } : null
+      )
       setRemountTick((t) => t + 1)
       setLoadDialogOpen(false)
       toast.success('템플릿을 적용했습니다')
@@ -244,19 +300,39 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
 
   return (
     <div className="space-y-4">
-      {/* 템플릿 툴바 */}
-      <div className="flex justify-end gap-2">
-        <Button size="sm" variant="outline" onClick={openLoadDialog}>
-          <FolderOpen /> 템플릿 불러오기
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setSaveDialogOpen(true)}
-          disabled={contents.length === 0}
-        >
-          <Save /> 템플릿으로 저장
-        </Button>
+      {/* 템플릿 툴바 — 좌: 현재 템플릿 정보 / 우: 불러오기·저장 */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+          {templateInfo ? (
+            <>
+              <FolderOpen className="size-3.5 shrink-0" />
+              <span
+                className="min-w-0 truncate font-medium text-foreground"
+                title={templateInfo.name}
+              >
+                {templateInfo.name}
+              </span>
+              {formatTemplateAt(templateInfo.at) && (
+                <span className="shrink-0">· {formatTemplateAt(templateInfo.at)}</span>
+              )}
+            </>
+          ) : (
+            <span>템플릿 미사용</span>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button size="sm" variant="outline" onClick={openLoadDialog}>
+            <FolderOpen /> 템플릿 불러오기
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={openSaveDialog}
+            disabled={contents.length === 0}
+          >
+            <Save /> 템플릿으로 저장
+          </Button>
+        </div>
       </div>
 
       {contents.length === 0 && (
@@ -370,6 +446,39 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
           <DialogHeader>
             <DialogTitle>템플릿으로 저장</DialogTitle>
           </DialogHeader>
+          {templateInfo?.id && (
+            <div className="space-y-1.5">
+              <Label>저장 방식</Label>
+              <div className="space-y-1">
+                <label className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm has-checked:border-primary">
+                  <input
+                    type="radio"
+                    name="tpl-save-mode"
+                    checked={saveMode === 'overwrite'}
+                    onChange={() => {
+                      setSaveMode('overwrite')
+                      setTemplateName(templateInfo.name)
+                    }}
+                  />
+                  <span className="min-w-0 truncate">
+                    기존 템플릿 덮어쓰기: <span className="font-medium">{templateInfo.name}</span>
+                  </span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm has-checked:border-primary">
+                  <input
+                    type="radio"
+                    name="tpl-save-mode"
+                    checked={saveMode === 'new'}
+                    onChange={() => {
+                      setSaveMode('new')
+                      setTemplateName('')
+                    }}
+                  />
+                  새 템플릿으로 저장
+                </label>
+              </div>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="tpl-name">템플릿 이름</Label>
             <Input
@@ -380,7 +489,9 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
               maxLength={200}
             />
             <p className="text-xs text-muted-foreground">
-              현재 블록 {contents.length}개를 템플릿으로 저장합니다.
+              {saveMode === 'overwrite' && templateInfo?.id
+                ? `현재 블록 ${contents.length}개로 기존 템플릿 내용을 교체합니다.`
+                : `현재 블록 ${contents.length}개를 새 템플릿으로 저장합니다.`}
             </p>
           </div>
           <DialogFooter>
@@ -435,8 +546,7 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{t.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      블록 {t._count.contents}개 ·{' '}
-                      {new Date(t.updatedAt).toLocaleDateString('ko-KR')}
+                      블록 {t._count.contents}개 · {formatTemplateAt(t.updatedAt)}
                     </div>
                   </div>
                 </label>
@@ -505,16 +615,20 @@ function ButtonBlock({
   const [title, setTitle] = useState(data?.title ?? '지원하기')
   const [linkType, setLinkType] = useState<'form' | 'url'>(data?.linkType ?? 'form')
   const [url, setUrl] = useState(data?.url ?? '')
+  const [color, setColor] = useState(data?.color ?? BUTTON_DEFAULT_COLOR)
   const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const uid = useId()
 
-  function attemptSave(next: { title: string; linkType: 'form' | 'url'; url: string }) {
+  type ButtonDraft = { title: string; linkType: 'form' | 'url'; url: string; color: string }
+
+  function attemptSave(next: ButtonDraft) {
     const result = buttonDataSchema.safeParse({
       title: next.title,
       linkType: next.linkType,
       url: next.url || undefined,
+      color: next.color,
     })
     if (!result.success) {
       const first = result.error.issues[0]
@@ -531,7 +645,7 @@ function ButtonBlock({
       })
   }
 
-  function debouncedSave(next: { title: string; linkType: 'form' | 'url'; url: string }) {
+  function debouncedSave(next: ButtonDraft) {
     clearTimeout(timer.current)
     timer.current = setTimeout(() => attemptSave(next), 600)
   }
@@ -542,19 +656,19 @@ function ButtonBlock({
 
   function handleTitleChange(value: string) {
     setTitle(value)
-    debouncedSave({ title: value, linkType, url })
+    debouncedSave({ title: value, linkType, url, color })
   }
   function handleTitleBlur() {
     clearTimeout(timer.current)
-    attemptSave({ title, linkType, url })
+    attemptSave({ title, linkType, url, color })
   }
   function handleUrlChange(value: string) {
     setUrl(value)
-    debouncedSave({ title, linkType, url: value })
+    debouncedSave({ title, linkType, url: value, color })
   }
   function handleUrlBlur() {
     clearTimeout(timer.current)
-    attemptSave({ title, linkType, url })
+    attemptSave({ title, linkType, url, color })
   }
   function handleLinkTypeChange(value: 'form' | 'url') {
     setLinkType(value)
@@ -564,16 +678,21 @@ function ButtonBlock({
       setError(null)
       return
     }
-    attemptSave({ title, linkType: value, url })
+    attemptSave({ title, linkType: value, url, color })
+  }
+  function handleColorChange(value: string, immediate: boolean) {
+    setColor(value)
+    const next = { title, linkType, url, color: value }
+    if (immediate) {
+      clearTimeout(timer.current)
+      attemptSave(next)
+    } else {
+      debouncedSave(next)
+    }
   }
 
   return (
     <div className="space-y-3">
-      {/* 실제 버튼 UI 미리보기 */}
-      <div className="pointer-events-none flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow">
-        {title || '버튼 제목'}
-      </div>
-
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <Label htmlFor={`${uid}-btn-title`}>버튼 제목</Label>
@@ -625,6 +744,39 @@ function ButtonBlock({
           />
         </div>
       )}
+      <div className="space-y-1.5">
+        <Label>버튼 색상</Label>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {BUTTON_PRESET_COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              aria-label={`버튼 색상 ${c}`}
+              className={cn(
+                'size-7 cursor-pointer rounded-full border transition',
+                color.toLowerCase() === c.toLowerCase()
+                  ? 'ring-2 ring-primary ring-offset-2 ring-offset-background'
+                  : 'hover:scale-110'
+              )}
+              style={{ backgroundColor: c }}
+              onClick={() => handleColorChange(c, true)}
+            />
+          ))}
+          <label
+            className="relative ml-1 flex size-7 cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)]"
+            aria-label="커스텀 색상"
+            title="커스텀 색상"
+          >
+            <input
+              type="color"
+              value={color}
+              className="absolute inset-0 size-full cursor-pointer opacity-0"
+              onChange={(e) => handleColorChange(e.target.value, false)}
+              onBlur={() => handleColorChange(color, true)}
+            />
+          </label>
+        </div>
+      </div>
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   )

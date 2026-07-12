@@ -112,6 +112,10 @@ export const buttonDataSchema = z
     title: z.string().min(1, '버튼 제목을 입력하세요').max(50, '버튼 제목은 50자 이내여야 합니다'),
     linkType: z.enum(['form', 'url']),
     url: z.string().optional(),
+    color: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, '색상 형식이 올바르지 않습니다')
+      .optional(),
   })
   .superRefine((val, ctx) => {
     if (val.linkType === 'url') {
@@ -190,10 +194,12 @@ export const updateTemplateSchema = z.object({
 })
 export type UpdateTemplateInput = z.infer<typeof updateTemplateSchema>
 
-// 위저드 상세 스텝에서 "템플릿으로 저장" — 공고의 콘텐츠 블록을 복제해 템플릿 생성
+// 위저드 상세 스텝에서 "템플릿으로 저장" — 공고의 콘텐츠 블록을 복제해 템플릿 생성.
+// templateId 지정 시 해당 템플릿을 덮어쓴다(이름·콘텐츠 교체).
 export const createTemplateSchema = z.object({
   name: z.string().min(1, '템플릿 이름을 입력하세요').max(200),
   postingId: idLike,
+  templateId: idLike.optional(),
 })
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>
 
