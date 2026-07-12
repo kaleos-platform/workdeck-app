@@ -38,6 +38,11 @@ export async function POST(req: NextRequest) {
 
   const title = parsed.data.title?.trim() || '제목 없는 공고'
 
+  // 지원서 마감일 기본값: KST 기준 오늘 + 14일 (UTC 자정 DateTime — PATCH의 'YYYY-MM-DD' 저장과 동일 규약)
+  const todayKst = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date())
+  const defaultClosing = new Date(`${todayKst}T00:00:00Z`)
+  defaultClosing.setUTCDate(defaultClosing.getUTCDate() + 14)
+
   const posting = await prisma.$transaction(async (tx) => {
     const created = await tx.hiringPosting.create({
       data: {
@@ -46,6 +51,7 @@ export async function POST(req: NextRequest) {
         status: 'DRAFT',
         authorUserId: resolved.user.id,
         applicationEntries: DEFAULT_FORM_FIELDS,
+        closingDate: defaultClosing,
       },
       select: { id: true, uuid: true, title: true, status: true },
     })
