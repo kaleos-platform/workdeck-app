@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -46,6 +45,7 @@ import { CategoryCombobox } from '@/components/finance/category-combobox'
 import {
   buildClassifyOptions,
   buildParentOptions,
+  comboOptionLabel,
   type ComboOption,
 } from '@/lib/finance/category-options'
 import type {
@@ -205,10 +205,21 @@ export function TransactionsView() {
   const [commitDialogOpen, setCommitDialogOpen] = useState(false)
   const [committing, setCommitting] = useState(false)
 
-  // 분류 직후 동일 적요 자동 적용 다이얼로그
-  const [autoApply, setAutoApply] = useState<{ categoryId: string; siblingIds: string[] } | null>(
-    null
-  )
+  // 분류 직후 동일 적요 자동 적용 다이얼로그 — 분류 확인 팝업의 메모도 함께 전파
+  const [autoApply, setAutoApply] = useState<{
+    categoryId: string
+    siblingIds: string[]
+    memo: string | null
+  } | null>(null)
+
+  // 분류 확인 팝업(스테이징 전용) — 규칙 저장 여부(기본 on) + 메모 입력 후 적용
+  const [classifyConfirm, setClassifyConfirm] = useState<{
+    rowId: string
+    categoryId: string
+    categoryLabel: string
+    memo: string | null
+  } | null>(null)
+  const [classifySaving, setClassifySaving] = useState(false)
 
   // 카테고리 트리 로드 — 실패는 토스트로 가시화(빈 드롭다운 미스터리 방지)
   const loadCategories = useCallback(async () => {
@@ -363,29 +374,54 @@ export function TransactionsView() {
     void loadStaging(tab)
   }
 
-  // 스테이징 categoryId 변경 → PATCH
-  const handleStagingClassify = async (rowId: string, categoryId: string) => {
+  // 스테이징 categoryId 선택 — 즉시 저장 대신 확인 팝업(규칙 저장 여부 + 메모)을 연다.
+  // CategorySelect·추천(SuggestCell) 적용 모두 이 경로를 탄다.
+  const handleStagingClassify = (rowId: string, categoryId: string) => {
+    const row = stagingRows.find((r) => r.id === rowId)
+    setClassifyConfirm({
+      rowId,
+      categoryId,
+      categoryLabel: comboOptionLabel(leafTargets, categoryId) || '선택한 계정과목',
+      memo: row?.memo ?? null,
+    })
+  }
+
+  // 분류 확인 팝업 적용 — learn=규칙 저장 체크값, 메모 함께 저장(규칙 저장 시 규칙에도 반영)
+  const handleClassifyConfirmApply = async (learn: boolean, memoInput: string) => {
+    if (!classifyConfirm) return
+    const { rowId, categoryId } = classifyConfirm
+    const memo = memoInput.trim() === '' ? null : memoInput.trim()
+    setClassifySaving(true)
     try {
       const res = await fetch(`/api/finance/staging/${rowId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ categoryId }),
+        body: JSON.stringify({ categoryId, learn, memo }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '분류 저장 실패')
+      setClassifyConfirm(null)
       void loadStaging(stagingTab)
-      // 동일 적요+동일 방향 미처리 행이 있으면 자동 적용 여부를 물음
+      // 동일 적요+동일 방향 미처리 행이 있으면 자동 적용 여부를 물음(메모도 함께 전파)
       const siblingIds: string[] = Array.isArray(data?.siblingIds) ? data.siblingIds : []
-      if (siblingIds.length > 0) setAutoApply({ categoryId, siblingIds })
-      else toast.success('동일 적요는 다음부터 자동 분류됩니다')
+      if (siblingIds.length > 0) setAutoApply({ categoryId, siblingIds, memo })
+      else if (learn) toast.success('동일 적요는 다음부터 자동 분류됩니다')
+      else toast.success('분류가 저장되었습니다')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '분류 저장 실패')
+    } finally {
+      setClassifySaving(false)
     }
   }
 
   // 일괄 처리(bulk 엔드포인트) — 계정과목 분류 또는 중복 처리
   const applyBulk = useCallback(
-    async (payload: { ids: string[]; categoryId?: string; resolution?: FinStagedResolution }) => {
+    async (payload: {
+      ids: string[]
+      categoryId?: string
+      resolution?: FinStagedResolution
+      memo?: string | null
+    }) => {
       const res = await fetch('/api/finance/staging/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -421,7 +457,12 @@ export function TransactionsView() {
   const handleAutoApplyConfirm = async () => {
     if (!autoApply) return
     try {
-      const n = await applyBulk({ ids: autoApply.siblingIds, categoryId: autoApply.categoryId })
+      const n = await applyBulk({
+        ids: autoApply.siblingIds,
+        categoryId: autoApply.categoryId,
+        // 메모가 있을 때만 전달 — 없으면 형제 행 기존 메모 유지
+        ...(autoApply.memo != null ? { memo: autoApply.memo } : {}),
+      })
       toast.success(`동일 적요 ${n}건에 적용했습니다`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '일괄 적용 실패')
@@ -706,6 +747,18 @@ export function TransactionsView() {
         </DialogContent>
       </Dialog>
 
+      {/* ── 분류 확인(규칙 저장 여부 + 메모) — 스테이징 전용 ── */}
+      {classifyConfirm && (
+        <ClassifyConfirmDialog
+          key={`${classifyConfirm.rowId}:${classifyConfirm.categoryId}`}
+          categoryLabel={classifyConfirm.categoryLabel}
+          initialMemo={classifyConfirm.memo}
+          saving={classifySaving}
+          onCancel={() => setClassifyConfirm(null)}
+          onApply={handleClassifyConfirmApply}
+        />
+      )}
+
       {/* ── 동일 적요 자동 적용 확인 ── */}
       <Dialog open={autoApply !== null} onOpenChange={(open) => !open && setAutoApply(null)}>
         <DialogContent className="max-w-sm">
@@ -715,6 +768,7 @@ export function TransactionsView() {
               같은 적요·같은 방향의 미처리 내역{' '}
               <strong>{autoApply?.siblingIds.length ?? 0}건</strong>에도 같은 계정과목을 적용할까요?
               (검토 제안도 덮어씁니다.)
+              {autoApply?.memo != null && ' 메모도 함께 적용됩니다.'}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1807,11 +1861,85 @@ function TransactionRow({
   )
 }
 
+// ─── 분류 확인 팝업 (스테이징 전용) ─────────────────────────────────────────────
+
+/**
+ * 계정과목 선택 직후 확인 팝업. 규칙 저장 체크(기본 on — 동일 적요 자동 분류·메모 포함)와
+ * 메모 입력(행 기존 메모 prefill)을 받아 적용한다. 체크 해제 시 규칙 미학습, 분류+메모만 반영.
+ * key로 rowId:categoryId를 받아 열 때마다 상태가 초기화된다.
+ */
+function ClassifyConfirmDialog({
+  categoryLabel,
+  initialMemo,
+  saving,
+  onCancel,
+  onApply,
+}: {
+  categoryLabel: string
+  initialMemo: string | null
+  saving: boolean
+  onCancel: () => void
+  onApply: (learn: boolean, memo: string) => void
+}) {
+  const [learn, setLearn] = useState(true)
+  const [memoDraft, setMemoDraft] = useState(initialMemo ?? '')
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && !saving && onCancel()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>계정과목 분류</DialogTitle>
+          <DialogDescription>
+            이 거래를 <strong>{categoryLabel}</strong>(으)로 분류합니다.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <label className="flex items-start gap-2 text-sm">
+            <Checkbox
+              checked={learn}
+              onCheckedChange={(v) => setLearn(v === true)}
+              className="mt-0.5"
+            />
+            <span>
+              이 분류를 규칙으로 저장
+              <span className="block text-xs text-muted-foreground">
+                동일 적요는 다음 업로드부터 자동 분류되고, 메모도 함께 적용됩니다
+              </span>
+            </span>
+          </label>
+          <div className="space-y-1">
+            <Label className="text-xs">메모</Label>
+            <Textarea
+              value={memoDraft}
+              onChange={(e) => setMemoDraft(e.target.value)}
+              maxLength={MEMO_MAX}
+              rows={2}
+              placeholder="메모 입력 (선택)"
+              className="text-xs"
+            />
+            <p className="text-right text-[10px] text-muted-foreground">
+              {memoDraft.length}/{MEMO_MAX}
+            </p>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel} disabled={saving}>
+            취소
+          </Button>
+          <Button onClick={() => onApply(learn, memoDraft)} disabled={saving}>
+            {saving ? '저장 중...' : '적용'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ─── 메모 셀 (스테이징·확정 공용) ───────────────────────────────────────────────
 
 /**
- * 메모 팝오버 편집 셀. 메모가 있으면 truncate 요약(클릭=편집), 없으면 '＋메모' 버튼.
- * 저장=trim 후 빈 문자열이면 삭제(null). 스테이징 메모는 저장 처리 시 확정 거래로 이관된다.
+ * 인라인 메모 입력 셀. 항상 소형 input을 표시하고 blur/Enter 시 변경분만 저장한다.
+ * trim 후 빈 문자열이면 삭제(null). 스테이징 메모는 저장 처리 시 확정 거래로 이관된다.
  */
 function MemoCell({
   memo,
@@ -1820,88 +1948,41 @@ function MemoCell({
   memo: string | null
   onSave: (memo: string | null) => Promise<void>
 }) {
-  const [open, setOpen] = useState(false)
-  const [draft, setDraft] = useState('')
+  const [draft, setDraft] = useState(memo ?? '')
   const [saving, setSaving] = useState(false)
 
-  const save = async (value: string | null) => {
+  // 외부 갱신(분류 팝업·자동 적용 후 재조회 등) 동기화
+  useEffect(() => setDraft(memo ?? ''), [memo])
+
+  const commit = async () => {
+    const value = draft.trim() === '' ? null : draft.trim()
+    if (value === memo) return // 변경분만 저장
     setSaving(true)
     try {
       await onSave(value)
-      setOpen(false)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '메모 저장 실패')
+      setDraft(memo ?? '')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={(o) => {
-        setOpen(o)
-        if (o) setDraft(memo ?? '')
+    <Input
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => void commit()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur()
       }}
-    >
-      <PopoverTrigger asChild>
-        {memo ? (
-          <button
-            type="button"
-            className="block max-w-[150px] truncate text-left text-xs hover:underline"
-            title={memo}
-          >
-            {memo}
-          </button>
-        ) : (
-          <Button
-            size="xs"
-            variant="ghost"
-            className="h-6 px-1.5 text-xs text-muted-foreground"
-            aria-label="메모 추가"
-          >
-            ＋메모
-          </Button>
-        )}
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 space-y-2">
-        <Textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          maxLength={MEMO_MAX}
-          rows={3}
-          placeholder="메모 입력"
-          className="text-xs"
-          autoFocus
-        />
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] text-muted-foreground">
-            {draft.length}/{MEMO_MAX}
-          </span>
-          <div className="flex gap-1.5">
-            {memo && (
-              <Button
-                size="xs"
-                variant="ghost"
-                className="h-6 px-2 text-xs text-muted-foreground"
-                disabled={saving}
-                onClick={() => void save(null)}
-              >
-                삭제
-              </Button>
-            )}
-            <Button
-              size="xs"
-              className="h-6 px-2 text-xs"
-              disabled={saving}
-              onClick={() => void save(draft.trim() === '' ? null : draft.trim())}
-            >
-              {saving ? '저장 중...' : '저장'}
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+      maxLength={MEMO_MAX}
+      disabled={saving}
+      placeholder="메모"
+      aria-label="메모"
+      title={memo ?? undefined}
+      className="h-7 w-[150px] text-xs"
+    />
   )
 }
 

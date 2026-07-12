@@ -2758,6 +2758,7 @@ model FinClassRule {
   // null = 방향 무관(이체 시드 등). 사용자 EXACT 규칙은 행의 방향(IN/OUT)을 가진다.
   direction   FinTxnDirection?
   learnedFrom FinClassRuleSource    @default(USER)
+  memo        String? // 규칙 학습 시 함께 저장한 메모 — 자동분류 시 스테이징 행 memo로 복사
 
   space    Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   category FinCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)

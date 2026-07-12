@@ -14,14 +14,29 @@ const nameById = new Map([
 ])
 
 const ruleset: ClassRuleLite[] = [
-  { id: 'seed:택배', matchKey: '택배', matchType: 'KEYWORD', categoryId: 'c1', direction: 'OUT' },
-  { id: 'seed:광고', matchKey: '광고', matchType: 'KEYWORD', categoryId: 'c2', direction: 'OUT' },
+  {
+    id: 'seed:택배',
+    matchKey: '택배',
+    matchType: 'KEYWORD',
+    categoryId: 'c1',
+    direction: 'OUT',
+    memo: null,
+  },
+  {
+    id: 'seed:광고',
+    matchKey: '광고',
+    matchType: 'KEYWORD',
+    categoryId: 'c2',
+    direction: 'OUT',
+    memo: null,
+  },
   {
     id: 'rule-learned',
     matchKey: 'cj대한통운 택배',
     matchType: 'EXACT',
     categoryId: 'c1',
     direction: 'OUT',
+    memo: null,
   },
 ]
 

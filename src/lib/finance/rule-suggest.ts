@@ -43,6 +43,7 @@ export async function loadRuleSuggestContext(
         matchType: 'KEYWORD',
         categoryId: catId,
         direction: directionForType(leaf.type),
+        memo: null,
       })
     }
   }

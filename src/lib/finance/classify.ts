@@ -27,6 +27,8 @@ export type ClassRuleLite = {
   categoryId: string
   /** 방향 구분 — null = 방향 무관(이체/시드), IN/OUT = 해당 방향 전용 */
   direction: FinTxnDirection | null
+  /** 규칙 학습 시 저장한 메모 — 자동분류(확정) 시 행 memo로 복사 */
+  memo: string | null
 }
 
 export type ClassifyInput = {
@@ -38,13 +40,22 @@ export type ClassifyResult = {
   categoryId: string | null
   classStatus: FinClassStatus
   matchedRuleId: string | null
+  /** 매칭 규칙의 메모(무매칭 null). 소비처는 CLASSIFIED(확정)일 때만 행에 복사한다. */
+  ruleMemo: string | null
 }
 
 /** Space의 모든 분류 규칙을 로드한다(임포트 1회 분류 시 1번만 호출해 재사용). */
 export async function loadSpaceRules(spaceId: string): Promise<ClassRuleLite[]> {
   return prisma.finClassRule.findMany({
     where: { spaceId },
-    select: { id: true, matchKey: true, matchType: true, categoryId: true, direction: true },
+    select: {
+      id: true,
+      matchKey: true,
+      matchType: true,
+      categoryId: true,
+      direction: true,
+      memo: true,
+    },
   })
 }
 
@@ -65,7 +76,8 @@ export function classifyRow(
   direction: FinTxnDirection
 ): ClassifyResult {
   const text = buildMatchText(input)
-  if (!text) return { categoryId: null, classStatus: 'UNCLASSIFIED', matchedRuleId: null }
+  if (!text)
+    return { categoryId: null, classStatus: 'UNCLASSIFIED', matchedRuleId: null, ruleMemo: null }
 
   // 1) EXACT — 정규화 전체 일치. 방향-특정 > 방향무관(null).
   let exactSpecific: ClassRuleLite | null = null
@@ -80,7 +92,12 @@ export function classifyRow(
   }
   const exact = exactSpecific ?? exactAny
   if (exact) {
-    return { categoryId: exact.categoryId, classStatus: 'CLASSIFIED', matchedRuleId: exact.id }
+    return {
+      categoryId: exact.categoryId,
+      classStatus: 'CLASSIFIED',
+      matchedRuleId: exact.id,
+      ruleMemo: exact.memo,
+    }
   }
 
   // 2) KEYWORD — 부분 포함, 방향-특정 우선 그 안에서 가장 긴(구체적) 키워드.
@@ -96,31 +113,51 @@ export function classifyRow(
   }
   const best = bestSpecific ?? bestAny
   if (best) {
-    return { categoryId: best.categoryId, classStatus: 'REVIEW', matchedRuleId: best.id }
+    return {
+      categoryId: best.categoryId,
+      classStatus: 'REVIEW',
+      matchedRuleId: best.id,
+      ruleMemo: best.memo,
+    }
   }
 
-  return { categoryId: null, classStatus: 'UNCLASSIFIED', matchedRuleId: null }
+  return { categoryId: null, classStatus: 'UNCLASSIFIED', matchedRuleId: null, ruleMemo: null }
 }
 
 /**
  * 사용자 분류를 EXACT 규칙으로 학습한다(동일 적요·동일 방향 다음부터 자동 분류).
  * matchKey = 정규화한 적요(+상대), 방향(IN/OUT)별로 별개 규칙. 같은 적요라도 비용/수입 분리.
  * (spaceId, matchKey, direction) 충돌 시 categoryId 갱신(사용자 정정 우선).
+ * memo: undefined=기존 유지, null=삭제, string=설정 (memo 미전달 호출부가 규칙 메모를 지우지 않도록).
  * 반환: 학습된 규칙 id (적요가 비어 학습 불가하면 null).
  */
 export async function learnRule(
   spaceId: string,
   input: ClassifyInput,
   categoryId: string,
-  direction: FinTxnDirection
+  direction: FinTxnDirection,
+  memo?: string | null
 ): Promise<string | null> {
   const matchKey = buildMatchText(input)
   if (!matchKey) return null
 
   const rule = await prisma.finClassRule.upsert({
     where: { spaceId_matchKey_direction: { spaceId, matchKey, direction } },
-    update: { categoryId, matchType: 'EXACT', learnedFrom: 'USER' },
-    create: { spaceId, matchKey, categoryId, matchType: 'EXACT', learnedFrom: 'USER', direction },
+    update: {
+      categoryId,
+      matchType: 'EXACT',
+      learnedFrom: 'USER',
+      ...(memo !== undefined ? { memo } : {}),
+    },
+    create: {
+      spaceId,
+      matchKey,
+      categoryId,
+      matchType: 'EXACT',
+      learnedFrom: 'USER',
+      direction,
+      memo: memo ?? null,
+    },
     select: { id: true },
   })
   return rule.id
