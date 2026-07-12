@@ -15,11 +15,18 @@ import {
   MousePointerClick,
   Briefcase,
   Maximize2,
+  FolderOpen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +39,13 @@ import { getPostingAssetPublicUrl, type WizardContentData } from './build-types'
 import { buttonDataSchema, type ButtonData } from '@/lib/validations/hiring-posts'
 
 type ContentType = 'text' | 'image' | 'button' | 'positions'
+
+type TemplateItem = {
+  id: string
+  name: string
+  updatedAt: string
+  _count: { contents: number }
+}
 
 type Props = {
   postingId: string
@@ -56,6 +70,12 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
   const [focusBlockId, setFocusBlockId] = useState<string | null>(null)
   const [remountTick, setRemountTick] = useState(0)
+  // 템플릿 저장/불러오기 다이얼로그
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false)
+  const [loadDialogOpen, setLoadDialogOpen] = useState(false)
+  const [templates, setTemplates] = useState<TemplateItem[] | null>(null)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  const [applyingTemplate, setApplyingTemplate] = useState(false)
 
   const hasPositionsBlock = contents.some((c) => c.contentType === 'positions')
 
@@ -172,6 +192,7 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
       })
       if (!res.ok) throw new Error('템플릿 저장에 실패했습니다')
       setTemplateName('')
+      setSaveDialogOpen(false)
       toast.success('현재 상세를 템플릿으로 저장했습니다')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '템플릿 저장에 실패했습니다')
@@ -180,10 +201,64 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
     }
   }
 
+  async function openLoadDialog() {
+    setLoadDialogOpen(true)
+    setSelectedTemplateId(null)
+    setTemplates(null)
+    try {
+      const res = await fetch('/api/hiring-posts/templates')
+      if (!res.ok) throw new Error('템플릿 목록을 불러오지 못했습니다')
+      const { templates } = await res.json()
+      setTemplates(templates)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '템플릿 목록을 불러오지 못했습니다')
+      setTemplates([])
+    }
+  }
+
+  // 템플릿 적용 — 기존 블록 전체 교체
+  async function handleApplyTemplate() {
+    if (!selectedTemplateId) return
+    setApplyingTemplate(true)
+    try {
+      const res = await fetch(`/api/hiring-posts/postings/${postingId}/apply-template`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId: selectedTemplateId }),
+      })
+      if (!res.ok) throw new Error('템플릿 적용에 실패했습니다')
+      const { contents: next } = await res.json()
+      onChange(next)
+      setRemountTick((t) => t + 1)
+      setLoadDialogOpen(false)
+      toast.success('템플릿을 적용했습니다')
+      router.refresh()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '템플릿 적용에 실패했습니다')
+    } finally {
+      setApplyingTemplate(false)
+    }
+  }
+
   const focusBlock = focusBlockId ? contents.find((c) => c.id === focusBlockId) : null
 
   return (
     <div className="space-y-4">
+      {/* 템플릿 툴바 */}
+      <div className="flex justify-end gap-2">
+        <Button size="sm" variant="outline" onClick={openLoadDialog}>
+          <FolderOpen /> 템플릿 불러오기
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setSaveDialogOpen(true)}
+          disabled={contents.length === 0}
+        >
+          <Save /> 템플릿으로 저장
+        </Button>
+      </div>
+
       {contents.length === 0 && (
         <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
           공고를 꾸밀 블록이 없습니다. 아래에서 블록을 추가하세요.
@@ -281,29 +356,117 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {contents.length > 0 && (
-        <div className="flex items-end gap-2 rounded-lg border bg-muted/30 p-4">
-          <div className="flex-1 space-y-1.5">
-            <label className="text-sm font-medium" htmlFor="tpl-name">
-              템플릿으로 저장
-            </label>
+      {/* 템플릿으로 저장 다이얼로그 */}
+      <Dialog
+        open={saveDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSaveDialogOpen(false)
+            setTemplateName('')
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>템플릿으로 저장</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label htmlFor="tpl-name">템플릿 이름</Label>
             <Input
               id="tpl-name"
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
-              placeholder="템플릿 이름"
+              placeholder="예: 매장 알바 기본 상세"
+              maxLength={200}
             />
+            <p className="text-xs text-muted-foreground">
+              현재 블록 {contents.length}개를 템플릿으로 저장합니다.
+            </p>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleSaveTemplate}
-            disabled={savingTemplate}
-          >
-            <Save /> 저장
-          </Button>
-        </div>
-      )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSaveDialogOpen(false)
+                setTemplateName('')
+              }}
+              disabled={savingTemplate}
+            >
+              취소
+            </Button>
+            <Button size="sm" onClick={handleSaveTemplate} disabled={savingTemplate}>
+              <Save /> 저장
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 템플릿 불러오기 다이얼로그 */}
+      <Dialog
+        open={loadDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) setLoadDialogOpen(false)
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>템플릿 불러오기</DialogTitle>
+          </DialogHeader>
+          {templates === null ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">불러오는 중…</p>
+          ) : templates.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              저장된 템플릿이 없습니다. 템플릿으로 저장 버튼으로 먼저 만들어 보세요.
+            </p>
+          ) : (
+            <div className="max-h-72 space-y-1 overflow-y-auto">
+              {templates.map((t) => (
+                <label
+                  key={t.id}
+                  className="flex cursor-pointer items-center gap-3 rounded-md border px-4 py-2.5 hover:bg-accent/50 has-checked:border-primary"
+                >
+                  <input
+                    type="radio"
+                    name="load-template"
+                    checked={selectedTemplateId === t.id}
+                    onChange={() => setSelectedTemplateId(t.id)}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium">{t.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      블록 {t._count.contents}개 ·{' '}
+                      {new Date(t.updatedAt).toLocaleDateString('ko-KR')}
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+          {selectedTemplateId && contents.length > 0 && (
+            <p className="text-xs text-destructive">
+              적용하면 기존 블록 {contents.length}개가 모두 교체됩니다.
+            </p>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLoadDialogOpen(false)}
+              disabled={applyingTemplate}
+            >
+              취소
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleApplyTemplate}
+              disabled={!selectedTemplateId || applyingTemplate}
+            >
+              <FolderOpen /> 적용
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={focusBlockId !== null}
