@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
+import { buttonBlockStyle } from '@/lib/hiring/button-color'
 import { PostingStatusBadge, type PostingStatus } from './status-badge'
 import {
   getPostingAssetPublicUrl,
@@ -77,7 +78,12 @@ export function PostingPreview({
                 ) : null
               ) : c.contentType === 'button' ? (
                 (() => {
-                  const btn = c.data as { title?: string; linkType?: string; url?: string } | null
+                  const btn = c.data as {
+                    title?: string
+                    linkType?: string
+                    url?: string
+                    color?: string
+                  } | null
                   if (!btn?.title) return null
                   return (
                     <a
@@ -85,7 +91,8 @@ export function PostingPreview({
                       href={btn.linkType === 'url' && btn.url ? btn.url : '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                      style={buttonBlockStyle(btn.color)}
+                      className="inline-flex w-full items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium shadow transition-opacity hover:opacity-90"
                     >
                       {btn.title}
                     </a>

@@ -68,6 +68,11 @@ export async function POST(req: NextRequest) {
         })),
       })
     }
+    // 표시용 템플릿 이름 스냅샷 기록
+    await tx.hiringPosting.update({
+      where: { id: posting.id },
+      data: { appliedTemplateName: parsed.data.name },
+    })
     return created
   })
 

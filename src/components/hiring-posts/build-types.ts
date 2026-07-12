@@ -51,6 +51,7 @@ export type WizardPosting = {
   storeIds: string[]
   contents: WizardContentData[]
   formFields: FormFieldInput[]
+  appliedTemplateName: string | null
 }
 
 export type WizardData = {

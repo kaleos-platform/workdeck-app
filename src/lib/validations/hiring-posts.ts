@@ -112,6 +112,10 @@ export const buttonDataSchema = z
     title: z.string().min(1, '버튼 제목을 입력하세요').max(50, '버튼 제목은 50자 이내여야 합니다'),
     linkType: z.enum(['form', 'url']),
     url: z.string().optional(),
+    color: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, '색상 형식이 올바르지 않습니다')
+      .optional(),
   })
   .superRefine((val, ctx) => {
     if (val.linkType === 'url') {

@@ -33,6 +33,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     where: { id: parsed.data.templateId, spaceId: resolved.space.id },
     select: {
       id: true,
+      name: true,
       contents: {
         where: { sourceType: 'DETAIL_TEMPLATE' },
         orderBy: { sortOrder: 'asc' },
@@ -59,6 +60,11 @@ export async function POST(req: NextRequest, { params }: Params) {
         })),
       })
     }
+    // 표시용 템플릿 이름 스냅샷 기록
+    await tx.hiringPosting.update({
+      where: { id },
+      data: { appliedTemplateName: template.name },
+    })
   })
 
   const contents = await prisma.hiringContent.findMany({
