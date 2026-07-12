@@ -34,6 +34,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Editor } from '@/components/sc/editor/editor'
+import { cn } from '@/lib/utils'
+import { BUTTON_DEFAULT_COLOR, BUTTON_PRESET_COLORS } from '@/lib/hiring/button-color'
 import { AutoSaveIndicator } from './autosave-indicator'
 import { getPostingAssetPublicUrl, type WizardContentData } from './build-types'
 import { buttonDataSchema, type ButtonData } from '@/lib/validations/hiring-posts'
@@ -51,6 +53,7 @@ type Props = {
   postingId: string
   contents: WizardContentData[]
   positions: { id: string; name: string }[]
+  appliedTemplateName: string | null
   onChange: (contents: WizardContentData[]) => void
 }
 
@@ -61,7 +64,13 @@ const CONTENT_TYPE_META: Record<ContentType, { icon: typeof Type; label: string 
   positions: { icon: Briefcase, label: '직무 정보' },
 }
 
-export function ContentBlockEditor({ postingId, contents, positions, onChange }: Props) {
+export function ContentBlockEditor({
+  postingId,
+  contents,
+  positions,
+  appliedTemplateName,
+  onChange,
+}: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [templateName, setTemplateName] = useState('')
@@ -76,6 +85,8 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
   const [templates, setTemplates] = useState<TemplateItem[] | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [applyingTemplate, setApplyingTemplate] = useState(false)
+  // 마지막 저장/적용 템플릿 이름 (서버 스냅샷 + 클라이언트 즉시 갱신)
+  const [templateLabel, setTemplateLabel] = useState<string | null>(appliedTemplateName)
 
   const hasPositionsBlock = contents.some((c) => c.contentType === 'positions')
 
@@ -191,6 +202,7 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
         body: JSON.stringify({ name: templateName.trim(), postingId }),
       })
       if (!res.ok) throw new Error('템플릿 저장에 실패했습니다')
+      setTemplateLabel(templateName.trim())
       setTemplateName('')
       setSaveDialogOpen(false)
       toast.success('현재 상세를 템플릿으로 저장했습니다')
@@ -229,6 +241,7 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
       if (!res.ok) throw new Error('템플릿 적용에 실패했습니다')
       const { contents: next } = await res.json()
       onChange(next)
+      setTemplateLabel(templates?.find((t) => t.id === selectedTemplateId)?.name ?? null)
       setRemountTick((t) => t + 1)
       setLoadDialogOpen(false)
       toast.success('템플릿을 적용했습니다')
@@ -245,7 +258,12 @@ export function ContentBlockEditor({ postingId, contents, positions, onChange }:
   return (
     <div className="space-y-4">
       {/* 템플릿 툴바 */}
-      <div className="flex justify-end gap-2">
+      <div className="flex items-center justify-end gap-2">
+        {templateLabel && (
+          <span className="min-w-0 truncate text-xs text-muted-foreground" title={templateLabel}>
+            템플릿: <span className="font-medium text-foreground">{templateLabel}</span>
+          </span>
+        )}
         <Button size="sm" variant="outline" onClick={openLoadDialog}>
           <FolderOpen /> 템플릿 불러오기
         </Button>
@@ -505,16 +523,20 @@ function ButtonBlock({
   const [title, setTitle] = useState(data?.title ?? '지원하기')
   const [linkType, setLinkType] = useState<'form' | 'url'>(data?.linkType ?? 'form')
   const [url, setUrl] = useState(data?.url ?? '')
+  const [color, setColor] = useState(data?.color ?? BUTTON_DEFAULT_COLOR)
   const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const uid = useId()
 
-  function attemptSave(next: { title: string; linkType: 'form' | 'url'; url: string }) {
+  type ButtonDraft = { title: string; linkType: 'form' | 'url'; url: string; color: string }
+
+  function attemptSave(next: ButtonDraft) {
     const result = buttonDataSchema.safeParse({
       title: next.title,
       linkType: next.linkType,
       url: next.url || undefined,
+      color: next.color,
     })
     if (!result.success) {
       const first = result.error.issues[0]
@@ -531,7 +553,7 @@ function ButtonBlock({
       })
   }
 
-  function debouncedSave(next: { title: string; linkType: 'form' | 'url'; url: string }) {
+  function debouncedSave(next: ButtonDraft) {
     clearTimeout(timer.current)
     timer.current = setTimeout(() => attemptSave(next), 600)
   }
@@ -542,19 +564,19 @@ function ButtonBlock({
 
   function handleTitleChange(value: string) {
     setTitle(value)
-    debouncedSave({ title: value, linkType, url })
+    debouncedSave({ title: value, linkType, url, color })
   }
   function handleTitleBlur() {
     clearTimeout(timer.current)
-    attemptSave({ title, linkType, url })
+    attemptSave({ title, linkType, url, color })
   }
   function handleUrlChange(value: string) {
     setUrl(value)
-    debouncedSave({ title, linkType, url: value })
+    debouncedSave({ title, linkType, url: value, color })
   }
   function handleUrlBlur() {
     clearTimeout(timer.current)
-    attemptSave({ title, linkType, url })
+    attemptSave({ title, linkType, url, color })
   }
   function handleLinkTypeChange(value: 'form' | 'url') {
     setLinkType(value)
@@ -564,16 +586,21 @@ function ButtonBlock({
       setError(null)
       return
     }
-    attemptSave({ title, linkType: value, url })
+    attemptSave({ title, linkType: value, url, color })
+  }
+  function handleColorChange(value: string, immediate: boolean) {
+    setColor(value)
+    const next = { title, linkType, url, color: value }
+    if (immediate) {
+      clearTimeout(timer.current)
+      attemptSave(next)
+    } else {
+      debouncedSave(next)
+    }
   }
 
   return (
     <div className="space-y-3">
-      {/* 실제 버튼 UI 미리보기 */}
-      <div className="pointer-events-none flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow">
-        {title || '버튼 제목'}
-      </div>
-
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <Label htmlFor={`${uid}-btn-title`}>버튼 제목</Label>
@@ -625,6 +652,39 @@ function ButtonBlock({
           />
         </div>
       )}
+      <div className="space-y-1.5">
+        <Label>버튼 색상</Label>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {BUTTON_PRESET_COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              aria-label={`버튼 색상 ${c}`}
+              className={cn(
+                'size-7 cursor-pointer rounded-full border transition',
+                color.toLowerCase() === c.toLowerCase()
+                  ? 'ring-2 ring-primary ring-offset-2 ring-offset-background'
+                  : 'hover:scale-110'
+              )}
+              style={{ backgroundColor: c }}
+              onClick={() => handleColorChange(c, true)}
+            />
+          ))}
+          <label
+            className="relative ml-1 flex size-7 cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)]"
+            aria-label="커스텀 색상"
+            title="커스텀 색상"
+          >
+            <input
+              type="color"
+              value={color}
+              className="absolute inset-0 size-full cursor-pointer opacity-0"
+              onChange={(e) => handleColorChange(e.target.value, false)}
+              onBlur={() => handleColorChange(color, true)}
+            />
+          </label>
+        </div>
+      </div>
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   )

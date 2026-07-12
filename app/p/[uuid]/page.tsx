@@ -18,6 +18,7 @@ import {
   hiringAssetPublicUrl,
 } from '@/components/hiring-public/posting-labels'
 import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
+import { buttonBlockStyle } from '@/lib/hiring/button-color'
 
 type Params = { params: Promise<{ uuid: string }>; searchParams: Promise<{ preview?: string }> }
 
@@ -117,21 +118,42 @@ export default async function PublicPostingPage({ params, searchParams }: Params
               />
             ) : c.contentType === 'button' && c.data ? (
               (() => {
-                const btn = c.data as { title?: string; linkType?: string; url?: string }
+                const btn = c.data as {
+                  title?: string
+                  linkType?: string
+                  url?: string
+                  color?: string
+                }
                 if (!btn.title) return null
                 const isForm = btn.linkType === 'form'
+                const btnCls =
+                  'inline-flex h-10 w-full items-center justify-center rounded-md px-6 text-sm font-medium shadow transition-opacity hover:opacity-90'
+                const style = buttonBlockStyle(btn.color)
                 return (
                   <div key={c.id} className="p-6">
-                    {isForm ? (
-                      <Button asChild size="lg" className="w-full">
-                        <Link href={getHiringPublicApplyPath(uuid)}>{btn.title}</Link>
-                      </Button>
+                    {isClosed ? (
+                      // 마감: 버튼 비활성
+                      <span
+                        aria-disabled="true"
+                        style={style}
+                        className={`${btnCls} pointer-events-none opacity-50`}
+                      >
+                        {btn.title}
+                      </span>
+                    ) : isForm ? (
+                      <Link href={getHiringPublicApplyPath(uuid)} style={style} className={btnCls}>
+                        {btn.title}
+                      </Link>
                     ) : (
-                      <Button asChild size="lg" className="w-full">
-                        <a href={btn.url} target="_blank" rel="noopener noreferrer">
-                          {btn.title}
-                        </a>
-                      </Button>
+                      <a
+                        href={btn.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={style}
+                        className={btnCls}
+                      >
+                        {btn.title}
+                      </a>
                     )}
                   </div>
                 )
@@ -178,18 +200,12 @@ export default async function PublicPostingPage({ params, searchParams }: Params
         </section>
       )}
 
-      {/* 지원 CTA */}
-      <div className="sticky bottom-4 z-10">
-        {isClosed ? (
-          <div className="rounded-lg border bg-card p-4 text-center text-sm text-muted-foreground shadow-sm">
-            마감된 공고입니다. 지원을 받지 않습니다.
-          </div>
-        ) : (
-          <Button asChild size="lg" className="w-full shadow-sm">
-            <Link href={getHiringPublicApplyPath(uuid)}>지원하기</Link>
-          </Button>
-        )}
-      </div>
+      {/* 마감 안내 — 일반 섹션 (지원 CTA는 버튼 블록으로만 제공) */}
+      {isClosed && (
+        <div className="rounded-lg border bg-card p-4 text-center text-sm text-muted-foreground shadow-sm">
+          마감된 공고입니다. 지원을 받지 않습니다.
+        </div>
+      )}
     </article>
   )
 }
