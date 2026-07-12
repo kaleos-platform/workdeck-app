@@ -94,7 +94,7 @@ export function PublishBar({
     }
   }
 
-  const publishLabel = status === 'CLOSED' ? '재발행' : '발행'
+  const publishLabel = status === 'CLOSED' ? '공고 재등록' : '공고 등록'
 
   return (
     <div className="flex flex-wrap items-center gap-2">
