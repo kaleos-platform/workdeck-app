@@ -47,20 +47,45 @@ export async function POST(req: NextRequest) {
   })
   if (!posting) return errorResponse('공고를 찾을 수 없습니다', 404)
 
-  const template = await prisma.$transaction(async (tx) => {
-    const created = await tx.hiringDetailTemplate.create({
-      data: {
-        spaceId: resolved.space.id,
-        name: parsed.data.name,
-        imagePath: posting.contents[0]?.imagePath ?? null,
-      },
+  // 덮어쓰기 대상 검증 (templateId 지정 시)
+  const overwriteId = parsed.data.templateId ?? null
+  if (overwriteId) {
+    const target = await prisma.hiringDetailTemplate.findFirst({
+      where: { id: overwriteId, spaceId: resolved.space.id },
+      select: { id: true },
     })
+    if (!target) return errorResponse('템플릿을 찾을 수 없습니다', 404)
+  }
+
+  const template = await prisma.$transaction(async (tx) => {
+    let target: { id: string }
+    if (overwriteId) {
+      // 덮어쓰기: 기존 콘텐츠 제거 + 이름/썸네일 갱신
+      await tx.hiringContent.deleteMany({
+        where: { templateId: overwriteId, sourceType: 'DETAIL_TEMPLATE' },
+      })
+      target = await tx.hiringDetailTemplate.update({
+        where: { id: overwriteId },
+        data: {
+          name: parsed.data.name,
+          imagePath: posting.contents[0]?.imagePath ?? null,
+        },
+      })
+    } else {
+      target = await tx.hiringDetailTemplate.create({
+        data: {
+          spaceId: resolved.space.id,
+          name: parsed.data.name,
+          imagePath: posting.contents[0]?.imagePath ?? null,
+        },
+      })
+    }
     if (posting.contents.length > 0) {
       await tx.hiringContent.createMany({
         data: posting.contents.map((c) => ({
           spaceId: resolved.space.id,
           sourceType: 'DETAIL_TEMPLATE' as const,
-          templateId: created.id,
+          templateId: target.id,
           contentType: c.contentType,
           data: (c.data ?? undefined) as Prisma.InputJsonValue | undefined,
           imagePath: c.imagePath,
@@ -68,13 +93,17 @@ export async function POST(req: NextRequest) {
         })),
       })
     }
-    // 표시용 템플릿 이름 스냅샷 기록
+    // 표시용 템플릿 스냅샷 기록
     await tx.hiringPosting.update({
       where: { id: posting.id },
-      data: { appliedTemplateName: parsed.data.name },
+      data: {
+        appliedTemplateId: target.id,
+        appliedTemplateName: parsed.data.name,
+        appliedTemplateAt: new Date(),
+      },
     })
-    return created
+    return target
   })
 
-  return NextResponse.json({ template }, { status: 201 })
+  return NextResponse.json({ template }, { status: overwriteId ? 200 : 201 })
 }

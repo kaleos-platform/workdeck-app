@@ -49,12 +49,26 @@ type TemplateItem = {
   _count: { contents: number }
 }
 
+type AppliedTemplate = {
+  id: string | null
+  name: string
+  at: string | null
+}
+
 type Props = {
   postingId: string
   contents: WizardContentData[]
   positions: { id: string; name: string }[]
-  appliedTemplateName: string | null
+  appliedTemplate: AppliedTemplate | null
   onChange: (contents: WizardContentData[]) => void
+}
+
+// "2026. 7. 12. 오후 2:11" 형식
+function formatTemplateAt(at: string | null): string | null {
+  if (!at) return null
+  const d = new Date(at)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
 const CONTENT_TYPE_META: Record<ContentType, { icon: typeof Type; label: string }> = {
@@ -68,7 +82,7 @@ export function ContentBlockEditor({
   postingId,
   contents,
   positions,
-  appliedTemplateName,
+  appliedTemplate,
   onChange,
 }: Props) {
   const router = useRouter()
@@ -85,8 +99,10 @@ export function ContentBlockEditor({
   const [templates, setTemplates] = useState<TemplateItem[] | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [applyingTemplate, setApplyingTemplate] = useState(false)
-  // 마지막 저장/적용 템플릿 이름 (서버 스냅샷 + 클라이언트 즉시 갱신)
-  const [templateLabel, setTemplateLabel] = useState<string | null>(appliedTemplateName)
+  // 마지막 저장/적용 템플릿 정보 (서버 스냅샷 + 클라이언트 즉시 갱신)
+  const [templateInfo, setTemplateInfo] = useState<AppliedTemplate | null>(appliedTemplate)
+  // 저장 모드: 현재 템플릿 덮어쓰기 vs 새 템플릿
+  const [saveMode, setSaveMode] = useState<'overwrite' | 'new'>('new')
 
   const hasPositionsBlock = contents.some((c) => c.contentType === 'positions')
 
@@ -189,23 +205,47 @@ export function ContentBlockEditor({
     return patchContent(contentId, { data })
   }
 
+  function openSaveDialog() {
+    // 현재 템플릿이 있으면 덮어쓰기 기본 + 이름 프리필
+    if (templateInfo?.id) {
+      setSaveMode('overwrite')
+      setTemplateName(templateInfo.name)
+    } else {
+      setSaveMode('new')
+      setTemplateName('')
+    }
+    setSaveDialogOpen(true)
+  }
+
   async function handleSaveTemplate() {
-    if (!templateName.trim()) {
+    const name = templateName.trim()
+    if (!name) {
       toast.error('템플릿 이름을 입력하세요')
       return
     }
+    const overwriteId = saveMode === 'overwrite' ? (templateInfo?.id ?? null) : null
     setSavingTemplate(true)
     try {
       const res = await fetch('/api/hiring-posts/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: templateName.trim(), postingId }),
+        body: JSON.stringify({
+          name,
+          postingId,
+          ...(overwriteId ? { templateId: overwriteId } : {}),
+        }),
       })
+      if (res.status === 404 && overwriteId) {
+        throw new Error('원본 템플릿이 삭제되었습니다 — 새 템플릿으로 저장하세요')
+      }
       if (!res.ok) throw new Error('템플릿 저장에 실패했습니다')
-      setTemplateLabel(templateName.trim())
+      const { template } = await res.json()
+      setTemplateInfo({ id: template.id, name, at: new Date().toISOString() })
       setTemplateName('')
       setSaveDialogOpen(false)
-      toast.success('현재 상세를 템플릿으로 저장했습니다')
+      toast.success(
+        overwriteId ? '템플릿을 덮어썼습니다' : '현재 상세를 새 템플릿으로 저장했습니다'
+      )
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '템플릿 저장에 실패했습니다')
     } finally {
@@ -241,7 +281,10 @@ export function ContentBlockEditor({
       if (!res.ok) throw new Error('템플릿 적용에 실패했습니다')
       const { contents: next } = await res.json()
       onChange(next)
-      setTemplateLabel(templates?.find((t) => t.id === selectedTemplateId)?.name ?? null)
+      const applied = templates?.find((t) => t.id === selectedTemplateId)
+      setTemplateInfo(
+        applied ? { id: applied.id, name: applied.name, at: new Date().toISOString() } : null
+      )
       setRemountTick((t) => t + 1)
       setLoadDialogOpen(false)
       toast.success('템플릿을 적용했습니다')
@@ -257,24 +300,39 @@ export function ContentBlockEditor({
 
   return (
     <div className="space-y-4">
-      {/* 템플릿 툴바 */}
-      <div className="flex items-center justify-end gap-2">
-        {templateLabel && (
-          <span className="min-w-0 truncate text-xs text-muted-foreground" title={templateLabel}>
-            템플릿: <span className="font-medium text-foreground">{templateLabel}</span>
-          </span>
-        )}
-        <Button size="sm" variant="outline" onClick={openLoadDialog}>
-          <FolderOpen /> 템플릿 불러오기
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setSaveDialogOpen(true)}
-          disabled={contents.length === 0}
-        >
-          <Save /> 템플릿으로 저장
-        </Button>
+      {/* 템플릿 툴바 — 좌: 현재 템플릿 정보 / 우: 불러오기·저장 */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+          {templateInfo ? (
+            <>
+              <FolderOpen className="size-3.5 shrink-0" />
+              <span
+                className="min-w-0 truncate font-medium text-foreground"
+                title={templateInfo.name}
+              >
+                {templateInfo.name}
+              </span>
+              {formatTemplateAt(templateInfo.at) && (
+                <span className="shrink-0">· {formatTemplateAt(templateInfo.at)}</span>
+              )}
+            </>
+          ) : (
+            <span>템플릿 미사용</span>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button size="sm" variant="outline" onClick={openLoadDialog}>
+            <FolderOpen /> 템플릿 불러오기
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={openSaveDialog}
+            disabled={contents.length === 0}
+          >
+            <Save /> 템플릿으로 저장
+          </Button>
+        </div>
       </div>
 
       {contents.length === 0 && (
@@ -388,6 +446,39 @@ export function ContentBlockEditor({
           <DialogHeader>
             <DialogTitle>템플릿으로 저장</DialogTitle>
           </DialogHeader>
+          {templateInfo?.id && (
+            <div className="space-y-1.5">
+              <Label>저장 방식</Label>
+              <div className="space-y-1">
+                <label className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm has-checked:border-primary">
+                  <input
+                    type="radio"
+                    name="tpl-save-mode"
+                    checked={saveMode === 'overwrite'}
+                    onChange={() => {
+                      setSaveMode('overwrite')
+                      setTemplateName(templateInfo.name)
+                    }}
+                  />
+                  <span className="min-w-0 truncate">
+                    기존 템플릿 덮어쓰기: <span className="font-medium">{templateInfo.name}</span>
+                  </span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm has-checked:border-primary">
+                  <input
+                    type="radio"
+                    name="tpl-save-mode"
+                    checked={saveMode === 'new'}
+                    onChange={() => {
+                      setSaveMode('new')
+                      setTemplateName('')
+                    }}
+                  />
+                  새 템플릿으로 저장
+                </label>
+              </div>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="tpl-name">템플릿 이름</Label>
             <Input
@@ -398,7 +489,9 @@ export function ContentBlockEditor({
               maxLength={200}
             />
             <p className="text-xs text-muted-foreground">
-              현재 블록 {contents.length}개를 템플릿으로 저장합니다.
+              {saveMode === 'overwrite' && templateInfo?.id
+                ? `현재 블록 ${contents.length}개로 기존 템플릿 내용을 교체합니다.`
+                : `현재 블록 ${contents.length}개를 새 템플릿으로 저장합니다.`}
             </p>
           </div>
           <DialogFooter>
@@ -453,8 +546,7 @@ export function ContentBlockEditor({
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{t.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      블록 {t._count.contents}개 ·{' '}
-                      {new Date(t.updatedAt).toLocaleDateString('ko-KR')}
+                      블록 {t._count.contents}개 · {formatTemplateAt(t.updatedAt)}
                     </div>
                   </div>
                 </label>
