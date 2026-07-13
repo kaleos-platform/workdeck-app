@@ -67,6 +67,7 @@ export async function proxy(request: NextRequest) {
       '/d',
       '/api',
       '/auth',
+      '/oauth',
     ]
     const shouldMoveToApp = appOnlyPaths.some((base) => isPathOrChild(pathname, base))
     if (shouldMoveToApp) {
