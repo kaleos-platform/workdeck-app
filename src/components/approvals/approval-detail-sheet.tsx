@@ -55,6 +55,14 @@ export function ApprovalDetailSheet({
   const beforeEntries = toEntries(action.beforeState)
   const isPending = action.status === 'PENDING'
 
+  // 목록 갱신 + 사이드바 배지 갱신(별도 컴포넌트 트리라 커스텀 이벤트로 신호).
+  function notifyDecided() {
+    onDecided()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('workdeck:approvals-changed'))
+    }
+  }
+
   async function decide(decision: 'approve' | 'reject') {
     if (!action || isDeciding) return
     setIsDeciding(true)
@@ -78,7 +86,7 @@ export function ApprovalDetailSheet({
       if (res.status === 409 || outcome?.status === 'CONFLICT') {
         setOutcomeNote({ kind: 'conflict', message: '이미 처리되었습니다.' })
         toast.info('이미 처리된 액션입니다')
-        onDecided()
+        notifyDecided()
         return
       }
 
@@ -103,7 +111,7 @@ export function ApprovalDetailSheet({
         toast.success('거부되었습니다')
       }
 
-      onDecided()
+      notifyDecided()
     } catch {
       toast.error('네트워크 오류가 발생했습니다')
     } finally {

@@ -348,15 +348,27 @@ export function Sidebar({
   }, [pathname, isCoupangSidebar])
 
   // 승인 대기 카운트 — workdeck 허브(My Deck 홈)에서만 가볍게 조회.
+  // 네비게이션(pathname)뿐 아니라 승인/거부 후에도 갱신되도록 커스텀 이벤트를 구독한다
+  // (승인 큐 UI는 별도 컴포넌트 트리라 prop으로 연결되지 않는다).
   useEffect(() => {
     if (!isWorkdeckSidebar) return
 
-    fetch('/api/agent/actions?status=PENDING')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: { actions: unknown[] } | null) => {
-        setPendingApprovalCount(data?.actions?.length ?? 0)
-      })
-      .catch(() => {})
+    let cancelled = false
+    const refetch = () => {
+      fetch('/api/agent/actions?status=PENDING')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data: { actions: unknown[] } | null) => {
+          if (!cancelled) setPendingApprovalCount(data?.actions?.length ?? 0)
+        })
+        .catch(() => {})
+    }
+
+    refetch()
+    window.addEventListener('workdeck:approvals-changed', refetch)
+    return () => {
+      cancelled = true
+      window.removeEventListener('workdeck:approvals-changed', refetch)
+    }
   }, [pathname, isWorkdeckSidebar])
 
   const groupedCampaigns = useMemo(() => {
