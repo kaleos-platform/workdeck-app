@@ -22,6 +22,10 @@
     {
       "path": "/api/cron/reorder-settle",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/agent-actions-expire",
+      "schedule": "0 3 * * *"
     }
   ]
 }
