@@ -3,6 +3,7 @@ import type { ActionDefinition } from './types'
 import { prisma } from '@/lib/prisma'
 import { learnRule } from '@/lib/finance/classify'
 import { normalizeFinKey, directionForType } from '@/lib/finance/kifrs-seed'
+import { normalizeMemoInput } from '@/lib/finance/memo'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너.
 // TParams는 execute/snapshot에서 반공변 위치라 좁은 타입이 넓은 타입에 직접 대입 불가 →
@@ -81,6 +82,8 @@ const classruleParams = z.object({
   matchKey: z.string().min(1),
   categoryId: z.string(),
   matchType: z.enum(['EXACT', 'KEYWORD']),
+  // 규칙 메모(선택) — 자동분류 시 스테이징 행 memo로 복사된다(FinClassRule.memo).
+  memo: z.string().optional(),
 })
 
 const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
@@ -101,6 +104,10 @@ const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
     const normalizedKey = normalizeFinKey(params.matchKey)
     const direction = directionForType(category.type)
 
+    // 메모 정규화 — undefined=변경 없음(유지), null/빈="삭제"(null), 그 외 trim 문자열.
+    const memoResult = normalizeMemoInput(params.memo)
+    if (!memoResult.ok) throw new Error(memoResult.error)
+
     // (spaceId, matchKey, direction) 멱등 — direction이 null일 수 있어 findFirst → update/create.
     const existing = await prisma.finClassRule.findFirst({
       where: { spaceId, matchKey: normalizedKey, direction },
@@ -110,7 +117,13 @@ const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
     const rule = existing
       ? await prisma.finClassRule.update({
           where: { id: existing.id },
-          data: { categoryId: params.categoryId, matchType: params.matchType, learnedFrom: 'USER' },
+          data: {
+            categoryId: params.categoryId,
+            matchType: params.matchType,
+            learnedFrom: 'USER',
+            // undefined면 memo 필드를 data에서 생략해 기존 값을 유지한다.
+            ...(memoResult.value === undefined ? {} : { memo: memoResult.value }),
+          },
           select: { id: true },
         })
       : await prisma.finClassRule.create({
@@ -121,6 +134,7 @@ const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
             matchType: params.matchType,
             learnedFrom: 'USER',
             direction,
+            memo: memoResult.value ?? null,
           },
           select: { id: true },
         })

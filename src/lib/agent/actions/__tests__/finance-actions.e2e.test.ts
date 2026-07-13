@@ -114,11 +114,11 @@ d('finance 액션 실행', () => {
     expect((row?.beforeState as { classStatus?: string } | null)?.classStatus).toBe('UNCLASSIFIED')
   })
 
-  test('classrule.create: 승인 실행 → 규칙 생성', async () => {
+  test('classrule.create: 승인 실행 → 규칙 생성(memo 포함)', async () => {
     const created = await createPendingAction({
       spaceId: SPACE_ID,
       actionType: 'finance.classrule.create',
-      params: { matchKey: '스타벅스', categoryId, matchType: 'KEYWORD' },
+      params: { matchKey: '스타벅스', categoryId, matchType: 'KEYWORD', memo: '  카페 지출  ' },
       summary: '규칙: 스타벅스 → 식비',
       source: 'MCP',
       requestedBy: USER_ID,
@@ -129,6 +129,24 @@ d('finance 액션 실행', () => {
     expect(rules.length).toBe(1)
     expect(rules[0].matchType).toBe('KEYWORD')
     expect(rules[0].learnedFrom).toBe('USER')
+    // memo는 정규화(trim)되어 저장된다.
+    expect(rules[0].memo).toBe('카페 지출')
+  })
+
+  test('classrule.create: memo 없으면 null', async () => {
+    const created = await createPendingAction({
+      spaceId: SPACE_ID,
+      actionType: 'finance.classrule.create',
+      params: { matchKey: '이마트', categoryId, matchType: 'EXACT' },
+      summary: '규칙',
+      source: 'MCP',
+      requestedBy: USER_ID,
+    })
+    await approveAndExecute(created.actionId, USER_ID)
+    const rule = await prisma.finClassRule.findFirst({
+      where: { spaceId: SPACE_ID, matchType: 'EXACT' },
+    })
+    expect(rule?.memo).toBeNull()
   })
 
   test('reclassify: 존재하지 않는 거래 → FAILED', async () => {

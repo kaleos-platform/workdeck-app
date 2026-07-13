@@ -67,11 +67,12 @@ const financeClassifyTransactionsTool: ToolDefinition = {
 const financeCreateClassRuleTool: ToolDefinition = {
   name: 'finance_create_class_rule',
   description:
-    '거래 자동 분류 규칙을 생성하도록 요청합니다. 즉시 생성되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN) 승인 후에 실제로 반영됩니다.',
+    '거래 자동 분류 규칙을 생성하도록 요청합니다. memo(선택)를 함께 저장하면 이 규칙으로 자동분류된 거래에 메모가 복사됩니다. 즉시 생성되지 않고 승인 대기 큐에 등록되며, 관리자(ADMIN) 승인 후에 실제로 반영됩니다.',
   inputSchema: {
     matchKey: z.string().min(1),
     categoryId: z.string(),
     matchType: z.enum(['EXACT', 'KEYWORD']),
+    memo: z.string().optional(),
   },
   mode: 'write',
   async execute(ctx, params) {
@@ -80,6 +81,7 @@ const financeCreateClassRuleTool: ToolDefinition = {
       matchKey: params.matchKey as string,
       categoryId: params.categoryId as string,
       matchType: params.matchType as 'EXACT' | 'KEYWORD',
+      memo: params.memo as string | undefined,
     }
     const summary = `분류 규칙 생성: "${actionParams.matchKey}" (${actionParams.matchType}) → 계정과목 ${actionParams.categoryId}`
     const r = await createPendingAction({
