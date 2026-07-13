@@ -210,3 +210,6 @@ export function getHiringPublicPostingPath(uuid: string): string {
 export function getHiringPublicApplyPath(uuid: string): string {
   return `/p/${uuid}/apply`
 }
+
+// ─── 승인 큐 (전역, deck-scope 아님) ───────────────────────────────────────────
+export const APPROVALS_PATH = '/approvals'
