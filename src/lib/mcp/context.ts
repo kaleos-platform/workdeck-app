@@ -67,7 +67,9 @@ export async function resolveMcpDeckContext(
  *  2. Space 있음 + deck 비활성 → throw(거부)
  *  3. Space 있음 + deck 활성 → workspace 폴백으로 진행
  */
-export async function resolveMcpWorkspace(userId: string): Promise<{ workspace: { id: string } }> {
+export async function resolveMcpWorkspace(
+  userId: string
+): Promise<{ workspace: { id: string }; space: { id: string } | null }> {
   const membership = await prisma.spaceMember.findFirst({
     where: { userId },
     orderBy: { createdAt: 'asc' }, // 결정적 최고참 멤버십
@@ -94,5 +96,7 @@ export async function resolveMcpWorkspace(userId: string): Promise<{ workspace: 
   })
   if (!workspace) throw new Error('워크스페이스가 없습니다')
 
-  return { workspace }
+  // space는 승인 큐 라우팅(AgentPendingAction.spaceId)에 필요하다. 레거시(Space 없음)면 null —
+  // 조회(read) tool은 workspace만 쓰므로 무관하나, write tool은 space가 있어야 큐잉 가능하다.
+  return { workspace, space: membership?.space ?? null }
 }

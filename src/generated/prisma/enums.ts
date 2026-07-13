@@ -81,6 +81,28 @@ export const SpaceMemberRole = {
 export type SpaceMemberRole = (typeof SpaceMemberRole)[keyof typeof SpaceMemberRole]
 
 
+export const AgentActionStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  EXECUTED: 'EXECUTED',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type AgentActionStatus = (typeof AgentActionStatus)[keyof typeof AgentActionStatus]
+
+
+export const AgentActionSource = {
+  MCP: 'MCP',
+  WORKDECK_AGENT: 'WORKDECK_AGENT',
+  WEB: 'WEB',
+  SYSTEM: 'SYSTEM'
+} as const
+
+export type AgentActionSource = (typeof AgentActionSource)[keyof typeof AgentActionSource]
+
+
 export const ReorderPlanStatus = {
   DRAFT: 'DRAFT',
   FINALIZED: 'FINALIZED',

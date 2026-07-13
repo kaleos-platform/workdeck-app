@@ -395,6 +395,7 @@ export const ModelName = {
   DailyMemo: 'DailyMemo',
   Space: 'Space',
   SpaceMember: 'SpaceMember',
+  AgentPendingAction: 'AgentPendingAction',
   DeckApp: 'DeckApp',
   DeckInstance: 'DeckInstance',
   CoupangCredential: 'CoupangCredential',
@@ -525,7 +526,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1340,6 +1341,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SpaceMemberCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SpaceMemberCountAggregateOutputType> | number
+        }
+      }
+    }
+    AgentPendingAction: {
+      payload: Prisma.$AgentPendingActionPayload<ExtArgs>
+      fields: Prisma.AgentPendingActionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AgentPendingActionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AgentPendingActionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload>
+        }
+        findFirst: {
+          args: Prisma.AgentPendingActionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AgentPendingActionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload>
+        }
+        findMany: {
+          args: Prisma.AgentPendingActionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload>[]
+        }
+        create: {
+          args: Prisma.AgentPendingActionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload>
+        }
+        createMany: {
+          args: Prisma.AgentPendingActionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AgentPendingActionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload>[]
+        }
+        delete: {
+          args: Prisma.AgentPendingActionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload>
+        }
+        update: {
+          args: Prisma.AgentPendingActionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload>
+        }
+        deleteMany: {
+          args: Prisma.AgentPendingActionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AgentPendingActionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AgentPendingActionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload>[]
+        }
+        upsert: {
+          args: Prisma.AgentPendingActionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentPendingActionPayload>
+        }
+        aggregate: {
+          args: Prisma.AgentPendingActionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAgentPendingAction>
+        }
+        groupBy: {
+          args: Prisma.AgentPendingActionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentPendingActionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AgentPendingActionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentPendingActionCountAggregateOutputType> | number
         }
       }
     }
@@ -10056,6 +10131,33 @@ export const SpaceMemberScalarFieldEnum = {
 export type SpaceMemberScalarFieldEnum = (typeof SpaceMemberScalarFieldEnum)[keyof typeof SpaceMemberScalarFieldEnum]
 
 
+export const AgentPendingActionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  deckKey: 'deckKey',
+  actionType: 'actionType',
+  payload: 'payload',
+  summary: 'summary',
+  beforeState: 'beforeState',
+  source: 'source',
+  requestedBy: 'requestedBy',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  decidedBy: 'decidedBy',
+  decidedAt: 'decidedAt',
+  executedAt: 'executedAt',
+  result: 'result',
+  error: 'error',
+  idempotencyKey: 'idempotencyKey',
+  slackChannelId: 'slackChannelId',
+  slackMessageTs: 'slackMessageTs',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
+
+
 export const DeckAppScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -12164,6 +12266,48 @@ export type ListEnumSpaceMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'AgentActionSource'
+ */
+export type EnumAgentActionSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgentActionSource'>
+    
+
+
+/**
+ * Reference to a field of type 'AgentActionSource[]'
+ */
+export type ListEnumAgentActionSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgentActionSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AgentActionStatus'
+ */
+export type EnumAgentActionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgentActionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AgentActionStatus[]'
+ */
+export type ListEnumAgentActionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgentActionStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'CoupangBackfillStatus'
  */
 export type EnumCoupangBackfillStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CoupangBackfillStatus'>
@@ -12202,20 +12346,6 @@ export type EnumAnalysisTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'AnalysisType[]'
  */
 export type ListEnumAnalysisTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AnalysisType[]'>
-    
-
-
-/**
- * Reference to a field of type 'Json'
- */
-export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-/**
- * Reference to a field of type 'QueryMode'
- */
-export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -13206,6 +13336,7 @@ export type GlobalOmitConfig = {
   dailyMemo?: Prisma.DailyMemoOmit
   space?: Prisma.SpaceOmit
   spaceMember?: Prisma.SpaceMemberOmit
+  agentPendingAction?: Prisma.AgentPendingActionOmit
   deckApp?: Prisma.DeckAppOmit
   deckInstance?: Prisma.DeckInstanceOmit
   coupangCredential?: Prisma.CoupangCredentialOmit

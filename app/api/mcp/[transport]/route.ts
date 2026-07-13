@@ -26,9 +26,19 @@ const handler = createMcpHandler(
 
           try {
             const result = await def.execute({ userId }, (args ?? {}) as Record<string, unknown>)
+            const structuredContent = result as Record<string, unknown>
+            // write tool은 즉시 실행되지 않고 승인 큐에 등록된다 — LLM이 사용자에게
+            // "실행 완료"로 오인 안내하지 않도록 텍스트를 분기한다.
+            const isPending =
+              def.mode === 'write' || structuredContent?.status === 'pending_approval'
+            const text = isPending
+              ? `승인 대기 큐에 등록했습니다(승인 후 실행됨). 승인 URL: ${
+                  structuredContent?.approvalUrl ?? '(웹 승인 큐)'
+                }`
+              : `${def.name} 실행 완료: ${JSON.stringify(result)}`
             return {
-              structuredContent: result as Record<string, unknown>,
-              content: [{ type: 'text', text: `${def.name} 실행 완료: ${JSON.stringify(result)}` }],
+              structuredContent,
+              content: [{ type: 'text', text }],
             }
           } catch (err) {
             // execute의 throw(한국어 Error)를 MCP 에러 규약으로 변환한다.

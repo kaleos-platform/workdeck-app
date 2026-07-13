@@ -68,6 +68,24 @@ enum SpaceMemberRole {
   MEMBER
 }
 
+// 에이전트 승인 큐 액션 상태 (Phase 4)
+enum AgentActionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+  EXPIRED
+}
+
+// 승인 요청 출처
+enum AgentActionSource {
+  MCP
+  WORKDECK_AGENT
+  WEB
+  SYSTEM
+}
+
 // ─── 발주 예측 열거형 ─────────────────────────────────────────────────────────
 
 // 발주 계획 상태
@@ -468,6 +486,9 @@ model Space {
   boDeployments         BoDeployment[]
   boJobs                BoJob[]
   boChannelCredentials  BoChannelCredential[]
+
+  // ─── 에이전트 승인 큐 (Agent) ───
+  agentPendingActions AgentPendingAction[]
 }
 
 // 공간 멤버십 + 역할
@@ -484,6 +505,40 @@ model SpaceMember {
 
   @@unique([spaceId, userId])
   @@index([userId])
+}
+
+// 에이전트 승인 큐 — MCP/워크덱 에이전트의 상태 변경(write) 요청을 승인부 실행한다.
+// 조회는 자유, 변경은 이 큐에 PENDING으로 쌓이고 ADMIN 승인 시 동기 실행된다.
+model AgentPendingAction {
+  id          String            @id @default(cuid())
+  spaceId     String
+  deckKey     String // "finance" | "seller-hub" | "coupang-ads"
+  actionType  String // ActionDefinition.actionType, 예: "finance.transaction.reclassify"
+  payload     Json // 액션 파라미터 (paramsSchema로 검증된 값)
+  summary     String // 사람이 읽는 한 줄 요약
+  beforeState Json? // 실행 전 스냅샷 (diff·롤백 참고용)
+  source      AgentActionSource
+  requestedBy String // 요청자 User.id (또는 워커/시스템 식별자)
+
+  status      AgentActionStatus @default(PENDING)
+  expiresAt   DateTime // createPendingAction에서 now+72h로 설정 (앱 계산)
+  decidedBy   String? // 승인/거부한 User.id
+  decidedAt   DateTime?
+  executedAt  DateTime?
+  result      Json? // execute 성공 결과
+  error       String? // execute 실패 메시지
+
+  idempotencyKey String? @unique // 재시도 멱등 — 동일 키 재요청 시 기존 액션 반환
+  slackChannelId String? // Phase 6 Slack 연동 예약
+  slackMessageTs String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, status, createdAt])
+  @@index([status, expiresAt])
 }
 
 // 카드 앱 카탈로그 (전역 정의)

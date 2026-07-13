@@ -62,6 +62,7 @@ export const ModelName = {
   DailyMemo: 'DailyMemo',
   Space: 'Space',
   SpaceMember: 'SpaceMember',
+  AgentPendingAction: 'AgentPendingAction',
   DeckApp: 'DeckApp',
   DeckInstance: 'DeckInstance',
   CoupangCredential: 'CoupangCredential',
@@ -357,6 +358,33 @@ export const SpaceMemberScalarFieldEnum = {
 } as const
 
 export type SpaceMemberScalarFieldEnum = (typeof SpaceMemberScalarFieldEnum)[keyof typeof SpaceMemberScalarFieldEnum]
+
+
+export const AgentPendingActionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  deckKey: 'deckKey',
+  actionType: 'actionType',
+  payload: 'payload',
+  summary: 'summary',
+  beforeState: 'beforeState',
+  source: 'source',
+  requestedBy: 'requestedBy',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  decidedBy: 'decidedBy',
+  decidedAt: 'decidedAt',
+  executedAt: 'executedAt',
+  result: 'result',
+  error: 'error',
+  idempotencyKey: 'idempotencyKey',
+  slackChannelId: 'slackChannelId',
+  slackMessageTs: 'slackMessageTs',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
 
 
 export const DeckAppScalarFieldEnum = {
