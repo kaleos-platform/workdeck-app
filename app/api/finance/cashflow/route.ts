@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
   const grain: Grain =
     sp.get('grain') === 'quarter' ? 'quarter' : sp.get('grain') === 'year' ? 'year' : 'month'
   const periods = sp.get('periods')?.split(',') ?? []
+  const exclude = sp.get('exclude')?.split(',').filter(Boolean) ?? []
 
-  return NextResponse.json(await queryCashflow(spaceId, { grain, periods }))
+  return NextResponse.json(await queryCashflow(spaceId, { grain, periods, exclude }))
 }
