@@ -40,6 +40,9 @@ describe('computePnlMetrics', () => {
     expect(m.contributionMarginRatio.total).toBe(50)
     // 영업이익 = 1000 − 400 − 300 = 300 (금융·미지정 제외)
     expect(m.operatingIncome.total).toBe(300)
+    // 매출총이익율 = 600/1000 = 60%, 영업이익율 = 300/1000 = 30%
+    expect(m.grossMarginRatio.total).toBe(60)
+    expect(m.operatingMarginRatio.total).toBe(30)
     // BEP = 고정비 / 공헌이익율 = 200 / 0.5 = 400
     expect(m.breakEvenSales.total).toBe(400)
   })
@@ -70,6 +73,8 @@ describe('computePnlMetrics', () => {
     ]
     const m = computePnlMetrics(facts, BUCKETS)
     expect(m.contributionMarginRatio.total).toBeNull()
+    expect(m.grossMarginRatio.total).toBeNull()
+    expect(m.operatingMarginRatio.total).toBeNull()
     expect(m.breakEvenSales.total).toBeNull()
     expect(m.contributionMarginRatio.values['2026-06']).toBeNull()
     expect(m.breakEvenSales.values['2026-06']).toBeNull()
