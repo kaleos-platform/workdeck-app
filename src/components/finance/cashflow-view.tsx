@@ -2,11 +2,15 @@
 
 import { Fragment, useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Pin, X, Search, ArrowUp, ArrowDown } from 'lucide-react'
+import { Pin, X, Search, ArrowUp, ArrowDown, ListFilter } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Card } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Table,
   TableBody,
@@ -23,6 +27,7 @@ import {
   accountKindLabel,
   classStatusBadge,
 } from '@/components/finance/format'
+import type { PnlMetrics } from '@/lib/finance/pnl-metrics'
 import type { FinAccountKind, FinClassStatus } from '@/generated/prisma/enums'
 import { FinanceCashflowSankey } from '@/components/finance/cashflow-sankey'
 import { CashflowPeriodPicker } from '@/components/finance/cashflow-period-picker'
@@ -86,6 +91,13 @@ interface CashflowTotalEntry {
   changePct: number | null
 }
 
+interface LeafOption {
+  id: string
+  name: string
+  type: 'INCOME' | 'EXPENSE' | 'ASSET' | 'LIABILITY' | 'EQUITY' | 'TRANSFER'
+  parentName: string | null
+}
+
 interface CashflowData {
   grain: Grain
   from: string
@@ -98,6 +110,9 @@ interface CashflowData {
     expense: CashflowTotalEntry
     net: CashflowTotalEntry
   }
+  metrics: PnlMetrics
+  leafOptions: LeafOption[]
+  exclude: string[]
 }
 
 // ─── 선택(행/그룹 클릭) → 거래내역 조회 대상 ──────────────────────────────────
@@ -226,12 +241,31 @@ export function FinanceCashflowView() {
   // 선택된 계정과목/대분류 — 우측 거래내역 패널 대상.
   const [selected, setSelected] = useState<Selection | null>(null)
 
-  const load = useCallback(async (g: Grain, periods: string[]) => {
+  // 제외 계정과목 — URL 쿼리(?exclude=)가 단일 소스(새로고침·링크공유 유지).
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const excludeParam = searchParams.get('exclude') ?? ''
+  const excluded = useMemo(() => new Set(excludeParam.split(',').filter(Boolean)), [excludeParam])
+
+  const setExcluded = useCallback(
+    (next: Set<string>) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (next.size > 0) params.set('exclude', [...next].join(','))
+      else params.delete('exclude')
+      const qs = params.toString()
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    },
+    [pathname, router, searchParams]
+  )
+
+  const load = useCallback(async (g: Grain, periods: string[], exclude: string) => {
     if (periods.length === 0) return
     setLoading(true)
     setSelected(null)
     try {
       const qs = new URLSearchParams({ grain: g, periods: periods.join(',') })
+      if (exclude) qs.set('exclude', exclude)
       const res = await fetch(`/api/finance/cashflow?${qs}`)
       if (!res.ok) throw new Error('현금흐름 데이터 조회 실패')
       const json: CashflowData = await res.json()
@@ -244,8 +278,8 @@ export function FinanceCashflowView() {
   }, [])
 
   useEffect(() => {
-    void load(grain, selectedPeriods)
-  }, [load, grain, selectedPeriods])
+    void load(grain, selectedPeriods, excludeParam)
+  }, [load, grain, selectedPeriods, excludeParam])
 
   // grain 변경: 테이블 기본 기간·핀 초기화 + 흐름도 기간을 해당 grain 최신으로 리셋.
   function handleGrainChange(g: Grain) {
@@ -308,6 +342,11 @@ export function FinanceCashflowView() {
                 setSelected(null)
               }}
             />
+            <ExcludeFilter
+              options={data?.leafOptions ?? []}
+              excluded={excluded}
+              onChange={setExcluded}
+            />
           </>
         )}
         {/* 흐름도 뷰: 단일 기간 선택 */}
@@ -336,7 +375,8 @@ export function FinanceCashflowView() {
         <EmptyState />
       ) : (
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-          <div className="min-w-0 flex-1 overflow-x-auto">
+          <div className="min-w-0 flex-1 space-y-4 overflow-x-auto">
+            <PnlSummaryCards metrics={data.metrics} />
             <CashflowTable
               data={data}
               mode={displayMode}
@@ -373,6 +413,155 @@ function EmptyState() {
   )
 }
 
+// ─── 제외 계정과목 필터 ───────────────────────────────────────────────────────
+// 특정 하위 계정과목을 표·손익 지표 계산에서 제외. 선택은 URL(?exclude=)에 반영.
+
+function ExcludeFilter({
+  options,
+  excluded,
+  onChange,
+}: {
+  options: LeafOption[]
+  excluded: Set<string>
+  onChange: (next: Set<string>) => void
+}) {
+  const income = options.filter((o) => o.type === 'INCOME')
+  const expense = options.filter((o) => o.type === 'EXPENSE')
+
+  const toggle = (id: string) => {
+    const next = new Set(excluded)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    onChange(next)
+  }
+
+  const renderGroup = (label: string, items: LeafOption[]) =>
+    items.length === 0 ? null : (
+      <div className="space-y-1">
+        <p className="px-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+          {label}
+        </p>
+        {items.map((o) => (
+          <label
+            key={o.id}
+            className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 hover:bg-accent"
+          >
+            <Checkbox checked={excluded.has(o.id)} onCheckedChange={() => toggle(o.id)} />
+            <span className="truncate text-sm" title={o.name}>
+              {o.name}
+            </span>
+            {o.parentName && (
+              <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
+                {o.parentName}
+              </span>
+            )}
+          </label>
+        ))}
+      </div>
+    )
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+          <ListFilter className="size-3.5" />
+          제외 계정과목
+          {excluded.size > 0 && (
+            <Badge variant="secondary" className="ml-0.5 h-4 px-1.5 text-[10px]">
+              {excluded.size}
+            </Badge>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-72 p-2">
+        <div className="mb-2 flex items-center justify-between px-1">
+          <span className="text-xs font-medium">계산에서 제외</span>
+          {excluded.size > 0 && (
+            <button
+              type="button"
+              className="text-[11px] text-muted-foreground hover:text-foreground"
+              onClick={() => onChange(new Set())}
+            >
+              초기화
+            </button>
+          )}
+        </div>
+        <div className="max-h-72 space-y-3 overflow-y-auto">
+          {options.length === 0 ? (
+            <p className="px-1 py-4 text-center text-xs text-muted-foreground">
+              계정과목이 없습니다.
+            </p>
+          ) : (
+            <>
+              {renderGroup('수입', income)}
+              {renderGroup('지출', expense)}
+            </>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+// ─── 손익 지표 요약 카드 ───────────────────────────────────────────────────────
+
+function PnlSummaryCards({ metrics }: { metrics: PnlMetrics }) {
+  const cmRatio = metrics.contributionMarginRatio.total
+  const bep = metrics.breakEvenSales.total
+  const cards: {
+    label: string
+    hint: string
+    value: string
+    num: number | null
+    accent?: boolean
+  }[] = [
+    {
+      label: '매출총이익',
+      hint: '매출 − 매출원가',
+      value: formatWon(metrics.grossProfit.total),
+      num: metrics.grossProfit.total,
+    },
+    {
+      label: '공헌이익',
+      hint:
+        cmRatio == null ? '매출 − 변동비' : `매출 − 변동비 · 공헌이익율 ${formatPercent(cmRatio)}`,
+      value: formatWon(metrics.contributionMargin.total),
+      num: metrics.contributionMargin.total,
+    },
+    {
+      label: '영업이익',
+      hint: '매출 − 매출원가 − 영업비용',
+      value: formatWon(metrics.operatingIncome.total),
+      num: metrics.operatingIncome.total,
+      accent: true,
+    },
+    {
+      label: '손익분기점 매출액',
+      hint: '고정비 / 공헌이익율',
+      value: bep == null ? '—' : formatWon(bep),
+      num: null,
+    },
+  ]
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {cards.map((c) => (
+        <Card key={c.label} className={cn('gap-1 p-3', c.accent && 'border-primary/30')}>
+          <p className="text-xs text-muted-foreground">{c.label}</p>
+          <p
+            className={cn(
+              'font-mono text-lg font-semibold tabular-nums',
+              c.num != null && netValueClass(c.num)
+            )}
+          >
+            {c.value}
+          </p>
+          <p className="text-[10px] text-muted-foreground">{c.hint}</p>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
 // ─── 테이블 ───────────────────────────────────────────────────────────────────
 // 첫 컬럼(계정과목) sticky. 핀한 기간 컬럼은 계정과목 옆에 sticky 고정(고정폭 w-[220px]/w-[160px]라 offset 정확).
 
@@ -391,7 +580,7 @@ function CashflowTable({
   selectedKey: string | null
   onSelect: (sel: Selection) => void
 }) {
-  const { buckets, incomeRows, expenseRows, totals } = data
+  const { buckets, incomeRows, expenseRows, totals, metrics } = data
   const incomeGroups = buildCashflowGroups(incomeRows, buckets, mode)
   const expenseGroups = buildCashflowGroups(expenseRows, buckets, mode)
   const columns = buildDisplayColumns(buckets, pinnedPeriods)
@@ -475,9 +664,96 @@ function CashflowTable({
 
           {/* ── 순현금흐름 ── */}
           <NetRow entry={totals.net} columns={columns} />
+
+          {/* ── 손익 지표 ── */}
+          <SectionLabelRow label="손익 지표 (영업매출 기준)" colSpan={colSpan} />
+          <MetricRow
+            label="매출총이익"
+            hint="매출 − 매출원가"
+            values={metrics.grossProfit.values}
+            columns={columns}
+            valueClassFn={netValueClass}
+          />
+          <MetricRow
+            label="공헌이익"
+            hint="매출 − 변동비"
+            values={metrics.contributionMargin.values}
+            columns={columns}
+            valueClassFn={netValueClass}
+          />
+          <MetricRow
+            label="공헌이익율"
+            hint="공헌이익 / 매출"
+            values={metrics.contributionMarginRatio.values}
+            columns={columns}
+            kind="percent"
+          />
+          <MetricRow
+            label="영업이익"
+            hint="매출 − 매출원가 − 영업비용"
+            values={metrics.operatingIncome.values}
+            columns={columns}
+            valueClassFn={netValueClass}
+          />
+          <MetricRow
+            label="손익분기점 매출액"
+            hint="고정비 / 공헌이익율"
+            values={metrics.breakEvenSales.values}
+            columns={columns}
+          />
         </TableBody>
       </Table>
     </div>
+  )
+}
+
+// ─── 손익 지표 행 ─────────────────────────────────────────────────────────────
+
+function MetricRow({
+  label,
+  hint,
+  values,
+  columns,
+  kind = 'won',
+  valueClassFn,
+}: {
+  label: string
+  hint: string
+  values: Record<string, number | null>
+  columns: DisplayColumn[]
+  kind?: 'won' | 'percent'
+  valueClassFn?: (v: number) => string
+}) {
+  const rowBg = 'bg-card'
+  const fmt = (v: number | null): string =>
+    v == null ? '—' : kind === 'percent' ? formatPercent(v) : formatWon(v)
+  return (
+    <TableRow className="hover:bg-muted/30">
+      <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4', rowBg)}>
+        <div className="flex min-w-0 flex-col">
+          <span className="text-sm font-medium">{label}</span>
+          <span className="text-[10px] text-muted-foreground">{hint}</span>
+        </div>
+      </TableCell>
+      {columns.map((col) => {
+        const p = pinCell(col, rowBg)
+        const v = values[col.bucket] ?? null
+        return (
+          <TableCell
+            key={col.bucket}
+            className={cn(
+              'w-[160px] px-3 text-right font-mono text-sm font-medium tabular-nums',
+              v != null && valueClassFn?.(v),
+              p.className
+            )}
+            style={p.style}
+          >
+            {fmt(v)}
+          </TableCell>
+        )
+      })}
+      <TableCell className="w-[84px] px-3" />
+    </TableRow>
   )
 }
 
