@@ -104,4 +104,18 @@ describe('buildPnlStatement', () => {
     // 매출원가 = 상품매입 단일 → "상품매입 (매출원가)"
     expect(rows.some((r) => r.label === '상품매입 (매출원가)')).toBe(true)
   })
+
+  it('선택 가능: 그룹/리프는 categoryIds·direction 보유, 소계는 미선택', () => {
+    const rows = buildPnlStatement(LEAVES, B, 'income-statement', 'hierarchy')
+    const 매출액 = rows.find((r) => r.label === '매출액')!
+    expect(매출액.selectable).toBe(true)
+    expect(매출액.direction).toBe('IN')
+    expect(매출액.categoryIds).toEqual(['상품매출', '배송비수익'])
+    const 판관비leaf = rows.find((r) => r.variant === 'leaf' && r.label === '임차료')!
+    expect(판관비leaf.selectable).toBe(true)
+    expect(판관비leaf.direction).toBe('OUT')
+    expect(판관비leaf.categoryIds).toEqual(['임차료'])
+    const 소계 = rows.find((r) => r.label === '매출총이익')!
+    expect(소계.selectable).toBeFalsy()
+  })
 })
