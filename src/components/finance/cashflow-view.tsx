@@ -196,7 +196,7 @@ function SegmentGroup<T extends string>({
   onChange,
 }: {
   label: string
-  options: { value: T; label: string }[]
+  options: { value: T; label: string; disabled?: boolean }[]
   value: T
   onChange: (v: T) => void
 }) {
@@ -209,6 +209,8 @@ function SegmentGroup<T extends string>({
             key={opt.value}
             variant={value === opt.value ? 'default' : 'ghost'}
             size="sm"
+            disabled={opt.disabled}
+            title={opt.disabled ? '이 관점에서는 사용할 수 없습니다' : undefined}
             className={cn(
               'h-8 rounded-none px-3 text-xs font-medium',
               i === 0 && 'rounded-l-md',
@@ -329,6 +331,21 @@ export function FinanceCashflowView() {
         {/* 테이블 뷰: 기간 다중선택 + 표시 모드 */}
         {view === 'table' && (
           <>
+            <SegmentGroup<ProfitView>
+              label="관점"
+              options={[
+                { value: 'cash', label: '수입·지출' },
+                { value: 'contribution', label: '공헌이익' },
+                { value: 'income-statement', label: '손익계산서' },
+              ]}
+              value={profitView}
+              onChange={(v) => {
+                setProfitView(v)
+                setSelected(null)
+                // 손익계산서·공헌이익 관점은 '하위만' 미지원 → 진입 시 대분류+하위로 보정.
+                if (v !== 'cash' && displayMode === 'leaf') setDisplayMode('hierarchy')
+              }}
+            />
             <CashflowPeriodPicker
               grain={grain}
               selected={selectedPeriods}
@@ -339,7 +356,7 @@ export function FinanceCashflowView() {
               options={[
                 { value: 'group', label: '대분류' },
                 { value: 'hierarchy', label: '대분류+하위' },
-                { value: 'leaf', label: '하위만' },
+                { value: 'leaf', label: '하위만', disabled: profitView !== 'cash' },
               ]}
               value={displayMode}
               onChange={(m) => {
@@ -351,19 +368,6 @@ export function FinanceCashflowView() {
               options={data?.leafOptions ?? []}
               excluded={excluded}
               onChange={setExcluded}
-            />
-            <SegmentGroup<ProfitView>
-              label="관점"
-              options={[
-                { value: 'income-statement', label: '손익계산서' },
-                { value: 'contribution', label: '공헌이익' },
-                { value: 'cash', label: '수입·지출' },
-              ]}
-              value={profitView}
-              onChange={(v) => {
-                setProfitView(v)
-                setSelected(null)
-              }}
             />
           </>
         )}
@@ -699,7 +703,26 @@ function CashflowTable({
               <NetRow entry={totals.net} columns={columns} />
             </>
           ) : (
-            statementRows.map((r) => <StatementRowView key={r.key} row={r} columns={columns} />)
+            statementRows.map((r) => (
+              <StatementRowView
+                key={r.key}
+                row={r}
+                columns={columns}
+                selected={selectedKey === r.key}
+                onSelect={
+                  r.selectable
+                    ? () =>
+                        onSelect({
+                          key: r.key,
+                          title: r.label,
+                          direction: r.direction ?? 'IN',
+                          categoryIds: r.categoryIds ?? [],
+                          uncategorized: r.uncategorized ?? false,
+                        })
+                    : undefined
+                }
+              />
+            ))
           )}
         </TableBody>
       </Table>
@@ -710,9 +733,19 @@ function CashflowTable({
 // ─── 손익계산서/공헌이익 관점 행 ─────────────────────────────────────────────
 // variant: group(대분류 헤더, 굵게) · leaf(하위 계정, 들여쓰기) · subtotal(이익 소계 강조+이익률)
 
-function StatementRowView({ row, columns }: { row: StatementRow; columns: DisplayColumn[] }) {
+function StatementRowView({
+  row,
+  columns,
+  selected = false,
+  onSelect,
+}: {
+  row: StatementRow
+  columns: DisplayColumn[]
+  selected?: boolean
+  onSelect?: () => void
+}) {
   const { label, marginLabel, values, changePct, variant } = row
-  const rowBg = variant === 'subtotal' ? 'bg-muted/30' : 'bg-card'
+  const rowBg = selected ? 'bg-accent' : variant === 'subtotal' ? 'bg-muted/30' : 'bg-card'
   const labelCls =
     variant === 'subtotal'
       ? 'text-sm font-semibold'
@@ -725,7 +758,14 @@ function StatementRowView({ row, columns }: { row: StatementRow; columns: Displa
     variant === 'leaf' && 'text-muted-foreground'
   )
   return (
-    <TableRow className={cn('hover:bg-muted/30', variant === 'subtotal' && 'border-t bg-muted/30')}>
+    <TableRow
+      className={cn(
+        'hover:bg-muted/30',
+        onSelect && 'cursor-pointer',
+        selected ? 'bg-accent' : variant === 'subtotal' && 'border-t bg-muted/30'
+      )}
+      onClick={onSelect}
+    >
       <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4', rowBg)}>
         <div className="flex min-w-0 items-baseline gap-2">
           <span className={labelCls}>{label}</span>
