@@ -28,6 +28,7 @@ import {
   classStatusBadge,
 } from '@/components/finance/format'
 import type { PnlMetrics } from '@/lib/finance/pnl-metrics'
+import { buildPnlStatement, type PnlLeaf, type StatementRow } from '@/lib/finance/pnl-statement'
 import type { FinAccountKind, FinClassStatus } from '@/generated/prisma/enums'
 import { FinanceCashflowSankey } from '@/components/finance/cashflow-sankey'
 import { CashflowPeriodPicker } from '@/components/finance/cashflow-period-picker'
@@ -56,8 +57,8 @@ import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
 type ViewMode = 'table' | 'flow'
-// 손익 지표 표시 관점 — 손익계산서(기능별) vs 공헌이익(원가행태별). 둘 다 영업이익으로 수렴.
-type ProfitView = 'income-statement' | 'contribution'
+// 표시 관점 — 수입·지출(현금 흐름) / 손익계산서(기능별) / 공헌이익(원가행태별).
+type ProfitView = 'cash' | 'income-statement' | 'contribution'
 
 // 표시 컬럼(기간) — 핀이면 계정과목 옆 sticky. 고정폭이라 left offset 정확.
 const ACCOUNT_W = 220
@@ -113,6 +114,7 @@ interface CashflowData {
     net: CashflowTotalEntry
   }
   metrics: PnlMetrics
+  pnlLeaves: PnlLeaf[]
   leafOptions: LeafOption[]
   exclude: string[]
 }
@@ -229,7 +231,7 @@ export function FinanceCashflowView() {
   const [view, setView] = useState<ViewMode>('table')
   const [grain, setGrain] = useState<Grain>('month')
   const [displayMode, setDisplayMode] = useState<DisplayMode>('hierarchy')
-  const [profitView, setProfitView] = useState<ProfitView>('income-statement')
+  const [profitView, setProfitView] = useState<ProfitView>('cash')
   // 표시 기간(오름차순) — 기본은 직전월까지 최근 N. grain 변경 시 리셋.
   const [selectedPeriods, setSelectedPeriods] = useState<string[]>(() =>
     defaultSelectedPeriods('month', ymOf(new Date()))
@@ -351,13 +353,17 @@ export function FinanceCashflowView() {
               onChange={setExcluded}
             />
             <SegmentGroup<ProfitView>
-              label="손익 관점"
+              label="관점"
               options={[
                 { value: 'income-statement', label: '손익계산서' },
                 { value: 'contribution', label: '공헌이익' },
+                { value: 'cash', label: '수입·지출' },
               ]}
               value={profitView}
-              onChange={setProfitView}
+              onChange={(v) => {
+                setProfitView(v)
+                setSelected(null)
+              }}
             />
           </>
         )}
@@ -598,9 +604,11 @@ function CashflowTable({
   selectedKey: string | null
   onSelect: (sel: Selection) => void
 }) {
-  const { buckets, incomeRows, expenseRows, totals, metrics } = data
+  const { buckets, incomeRows, expenseRows, totals, pnlLeaves } = data
   const incomeGroups = buildCashflowGroups(incomeRows, buckets, mode)
   const expenseGroups = buildCashflowGroups(expenseRows, buckets, mode)
+  const statementRows =
+    profitView === 'cash' ? [] : buildPnlStatement(pnlLeaves, buckets, profitView, mode)
   const columns = buildDisplayColumns(buckets, pinnedPeriods)
   const colSpan = columns.length + 2
 
@@ -651,168 +659,99 @@ function CashflowTable({
         </TableHeader>
 
         <TableBody>
-          {/* ── 수입 섹션 ── */}
-          <SectionLabelRow label="수입" colSpan={colSpan} />
-          <SectionBody
-            section="수입"
-            groups={incomeGroups}
-            columns={columns}
-            mode={mode}
-            selectedKey={selectedKey}
-            onSelect={onSelect}
-          />
-          <TotalRow label="수입 합계" entry={totals.income} columns={columns} rowBg="bg-muted/40" />
+          {profitView === 'cash' ? (
+            <>
+              {/* ── 수입 섹션 ── */}
+              <SectionLabelRow label="수입" colSpan={colSpan} />
+              <SectionBody
+                section="수입"
+                groups={incomeGroups}
+                columns={columns}
+                mode={mode}
+                selectedKey={selectedKey}
+                onSelect={onSelect}
+              />
+              <TotalRow
+                label="수입 합계"
+                entry={totals.income}
+                columns={columns}
+                rowBg="bg-muted/40"
+              />
 
-          {/* ── 지출 섹션 ── */}
-          <SectionLabelRow label="지출" colSpan={colSpan} />
-          <SectionBody
-            section="지출"
-            groups={expenseGroups}
-            columns={columns}
-            mode={mode}
-            selectedKey={selectedKey}
-            onSelect={onSelect}
-          />
-          <TotalRow
-            label="지출 합계"
-            entry={totals.expense}
-            columns={columns}
-            rowBg="bg-muted/40"
-          />
+              {/* ── 지출 섹션 ── */}
+              <SectionLabelRow label="지출" colSpan={colSpan} />
+              <SectionBody
+                section="지출"
+                groups={expenseGroups}
+                columns={columns}
+                mode={mode}
+                selectedKey={selectedKey}
+                onSelect={onSelect}
+              />
+              <TotalRow
+                label="지출 합계"
+                entry={totals.expense}
+                columns={columns}
+                rowBg="bg-muted/40"
+              />
 
-          {/* ── 순현금흐름 ── */}
-          <NetRow entry={totals.net} columns={columns} />
-
-          {/* ── 손익 지표 (돈의 흐름: 매출 → 비용 차감 → 이익, 관점별) ── */}
-          <SectionLabelRow
-            label={
-              profitView === 'income-statement'
-                ? '손익계산서 관점 (영업매출 기준)'
-                : '공헌이익 관점 (영업매출 기준)'
-            }
-            colSpan={colSpan}
-          />
-          {buildProfitFlowRows(metrics, profitView).map((r) => (
-            <MetricRow key={r.label} row={r} columns={columns} />
-          ))}
+              {/* ── 순현금흐름 ── */}
+              <NetRow entry={totals.net} columns={columns} />
+            </>
+          ) : (
+            statementRows.map((r) => <StatementRowView key={r.key} row={r} columns={columns} />)
+          )}
         </TableBody>
       </Table>
     </div>
   )
 }
 
-// ─── 손익 지표 행 (돈의 흐름 계단식) ─────────────────────────────────────────
-// variant: base(매출) · deduct(−차감) · subtotal(이익 소계 강조) · ratio(율)
+// ─── 손익계산서/공헌이익 관점 행 ─────────────────────────────────────────────
+// variant: group(대분류 헤더, 굵게) · leaf(하위 계정, 들여쓰기) · subtotal(이익 소계 강조+이익률)
 
-type MetricFlowRow = {
-  label: string
-  hint?: string
-  values: Record<string, number | null>
-  variant: 'base' | 'deduct' | 'subtotal' | 'ratio'
-  kind: 'won' | 'percent'
-}
-
-/** 관점별 손익 흐름 행 구성 — 매출 → 비용 차감 → 이익 소계 → 이익률. */
-function buildProfitFlowRows(metrics: PnlMetrics, view: ProfitView): MetricFlowRow[] {
-  const won = 'won' as const
-  const percent = 'percent' as const
-  if (view === 'income-statement') {
-    return [
-      {
-        label: '매출',
-        hint: '영업매출',
-        values: metrics.revenue.values,
-        variant: 'base',
-        kind: won,
-      },
-      { label: '(−) 매출원가', values: metrics.cogs.values, variant: 'deduct', kind: won },
-      { label: '매출총이익', values: metrics.grossProfit.values, variant: 'subtotal', kind: won },
-      {
-        label: '매출총이익율',
-        values: metrics.grossMarginRatio.values,
-        variant: 'ratio',
-        kind: percent,
-      },
-      { label: '(−) 영업비용', values: metrics.opex.values, variant: 'deduct', kind: won },
-      { label: '영업이익', values: metrics.operatingIncome.values, variant: 'subtotal', kind: won },
-      {
-        label: '영업이익율',
-        values: metrics.operatingMarginRatio.values,
-        variant: 'ratio',
-        kind: percent,
-      },
-    ]
-  }
-  return [
-    { label: '매출', hint: '영업매출', values: metrics.revenue.values, variant: 'base', kind: won },
-    { label: '(−) 변동비', values: metrics.variableCost.values, variant: 'deduct', kind: won },
-    {
-      label: '공헌이익',
-      values: metrics.contributionMargin.values,
-      variant: 'subtotal',
-      kind: won,
-    },
-    {
-      label: '공헌이익율',
-      values: metrics.contributionMarginRatio.values,
-      variant: 'ratio',
-      kind: percent,
-    },
-    { label: '(−) 고정비', values: metrics.fixedCost.values, variant: 'deduct', kind: won },
-    { label: '영업이익', values: metrics.operatingIncome.values, variant: 'subtotal', kind: won },
-    {
-      label: '영업이익율',
-      values: metrics.operatingMarginRatio.values,
-      variant: 'ratio',
-      kind: percent,
-    },
-  ]
-}
-
-function MetricRow({ row, columns }: { row: MetricFlowRow; columns: DisplayColumn[] }) {
-  const { label, hint, values, variant, kind } = row
+function StatementRowView({ row, columns }: { row: StatementRow; columns: DisplayColumn[] }) {
+  const { label, marginLabel, values, changePct, variant } = row
   const rowBg = variant === 'subtotal' ? 'bg-muted/30' : 'bg-card'
-  const fmt = (v: number | null): string =>
-    v == null ? '—' : kind === 'percent' ? formatPercent(v) : formatWon(v)
   const labelCls =
     variant === 'subtotal'
       ? 'text-sm font-semibold'
-      : variant === 'ratio'
-        ? 'pl-3 text-xs text-muted-foreground'
-        : variant === 'deduct'
-          ? 'pl-3 text-sm text-muted-foreground'
-          : 'text-sm font-medium'
+      : variant === 'leaf'
+        ? 'pl-6 text-sm text-muted-foreground'
+        : 'text-sm font-medium'
   const valueCls = cn(
-    'w-[160px] px-3 text-right font-mono tabular-nums',
-    variant === 'subtotal' ? 'text-sm font-semibold' : 'text-sm',
-    variant === 'ratio' ? 'text-muted-foreground' : ''
+    'w-[160px] px-3 text-right font-mono tabular-nums text-sm',
+    variant === 'subtotal' && 'font-semibold',
+    variant === 'leaf' && 'text-muted-foreground'
   )
   return (
     <TableRow className={cn('hover:bg-muted/30', variant === 'subtotal' && 'border-t bg-muted/30')}>
       <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4', rowBg)}>
-        <div className="flex min-w-0 flex-col">
+        <div className="flex min-w-0 items-baseline gap-2">
           <span className={labelCls}>{label}</span>
-          {hint && <span className="text-[10px] text-muted-foreground">{hint}</span>}
+          {marginLabel && (
+            <span className="shrink-0 text-[10px] text-muted-foreground">{marginLabel}</span>
+          )}
         </div>
       </TableCell>
       {columns.map((col) => {
         const p = pinCell(col, rowBg)
-        const v = values[col.bucket] ?? null
+        const v = values[col.bucket] ?? 0
         return (
           <TableCell
             key={col.bucket}
-            className={cn(
-              valueCls,
-              variant === 'subtotal' && v != null && netValueClass(v),
-              p.className
-            )}
+            className={cn(valueCls, variant === 'subtotal' && netValueClass(v), p.className)}
             style={p.style}
           >
-            {variant === 'deduct' && v != null && v !== 0 ? `(${fmt(v)})` : fmt(v)}
+            {formatWon(v)}
           </TableCell>
         )
       })}
-      <TableCell className="w-[84px] px-3" />
+      <TableCell
+        className={cn('w-[84px] px-3 text-right text-xs tabular-nums', changePctClass(changePct))}
+      >
+        {formatPercent(changePct, { sign: true })}
+      </TableCell>
     </TableRow>
   )
 }
