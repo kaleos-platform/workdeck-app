@@ -78,6 +78,16 @@ export type SpaceMember = Prisma.SpaceMemberModel
  */
 export type AgentPendingAction = Prisma.AgentPendingActionModel
 /**
+ * Model SlackInstallation
+ * 
+ */
+export type SlackInstallation = Prisma.SlackInstallationModel
+/**
+ * Model SpaceSlackChannel
+ * 
+ */
+export type SpaceSlackChannel = Prisma.SpaceSlackChannelModel
+/**
  * Model DeckApp
  * 
  */

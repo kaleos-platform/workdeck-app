@@ -63,6 +63,8 @@ export const ModelName = {
   Space: 'Space',
   SpaceMember: 'SpaceMember',
   AgentPendingAction: 'AgentPendingAction',
+  SlackInstallation: 'SlackInstallation',
+  SpaceSlackChannel: 'SpaceSlackChannel',
   DeckApp: 'DeckApp',
   DeckInstance: 'DeckInstance',
   CoupangCredential: 'CoupangCredential',
@@ -385,6 +387,35 @@ export const AgentPendingActionScalarFieldEnum = {
 } as const
 
 export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
+
+
+export const SlackInstallationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  teamId: 'teamId',
+  teamName: 'teamName',
+  botUserId: 'botUserId',
+  botToken: 'botToken',
+  botTokenIv: 'botTokenIv',
+  scope: 'scope',
+  installedBy: 'installedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SlackInstallationScalarFieldEnum = (typeof SlackInstallationScalarFieldEnum)[keyof typeof SlackInstallationScalarFieldEnum]
+
+
+export const SpaceSlackChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  channelName: 'channelName',
+  kind: 'kind',
+  createdAt: 'createdAt'
+} as const
+
+export type SpaceSlackChannelScalarFieldEnum = (typeof SpaceSlackChannelScalarFieldEnum)[keyof typeof SpaceSlackChannelScalarFieldEnum]
 
 
 export const DeckAppScalarFieldEnum = {
