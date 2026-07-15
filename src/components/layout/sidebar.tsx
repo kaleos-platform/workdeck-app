@@ -38,6 +38,7 @@ import {
   Layers,
   Globe,
   Send,
+  ShieldCheck,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -103,6 +104,7 @@ import {
   BLOG_OPS_POSTS_PATH,
   BLOG_OPS_CHANNELS_PATH,
   BLOG_OPS_DEPLOYMENTS_PATH,
+  APPROVALS_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -252,6 +254,7 @@ function RailLink({
   isActive,
   collapsed,
   size = 'md',
+  badgeCount,
 }: {
   href: string
   icon: LucideIcon
@@ -259,7 +262,11 @@ function RailLink({
   isActive: boolean
   collapsed: boolean
   size?: 'md' | 'sm'
+  /** 우측(펼침) / 우상단(접힘)에 표시할 카운트 배지 — 0 이하면 표시 안 함 */
+  badgeCount?: number
 }) {
+  const hasBadge = typeof badgeCount === 'number' && badgeCount > 0
+
   if (collapsed) {
     return (
       <Tooltip>
@@ -268,14 +275,22 @@ function RailLink({
             href={href}
             aria-label={label}
             className={cn(
-              'group flex w-full cursor-pointer items-center justify-center rounded-lg p-3 transition hover:bg-white/10 hover:text-white',
+              'group relative flex w-full cursor-pointer items-center justify-center rounded-lg p-3 transition hover:bg-white/10 hover:text-white',
               isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
             )}
           >
             <Icon className="h-5 w-5 flex-shrink-0" />
+            {hasBadge && (
+              <span className="absolute top-1 right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-semibold text-white">
+                {badgeCount}
+              </span>
+            )}
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right">{label}</TooltipContent>
+        <TooltipContent side="right">
+          {label}
+          {hasBadge ? ` (${badgeCount})` : ''}
+        </TooltipContent>
       </Tooltip>
     )
   }
@@ -284,13 +299,18 @@ function RailLink({
     <Link
       href={href}
       className={cn(
-        'group flex w-full cursor-pointer justify-start rounded-lg text-sm font-medium transition hover:bg-white/10 hover:text-white',
+        'group flex w-full cursor-pointer items-center justify-start rounded-lg text-sm font-medium transition hover:bg-white/10 hover:text-white',
         size === 'sm' ? 'px-2 py-2' : 'p-3',
         isActive ? 'bg-white/10 text-white' : 'text-zinc-400'
       )}
     >
       <Icon className={cn('flex-shrink-0', size === 'sm' ? 'mr-2.5 h-4 w-4' : 'mr-3 h-5 w-5')} />
       <span className="truncate">{label}</span>
+      {hasBadge && (
+        <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-semibold text-white">
+          {badgeCount}
+        </span>
+      )}
     </Link>
   )
 }
@@ -306,6 +326,7 @@ export function Sidebar({
   const { collapsed, toggle, expand, mounted } = useSidebarCollapsed()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
+  const [pendingApprovalCount, setPendingApprovalCount] = useState(0)
   const isWorkdeckSidebar = variant === 'workdeck'
   const isCoupangSidebar = variant === 'coupang-ads'
   const isSellerHubSidebar = variant === 'seller-hub'
@@ -325,6 +346,30 @@ export function Sidebar({
       .then((list: Campaign[]) => setCampaigns(list))
       .catch(() => {})
   }, [pathname, isCoupangSidebar])
+
+  // 승인 대기 카운트 — workdeck 허브(My Deck 홈)에서만 가볍게 조회.
+  // 네비게이션(pathname)뿐 아니라 승인/거부 후에도 갱신되도록 커스텀 이벤트를 구독한다
+  // (승인 큐 UI는 별도 컴포넌트 트리라 prop으로 연결되지 않는다).
+  useEffect(() => {
+    if (!isWorkdeckSidebar) return
+
+    let cancelled = false
+    const refetch = () => {
+      fetch('/api/agent/actions?status=PENDING')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data: { actions: unknown[] } | null) => {
+          if (!cancelled) setPendingApprovalCount(data?.actions?.length ?? 0)
+        })
+        .catch(() => {})
+    }
+
+    refetch()
+    window.addEventListener('workdeck:approvals-changed', refetch)
+    return () => {
+      cancelled = true
+      window.removeEventListener('workdeck:approvals-changed', refetch)
+    }
+  }, [pathname, isWorkdeckSidebar])
 
   const groupedCampaigns = useMemo(() => {
     const grouped = campaigns.reduce<Record<string, Campaign[]>>((acc, campaign) => {
@@ -444,13 +489,21 @@ export function Sidebar({
       >
         {isWorkdeckSidebar && (
           <>
-            <div className="mb-2">
+            <div className="mb-2 space-y-1">
               <RailLink
                 href="/my-deck"
                 icon={Home}
                 label="My Deck 홈"
                 isActive={pathname === '/my-deck'}
                 collapsed={collapsed}
+              />
+              <RailLink
+                href={APPROVALS_PATH}
+                icon={ShieldCheck}
+                label="승인 대기"
+                isActive={pathname === APPROVALS_PATH || pathname.startsWith(`${APPROVALS_PATH}/`)}
+                collapsed={collapsed}
+                badgeCount={pendingApprovalCount}
               />
             </div>
 

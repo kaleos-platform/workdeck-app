@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { toNumOrNull } from '@/lib/finance/serialize'
+import { queryAccounts } from '@/lib/finance/queries'
 
 const VALID_KINDS = ['BANK', 'CARD'] as const
 type AccountKind = (typeof VALID_KINDS)[number]
@@ -12,18 +13,7 @@ export async function GET() {
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
-  const accounts = await prisma.finAccount.findMany({
-    where: { spaceId },
-    orderBy: { createdAt: 'asc' },
-  })
-
-  return NextResponse.json({
-    accounts: accounts.map((a) => ({
-      ...a,
-      openingBalance: toNumOrNull(a.openingBalance),
-      currentBalance: toNumOrNull(a.currentBalance),
-    })),
-  })
+  return NextResponse.json(await queryAccounts(spaceId))
 }
 
 // 생성: 계좌 추가

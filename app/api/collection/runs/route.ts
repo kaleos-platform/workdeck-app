@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkspace, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
-
-// 10분 이상 RUNNING 상태면 타임아웃 처리
-const STALE_THRESHOLD_MS = 10 * 60 * 1000
+import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { queryCollectionRuns } from '@/lib/coupang-ads/queries'
 
 // GET /api/collection/runs — 수집 실행 이력 조회
 export async function GET(request: NextRequest) {
@@ -11,65 +9,12 @@ export async function GET(request: NextRequest) {
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 
-  // 고착된 RUNNING 상태 자동 정리
-  const staleThreshold = new Date(Date.now() - STALE_THRESHOLD_MS)
-  await prisma.collectionRun.updateMany({
-    where: {
-      workspaceId: workspace.id,
-      status: { in: ['RUNNING', 'DOWNLOADING', 'PARSING'] },
-      startedAt: { lt: staleThreshold },
-    },
-    data: {
-      status: 'FAILED',
-      completedAt: new Date(),
-      error: '타임아웃: 10분 이상 응답 없음',
-    },
-  })
-
   // 페이지네이션 파라미터
   const url = new URL(request.url)
-  const limit = Math.min(Number(url.searchParams.get('limit')) || 20, 100)
+  const limit = Number(url.searchParams.get('limit')) || 20
   const cursor = url.searchParams.get('cursor')
 
-  const runs = await prisma.collectionRun.findMany({
-    where: { workspaceId: workspace.id },
-    orderBy: { createdAt: 'desc' },
-    take: limit + 1,
-    ...(cursor && { cursor: { id: cursor }, skip: 1 }),
-  })
-
-  // 다음 페이지 존재 여부 확인
-  const hasMore = runs.length > limit
-  if (hasMore) runs.pop()
-
-  // uploadId가 있는 run에 대해 ReportUpload 정보 조회
-  const uploadIds = runs.map((r) => r.uploadId).filter(Boolean) as string[]
-  const uploads =
-    uploadIds.length > 0
-      ? await prisma.reportUpload.findMany({
-          where: { id: { in: uploadIds } },
-          select: {
-            id: true,
-            fileName: true,
-            periodStart: true,
-            periodEnd: true,
-            totalRows: true,
-            insertedRows: true,
-            duplicateRows: true,
-          },
-        })
-      : []
-  const uploadMap = new Map(uploads.map((u) => [u.id, u]))
-
-  const runsWithUpload = runs.map((r) => ({
-    ...r,
-    upload: r.uploadId ? (uploadMap.get(r.uploadId) ?? null) : null,
-  }))
-
-  return NextResponse.json({
-    runs: runsWithUpload,
-    nextCursor: hasMore ? runs[runs.length - 1].id : null,
-  })
+  return NextResponse.json(await queryCollectionRuns(workspace.id, { limit, cursor }))
 }
 
 // POST /api/collection/runs — 수집 트리거 (사용자 세션 OR Worker 인증)

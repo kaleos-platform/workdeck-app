@@ -265,6 +265,7 @@ export type SpaceWhereInput = {
   boDeployments?: Prisma.BoDeploymentListRelationFilter
   boJobs?: Prisma.BoJobListRelationFilter
   boChannelCredentials?: Prisma.BoChannelCredentialListRelationFilter
+  agentPendingActions?: Prisma.AgentPendingActionListRelationFilter
 }
 
 export type SpaceOrderByWithRelationInput = {
@@ -349,6 +350,7 @@ export type SpaceOrderByWithRelationInput = {
   boDeployments?: Prisma.BoDeploymentOrderByRelationAggregateInput
   boJobs?: Prisma.BoJobOrderByRelationAggregateInput
   boChannelCredentials?: Prisma.BoChannelCredentialOrderByRelationAggregateInput
+  agentPendingActions?: Prisma.AgentPendingActionOrderByRelationAggregateInput
 }
 
 export type SpaceWhereUniqueInput = Prisma.AtLeast<{
@@ -436,6 +438,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   boDeployments?: Prisma.BoDeploymentListRelationFilter
   boJobs?: Prisma.BoJobListRelationFilter
   boChannelCredentials?: Prisma.BoChannelCredentialListRelationFilter
+  agentPendingActions?: Prisma.AgentPendingActionListRelationFilter
 }, "id">
 
 export type SpaceOrderByWithAggregationInput = {
@@ -544,6 +547,7 @@ export type SpaceCreateInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateInput = {
@@ -628,6 +632,7 @@ export type SpaceUncheckedCreateInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUpdateInput = {
@@ -712,6 +717,7 @@ export type SpaceUpdateInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateInput = {
@@ -796,6 +802,7 @@ export type SpaceUncheckedUpdateInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateManyInput = {
@@ -878,6 +885,20 @@ export type SpaceUpdateOneRequiredWithoutMembersNestedInput = {
   upsert?: Prisma.SpaceUpsertWithoutMembersInput
   connect?: Prisma.SpaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutMembersInput, Prisma.SpaceUpdateWithoutMembersInput>, Prisma.SpaceUncheckedUpdateWithoutMembersInput>
+}
+
+export type SpaceCreateNestedOneWithoutAgentPendingActionsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutAgentPendingActionsInput, Prisma.SpaceUncheckedCreateWithoutAgentPendingActionsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutAgentPendingActionsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutAgentPendingActionsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutAgentPendingActionsInput, Prisma.SpaceUncheckedCreateWithoutAgentPendingActionsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutAgentPendingActionsInput
+  upsert?: Prisma.SpaceUpsertWithoutAgentPendingActionsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutAgentPendingActionsInput, Prisma.SpaceUpdateWithoutAgentPendingActionsInput>, Prisma.SpaceUncheckedUpdateWithoutAgentPendingActionsInput>
 }
 
 export type SpaceCreateNestedOneWithoutDeckInstancesInput = {
@@ -1999,6 +2020,7 @@ export type SpaceCreateWithoutMembersInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutMembersInput = {
@@ -2082,6 +2104,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutMembersInput = {
@@ -2181,6 +2204,7 @@ export type SpaceUpdateWithoutMembersInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutMembersInput = {
@@ -2190,6 +2214,359 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
+  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutAgentPendingActionsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
+  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
+  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
+  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
+  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
+  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
+  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
+  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutAgentPendingActionsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutAgentPendingActionsInput, Prisma.SpaceUncheckedCreateWithoutAgentPendingActionsInput>
+}
+
+export type SpaceUpsertWithoutAgentPendingActionsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutAgentPendingActionsInput, Prisma.SpaceUncheckedUpdateWithoutAgentPendingActionsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutAgentPendingActionsInput, Prisma.SpaceUncheckedCreateWithoutAgentPendingActionsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutAgentPendingActionsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutAgentPendingActionsInput, Prisma.SpaceUncheckedUpdateWithoutAgentPendingActionsInput>
+}
+
+export type SpaceUpdateWithoutAgentPendingActionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
+  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
+  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
+  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
+  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2347,6 +2724,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
@@ -2430,6 +2808,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeckInstancesInput = {
@@ -2529,6 +2908,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
@@ -2612,6 +2992,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductGroupsInput = {
@@ -2695,6 +3076,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
@@ -2778,6 +3160,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductGroupsInput = {
@@ -2877,6 +3260,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
@@ -2960,6 +3344,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvProductsInput = {
@@ -3043,6 +3428,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvProductsInput = {
@@ -3126,6 +3512,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvProductsInput = {
@@ -3225,6 +3612,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvProductsInput = {
@@ -3308,6 +3696,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationsInput = {
@@ -3391,6 +3780,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationsInput = {
@@ -3474,6 +3864,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationsInput = {
@@ -3573,6 +3964,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
@@ -3656,6 +4048,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvMovementsInput = {
@@ -3739,6 +4132,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvMovementsInput = {
@@ -3822,6 +4216,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvMovementsInput = {
@@ -3921,6 +4316,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
@@ -4004,6 +4400,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvStockLevelsInput = {
@@ -4087,6 +4484,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
@@ -4170,6 +4568,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvStockLevelsInput = {
@@ -4269,6 +4668,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
@@ -4352,6 +4752,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvImportHistoriesInput = {
@@ -4435,6 +4836,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
@@ -4518,6 +4920,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvImportHistoriesInput = {
@@ -4617,6 +5020,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
@@ -4700,6 +5104,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvReconciliationsInput = {
@@ -4783,6 +5188,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
@@ -4866,6 +5272,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvReconciliationsInput = {
@@ -4965,6 +5372,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
@@ -5048,6 +5456,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvLocationMappingsInput = {
@@ -5131,6 +5540,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
@@ -5214,6 +5624,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvLocationMappingsInput = {
@@ -5313,6 +5724,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
@@ -5396,6 +5808,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutInvSettingsInput = {
@@ -5479,6 +5892,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutInvSettingsInput = {
@@ -5562,6 +5976,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutInvSettingsInput = {
@@ -5661,6 +6076,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
@@ -5744,6 +6160,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodsInput = {
@@ -5827,6 +6244,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
@@ -5910,6 +6328,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodsInput = {
@@ -6009,6 +6428,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
@@ -6092,6 +6512,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
@@ -6175,6 +6596,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
@@ -6258,6 +6680,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelShippingMethodLabelsInput = {
@@ -6357,6 +6780,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
@@ -6440,6 +6864,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelBatchesInput = {
@@ -6523,6 +6948,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelBatchesInput = {
@@ -6606,6 +7032,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelBatchesInput = {
@@ -6705,6 +7132,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
@@ -6788,6 +7216,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelOrdersInput = {
@@ -6871,6 +7300,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelOrdersInput = {
@@ -6954,6 +7384,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelOrdersInput = {
@@ -7053,6 +7484,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
@@ -7136,6 +7568,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelProductAliasesInput = {
@@ -7219,6 +7652,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
@@ -7302,6 +7736,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelProductAliasesInput = {
@@ -7401,6 +7836,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
@@ -7484,6 +7920,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
@@ -7567,6 +8004,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
@@ -7650,6 +8088,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelColumnMappingPresetsInput = {
@@ -7749,6 +8188,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
@@ -7832,6 +8272,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
@@ -7915,6 +8356,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
@@ -7998,6 +8440,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDelIntegrationHistoriesInput = {
@@ -8097,6 +8540,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
@@ -8180,6 +8624,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandsInput = {
@@ -8263,6 +8708,7 @@ export type SpaceCreateWithoutBrandsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandsInput = {
@@ -8346,6 +8792,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandsInput = {
@@ -8445,6 +8892,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandsInput = {
@@ -8528,6 +8976,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelTypeDefsInput = {
@@ -8611,6 +9060,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
@@ -8694,6 +9144,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelTypeDefsInput = {
@@ -8793,6 +9244,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
@@ -8876,6 +9328,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelsInput = {
@@ -8959,6 +9412,7 @@ export type SpaceCreateWithoutChannelsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelsInput = {
@@ -9042,6 +9496,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelsInput = {
@@ -9141,6 +9596,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelsInput = {
@@ -9224,6 +9680,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductionRunsInput = {
@@ -9307,6 +9764,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductionRunsInput = {
@@ -9390,6 +9848,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductionRunsInput = {
@@ -9489,6 +9948,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
@@ -9572,6 +10032,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutPricingScenariosInput = {
@@ -9655,6 +10116,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
@@ -9738,6 +10200,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutPricingScenariosInput = {
@@ -9837,6 +10300,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
@@ -9920,6 +10384,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductPricingSettingsInput = {
@@ -10003,6 +10468,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
@@ -10086,6 +10552,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductPricingSettingsInput = {
@@ -10185,6 +10652,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
@@ -10268,6 +10736,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutOptionCodeAliasesInput = {
@@ -10351,6 +10820,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
@@ -10434,6 +10904,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutOptionCodeAliasesInput = {
@@ -10533,6 +11004,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
@@ -10616,6 +11088,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductListingsInput = {
@@ -10699,6 +11172,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductListingsInput = {
@@ -10782,6 +11256,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductListingsInput = {
@@ -10881,6 +11356,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductListingsInput = {
@@ -10964,6 +11440,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelStockMovementsInput = {
@@ -11047,6 +11524,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
@@ -11130,6 +11608,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelStockMovementsInput = {
@@ -11229,6 +11708,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
@@ -11312,6 +11792,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelProductsInput = {
@@ -11395,6 +11876,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelProductsInput = {
@@ -11478,6 +11960,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelProductsInput = {
@@ -11577,6 +12060,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
@@ -11660,6 +12144,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutProductsInput = {
@@ -11743,6 +12228,7 @@ export type SpaceCreateWithoutProductsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutProductsInput = {
@@ -11826,6 +12312,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutProductsInput = {
@@ -11925,6 +12412,7 @@ export type SpaceUpdateWithoutProductsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutProductsInput = {
@@ -12008,6 +12496,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutPersonasInput = {
@@ -12091,6 +12580,7 @@ export type SpaceCreateWithoutPersonasInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutPersonasInput = {
@@ -12174,6 +12664,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutPersonasInput = {
@@ -12273,6 +12764,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutPersonasInput = {
@@ -12356,6 +12848,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBrandProfileInput = {
@@ -12439,6 +12932,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBrandProfileInput = {
@@ -12522,6 +13016,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBrandProfileInput = {
@@ -12621,6 +13116,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
@@ -12704,6 +13200,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
@@ -12787,6 +13284,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
@@ -12870,6 +13368,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutWorkspaceAiCreditsInput = {
@@ -12969,6 +13468,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
@@ -13052,6 +13552,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutImageGenerationLogsInput = {
@@ -13135,6 +13636,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
@@ -13218,6 +13720,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutImageGenerationLogsInput = {
@@ -13317,6 +13820,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
@@ -13400,6 +13904,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutTextGenerationLogsInput = {
@@ -13483,6 +13988,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
@@ -13566,6 +14072,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutTextGenerationLogsInput = {
@@ -13665,6 +14172,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
@@ -13748,6 +14256,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutTemplatesInput = {
@@ -13831,6 +14340,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutTemplatesInput = {
@@ -13914,6 +14424,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutTemplatesInput = {
@@ -14013,6 +14524,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutTemplatesInput = {
@@ -14096,6 +14608,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSalesContentChannelsInput = {
@@ -14179,6 +14692,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
@@ -14262,6 +14776,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSalesContentChannelsInput = {
@@ -14361,6 +14876,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
@@ -14444,6 +14960,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentsInput = {
@@ -14527,6 +15044,7 @@ export type SpaceCreateWithoutContentsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentsInput = {
@@ -14610,6 +15128,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentsInput = {
@@ -14709,6 +15228,7 @@ export type SpaceUpdateWithoutContentsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentsInput = {
@@ -14792,6 +15312,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentDeploymentsInput = {
@@ -14875,6 +15396,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
@@ -14958,6 +15480,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentDeploymentsInput = {
@@ -15057,6 +15580,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
@@ -15140,6 +15664,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentClickEventsInput = {
@@ -15223,6 +15748,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
@@ -15306,6 +15832,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentClickEventsInput = {
@@ -15405,6 +15932,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
@@ -15488,6 +16016,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutChannelCredentialsInput = {
@@ -15571,6 +16100,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
@@ -15654,6 +16184,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutChannelCredentialsInput = {
@@ -15753,6 +16284,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
@@ -15836,6 +16368,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutDeploymentMetricsInput = {
@@ -15919,6 +16452,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
@@ -16002,6 +16536,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutDeploymentMetricsInput = {
@@ -16101,6 +16636,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
@@ -16184,6 +16720,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutSalesContentJobsInput = {
@@ -16267,6 +16804,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
@@ -16350,6 +16888,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutSalesContentJobsInput = {
@@ -16449,6 +16988,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
@@ -16532,6 +17072,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentVersionsInput = {
@@ -16615,6 +17156,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentVersionsInput = {
@@ -16698,6 +17240,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentVersionsInput = {
@@ -16797,6 +17340,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
@@ -16880,6 +17424,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutContentAssetsInput = {
@@ -16963,6 +17508,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutContentAssetsInput = {
@@ -17046,6 +17592,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutContentAssetsInput = {
@@ -17145,6 +17692,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
@@ -17228,6 +17776,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutIdeationsInput = {
@@ -17311,6 +17860,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutIdeationsInput = {
@@ -17394,6 +17944,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutIdeationsInput = {
@@ -17493,6 +18044,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutIdeationsInput = {
@@ -17576,6 +18128,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutImprovementRulesInput = {
@@ -17659,6 +18212,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
@@ -17742,6 +18296,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutImprovementRulesInput = {
@@ -17841,6 +18396,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
@@ -17924,6 +18480,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutReorderPlansInput = {
@@ -18007,6 +18564,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutReorderPlansInput = {
@@ -18090,6 +18648,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutReorderPlansInput = {
@@ -18189,6 +18748,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
@@ -18272,6 +18832,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinAccountsInput = {
@@ -18355,6 +18916,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinAccountsInput = {
@@ -18438,6 +19000,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinAccountsInput = {
@@ -18537,6 +19100,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
@@ -18620,6 +19184,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinLiabilitiesInput = {
@@ -18703,6 +19268,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
@@ -18786,6 +19352,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinLiabilitiesInput = {
@@ -18885,6 +19452,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
@@ -18968,6 +19536,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinCategoriesInput = {
@@ -19051,6 +19620,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
@@ -19134,6 +19704,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinCategoriesInput = {
@@ -19233,6 +19804,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
@@ -19316,6 +19888,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinClassRulesInput = {
@@ -19399,6 +19972,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
@@ -19482,6 +20056,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinClassRulesInput = {
@@ -19581,6 +20156,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
@@ -19664,6 +20240,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinMappingPresetsInput = {
@@ -19747,6 +20324,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
@@ -19830,6 +20408,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinMappingPresetsInput = {
@@ -19929,6 +20508,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
@@ -20012,6 +20592,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinImportsInput = {
@@ -20095,6 +20676,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinImportsInput = {
@@ -20178,6 +20760,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinImportsInput = {
@@ -20277,6 +20860,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinImportsInput = {
@@ -20360,6 +20944,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinStagedRowsInput = {
@@ -20443,6 +21028,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
@@ -20526,6 +21112,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinStagedRowsInput = {
@@ -20625,6 +21212,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
@@ -20708,6 +21296,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinTransactionsInput = {
@@ -20791,6 +21380,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
@@ -20874,6 +21464,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinTransactionsInput = {
@@ -20973,6 +21564,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
@@ -21056,6 +21648,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
@@ -21139,6 +21732,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
@@ -21222,6 +21816,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutFinBalanceSnapshotsInput = {
@@ -21321,6 +21916,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
@@ -21404,6 +22000,7 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringStoresInput = {
@@ -21487,6 +22084,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringStoresInput = {
@@ -21570,6 +22168,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringStoresInput = {
@@ -21669,6 +22268,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
@@ -21752,6 +22352,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringPositionsInput = {
@@ -21835,6 +22436,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
@@ -21918,6 +22520,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringPositionsInput = {
@@ -22017,6 +22620,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
@@ -22100,6 +22704,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringPostingsInput = {
@@ -22183,6 +22788,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
@@ -22266,6 +22872,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringPostingsInput = {
@@ -22365,6 +22972,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
@@ -22448,6 +23056,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringPostingPositionsInput = {
@@ -22531,6 +23140,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
@@ -22614,6 +23224,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringPostingPositionsInput = {
@@ -22713,6 +23324,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
@@ -22796,6 +23408,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringContentsInput = {
@@ -22879,6 +23492,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringContentsInput = {
@@ -22962,6 +23576,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringContentsInput = {
@@ -23061,6 +23676,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
@@ -23144,6 +23760,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringDetailTemplatesInput = {
@@ -23227,6 +23844,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
@@ -23310,6 +23928,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringDetailTemplatesInput = {
@@ -23409,6 +24028,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
@@ -23492,6 +24112,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringApplicationsInput = {
@@ -23575,6 +24196,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
@@ -23658,6 +24280,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringApplicationsInput = {
@@ -23757,6 +24380,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
@@ -23840,6 +24464,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringBlacklistsInput = {
@@ -23923,6 +24548,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
@@ -24006,6 +24632,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringBlacklistsInput = {
@@ -24105,6 +24732,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
@@ -24188,6 +24816,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutHiringMessageTemplatesInput = {
@@ -24271,6 +24900,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
@@ -24354,6 +24984,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutHiringMessageTemplatesInput = {
@@ -24453,6 +25084,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
@@ -24536,6 +25168,7 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoProductsInput = {
@@ -24619,6 +25252,7 @@ export type SpaceCreateWithoutBoProductsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoProductsInput = {
@@ -24702,6 +25336,7 @@ export type SpaceUncheckedCreateWithoutBoProductsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoProductsInput = {
@@ -24801,6 +25436,7 @@ export type SpaceUpdateWithoutBoProductsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoProductsInput = {
@@ -24884,6 +25520,7 @@ export type SpaceUncheckedUpdateWithoutBoProductsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoIdeationsInput = {
@@ -24967,6 +25604,7 @@ export type SpaceCreateWithoutBoIdeationsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoIdeationsInput = {
@@ -25050,6 +25688,7 @@ export type SpaceUncheckedCreateWithoutBoIdeationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoIdeationsInput = {
@@ -25149,6 +25788,7 @@ export type SpaceUpdateWithoutBoIdeationsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoIdeationsInput = {
@@ -25232,6 +25872,7 @@ export type SpaceUncheckedUpdateWithoutBoIdeationsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoMaterialsInput = {
@@ -25315,6 +25956,7 @@ export type SpaceCreateWithoutBoMaterialsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoMaterialsInput = {
@@ -25398,6 +26040,7 @@ export type SpaceUncheckedCreateWithoutBoMaterialsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoMaterialsInput = {
@@ -25497,6 +26140,7 @@ export type SpaceUpdateWithoutBoMaterialsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoMaterialsInput = {
@@ -25580,6 +26224,7 @@ export type SpaceUncheckedUpdateWithoutBoMaterialsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoPostsInput = {
@@ -25663,6 +26308,7 @@ export type SpaceCreateWithoutBoPostsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoPostsInput = {
@@ -25746,6 +26392,7 @@ export type SpaceUncheckedCreateWithoutBoPostsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoPostsInput = {
@@ -25845,6 +26492,7 @@ export type SpaceUpdateWithoutBoPostsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoPostsInput = {
@@ -25928,6 +26576,7 @@ export type SpaceUncheckedUpdateWithoutBoPostsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoPostVersionsInput = {
@@ -26011,6 +26660,7 @@ export type SpaceCreateWithoutBoPostVersionsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoPostVersionsInput = {
@@ -26094,6 +26744,7 @@ export type SpaceUncheckedCreateWithoutBoPostVersionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoPostVersionsInput = {
@@ -26193,6 +26844,7 @@ export type SpaceUpdateWithoutBoPostVersionsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoPostVersionsInput = {
@@ -26276,6 +26928,7 @@ export type SpaceUncheckedUpdateWithoutBoPostVersionsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoChannelsInput = {
@@ -26359,6 +27012,7 @@ export type SpaceCreateWithoutBoChannelsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoChannelsInput = {
@@ -26442,6 +27096,7 @@ export type SpaceUncheckedCreateWithoutBoChannelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoChannelsInput = {
@@ -26541,6 +27196,7 @@ export type SpaceUpdateWithoutBoChannelsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoChannelsInput = {
@@ -26624,6 +27280,7 @@ export type SpaceUncheckedUpdateWithoutBoChannelsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoPostVariantsInput = {
@@ -26707,6 +27364,7 @@ export type SpaceCreateWithoutBoPostVariantsInput = {
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoPostVariantsInput = {
@@ -26790,6 +27448,7 @@ export type SpaceUncheckedCreateWithoutBoPostVariantsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoPostVariantsInput = {
@@ -26889,6 +27548,7 @@ export type SpaceUpdateWithoutBoPostVariantsInput = {
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoPostVariantsInput = {
@@ -26972,6 +27632,7 @@ export type SpaceUncheckedUpdateWithoutBoPostVariantsInput = {
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoDeploymentsInput = {
@@ -27055,6 +27716,7 @@ export type SpaceCreateWithoutBoDeploymentsInput = {
   boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoDeploymentsInput = {
@@ -27138,6 +27800,7 @@ export type SpaceUncheckedCreateWithoutBoDeploymentsInput = {
   boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoDeploymentsInput = {
@@ -27237,6 +27900,7 @@ export type SpaceUpdateWithoutBoDeploymentsInput = {
   boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoDeploymentsInput = {
@@ -27320,6 +27984,7 @@ export type SpaceUncheckedUpdateWithoutBoDeploymentsInput = {
   boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoJobsInput = {
@@ -27403,6 +28068,7 @@ export type SpaceCreateWithoutBoJobsInput = {
   boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoJobsInput = {
@@ -27486,6 +28152,7 @@ export type SpaceUncheckedCreateWithoutBoJobsInput = {
   boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoJobsInput = {
@@ -27585,6 +28252,7 @@ export type SpaceUpdateWithoutBoJobsInput = {
   boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoJobsInput = {
@@ -27668,6 +28336,7 @@ export type SpaceUncheckedUpdateWithoutBoJobsInput = {
   boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceCreateWithoutBoChannelCredentialsInput = {
@@ -27751,6 +28420,7 @@ export type SpaceCreateWithoutBoChannelCredentialsInput = {
   boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
   boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceUncheckedCreateWithoutBoChannelCredentialsInput = {
@@ -27834,6 +28504,7 @@ export type SpaceUncheckedCreateWithoutBoChannelCredentialsInput = {
   boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
   boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
   boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
 }
 
 export type SpaceCreateOrConnectWithoutBoChannelCredentialsInput = {
@@ -27933,6 +28604,7 @@ export type SpaceUpdateWithoutBoChannelCredentialsInput = {
   boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
   boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
 }
 
 export type SpaceUncheckedUpdateWithoutBoChannelCredentialsInput = {
@@ -28016,6 +28688,7 @@ export type SpaceUncheckedUpdateWithoutBoChannelCredentialsInput = {
   boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
   boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
   boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 
@@ -28096,6 +28769,7 @@ export type SpaceCountOutputType = {
   boDeployments: number
   boJobs: number
   boChannelCredentials: number
+  agentPendingActions: number
 }
 
 export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -28171,6 +28845,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   boDeployments?: boolean | SpaceCountOutputTypeCountBoDeploymentsArgs
   boJobs?: boolean | SpaceCountOutputTypeCountBoJobsArgs
   boChannelCredentials?: boolean | SpaceCountOutputTypeCountBoChannelCredentialsArgs
+  agentPendingActions?: boolean | SpaceCountOutputTypeCountAgentPendingActionsArgs
 }
 
 /**
@@ -28687,6 +29362,13 @@ export type SpaceCountOutputTypeCountBoChannelCredentialsArgs<ExtArgs extends ru
   where?: Prisma.BoChannelCredentialWhereInput
 }
 
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountAgentPendingActionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AgentPendingActionWhereInput
+}
+
 
 export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -28770,6 +29452,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   boDeployments?: boolean | Prisma.Space$boDeploymentsArgs<ExtArgs>
   boJobs?: boolean | Prisma.Space$boJobsArgs<ExtArgs>
   boChannelCredentials?: boolean | Prisma.Space$boChannelCredentialsArgs<ExtArgs>
+  agentPendingActions?: boolean | Prisma.Space$agentPendingActionsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["space"]>
 
@@ -28877,6 +29560,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   boDeployments?: boolean | Prisma.Space$boDeploymentsArgs<ExtArgs>
   boJobs?: boolean | Prisma.Space$boJobsArgs<ExtArgs>
   boChannelCredentials?: boolean | Prisma.Space$boChannelCredentialsArgs<ExtArgs>
+  agentPendingActions?: boolean | Prisma.Space$agentPendingActionsArgs<ExtArgs>
   _count?: boolean | Prisma.SpaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SpaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -28960,6 +29644,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     boDeployments: Prisma.$BoDeploymentPayload<ExtArgs>[]
     boJobs: Prisma.$BoJobPayload<ExtArgs>[]
     boChannelCredentials: Prisma.$BoChannelCredentialPayload<ExtArgs>[]
+    agentPendingActions: Prisma.$AgentPendingActionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -29437,6 +30122,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   boDeployments<T extends Prisma.Space$boDeploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boDeploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoDeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   boJobs<T extends Prisma.Space$boJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   boChannelCredentials<T extends Prisma.Space$boChannelCredentialsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boChannelCredentialsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoChannelCredentialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  agentPendingActions<T extends Prisma.Space$agentPendingActionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$agentPendingActionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentPendingActionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -31642,6 +32328,30 @@ export type Space$boChannelCredentialsArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.BoChannelCredentialScalarFieldEnum | Prisma.BoChannelCredentialScalarFieldEnum[]
+}
+
+/**
+ * Space.agentPendingActions
+ */
+export type Space$agentPendingActionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AgentPendingAction
+   */
+  select?: Prisma.AgentPendingActionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AgentPendingAction
+   */
+  omit?: Prisma.AgentPendingActionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AgentPendingActionInclude<ExtArgs> | null
+  where?: Prisma.AgentPendingActionWhereInput
+  orderBy?: Prisma.AgentPendingActionOrderByWithRelationInput | Prisma.AgentPendingActionOrderByWithRelationInput[]
+  cursor?: Prisma.AgentPendingActionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AgentPendingActionScalarFieldEnum | Prisma.AgentPendingActionScalarFieldEnum[]
 }
 
 /**
