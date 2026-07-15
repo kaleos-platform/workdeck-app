@@ -54,10 +54,14 @@ export interface PnlMetrics {
   variableCost: PnlSeries
   fixedCost: PnlSeries
   grossProfit: PnlSeries
+  /** 매출총이익율(%). */
+  grossMarginRatio: PnlRatioSeries
   contributionMargin: PnlSeries
   /** 공헌이익율(%). */
   contributionMarginRatio: PnlRatioSeries
   operatingIncome: PnlSeries
+  /** 영업이익율(%). */
+  operatingMarginRatio: PnlRatioSeries
   /** 손익분기점 매출액(공헌이익율 ≤ 0 → null). */
   breakEvenSales: PnlRatioSeries
 }
@@ -102,7 +106,9 @@ export function computePnlMetrics(facts: PnlTxnFact[], buckets: string[]): PnlMe
   const contributionMargin = zeroMap(buckets)
   const fixedCost = zeroMap(buckets)
   const operatingIncome = zeroMap(buckets)
+  const gmRatio: Record<string, number | null> = {}
   const cmRatio: Record<string, number | null> = {}
+  const omRatio: Record<string, number | null> = {}
   const bep: Record<string, number | null> = {}
 
   for (const b of buckets) {
@@ -114,8 +120,10 @@ export function computePnlMetrics(facts: PnlTxnFact[], buckets: string[]): PnlMe
     contributionMargin[b] = round2(revenue[b] - variableCost[b])
     fixedCost[b] = round2(cogs[b] + opex[b] - variableCost[b])
     operatingIncome[b] = round2(revenue[b] - cogs[b] - opex[b])
+    gmRatio[b] = ratio(grossProfit[b], revenue[b])
     const r = ratio(contributionMargin[b], revenue[b])
     cmRatio[b] = r
+    omRatio[b] = ratio(operatingIncome[b], revenue[b])
     bep[b] = breakEven(fixedCost[b], r)
   }
 
@@ -138,9 +146,14 @@ export function computePnlMetrics(facts: PnlTxnFact[], buckets: string[]): PnlMe
     variableCost: series(variableCost, totVariable),
     fixedCost: series(fixedCost, totFixed),
     grossProfit: series(grossProfit, round2(totRevenue - totCogs)),
+    grossMarginRatio: { values: gmRatio, total: ratio(round2(totRevenue - totCogs), totRevenue) },
     contributionMargin: series(contributionMargin, totCm),
     contributionMarginRatio: { values: cmRatio, total: totCmRatio },
     operatingIncome: series(operatingIncome, round2(totRevenue - totCogs - totOpex)),
+    operatingMarginRatio: {
+      values: omRatio,
+      total: ratio(round2(totRevenue - totCogs - totOpex), totRevenue),
+    },
     breakEvenSales: { values: bep, total: breakEven(totFixed, totCmRatio) },
   }
 }
