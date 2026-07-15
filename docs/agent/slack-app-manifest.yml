@@ -1,0 +1,45 @@
+# Workdeck Slack 앱 매니페스트 (M3 승인 알림 연동)
+#
+# 설치 절차:
+#   1. https://api.slack.com/apps → "Create New App" → "From an app manifest"
+#   2. 설치할 Slack workspace 선택 후, 이 파일 내용을 붙여넣어 앱 생성.
+#   3. 생성된 앱의 "Basic Information"에서 아래 값을 워크덱 환경변수로 등록:
+#        SLACK_CLIENT_ID      = App Credentials > Client ID
+#        SLACK_CLIENT_SECRET  = App Credentials > Client Secret
+#        SLACK_SIGNING_SECRET = App Credentials > Signing Secret
+#   4. bot 토큰 암호화에 ENCRYPTION_KEY(32바이트 hex)가 필요하다(배송 PII와 공용).
+#   5. 워크덱에서 /api/slack/oauth/install(ADMIN)로 설치를 시작 → OAuth 왕복 후
+#      /api/slack/channels로 승인 알림 채널(kind=approvals)을 등록한다.
+#
+# redirect_urls / request_url의 호스트는 운영(app.workdeck.work) 기준.
+# preview에서 검증하려면 해당 preview 호스트로 임시 변경해야 한다.
+
+display_information:
+  name: Workdeck
+  description: 워크덱 에이전트 승인 알림 및 인터랙티브 승인
+  background_color: "#1a1a1a"
+
+features:
+  bot_user:
+    display_name: Workdeck
+    always_online: true
+
+oauth_config:
+  redirect_urls:
+    - https://app.workdeck.work/api/slack/oauth/callback
+  scopes:
+    bot:
+      - chat:write
+      - channels:read
+
+settings:
+  interactivity:
+    is_enabled: true
+    request_url: https://app.workdeck.work/api/slack/interactive
+  event_subscriptions:
+    request_url: https://app.workdeck.work/api/slack/events
+    # M4 예약 — 구독할 봇 이벤트 목록은 아직 비워 둔다(현재는 url_verification 핸드셰이크만 처리).
+    bot_events: []
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
