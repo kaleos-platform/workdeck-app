@@ -56,6 +56,8 @@ import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
 type ViewMode = 'table' | 'flow'
+// 손익 지표 표시 관점 — 손익계산서(기능별) vs 공헌이익(원가행태별). 둘 다 영업이익으로 수렴.
+type ProfitView = 'income-statement' | 'contribution'
 
 // 표시 컬럼(기간) — 핀이면 계정과목 옆 sticky. 고정폭이라 left offset 정확.
 const ACCOUNT_W = 220
@@ -227,6 +229,7 @@ export function FinanceCashflowView() {
   const [view, setView] = useState<ViewMode>('table')
   const [grain, setGrain] = useState<Grain>('month')
   const [displayMode, setDisplayMode] = useState<DisplayMode>('hierarchy')
+  const [profitView, setProfitView] = useState<ProfitView>('income-statement')
   // 표시 기간(오름차순) — 기본은 직전월까지 최근 N. grain 변경 시 리셋.
   const [selectedPeriods, setSelectedPeriods] = useState<string[]>(() =>
     defaultSelectedPeriods('month', ymOf(new Date()))
@@ -347,6 +350,15 @@ export function FinanceCashflowView() {
               excluded={excluded}
               onChange={setExcluded}
             />
+            <SegmentGroup<ProfitView>
+              label="손익 관점"
+              options={[
+                { value: 'income-statement', label: '손익계산서' },
+                { value: 'contribution', label: '공헌이익' },
+              ]}
+              value={profitView}
+              onChange={setProfitView}
+            />
           </>
         )}
         {/* 흐름도 뷰: 단일 기간 선택 */}
@@ -380,6 +392,7 @@ export function FinanceCashflowView() {
             <CashflowTable
               data={data}
               mode={displayMode}
+              profitView={profitView}
               pinnedPeriods={pinnedPeriods}
               onTogglePin={togglePin}
               selectedKey={selected?.key ?? null}
@@ -514,6 +527,7 @@ function PnlSummaryCards({ metrics }: { metrics: PnlMetrics }) {
     value: string
     num: number | null
     accent?: boolean
+    muted?: boolean
   }[] = [
     {
       label: '매출총이익',
@@ -537,9 +551,10 @@ function PnlSummaryCards({ metrics }: { metrics: PnlMetrics }) {
     },
     {
       label: '손익분기점 매출액',
-      hint: '고정비 / 공헌이익율',
-      value: bep == null ? '—' : formatWon(bep),
+      hint: bep == null ? '공헌이익 음수 — 분기점 없음' : '고정비 / 공헌이익율',
+      value: bep == null ? '산출 불가' : formatWon(bep),
       num: null,
+      muted: bep == null,
     },
   ]
   return (
@@ -549,7 +564,8 @@ function PnlSummaryCards({ metrics }: { metrics: PnlMetrics }) {
           <p className="text-xs text-muted-foreground">{c.label}</p>
           <p
             className={cn(
-              'font-mono text-lg font-semibold tabular-nums',
+              'font-mono font-semibold tabular-nums',
+              c.muted ? 'text-sm text-muted-foreground' : 'text-lg',
               c.num != null && netValueClass(c.num)
             )}
           >
@@ -568,6 +584,7 @@ function PnlSummaryCards({ metrics }: { metrics: PnlMetrics }) {
 function CashflowTable({
   data,
   mode,
+  profitView,
   pinnedPeriods,
   onTogglePin,
   selectedKey,
@@ -575,6 +592,7 @@ function CashflowTable({
 }: {
   data: CashflowData
   mode: DisplayMode
+  profitView: ProfitView
   pinnedPeriods: Set<string>
   onTogglePin: (bucket: string) => void
   selectedKey: string | null
@@ -665,74 +683,116 @@ function CashflowTable({
           {/* ── 순현금흐름 ── */}
           <NetRow entry={totals.net} columns={columns} />
 
-          {/* ── 손익 지표 ── */}
-          <SectionLabelRow label="손익 지표 (영업매출 기준)" colSpan={colSpan} />
-          <MetricRow
-            label="매출총이익"
-            hint="매출 − 매출원가"
-            values={metrics.grossProfit.values}
-            columns={columns}
-            valueClassFn={netValueClass}
+          {/* ── 손익 지표 (돈의 흐름: 매출 → 비용 차감 → 이익, 관점별) ── */}
+          <SectionLabelRow
+            label={
+              profitView === 'income-statement'
+                ? '손익계산서 관점 (영업매출 기준)'
+                : '공헌이익 관점 (영업매출 기준)'
+            }
+            colSpan={colSpan}
           />
-          <MetricRow
-            label="공헌이익"
-            hint="매출 − 변동비"
-            values={metrics.contributionMargin.values}
-            columns={columns}
-            valueClassFn={netValueClass}
-          />
-          <MetricRow
-            label="공헌이익율"
-            hint="공헌이익 / 매출"
-            values={metrics.contributionMarginRatio.values}
-            columns={columns}
-            kind="percent"
-          />
-          <MetricRow
-            label="영업이익"
-            hint="매출 − 매출원가 − 영업비용"
-            values={metrics.operatingIncome.values}
-            columns={columns}
-            valueClassFn={netValueClass}
-          />
-          <MetricRow
-            label="손익분기점 매출액"
-            hint="고정비 / 공헌이익율"
-            values={metrics.breakEvenSales.values}
-            columns={columns}
-          />
+          {buildProfitFlowRows(metrics, profitView).map((r) => (
+            <MetricRow key={r.label} row={r} columns={columns} />
+          ))}
         </TableBody>
       </Table>
     </div>
   )
 }
 
-// ─── 손익 지표 행 ─────────────────────────────────────────────────────────────
+// ─── 손익 지표 행 (돈의 흐름 계단식) ─────────────────────────────────────────
+// variant: base(매출) · deduct(−차감) · subtotal(이익 소계 강조) · ratio(율)
 
-function MetricRow({
-  label,
-  hint,
-  values,
-  columns,
-  kind = 'won',
-  valueClassFn,
-}: {
+type MetricFlowRow = {
   label: string
-  hint: string
+  hint?: string
   values: Record<string, number | null>
-  columns: DisplayColumn[]
-  kind?: 'won' | 'percent'
-  valueClassFn?: (v: number) => string
-}) {
-  const rowBg = 'bg-card'
+  variant: 'base' | 'deduct' | 'subtotal' | 'ratio'
+  kind: 'won' | 'percent'
+}
+
+/** 관점별 손익 흐름 행 구성 — 매출 → 비용 차감 → 이익 소계 → 이익률. */
+function buildProfitFlowRows(metrics: PnlMetrics, view: ProfitView): MetricFlowRow[] {
+  const won = 'won' as const
+  const percent = 'percent' as const
+  if (view === 'income-statement') {
+    return [
+      {
+        label: '매출',
+        hint: '영업매출',
+        values: metrics.revenue.values,
+        variant: 'base',
+        kind: won,
+      },
+      { label: '(−) 매출원가', values: metrics.cogs.values, variant: 'deduct', kind: won },
+      { label: '매출총이익', values: metrics.grossProfit.values, variant: 'subtotal', kind: won },
+      {
+        label: '매출총이익율',
+        values: metrics.grossMarginRatio.values,
+        variant: 'ratio',
+        kind: percent,
+      },
+      { label: '(−) 영업비용', values: metrics.opex.values, variant: 'deduct', kind: won },
+      { label: '영업이익', values: metrics.operatingIncome.values, variant: 'subtotal', kind: won },
+      {
+        label: '영업이익율',
+        values: metrics.operatingMarginRatio.values,
+        variant: 'ratio',
+        kind: percent,
+      },
+    ]
+  }
+  return [
+    { label: '매출', hint: '영업매출', values: metrics.revenue.values, variant: 'base', kind: won },
+    { label: '(−) 변동비', values: metrics.variableCost.values, variant: 'deduct', kind: won },
+    {
+      label: '공헌이익',
+      values: metrics.contributionMargin.values,
+      variant: 'subtotal',
+      kind: won,
+    },
+    {
+      label: '공헌이익율',
+      values: metrics.contributionMarginRatio.values,
+      variant: 'ratio',
+      kind: percent,
+    },
+    { label: '(−) 고정비', values: metrics.fixedCost.values, variant: 'deduct', kind: won },
+    { label: '영업이익', values: metrics.operatingIncome.values, variant: 'subtotal', kind: won },
+    {
+      label: '영업이익율',
+      values: metrics.operatingMarginRatio.values,
+      variant: 'ratio',
+      kind: percent,
+    },
+  ]
+}
+
+function MetricRow({ row, columns }: { row: MetricFlowRow; columns: DisplayColumn[] }) {
+  const { label, hint, values, variant, kind } = row
+  const rowBg = variant === 'subtotal' ? 'bg-muted/30' : 'bg-card'
   const fmt = (v: number | null): string =>
     v == null ? '—' : kind === 'percent' ? formatPercent(v) : formatWon(v)
+  const labelCls =
+    variant === 'subtotal'
+      ? 'text-sm font-semibold'
+      : variant === 'ratio'
+        ? 'pl-3 text-xs text-muted-foreground'
+        : variant === 'deduct'
+          ? 'pl-3 text-sm text-muted-foreground'
+          : 'text-sm font-medium'
+  const valueCls = cn(
+    'w-[160px] px-3 text-right font-mono tabular-nums',
+    variant === 'subtotal' ? 'text-sm font-semibold' : 'text-sm',
+    variant === 'ratio' ? 'text-muted-foreground' : ''
+  )
   return (
-    <TableRow className="hover:bg-muted/30">
+    <TableRow className={cn('hover:bg-muted/30', variant === 'subtotal' && 'border-t bg-muted/30')}>
       <TableCell className={cn('sticky left-0 z-20 w-[220px] px-4', rowBg)}>
         <div className="flex min-w-0 flex-col">
-          <span className="text-sm font-medium">{label}</span>
-          <span className="text-[10px] text-muted-foreground">{hint}</span>
+          <span className={labelCls}>{label}</span>
+          {hint && <span className="text-[10px] text-muted-foreground">{hint}</span>}
         </div>
       </TableCell>
       {columns.map((col) => {
@@ -742,13 +802,13 @@ function MetricRow({
           <TableCell
             key={col.bucket}
             className={cn(
-              'w-[160px] px-3 text-right font-mono text-sm font-medium tabular-nums',
-              v != null && valueClassFn?.(v),
+              valueCls,
+              variant === 'subtotal' && v != null && netValueClass(v),
               p.className
             )}
             style={p.style}
           >
-            {fmt(v)}
+            {variant === 'deduct' && v != null && v !== 0 ? `(${fmt(v)})` : fmt(v)}
           </TableCell>
         )
       })}
