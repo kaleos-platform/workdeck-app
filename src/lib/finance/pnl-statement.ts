@@ -34,7 +34,14 @@ export interface StatementRow {
   values: Record<string, number>
   changePct: number | null
   variant: 'group' | 'leaf' | 'subtotal'
+  /** 거래내역 패널 대상(그룹/리프만; 소계는 미선택). */
+  selectable?: boolean
+  direction?: 'IN' | 'OUT'
+  categoryIds?: string[]
+  uncategorized?: boolean
 }
+
+const isNone = (id: string): boolean => id.startsWith('__none_')
 
 const zero = (buckets: string[]): Record<string, number> =>
   Object.fromEntries(buckets.map((b) => [b, 0]))
@@ -111,6 +118,9 @@ export function buildPnlStatement(
   const pushGroup = (label: string, leaves: PnlLeaf[]) => {
     if (leaves.length === 0) return
     const values = sumLeaves(leaves, buckets)
+    const direction: 'IN' | 'OUT' = leaves[0].type === 'INCOME' ? 'IN' : 'OUT'
+    const catIds = leaves.map((l) => l.id).filter((id) => !isNone(id))
+    const uncategorized = leaves.some((l) => isNone(l.id))
     if (leaves.length === 1) {
       rows.push({
         key: `g:${label}`,
@@ -118,6 +128,10 @@ export function buildPnlStatement(
         values,
         changePct: changeOf(values, buckets),
         variant: 'group',
+        selectable: true,
+        direction,
+        categoryIds: catIds,
+        uncategorized,
       })
       return
     }
@@ -127,6 +141,10 @@ export function buildPnlStatement(
       values,
       changePct: changeOf(values, buckets),
       variant: 'group',
+      selectable: true,
+      direction,
+      categoryIds: catIds,
+      uncategorized,
     })
     if (mode === 'group') return
     const sorted = [...leaves].sort(
@@ -140,6 +158,10 @@ export function buildPnlStatement(
         values: l.values,
         changePct: changeOf(l.values, buckets),
         variant: 'leaf',
+        selectable: true,
+        direction,
+        categoryIds: isNone(l.id) ? [] : [l.id],
+        uncategorized: isNone(l.id),
       })
     }
   }
