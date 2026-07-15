@@ -63,6 +63,9 @@ export const ModelName = {
   Space: 'Space',
   SpaceMember: 'SpaceMember',
   AgentPendingAction: 'AgentPendingAction',
+  SpaceAgent: 'SpaceAgent',
+  AgentLlmUsage: 'AgentLlmUsage',
+  AgentConversation: 'AgentConversation',
   SlackInstallation: 'SlackInstallation',
   SpaceSlackChannel: 'SpaceSlackChannel',
   DeckApp: 'DeckApp',
@@ -387,6 +390,44 @@ export const AgentPendingActionScalarFieldEnum = {
 } as const
 
 export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
+
+
+export const SpaceAgentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceAgentScalarFieldEnum = (typeof SpaceAgentScalarFieldEnum)[keyof typeof SpaceAgentScalarFieldEnum]
+
+
+export const AgentLlmUsageScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  date: 'date',
+  requestCount: 'requestCount',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AgentLlmUsageScalarFieldEnum = (typeof AgentLlmUsageScalarFieldEnum)[keyof typeof AgentLlmUsageScalarFieldEnum]
+
+
+export const AgentConversationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  threadTs: 'threadTs',
+  messages: 'messages',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AgentConversationScalarFieldEnum = (typeof AgentConversationScalarFieldEnum)[keyof typeof AgentConversationScalarFieldEnum]
 
 
 export const SlackInstallationScalarFieldEnum = {
