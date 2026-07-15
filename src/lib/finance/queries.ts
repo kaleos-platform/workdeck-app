@@ -29,6 +29,7 @@ import {
   type Grain,
 } from '@/lib/finance/periods'
 import { computeLiabilityPending } from '@/lib/finance/liability'
+import { computePnlMetrics, type PnlTxnFact } from '@/lib/finance/pnl-metrics'
 import type { Prisma } from '@/generated/prisma/client'
 import type { FinFlowRole } from '@/generated/prisma/enums'
 
@@ -205,6 +206,8 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
 export interface QueryCashflowOptions {
   grain: Grain
   periods?: string[]
+  /** 계산에서 제외할 계정과목(리프) id — 표·손익 지표 모두에서 빠진다. */
+  exclude?: string[]
 }
 
 export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions) {
@@ -247,8 +250,10 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
     }),
   ])
 
+  const excludeSet = new Set(opts.exclude ?? [])
   const catById = new Map(categories.map((c) => [c.id, c]))
   const rootIds = new Set(categories.filter((c) => c.parentId === null).map((c) => c.id))
+  const parentIds = new Set(categories.map((c) => c.parentId).filter((p): p is string => !!p))
 
   /** 카테고리의 level-1 조상(루트의 직계 자식) — 상위 대분류. flowRole 포함. */
   function levelOne(
@@ -279,6 +284,8 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
     values: Record<string, number>
   }
   const rowMap = new Map<string, Row>()
+  // 손익 지표(공헌·매출총·영업이익 등) 집계용 거래 사실. 제외 계정과목·이체는 미포함.
+  const pnlFacts: PnlTxnFact[] = []
 
   const ensureRow = (key: string, seed: Omit<Row, 'values'>) => {
     let r = rowMap.get(key)
@@ -291,6 +298,8 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
 
   for (const t of txns) {
     if (t.isTransfer) continue
+    // 제외 계정과목: 표·지표 모두에서 완전히 빠진다.
+    if (t.categoryId && excludeSet.has(t.categoryId)) continue
     const bucket = bucketOf(ymOf(t.txnDate), grain)
     // 비연속 선택 시 갭 기간(예: 1·5월만 선택했는데 3월 거래)은 미시드 버킷 → 건너뜀(NaN 방지).
     if (!bucketSet.has(bucket)) continue
@@ -334,7 +343,28 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
 
     const row = ensureRow(key, seed)
     row.values[bucket] += amt
+
+    // 손익 지표: 대분류 flowRole + 리프 groupLabel로 사실 축적.
+    pnlFacts.push({
+      bucket,
+      direction: t.direction,
+      amount: amt,
+      flowRole: parent?.flowRole ?? null,
+      groupLabel: leaf?.groupLabel ?? null,
+    })
   }
+
+  const metrics = computePnlMetrics(pnlFacts, buckets)
+
+  // 제외 필터 UI용 리프(운영 항목) 카탈로그 — 제외/거래 유무와 무관하게 전량 제공.
+  const leafOptions = categories
+    .filter((c) => !parentIds.has(c.id) && !rootIds.has(c.id))
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      type: c.type,
+      parentName: c.parentId ? (catById.get(c.parentId)?.name ?? null) : null,
+    }))
 
   const allRows = [...rowMap.values()].map((r) => ({
     ...r,
@@ -376,6 +406,9 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
       expense: { values: expenseTotals, changePct: changePct(expenseTotals) },
       net: { values: netTotals, changePct: changePct(netTotals) },
     },
+    metrics,
+    leafOptions,
+    exclude: [...excludeSet],
   }
 }
 
