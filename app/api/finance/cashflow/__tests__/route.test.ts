@@ -38,6 +38,7 @@ jest.mock('@/lib/prisma', () => ({
 }))
 
 import { GET } from '../route'
+import { buildPnlStatement } from '@/lib/finance/pnl-statement'
 
 // 트리: 수입>매출(MERCH_SALES)>상품매출 · 지출>매출원가(COGS)>[변동] · 지출>영업비용(OPEX)>[변동,고정]
 const CATEGORIES = [
@@ -163,5 +164,26 @@ describe('/api/finance/cashflow metrics', () => {
     // 지출 행에도 택배비 없음
     const expenseIds = body.expenseRows.map((r: { name: string }) => r.name)
     expect(expenseIds).not.toContain('택배비')
+  })
+
+  test('pnlLeaves 자연부호 net: 환불(COGS 계정 IN)이 계정 내 상계', async () => {
+    ensureMock().finTransaction.findMany.mockResolvedValue([
+      txn('l-sales', 'IN', 1000),
+      txn('l-cogs-v', 'OUT', 400),
+      txn('l-cogs-v', 'IN', 100), // 반품 환입(COGS 계정의 IN) → 원가 net 300
+      txn('l-opex-f', 'OUT', 200),
+    ])
+    const res = (await GET(req('grain=month&periods=2026-06')))!
+    const body = await res.json()
+    const leaf = (id: string) =>
+      body.pnlLeaves.find((l: { id: string }) => l.id === id)?.values['2026-06']
+    // 지출계정 자연부호 = OUT:+, IN:− → 매입 net = 400 − 100 = 300
+    expect(leaf('l-cogs-v')).toBe(300)
+    expect(leaf('l-sales')).toBe(1000)
+    // buildPnlStatement 당기순이익 = Σ수입 − Σ지출 = (1000) − (300+200) = 500 = 순현금흐름
+    const stmt = buildPnlStatement(body.pnlLeaves, body.buckets, 'income-statement', 'hierarchy')
+    const netRow = stmt.find((r) => r.label === '당기순이익')!.values['2026-06']
+    expect(netRow).toBe(500)
+    expect(body.totals.net.values['2026-06']).toBe(500)
   })
 })

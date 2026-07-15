@@ -287,6 +287,26 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
   // 손익 지표(공헌·매출총·영업이익 등) 집계용 거래 사실. 제외 계정과목·이체는 미포함.
   const pnlFacts: PnlTxnFact[] = []
 
+  // 손익계산서/공헌이익 관점용 — 계정별 자연부호 net(수입계정 IN:+/OUT:−, 지출계정 OUT:+/IN:−).
+  // 환불(자연방향 반대 거래)이 계정 내 상계되어 헤더=Σleaf·당기순이익=순현금흐름 불변식 보장.
+  type PnlLeaf = {
+    id: string
+    name: string
+    type: 'INCOME' | 'EXPENSE'
+    flowRole: FinFlowRole | null
+    groupLabel: string | null
+    values: Record<string, number>
+  }
+  const pnlLeafMap = new Map<string, PnlLeaf>()
+  const ensurePnlLeaf = (key: string, seed: Omit<PnlLeaf, 'values'>) => {
+    let l = pnlLeafMap.get(key)
+    if (!l) {
+      l = { ...seed, values: Object.fromEntries(buckets.map((b) => [b, 0])) }
+      pnlLeafMap.set(key, l)
+    }
+    return l
+  }
+
   const ensureRow = (key: string, seed: Omit<Row, 'values'>) => {
     let r = rowMap.get(key)
     if (!r) {
@@ -352,6 +372,31 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
       flowRole: parent?.flowRole ?? null,
       groupLabel: leaf?.groupLabel ?? null,
     })
+
+    // 손익계산서/공헌이익용 계정별 자연부호 net. 계정 type이 자연방향(미분류는 거래방향 폴백).
+    const natType: 'INCOME' | 'EXPENSE' =
+      leaf?.type === 'INCOME' || leaf?.type === 'EXPENSE'
+        ? leaf.type
+        : t.direction === 'IN'
+          ? 'INCOME'
+          : 'EXPENSE'
+    const natSign =
+      natType === 'INCOME'
+        ? t.direction === 'IN'
+          ? amt
+          : -amt
+        : t.direction === 'OUT'
+          ? amt
+          : -amt
+    const pKey = leaf?.id ?? `__none_${natType}`
+    const pLeaf = ensurePnlLeaf(pKey, {
+      id: pKey,
+      name: leaf?.name ?? '미분류',
+      type: natType,
+      flowRole: parent?.flowRole ?? null,
+      groupLabel: leaf?.groupLabel ?? null,
+    })
+    pLeaf.values[bucket] += natSign
   }
 
   const metrics = computePnlMetrics(pnlFacts, buckets)
@@ -365,6 +410,11 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
       type: c.type,
       parentName: c.parentId ? (catById.get(c.parentId)?.name ?? null) : null,
     }))
+
+  const pnlLeaves = [...pnlLeafMap.values()].map((l) => ({
+    ...l,
+    values: Object.fromEntries(buckets.map((b) => [b, round2(l.values[b])])),
+  }))
 
   const allRows = [...rowMap.values()].map((r) => ({
     ...r,
@@ -407,6 +457,7 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
       net: { values: netTotals, changePct: changePct(netTotals) },
     },
     metrics,
+    pnlLeaves,
     leafOptions,
     exclude: [...excludeSet],
   }
