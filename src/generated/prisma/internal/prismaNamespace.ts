@@ -396,6 +396,11 @@ export const ModelName = {
   Space: 'Space',
   SpaceMember: 'SpaceMember',
   AgentPendingAction: 'AgentPendingAction',
+  SpaceAgent: 'SpaceAgent',
+  AgentLlmUsage: 'AgentLlmUsage',
+  AgentConversation: 'AgentConversation',
+  SlackInstallation: 'SlackInstallation',
+  SpaceSlackChannel: 'SpaceSlackChannel',
   DeckApp: 'DeckApp',
   DeckInstance: 'DeckInstance',
   CoupangCredential: 'CoupangCredential',
@@ -526,7 +531,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1415,6 +1420,376 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AgentPendingActionCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AgentPendingActionCountAggregateOutputType> | number
+        }
+      }
+    }
+    SpaceAgent: {
+      payload: Prisma.$SpaceAgentPayload<ExtArgs>
+      fields: Prisma.SpaceAgentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SpaceAgentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SpaceAgentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload>
+        }
+        findFirst: {
+          args: Prisma.SpaceAgentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SpaceAgentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload>
+        }
+        findMany: {
+          args: Prisma.SpaceAgentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload>[]
+        }
+        create: {
+          args: Prisma.SpaceAgentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload>
+        }
+        createMany: {
+          args: Prisma.SpaceAgentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SpaceAgentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload>[]
+        }
+        delete: {
+          args: Prisma.SpaceAgentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload>
+        }
+        update: {
+          args: Prisma.SpaceAgentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload>
+        }
+        deleteMany: {
+          args: Prisma.SpaceAgentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SpaceAgentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SpaceAgentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload>[]
+        }
+        upsert: {
+          args: Prisma.SpaceAgentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentPayload>
+        }
+        aggregate: {
+          args: Prisma.SpaceAgentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpaceAgent>
+        }
+        groupBy: {
+          args: Prisma.SpaceAgentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceAgentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SpaceAgentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceAgentCountAggregateOutputType> | number
+        }
+      }
+    }
+    AgentLlmUsage: {
+      payload: Prisma.$AgentLlmUsagePayload<ExtArgs>
+      fields: Prisma.AgentLlmUsageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AgentLlmUsageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AgentLlmUsageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload>
+        }
+        findFirst: {
+          args: Prisma.AgentLlmUsageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AgentLlmUsageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload>
+        }
+        findMany: {
+          args: Prisma.AgentLlmUsageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload>[]
+        }
+        create: {
+          args: Prisma.AgentLlmUsageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload>
+        }
+        createMany: {
+          args: Prisma.AgentLlmUsageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AgentLlmUsageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload>[]
+        }
+        delete: {
+          args: Prisma.AgentLlmUsageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload>
+        }
+        update: {
+          args: Prisma.AgentLlmUsageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload>
+        }
+        deleteMany: {
+          args: Prisma.AgentLlmUsageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AgentLlmUsageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AgentLlmUsageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload>[]
+        }
+        upsert: {
+          args: Prisma.AgentLlmUsageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentLlmUsagePayload>
+        }
+        aggregate: {
+          args: Prisma.AgentLlmUsageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAgentLlmUsage>
+        }
+        groupBy: {
+          args: Prisma.AgentLlmUsageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentLlmUsageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AgentLlmUsageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentLlmUsageCountAggregateOutputType> | number
+        }
+      }
+    }
+    AgentConversation: {
+      payload: Prisma.$AgentConversationPayload<ExtArgs>
+      fields: Prisma.AgentConversationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AgentConversationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AgentConversationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload>
+        }
+        findFirst: {
+          args: Prisma.AgentConversationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AgentConversationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload>
+        }
+        findMany: {
+          args: Prisma.AgentConversationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload>[]
+        }
+        create: {
+          args: Prisma.AgentConversationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload>
+        }
+        createMany: {
+          args: Prisma.AgentConversationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AgentConversationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload>[]
+        }
+        delete: {
+          args: Prisma.AgentConversationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload>
+        }
+        update: {
+          args: Prisma.AgentConversationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload>
+        }
+        deleteMany: {
+          args: Prisma.AgentConversationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AgentConversationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AgentConversationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload>[]
+        }
+        upsert: {
+          args: Prisma.AgentConversationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentConversationPayload>
+        }
+        aggregate: {
+          args: Prisma.AgentConversationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAgentConversation>
+        }
+        groupBy: {
+          args: Prisma.AgentConversationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentConversationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AgentConversationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentConversationCountAggregateOutputType> | number
+        }
+      }
+    }
+    SlackInstallation: {
+      payload: Prisma.$SlackInstallationPayload<ExtArgs>
+      fields: Prisma.SlackInstallationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SlackInstallationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SlackInstallationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        findFirst: {
+          args: Prisma.SlackInstallationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SlackInstallationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        findMany: {
+          args: Prisma.SlackInstallationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>[]
+        }
+        create: {
+          args: Prisma.SlackInstallationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        createMany: {
+          args: Prisma.SlackInstallationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SlackInstallationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>[]
+        }
+        delete: {
+          args: Prisma.SlackInstallationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        update: {
+          args: Prisma.SlackInstallationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        deleteMany: {
+          args: Prisma.SlackInstallationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SlackInstallationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SlackInstallationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>[]
+        }
+        upsert: {
+          args: Prisma.SlackInstallationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        aggregate: {
+          args: Prisma.SlackInstallationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSlackInstallation>
+        }
+        groupBy: {
+          args: Prisma.SlackInstallationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackInstallationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SlackInstallationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackInstallationCountAggregateOutputType> | number
+        }
+      }
+    }
+    SpaceSlackChannel: {
+      payload: Prisma.$SpaceSlackChannelPayload<ExtArgs>
+      fields: Prisma.SpaceSlackChannelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SpaceSlackChannelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SpaceSlackChannelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        findFirst: {
+          args: Prisma.SpaceSlackChannelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SpaceSlackChannelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        findMany: {
+          args: Prisma.SpaceSlackChannelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>[]
+        }
+        create: {
+          args: Prisma.SpaceSlackChannelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        createMany: {
+          args: Prisma.SpaceSlackChannelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SpaceSlackChannelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>[]
+        }
+        delete: {
+          args: Prisma.SpaceSlackChannelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        update: {
+          args: Prisma.SpaceSlackChannelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        deleteMany: {
+          args: Prisma.SpaceSlackChannelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SpaceSlackChannelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SpaceSlackChannelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>[]
+        }
+        upsert: {
+          args: Prisma.SpaceSlackChannelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        aggregate: {
+          args: Prisma.SpaceSlackChannelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpaceSlackChannel>
+        }
+        groupBy: {
+          args: Prisma.SpaceSlackChannelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceSlackChannelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SpaceSlackChannelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceSlackChannelCountAggregateOutputType> | number
         }
       }
     }
@@ -10158,6 +10533,73 @@ export const AgentPendingActionScalarFieldEnum = {
 export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
 
 
+export const SpaceAgentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceAgentScalarFieldEnum = (typeof SpaceAgentScalarFieldEnum)[keyof typeof SpaceAgentScalarFieldEnum]
+
+
+export const AgentLlmUsageScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  date: 'date',
+  requestCount: 'requestCount',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AgentLlmUsageScalarFieldEnum = (typeof AgentLlmUsageScalarFieldEnum)[keyof typeof AgentLlmUsageScalarFieldEnum]
+
+
+export const AgentConversationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  threadTs: 'threadTs',
+  messages: 'messages',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AgentConversationScalarFieldEnum = (typeof AgentConversationScalarFieldEnum)[keyof typeof AgentConversationScalarFieldEnum]
+
+
+export const SlackInstallationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  teamId: 'teamId',
+  teamName: 'teamName',
+  botUserId: 'botUserId',
+  botToken: 'botToken',
+  botTokenIv: 'botTokenIv',
+  scope: 'scope',
+  installedBy: 'installedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SlackInstallationScalarFieldEnum = (typeof SlackInstallationScalarFieldEnum)[keyof typeof SlackInstallationScalarFieldEnum]
+
+
+export const SpaceSlackChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  channelName: 'channelName',
+  kind: 'kind',
+  createdAt: 'createdAt'
+} as const
+
+export type SpaceSlackChannelScalarFieldEnum = (typeof SpaceSlackChannelScalarFieldEnum)[keyof typeof SpaceSlackChannelScalarFieldEnum]
+
+
 export const DeckAppScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -13337,6 +13779,11 @@ export type GlobalOmitConfig = {
   space?: Prisma.SpaceOmit
   spaceMember?: Prisma.SpaceMemberOmit
   agentPendingAction?: Prisma.AgentPendingActionOmit
+  spaceAgent?: Prisma.SpaceAgentOmit
+  agentLlmUsage?: Prisma.AgentLlmUsageOmit
+  agentConversation?: Prisma.AgentConversationOmit
+  slackInstallation?: Prisma.SlackInstallationOmit
+  spaceSlackChannel?: Prisma.SpaceSlackChannelOmit
   deckApp?: Prisma.DeckAppOmit
   deckInstance?: Prisma.DeckInstanceOmit
   coupangCredential?: Prisma.CoupangCredentialOmit

@@ -13,6 +13,7 @@ import { errorResponse, assertRole } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { approveAndExecute, rejectAction } from '@/lib/agent/actions/execute'
 import { getActionDefinition } from '@/lib/agent/actions/registry'
+import { syncSlackDecision } from '@/lib/slack/sync-decision'
 import type { SpaceMemberRole } from '@/lib/api-helpers'
 
 // 호출자가 액션의 space에서 갖는 역할을 반환(멤버 아니면 null).
@@ -76,6 +77,9 @@ export async function PATCH(
     decision === 'approve'
       ? await approveAndExecute(actionId, user.id)
       : await rejectAction(actionId, user.id)
+
+  // 결정 후 Slack 원본 메시지를 최종 상태로 동기화(sync 내부가 무해 — no-op·실패 흡수).
+  await syncSlackDecision(actionId)
 
   // CONFLICT(이미 처리/만료)면 409, 그 외는 결과 그대로 200.
   const httpStatus = outcome.status === 'CONFLICT' ? 409 : 200

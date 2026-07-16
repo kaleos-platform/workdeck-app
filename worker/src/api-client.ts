@@ -172,6 +172,28 @@ export async function uploadReport(
   return response.json()
 }
 
+/** Slack 알림 발송 대상 (멀티테넌트 — Space에 등록된 notifications 채널) */
+export type SlackNotificationTargetResponse = {
+  spaceId: string
+  channelId: string
+  botToken: string // AES-256-CBC hex 암호문 — 워커가 ENCRYPTION_KEY로 복호화
+  botTokenIv: string
+} | null
+
+/**
+ * workspaceId로 Slack 알림 발송 대상 조회 (없으면 null — 레거시 env 경로로 폴백)
+ * GET /api/slack/notification-target?workspaceId=...
+ */
+export async function getSlackNotificationTarget(
+  workspaceId: string
+): Promise<SlackNotificationTargetResponse> {
+  const response = await workerFetch(
+    `/api/slack/notification-target?workspaceId=${encodeURIComponent(workspaceId)}`
+  )
+  const data = await response.json()
+  return data.target ?? null
+}
+
 /**
  * 재고 엑셀 파일 업로드 (multipart/form-data)
  * POST /api/inventory/upload-worker

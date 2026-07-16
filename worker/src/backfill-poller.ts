@@ -246,9 +246,12 @@ export function startBackfillPoller(): void {
         if (err instanceof LoginError) {
           startLoginCooldown(err.reason)
           if (shouldAlertLoginFailure(err.reason)) {
-            await notifyLoginFailed({ reason: err.reason, source: 'backfill', detail: msg }).catch(
-              () => {}
-            )
+            await notifyLoginFailed({
+              reason: err.reason,
+              source: 'backfill',
+              detail: msg,
+              workspaceId: job.workspaceId,
+            }).catch(() => {})
           }
         }
         await reportBackfillJob({ jobId: job.id, status: 'FAILED', error: msg })
@@ -318,6 +321,7 @@ export function startBackfillPoller(): void {
           revenue: totals.revenue,
           orderCount: totals.orderCount,
           salesQty: totals.salesQty,
+          workspaceId: job.workspaceId,
         }).catch((err) => console.error('[slack] 판매 알림 전송 실패:', err))
       }
 

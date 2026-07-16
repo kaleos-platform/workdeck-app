@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { buildAppUrl } from '@/lib/domain'
+import { notifyPendingAction } from '@/lib/slack/notify-pending-action'
 import { getActionDefinition } from './registry'
 import type { PendingActionDraft, PendingActionResult } from './types'
 
@@ -73,6 +74,9 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
       },
       select: { id: true, expiresAt: true },
     })
+    // 신규 생성 경로에서만 Slack 알림(멱등·경합 패자 경로는 제외 — 중복 알림 방지).
+    // notify 내부가 전부 try/catch + 타임아웃이라 await해도 액션 생성을 막지 않는다.
+    await notifyPendingAction(action.id)
     return toResult(action)
   } catch (err) {
     // idempotencyKey 경합 — 다른 요청이 먼저 생성. 승자를 재조회해 반환.

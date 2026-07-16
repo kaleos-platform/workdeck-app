@@ -308,6 +308,7 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     totalRows: uploadResult.totalRows,
     insertedRows: uploadResult.insertedRows,
     duplicateRows: uploadResult.duplicateRows,
+    workspaceId: credential.workspaceId,
   }).catch((err) => console.error('[slack] 알림 전송 실패:', err))
 
   // ── Step 9: 재고 데이터 수집 (Wing) ──
@@ -348,8 +349,8 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
   }
 
   // ── Step 10: 재고 수집 결과 Slack 알림 ──
-  await notifyInventoryDone(inventoryResult).catch((err) =>
-    console.error('[slack] 재고 알림 전송 실패:', err)
+  await notifyInventoryDone({ ...inventoryResult, workspaceId: credential.workspaceId }).catch(
+    (err) => console.error('[slack] 재고 알림 전송 실패:', err)
   )
 
   // ── Step 10.1: 재고 실패를 CollectionRun에 가시화 ──
@@ -381,8 +382,8 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
     .toISOString()
     .slice(0, 10)
   const vendorCollected = (inventoryResult.vendorRows ?? 0) > 0
-  await triggerSellerOpsSync(salesDateKst, vendorCollected, isManual).catch((err) =>
-    console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err)
+  await triggerSellerOpsSync(salesDateKst, vendorCollected, isManual, credential.workspaceId).catch(
+    (err) => console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err)
   )
 
   return result.filePath
@@ -398,11 +399,14 @@ async function executeCollectionPipeline(runId: string, isManual = false): Promi
  * @param vendorCollected 이번 사이클에 VENDOR 를 실제 수집했는지 — false면 변환만 하고 알림 생략
  *                        (변환은 전 Space 의 어제 기존 데이터 대상이라 항상 호출하되,
  *                         이번 수집이 없으면 stale 데이터로 "수집 완료" 알림이 나가지 않게).
+ * @param workspaceId 알림 발송용(변환 자체는 전 Space 대상이지만, 이번 수집을 트리거한
+ *                     workspace 로 알림을 보낸다 — Slack 알림 대상 해석에 필요).
  */
 async function triggerSellerOpsSync(
   salesDateRange: string,
   vendorCollected: boolean,
-  isManual: boolean
+  isManual: boolean,
+  workspaceId?: string
 ): Promise<void> {
   const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
   const apiKey = process.env.WORKER_API_KEY
@@ -433,6 +437,7 @@ async function triggerSellerOpsSync(
       revenue: t.revenue ?? 0,
       orderCount: t.orderCount ?? 0,
       salesQty: t.salesQty ?? 0,
+      workspaceId,
     }).catch((err: unknown) => console.error('[slack] 판매 알림 전송 실패:', err))
   } catch (err) {
     console.error('[orchestrator] 쿠팡 판매 변환 트리거 실패:', err)
