@@ -134,10 +134,10 @@ describe('buildPnlStatement', () => {
     expect(safetyStatusOf(10)).toBe('보통')
     expect(safetyStatusOf(9.9)).toBe('위험')
     expect(safetyStatusOf(-5)).toBe('위험') // 영업손실
-    expect(safetyStatusOf(null)).toBeNull()
+    expect(safetyStatusOf(null)).toBe('위험') // 산출 불가도 위험
   })
 
-  it('공헌이익 ≤ 0: 안전한계율 null', () => {
+  it('공헌이익 ≤ 0: 안전한계율 null이지만 상태는 위험', () => {
     const loss: PnlLeaf[] = [
       leaf('상품매출', 'INCOME', 'MERCH_SALES', null, 100),
       leaf('상품매입', 'EXPENSE', 'COGS', '변동', 150), // 변동비 > 매출
@@ -145,7 +145,17 @@ describe('buildPnlStatement', () => {
     const s = buildPnlSummary(loss, B)
     expect(s.contributionMargin).toBeLessThanOrEqual(0)
     expect(s.safetyMargin).toBeNull()
-    expect(s.safetyStatus).toBeNull()
+    expect(s.safetyStatus).toBe('위험')
+    expect(s.breakEvenSales).toBeNull()
+  })
+
+  it('손익분기점 매출액 = 고정비 / 공헌이익율', () => {
+    const s = buildPnlSummary(LEAVES, B)
+    // 고정비 = 공헌이익350 − 영업이익230 = 120, 공헌이익율 = 350/700 = 0.5
+    // BEP = 120 / 0.5 = 240
+    expect(s.breakEvenSales).toBe(240)
+    // 검산: 안전한계율 = (매출700 − BEP240)/700 = 65.71
+    expect(s.safetyMargin).toBeCloseTo(65.71, 1)
   })
 
   it('선택 가능: 그룹/리프는 categoryIds·direction 보유, 소계는 미선택', () => {
