@@ -10,7 +10,9 @@ import { signState } from '@/lib/slack/state'
 
 export const runtime = 'nodejs'
 
-const SLACK_SCOPES = 'chat:write,channels:read'
+// manifest(docs/agent/slack-app-manifest.yml)의 bot scope와 반드시 동기 유지 —
+// OAuth 설치 시 실제 부여되는 scope는 이 목록이다(manifest는 앱 설정일 뿐).
+const SLACK_SCOPES = 'chat:write,channels:read,app_mentions:read'
 
 export async function GET() {
   const user = await getUser()
