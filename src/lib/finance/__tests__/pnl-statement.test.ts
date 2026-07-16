@@ -1,7 +1,13 @@
 /**
  * pnl-statement 순수 함수 유닛 — 관점별 순서·미지정 흡수·환불 불변식·헤더=Σleaf.
  */
-import { buildPnlStatement, type PnlLeaf, type StatementRow } from '@/lib/finance/pnl-statement'
+import {
+  buildPnlStatement,
+  buildPnlSummary,
+  safetyStatusOf,
+  type PnlLeaf,
+  type StatementRow,
+} from '@/lib/finance/pnl-statement'
 import type { FinFlowRole } from '@/generated/prisma/enums'
 
 const B = ['2026-06']
@@ -103,6 +109,43 @@ describe('buildPnlStatement', () => {
     const rows = buildPnlStatement(LEAVES, B, 'income-statement', 'hierarchy')
     // 매출원가 = 상품매입 단일 → "상품매입 (매출원가)"
     expect(rows.some((r) => r.label === '상품매입 (매출원가)')).toBe(true)
+  })
+
+  it('요약: 이익률·순이익율·안전한계율', () => {
+    const s = buildPnlSummary(LEAVES, B)
+    expect(s.revenue).toBe(700)
+    expect(s.grossProfit).toBe(400)
+    expect(s.grossMarginRatio).toBe(57) // 400/700
+    expect(s.contributionMarginRatio).toBe(50) // 350/700
+    expect(s.operatingIncome).toBe(230)
+    expect(s.operatingMarginRatio).toBe(33) // 230/700
+    expect(s.netIncome).toBe(205)
+    expect(s.netMarginRatio).toBe(29) // 205/700
+    // 안전한계율 = 영업이익/공헌이익 = 230/350 = 65.71 → 우수
+    expect(s.safetyMargin).toBeCloseTo(65.71, 1)
+    expect(s.safetyStatus).toBe('우수')
+  })
+
+  it('안전한계율 구간 경계: 30/20/10', () => {
+    expect(safetyStatusOf(30)).toBe('우수')
+    expect(safetyStatusOf(29.9)).toBe('양호')
+    expect(safetyStatusOf(20)).toBe('양호')
+    expect(safetyStatusOf(19.9)).toBe('보통')
+    expect(safetyStatusOf(10)).toBe('보통')
+    expect(safetyStatusOf(9.9)).toBe('위험')
+    expect(safetyStatusOf(-5)).toBe('위험') // 영업손실
+    expect(safetyStatusOf(null)).toBeNull()
+  })
+
+  it('공헌이익 ≤ 0: 안전한계율 null', () => {
+    const loss: PnlLeaf[] = [
+      leaf('상품매출', 'INCOME', 'MERCH_SALES', null, 100),
+      leaf('상품매입', 'EXPENSE', 'COGS', '변동', 150), // 변동비 > 매출
+    ]
+    const s = buildPnlSummary(loss, B)
+    expect(s.contributionMargin).toBeLessThanOrEqual(0)
+    expect(s.safetyMargin).toBeNull()
+    expect(s.safetyStatus).toBeNull()
   })
 
   it('선택 가능: 그룹/리프는 categoryIds·direction 보유, 소계는 미선택', () => {
