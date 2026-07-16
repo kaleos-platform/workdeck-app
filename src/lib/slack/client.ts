@@ -43,10 +43,10 @@ export async function slackApi(
   return (await res.json()) as SlackApiResponse
 }
 
-/** chat.postMessage — 성공 시 { ok, ts, channel } 반환. */
+/** chat.postMessage — 성공 시 { ok, ts, channel } 반환. thread_ts 지정 시 스레드 답글. */
 export async function postMessage(
   token: string,
-  args: { channel: string; text: string; blocks?: unknown[] }
+  args: { channel: string; text: string; blocks?: unknown[]; thread_ts?: string }
 ): Promise<SlackApiResponse> {
   return slackApi(token, 'chat.postMessage', args)
 }

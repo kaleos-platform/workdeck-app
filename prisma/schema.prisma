@@ -492,6 +492,10 @@ model Space {
 
   // ─── 에이전트 승인 큐 (Agent) ───
   agentPendingActions AgentPendingAction[]
+
+  // ─── 하이브리드 workdeck 에이전트 (M4) ───
+  agentToggle    SpaceAgent?
+  agentLlmUsages AgentLlmUsage[]
 }
 
 // 공간 멤버십 + 역할
@@ -542,6 +546,51 @@ model AgentPendingAction {
 
   @@index([spaceId, status, createdAt])
   @@index([status, expiresAt])
+}
+
+// Space별 workdeck 에이전트 활성 토글. 레코드 없으면 앱에서 기본 활성으로 취급한다.
+model SpaceAgent {
+  id       String  @id @default(cuid())
+  spaceId  String  @unique
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+}
+
+// LLM 사용량 일일 집계 — Space별 rate limit. date는 KST "YYYY-MM-DD".
+model AgentLlmUsage {
+  id           String @id @default(cuid())
+  spaceId      String
+  date         String // KST YYYY-MM-DD
+  requestCount Int    @default(0)
+  inputTokens  Int    @default(0)
+  outputTokens Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, date])
+}
+
+// Slack 스레드 단위 대화 세션. messages는 최근 20턴 [{ role, content }] JSON.
+// (Space Cascade는 걸지 않는다 — TTL cron이 정리하고, Slack 좌표만으로 조회한다.)
+model AgentConversation {
+  id        String @id @default(cuid())
+  spaceId   String
+  channelId String
+  threadTs  String
+  messages  Json // [{ role: "user"|"assistant", content: ... }]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([channelId, threadTs])
+  @@index([updatedAt])
 }
 
 // Slack 워크스페이스 설치 (Space당 1개, Slack team당 1개).

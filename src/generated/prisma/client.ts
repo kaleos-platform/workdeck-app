@@ -100,6 +100,21 @@ export type SpaceMember = Prisma.SpaceMemberModel
  */
 export type AgentPendingAction = Prisma.AgentPendingActionModel
 /**
+ * Model SpaceAgent
+ * 
+ */
+export type SpaceAgent = Prisma.SpaceAgentModel
+/**
+ * Model AgentLlmUsage
+ * 
+ */
+export type AgentLlmUsage = Prisma.AgentLlmUsageModel
+/**
+ * Model AgentConversation
+ * 
+ */
+export type AgentConversation = Prisma.AgentConversationModel
+/**
  * Model SlackInstallation
  * 
  */

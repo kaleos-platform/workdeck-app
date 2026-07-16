@@ -12,6 +12,9 @@
     },
     "app/api/sh/shipping/import/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/slack/events/route.ts": {
+      "maxDuration": 300
     }
   },
   "crons": [
@@ -26,6 +29,10 @@
     {
       "path": "/api/cron/agent-actions-expire",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/agent-conversations-sweep",
+      "schedule": "0 4 * * *"
     }
   ]
 }

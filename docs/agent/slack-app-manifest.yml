@@ -31,6 +31,8 @@ oauth_config:
     bot:
       - chat:write
       - channels:read
+      # M4: app_mention 이벤트 수신에 필요.
+      - app_mentions:read
 
 settings:
   interactivity:
@@ -38,8 +40,10 @@ settings:
     request_url: https://app.workdeck.work/api/slack/interactive
   event_subscriptions:
     request_url: https://app.workdeck.work/api/slack/events
-    # M4 예약 — 구독할 봇 이벤트 목록은 아직 비워 둔다(현재는 url_verification 핸드셰이크만 처리).
-    bot_events: []
+    # M4: 앱 멘션으로 하이브리드 워크덱 에이전트를 호출한다.
+    # ⚠️ bot_events 또는 scope를 변경하면 Slack 앱 재설치(re-install)가 필요하다.
+    bot_events:
+      - app_mention
   org_deploy_enabled: false
   socket_mode_enabled: false
   token_rotation_enabled: false
