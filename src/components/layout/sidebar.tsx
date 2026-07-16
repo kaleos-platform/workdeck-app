@@ -39,6 +39,7 @@ import {
   Globe,
   Send,
   ShieldCheck,
+  Plug,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -105,6 +106,7 @@ import {
   BLOG_OPS_CHANNELS_PATH,
   BLOG_OPS_DEPLOYMENTS_PATH,
   APPROVALS_PATH,
+  SETTINGS_INTEGRATIONS_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -504,6 +506,16 @@ export function Sidebar({
                 isActive={pathname === APPROVALS_PATH || pathname.startsWith(`${APPROVALS_PATH}/`)}
                 collapsed={collapsed}
                 badgeCount={pendingApprovalCount}
+              />
+              <RailLink
+                href={SETTINGS_INTEGRATIONS_PATH}
+                icon={Plug}
+                label="연동 설정"
+                isActive={
+                  pathname === SETTINGS_INTEGRATIONS_PATH ||
+                  pathname.startsWith(`${SETTINGS_INTEGRATIONS_PATH}/`)
+                }
+                collapsed={collapsed}
               />
             </div>
 

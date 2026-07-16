@@ -1,10 +1,14 @@
 /**
- * Worker → Slack 직접 전송 모듈
- * 수집/분석 완료 시 에밀리 봇 토큰으로 #agent-amely-work에 Block Kit 메시지 전송
+ * Worker → Slack 전송 모듈 (멀티테넌트)
+ * 수집/분석 완료 시 workspaceId로 Space의 notifications 채널을 찾아 Block Kit 메시지를 보낸다.
+ * 전환기 이중화: 레거시 env(SLACK_BOT_TOKEN/SLACK_CHANNEL_ID, 구 에밀리 봇)가 설정돼 있으면
+ * 그 경로로도 계속 발송한다 — 단 신규 경로 발송 채널과 레거시 채널이 같으면 중복 발송을 생략한다.
  */
+import { getSlackNotificationTarget } from './api-client.js'
+import { decrypt } from './encryption.js'
 
-const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN ?? ''
-const SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID ?? ''
+const LEGACY_SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN ?? ''
+const LEGACY_SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID ?? ''
 const SLACK_API_URL = 'https://slack.com/api/chat.postMessage'
 
 // Deck 라벨 — Slack 메시지 헤더에 어떤 Deck 작업인지 표기 (정적).
@@ -20,35 +24,92 @@ type Block = {
   [key: string]: unknown
 }
 
-/** Slack에 Block Kit 메시지 전송 */
-async function postMessage(blocks: Block[], text: string): Promise<boolean> {
-  if (!SLACK_BOT_TOKEN || !SLACK_CHANNEL_ID) {
-    console.log('[slack] 봇 토큰 또는 채널 ID 미설정 — 알림 건너뜀')
-    return false
-  }
-
+/** 단일 채널로 Slack Block Kit 메시지 전송 (raw) */
+async function sendToChannel(
+  token: string,
+  channelId: string,
+  blocks: Block[],
+  text: string
+): Promise<boolean> {
   try {
     const res = await fetch(SLACK_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ channel: SLACK_CHANNEL_ID, blocks, text }),
+      body: JSON.stringify({ channel: channelId, blocks, text }),
     })
 
     const data = (await res.json()) as { ok: boolean; error?: string }
     if (!data.ok) {
-      console.error(`[slack] 전송 실패: ${data.error}`)
+      console.error(`[slack] 전송 실패 (channel=${channelId}): ${data.error}`)
       return false
     }
 
-    console.log('[slack] 메시지 전송 완료')
+    console.log(`[slack] 메시지 전송 완료 (channel=${channelId})`)
     return true
   } catch (err) {
-    console.error('[slack] 전송 에러:', err)
+    console.error(`[slack] 전송 에러 (channel=${channelId}):`, err)
     return false
   }
+}
+
+/**
+ * workspaceId 기반 신규 경로 발송 대상을 조회해 복호화한다.
+ * 대상이 없으면(미등록) null — 호출자는 레거시 경로만 사용한다.
+ */
+async function resolveNewPathTarget(
+  workspaceId: string
+): Promise<{ token: string; channelId: string } | null> {
+  try {
+    const target = await getSlackNotificationTarget(workspaceId)
+    if (!target) return null
+    const token = decrypt(target.botToken, target.botTokenIv)
+    return { token, channelId: target.channelId }
+  } catch (err) {
+    console.error('[slack] 알림 대상 조회/복호화 실패 — 레거시 경로만 사용:', err)
+    return null
+  }
+}
+
+/**
+ * Slack에 Block Kit 메시지 전송 — 신규(멀티테넌트) 경로 + 레거시 env 경로 이중 발송.
+ * workspaceId가 없으면(수집 파이프라인 초기 실패 등 컨텍스트 미확보) 레거시 경로만 시도한다.
+ * 신규 경로가 성공하고 그 채널이 레거시 채널과 같으면 중복 방지를 위해 레거시 발송을 생략한다.
+ */
+async function postMessage(blocks: Block[], text: string, workspaceId?: string): Promise<boolean> {
+  let newPathSent = false
+  let newPathChannelId: string | null = null
+
+  if (workspaceId) {
+    const target = await resolveNewPathTarget(workspaceId)
+    if (target) {
+      newPathChannelId = target.channelId
+      newPathSent = await sendToChannel(target.token, target.channelId, blocks, text)
+    }
+  }
+
+  const legacyConfigured = Boolean(LEGACY_SLACK_BOT_TOKEN && LEGACY_SLACK_CHANNEL_ID)
+  if (!legacyConfigured) {
+    if (!newPathSent) {
+      console.log('[slack] 레거시 봇 토큰/채널 미설정, 신규 경로 미등록 — 알림 건너뜀')
+    }
+    return newPathSent
+  }
+
+  // 신규 경로가 이미 같은 채널로 보냈으면 중복 발송 생략.
+  if (newPathSent && newPathChannelId === LEGACY_SLACK_CHANNEL_ID) {
+    return true
+  }
+
+  const legacySent = await sendToChannel(
+    LEGACY_SLACK_BOT_TOKEN,
+    LEGACY_SLACK_CHANNEL_ID,
+    blocks,
+    text
+  )
+  return newPathSent || legacySent
 }
 
 // ─── Block Kit 헬퍼 ─────────────────────────────────────────────────────────
@@ -96,6 +157,7 @@ export async function notifyCollectionDone(params: {
   totalRows: number
   insertedRows: number
   duplicateRows: number
+  workspaceId?: string
 }): Promise<void> {
   const blocks: Block[] = [
     header(`:white_check_mark: [${DECK_COUPANG_ADS}] 쿠팡 광고 데이터 수집 완료`),
@@ -110,7 +172,8 @@ export async function notifyCollectionDone(params: {
 
   await postMessage(
     blocks,
-    `쿠팡 광고 데이터 수집 완료: 등록 ${params.insertedRows.toLocaleString()}건 (${params.dateRange})`
+    `쿠팡 광고 데이터 수집 완료: 등록 ${params.insertedRows.toLocaleString()}건 (${params.dateRange})`,
+    params.workspaceId
   )
 }
 
@@ -119,6 +182,7 @@ export async function notifyAnalysisDone(params: {
   summary: string
   suggestionCount: number
   campaignCount: number
+  workspaceId?: string
 }): Promise<void> {
   const analysisUrl = process.env.WORKDECK_APP_URL
     ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/analysis`
@@ -135,7 +199,8 @@ export async function notifyAnalysisDone(params: {
 
   await postMessage(
     blocks,
-    `쿠팡 광고 분석 완료: ${params.campaignCount}개 캠페인, ${params.suggestionCount}개 제안`
+    `쿠팡 광고 분석 완료: ${params.campaignCount}개 캠페인, ${params.suggestionCount}개 제안`,
+    params.workspaceId
   )
 }
 
@@ -143,6 +208,7 @@ export async function notifyAnalysisDone(params: {
 export async function notifyInventoryDone(params: {
   healthRows?: number
   errors: string[]
+  workspaceId?: string
 }): Promise<void> {
   const hasData = (params.healthRows ?? 0) > 0
   const hasErrors = params.errors.length > 0
@@ -170,11 +236,11 @@ export async function notifyInventoryDone(params: {
 
   blocks.push(section(`<${inventoryUrl}|:package: 재고 현황 보기>`))
 
-  await postMessage(blocks, `쿠팡 재고 데이터 수집 ${status}`)
+  await postMessage(blocks, `쿠팡 재고 데이터 수집 ${status}`, params.workspaceId)
 }
 
-/** 수집 실패 알림 */
-export async function notifyCollectionFailed(error: string): Promise<void> {
+/** 수집 실패 알림 (workspaceId 확보 전 실패 경로에서도 호출되므로 옵션) */
+export async function notifyCollectionFailed(error: string, workspaceId?: string): Promise<void> {
   const blocks: Block[] = [
     header(`:x: [${DECK_COUPANG_ADS}] 쿠팡 광고 데이터 수집 실패`),
     divider(),
@@ -182,7 +248,7 @@ export async function notifyCollectionFailed(error: string): Promise<void> {
     section(error.slice(0, 200)),
   ]
 
-  await postMessage(blocks, `쿠팡 광고 데이터 수집 실패: ${error.slice(0, 100)}`)
+  await postMessage(blocks, `쿠팡 광고 데이터 수집 실패: ${error.slice(0, 100)}`, workspaceId)
 }
 
 /**
@@ -194,6 +260,7 @@ export async function notifyLoginFailed(params: {
   reason: 'CREDENTIAL_INVALID' | 'BOT_BLOCKED' | 'UNKNOWN'
   source: string // 'scheduled' | 'manual' | 'inventory' 등 — 어느 경로에서 났는지
   detail?: string
+  workspaceId?: string // 자격증명 조회 전 실패라 대부분 미확보 → 레거시 경로만 발송됨
 }): Promise<void> {
   const settingsUrl = process.env.WORKDECK_APP_URL
     ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/settings`
@@ -231,7 +298,7 @@ export async function notifyLoginFailed(params: {
   ]
   if (params.detail) blocks.push(context(params.detail.slice(0, 200)))
 
-  await postMessage(blocks, `쿠팡 로그인 실패(${params.reason}): ${title}`)
+  await postMessage(blocks, `쿠팡 로그인 실패(${params.reason}): ${title}`, params.workspaceId)
 }
 
 /** 로켓그로스 판매(VENDOR) 수집 완료 알림 — cron(daily) / 백필 공용 */
@@ -245,6 +312,7 @@ export async function notifyVendorSalesDone(params: {
   revenue: number // 매출 합
   orderCount: number // 주문 합
   salesQty: number // 판매량 합
+  workspaceId?: string
 }): Promise<void> {
   const salesUrl = process.env.WORKDECK_APP_URL
     ? `${process.env.WORKDECK_APP_URL}/d/seller-ops/settings/integration`
@@ -282,6 +350,7 @@ export async function notifyVendorSalesDone(params: {
 
   await postMessage(
     blocks,
-    `[${DECK_SELLER_OPS}] 쿠팡 로켓그로스 판매 데이터 수집 완료: 매출 ${won(params.revenue)}, 주문 ${params.orderCount}건, 판매량 ${params.salesQty}개`
+    `[${DECK_SELLER_OPS}] 쿠팡 로켓그로스 판매 데이터 수집 완료: 매출 ${won(params.revenue)}, 주문 ${params.orderCount}건, 판매량 ${params.salesQty}개`,
+    params.workspaceId
   )
 }

@@ -304,6 +304,7 @@ export function startAnalysisPoller(): void {
       if (!pendingData.report) return
 
       const reportId = pendingData.report.id as string
+      const workspaceId = pendingData.report.workspaceId as string | undefined
       console.log(`\n[analysis-poller] PENDING 분석 발견: ${reportId}`)
       isProcessing = true
 
@@ -361,6 +362,7 @@ export function startAnalysisPoller(): void {
             summary,
             suggestionCount: result.suggestions.length,
             campaignCount: campaigns.length,
+            workspaceId,
           })
         } else {
           const body = await completeRes.text().catch(() => '')

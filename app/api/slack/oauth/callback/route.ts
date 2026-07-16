@@ -1,7 +1,7 @@
 /**
  * GET /api/slack/oauth/callback
  * Slack authorize 후 리다이렉트되는 콜백. code를 bot 토큰으로 교환하고
- * SlackInstallation을 upsert한다. 결과는 /approvals?slack=<상태>로 리다이렉트.
+ * SlackInstallation을 upsert한다. 결과는 /settings/integrations?slack=<상태>로 리다이렉트.
  *
  * 상태: connected(성공) / denied(사용자 거부) / error(교환 실패·잘못된 state) /
  *       team_conflict(같은 Slack workspace가 이미 다른 Space에 설치됨).
@@ -16,7 +16,7 @@ import { encryptBotToken } from '@/lib/slack/token-crypto'
 export const runtime = 'nodejs'
 
 function redirectTo(status: string): NextResponse {
-  return NextResponse.redirect(buildAppUrl(`/approvals?slack=${status}`))
+  return NextResponse.redirect(buildAppUrl(`/settings/integrations?slack=${status}`))
 }
 
 export async function GET(req: NextRequest) {
