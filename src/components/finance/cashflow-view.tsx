@@ -28,7 +28,14 @@ import {
   classStatusBadge,
 } from '@/components/finance/format'
 import type { PnlMetrics } from '@/lib/finance/pnl-metrics'
-import { buildPnlStatement, type PnlLeaf, type StatementRow } from '@/lib/finance/pnl-statement'
+import {
+  buildPnlStatement,
+  buildPnlSummary,
+  type PnlLeaf,
+  type StatementRow,
+  type SafetyStatus,
+} from '@/lib/finance/pnl-statement'
+import { InfoHint } from '@/components/finance/info-hint'
 import type { FinAccountKind, FinClassStatus } from '@/generated/prisma/enums'
 import { FinanceCashflowSankey } from '@/components/finance/cashflow-sankey'
 import { CashflowPeriodPicker } from '@/components/finance/cashflow-period-picker'
@@ -331,6 +338,11 @@ export function FinanceCashflowView() {
         {/* 테이블 뷰: 기간 다중선택 + 표시 모드 */}
         {view === 'table' && (
           <>
+            <CashflowPeriodPicker
+              grain={grain}
+              selected={selectedPeriods}
+              onChange={setSelectedPeriods}
+            />
             <SegmentGroup<ProfitView>
               label="관점"
               options={[
@@ -345,11 +357,6 @@ export function FinanceCashflowView() {
                 // 손익계산서·공헌이익 관점은 '하위만' 미지원 → 진입 시 대분류+하위로 보정.
                 if (v !== 'cash' && displayMode === 'leaf') setDisplayMode('hierarchy')
               }}
-            />
-            <CashflowPeriodPicker
-              grain={grain}
-              selected={selectedPeriods}
-              onChange={setSelectedPeriods}
             />
             <SegmentGroup<DisplayMode>
               label="표시"
@@ -398,7 +405,7 @@ export function FinanceCashflowView() {
       ) : (
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
           <div className="min-w-0 flex-1 space-y-4 overflow-x-auto">
-            <PnlSummaryCards metrics={data.metrics} />
+            <PnlSummaryCards pnlLeaves={data.pnlLeaves} buckets={data.buckets} />
             <CashflowTable
               data={data}
               mode={displayMode}
@@ -528,62 +535,121 @@ function ExcludeFilter({
 
 // ─── 손익 지표 요약 카드 ───────────────────────────────────────────────────────
 
-function PnlSummaryCards({ metrics }: { metrics: PnlMetrics }) {
-  const cmRatio = metrics.contributionMarginRatio.total
-  const bep = metrics.breakEvenSales.total
+/** 안전한계율 상태 배지 색. */
+const SAFETY_BADGE: Record<SafetyStatus, string> = {
+  우수: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400',
+  양호: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400',
+  보통: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400',
+  위험: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-400',
+}
+
+/** 안전한계율 툴팁 가이드 — 상태 구간 + 개선 방법. */
+function SafetyGuide() {
+  return (
+    <div className="space-y-2 text-xs">
+      <div>
+        <p className="mb-1 font-semibold">안전한계율 = (매출액 − 손익분기점 매출액) / 매출액</p>
+        <ul className="space-y-0.5 text-muted-foreground">
+          <li>우수 ≥ 30% · 재무 안전성 우수</li>
+          <li>양호 20~30% · 수익력·안전성 안정적</li>
+          <li>보통 10~20% · 매출 감소 시 적자 전환 위험</li>
+          <li>위험 &lt; 10% · 즉각적 개선 필요</li>
+        </ul>
+      </div>
+      <div>
+        <p className="mb-1 font-semibold">높이는 방법</p>
+        <ul className="space-y-0.5 text-muted-foreground">
+          <li>· 고정비(임대료·인건비 등) 낮추기</li>
+          <li>· 공헌이익율 높이기 — 판매가 인상 또는 변동비 절감</li>
+          <li>· 매출 다변화 — 총액↑로 손익분기 초과 매출 달성</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+function PnlSummaryCards({ pnlLeaves, buckets }: { pnlLeaves: PnlLeaf[]; buckets: string[] }) {
+  const s = useMemo(() => buildPnlSummary(pnlLeaves, buckets), [pnlLeaves, buckets])
+  const ratioLabel = (name: string, r: number | null) =>
+    r == null ? name : `${name} ${formatPercent(r)}`
   const cards: {
     label: string
     hint: string
     value: string
-    num: number | null
+    num: number
     accent?: boolean
-    muted?: boolean
   }[] = [
     {
       label: '매출총이익',
-      hint: '매출 − 매출원가',
-      value: formatWon(metrics.grossProfit.total),
-      num: metrics.grossProfit.total,
+      hint: ratioLabel('매출총이익률', s.grossMarginRatio),
+      value: formatWon(s.grossProfit),
+      num: s.grossProfit,
     },
     {
       label: '공헌이익',
-      hint:
-        cmRatio == null ? '매출 − 변동비' : `매출 − 변동비 · 공헌이익율 ${formatPercent(cmRatio)}`,
-      value: formatWon(metrics.contributionMargin.total),
-      num: metrics.contributionMargin.total,
+      hint: ratioLabel('공헌이익율', s.contributionMarginRatio),
+      value: formatWon(s.contributionMargin),
+      num: s.contributionMargin,
     },
     {
       label: '영업이익',
-      hint: '매출 − 매출원가 − 영업비용',
-      value: formatWon(metrics.operatingIncome.total),
-      num: metrics.operatingIncome.total,
+      hint: ratioLabel('영업이익율', s.operatingMarginRatio),
+      value: formatWon(s.operatingIncome),
+      num: s.operatingIncome,
       accent: true,
     },
     {
-      label: '손익분기점 매출액',
-      hint: bep == null ? '공헌이익 음수 — 분기점 없음' : '고정비 / 공헌이익율',
-      value: bep == null ? '산출 불가' : formatWon(bep),
-      num: null,
-      muted: bep == null,
+      label: '당기순이익',
+      hint: ratioLabel('순이익율', s.netMarginRatio),
+      value: formatWon(s.netIncome),
+      num: s.netIncome,
     },
   ]
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
       {cards.map((c) => (
         <Card key={c.label} className={cn('gap-1 p-3', c.accent && 'border-primary/30')}>
           <p className="text-xs text-muted-foreground">{c.label}</p>
-          <p
-            className={cn(
-              'font-mono font-semibold tabular-nums',
-              c.muted ? 'text-sm text-muted-foreground' : 'text-lg',
-              c.num != null && netValueClass(c.num)
-            )}
-          >
+          <p className={cn('font-mono text-lg font-semibold tabular-nums', netValueClass(c.num))}>
             {c.value}
           </p>
           <p className="text-[10px] text-muted-foreground">{c.hint}</p>
         </Card>
       ))}
+      {/* 안전한계율 */}
+      <Card className="gap-1 p-3">
+        <div className="flex items-center gap-1">
+          <p className="text-xs text-muted-foreground">안전한계율</p>
+          <InfoHint content={<SafetyGuide />} />
+        </div>
+        {s.safetyMargin == null ? (
+          <p className="font-mono text-sm font-semibold text-muted-foreground">산출 불가</p>
+        ) : (
+          <div className="flex items-baseline gap-1.5">
+            <p
+              className={cn(
+                'font-mono text-lg font-semibold tabular-nums',
+                netValueClass(s.safetyMargin)
+              )}
+            >
+              {formatPercent(s.safetyMargin)}
+            </p>
+            {s.safetyStatus && (
+              <span
+                className={cn(
+                  'shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-medium',
+                  SAFETY_BADGE[s.safetyStatus]
+                )}
+              >
+                {s.safetyStatus}
+              </span>
+            )}
+          </div>
+        )}
+        <p className="text-[10px] text-muted-foreground">
+          {s.safetyMargin == null ? '공헌이익 음수' : '(매출 − 손익분기점) / 매출'}
+        </p>
+      </Card>
     </div>
   )
 }
@@ -744,7 +810,7 @@ function StatementRowView({
   selected?: boolean
   onSelect?: () => void
 }) {
-  const { label, marginLabel, values, changePct, variant } = row
+  const { label, marginLabel, marginPct, values, changePct, variant } = row
   const rowBg = selected ? 'bg-accent' : variant === 'subtotal' ? 'bg-muted/30' : 'bg-card'
   const labelCls =
     variant === 'subtotal'
@@ -770,7 +836,16 @@ function StatementRowView({
         <div className="flex min-w-0 items-baseline gap-2">
           <span className={labelCls}>{label}</span>
           {marginLabel && (
-            <span className="shrink-0 text-[10px] text-muted-foreground">{marginLabel}</span>
+            <span
+              className={cn(
+                'shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs font-semibold tabular-nums',
+                marginPct != null && marginPct < 0
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-emerald-700 dark:text-emerald-400'
+              )}
+            >
+              {marginLabel}
+            </span>
           )}
         </div>
       </TableCell>

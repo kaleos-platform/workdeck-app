@@ -10,6 +10,16 @@ import type { FinFlowRole } from '@/generated/prisma/enums'
 
 export type DisplayMode = 'group' | 'hierarchy' | 'leaf'
 
+/** 대분류 그룹 표시 우선순위(수입·지출 관점) — 낮을수록 먼저. 동률은 금액 desc.
+ *  수입: 매출(MERCH) 먼저. 지출: 매출원가→영업비용→금융비용→나머지. */
+const FLOW_ROLE_ORDER: Record<string, number> = {
+  MERCH_SALES: 0,
+  COGS: 0,
+  OPEX: 1,
+  FINANCING_COST: 2,
+}
+const flowRoleRank = (role: FinFlowRole | null): number => (role ? (FLOW_ROLE_ORDER[role] ?? 3) : 3)
+
 export interface CashflowLeaf {
   key: string
   name: string
@@ -95,7 +105,14 @@ export function buildCashflowGroups(
       if (!leaves || leaves.length === 0) continue
       leaves.sort((a, b) => sumOf(b, buckets) - sumOf(a, buckets))
       const values = sumValues(leaves, buckets)
-      groups.push({ key: `sub:${type}:${label}`, label, flowRole: null, values, changePct: changePctOf(values, buckets), leaves })
+      groups.push({
+        key: `sub:${type}:${label}`,
+        label,
+        flowRole: null,
+        values,
+        changePct: changePctOf(values, buckets),
+        leaves,
+      })
     }
     return groups
   }
@@ -122,7 +139,10 @@ export function buildCashflowGroups(
       leaves,
     })
   }
-  // 합계 내림차순.
-  groups.sort((a, b) => sumOf(b, buckets) - sumOf(a, buckets))
+  // flowRole 우선순위(매출→원가→영업→금융→기타) → 동률 시 합계 내림차순.
+  groups.sort((a, b) => {
+    const r = flowRoleRank(a.flowRole) - flowRoleRank(b.flowRole)
+    return r !== 0 ? r : sumOf(b, buckets) - sumOf(a, buckets)
+  })
   return groups
 }

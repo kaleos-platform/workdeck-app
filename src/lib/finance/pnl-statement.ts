@@ -31,6 +31,8 @@ export interface StatementRow {
   label: string
   /** 소계 이익률 라벨(예: "매출총이익률 62%"). */
   marginLabel?: string
+  /** 소계 이익률(%) — 강조 색상용. */
+  marginPct?: number | null
   values: Record<string, number>
   changePct: number | null
   variant: 'group' | 'leaf' | 'subtotal'
@@ -80,13 +82,8 @@ const marginPct = (
   return Math.round((s / r) * 100)
 }
 
-/** 관점별 손익계산서 행 구성. */
-export function buildPnlStatement(
-  pnlLeaves: PnlLeaf[],
-  buckets: string[],
-  view: ProfitView,
-  mode: StatementMode
-): StatementRow[] {
+/** 계정 분류 + 버킷별 그룹합·소계 집계(손익계산서/공헌이익/요약 공용). */
+function aggregatePnl(pnlLeaves: PnlLeaf[], buckets: string[]) {
   const income = pnlLeaves.filter((l) => l.type === 'INCOME')
   const expense = pnlLeaves.filter((l) => l.type === 'EXPENSE')
   const operating = (l: PnlLeaf) => l.flowRole === 'COGS' || l.flowRole === 'OPEX'
@@ -111,6 +108,43 @@ export function buildPnlStatement(
     buckets,
     -1
   )
+  return {
+    merchLeaves,
+    nonOpIncomeLeaves,
+    cogsLeaves,
+    opexLeaves,
+    nonOpExpenseLeaves,
+    variableLeaves,
+    fixedLeaves,
+    revenue,
+    grossProfit,
+    contributionMargin,
+    operatingIncome,
+    netIncome,
+  }
+}
+
+/** 관점별 손익계산서 행 구성. */
+export function buildPnlStatement(
+  pnlLeaves: PnlLeaf[],
+  buckets: string[],
+  view: ProfitView,
+  mode: StatementMode
+): StatementRow[] {
+  const {
+    merchLeaves,
+    nonOpIncomeLeaves,
+    cogsLeaves,
+    opexLeaves,
+    nonOpExpenseLeaves,
+    variableLeaves,
+    fixedLeaves,
+    revenue,
+    grossProfit,
+    contributionMargin,
+    operatingIncome,
+    netIncome,
+  } = aggregatePnl(pnlLeaves, buckets)
 
   const rows: StatementRow[] = []
 
@@ -176,6 +210,7 @@ export function buildPnlStatement(
       key: `s:${label}`,
       label,
       marginLabel: marginName && pct != null ? `${marginName} ${pct}%` : undefined,
+      marginPct: pct,
       values,
       changePct: changeOf(values, buckets),
       variant: 'subtotal',
@@ -200,4 +235,62 @@ export function buildPnlStatement(
   pushSubtotal('당기순이익', netIncome, '순이익률')
 
   return rows
+}
+
+// ─── 요약 지표(전체기간) ──────────────────────────────────────────────────────
+
+export type SafetyStatus = '우수' | '양호' | '보통' | '위험'
+
+export interface PnlSummary {
+  revenue: number
+  grossProfit: number
+  grossMarginRatio: number | null
+  contributionMargin: number
+  contributionMarginRatio: number | null
+  operatingIncome: number
+  operatingMarginRatio: number | null
+  netIncome: number
+  netMarginRatio: number | null
+  /** 안전한계율(%) = 영업이익 / 공헌이익 × 100. 공헌이익 ≤ 0 → null. */
+  safetyMargin: number | null
+  safetyStatus: SafetyStatus | null
+}
+
+/** 안전한계율(%) → 상태. 우수 ≥30 / 양호 20~30 / 보통 10~20 / 위험 <10. */
+export function safetyStatusOf(safetyMargin: number | null): SafetyStatus | null {
+  if (safetyMargin == null) return null
+  if (safetyMargin >= 30) return '우수'
+  if (safetyMargin >= 20) return '양호'
+  if (safetyMargin >= 10) return '보통'
+  return '위험'
+}
+
+const total = (m: Record<string, number>, buckets: string[]): number =>
+  round2(buckets.reduce((a, b) => a + (m[b] ?? 0), 0))
+
+/** 전체기간 요약 — 이익·이익률·안전한계율. pnlLeaves 단일 소스(표와 정합). */
+export function buildPnlSummary(pnlLeaves: PnlLeaf[], buckets: string[]): PnlSummary {
+  const a = aggregatePnl(pnlLeaves, buckets)
+  const revenue = total(a.revenue, buckets)
+  const grossProfit = total(a.grossProfit, buckets)
+  const contributionMargin = total(a.contributionMargin, buckets)
+  const operatingIncome = total(a.operatingIncome, buckets)
+  const netIncome = total(a.netIncome, buckets)
+  const pct = (v: number): number | null => (revenue > 0 ? Math.round((v / revenue) * 100) : null)
+  // 안전한계율 = 영업이익/공헌이익 (단일 가드). = (매출−손익분기점)/매출.
+  const safetyMargin =
+    contributionMargin > 0 ? round2((operatingIncome / contributionMargin) * 100) : null
+  return {
+    revenue,
+    grossProfit,
+    grossMarginRatio: pct(grossProfit),
+    contributionMargin,
+    contributionMarginRatio: pct(contributionMargin),
+    operatingIncome,
+    operatingMarginRatio: pct(operatingIncome),
+    netIncome,
+    netMarginRatio: pct(netIncome),
+    safetyMargin,
+    safetyStatus: safetyStatusOf(safetyMargin),
+  }
 }
