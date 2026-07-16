@@ -568,39 +568,49 @@ function SafetyGuide() {
   )
 }
 
+/** 비율(%) 강조 색 — 양수 emerald / 음수 red / null muted. */
+function ratioClass(r: number | null): string {
+  if (r == null) return 'text-muted-foreground'
+  if (r < 0) return 'text-red-600 dark:text-red-400'
+  return 'text-emerald-700 dark:text-emerald-400'
+}
+
 function PnlSummaryCards({ pnlLeaves, buckets }: { pnlLeaves: PnlLeaf[]; buckets: string[] }) {
   const s = useMemo(() => buildPnlSummary(pnlLeaves, buckets), [pnlLeaves, buckets])
-  const ratioLabel = (name: string, r: number | null) =>
-    r == null ? name : `${name} ${formatPercent(r)}`
   const cards: {
     label: string
-    hint: string
+    ratioName: string
+    ratio: number | null
     value: string
     num: number
     accent?: boolean
   }[] = [
     {
       label: '매출총이익',
-      hint: ratioLabel('매출총이익률', s.grossMarginRatio),
+      ratioName: '매출총이익률',
+      ratio: s.grossMarginRatio,
       value: formatWon(s.grossProfit),
       num: s.grossProfit,
     },
     {
       label: '공헌이익',
-      hint: ratioLabel('공헌이익율', s.contributionMarginRatio),
+      ratioName: '공헌이익율',
+      ratio: s.contributionMarginRatio,
       value: formatWon(s.contributionMargin),
       num: s.contributionMargin,
     },
     {
       label: '영업이익',
-      hint: ratioLabel('영업이익율', s.operatingMarginRatio),
+      ratioName: '영업이익율',
+      ratio: s.operatingMarginRatio,
       value: formatWon(s.operatingIncome),
       num: s.operatingIncome,
       accent: true,
     },
     {
       label: '당기순이익',
-      hint: ratioLabel('순이익율', s.netMarginRatio),
+      ratioName: '순이익율',
+      ratio: s.netMarginRatio,
       value: formatWon(s.netIncome),
       num: s.netIncome,
     },
@@ -613,19 +623,25 @@ function PnlSummaryCards({ pnlLeaves, buckets }: { pnlLeaves: PnlLeaf[]; buckets
           <p className={cn('font-mono text-lg font-semibold tabular-nums', netValueClass(c.num))}>
             {c.value}
           </p>
-          <p className="text-[10px] text-muted-foreground">{c.hint}</p>
+          {/* 이익률 강조 — 이름(작게) + 비율(굵게·컬러) */}
+          <div className="flex items-baseline gap-1">
+            <span className="text-[11px] text-muted-foreground">{c.ratioName}</span>
+            <span className={cn('text-sm font-semibold tabular-nums', ratioClass(c.ratio))}>
+              {c.ratio == null ? '—' : formatPercent(c.ratio)}
+            </span>
+          </div>
         </Card>
       ))}
-      {/* 안전한계율 */}
+      {/* 안전한계율 (+ 손익분기점 매출액) */}
       <Card className="gap-1 p-3">
         <div className="flex items-center gap-1">
           <p className="text-xs text-muted-foreground">안전한계율</p>
           <InfoHint content={<SafetyGuide />} />
         </div>
-        {s.safetyMargin == null ? (
-          <p className="font-mono text-sm font-semibold text-muted-foreground">산출 불가</p>
-        ) : (
-          <div className="flex items-baseline gap-1.5">
+        <div className="flex items-baseline gap-1.5">
+          {s.safetyMargin == null ? (
+            <p className="font-mono text-lg font-semibold text-muted-foreground">산출 불가</p>
+          ) : (
             <p
               className={cn(
                 'font-mono text-lg font-semibold tabular-nums',
@@ -634,21 +650,23 @@ function PnlSummaryCards({ pnlLeaves, buckets }: { pnlLeaves: PnlLeaf[]; buckets
             >
               {formatPercent(s.safetyMargin)}
             </p>
-            {s.safetyStatus && (
-              <span
-                className={cn(
-                  'shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-medium',
-                  SAFETY_BADGE[s.safetyStatus]
-                )}
-              >
-                {s.safetyStatus}
-              </span>
+          )}
+          <span
+            className={cn(
+              'shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-medium',
+              SAFETY_BADGE[s.safetyStatus]
             )}
-          </div>
-        )}
-        <p className="text-[10px] text-muted-foreground">
-          {s.safetyMargin == null ? '공헌이익 음수' : '(매출 − 손익분기점) / 매출'}
-        </p>
+          >
+            {s.safetyStatus}
+          </span>
+        </div>
+        {/* 손익분기점 매출액 — 동일 강조 */}
+        <div className="flex items-baseline gap-1 border-t pt-1">
+          <span className="text-[11px] text-muted-foreground">손익분기점 매출액</span>
+          <span className="font-mono text-sm font-semibold tabular-nums">
+            {s.breakEvenSales == null ? '—' : formatWon(s.breakEvenSales)}
+          </span>
+        </div>
       </Card>
     </div>
   )
