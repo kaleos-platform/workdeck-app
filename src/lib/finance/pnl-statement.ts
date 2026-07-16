@@ -251,14 +251,18 @@ export interface PnlSummary {
   operatingMarginRatio: number | null
   netIncome: number
   netMarginRatio: number | null
-  /** 안전한계율(%) = 영업이익 / 공헌이익 × 100. 공헌이익 ≤ 0 → null. */
+  /** 안전한계율(%) = 영업이익 / 공헌이익 × 100. 공헌이익 ≤ 0 → null(산출 불가). */
   safetyMargin: number | null
-  safetyStatus: SafetyStatus | null
+  /** 산출 불가(공헌이익 ≤ 0)도 '위험'으로 표시. */
+  safetyStatus: SafetyStatus
+  /** 손익분기점 매출액 = 고정비 / 공헌이익율. 공헌이익 ≤ 0 → null. */
+  breakEvenSales: number | null
 }
 
-/** 안전한계율(%) → 상태. 우수 ≥30 / 양호 20~30 / 보통 10~20 / 위험 <10. */
-export function safetyStatusOf(safetyMargin: number | null): SafetyStatus | null {
-  if (safetyMargin == null) return null
+/** 안전한계율(%) → 상태. 우수 ≥30 / 양호 20~30 / 보통 10~20 / 위험 <10.
+ *  산출 불가(null)는 적자 구조이므로 '위험'. */
+export function safetyStatusOf(safetyMargin: number | null): SafetyStatus {
+  if (safetyMargin == null) return '위험'
   if (safetyMargin >= 30) return '우수'
   if (safetyMargin >= 20) return '양호'
   if (safetyMargin >= 10) return '보통'
@@ -280,6 +284,11 @@ export function buildPnlSummary(pnlLeaves: PnlLeaf[], buckets: string[]): PnlSum
   // 안전한계율 = 영업이익/공헌이익 (단일 가드). = (매출−손익분기점)/매출.
   const safetyMargin =
     contributionMargin > 0 ? round2((operatingIncome / contributionMargin) * 100) : null
+  // 손익분기점 매출액 = 고정비 / 공헌이익율 = 고정비·매출 / 공헌이익. 고정비 = 공헌이익 − 영업이익.
+  const breakEvenSales =
+    contributionMargin > 0
+      ? round2(((contributionMargin - operatingIncome) * revenue) / contributionMargin)
+      : null
   return {
     revenue,
     grossProfit,
@@ -292,5 +301,6 @@ export function buildPnlSummary(pnlLeaves: PnlLeaf[], buckets: string[]): PnlSum
     netMarginRatio: pct(netIncome),
     safetyMargin,
     safetyStatus: safetyStatusOf(safetyMargin),
+    breakEvenSales,
   }
 }
