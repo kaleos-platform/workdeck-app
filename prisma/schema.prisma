@@ -426,6 +426,9 @@ model Space {
   // 발주 계획
   reorderPlans ReorderPlan[]
 
+  // Slack 연동 (M3)
+  slackInstallation SlackInstallation?
+
   // 온보딩 카드 닫힘 시각 (사용자가 명시적으로 X 클릭 시 기록)
   onboardingDismissedAt DateTime?
 
@@ -539,6 +542,40 @@ model AgentPendingAction {
 
   @@index([spaceId, status, createdAt])
   @@index([status, expiresAt])
+}
+
+// Slack 워크스페이스 설치 (Space당 1개, Slack team당 1개).
+// bot 토큰은 AES-256-CBC로 암호화해 저장한다(ENCRYPTION_KEY).
+model SlackInstallation {
+  id          String   @id @default(cuid())
+  spaceId     String   @unique
+  teamId      String   @unique // Slack workspace ID (T...)
+  teamName    String?
+  botUserId   String
+  botToken    String // AES-256-CBC hex 암호문 (xoxb-)
+  botTokenIv  String // hex IV
+  scope       String?
+  installedBy String // 설치한 User.id
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  space    Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channels SpaceSlackChannel[]
+}
+
+// Space별 용도 채널 (M3: kind="approvals" 승인 알림 채널).
+model SpaceSlackChannel {
+  id          String   @id @default(cuid())
+  spaceId     String
+  channelId   String // C...
+  channelName String?
+  kind        String   @default("approvals")
+  createdAt   DateTime @default(now())
+
+  installation SlackInstallation @relation(fields: [spaceId], references: [spaceId], onDelete: Cascade)
+
+  @@unique([spaceId, kind])
+  @@index([channelId])
 }
 
 // 카드 앱 카탈로그 (전역 정의)

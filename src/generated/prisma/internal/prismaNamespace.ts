@@ -396,6 +396,8 @@ export const ModelName = {
   Space: 'Space',
   SpaceMember: 'SpaceMember',
   AgentPendingAction: 'AgentPendingAction',
+  SlackInstallation: 'SlackInstallation',
+  SpaceSlackChannel: 'SpaceSlackChannel',
   DeckApp: 'DeckApp',
   DeckInstance: 'DeckInstance',
   CoupangCredential: 'CoupangCredential',
@@ -526,7 +528,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1415,6 +1417,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AgentPendingActionCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AgentPendingActionCountAggregateOutputType> | number
+        }
+      }
+    }
+    SlackInstallation: {
+      payload: Prisma.$SlackInstallationPayload<ExtArgs>
+      fields: Prisma.SlackInstallationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SlackInstallationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SlackInstallationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        findFirst: {
+          args: Prisma.SlackInstallationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SlackInstallationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        findMany: {
+          args: Prisma.SlackInstallationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>[]
+        }
+        create: {
+          args: Prisma.SlackInstallationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        createMany: {
+          args: Prisma.SlackInstallationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SlackInstallationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>[]
+        }
+        delete: {
+          args: Prisma.SlackInstallationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        update: {
+          args: Prisma.SlackInstallationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        deleteMany: {
+          args: Prisma.SlackInstallationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SlackInstallationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SlackInstallationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>[]
+        }
+        upsert: {
+          args: Prisma.SlackInstallationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackInstallationPayload>
+        }
+        aggregate: {
+          args: Prisma.SlackInstallationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSlackInstallation>
+        }
+        groupBy: {
+          args: Prisma.SlackInstallationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackInstallationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SlackInstallationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackInstallationCountAggregateOutputType> | number
+        }
+      }
+    }
+    SpaceSlackChannel: {
+      payload: Prisma.$SpaceSlackChannelPayload<ExtArgs>
+      fields: Prisma.SpaceSlackChannelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SpaceSlackChannelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SpaceSlackChannelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        findFirst: {
+          args: Prisma.SpaceSlackChannelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SpaceSlackChannelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        findMany: {
+          args: Prisma.SpaceSlackChannelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>[]
+        }
+        create: {
+          args: Prisma.SpaceSlackChannelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        createMany: {
+          args: Prisma.SpaceSlackChannelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SpaceSlackChannelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>[]
+        }
+        delete: {
+          args: Prisma.SpaceSlackChannelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        update: {
+          args: Prisma.SpaceSlackChannelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        deleteMany: {
+          args: Prisma.SpaceSlackChannelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SpaceSlackChannelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SpaceSlackChannelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>[]
+        }
+        upsert: {
+          args: Prisma.SpaceSlackChannelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSlackChannelPayload>
+        }
+        aggregate: {
+          args: Prisma.SpaceSlackChannelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpaceSlackChannel>
+        }
+        groupBy: {
+          args: Prisma.SpaceSlackChannelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceSlackChannelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SpaceSlackChannelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceSlackChannelCountAggregateOutputType> | number
         }
       }
     }
@@ -10158,6 +10308,35 @@ export const AgentPendingActionScalarFieldEnum = {
 export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
 
 
+export const SlackInstallationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  teamId: 'teamId',
+  teamName: 'teamName',
+  botUserId: 'botUserId',
+  botToken: 'botToken',
+  botTokenIv: 'botTokenIv',
+  scope: 'scope',
+  installedBy: 'installedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SlackInstallationScalarFieldEnum = (typeof SlackInstallationScalarFieldEnum)[keyof typeof SlackInstallationScalarFieldEnum]
+
+
+export const SpaceSlackChannelScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  channelName: 'channelName',
+  kind: 'kind',
+  createdAt: 'createdAt'
+} as const
+
+export type SpaceSlackChannelScalarFieldEnum = (typeof SpaceSlackChannelScalarFieldEnum)[keyof typeof SpaceSlackChannelScalarFieldEnum]
+
+
 export const DeckAppScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -13337,6 +13516,8 @@ export type GlobalOmitConfig = {
   space?: Prisma.SpaceOmit
   spaceMember?: Prisma.SpaceMemberOmit
   agentPendingAction?: Prisma.AgentPendingActionOmit
+  slackInstallation?: Prisma.SlackInstallationOmit
+  spaceSlackChannel?: Prisma.SpaceSlackChannelOmit
   deckApp?: Prisma.DeckAppOmit
   deckInstance?: Prisma.DeckInstanceOmit
   coupangCredential?: Prisma.CoupangCredentialOmit
