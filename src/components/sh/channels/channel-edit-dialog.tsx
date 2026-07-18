@@ -547,7 +547,7 @@ export function ChannelEditDialog({
                           가격 시뮬레이션 사용
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          OFF 시 수수료·배송 설정이 시뮬레이션에서 제외됩니다
+                          OFF 시 이 채널이 가격 시뮬레이션 대상에서 제외됩니다
                         </p>
                       </div>
                       <Switch
