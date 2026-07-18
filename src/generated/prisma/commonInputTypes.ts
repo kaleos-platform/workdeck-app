@@ -670,6 +670,23 @@ export type EnumDelBatchSourceWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumDelBatchSourceFilter<$PrismaModel>
 }
 
+export type EnumChannelShippingFeeTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ChannelShippingFeeType | Prisma.EnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ChannelShippingFeeType[] | Prisma.ListEnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ChannelShippingFeeType[] | Prisma.ListEnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumChannelShippingFeeTypeFilter<$PrismaModel> | $Enums.ChannelShippingFeeType
+}
+
+export type EnumChannelShippingFeeTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ChannelShippingFeeType | Prisma.EnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ChannelShippingFeeType[] | Prisma.ListEnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ChannelShippingFeeType[] | Prisma.ListEnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumChannelShippingFeeTypeWithAggregatesFilter<$PrismaModel> | $Enums.ChannelShippingFeeType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumChannelShippingFeeTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumChannelShippingFeeTypeFilter<$PrismaModel>
+}
+
 export type EnumProductionRunStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.ProductionRunStatus | Prisma.EnumProductionRunStatusFieldRefInput<$PrismaModel>
   in?: $Enums.ProductionRunStatus[] | Prisma.ListEnumProductionRunStatusFieldRefInput<$PrismaModel>
@@ -2207,6 +2224,23 @@ export type NestedEnumDelBatchSourceWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumDelBatchSourceFilter<$PrismaModel>
   _max?: Prisma.NestedEnumDelBatchSourceFilter<$PrismaModel>
+}
+
+export type NestedEnumChannelShippingFeeTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ChannelShippingFeeType | Prisma.EnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ChannelShippingFeeType[] | Prisma.ListEnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ChannelShippingFeeType[] | Prisma.ListEnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumChannelShippingFeeTypeFilter<$PrismaModel> | $Enums.ChannelShippingFeeType
+}
+
+export type NestedEnumChannelShippingFeeTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ChannelShippingFeeType | Prisma.EnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ChannelShippingFeeType[] | Prisma.ListEnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ChannelShippingFeeType[] | Prisma.ListEnumChannelShippingFeeTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumChannelShippingFeeTypeWithAggregatesFilter<$PrismaModel> | $Enums.ChannelShippingFeeType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumChannelShippingFeeTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumChannelShippingFeeTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumProductionRunStatusFilter<$PrismaModel = never> = {

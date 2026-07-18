@@ -11256,7 +11256,9 @@ export const ChannelScalarFieldEnum = {
   freeShippingThreshold: 'freeShippingThreshold',
   usesMarketingBudget: 'usesMarketingBudget',
   applyAdCost: 'applyAdCost',
+  shippingFeeType: 'shippingFeeType',
   shippingFee: 'shippingFee',
+  shippingFeePct: 'shippingFeePct',
   vatIncludedInFee: 'vatIncludedInFee',
   paymentFeeIncluded: 'paymentFeeIncluded',
   paymentFeePct: 'paymentFeePct',
@@ -12916,6 +12918,20 @@ export type EnumDelBatchSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$P
  * Reference to a field of type 'DelBatchSource[]'
  */
 export type ListEnumDelBatchSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DelBatchSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ChannelShippingFeeType'
+ */
+export type EnumChannelShippingFeeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChannelShippingFeeType'>
+    
+
+
+/**
+ * Reference to a field of type 'ChannelShippingFeeType[]'
+ */
+export type ListEnumChannelShippingFeeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ChannelShippingFeeType[]'>
     
 
 

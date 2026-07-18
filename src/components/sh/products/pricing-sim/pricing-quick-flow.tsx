@@ -52,7 +52,9 @@ type ApiCh = {
   channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
   useSimulation: boolean
   feeRates: { categoryName: string; ratePercent: string | number }[]
+  shippingFeeType: 'FIXED' | 'PERCENT'
   shippingFee: string | number | null
+  shippingFeePct: string | number | null
   freeShippingThreshold: string | number | null
   applyAdCost: boolean
   paymentFeeIncluded: boolean
@@ -90,7 +92,9 @@ type LiveSim = {
  */
 type ChOverride = {
   feePct: number // 기본 카테고리 수수료율 (0~100, UI %)
-  shippingFee: number // 원 — 주문당 판매자 부담 배송비 (항상 비용 반영)
+  shippingFeeType: 'FIXED' | 'PERCENT' // 배송비 산정 방식
+  shippingFee: number // 원 (FIXED) — 주문당 판매자 부담 배송비 (항상 비용 반영)
+  shippingFeePct: number // 0~1 (PERCENT, 판매가 대비)
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1 PG
   applyAdCost: boolean
@@ -121,7 +125,9 @@ function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
   const pgExplicit = c.paymentFeeIncluded === false && c.paymentFeePct != null
   return {
     feePct: feeBasic ? Number(feeBasic.ratePercent) : settings.defaultChannelFeePct,
+    shippingFeeType: c.shippingFeeType ?? 'FIXED',
     shippingFee,
+    shippingFeePct: c.shippingFeePct != null ? Number(c.shippingFeePct) : 0,
     paymentFeeIncluded: false,
     paymentFeePct: pgExplicit ? Number(c.paymentFeePct) : DEFAULT_PG_PCT,
     // 광고비는 기본 적용(글로벌 기본값), 채널별로 끌 수 있음.
@@ -141,8 +147,10 @@ function apiChToMatrixChannel(c: ApiCh, ov: ChOverride): MatrixChannel {
     paymentFeeIncluded: ov.paymentFeeIncluded,
     paymentFeePct: ov.paymentFeePct,
     applyAdCost: ov.applyAdCost,
+    shippingFeeType: ov.shippingFeeType,
     shippingFee: ov.shippingFee,
-    // 배송비는 주문당 판매자 부담 원가로 항상 반영 (threshold=1 → 모든 판매가에서 부과)
+    shippingFeePct: ov.shippingFeePct,
+    // FIXED 배송비는 항상 부과(threshold=1). PERCENT는 엔진이 threshold 무시.
     freeShippingThreshold: ov.shippingFee > 0 ? 1 : null,
   }
 }
@@ -823,7 +831,10 @@ export function PricingQuickFlow() {
                       <div className="min-w-0 flex-1">
                         <span className="text-sm font-medium">{bc.api.name}</span>
                         <span className="ml-1.5 text-[10px] text-muted-foreground">
-                          수수료 {ov.feePct.toFixed(1)}% · 배송 ₩{fmt(ov.shippingFee)}
+                          수수료 {ov.feePct.toFixed(1)}% · 배송{' '}
+                          {ov.shippingFeeType === 'PERCENT'
+                            ? `${(ov.shippingFeePct * 100).toFixed(1)}%`
+                            : `₩${fmt(ov.shippingFee)}`}
                           {ov.applyAdCost ? ` · 광고 ${(ov.adPct * 100).toFixed(1)}%` : ''}
                         </span>
                       </div>
@@ -854,14 +865,40 @@ export function PricingQuickFlow() {
                           />
                         </label>
                         <label className="space-y-1">
-                          <span className="text-[10px] text-muted-foreground">배송비</span>
-                          <SuffixInput
-                            value={String(ov.shippingFee)}
-                            onChange={(v) => setOverride(bc.api, { shippingFee: Number(v) || 0 })}
-                            suffix="₩"
-                            step={100}
-                            className="w-full"
-                          />
+                          <span className="flex items-center justify-between text-[10px] text-muted-foreground">
+                            <span>배송비</span>
+                            <button
+                              type="button"
+                              className="rounded border border-[var(--ps-border)] px-1 text-[9px] hover:bg-[var(--ps-muted)]"
+                              onClick={() =>
+                                setOverride(bc.api, {
+                                  shippingFeeType:
+                                    ov.shippingFeeType === 'PERCENT' ? 'FIXED' : 'PERCENT',
+                                })
+                              }
+                            >
+                              {ov.shippingFeeType === 'PERCENT' ? '비율 %' : '정액 ₩'}
+                            </button>
+                          </span>
+                          {ov.shippingFeeType === 'PERCENT' ? (
+                            <SuffixInput
+                              value={String(Math.round(ov.shippingFeePct * 1000) / 10)}
+                              onChange={(v) =>
+                                setOverride(bc.api, { shippingFeePct: (Number(v) || 0) / 100 })
+                              }
+                              suffix="%"
+                              step={0.1}
+                              className="w-full"
+                            />
+                          ) : (
+                            <SuffixInput
+                              value={String(ov.shippingFee)}
+                              onChange={(v) => setOverride(bc.api, { shippingFee: Number(v) || 0 })}
+                              suffix="₩"
+                              step={100}
+                              className="w-full"
+                            />
+                          )}
                         </label>
                         <div className="col-span-2 flex items-center justify-between gap-2">
                           <span className="text-[10px] text-muted-foreground">
