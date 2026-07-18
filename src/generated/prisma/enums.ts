@@ -236,6 +236,14 @@ export const DelBatchSource = {
 export type DelBatchSource = (typeof DelBatchSource)[keyof typeof DelBatchSource]
 
 
+export const ChannelShippingFeeType = {
+  FIXED: 'FIXED',
+  PERCENT: 'PERCENT'
+} as const
+
+export type ChannelShippingFeeType = (typeof ChannelShippingFeeType)[keyof typeof ChannelShippingFeeType]
+
+
 export const ProductionCostMode = {
   TOTAL: 'TOTAL',
   BREAKDOWN: 'BREAKDOWN'
