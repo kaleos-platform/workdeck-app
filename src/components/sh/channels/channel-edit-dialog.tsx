@@ -102,8 +102,6 @@ export function ChannelEditDialog({
     useState<string>(REPRESENTATIVE_NONE)
   const [fName, setFName] = useState('')
   const [fAdminUrl, setFAdminUrl] = useState('')
-  const [fUsesMarketing, setFUsesMarketing] = useState(false)
-  const [fApplyAdCost, setFApplyAdCost] = useState(false)
   const [fUseSimulation, setFUseSimulation] = useState(true)
   const [fIsActive, setFIsActive] = useState(true)
 
@@ -170,8 +168,6 @@ export function ChannelEditDialog({
       setFTypeDefId(channel.channelTypeDefId ?? NO_TYPE)
       setFName(channel.name)
       setFAdminUrl(channel.adminUrl ?? '')
-      setFUsesMarketing(channel.usesMarketingBudget)
-      setFApplyAdCost(channel.applyAdCost)
       setFUseSimulation(channel.useSimulation)
       setFIsActive(channel.isActive)
       setFExternalSource(channel.externalSource ?? EXTERNAL_SOURCE_NONE)
@@ -205,8 +201,6 @@ export function ChannelEditDialog({
       setFTypeDefId(NO_TYPE)
       setFName('')
       setFAdminUrl('')
-      setFUsesMarketing(false)
-      setFApplyAdCost(false)
       setFUseSimulation(true)
       setFIsActive(true)
       setFExternalSource(EXTERNAL_SOURCE_NONE)
@@ -298,8 +292,6 @@ export function ChannelEditDialog({
         channelTypeDefId: fTypeDefId,
         useSimulation: fUseSimulation,
         freeShipping: fFreeShipping,
-        usesMarketingBudget: fUsesMarketing,
-        applyAdCost: fApplyAdCost,
         vatIncludedInFee: fVatIncluded,
         paymentFeeIncluded: fPaymentFeeIncluded,
         isActive: fIsActive,
@@ -500,7 +492,18 @@ export function ChannelEditDialog({
                   />
                 </div>
 
-                {/* 판매채널만 노출되는 필드: 어드민 URL / 마케팅 / 가격 시뮬레이션 */}
+                {/* 사용 여부 — 모든 채널 유형에서 노출 (채널명 하단) */}
+                <div className="flex items-center justify-between rounded-md border p-3">
+                  <div>
+                    <Label htmlFor="ch-active">사용 여부</Label>
+                    <p className="text-xs text-muted-foreground">
+                      비활성화 시 채널 목록에서 표시되지 않습니다.
+                    </p>
+                  </div>
+                  <Switch id="ch-active" checked={fIsActive} onCheckedChange={setFIsActive} />
+                </div>
+
+                {/* 판매채널만 노출되는 필드: 어드민 URL / 가격 시뮬레이션 */}
                 {isSalesChannel && (
                   <>
                     <div className="space-y-2">
@@ -511,34 +514,6 @@ export function ChannelEditDialog({
                         onChange={(e) => setFAdminUrl(e.target.value)}
                         placeholder="https://wing.coupang.com/..."
                       />
-                    </div>
-
-                    <div className="space-y-3 rounded-md border p-3">
-                      <p className="text-xs font-medium text-muted-foreground">마케팅</p>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label htmlFor="ch-marketing">마케팅 예산 사용</Label>
-                          <p className="text-xs text-muted-foreground">채널 광고비 별도 운영</p>
-                        </div>
-                        <Switch
-                          id="ch-marketing"
-                          checked={fUsesMarketing}
-                          onCheckedChange={setFUsesMarketing}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label htmlFor="ch-apply-ad">광고비 자동 적용</Label>
-                          <p className="text-xs text-muted-foreground">
-                            시뮬레이션 시 광고비 자동 포함
-                          </p>
-                        </div>
-                        <Switch
-                          id="ch-apply-ad"
-                          checked={fApplyAdCost}
-                          onCheckedChange={setFApplyAdCost}
-                        />
-                      </div>
                     </div>
 
                     <div className="flex items-center justify-between rounded-md border p-3">
@@ -558,15 +533,6 @@ export function ChannelEditDialog({
                     </div>
                   </>
                 )}
-
-                {/* 활성 상태 — 모든 채널 유형에서 노출 */}
-                <div className="flex items-center justify-between rounded-md border p-3">
-                  <div>
-                    <Label htmlFor="ch-active">활성 상태</Label>
-                    <p className="text-xs text-muted-foreground">비활성 시 신규 주문에 사용 불가</p>
-                  </div>
-                  <Switch id="ch-active" checked={fIsActive} onCheckedChange={setFIsActive} />
-                </div>
 
                 {/* 연결된 소스 — 외부 데이터 연동 */}
                 <div className="space-y-2">
