@@ -90,8 +90,7 @@ type LiveSim = {
  */
 type ChOverride = {
   feePct: number // 기본 카테고리 수수료율 (0~100, UI %)
-  shippingFee: number // 원
-  freeShippingThreshold: number | null // 원 (무료배송 최소주문금액; null=배송비 미부과)
+  shippingFee: number // 원 — 주문당 판매자 부담 배송비 (항상 비용 반영)
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1 PG
   applyAdCost: boolean
@@ -118,15 +117,11 @@ function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
     c.shippingFee != null
       ? Number(c.shippingFee)
       : settings.defaultShippingCost || FALLBACK_SHIPPING_COST
-  // 명시 임계값이 있으면 무료배송 기준(프로모)으로, 없으면 항상 부과(물류비 성격, 기존 동작).
-  const freeShippingThreshold =
-    c.freeShippingThreshold != null ? Number(c.freeShippingThreshold) : shippingFee > 0 ? 1 : null
   // PG를 명시(별도 부과)한 채널만 채널값 사용, 그 외엔 기본 2% 별도 부과.
   const pgExplicit = c.paymentFeeIncluded === false && c.paymentFeePct != null
   return {
     feePct: feeBasic ? Number(feeBasic.ratePercent) : settings.defaultChannelFeePct,
     shippingFee,
-    freeShippingThreshold,
     paymentFeeIncluded: false,
     paymentFeePct: pgExplicit ? Number(c.paymentFeePct) : DEFAULT_PG_PCT,
     // 광고비는 기본 적용(글로벌 기본값), 채널별로 끌 수 있음.
@@ -147,7 +142,8 @@ function apiChToMatrixChannel(c: ApiCh, ov: ChOverride): MatrixChannel {
     paymentFeePct: ov.paymentFeePct,
     applyAdCost: ov.applyAdCost,
     shippingFee: ov.shippingFee,
-    freeShippingThreshold: ov.freeShippingThreshold,
+    // 배송비는 주문당 판매자 부담 원가로 항상 반영 (threshold=1 → 모든 판매가에서 부과)
+    freeShippingThreshold: ov.shippingFee > 0 ? 1 : null,
   }
 }
 
@@ -858,42 +854,12 @@ export function PricingQuickFlow() {
                           />
                         </label>
                         <label className="space-y-1">
-                          <span className="text-[10px] text-muted-foreground">광고비율</span>
-                          <SuffixInput
-                            value={String(Math.round(ov.adPct * 1000) / 10)}
-                            onChange={(v) => setOverride(bc.api, { adPct: (Number(v) || 0) / 100 })}
-                            suffix="%"
-                            step={0.1}
-                            className="w-full"
-                          />
-                        </label>
-                        <label className="space-y-1">
                           <span className="text-[10px] text-muted-foreground">배송비</span>
                           <SuffixInput
                             value={String(ov.shippingFee)}
                             onChange={(v) => setOverride(bc.api, { shippingFee: Number(v) || 0 })}
                             suffix="₩"
                             step={100}
-                            className="w-full"
-                          />
-                        </label>
-                        <label className="space-y-1">
-                          <span className="text-[10px] text-muted-foreground">
-                            무료배송 기준 (비우면 미부과)
-                          </span>
-                          <SuffixInput
-                            value={
-                              ov.freeShippingThreshold != null
-                                ? String(ov.freeShippingThreshold)
-                                : ''
-                            }
-                            onChange={(v) =>
-                              setOverride(bc.api, {
-                                freeShippingThreshold: v.trim() === '' ? null : Number(v) || 0,
-                              })
-                            }
-                            suffix="₩"
-                            step={1000}
                             className="w-full"
                           />
                         </label>
@@ -925,11 +891,26 @@ export function PricingQuickFlow() {
                           </div>
                         </div>
                         <div className="col-span-2 flex items-center justify-between gap-2">
-                          <span className="text-[10px] text-muted-foreground">광고비 적용</span>
-                          <Switch
-                            checked={ov.applyAdCost}
-                            onCheckedChange={(v) => setOverride(bc.api, { applyAdCost: v })}
-                          />
+                          <span className="text-[10px] text-muted-foreground">
+                            광고비 적용{ov.applyAdCost ? '' : ' (OFF · 광고비 0)'}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {ov.applyAdCost && (
+                              <SuffixInput
+                                value={String(Math.round(ov.adPct * 1000) / 10)}
+                                onChange={(v) =>
+                                  setOverride(bc.api, { adPct: (Number(v) || 0) / 100 })
+                                }
+                                suffix="%"
+                                step={0.1}
+                                className="w-20"
+                              />
+                            )}
+                            <Switch
+                              checked={ov.applyAdCost}
+                              onCheckedChange={(v) => setOverride(bc.api, { applyAdCost: v })}
+                            />
+                          </div>
                         </div>
                       </div>
                     )}
