@@ -57,12 +57,13 @@ async function sendToChannel(
 export async function sendDeckNotification(opts: {
   workspaceId: string
   deckKey: string // 'coupang-ads' | 'seller-hub'
+  eventKey?: string // 이벤트 단위 토글 게이트용(레지스트리 키). 미지정이면 마스터 토글만.
   blocks: unknown[]
   text: string
 }): Promise<boolean> {
   try {
-    // 토글 게이트 — off면 레거시 포함 전부 차단.
-    const enabled = await resolveDeckNotifyEnabled(opts.workspaceId, opts.deckKey)
+    // 토글 게이트 — 마스터 off 또는 이벤트 off면 레거시 포함 전부 차단.
+    const enabled = await resolveDeckNotifyEnabled(opts.workspaceId, opts.deckKey, opts.eventKey)
     if (!enabled) {
       console.log(`[slack] deck 알림 비활성(${opts.deckKey}) — 발송 생략`)
       return false

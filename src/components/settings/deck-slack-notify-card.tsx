@@ -7,12 +7,21 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Bell } from 'lucide-react'
 import { SETTINGS_INTEGRATIONS_PATH } from '@/lib/deck-routes'
+import { cn } from '@/lib/utils'
 
 type DeckKey = 'coupang-ads' | 'seller-hub'
+
+interface NotificationEvent {
+  key: string
+  label: string
+  description: string
+  enabled: boolean
+}
 
 interface NotificationSetting {
   enabled: boolean
   channelRegistered: boolean
+  events: NotificationEvent[]
 }
 
 export function DeckSlackNotifyCard({ deckKey }: { deckKey: DeckKey }) {
@@ -43,6 +52,53 @@ export function DeckSlackNotifyCard({ deckKey }: { deckKey: DeckKey }) {
         }
       } catch {
         setData((prev) => (prev ? { ...prev, enabled: !checked } : prev))
+      } finally {
+        setSaving(false)
+      }
+    },
+    [deckKey]
+  )
+
+  const handleEventToggle = useCallback(
+    async (eventKey: string, checked: boolean) => {
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              events: prev.events.map((e) => (e.key === eventKey ? { ...e, enabled: checked } : e)),
+            }
+          : prev
+      )
+      setSaving(true)
+      try {
+        const res = await fetch('/api/decks/notification-setting', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deckKey, events: { [eventKey]: checked } }),
+        })
+        if (!res.ok) {
+          setData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  events: prev.events.map((e) =>
+                    e.key === eventKey ? { ...e, enabled: !checked } : e
+                  ),
+                }
+              : prev
+          )
+        }
+      } catch {
+        setData((prev) =>
+          prev
+            ? {
+                ...prev,
+                events: prev.events.map((e) =>
+                  e.key === eventKey ? { ...e, enabled: !checked } : e
+                ),
+              }
+            : prev
+        )
       } finally {
         setSaving(false)
       }
@@ -81,6 +137,36 @@ export function DeckSlackNotifyCard({ deckKey }: { deckKey: DeckKey }) {
             에서 Slack 알림 채널을 등록하세요.
           </p>
         )}
+        {data && data.events.length > 0 && (
+          <div
+            className={cn(
+              'space-y-2 transition-opacity',
+              !data.enabled && 'pointer-events-none opacity-50'
+            )}
+          >
+            <p className="text-sm font-medium">알림 항목</p>
+            {data.events.map((event) => (
+              <div
+                key={event.key}
+                className="flex items-center justify-between gap-4 rounded-md border p-3"
+              >
+                <div className="space-y-0.5">
+                  <Label htmlFor={`deck-slack-notify-${deckKey}-${event.key}`}>{event.label}</Label>
+                  <p className="text-xs text-muted-foreground">{event.description}</p>
+                </div>
+                <Switch
+                  id={`deck-slack-notify-${deckKey}-${event.key}`}
+                  checked={event.enabled}
+                  disabled={loading || saving || !data.enabled}
+                  onCheckedChange={(checked) => handleEventToggle(event.key, checked)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">
+          오류 알림(수집 실패·로그인 실패·데이터 노후)은 Slack 알림이 켜져 있으면 항상 발송됩니다.
+        </p>
       </CardContent>
     </Card>
   )

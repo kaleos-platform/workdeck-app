@@ -190,15 +190,18 @@ export type SlackNotificationLookup = {
  * workspaceId로 Slack 알림 발송 대상 + Deck 토글 상태 조회.
  * target이 null이면 notifications 채널 미등록(레거시 env 경로로 폴백).
  * deckKey를 넘기면 해당 Deck의 slackNotifyEnabled를 반환한다 — false면 호출자가 레거시 포함 전부 skip.
+ * eventKey까지 넘기면 이벤트 단위 토글도 반영된다(togglable 이벤트가 off면 false).
  * deckKey 미지정이면 notifyEnabled는 항상 true(토글 무관).
- * GET /api/slack/notification-target?workspaceId=...&deckKey=...
+ * GET /api/slack/notification-target?workspaceId=...&deckKey=...&eventKey=...
  */
 export async function getSlackNotificationTarget(
   workspaceId: string,
-  deckKey?: string
+  deckKey?: string,
+  eventKey?: string
 ): Promise<SlackNotificationLookup> {
   const params = new URLSearchParams({ workspaceId })
   if (deckKey) params.set('deckKey', deckKey)
+  if (eventKey) params.set('eventKey', eventKey)
   const response = await workerFetch(`/api/slack/notification-target?${params.toString()}`)
   const data = await response.json()
   return { target: data.target ?? null, notifyEnabled: data.notifyEnabled !== false }
