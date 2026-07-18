@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { pricingScenarioPatchSchema } from '@/lib/sh/schemas'
-import { calculatePricing } from '@/lib/sh/pricing-calc'
-type Decimal = { toString(): string }
-
-// Decimal → number 변환 헬퍼
-function d(v: Decimal | null | undefined): number {
-  if (v == null) return 0
-  return Number(v.toString())
-}
+import { Prisma } from '@/generated/prisma/client'
+import { pricingScenarioSavePatchSchema } from '@/lib/sh/schemas'
+import { parseSnapshot } from '@/lib/sh/pricing-scenario-snapshot'
 
 type RouteContext = { params: Promise<{ scenarioId: string }> }
 
@@ -21,105 +15,28 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 
   const scenario = await prisma.pricingScenario.findFirst({
     where: { id: scenarioId, spaceId: resolved.space.id },
-    include: {
-      channel: { select: { id: true, name: true } },
-      channels: {
-        orderBy: { sortOrder: 'asc' },
-        include: {
-          channel: {
-            select: {
-              id: true,
-              name: true,
-              channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
-              feeRates: {
-                select: { categoryName: true, ratePercent: true },
-                orderBy: { categoryName: 'asc' },
-              },
-              shippingFee: true,
-              freeShippingThreshold: true,
-              applyAdCost: true,
-              paymentFeeIncluded: true,
-              paymentFeePct: true,
-            },
-          },
-        },
-      },
-      items: {
-        orderBy: { sortOrder: 'asc' },
-        include: {
-          option: {
-            select: {
-              id: true,
-              name: true,
-              sku: true,
-              costPrice: true,
-              retailPrice: true,
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  msrp: true,
-                  brand: { select: { id: true, name: true } },
-                },
-              },
-            },
-          },
-        },
-      },
+    select: {
+      id: true,
+      name: true,
+      memo: true,
+      productIds: true,
+      inputSnapshot: true,
+      updatedAt: true,
+      createdAt: true,
     },
   })
 
   if (!scenario) return errorResponse('시나리오를 찾을 수 없습니다', 404)
 
-  // Decimal 직렬화
-  const data = {
-    ...scenario,
-    vatRate: d(scenario.vatRate),
-    promotionValue: scenario.promotionValue != null ? d(scenario.promotionValue) : null,
-    channels: scenario.channels.map((sc) => ({
-      id: sc.channel.id,
-      name: sc.channel.name,
-      channelTypeDef: sc.channel.channelTypeDef,
-      feeRates: sc.channel.feeRates.map((fr) => ({
-        categoryName: fr.categoryName,
-        ratePercent: d(fr.ratePercent),
-      })),
-      shippingFee: sc.channel.shippingFee != null ? d(sc.channel.shippingFee) : 0,
-      freeShippingThreshold:
-        sc.channel.freeShippingThreshold != null ? d(sc.channel.freeShippingThreshold) : null,
-      applyAdCost: sc.channel.applyAdCost,
-      paymentFeeIncluded: sc.channel.paymentFeeIncluded,
-      paymentFeePct: sc.channel.paymentFeePct != null ? d(sc.channel.paymentFeePct) : 0,
-    })),
-    items: scenario.items.map((it) => ({
-      ...it,
-      costPrice: it.costPrice != null ? d(it.costPrice) : null,
-      salePrice: d(it.salePrice),
-      discountRate: d(it.discountRate),
-      channelFeePct: d(it.channelFeePct),
-      shippingCost: d(it.shippingCost),
-      packagingCost: d(it.packagingCost),
-      adCostPct: d(it.adCostPct),
-      operatingCostPct: d(it.operatingCostPct),
-      finalPrice: d(it.finalPrice),
-      revenueExVat: d(it.revenueExVat),
-      totalCost: d(it.totalCost),
-      netProfit: d(it.netProfit),
-      margin: d(it.margin),
-      // option은 optionId が null인 경우 null
-      // msrp는 InvProduct에 있음 — 클라이언트 편의를 위해 option 레벨에 끌어올림
-      option: it.option
-        ? {
-            ...it.option,
-            costPrice: it.option.costPrice != null ? d(it.option.costPrice) : null,
-            retailPrice: it.option.retailPrice != null ? d(it.option.retailPrice) : null,
-            msrp: it.option.product.msrp != null ? d(it.option.product.msrp) : null,
-          }
-        : null,
-    })),
-  }
-
-  return NextResponse.json(data)
+  return NextResponse.json({
+    id: scenario.id,
+    name: scenario.name,
+    memo: scenario.memo,
+    productIds: scenario.productIds,
+    snapshot: parseSnapshot(scenario.inputSnapshot),
+    updatedAt: scenario.updatedAt,
+    createdAt: scenario.createdAt,
+  })
 }
 
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
@@ -128,10 +45,9 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
   const { scenarioId } = await params
 
-  // 기존 시나리오 소속 확인
   const existing = await prisma.pricingScenario.findFirst({
     where: { id: scenarioId, spaceId: resolved.space.id },
-    select: { id: true, includeVat: true, vatRate: true, promotionType: true, promotionValue: true },
+    select: { id: true },
   })
   if (!existing) return errorResponse('시나리오를 찾을 수 없습니다', 404)
 
@@ -142,144 +58,36 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
     return errorResponse('잘못된 요청 형식입니다', 400)
   }
 
-  const parsed = pricingScenarioPatchSchema.safeParse(body)
+  const parsed = pricingScenarioSavePatchSchema.safeParse(body)
   if (!parsed.success) {
-    return errorResponse('입력값이 올바르지 않습니다', 400, {
-      issues: parsed.error.issues,
-    })
+    return errorResponse('입력값이 올바르지 않습니다', 400, { issues: parsed.error.issues })
   }
   const input = parsed.data
 
-  // channelId 소속 검증 (레거시)
-  if (input.channelId) {
-    const channel = await prisma.channel.findFirst({
-      where: { id: input.channelId, spaceId: resolved.space.id },
+  if (input.inputSnapshot !== undefined && !parseSnapshot(input.inputSnapshot)) {
+    return errorResponse('시나리오 데이터 형식이 올바르지 않습니다', 400)
+  }
+
+  if (input.productIds && input.productIds.length > 0) {
+    const validProducts = await prisma.invProduct.findMany({
+      where: { id: { in: input.productIds }, spaceId: resolved.space.id },
       select: { id: true },
     })
-    if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
-  }
-
-  // channels[] 또는 channelIds 정규화 — channels가 있으면 우선 사용
-  // undefined: 변경 없음 / []: 전체 삭제 / [...]: 교체
-  const resolvedChannelIds: string[] | undefined =
-    input.channels !== undefined
-      ? input.channels.flatMap((c) => (c.channelId ? [c.channelId] : []))
-      : input.channelIds
-
-  // channelIds 소속 검증 (M-N)
-  if (resolvedChannelIds && resolvedChannelIds.length > 0) {
-    const validChannels = await prisma.channel.findMany({
-      where: { id: { in: resolvedChannelIds }, spaceId: resolved.space.id },
-      select: { id: true },
-    })
-    if (validChannels.length !== resolvedChannelIds.length) {
-      return errorResponse('유효하지 않은 채널이 포함되어 있습니다', 400)
+    if (validProducts.length !== input.productIds.length) {
+      return errorResponse('유효하지 않은 상품이 포함되어 있습니다', 400)
     }
   }
 
-  // items가 있으면 optionId 소속 검증 — null 항목(수동 입력 행)은 skip
-  if (input.items && input.items.length > 0) {
-    const optionIds = input.items.map((it) => it.optionId).filter((id): id is string => id != null)
-    if (optionIds.length > 0) {
-      const validOptions = await prisma.invProductOption.findMany({
-        where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
-        select: { id: true },
-      })
-      if (validOptions.length !== optionIds.length) {
-        return errorResponse('유효하지 않은 옵션이 포함되어 있습니다', 400)
-      }
-    }
-  }
-
-  // 계산에 사용할 vatRate / includeVat / promotion — 입력값 우선, 없으면 기존값 사용
-  const effectiveIncludeVat = input.includeVat ?? existing.includeVat
-  const effectiveVatRate = input.vatRate ?? Number(existing.vatRate.toString())
-  const effectivePromotionType = input.promotionType ?? existing.promotionType
-  const effectivePromotionValue =
-    input.promotionValue !== undefined
-      ? (input.promotionValue ?? 0)
-      : existing.promotionValue != null
-        ? d(existing.promotionValue)
-        : 0
-
-  await prisma.$transaction(async (tx) => {
-    // 메타 업데이트
-    await tx.pricingScenario.update({
-      where: { id: scenarioId },
-      data: {
-        ...(input.name !== undefined && { name: input.name }),
-        ...(input.memo !== undefined && { memo: input.memo ?? null }),
-        ...('channelId' in input && { channelId: input.channelId ?? null }),
-        ...(input.includeVat !== undefined && { includeVat: input.includeVat }),
-        ...(input.vatRate !== undefined && { vatRate: input.vatRate }),
-        ...(input.promotionType !== undefined && { promotionType: input.promotionType }),
-        ...(input.promotionValue !== undefined && { promotionValue: input.promotionValue ?? null }),
-        ...(input.applyReturnAdjustment !== undefined && {
-          applyReturnAdjustment: input.applyReturnAdjustment,
-        }),
-      },
-    })
-
-    // channels[] 또는 channelIds가 있으면 M-N 채널 목록 전체 교체 (resolvedChannelIds로 정규화됨)
-    if (resolvedChannelIds !== undefined) {
-      await tx.pricingScenarioChannel.deleteMany({ where: { scenarioId } })
-      if (resolvedChannelIds.length > 0) {
-        await tx.pricingScenarioChannel.createMany({
-          data: resolvedChannelIds.map((channelId, idx) => ({
-            scenarioId,
-            channelId,
-            sortOrder: idx,
-          })),
-        })
-      }
-    }
-
-    // items가 있으면 전체 교체 (deleteMany → createMany)
-    if (input.items && input.items.length > 0) {
-      await tx.pricingScenarioItem.deleteMany({ where: { scenarioId } })
-      await tx.pricingScenarioItem.createMany({
-        data: input.items.map((it, idx) => {
-          // promotionValue는 DB에 0~1로 저장됨 (PERCENT 포함 — 저장 전 클라이언트가 /100)
-          const result = calculatePricing({
-            costPrice: it.costPrice ?? 0,
-            salePrice: it.salePrice,
-            discountRate: it.discountRate,
-            channelFeePct: it.channelFeePct,
-            shippingCost: it.shippingCost,
-            packagingCost: it.packagingCost,
-            adCostPct: it.adCostPct,
-            operatingCostPct: it.operatingCostPct,
-            includeVat: effectiveIncludeVat,
-            vatRate: effectiveVatRate,
-            promotion: {
-              type: effectivePromotionType,
-              value: effectivePromotionValue, // 0~1 (PERCENT 포함)
-            },
-          })
-          return {
-            scenarioId,
-            optionId: it.optionId ?? null,
-            manualName: it.manualName ?? null,
-            manualBrandName: it.manualBrandName ?? null,
-            unitsPerSet: it.unitsPerSet,
-            costPrice: it.costPrice ?? null,
-            salePrice: it.salePrice,
-            discountRate: it.discountRate,
-            channelFeePct: it.channelFeePct,
-            shippingCost: it.shippingCost,
-            packagingCost: it.packagingCost,
-            adCostPct: it.adCostPct,
-            operatingCostPct: it.operatingCostPct,
-            sortOrder: it.sortOrder ?? idx,
-            finalPrice: result.finalPrice,
-            revenueExVat: result.revenueExVat,
-            totalCost: result.totalCost,
-            netProfit: result.netProfit,
-            margin: result.margin,
-          }
-        }),
-      })
-    }
+  await prisma.pricingScenario.update({
+    where: { id: scenarioId },
+    data: {
+      ...(input.name !== undefined && { name: input.name }),
+      ...(input.memo !== undefined && { memo: input.memo ?? null }),
+      ...(input.productIds !== undefined && { productIds: input.productIds }),
+      ...(input.inputSnapshot !== undefined && {
+        inputSnapshot: input.inputSnapshot as Prisma.InputJsonValue,
+      }),
+    },
   })
 
   return NextResponse.json({ ok: true })
@@ -297,7 +105,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   })
   if (!existing) return errorResponse('시나리오를 찾을 수 없습니다', 404)
 
-  // cascade로 items, channels도 함께 삭제됨
+  // cascade로 레거시 items/channels도 함께 삭제됨
   await prisma.pricingScenario.delete({ where: { id: scenarioId } })
 
   return NextResponse.json({ ok: true })

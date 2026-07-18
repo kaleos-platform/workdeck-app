@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronDown, Info, Plus, RotateCcw, Save, Settings2 } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown, History, Info, Plus, RotateCcw, Save, Settings2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -25,8 +25,17 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import {
+  PRICING_DRAFT_KEY,
+  isMeaningfulSnapshot,
+  parseSnapshot,
+  type PricingSimSnapshot,
+  type PricingSimSummary,
+  type SnapChOverride,
+} from '@/lib/sh/pricing-scenario-snapshot'
 
 import { calculateMatrix } from '@/lib/sh/pricing-matrix-calc'
 import type {
@@ -42,6 +51,7 @@ import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
 import { PricingChannelBoardCard } from './pricing-channel-board-card'
 import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
 import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
+import { PricingScenarioHistoryPanel } from './pricing-scenario-history-panel'
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
 
@@ -254,8 +264,16 @@ export function PricingQuickFlow() {
 
   // ── 라이브 시뮬 설정 (세션 한정 override) ─────────────────────────────────
   const [live, setLive] = useState<LiveSim>(() => liveFromSettings(DEFAULT_SETTINGS))
-  // 설정이 새로 로드/저장되면 라이브값을 설정 기본값으로 리셋
+  // 초기 settings 로드 완료 여부 — 임시저장 복원 시 async 로드가 복원값을 덮어쓰는 것 방지
+  const settingsLoadedRef = useRef(false)
+  // 복원 시 "다음 1회 settings→live 리셋 건너뛰기" 플래그 (초기 로드가 아직 안 끝났을 때만 arm)
+  const skipNextLiveResetRef = useRef(false)
+  // 설정이 새로 로드/저장되면 라이브값을 설정 기본값으로 리셋 (단, 복원 직후 1회는 건너뜀)
   useEffect(() => {
+    if (skipNextLiveResetRef.current) {
+      skipNextLiveResetRef.current = false
+      return
+    }
     setLive(liveFromSettings(settings))
   }, [settings])
 
@@ -305,6 +323,9 @@ export function PricingQuickFlow() {
         }
       } catch {
         // 기본값 유지
+      } finally {
+        // 초기 로드 완료 — 이후 복원은 settings 리셋 걱정 없이 live를 직접 세팅
+        if (!cancelled) settingsLoadedRef.current = true
       }
     }
     load()
@@ -539,6 +560,8 @@ export function PricingQuickFlow() {
     setPromotion({ type: 'NONE', value: 0 })
     setLive(liveFromSettings(settings))
     setSnap(true)
+    setRestorable(null)
+    clearDraft()
     toast.success('시뮬레이션을 초기화했습니다')
   }
 
@@ -579,10 +602,207 @@ export function PricingQuickFlow() {
     }
   }, [matrixBundle, boardChannels, live, tierThresholds, snap])
 
+  // ── 스냅샷 직렬화 / 복원 ───────────────────────────────────────────────────
+  // 선택 상품(대표 = 첫 확정행). 번들이면 productIds에 전부 담아 구성 상품 모두 조회 대상.
+  const primaryProductId = confirmedRows[0]?.productId ?? null
+  const scenarioProductIds = useMemo(
+    () => [...new Set(confirmedRows.map((r) => r.productId))],
+    [confirmedRows]
+  )
+
+  const buildSnapshot = useCallback((): PricingSimSnapshot => {
+    const chOverrides: Record<string, SnapChOverride> = {}
+    for (const id of selectedChannelIds) {
+      const c = allChannels.find((ch) => ch.id === id)
+      if (c) chOverrides[id] = overrideOf(c)
+    }
+    const summary: PricingSimSummary = {
+      productNames: [...new Set(confirmedRows.map((r) => r.productName))],
+      channelCount: selectedChannelIds.length,
+      targetMarginPct: Math.round(live.targetMargin * 100),
+      priceMin: boardSummary?.min ?? null,
+      priceMax: boardSummary?.max ?? null,
+      totalCost: bundleCostSummary?.totalCost ?? 0,
+    }
+    return {
+      v: 1,
+      live,
+      rows: confirmedRows,
+      bundleNameInput,
+      selectedChannelIds,
+      chOverrides,
+      promotion,
+      snap,
+      summary,
+    }
+  }, [
+    confirmedRows,
+    selectedChannelIds,
+    allChannels,
+    overrideOf,
+    live,
+    boardSummary,
+    bundleCostSummary,
+    bundleNameInput,
+    promotion,
+    snap,
+  ])
+
+  const applySnapshot = useCallback((s: PricingSimSnapshot) => {
+    // 초기 settings 로드가 아직이면, 뒤늦게 도착할 리셋 1회를 건너뛰도록 arm
+    if (!settingsLoadedRef.current) skipNextLiveResetRef.current = true
+    setLive(s.live)
+    setRows(
+      s.rows.length > 0
+        ? s.rows.map((rc) => ({ id: nextRowId(), resolved: rc }))
+        : [{ id: nextRowId(), resolved: null }]
+    )
+    setBundleNameInput(s.bundleNameInput)
+    setSelectedChannelIds(s.selectedChannelIds)
+    setChOverrides(s.chOverrides)
+    setExpandedChannels(new Set())
+    setPromotion(s.promotion)
+    setSnap(s.snap)
+  }, [])
+
+  // ── 작성중 내용 자동 임시저장 (localStorage, debounce) ─────────────────────
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    const snapshot = buildSnapshot()
+    // 빈/기본 상태는 저장 안 함 — 기존 임시저장을 빈 내용으로 덮어쓰지 않도록
+    if (!isMeaningfulSnapshot(snapshot)) return
+    draftTimerRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(PRICING_DRAFT_KEY, JSON.stringify(snapshot))
+      } catch {
+        // 용량 초과 등 — 무시 (임시저장은 best-effort)
+      }
+    }, 500)
+    return () => {
+      if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
+    }
+  }, [buildSnapshot])
+
+  const clearDraft = useCallback(() => {
+    // 대기 중인 자동저장 타이머 취소 — 저장 직후 debounce가 draft를 되살리는 경쟁 방지
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
+    try {
+      localStorage.removeItem(PRICING_DRAFT_KEY)
+    } catch {
+      // 무시
+    }
+  }, [])
+
+  // ── 복원 배너 (mount 시 임시저장 감지) ────────────────────────────────────
+  const [restorable, setRestorable] = useState<PricingSimSnapshot | null>(null)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PRICING_DRAFT_KEY)
+      if (!raw) return
+      const s = parseSnapshot(JSON.parse(raw))
+      if (s && isMeaningfulSnapshot(s)) setRestorable(s)
+    } catch {
+      // 파싱 실패 — 조용히 무시
+    }
+    // mount 1회만
+  }, [])
+
+  // ── 시나리오 저장 다이얼로그 ──────────────────────────────────────────────
+  const [saveOpen, setSaveOpen] = useState(false)
+  const [saveName, setSaveName] = useState('')
+  const [saveMemo, setSaveMemo] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [historyRefresh, setHistoryRefresh] = useState(0)
+
+  const openSaveDialog = () => {
+    if (confirmedRows.length === 0) {
+      toast.error('저장할 상품을 먼저 선택해 주세요')
+      return
+    }
+    setSaveName(bundleName)
+    setSaveMemo('')
+    setSaveOpen(true)
+  }
+
+  const handleSaveScenario = async () => {
+    const name = saveName.trim()
+    if (!name) {
+      toast.error('시나리오 이름을 입력해 주세요')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetch('/api/sh/pricing-scenarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          memo: saveMemo.trim() || undefined,
+          productIds: scenarioProductIds,
+          inputSnapshot: buildSnapshot(),
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
+      toast.success('시나리오를 저장했습니다')
+      clearDraft()
+      setRestorable(null)
+      setSaveOpen(false)
+      setHistoryRefresh((n) => n + 1)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '저장 실패')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   // ─── 렌더 ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="ps-root">
+      {/* ── 임시저장 복원 배너 ── */}
+      {restorable && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm dark:border-emerald-900 dark:bg-emerald-950/40">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-emerald-600" />
+            <span>
+              작성 중이던 내용이 있습니다
+              {restorable.summary.productNames.length > 0 && (
+                <span className="ml-1 text-muted-foreground">
+                  ({restorable.summary.productNames.join(', ')})
+                </span>
+              )}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="h-7"
+              onClick={() => {
+                applySnapshot(restorable)
+                setRestorable(null)
+                toast.success('작성 중이던 내용을 복원했습니다')
+              }}
+            >
+              이어서 작성
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7"
+              onClick={() => {
+                setRestorable(null)
+                clearDraft()
+              }}
+            >
+              새로 시작
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* ── 헤더 ── */}
       <div className="mb-6 flex items-start justify-between gap-4">
         <h1 className="text-2xl font-bold tracking-tight">가격 시뮬레이션</h1>
@@ -596,12 +816,7 @@ export function PricingQuickFlow() {
           >
             <RotateCcw className="h-3.5 w-3.5" /> 초기화
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            className="h-8 gap-1.5"
-            onClick={() => toast.info('시나리오 저장은 준비 중입니다')}
-          >
+          <Button type="button" size="sm" className="h-8 gap-1.5" onClick={openSaveDialog}>
             <Save className="h-3.5 w-3.5" /> 시나리오 저장
           </Button>
         </div>
@@ -1023,6 +1238,25 @@ export function PricingQuickFlow() {
         </div>
       </div>
 
+      {/* ── 저장된 시나리오 내역 (선택 상품 단위) ── */}
+      {primaryProductId && (
+        <div className="mt-8 space-y-3">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold">저장된 가격 시나리오</h2>
+            <span className="text-[11px] text-muted-foreground">
+              {confirmedRows[0]?.productName} 기준
+            </span>
+          </div>
+          <PricingScenarioHistoryPanel
+            productId={primaryProductId}
+            onLoad={applySnapshot}
+            allowDelete
+            refreshSignal={historyRefresh}
+          />
+        </div>
+      )}
+
       {/* 설정 팝업 */}
       <PricingDefaultsDialog
         open={settingsOpen}
@@ -1063,6 +1297,59 @@ export function PricingQuickFlow() {
               disabled={!!creatingChannelId}
             >
               {creatingChannelId ? '생성 중...' : '생성'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 시나리오 저장 다이얼로그 */}
+      <Dialog open={saveOpen} onOpenChange={(v) => !saving && setSaveOpen(v)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>시나리오 저장</DialogTitle>
+            <DialogDescription>
+              현재 시뮬레이션 구성(상품·채널·마진·프로모션)을 저장합니다. 저장된 시나리오는 아래
+              목록과 상품 상세에서 다시 불러올 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="scenario-name" className="text-xs">
+                시나리오 이름
+              </Label>
+              <Input
+                id="scenario-name"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder={bundleName || '예: 여름 프로모션 기준'}
+                className="h-9"
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="scenario-memo" className="text-xs">
+                메모 (선택)
+              </Label>
+              <Textarea
+                id="scenario-memo"
+                value={saveMemo}
+                onChange={(e) => setSaveMemo(e.target.value)}
+                placeholder="가정·목적 등 메모"
+                rows={2}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSaveOpen(false)}
+              disabled={saving}
+            >
+              취소
+            </Button>
+            <Button size="sm" onClick={handleSaveScenario} disabled={saving}>
+              {saving ? '저장 중...' : '저장'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -11,13 +11,14 @@ import { ProductAttributesEditor } from '@/components/sh/products/product-attrib
 import { ProductOptionsTable } from '@/components/sh/products/product-options-table'
 import { ProductListingsPanel } from '@/components/sh/products/listings/product-listings-panel'
 import { ProductProductionRunsPanel } from '@/components/sh/products/production/product-production-runs-panel'
+import { PricingScenarioHistoryPanel } from '@/components/sh/products/pricing-sim/pricing-scenario-history-panel'
 import { SaveStatusChip } from '@/components/sh/save-status-chip'
 
 type Props = {
   productId: string
 }
 
-type SectionKey = 'basic' | 'options' | 'production' | 'listings'
+type SectionKey = 'basic' | 'options' | 'production' | 'listings' | 'pricing'
 
 const SECTIONS: { key: SectionKey; label: string; title: string; description: string }[] = [
   {
@@ -43,6 +44,12 @@ const SECTIONS: { key: SectionKey; label: string; title: string; description: st
     label: '판매채널 현황',
     title: '판매채널 현황',
     description: '이 상품이 등록된 판매채널 상품 목록',
+  },
+  {
+    key: 'pricing',
+    label: '가격 시나리오',
+    title: '가격 시나리오 내역',
+    description: '이 상품이 포함된 저장된 가격 시뮬레이션 시나리오',
   },
 ]
 
@@ -95,6 +102,7 @@ export function ProductDetailTabs({ productId }: Props) {
     options: null,
     production: null,
     listings: null,
+    pricing: null,
   })
 
   const goto = useCallback((key: SectionKey) => {
@@ -252,6 +260,18 @@ export function ProductDetailTabs({ productId }: Props) {
       >
         <SectionHeader title={SECTIONS[3].title} description={SECTIONS[3].description} />
         <ProductListingsPanel key={`listings-${refreshKey}`} productId={productId} />
+      </section>
+
+      <section
+        id="section-pricing"
+        data-section="pricing"
+        ref={(el) => {
+          sectionRefs.current.pricing = el
+        }}
+        className="scroll-mt-24 space-y-4 border-t pt-8"
+      >
+        <SectionHeader title={SECTIONS[4].title} description={SECTIONS[4].description} />
+        <PricingScenarioHistoryPanel productId={productId} />
       </section>
     </div>
   )

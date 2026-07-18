@@ -555,6 +555,26 @@ export type PricingScenarioInput = z.infer<typeof pricingScenarioSchema>
 export const pricingScenarioPatchSchema = pricingScenarioSchema.partial()
 export type PricingScenarioPatchInput = z.infer<typeof pricingScenarioPatchSchema>
 
+// ─── 시나리오 저장 (스냅샷 방식) ────────────────────────────────────────────────
+// 라이브 시뮬 상태 전체를 inputSnapshot(JSON)에 무손실 저장한다.
+// productIds는 상품 단위 조회(상품 상세/시뮬 패널)를 위한 역인덱스.
+export const pricingScenarioSaveSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  memo: z
+    .string()
+    .trim()
+    .max(500)
+    .optional()
+    .transform((v) => (v?.length ? v : undefined)),
+  productIds: z.array(z.string().min(1)).max(50).default([]),
+  // 클라이언트가 생성한 스냅샷 JSON — 구조 검증은 최소(자체 생성 데이터)
+  inputSnapshot: z.record(z.string(), z.unknown()),
+})
+export type PricingScenarioSaveInput = z.infer<typeof pricingScenarioSaveSchema>
+
+export const pricingScenarioSavePatchSchema = pricingScenarioSaveSchema.partial()
+export type PricingScenarioSavePatchInput = z.infer<typeof pricingScenarioSavePatchSchema>
+
 // 여러 listing 일괄 수정 — 판매가·상태만 현재 지원
 export const productListingBulkPatchSchema = z.object({
   ids: z.array(z.string().min(1)).min(1).max(100),
