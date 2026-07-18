@@ -100,17 +100,24 @@ type ChOverride = {
 
 // ─── 헬퍼 ─────────────────────────────────────────────────────────────────────
 
-// 채널이 PG를 명시 설정하지 않았을 때 사용하는 기본 결제수수료율 (0~1)
-const DEFAULT_PG_PCT = 0.02
+// 채널·설정 모두 미설정일 때 원가 과소평가를 막기 위한 앱 내장 기본값
+// (Space의 ProductPricingSettings는 DB 기본값이 0이라 실제로 비어있는 경우가 많음)
+const DEFAULT_PG_PCT = 0.02 // 결제수수료율 (0~1)
+const FALLBACK_SHIPPING_COST = 3000 // 배송비 (원)
+const FALLBACK_AD_PCT = 8 // 광고비율 (%, 0~100)
 
 /**
  * 채널 DB 값에서 ChOverride 초기값 생성.
- * 채널에 명시된 값은 그대로 사용하고, 미설정 항목은 글로벌 설정 기본값으로 폴백한다
- * (미설정=0 이 아니라 합리적 기본값 → 원가 과소평가 방지). 이후 채널별로 즉시 변경 가능.
+ * 채널에 명시된 값은 그대로 사용하고, 미설정 항목은 글로벌 설정값 → (그마저 0/미설정이면)
+ * 앱 내장 기본값 순으로 폴백한다 (미설정=0 이 아니라 합리적 기본값 → 원가 과소평가 방지).
+ * 이후 채널별로 즉시 변경 가능.
  */
 function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
   const feeBasic = c.feeRates.find((f) => f.categoryName === '기본') ?? c.feeRates[0]
-  const shippingFee = c.shippingFee != null ? Number(c.shippingFee) : settings.defaultShippingCost
+  const shippingFee =
+    c.shippingFee != null
+      ? Number(c.shippingFee)
+      : settings.defaultShippingCost || FALLBACK_SHIPPING_COST
   // 명시 임계값이 있으면 무료배송 기준(프로모)으로, 없으면 항상 부과(물류비 성격, 기존 동작).
   const freeShippingThreshold =
     c.freeShippingThreshold != null ? Number(c.freeShippingThreshold) : shippingFee > 0 ? 1 : null
@@ -124,7 +131,7 @@ function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
     paymentFeePct: pgExplicit ? Number(c.paymentFeePct) : DEFAULT_PG_PCT,
     // 광고비는 기본 적용(글로벌 기본값), 채널별로 끌 수 있음.
     applyAdCost: true,
-    adPct: settings.defaultAdCostPct / 100,
+    adPct: (settings.defaultAdCostPct || FALLBACK_AD_PCT) / 100,
   }
 }
 
