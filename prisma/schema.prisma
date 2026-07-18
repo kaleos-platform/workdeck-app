@@ -1752,6 +1752,7 @@ model PricingScenario {
   channelId             String? // 레거시 단일 채널 연결 (하위 호환 유지, 추후 제거)
   name                  String // 시나리오 이름
   memo                  String?
+  productIds            String[]      @default([]) // 시나리오에 포함된 상품(InvProduct.id) 목록 — 상품 단위 조회용 (다대다)
   // 시뮬레이션 전역 옵션
   includeVat            Boolean       @default(true) // 판매가에 VAT 포함 여부
   vatRate               Decimal       @default(0.1) @db.Decimal(6, 4) // 부가세율
@@ -1760,6 +1761,7 @@ model PricingScenario {
   promotionValue        Decimal?      @db.Decimal(18, 4) // FLAT: 금액, PERCENT: 0~1 비율
   // 반품/교환 비용 반영
   applyReturnAdjustment Boolean       @default(false)
+  inputSnapshot         Json? // 라이브 시뮬 상태 전체 + 클라 계산 요약 스냅샷 (복원·표시용 단일 소스)
 
   space    Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channel  Channel?                 @relation(fields: [channelId], references: [id], onDelete: SetNull)

@@ -72,11 +72,13 @@ export type PricingScenarioCountAggregateOutputType = {
   channelId: number
   name: number
   memo: number
+  productIds: number
   includeVat: number
   vatRate: number
   promotionType: number
   promotionValue: number
   applyReturnAdjustment: number
+  inputSnapshot: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -129,11 +131,13 @@ export type PricingScenarioCountAggregateInputType = {
   channelId?: true
   name?: true
   memo?: true
+  productIds?: true
   includeVat?: true
   vatRate?: true
   promotionType?: true
   promotionValue?: true
   applyReturnAdjustment?: true
+  inputSnapshot?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -231,11 +235,13 @@ export type PricingScenarioGroupByOutputType = {
   channelId: string | null
   name: string
   memo: string | null
+  productIds: string[]
   includeVat: boolean
   vatRate: runtime.Decimal
   promotionType: $Enums.PromotionType
   promotionValue: runtime.Decimal | null
   applyReturnAdjustment: boolean
+  inputSnapshot: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
   _count: PricingScenarioCountAggregateOutputType | null
@@ -269,11 +275,13 @@ export type PricingScenarioWhereInput = {
   channelId?: Prisma.StringNullableFilter<"PricingScenario"> | string | null
   name?: Prisma.StringFilter<"PricingScenario"> | string
   memo?: Prisma.StringNullableFilter<"PricingScenario"> | string | null
+  productIds?: Prisma.StringNullableListFilter<"PricingScenario">
   includeVat?: Prisma.BoolFilter<"PricingScenario"> | boolean
   vatRate?: Prisma.DecimalFilter<"PricingScenario"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFilter<"PricingScenario"> | $Enums.PromotionType
   promotionValue?: Prisma.DecimalNullableFilter<"PricingScenario"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFilter<"PricingScenario"> | boolean
+  inputSnapshot?: Prisma.JsonNullableFilter<"PricingScenario">
   createdAt?: Prisma.DateTimeFilter<"PricingScenario"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PricingScenario"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -288,11 +296,13 @@ export type PricingScenarioOrderByWithRelationInput = {
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
+  productIds?: Prisma.SortOrder
   includeVat?: Prisma.SortOrder
   vatRate?: Prisma.SortOrder
   promotionType?: Prisma.SortOrder
   promotionValue?: Prisma.SortOrderInput | Prisma.SortOrder
   applyReturnAdjustment?: Prisma.SortOrder
+  inputSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -310,11 +320,13 @@ export type PricingScenarioWhereUniqueInput = Prisma.AtLeast<{
   channelId?: Prisma.StringNullableFilter<"PricingScenario"> | string | null
   name?: Prisma.StringFilter<"PricingScenario"> | string
   memo?: Prisma.StringNullableFilter<"PricingScenario"> | string | null
+  productIds?: Prisma.StringNullableListFilter<"PricingScenario">
   includeVat?: Prisma.BoolFilter<"PricingScenario"> | boolean
   vatRate?: Prisma.DecimalFilter<"PricingScenario"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFilter<"PricingScenario"> | $Enums.PromotionType
   promotionValue?: Prisma.DecimalNullableFilter<"PricingScenario"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFilter<"PricingScenario"> | boolean
+  inputSnapshot?: Prisma.JsonNullableFilter<"PricingScenario">
   createdAt?: Prisma.DateTimeFilter<"PricingScenario"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PricingScenario"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -329,11 +341,13 @@ export type PricingScenarioOrderByWithAggregationInput = {
   channelId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
+  productIds?: Prisma.SortOrder
   includeVat?: Prisma.SortOrder
   vatRate?: Prisma.SortOrder
   promotionType?: Prisma.SortOrder
   promotionValue?: Prisma.SortOrderInput | Prisma.SortOrder
   applyReturnAdjustment?: Prisma.SortOrder
+  inputSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.PricingScenarioCountOrderByAggregateInput
@@ -352,11 +366,13 @@ export type PricingScenarioScalarWhereWithAggregatesInput = {
   channelId?: Prisma.StringNullableWithAggregatesFilter<"PricingScenario"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"PricingScenario"> | string
   memo?: Prisma.StringNullableWithAggregatesFilter<"PricingScenario"> | string | null
+  productIds?: Prisma.StringNullableListFilter<"PricingScenario">
   includeVat?: Prisma.BoolWithAggregatesFilter<"PricingScenario"> | boolean
   vatRate?: Prisma.DecimalWithAggregatesFilter<"PricingScenario"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeWithAggregatesFilter<"PricingScenario"> | $Enums.PromotionType
   promotionValue?: Prisma.DecimalNullableWithAggregatesFilter<"PricingScenario"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolWithAggregatesFilter<"PricingScenario"> | boolean
+  inputSnapshot?: Prisma.JsonNullableWithAggregatesFilter<"PricingScenario">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PricingScenario"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"PricingScenario"> | Date | string
 }
@@ -365,11 +381,13 @@ export type PricingScenarioCreateInput = {
   id?: string
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutPricingScenariosInput
@@ -384,11 +402,13 @@ export type PricingScenarioUncheckedCreateInput = {
   channelId?: string | null
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutScenarioInput
@@ -399,11 +419,13 @@ export type PricingScenarioUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutPricingScenariosNestedInput
@@ -418,11 +440,13 @@ export type PricingScenarioUncheckedUpdateInput = {
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutScenarioNestedInput
@@ -435,11 +459,13 @@ export type PricingScenarioCreateManyInput = {
   channelId?: string | null
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -448,11 +474,13 @@ export type PricingScenarioUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -463,11 +491,13 @@ export type PricingScenarioUncheckedUpdateManyInput = {
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -488,11 +518,13 @@ export type PricingScenarioCountOrderByAggregateInput = {
   channelId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  productIds?: Prisma.SortOrder
   includeVat?: Prisma.SortOrder
   vatRate?: Prisma.SortOrder
   promotionType?: Prisma.SortOrder
   promotionValue?: Prisma.SortOrder
   applyReturnAdjustment?: Prisma.SortOrder
+  inputSnapshot?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -626,6 +658,15 @@ export type PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput = {
   deleteMany?: Prisma.PricingScenarioScalarWhereInput | Prisma.PricingScenarioScalarWhereInput[]
 }
 
+export type PricingScenarioCreateproductIdsInput = {
+  set: string[]
+}
+
+export type PricingScenarioUpdateproductIdsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
 export type EnumPromotionTypeFieldUpdateOperationsInput = {
   set?: $Enums.PromotionType
 }
@@ -662,11 +703,13 @@ export type PricingScenarioCreateWithoutSpaceInput = {
   id?: string
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   channel?: Prisma.ChannelCreateNestedOneWithoutPricingScenariosInput
@@ -679,11 +722,13 @@ export type PricingScenarioUncheckedCreateWithoutSpaceInput = {
   channelId?: string | null
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutScenarioInput
@@ -725,11 +770,13 @@ export type PricingScenarioScalarWhereInput = {
   channelId?: Prisma.StringNullableFilter<"PricingScenario"> | string | null
   name?: Prisma.StringFilter<"PricingScenario"> | string
   memo?: Prisma.StringNullableFilter<"PricingScenario"> | string | null
+  productIds?: Prisma.StringNullableListFilter<"PricingScenario">
   includeVat?: Prisma.BoolFilter<"PricingScenario"> | boolean
   vatRate?: Prisma.DecimalFilter<"PricingScenario"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFilter<"PricingScenario"> | $Enums.PromotionType
   promotionValue?: Prisma.DecimalNullableFilter<"PricingScenario"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFilter<"PricingScenario"> | boolean
+  inputSnapshot?: Prisma.JsonNullableFilter<"PricingScenario">
   createdAt?: Prisma.DateTimeFilter<"PricingScenario"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PricingScenario"> | Date | string
 }
@@ -738,11 +785,13 @@ export type PricingScenarioCreateWithoutChannelInput = {
   id?: string
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutPricingScenariosInput
@@ -755,11 +804,13 @@ export type PricingScenarioUncheckedCreateWithoutChannelInput = {
   spaceId: string
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutScenarioInput
@@ -796,11 +847,13 @@ export type PricingScenarioCreateWithoutChannelsInput = {
   id?: string
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutPricingScenariosInput
@@ -814,11 +867,13 @@ export type PricingScenarioUncheckedCreateWithoutChannelsInput = {
   channelId?: string | null
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.PricingScenarioItemUncheckedCreateNestedManyWithoutScenarioInput
@@ -844,11 +899,13 @@ export type PricingScenarioUpdateWithoutChannelsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutPricingScenariosNestedInput
@@ -862,11 +919,13 @@ export type PricingScenarioUncheckedUpdateWithoutChannelsInput = {
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutScenarioNestedInput
@@ -876,11 +935,13 @@ export type PricingScenarioCreateWithoutItemsInput = {
   id?: string
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutPricingScenariosInput
@@ -894,11 +955,13 @@ export type PricingScenarioUncheckedCreateWithoutItemsInput = {
   channelId?: string | null
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   channels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutScenarioInput
@@ -924,11 +987,13 @@ export type PricingScenarioUpdateWithoutItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutPricingScenariosNestedInput
@@ -942,11 +1007,13 @@ export type PricingScenarioUncheckedUpdateWithoutItemsInput = {
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutScenarioNestedInput
@@ -957,11 +1024,13 @@ export type PricingScenarioCreateManySpaceInput = {
   channelId?: string | null
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -970,11 +1039,13 @@ export type PricingScenarioUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.ChannelUpdateOneWithoutPricingScenariosNestedInput
@@ -987,11 +1058,13 @@ export type PricingScenarioUncheckedUpdateWithoutSpaceInput = {
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutScenarioNestedInput
@@ -1003,11 +1076,13 @@ export type PricingScenarioUncheckedUpdateManyWithoutSpaceInput = {
   channelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1017,11 +1092,13 @@ export type PricingScenarioCreateManyChannelInput = {
   spaceId: string
   name: string
   memo?: string | null
+  productIds?: Prisma.PricingScenarioCreateproductIdsInput | string[]
   includeVat?: boolean
   vatRate?: runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: $Enums.PromotionType
   promotionValue?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1030,11 +1107,13 @@ export type PricingScenarioUpdateWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutPricingScenariosNestedInput
@@ -1047,11 +1126,13 @@ export type PricingScenarioUncheckedUpdateWithoutChannelInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.PricingScenarioItemUncheckedUpdateManyWithoutScenarioNestedInput
@@ -1063,11 +1144,13 @@ export type PricingScenarioUncheckedUpdateManyWithoutChannelInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productIds?: Prisma.PricingScenarioUpdateproductIdsInput | string[]
   includeVat?: Prisma.BoolFieldUpdateOperationsInput | boolean
   vatRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   promotionType?: Prisma.EnumPromotionTypeFieldUpdateOperationsInput | $Enums.PromotionType
   promotionValue?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   applyReturnAdjustment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  inputSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1118,11 +1201,13 @@ export type PricingScenarioSelect<ExtArgs extends runtime.Types.Extensions.Inter
   channelId?: boolean
   name?: boolean
   memo?: boolean
+  productIds?: boolean
   includeVat?: boolean
   vatRate?: boolean
   promotionType?: boolean
   promotionValue?: boolean
   applyReturnAdjustment?: boolean
+  inputSnapshot?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1138,11 +1223,13 @@ export type PricingScenarioSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   channelId?: boolean
   name?: boolean
   memo?: boolean
+  productIds?: boolean
   includeVat?: boolean
   vatRate?: boolean
   promotionType?: boolean
   promotionValue?: boolean
   applyReturnAdjustment?: boolean
+  inputSnapshot?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1155,11 +1242,13 @@ export type PricingScenarioSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   channelId?: boolean
   name?: boolean
   memo?: boolean
+  productIds?: boolean
   includeVat?: boolean
   vatRate?: boolean
   promotionType?: boolean
   promotionValue?: boolean
   applyReturnAdjustment?: boolean
+  inputSnapshot?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -1172,16 +1261,18 @@ export type PricingScenarioSelectScalar = {
   channelId?: boolean
   name?: boolean
   memo?: boolean
+  productIds?: boolean
   includeVat?: boolean
   vatRate?: boolean
   promotionType?: boolean
   promotionValue?: boolean
   applyReturnAdjustment?: boolean
+  inputSnapshot?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PricingScenarioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "name" | "memo" | "includeVat" | "vatRate" | "promotionType" | "promotionValue" | "applyReturnAdjustment" | "createdAt" | "updatedAt", ExtArgs["result"]["pricingScenario"]>
+export type PricingScenarioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelId" | "name" | "memo" | "productIds" | "includeVat" | "vatRate" | "promotionType" | "promotionValue" | "applyReturnAdjustment" | "inputSnapshot" | "createdAt" | "updatedAt", ExtArgs["result"]["pricingScenario"]>
 export type PricingScenarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.PricingScenario$channelArgs<ExtArgs>
@@ -1212,11 +1303,13 @@ export type $PricingScenarioPayload<ExtArgs extends runtime.Types.Extensions.Int
     channelId: string | null
     name: string
     memo: string | null
+    productIds: string[]
     includeVat: boolean
     vatRate: runtime.Decimal
     promotionType: $Enums.PromotionType
     promotionValue: runtime.Decimal | null
     applyReturnAdjustment: boolean
+    inputSnapshot: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["pricingScenario"]>
@@ -1651,11 +1744,13 @@ export interface PricingScenarioFieldRefs {
   readonly channelId: Prisma.FieldRef<"PricingScenario", 'String'>
   readonly name: Prisma.FieldRef<"PricingScenario", 'String'>
   readonly memo: Prisma.FieldRef<"PricingScenario", 'String'>
+  readonly productIds: Prisma.FieldRef<"PricingScenario", 'String[]'>
   readonly includeVat: Prisma.FieldRef<"PricingScenario", 'Boolean'>
   readonly vatRate: Prisma.FieldRef<"PricingScenario", 'Decimal'>
   readonly promotionType: Prisma.FieldRef<"PricingScenario", 'PromotionType'>
   readonly promotionValue: Prisma.FieldRef<"PricingScenario", 'Decimal'>
   readonly applyReturnAdjustment: Prisma.FieldRef<"PricingScenario", 'Boolean'>
+  readonly inputSnapshot: Prisma.FieldRef<"PricingScenario", 'Json'>
   readonly createdAt: Prisma.FieldRef<"PricingScenario", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"PricingScenario", 'DateTime'>
 }
