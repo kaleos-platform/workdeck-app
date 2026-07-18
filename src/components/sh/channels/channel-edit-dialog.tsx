@@ -53,7 +53,9 @@ type Channel = {
   feeRates: { categoryName: string; ratePercent: number }[]
   usesMarketingBudget: boolean
   applyAdCost: boolean
+  shippingFeeType: 'FIXED' | 'PERCENT'
   shippingFee: number | null
+  shippingFeePct: number | null // DB/API는 0~1 소수
   vatIncludedInFee: boolean
   paymentFeeIncluded: boolean
   paymentFeePct: number | null // DB/API는 0~1 소수
@@ -118,7 +120,9 @@ export function ChannelEditDialog({
   const [feeRows, setFeeRows] = useState<FeeRateRow[]>([{ categoryName: '기본', ratePercent: '0' }])
 
   // ── 배송 탭 ──
-  const [fShippingFee, setFShippingFee] = useState('')
+  const [fShippingFeeType, setFShippingFeeType] = useState<'FIXED' | 'PERCENT'>('FIXED')
+  const [fShippingFee, setFShippingFee] = useState('') // 정액(원)
+  const [fShippingFeePct, setFShippingFeePct] = useState('') // 비율(%, 저장 시 /100)
   const [fFreeShipping, setFFreeShipping] = useState(false)
   const [fFreeShippingThreshold, setFFreeShippingThreshold] = useState('')
 
@@ -187,7 +191,9 @@ export function ChannelEditDialog({
       if (!hasBase) rows.unshift({ categoryName: '기본', ratePercent: '0' })
       setFeeRows(rows)
 
+      setFShippingFeeType(channel.shippingFeeType ?? 'FIXED')
       setFShippingFee(channel.shippingFee != null ? String(channel.shippingFee) : '')
+      setFShippingFeePct(channel.shippingFeePct != null ? String(channel.shippingFeePct * 100) : '')
       setFFreeShipping(channel.freeShipping)
       setFFreeShippingThreshold(
         channel.freeShippingThreshold != null ? String(channel.freeShippingThreshold) : ''
@@ -211,7 +217,9 @@ export function ChannelEditDialog({
       setFPaymentFeePct('')
       setFeeRows([{ categoryName: '기본', ratePercent: '0' }])
 
+      setFShippingFeeType('FIXED')
       setFShippingFee('')
+      setFShippingFeePct('')
       setFFreeShipping(false)
       setFFreeShippingThreshold('')
 
@@ -308,7 +316,15 @@ export function ChannelEditDialog({
       if (fAdminUrl.trim()) body.adminUrl = fAdminUrl.trim()
       else body.adminUrl = null
 
-      if (fShippingFee) body.shippingFee = parseFloat(fShippingFee)
+      // 배송비 산정 방식 — FIXED: shippingFee(원), PERCENT: shippingFeePct(판매가 %→/100 저장)
+      body.shippingFeeType = fShippingFeeType
+      if (fShippingFeeType === 'PERCENT') {
+        body.shippingFeePct = fShippingFeePct ? parseFloat(fShippingFeePct) / 100 : null
+        body.shippingFee = null
+      } else {
+        body.shippingFee = fShippingFee ? parseFloat(fShippingFee) : null
+        body.shippingFeePct = null
+      }
       if (fFreeShippingThreshold && !fFreeShipping)
         body.freeShippingThreshold = parseFloat(fFreeShippingThreshold)
 
@@ -731,49 +747,89 @@ export function ChannelEditDialog({
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="ch-shipping-fee">기본 배송비 (원)</Label>
-              <Input
-                id="ch-shipping-fee"
-                type="number"
-                min="0"
-                value={fShippingFee}
-                onChange={(e) => setFShippingFee(e.target.value)}
-                placeholder="0"
-              />
-            </div>
-
-            <div className="flex items-center justify-between rounded-md border px-3 py-2">
-              <div>
-                <Label htmlFor="ch-free-shipping" className="cursor-pointer">
-                  무료 배송
-                </Label>
-                <p className="text-xs text-muted-foreground">이 채널은 항상 무료배송</p>
-              </div>
-              <Switch
-                id="ch-free-shipping"
-                checked={fFreeShipping}
-                onCheckedChange={setFFreeShipping}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="ch-free-threshold"
-                className={fFreeShipping ? 'text-muted-foreground' : undefined}
+              <Label htmlFor="ch-shipping-type">배송비 산정 방식</Label>
+              <Select
+                value={fShippingFeeType}
+                onValueChange={(v) => setFShippingFeeType(v as 'FIXED' | 'PERCENT')}
               >
-                무료 배송 기준금액 (원)
-              </Label>
-              <Input
-                id="ch-free-threshold"
-                type="number"
-                min="0"
-                step="1000"
-                value={fFreeShipping ? '' : fFreeShippingThreshold}
-                onChange={(e) => setFFreeShippingThreshold(e.target.value)}
-                placeholder={fFreeShipping ? '항상 무료배송 (사용 안 함)' : '예: 50000'}
-                disabled={fFreeShipping}
-              />
+                <SelectTrigger id="ch-shipping-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="FIXED">정액 (원)</SelectItem>
+                  <SelectItem value="PERCENT">비율 (판매가 대비 %)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            {fShippingFeeType === 'FIXED' ? (
+              <div className="space-y-2">
+                <Label htmlFor="ch-shipping-fee">기본 배송비 (원)</Label>
+                <Input
+                  id="ch-shipping-fee"
+                  type="number"
+                  min="0"
+                  value={fShippingFee}
+                  onChange={(e) => setFShippingFee(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="ch-shipping-pct">배송비율 (판매가 대비 %)</Label>
+                <Input
+                  id="ch-shipping-pct"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={fShippingFeePct}
+                  onChange={(e) => setFShippingFeePct(e.target.value)}
+                  placeholder="예: 3"
+                />
+                <p className="text-xs text-muted-foreground">
+                  판매가(VAT 포함) 대비 비율로 배송비를 계산합니다. 무료배송 기준은 적용되지
+                  않습니다.
+                </p>
+              </div>
+            )}
+
+            {/* 무료배송 설정 — 정액(FIXED) 방식에서만 적용 */}
+            {fShippingFeeType === 'FIXED' && (
+              <>
+                <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                  <div>
+                    <Label htmlFor="ch-free-shipping" className="cursor-pointer">
+                      무료 배송
+                    </Label>
+                    <p className="text-xs text-muted-foreground">이 채널은 항상 무료배송</p>
+                  </div>
+                  <Switch
+                    id="ch-free-shipping"
+                    checked={fFreeShipping}
+                    onCheckedChange={setFFreeShipping}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="ch-free-threshold"
+                    className={fFreeShipping ? 'text-muted-foreground' : undefined}
+                  >
+                    무료 배송 기준금액 (원)
+                  </Label>
+                  <Input
+                    id="ch-free-threshold"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={fFreeShipping ? '' : fFreeShippingThreshold}
+                    onChange={(e) => setFFreeShippingThreshold(e.target.value)}
+                    placeholder={fFreeShipping ? '항상 무료배송 (사용 안 함)' : '예: 50000'}
+                    disabled={fFreeShipping}
+                  />
+                </div>
+              </>
+            )}
           </TabsContent>
 
           {/* ── 고급 탭 ── */}

@@ -24,8 +24,11 @@ export type MatrixChannel = {
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1 (paymentFeeIncluded=false 일 때 사용)
   applyAdCost: boolean
-  shippingFee: number // 원
-  freeShippingThreshold: number | null // 원, null 또는 0이면 무료배송 기준 없음 (항상 유료)
+  /** 배송비 산정 방식: 'FIXED'=정액(shippingFee 원), 'PERCENT'=판매가 대비 비율(shippingFeePct). 미지정 시 FIXED */
+  shippingFeeType?: 'FIXED' | 'PERCENT'
+  shippingFee: number // 원 (FIXED)
+  shippingFeePct?: number // 0~1 (PERCENT, 판매가 대비)
+  freeShippingThreshold: number | null // 원, null 또는 0이면 무료배송 기준 없음 (항상 유료). PERCENT 모드에선 무시(항상 부과)
 }
 
 /** 번들 구성 컴포넌트 (단일 SKU 원가·소비자가 기준가 기여) */
@@ -239,12 +242,17 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   // 8. 포장비 (번들당 1회)
   const packaging = r2(n(bundle.packagingCost))
 
-  // 9. 배송비 — 무료배송 임계값 도달 시 판매자가 배송비를 부담(비용 반영)
-  //    finalPrice >= threshold 이면 판매자 배송비 부담 = shippingFee
-  //    threshold 미달(고객이 배송비 부담) 또는 threshold 미설정이면 판매자 비용 = 0
-  const threshold = channel.freeShippingThreshold
-  const shipping =
-    threshold != null && threshold > 0 && finalPrice >= threshold ? r2(n(channel.shippingFee)) : 0
+  // 9. 배송비
+  //    PERCENT: 판매가(finalPrice) 대비 비율로 항상 부과.
+  //    FIXED: 무료배송 임계값 도달 시 판매자가 배송비 부담(finalPrice >= threshold → shippingFee, 아니면 0).
+  let shipping = 0
+  if (channel.shippingFeeType === 'PERCENT') {
+    shipping = r2(finalPrice * n(channel.shippingFeePct))
+  } else {
+    const threshold = channel.freeShippingThreshold
+    shipping =
+      threshold != null && threshold > 0 && finalPrice >= threshold ? r2(n(channel.shippingFee)) : 0
+  }
 
   // 10. 번들 원가: Σ(component.costPrice × quantity)
   const setCost = bundleSetCost(bundle)
@@ -311,9 +319,13 @@ function calcRetailForTarget(target: number, inputs: MatrixInputs): number | nul
   try {
     const { bundle, channel, globals } = inputs
 
+    const isPercentShipping = channel.shippingFeeType === 'PERCENT'
+
     let feePct = lookupCategoryFeePct(channel.feeRates)
     if (!channel.paymentFeeIncluded) feePct += n(channel.paymentFeePct)
     if (channel.applyAdCost) feePct += n(globals.adCostPct)
+    // PERCENT 배송비는 판매가 비례 → 분모항(Σfee%)에 포함
+    if (isPercentShipping) feePct += n(channel.shippingFeePct)
 
     // gross-basis 분모: (1−target)/(1+v) − Σfee%
     const vatDivisor = globals.includeVat ? 1 + n(globals.vatRate) : 1
@@ -331,6 +343,11 @@ function calcRetailForTarget(target: number, inputs: MatrixInputs): number | nul
     const priceFor = (fixed: number): number | null => {
       const p = fixed / denominator
       return p > 0 && Number.isFinite(p) ? r2(p) : null
+    }
+
+    // PERCENT 배송비는 고정비 없음(분모에 반영됨)
+    if (isPercentShipping) {
+      return priceFor(setCost + packagingCost + returnCostFixed)
     }
 
     const threshold = channel.freeShippingThreshold

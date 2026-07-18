@@ -1558,6 +1558,12 @@ model ChannelTypeDef {
 }
 
 // 공용 판매 채널
+// 채널 배송비 산정 방식
+enum ChannelShippingFeeType {
+  FIXED // 정액 (원)
+  PERCENT // 판매가 대비 비율
+}
+
 model Channel {
   id                      String   @id @default(cuid())
   spaceId                 String
@@ -1578,7 +1584,10 @@ model Channel {
   freeShippingThreshold   Decimal? @db.Decimal(18, 2) // 무료배송 최소 주문금액
   usesMarketingBudget     Boolean  @default(false)
   applyAdCost             Boolean  @default(false) // 시뮬레이션 시 광고비 자동 적용
+  // 배송비 산정 방식: FIXED=정액(shippingFee 원), PERCENT=판매가 대비 비율(shippingFeePct 0~1)
+  shippingFeeType         ChannelShippingFeeType @default(FIXED)
   shippingFee             Decimal? @db.Decimal(18, 2)
+  shippingFeePct          Decimal? @db.Decimal(6, 4) // 배송비율 (0~1, shippingFeeType=PERCENT일 때 사용)
   vatIncludedInFee        Boolean  @default(true)
   paymentFeeIncluded      Boolean  @default(true) // 결제 수수료 포함 여부
   paymentFeePct           Decimal? @db.Decimal(6, 4) // 결제 수수료율 (0~1)
