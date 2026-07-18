@@ -57,13 +57,23 @@ describe('GET /api/slack/notification-target', () => {
     expect(resolveDeckNotifyEnabled).not.toHaveBeenCalled()
   })
 
-  it('deckKey 주어지면 토글 조회 결과를 notifyEnabled로 반환', async () => {
+  it('deckKey 주어지면 토글 조회 결과를 notifyEnabled로 반환(eventKey 미지정)', async () => {
     resolveDeckNotifyEnabled.mockResolvedValue(false)
 
     const res = await callGet('?workspaceId=ws1&deckKey=seller-hub')
     const body = await res.json()
 
     expect(body).toEqual({ target: { channelId: 'C1' }, notifyEnabled: false })
-    expect(resolveDeckNotifyEnabled).toHaveBeenCalledWith('ws1', 'seller-hub')
+    expect(resolveDeckNotifyEnabled).toHaveBeenCalledWith('ws1', 'seller-hub', undefined)
+  })
+
+  it('eventKey까지 주어지면 게이트에 전달한다', async () => {
+    resolveDeckNotifyEnabled.mockResolvedValue(true)
+
+    const res = await callGet('?workspaceId=ws1&deckKey=coupang-ads&eventKey=collection_done')
+    const body = await res.json()
+
+    expect(body).toEqual({ target: { channelId: 'C1' }, notifyEnabled: true })
+    expect(resolveDeckNotifyEnabled).toHaveBeenCalledWith('ws1', 'coupang-ads', 'collection_done')
   })
 })
