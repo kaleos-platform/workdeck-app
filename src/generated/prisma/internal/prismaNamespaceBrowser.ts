@@ -1212,11 +1212,13 @@ export const PricingScenarioScalarFieldEnum = {
   channelId: 'channelId',
   name: 'name',
   memo: 'memo',
+  productIds: 'productIds',
   includeVat: 'includeVat',
   vatRate: 'vatRate',
   promotionType: 'promotionType',
   promotionValue: 'promotionValue',
   applyReturnAdjustment: 'applyReturnAdjustment',
+  inputSnapshot: 'inputSnapshot',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
