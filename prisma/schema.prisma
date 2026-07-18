@@ -643,6 +643,8 @@ model DeckInstance {
   spaceId   String
   deckAppId String
   isActive  Boolean @default(true)
+  // Deck 단위 Slack 알림 토글 — false면 이 Deck의 모든 알림(레거시 포함) 발송을 차단한다.
+  slackNotifyEnabled Boolean @default(true)
 
   space   Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   deckApp DeckApp @relation(fields: [deckAppId], references: [id])

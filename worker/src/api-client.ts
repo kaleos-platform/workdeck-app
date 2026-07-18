@@ -180,18 +180,28 @@ export type SlackNotificationTargetResponse = {
   botTokenIv: string
 } | null
 
+/** Slack 알림 조회 결과 — target(발송 채널) + notifyEnabled(Deck 토글) */
+export type SlackNotificationLookup = {
+  target: SlackNotificationTargetResponse
+  notifyEnabled: boolean
+}
+
 /**
- * workspaceId로 Slack 알림 발송 대상 조회 (없으면 null — 레거시 env 경로로 폴백)
- * GET /api/slack/notification-target?workspaceId=...
+ * workspaceId로 Slack 알림 발송 대상 + Deck 토글 상태 조회.
+ * target이 null이면 notifications 채널 미등록(레거시 env 경로로 폴백).
+ * deckKey를 넘기면 해당 Deck의 slackNotifyEnabled를 반환한다 — false면 호출자가 레거시 포함 전부 skip.
+ * deckKey 미지정이면 notifyEnabled는 항상 true(토글 무관).
+ * GET /api/slack/notification-target?workspaceId=...&deckKey=...
  */
 export async function getSlackNotificationTarget(
-  workspaceId: string
-): Promise<SlackNotificationTargetResponse> {
-  const response = await workerFetch(
-    `/api/slack/notification-target?workspaceId=${encodeURIComponent(workspaceId)}`
-  )
+  workspaceId: string,
+  deckKey?: string
+): Promise<SlackNotificationLookup> {
+  const params = new URLSearchParams({ workspaceId })
+  if (deckKey) params.set('deckKey', deckKey)
+  const response = await workerFetch(`/api/slack/notification-target?${params.toString()}`)
   const data = await response.json()
-  return data.target ?? null
+  return { target: data.target ?? null, notifyEnabled: data.notifyEnabled !== false }
 }
 
 /**

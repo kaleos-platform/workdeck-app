@@ -10615,6 +10615,7 @@ export const DeckInstanceScalarFieldEnum = {
   spaceId: 'spaceId',
   deckAppId: 'deckAppId',
   isActive: 'isActive',
+  slackNotifyEnabled: 'slackNotifyEnabled',
   createdAt: 'createdAt'
 } as const
 
