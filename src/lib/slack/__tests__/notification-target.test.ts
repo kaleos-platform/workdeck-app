@@ -112,7 +112,7 @@ describe('resolveDeckNotifyEnabled', () => {
     expect(result).toBe(false)
     expect(findUniqueDeckInstance).toHaveBeenCalledWith({
       where: { spaceId_deckAppId: { spaceId: 'space1', deckAppId: 'coupang-ads' } },
-      select: { slackNotifyEnabled: true },
+      select: { slackNotifyEnabled: true, slackNotifyEvents: true },
     })
   })
 
@@ -133,5 +133,53 @@ describe('resolveDeckNotifyEnabled', () => {
 
     expect(await resolveDeckNotifyEnabled('ws1', 'coupang-ads')).toBe(true)
     expect(findUniqueDeckInstance).not.toHaveBeenCalled()
+  })
+
+  it('togglable 이벤트가 false로 기록되면 false', async () => {
+    findUniqueDeckInstance.mockResolvedValue({
+      slackNotifyEnabled: true,
+      slackNotifyEvents: { collection_done: false },
+    })
+
+    expect(await resolveDeckNotifyEnabled('ws1', 'coupang-ads', 'collection_done')).toBe(false)
+  })
+
+  it('이벤트가 기재되지 않았으면(미기재) default-on으로 true', async () => {
+    findUniqueDeckInstance.mockResolvedValue({
+      slackNotifyEnabled: true,
+      slackNotifyEvents: { collection_done: false },
+    })
+
+    // 다른 이벤트는 미기재 → on
+    expect(await resolveDeckNotifyEnabled('ws1', 'coupang-ads', 'inventory_collection_done')).toBe(
+      true
+    )
+  })
+
+  it('비togglable 이벤트는 false로 기록돼 있어도 fail-open으로 true', async () => {
+    findUniqueDeckInstance.mockResolvedValue({
+      slackNotifyEnabled: true,
+      slackNotifyEvents: { collection_failed: false },
+    })
+
+    expect(await resolveDeckNotifyEnabled('ws1', 'coupang-ads', 'collection_failed')).toBe(true)
+  })
+
+  it('레지스트리에 없는 eventKey는 fail-open으로 true', async () => {
+    findUniqueDeckInstance.mockResolvedValue({
+      slackNotifyEnabled: true,
+      slackNotifyEvents: { unknown_event: false },
+    })
+
+    expect(await resolveDeckNotifyEnabled('ws1', 'coupang-ads', 'unknown_event')).toBe(true)
+  })
+
+  it('마스터 off면 이벤트가 on이어도 false', async () => {
+    findUniqueDeckInstance.mockResolvedValue({
+      slackNotifyEnabled: false,
+      slackNotifyEvents: null,
+    })
+
+    expect(await resolveDeckNotifyEnabled('ws1', 'coupang-ads', 'collection_done')).toBe(false)
   })
 })

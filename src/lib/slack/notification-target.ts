@@ -8,6 +8,7 @@
  * 이 함수를 호출해 감싸는 형태로 노출한다(라우트 자체는 별도 작업으로 추가 예정).
  */
 import { prisma } from '@/lib/prisma'
+import { isTogglableEvent } from './notification-events'
 
 export const NOTIFICATION_CHANNEL_KIND = 'notifications'
 
@@ -70,20 +71,29 @@ export async function resolveSlackNotificationTarget(
 
 /**
  * Deck 단위 Slack 알림 토글 상태를 조회한다.
- * DeckInstance.slackNotifyEnabled === false 면 발송 차단(false). Space나 DeckInstance를
- * 찾을 수 없으면(미설치·미해석) 발송을 막지 않도록 true를 반환한다(fail-open).
+ * - 마스터 slackNotifyEnabled === false 면 발송 차단(false).
+ * - eventKey가 주어지고 레지스트리상 togglable이며 slackNotifyEvents[eventKey] === false 면 차단(false).
+ * - 비togglable·미기재 이벤트, Space·DeckInstance 미해석은 발송을 막지 않도록 true(fail-open).
  */
 export async function resolveDeckNotifyEnabled(
   workspaceId: string,
-  deckKey: string
+  deckKey: string,
+  eventKey?: string
 ): Promise<boolean> {
   const spaceId = await resolveNotificationSpaceId(workspaceId)
   if (!spaceId) return true
 
   const deckInstance = await prisma.deckInstance.findUnique({
     where: { spaceId_deckAppId: { spaceId, deckAppId: deckKey } },
-    select: { slackNotifyEnabled: true },
+    select: { slackNotifyEnabled: true, slackNotifyEvents: true },
   })
   if (!deckInstance) return true
-  return deckInstance.slackNotifyEnabled
+  if (!deckInstance.slackNotifyEnabled) return false
+
+  // 이벤트 단위 토글 — togglable 이벤트가 명시적으로 false로 기록된 경우에만 차단.
+  if (eventKey && isTogglableEvent(deckKey, eventKey)) {
+    const events = deckInstance.slackNotifyEvents as Record<string, boolean> | null
+    if (events?.[eventKey] === false) return false
+  }
+  return true
 }

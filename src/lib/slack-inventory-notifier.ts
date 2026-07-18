@@ -168,6 +168,7 @@ export async function notifyInventoryAnalysis(params: {
   return sendDeckNotification({
     workspaceId: params.workspaceId,
     deckKey: DECK_KEY,
+    eventKey: 'inventory_analysis_done',
     blocks,
     text: `쿠팡 재고 분석 완료: ${totalIssues}건의 이슈 발견`,
   })
@@ -200,6 +201,7 @@ export async function notifyInventoryStaleData(params: {
   return sendDeckNotification({
     workspaceId: params.workspaceId,
     deckKey: DECK_KEY,
+    eventKey: 'inventory_stale',
     blocks,
     text: `쿠팡 재고 분석 스킵 — 데이터가 ${params.ageDays}일 전입니다`,
   })

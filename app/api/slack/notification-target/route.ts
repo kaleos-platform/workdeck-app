@@ -21,10 +21,14 @@ export async function GET(req: NextRequest) {
   if (!workspaceId) return errorResponse('workspaceId는 필수입니다', 400)
 
   // deckKey가 주어지면 해당 Deck의 알림 토글 상태를 함께 반환한다(미지정이면 항상 true).
+  // eventKey까지 주어지면 이벤트 단위 토글도 반영한다.
   // target은 토글과 무관하게 조회한다 — skip 판단은 호출자(워커)가 notifyEnabled로 한다.
   const deckKey = req.nextUrl.searchParams.get('deckKey')
+  const eventKey = req.nextUrl.searchParams.get('eventKey') ?? undefined
   const target = await resolveSlackNotificationTarget(workspaceId)
-  const notifyEnabled = deckKey ? await resolveDeckNotifyEnabled(workspaceId, deckKey) : true
+  const notifyEnabled = deckKey
+    ? await resolveDeckNotifyEnabled(workspaceId, deckKey, eventKey)
+    : true
 
   return NextResponse.json({ target, notifyEnabled })
 }
