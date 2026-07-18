@@ -6,7 +6,10 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { errorResponse, resolveWorkerAuth } from '@/lib/api-helpers'
-import { resolveSlackNotificationTarget } from '@/lib/slack/notification-target'
+import {
+  resolveSlackNotificationTarget,
+  resolveDeckNotifyEnabled,
+} from '@/lib/slack/notification-target'
 
 export const runtime = 'nodejs'
 
@@ -17,7 +20,11 @@ export async function GET(req: NextRequest) {
   const workspaceId = req.nextUrl.searchParams.get('workspaceId')
   if (!workspaceId) return errorResponse('workspaceId는 필수입니다', 400)
 
+  // deckKey가 주어지면 해당 Deck의 알림 토글 상태를 함께 반환한다(미지정이면 항상 true).
+  // target은 토글과 무관하게 조회한다 — skip 판단은 호출자(워커)가 notifyEnabled로 한다.
+  const deckKey = req.nextUrl.searchParams.get('deckKey')
   const target = await resolveSlackNotificationTarget(workspaceId)
+  const notifyEnabled = deckKey ? await resolveDeckNotifyEnabled(workspaceId, deckKey) : true
 
-  return NextResponse.json({ target })
+  return NextResponse.json({ target, notifyEnabled })
 }

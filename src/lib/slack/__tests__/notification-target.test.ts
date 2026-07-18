@@ -1,11 +1,12 @@
 /**
  * @jest-environment node
  */
-import { resolveSlackNotificationTarget } from '../notification-target'
+import { resolveSlackNotificationTarget, resolveDeckNotifyEnabled } from '../notification-target'
 
 const findUniqueWorkspace = jest.fn()
 const findManySpaceMember = jest.fn()
 const findUniqueSpaceSlackChannel = jest.fn()
+const findUniqueDeckInstance = jest.fn()
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
@@ -14,6 +15,7 @@ jest.mock('@/lib/prisma', () => ({
     spaceSlackChannel: {
       findUnique: (...args: unknown[]) => findUniqueSpaceSlackChannel(...args),
     },
+    deckInstance: { findUnique: (...args: unknown[]) => findUniqueDeckInstance(...args) },
   },
 }))
 
@@ -91,5 +93,45 @@ describe('resolveSlackNotificationTarget', () => {
     const result = await resolveSlackNotificationTarget('ws1')
 
     expect(result?.spaceId).toBe('space-first')
+  })
+})
+
+describe('resolveDeckNotifyEnabled', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    // Space 해석은 항상 OWNER Space로 성공하도록 기본 세팅.
+    findUniqueWorkspace.mockResolvedValue({ ownerId: 'user1' })
+    findManySpaceMember.mockResolvedValue([{ spaceId: 'space1', role: 'OWNER' }])
+  })
+
+  it('DeckInstance.slackNotifyEnabled=false면 false', async () => {
+    findUniqueDeckInstance.mockResolvedValue({ slackNotifyEnabled: false })
+
+    const result = await resolveDeckNotifyEnabled('ws1', 'coupang-ads')
+
+    expect(result).toBe(false)
+    expect(findUniqueDeckInstance).toHaveBeenCalledWith({
+      where: { spaceId_deckAppId: { spaceId: 'space1', deckAppId: 'coupang-ads' } },
+      select: { slackNotifyEnabled: true },
+    })
+  })
+
+  it('slackNotifyEnabled=true면 true', async () => {
+    findUniqueDeckInstance.mockResolvedValue({ slackNotifyEnabled: true })
+
+    expect(await resolveDeckNotifyEnabled('ws1', 'seller-hub')).toBe(true)
+  })
+
+  it('DeckInstance가 없으면 fail-open으로 true', async () => {
+    findUniqueDeckInstance.mockResolvedValue(null)
+
+    expect(await resolveDeckNotifyEnabled('ws1', 'coupang-ads')).toBe(true)
+  })
+
+  it('Space를 해석할 수 없으면(멤버십 없음) fail-open으로 true', async () => {
+    findManySpaceMember.mockResolvedValue([])
+
+    expect(await resolveDeckNotifyEnabled('ws1', 'coupang-ads')).toBe(true)
+    expect(findUniqueDeckInstance).not.toHaveBeenCalled()
   })
 })
