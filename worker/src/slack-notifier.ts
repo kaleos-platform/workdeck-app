@@ -16,6 +16,10 @@ const SLACK_API_URL = 'https://slack.com/api/chat.postMessage'
 const DECK_COUPANG_ADS = '쿠팡 광고 관리자'
 const DECK_SELLER_OPS = '브랜드 운영'
 
+// Deck 토글 게이트용 DeckApp.id (라벨/URL의 seller-ops와 다름 — 판매 수집 Deck의 실 id는 seller-hub).
+const DECK_KEY_COUPANG_ADS = 'coupang-ads'
+const DECK_KEY_SELLER_HUB = 'seller-hub'
+
 type Block = {
   type: string
   text?: unknown
@@ -56,17 +60,25 @@ async function sendToChannel(
 }
 
 /**
- * workspaceId 기반 신규 경로 발송 대상을 조회해 복호화한다.
- * 대상이 없으면(미등록) null — 호출자는 레거시 경로만 사용한다.
+ * workspaceId 기반 신규 경로 발송 대상 + Deck 토글 상태를 조회해 복호화한다.
+ * deckKey를 넘기면 notifyEnabled로 Deck 알림 토글을 함께 받는다.
+ * 조회/복호화가 실패하면 null — 호출자는 게이트를 건너뛰고 레거시 경로로 폴백한다(fail-open).
  */
-async function resolveNewPathTarget(
-  workspaceId: string
-): Promise<{ token: string; channelId: string } | null> {
+async function resolveNewPath(
+  workspaceId: string,
+  deckKey?: string
+): Promise<{
+  notifyEnabled: boolean
+  channel: { token: string; channelId: string } | null
+} | null> {
   try {
-    const target = await getSlackNotificationTarget(workspaceId)
-    if (!target) return null
-    const token = decrypt(target.botToken, target.botTokenIv)
-    return { token, channelId: target.channelId }
+    const lookup = await getSlackNotificationTarget(workspaceId, deckKey)
+    if (!lookup.target) return { notifyEnabled: lookup.notifyEnabled, channel: null }
+    const token = decrypt(lookup.target.botToken, lookup.target.botTokenIv)
+    return {
+      notifyEnabled: lookup.notifyEnabled,
+      channel: { token, channelId: lookup.target.channelId },
+    }
   } catch (err) {
     console.error('[slack] 알림 대상 조회/복호화 실패 — 레거시 경로만 사용:', err)
     return null
@@ -76,17 +88,35 @@ async function resolveNewPathTarget(
 /**
  * Slack에 Block Kit 메시지 전송 — 신규(멀티테넌트) 경로 + 레거시 env 경로 이중 발송.
  * workspaceId가 없으면(수집 파이프라인 초기 실패 등 컨텍스트 미확보) 레거시 경로만 시도한다.
+ * deckKey가 주어지고 Deck 토글이 off(notifyEnabled===false)면 레거시 포함 전부 발송하지 않는다.
  * 신규 경로가 성공하고 그 채널이 레거시 채널과 같으면 중복 방지를 위해 레거시 발송을 생략한다.
  */
-async function postMessage(blocks: Block[], text: string, workspaceId?: string): Promise<boolean> {
+async function postMessage(
+  blocks: Block[],
+  text: string,
+  workspaceId?: string,
+  deckKey?: string
+): Promise<boolean> {
   let newPathSent = false
   let newPathChannelId: string | null = null
 
   if (workspaceId) {
-    const target = await resolveNewPathTarget(workspaceId)
-    if (target) {
-      newPathChannelId = target.channelId
-      newPathSent = await sendToChannel(target.token, target.channelId, blocks, text)
+    const resolved = await resolveNewPath(workspaceId, deckKey)
+    if (resolved) {
+      // Deck 토글 off면 레거시 포함 전부 skip(토글이 authoritative).
+      if (!resolved.notifyEnabled) {
+        console.log('[slack] deck 알림 비활성 — 발송 생략')
+        return false
+      }
+      if (resolved.channel) {
+        newPathChannelId = resolved.channel.channelId
+        newPathSent = await sendToChannel(
+          resolved.channel.token,
+          resolved.channel.channelId,
+          blocks,
+          text
+        )
+      }
     }
   }
 
@@ -173,7 +203,8 @@ export async function notifyCollectionDone(params: {
   await postMessage(
     blocks,
     `쿠팡 광고 데이터 수집 완료: 등록 ${params.insertedRows.toLocaleString()}건 (${params.dateRange})`,
-    params.workspaceId
+    params.workspaceId,
+    DECK_KEY_COUPANG_ADS
   )
 }
 
@@ -200,7 +231,8 @@ export async function notifyAnalysisDone(params: {
   await postMessage(
     blocks,
     `쿠팡 광고 분석 완료: ${params.campaignCount}개 캠페인, ${params.suggestionCount}개 제안`,
-    params.workspaceId
+    params.workspaceId,
+    DECK_KEY_COUPANG_ADS
   )
 }
 
@@ -236,7 +268,12 @@ export async function notifyInventoryDone(params: {
 
   blocks.push(section(`<${inventoryUrl}|:package: 재고 현황 보기>`))
 
-  await postMessage(blocks, `쿠팡 재고 데이터 수집 ${status}`, params.workspaceId)
+  await postMessage(
+    blocks,
+    `쿠팡 재고 데이터 수집 ${status}`,
+    params.workspaceId,
+    DECK_KEY_COUPANG_ADS
+  )
 }
 
 /** 수집 실패 알림 (workspaceId 확보 전 실패 경로에서도 호출되므로 옵션) */
@@ -248,7 +285,12 @@ export async function notifyCollectionFailed(error: string, workspaceId?: string
     section(error.slice(0, 200)),
   ]
 
-  await postMessage(blocks, `쿠팡 광고 데이터 수집 실패: ${error.slice(0, 100)}`, workspaceId)
+  await postMessage(
+    blocks,
+    `쿠팡 광고 데이터 수집 실패: ${error.slice(0, 100)}`,
+    workspaceId,
+    DECK_KEY_COUPANG_ADS
+  )
 }
 
 /**
@@ -298,7 +340,12 @@ export async function notifyLoginFailed(params: {
   ]
   if (params.detail) blocks.push(context(params.detail.slice(0, 200)))
 
-  await postMessage(blocks, `쿠팡 로그인 실패(${params.reason}): ${title}`, params.workspaceId)
+  await postMessage(
+    blocks,
+    `쿠팡 로그인 실패(${params.reason}): ${title}`,
+    params.workspaceId,
+    DECK_KEY_COUPANG_ADS
+  )
 }
 
 /** 로켓그로스 판매(VENDOR) 수집 완료 알림 — cron(daily) / 백필 공용 */
@@ -351,6 +398,7 @@ export async function notifyVendorSalesDone(params: {
   await postMessage(
     blocks,
     `[${DECK_SELLER_OPS}] 쿠팡 로켓그로스 판매 데이터 수집 완료: 매출 ${won(params.revenue)}, 주문 ${params.orderCount}건, 판매량 ${params.salesQty}개`,
-    params.workspaceId
+    params.workspaceId,
+    DECK_KEY_SELLER_HUB
   )
 }

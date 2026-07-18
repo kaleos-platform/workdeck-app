@@ -29,6 +29,7 @@ export type DeckInstanceMinAggregateOutputType = {
   spaceId: string | null
   deckAppId: string | null
   isActive: boolean | null
+  slackNotifyEnabled: boolean | null
   createdAt: Date | null
 }
 
@@ -37,6 +38,7 @@ export type DeckInstanceMaxAggregateOutputType = {
   spaceId: string | null
   deckAppId: string | null
   isActive: boolean | null
+  slackNotifyEnabled: boolean | null
   createdAt: Date | null
 }
 
@@ -45,6 +47,7 @@ export type DeckInstanceCountAggregateOutputType = {
   spaceId: number
   deckAppId: number
   isActive: number
+  slackNotifyEnabled: number
   createdAt: number
   _all: number
 }
@@ -55,6 +58,7 @@ export type DeckInstanceMinAggregateInputType = {
   spaceId?: true
   deckAppId?: true
   isActive?: true
+  slackNotifyEnabled?: true
   createdAt?: true
 }
 
@@ -63,6 +67,7 @@ export type DeckInstanceMaxAggregateInputType = {
   spaceId?: true
   deckAppId?: true
   isActive?: true
+  slackNotifyEnabled?: true
   createdAt?: true
 }
 
@@ -71,6 +76,7 @@ export type DeckInstanceCountAggregateInputType = {
   spaceId?: true
   deckAppId?: true
   isActive?: true
+  slackNotifyEnabled?: true
   createdAt?: true
   _all?: true
 }
@@ -152,6 +158,7 @@ export type DeckInstanceGroupByOutputType = {
   spaceId: string
   deckAppId: string
   isActive: boolean
+  slackNotifyEnabled: boolean
   createdAt: Date
   _count: DeckInstanceCountAggregateOutputType | null
   _min: DeckInstanceMinAggregateOutputType | null
@@ -181,6 +188,7 @@ export type DeckInstanceWhereInput = {
   spaceId?: Prisma.StringFilter<"DeckInstance"> | string
   deckAppId?: Prisma.StringFilter<"DeckInstance"> | string
   isActive?: Prisma.BoolFilter<"DeckInstance"> | boolean
+  slackNotifyEnabled?: Prisma.BoolFilter<"DeckInstance"> | boolean
   createdAt?: Prisma.DateTimeFilter<"DeckInstance"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   deckApp?: Prisma.XOR<Prisma.DeckAppScalarRelationFilter, Prisma.DeckAppWhereInput>
@@ -191,6 +199,7 @@ export type DeckInstanceOrderByWithRelationInput = {
   spaceId?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  slackNotifyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   deckApp?: Prisma.DeckAppOrderByWithRelationInput
@@ -205,6 +214,7 @@ export type DeckInstanceWhereUniqueInput = Prisma.AtLeast<{
   spaceId?: Prisma.StringFilter<"DeckInstance"> | string
   deckAppId?: Prisma.StringFilter<"DeckInstance"> | string
   isActive?: Prisma.BoolFilter<"DeckInstance"> | boolean
+  slackNotifyEnabled?: Prisma.BoolFilter<"DeckInstance"> | boolean
   createdAt?: Prisma.DateTimeFilter<"DeckInstance"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   deckApp?: Prisma.XOR<Prisma.DeckAppScalarRelationFilter, Prisma.DeckAppWhereInput>
@@ -215,6 +225,7 @@ export type DeckInstanceOrderByWithAggregationInput = {
   spaceId?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  slackNotifyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.DeckInstanceCountOrderByAggregateInput
   _max?: Prisma.DeckInstanceMaxOrderByAggregateInput
@@ -229,12 +240,14 @@ export type DeckInstanceScalarWhereWithAggregatesInput = {
   spaceId?: Prisma.StringWithAggregatesFilter<"DeckInstance"> | string
   deckAppId?: Prisma.StringWithAggregatesFilter<"DeckInstance"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"DeckInstance"> | boolean
+  slackNotifyEnabled?: Prisma.BoolWithAggregatesFilter<"DeckInstance"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DeckInstance"> | Date | string
 }
 
 export type DeckInstanceCreateInput = {
   id?: string
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDeckInstancesInput
   deckApp: Prisma.DeckAppCreateNestedOneWithoutInstancesInput
@@ -245,12 +258,14 @@ export type DeckInstanceUncheckedCreateInput = {
   spaceId: string
   deckAppId: string
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: Date | string
 }
 
 export type DeckInstanceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDeckInstancesNestedInput
   deckApp?: Prisma.DeckAppUpdateOneRequiredWithoutInstancesNestedInput
@@ -261,6 +276,7 @@ export type DeckInstanceUncheckedUpdateInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -269,12 +285,14 @@ export type DeckInstanceCreateManyInput = {
   spaceId: string
   deckAppId: string
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: Date | string
 }
 
 export type DeckInstanceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -283,6 +301,7 @@ export type DeckInstanceUncheckedUpdateManyInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -306,6 +325,7 @@ export type DeckInstanceCountOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  slackNotifyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -314,6 +334,7 @@ export type DeckInstanceMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  slackNotifyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -322,6 +343,7 @@ export type DeckInstanceMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   deckAppId?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  slackNotifyEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -412,6 +434,7 @@ export type DeckInstanceUncheckedUpdateManyWithoutDeckAppNestedInput = {
 export type DeckInstanceCreateWithoutSpaceInput = {
   id?: string
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: Date | string
   deckApp: Prisma.DeckAppCreateNestedOneWithoutInstancesInput
 }
@@ -420,6 +443,7 @@ export type DeckInstanceUncheckedCreateWithoutSpaceInput = {
   id?: string
   deckAppId: string
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: Date | string
 }
 
@@ -457,12 +481,14 @@ export type DeckInstanceScalarWhereInput = {
   spaceId?: Prisma.StringFilter<"DeckInstance"> | string
   deckAppId?: Prisma.StringFilter<"DeckInstance"> | string
   isActive?: Prisma.BoolFilter<"DeckInstance"> | boolean
+  slackNotifyEnabled?: Prisma.BoolFilter<"DeckInstance"> | boolean
   createdAt?: Prisma.DateTimeFilter<"DeckInstance"> | Date | string
 }
 
 export type DeckInstanceCreateWithoutDeckAppInput = {
   id?: string
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutDeckInstancesInput
 }
@@ -471,6 +497,7 @@ export type DeckInstanceUncheckedCreateWithoutDeckAppInput = {
   id?: string
   spaceId: string
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: Date | string
 }
 
@@ -504,12 +531,14 @@ export type DeckInstanceCreateManySpaceInput = {
   id?: string
   deckAppId: string
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: Date | string
 }
 
 export type DeckInstanceUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deckApp?: Prisma.DeckAppUpdateOneRequiredWithoutInstancesNestedInput
 }
@@ -518,6 +547,7 @@ export type DeckInstanceUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -525,6 +555,7 @@ export type DeckInstanceUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   deckAppId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -532,12 +563,14 @@ export type DeckInstanceCreateManyDeckAppInput = {
   id?: string
   spaceId: string
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: Date | string
 }
 
 export type DeckInstanceUpdateWithoutDeckAppInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutDeckInstancesNestedInput
 }
@@ -546,6 +579,7 @@ export type DeckInstanceUncheckedUpdateWithoutDeckAppInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -553,6 +587,7 @@ export type DeckInstanceUncheckedUpdateManyWithoutDeckAppInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  slackNotifyEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -563,6 +598,7 @@ export type DeckInstanceSelect<ExtArgs extends runtime.Types.Extensions.Internal
   spaceId?: boolean
   deckAppId?: boolean
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   deckApp?: boolean | Prisma.DeckAppDefaultArgs<ExtArgs>
@@ -573,6 +609,7 @@ export type DeckInstanceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   spaceId?: boolean
   deckAppId?: boolean
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   deckApp?: boolean | Prisma.DeckAppDefaultArgs<ExtArgs>
@@ -583,6 +620,7 @@ export type DeckInstanceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   spaceId?: boolean
   deckAppId?: boolean
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   deckApp?: boolean | Prisma.DeckAppDefaultArgs<ExtArgs>
@@ -593,10 +631,11 @@ export type DeckInstanceSelectScalar = {
   spaceId?: boolean
   deckAppId?: boolean
   isActive?: boolean
+  slackNotifyEnabled?: boolean
   createdAt?: boolean
 }
 
-export type DeckInstanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "deckAppId" | "isActive" | "createdAt", ExtArgs["result"]["deckInstance"]>
+export type DeckInstanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "deckAppId" | "isActive" | "slackNotifyEnabled" | "createdAt", ExtArgs["result"]["deckInstance"]>
 export type DeckInstanceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   deckApp?: boolean | Prisma.DeckAppDefaultArgs<ExtArgs>
@@ -621,6 +660,7 @@ export type $DeckInstancePayload<ExtArgs extends runtime.Types.Extensions.Intern
     spaceId: string
     deckAppId: string
     isActive: boolean
+    slackNotifyEnabled: boolean
     createdAt: Date
   }, ExtArgs["result"]["deckInstance"]>
   composites: {}
@@ -1051,6 +1091,7 @@ export interface DeckInstanceFieldRefs {
   readonly spaceId: Prisma.FieldRef<"DeckInstance", 'String'>
   readonly deckAppId: Prisma.FieldRef<"DeckInstance", 'String'>
   readonly isActive: Prisma.FieldRef<"DeckInstance", 'Boolean'>
+  readonly slackNotifyEnabled: Prisma.FieldRef<"DeckInstance", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"DeckInstance", 'DateTime'>
 }
     

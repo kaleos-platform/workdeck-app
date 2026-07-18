@@ -266,6 +266,7 @@ export async function runAndSaveInventoryAnalysis(params: {
       try {
         const { notifyInventoryStaleData } = await import('@/lib/slack-inventory-notifier')
         slackDelivered = await notifyInventoryStaleData({
+          workspaceId: params.workspaceId,
           snapshotDate: output.snapshotDate,
           ageDays,
         })
@@ -319,6 +320,7 @@ export async function runAndSaveInventoryAnalysis(params: {
     try {
       const { notifyInventoryAnalysis } = await import('@/lib/slack-inventory-notifier')
       slackDelivered = await notifyInventoryAnalysis({
+        workspaceId: params.workspaceId,
         analysedAt: analysis.analysedAt,
         snapshotDate: output.snapshotDate,
         ageDays,

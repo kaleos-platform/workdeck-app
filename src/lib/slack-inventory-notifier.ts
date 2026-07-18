@@ -4,10 +4,10 @@
  */
 
 import type { InventoryAnalysisResults } from '@/lib/inventory-analyzer'
+import { sendDeckNotification, sendSystemNotification } from '@/lib/slack/send-notification'
 
-const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN ?? ''
-const SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID ?? ''
-const SLACK_API_URL = 'https://slack.com/api/chat.postMessage'
+// 재고 분석·수집 알림은 모두 쿠팡 광고 관리자 Deck 소속.
+const DECK_KEY = 'coupang-ads'
 
 type Block = {
   type: string
@@ -15,38 +15,6 @@ type Block = {
   fields?: unknown[]
   elements?: unknown[]
   [key: string]: unknown
-}
-
-async function postMessage(blocks: Block[], text: string): Promise<boolean> {
-  if (!SLACK_BOT_TOKEN || !SLACK_CHANNEL_ID) {
-    console.log(
-      `[slack-inventory] env 미설정 — token: ${SLACK_BOT_TOKEN ? 'set' : 'missing'}, channel: ${SLACK_CHANNEL_ID ? 'set' : 'missing'}`
-    )
-    return false
-  }
-
-  try {
-    const res = await fetch(SLACK_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
-      },
-      body: JSON.stringify({ channel: SLACK_CHANNEL_ID, blocks, text }),
-    })
-
-    const data = (await res.json()) as { ok: boolean; error?: string }
-    if (!data.ok) {
-      console.error(`[slack-inventory] 전송 실패: ${data.error}`)
-      return false
-    }
-
-    console.log('[slack-inventory] 메시지 전송 완료')
-    return true
-  } catch (err) {
-    console.error('[slack-inventory] 전송 에러:', err)
-    return false
-  }
 }
 
 // ─── Block Kit 헬퍼 ─────────────────────────────────────────────────────────
@@ -83,6 +51,7 @@ function formatItems(items: Array<{ label: string }>, maxItems: number): string 
 // ─── 알림 전송 ──────────────────────────────────────────────────────────────
 
 export async function notifyInventoryAnalysis(params: {
+  workspaceId: string
   analysedAt: Date
   snapshotDate: Date
   /** snapshotDate 기준 KST 자정 경과일. 2 이상이면 stale 경고 라벨 표시. */
@@ -196,7 +165,12 @@ export async function notifyInventoryAnalysis(params: {
   blocks.push(divider())
   blocks.push(context(`전체 결과는 <${inventoryUrl}|재고 관리 페이지>에서 확인하세요`))
 
-  return postMessage(blocks, `쿠팡 재고 분석 완료: ${totalIssues}건의 이슈 발견`)
+  return sendDeckNotification({
+    workspaceId: params.workspaceId,
+    deckKey: DECK_KEY,
+    blocks,
+    text: `쿠팡 재고 분석 완료: ${totalIssues}건의 이슈 발견`,
+  })
 }
 
 // ─── Stale 데이터 알림 ──────────────────────────────────────────────────────
@@ -206,6 +180,7 @@ export async function notifyInventoryAnalysis(params: {
  * 같은 snapshotDate에 대해 dedupe marker가 호출측에서 관리된다.
  */
 export async function notifyInventoryStaleData(params: {
+  workspaceId: string
   snapshotDate: Date
   ageDays: number
 }): Promise<boolean> {
@@ -222,7 +197,12 @@ export async function notifyInventoryStaleData(params: {
     context(`<${inventoryUrl}|재고 관리 페이지>에서 마지막 상태를 확인하세요`),
   ]
 
-  return postMessage(blocks, `쿠팡 재고 분석 스킵 — 데이터가 ${params.ageDays}일 전입니다`)
+  return sendDeckNotification({
+    workspaceId: params.workspaceId,
+    deckKey: DECK_KEY,
+    blocks,
+    text: `쿠팡 재고 분석 스킵 — 데이터가 ${params.ageDays}일 전입니다`,
+  })
 }
 
 // ─── 워커 다운 알림 ────────────────────────────────────────────────────────
@@ -253,5 +233,5 @@ export async function notifyWorkerDown(params: {
     ),
   ]
 
-  return postMessage(blocks, `워커 다운 의심: ${params.service}`)
+  return sendSystemNotification({ blocks, text: `워커 다운 의심: ${params.service}` })
 }

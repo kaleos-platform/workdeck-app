@@ -10,6 +10,7 @@ import { AnalysisSchedule } from '@/components/analysis/analysis-schedule'
 import { AgentConfig } from '@/components/settings/agent-config'
 import { AgentScheduledMessages } from '@/components/settings/agent-scheduled-messages'
 import { AgentActivityLog } from '@/components/settings/agent-activity-log'
+import { DeckSlackNotifyCard } from '@/components/settings/deck-slack-notify-card'
 import { cn } from '@/lib/utils'
 
 function StatusDot({ active }: { active: boolean | null }) {
@@ -18,7 +19,7 @@ function StatusDot({ active }: { active: boolean | null }) {
     <span
       className={cn(
         'inline-block h-1.5 w-1.5 rounded-full',
-        active ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600',
+        active ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
       )}
     />
   )
@@ -40,12 +41,14 @@ export default function CoupangAdsSettingsPage() {
       fetch('/api/deck-agents').then((r) => (r.ok ? r.json() : null)),
       fetch('/api/collection/schedule').then((r) => (r.ok ? r.json() : null)),
       fetch('/api/collection/credentials').then((r) => (r.ok ? r.json() : null)),
-    ]).then(([agentData, scheduleData, credData]) => {
-      const agent = agentData?.agent
-      setAgentActive(agent?.enabled ?? false)
-      setScheduleActive(scheduleData?.schedule?.enabled ?? false)
-      setCredentialActive(credData?.isConnected ?? false)
-    }).catch(() => {})
+    ])
+      .then(([agentData, scheduleData, credData]) => {
+        const agent = agentData?.agent
+        setAgentActive(agent?.enabled ?? false)
+        setScheduleActive(scheduleData?.schedule?.enabled ?? false)
+        setCredentialActive(credData?.isConnected ?? false)
+      })
+      .catch(() => {})
   }, [])
 
   return (
@@ -86,6 +89,7 @@ export default function CoupangAdsSettingsPage() {
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
+          <DeckSlackNotifyCard deckKey="coupang-ads" />
           <AgentScheduledMessages onNavigateTab={setActiveTab} />
         </TabsContent>
 

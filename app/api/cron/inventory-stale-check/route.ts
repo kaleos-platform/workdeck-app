@@ -72,17 +72,18 @@ export async function GET(request: NextRequest) {
 
       if (!existing) {
         try {
-          await notifyInventoryStaleData({
+          // 반환값이 실제 발송 성공 여부 — Deck 알림 토글 off면 false(미발송).
+          notified = await notifyInventoryStaleData({
+            workspaceId: row.workspaceId,
             snapshotDate: row.snapshotDate,
             ageDays,
           })
-          notified = true
         } catch (err) {
           console.error(`[cron/inventory-stale-check] Slack 실패 (${row.workspaceId}):`, err)
         }
 
         // Slack 전송 성공 시에만 dedupe 마커 기록.
-        // 실패 시 마커 없음 → 다음 cron 실행에서 재시도(영구 침묵 방지).
+        // 미발송(실패·토글 off) 시 마커 없음 → 다음 cron 실행에서 재평가(영구 침묵 방지).
         if (notified) {
           await prisma.inventoryAnalysis.create({
             data: {

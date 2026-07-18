@@ -30,24 +30,40 @@ import {
 } from './login-guard.js'
 
 /**
+ * 수집 파이프라인 컨텍스트 — 실패 시 알림에 workspaceId를 실어 Deck 토글 게이트가 적용되도록 한다.
+ * getCredentials() 성공 직후에 채워진다. getCredentials 이전(진짜 초기 실패)에는 비어 있어
+ * 알림이 레거시 경로만 탄다.
+ */
+type CollectionContext = { workspaceId?: string }
+
+/**
  * 수집 실패 공통 처리 — Slack 알림 + (로그인 실패면) 자동 로그인 쿨다운 진입.
  * LoginError 면 사유별 안내 알림(디듀프)을, 그 외면 일반 수집 실패 알림을 보낸다.
+ * workspaceId가 확보됐으면 알림에 전달해 Deck 토글이 적용되도록 한다.
  */
-async function handleCollectionFailure(error: unknown, source: string): Promise<void> {
+async function handleCollectionFailure(
+  error: unknown,
+  source: string,
+  workspaceId?: string
+): Promise<void> {
   if (error instanceof LoginError) {
     // 막힌 상태에서 자동 경로가 재로그인 난사하지 않도록 쿨다운(Akamai 악화 방지).
     startLoginCooldown(error.reason)
     // 같은 사유 알림이 폴링마다 도배되지 않게 디듀프.
     if (shouldAlertLoginFailure(error.reason)) {
-      await notifyLoginFailed({ reason: error.reason, source, detail: error.message }).catch(
-        () => {}
-      )
+      await notifyLoginFailed({
+        reason: error.reason,
+        source,
+        detail: error.message,
+        workspaceId,
+      }).catch(() => {})
     }
     return
   }
-  await notifyCollectionFailed(error instanceof Error ? error.message : String(error)).catch(
-    () => {}
-  )
+  await notifyCollectionFailed(
+    error instanceof Error ? error.message : String(error),
+    workspaceId
+  ).catch(() => {})
 }
 
 /**
@@ -114,6 +130,7 @@ export async function runCollectionForRun(runId: string): Promise<void> {
   }
 
   let downloadedFilePath: string | null = null
+  const ctx: CollectionContext = {}
 
   try {
     // ── Step 2: 상태 → RUNNING ──
@@ -121,7 +138,7 @@ export async function runCollectionForRun(runId: string): Promise<void> {
     console.log(`[manual] 상태: RUNNING (runId: ${runId})`)
 
     // ── Step 3~7: 공통 파이프라인 ──
-    downloadedFilePath = await executeCollectionPipeline(runId, true)
+    downloadedFilePath = await executeCollectionPipeline(runId, true, ctx)
     // 사용자 직접 트리거(manual)가 성공 = 자격증명/차단이 정상 복구됨 → 자동 쿨다운 해제.
     clearLoginCooldown()
   } catch (error) {
@@ -135,7 +152,7 @@ export async function runCollectionForRun(runId: string): Promise<void> {
     } catch (updateError) {
       console.error('[manual] 상태 업데이트 실패:', updateError)
     }
-    await handleCollectionFailure(error, 'manual')
+    await handleCollectionFailure(error, 'manual', ctx.workspaceId)
     throw error
   } finally {
     if (downloadedFilePath && fs.existsSync(downloadedFilePath)) {
@@ -177,6 +194,7 @@ export async function runCollection(triggeredBy: string = 'scheduled'): Promise<
 
   let runId: string | null = null
   let downloadedFilePath: string | null = null
+  const ctx: CollectionContext = {}
 
   try {
     // ── Step 1: CollectionRun 생성 ──
@@ -190,7 +208,7 @@ export async function runCollection(triggeredBy: string = 'scheduled'): Promise<
     console.log('상태: RUNNING')
 
     // ── Step 3~7: 공통 파이프라인 ──
-    downloadedFilePath = await executeCollectionPipeline(runId)
+    downloadedFilePath = await executeCollectionPipeline(runId, false, ctx)
   } catch (error) {
     // ── Step 8: 에러 시 → FAILED ──
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -210,7 +228,7 @@ export async function runCollection(triggeredBy: string = 'scheduled'): Promise<
 
     // 기존엔 scheduled 실패 시 Slack 알림이 없어 비번 만료를 몇 시간씩 몰랐다(운영 갭).
     // 사유별 알림 + (로그인 실패면) 자동 쿨다운 진입.
-    await handleCollectionFailure(error, triggeredBy)
+    await handleCollectionFailure(error, triggeredBy, ctx.workspaceId)
 
     throw error
   } finally {
@@ -227,10 +245,16 @@ export async function runCollection(triggeredBy: string = 'scheduled'): Promise<
 }
 
 /** Step 3~7 공통 파이프라인 — 자격증명 → 다운로드 → 파싱 → 업로드 → 완료 */
-async function executeCollectionPipeline(runId: string, isManual = false): Promise<string | null> {
+async function executeCollectionPipeline(
+  runId: string,
+  isManual = false,
+  ctx?: CollectionContext
+): Promise<string | null> {
   // ── Step 3: 자격증명 복호화 ──
   console.log('자격증명 조회 및 복호화 중...')
   const credential = await getCredentials()
+  // 실패 알림이 Deck 토글 게이트를 타도록 workspaceId를 컨텍스트에 채운다(이 시점 이후 실패만 해당).
+  if (ctx) ctx.workspaceId = credential.workspaceId
   // iv가 'none'이면 평문 저장 (ENCRYPTION_KEY 미설정 환경)
   const password =
     credential.passwordIv === 'none'
