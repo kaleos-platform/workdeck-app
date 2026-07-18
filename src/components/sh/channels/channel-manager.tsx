@@ -410,6 +410,7 @@ export function ShChannelManager() {
                   <TableHead className="w-9" />
                   <TableHead>채널명</TableHead>
                   <TableHead>유형</TableHead>
+                  <TableHead className="text-right">수수료</TableHead>
                   <TableHead>시뮬</TableHead>
                   <TableHead>상태</TableHead>
                   <TableHead className="text-right">수정</TableHead>
@@ -456,6 +457,27 @@ export function ShChannelManager() {
                           )}
                         </TableCell>
 
+                        {/* 수수료 — 기본 카테고리율 (여러 개면 "외 N") */}
+                        <TableCell className="text-right tabular-nums">
+                          {(() => {
+                            if (ch.feeRates.length === 0)
+                              return <span className="text-xs text-muted-foreground">-</span>
+                            const basic =
+                              ch.feeRates.find((f) => f.categoryName === '기본') ?? ch.feeRates[0]
+                            const extra = ch.feeRates.length - 1
+                            return (
+                              <span className="text-sm">
+                                {Number(basic.ratePercent).toFixed(1)}%
+                                {extra > 0 && (
+                                  <span className="ml-1 text-xs text-muted-foreground">
+                                    외 {extra}
+                                  </span>
+                                )}
+                              </span>
+                            )
+                          })()}
+                        </TableCell>
+
                         {/* 시뮬레이션 */}
                         <TableCell>
                           {ch.useSimulation ? (
@@ -491,7 +513,7 @@ export function ShChannelManager() {
                       {/* 확장 행 — 카테고리별 수수료 read-only */}
                       {isExpanded && (
                         <TableRow className="hover:bg-transparent">
-                          <TableCell colSpan={6} className="bg-muted/30 px-6 py-3">
+                          <TableCell colSpan={7} className="bg-muted/30 px-6 py-3">
                             <p className="mb-2 text-xs font-medium text-muted-foreground">
                               카테고리별 수수료
                             </p>

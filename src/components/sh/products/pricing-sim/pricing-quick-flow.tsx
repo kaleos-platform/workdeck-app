@@ -413,6 +413,8 @@ export function PricingQuickFlow() {
     const c = allChannels.find((ch) => ch.id === id)
     if (c)
       setChOverrides((prev) => (prev[id] ? prev : { ...prev, [id]: seedOverride(c, settings) }))
+    // 채널별 설정 편집 영역을 기본으로 펼쳐 바로 확인·조정 가능하게 한다
+    setExpandedChannels((prev) => new Set(prev).add(id))
     setChannelPickerId('')
   }
 
