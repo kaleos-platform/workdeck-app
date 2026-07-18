@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Info, Plus, RotateCcw, Save, Settings2 } from 'lucide-react'
+import { ChevronDown, Info, Plus, RotateCcw, Save, Settings2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -71,9 +71,9 @@ type RowEntry = {
 }
 
 /**
- * 좌측 패널에서 라이브 조정하는 시뮬 설정 (세션 한정, 미저장).
+ * 좌측 패널에서 라이브 조정하는 시뮬 설정 (세션 한정, 미저장) — 전 채널 공통 항목만.
  * 설정 다이얼로그 기본값에서 초기화 → 슬라이더/토글로 즉시 덮어쓰기.
- * 모든 채널 매트릭스에 공통 적용 (채널 DB 값보다 우선).
+ * 채널별 비용(수수료·배송·PG·광고)은 LiveSim이 아니라 채널별 override(ChOverride)로 관리한다.
  */
 type LiveSim = {
   targetMargin: number // 0~1 목표 마진율 (good 역산 기준)
@@ -82,35 +82,72 @@ type LiveSim = {
   vatRate: number // 0~1
   returnRate: number // 0~1
   returnHandling: number // 원/건
-  shippingCost: number // 원 (물류·풀필먼트, 전 채널 공통)
-  paymentFeePct: number // 0~1 PG (전 채널 공통)
-  applyAdCost: boolean // 광고비 사용
-  adCostPct: number // 0~1 광고비 기본값 (채널별 미입력 시 fallback)
+}
+
+/**
+ * 채널별 비용 override (세션 한정) — 채널 DB 값에서 프리필 후 화면에서 즉시 변경 가능.
+ * 시뮬레이션에만 적용되며 채널 설정에는 저장되지 않는다.
+ */
+type ChOverride = {
+  feePct: number // 기본 카테고리 수수료율 (0~100, UI %)
+  shippingFee: number // 원
+  freeShippingThreshold: number | null // 원 (무료배송 최소주문금액; null=배송비 미부과)
+  paymentFeeIncluded: boolean
+  paymentFeePct: number // 0~1 PG
+  applyAdCost: boolean
+  adPct: number // 0~1 광고비율
 }
 
 // ─── 헬퍼 ─────────────────────────────────────────────────────────────────────
 
-/** ApiCh → MatrixChannel — 채널 수수료는 DB, 나머지 비용은 라이브 설정으로 override */
-function apiChToMatrixChannel(c: ApiCh, live: LiveSim): MatrixChannel {
+// 채널·설정 모두 미설정일 때 원가 과소평가를 막기 위한 앱 내장 기본값
+// (Space의 ProductPricingSettings는 DB 기본값이 0이라 실제로 비어있는 경우가 많음)
+const DEFAULT_PG_PCT = 0.02 // 결제수수료율 (0~1)
+const FALLBACK_SHIPPING_COST = 3000 // 배송비 (원)
+const FALLBACK_AD_PCT = 8 // 광고비율 (%, 0~100)
+
+/**
+ * 채널 DB 값에서 ChOverride 초기값 생성.
+ * 채널에 명시된 값은 그대로 사용하고, 미설정 항목은 글로벌 설정값 → (그마저 0/미설정이면)
+ * 앱 내장 기본값 순으로 폴백한다 (미설정=0 이 아니라 합리적 기본값 → 원가 과소평가 방지).
+ * 이후 채널별로 즉시 변경 가능.
+ */
+function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
+  const feeBasic = c.feeRates.find((f) => f.categoryName === '기본') ?? c.feeRates[0]
+  const shippingFee =
+    c.shippingFee != null
+      ? Number(c.shippingFee)
+      : settings.defaultShippingCost || FALLBACK_SHIPPING_COST
+  // 명시 임계값이 있으면 무료배송 기준(프로모)으로, 없으면 항상 부과(물류비 성격, 기존 동작).
+  const freeShippingThreshold =
+    c.freeShippingThreshold != null ? Number(c.freeShippingThreshold) : shippingFee > 0 ? 1 : null
+  // PG를 명시(별도 부과)한 채널만 채널값 사용, 그 외엔 기본 2% 별도 부과.
+  const pgExplicit = c.paymentFeeIncluded === false && c.paymentFeePct != null
+  return {
+    feePct: feeBasic ? Number(feeBasic.ratePercent) : settings.defaultChannelFeePct,
+    shippingFee,
+    freeShippingThreshold,
+    paymentFeeIncluded: false,
+    paymentFeePct: pgExplicit ? Number(c.paymentFeePct) : DEFAULT_PG_PCT,
+    // 광고비는 기본 적용(글로벌 기본값), 채널별로 끌 수 있음.
+    applyAdCost: true,
+    adPct: (settings.defaultAdCostPct || FALLBACK_AD_PCT) / 100,
+  }
+}
+
+/** ApiCh + 채널별 override → MatrixChannel — 채널 DB 값 기준, 화면 변경분 반영 */
+function apiChToMatrixChannel(c: ApiCh, ov: ChOverride): MatrixChannel {
   const channelType = c.channelTypeDef?.isSalesChannel === false ? 'INTERNAL_TRANSFER' : null
   return {
     id: c.id,
     name: c.name,
     channelType,
-    feeRates:
-      c.feeRates.length > 0
-        ? c.feeRates.map((fr) => ({
-            categoryName: fr.categoryName,
-            ratePercent: Number(fr.ratePercent),
-          }))
-        : [{ categoryName: '기본', ratePercent: 0 }],
-    // PG·배송비는 라이브 설정(전 채널 공통)으로 override
-    paymentFeeIncluded: false,
-    paymentFeePct: live.paymentFeePct,
-    applyAdCost: live.applyAdCost,
-    shippingFee: live.shippingCost,
-    // 물류비는 항상 비용 반영 (threshold > 0, 모든 가격 초과)
-    freeShippingThreshold: live.shippingCost > 0 ? 1 : null,
+    feeRates: [{ categoryName: '기본', ratePercent: ov.feePct }],
+    paymentFeeIncluded: ov.paymentFeeIncluded,
+    paymentFeePct: ov.paymentFeePct,
+    applyAdCost: ov.applyAdCost,
+    shippingFee: ov.shippingFee,
+    freeShippingThreshold: ov.freeShippingThreshold,
   }
 }
 
@@ -137,11 +174,6 @@ function liveFromSettings(s: PricingFullSettings): LiveSim {
     vatRate: s.defaultVatRate,
     returnRate: s.defaultReturnRate,
     returnHandling: s.defaultReturnShipping,
-    shippingCost: s.defaultShippingCost,
-    // PG는 설정에 별도 필드 없음 — 운영비 자리 대신 2% 기본값
-    paymentFeePct: 0.02,
-    applyAdCost: true,
-    adCostPct: s.defaultAdCostPct / 100,
   }
 }
 
@@ -344,12 +376,43 @@ export function PricingQuickFlow() {
   const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>([])
   const [channelPickerId, setChannelPickerId] = useState<string>('')
 
-  // 채널별 광고비율 override (0~1). 미설정 채널은 live.adCostPct fallback.
-  const [adPctByChannel, setAdPctByChannel] = useState<Record<string, number>>({})
+  // 채널별 비용 override (세션 한정). 채널 DB 값에서 프리필, 화면에서 즉시 변경.
+  const [chOverrides, setChOverrides] = useState<Record<string, ChOverride>>({})
+  // 채널별 편집 영역 펼침 상태
+  const [expandedChannels, setExpandedChannels] = useState<Set<string>>(() => new Set())
+
+  // 채널 override 조회 — 미설정이면 채널 DB 값 + 설정 기본값에서 즉석 seed (렌더 순수성 유지)
+  const overrideOf = useCallback(
+    (c: ApiCh): ChOverride => chOverrides[c.id] ?? seedOverride(c, settings),
+    [chOverrides, settings]
+  )
+
+  const setOverride = useCallback(
+    (c: ApiCh, patch: Partial<ChOverride>) => {
+      setChOverrides((prev) => ({
+        ...prev,
+        [c.id]: { ...(prev[c.id] ?? seedOverride(c, settings)), ...patch },
+      }))
+    },
+    [settings]
+  )
+
+  const toggleExpanded = (id: string) => {
+    setExpandedChannels((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const addChannel = (id: string) => {
     if (!id || selectedChannelIds.includes(id)) return
     setSelectedChannelIds((prev) => [...prev, id])
+    // 선택 시 채널 DB 값으로 override 고정 (이후 채널 설정이 바뀌어도 세션값 유지)
+    const c = allChannels.find((ch) => ch.id === id)
+    if (c)
+      setChOverrides((prev) => (prev[id] ? prev : { ...prev, [id]: seedOverride(c, settings) }))
     setChannelPickerId('')
   }
 
@@ -357,23 +420,24 @@ export function PricingQuickFlow() {
     setSelectedChannelIds((prev) => prev.filter((c) => c !== id))
   }
 
-  const adPctOf = useCallback(
-    (channelId: string) => adPctByChannel[channelId] ?? live.adCostPct,
-    [adPctByChannel, live.adCostPct]
+  // 가격 시뮬레이션 사용(useSimulation) 채널만 대상
+  const simChannels = useMemo(
+    () => allChannels.filter((c) => c.useSimulation !== false),
+    [allChannels]
   )
 
   const selectedApiChannels = useMemo(
     () =>
       selectedChannelIds
-        .map((id) => allChannels.find((c) => c.id === id))
+        .map((id) => simChannels.find((c) => c.id === id))
         .filter((c): c is ApiCh => c != null),
-    [selectedChannelIds, allChannels]
+    [selectedChannelIds, simChannels]
   )
 
   // 추가 가능한 채널 목록
   const availableChannels = useMemo(
-    () => allChannels.filter((c) => !selectedChannelIds.includes(c.id)),
-    [allChannels, selectedChannelIds]
+    () => simChannels.filter((c) => !selectedChannelIds.includes(c.id)),
+    [simChannels, selectedChannelIds]
   )
 
   // ── 프로모션 ──────────────────────────────────────────────────────────────
@@ -464,7 +528,8 @@ export function PricingQuickFlow() {
     setRows([{ id: nextRowId(), resolved: null }])
     setBundleNameInput('')
     setSelectedChannelIds([])
-    setAdPctByChannel({})
+    setChOverrides({})
+    setExpandedChannels(new Set())
     setPromotion({ type: 'NONE', value: 0 })
     setLive(liveFromSettings(settings))
     setSnap(true)
@@ -474,12 +539,15 @@ export function PricingQuickFlow() {
   // ── 우측 보드용 채널 + globals ─────────────────────────────────────────────
   const boardChannels = useMemo(
     () =>
-      selectedApiChannels.map((c) => ({
-        api: c,
-        adPct: adPctOf(c.id),
-        channel: apiChToMatrixChannel(c, live),
-      })),
-    [selectedApiChannels, live, adPctOf]
+      selectedApiChannels.map((c) => {
+        const ov = overrideOf(c)
+        return {
+          api: c,
+          adPct: ov.adPct,
+          channel: apiChToMatrixChannel(c, ov),
+        }
+      }),
+    [selectedApiChannels, overrideOf]
   )
 
   // KPI — 통과 채널 수 + 권장가 범위. 카드와 동일 역산(good)을 한 번 더 계산.
@@ -728,47 +796,9 @@ export function PricingQuickFlow() {
                 />
               </FieldRow>
 
-              {/* 물류·풀필먼트비 */}
-              <FieldRow
-                label="물류·풀필먼트비"
-                sub="입출고·포장 · 건당"
-                tooltip="주문 1건당 입출고·포장 고정비. 전 채널 공통 적용됩니다."
-              >
-                <SuffixInput
-                  value={String(live.shippingCost)}
-                  onChange={(v) => setLiveField('shippingCost', Number(v) || 0)}
-                  suffix="₩"
-                  step={100}
-                  className="w-24"
-                />
-              </FieldRow>
-
-              {/* PG 결제 수수료 */}
-              <FieldRow
-                label="PG 결제 수수료"
-                sub="전 채널 공통"
-                tooltip="결제대행(PG) 수수료. 판매가 기준이며 전 채널에 공통 적용됩니다."
-              >
-                <SuffixInput
-                  value={String(Math.round(live.paymentFeePct * 1000) / 10)}
-                  onChange={(v) => setLiveField('paymentFeePct', (Number(v) || 0) / 100)}
-                  suffix="%"
-                  step={0.1}
-                  className="w-20"
-                />
-              </FieldRow>
-
-              {/* 광고비 사용 */}
-              <FieldRow
-                label="광고비 사용"
-                sub="채널별 매출 대비 비율 적용"
-                tooltip="끄면 광고비 0. 켜면 ③ 판매채널의 채널별 광고비율(%)을 판매가 대비 비용으로 적용합니다."
-              >
-                <Switch
-                  checked={live.applyAdCost}
-                  onCheckedChange={(v) => setLiveField('applyAdCost', v)}
-                />
-              </FieldRow>
+              <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
+                배송비·PG·광고비·수수료율은 ③ 판매채널에서 채널별로 설정합니다.
+              </p>
             </TooltipProvider>
           </StepCard>
 
@@ -776,41 +806,131 @@ export function PricingQuickFlow() {
           <StepCard step={3} title="판매채널" badge={`${selectedChannelIds.length}개 선택`}>
             <div className="space-y-2">
               {boardChannels.map((bc) => {
-                const feeBasic =
-                  bc.api.feeRates.find((f) => f.categoryName === '기본') ?? bc.api.feeRates[0]
-                const feePct = feeBasic ? Number(feeBasic.ratePercent) : 0
+                const ov = overrideOf(bc.api)
+                const open = expandedChannels.has(bc.api.id)
                 return (
                   <div
                     key={bc.api.id}
-                    className="flex items-center gap-2 rounded-md border border-[var(--ps-border)] bg-[var(--ps-card)] px-3 py-2"
+                    className="rounded-md border border-[var(--ps-border)] bg-[var(--ps-card)]"
                   >
-                    <button
-                      type="button"
-                      onClick={() => removeChannel(bc.api.id)}
-                      className="text-emerald-600"
-                      aria-label={`${bc.api.name} 선택 해제`}
-                    >
-                      ✓
-                    </button>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-sm font-medium">{bc.api.name}</span>
-                      <span className="ml-1.5 text-[10px] text-muted-foreground">
-                        수수료 {feePct.toFixed(1)}%
-                      </span>
+                    <div className="flex items-center gap-2 px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={() => removeChannel(bc.api.id)}
+                        className="text-emerald-600"
+                        aria-label={`${bc.api.name} 선택 해제`}
+                      >
+                        ✓
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-sm font-medium">{bc.api.name}</span>
+                        <span className="ml-1.5 text-[10px] text-muted-foreground">
+                          수수료 {ov.feePct.toFixed(1)}% · 배송 ₩{fmt(ov.shippingFee)}
+                          {ov.applyAdCost ? ` · 광고 ${(ov.adPct * 100).toFixed(1)}%` : ''}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleExpanded(bc.api.id)}
+                        className="text-muted-foreground hover:text-foreground"
+                        aria-label={`${bc.api.name} 채널별 비용 설정`}
+                        aria-expanded={open}
+                      >
+                        <ChevronDown
+                          className={cn('h-4 w-4 transition-transform', open && 'rotate-180')}
+                        />
+                      </button>
                     </div>
-                    {/* 채널별 광고비율 */}
-                    <SuffixInput
-                      value={String(Math.round(bc.adPct * 1000) / 10)}
-                      onChange={(v) =>
-                        setAdPctByChannel((prev) => ({
-                          ...prev,
-                          [bc.api.id]: (Number(v) || 0) / 100,
-                        }))
-                      }
-                      suffix="%"
-                      step={0.1}
-                      className="w-16"
-                    />
+                    {open && (
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-2 border-t border-[var(--ps-border)] px-3 py-2.5">
+                        <label className="space-y-1">
+                          <span className="text-[10px] text-muted-foreground">
+                            카테고리 수수료율
+                          </span>
+                          <SuffixInput
+                            value={String(ov.feePct)}
+                            onChange={(v) => setOverride(bc.api, { feePct: Number(v) || 0 })}
+                            suffix="%"
+                            step={0.1}
+                            className="w-full"
+                          />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="text-[10px] text-muted-foreground">광고비율</span>
+                          <SuffixInput
+                            value={String(Math.round(ov.adPct * 1000) / 10)}
+                            onChange={(v) => setOverride(bc.api, { adPct: (Number(v) || 0) / 100 })}
+                            suffix="%"
+                            step={0.1}
+                            className="w-full"
+                          />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="text-[10px] text-muted-foreground">배송비</span>
+                          <SuffixInput
+                            value={String(ov.shippingFee)}
+                            onChange={(v) => setOverride(bc.api, { shippingFee: Number(v) || 0 })}
+                            suffix="₩"
+                            step={100}
+                            className="w-full"
+                          />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="text-[10px] text-muted-foreground">
+                            무료배송 기준 (비우면 미부과)
+                          </span>
+                          <SuffixInput
+                            value={
+                              ov.freeShippingThreshold != null
+                                ? String(ov.freeShippingThreshold)
+                                : ''
+                            }
+                            onChange={(v) =>
+                              setOverride(bc.api, {
+                                freeShippingThreshold: v.trim() === '' ? null : Number(v) || 0,
+                              })
+                            }
+                            suffix="₩"
+                            step={1000}
+                            className="w-full"
+                          />
+                        </label>
+                        <div className="col-span-2 flex items-center justify-between gap-2">
+                          <span className="text-[10px] text-muted-foreground">
+                            PG 결제수수료{ov.paymentFeeIncluded ? ' (채널수수료에 포함)' : ''}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {!ov.paymentFeeIncluded && (
+                              <SuffixInput
+                                value={String(Math.round(ov.paymentFeePct * 1000) / 10)}
+                                onChange={(v) =>
+                                  setOverride(bc.api, { paymentFeePct: (Number(v) || 0) / 100 })
+                                }
+                                suffix="%"
+                                step={0.1}
+                                className="w-20"
+                              />
+                            )}
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-muted-foreground">포함</span>
+                              <Switch
+                                checked={ov.paymentFeeIncluded}
+                                onCheckedChange={(v) =>
+                                  setOverride(bc.api, { paymentFeeIncluded: v })
+                                }
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-span-2 flex items-center justify-between gap-2">
+                          <span className="text-[10px] text-muted-foreground">광고비 적용</span>
+                          <Switch
+                            checked={ov.applyAdCost}
+                            onCheckedChange={(v) => setOverride(bc.api, { applyAdCost: v })}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -830,7 +950,8 @@ export function PricingQuickFlow() {
               </Select>
             )}
             <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
-              % = 판매가(VAT 포함) 대비 채널 수수료. 광고비는 채널별 입력값을 사용합니다.
+              채널에 설정된 값에서 시작합니다. ▾를 눌러 이 시뮬레이션에만 적용할 값으로 변경할 수
+              있습니다.
             </p>
           </StepCard>
 
