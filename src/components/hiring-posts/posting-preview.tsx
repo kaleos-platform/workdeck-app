@@ -131,7 +131,7 @@ export function PostingPreview({
                     </div>
                   )}
                 </div>
-              ) : c.data ? (
+              ) : c.contentType === 'text' && c.data ? (
                 // 공개 페이지(app/p/[uuid])와 동일한 렌더 — 에디터 박스 없이 본문만 표시
                 <div
                   key={c.id}
