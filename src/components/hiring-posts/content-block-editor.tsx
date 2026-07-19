@@ -16,6 +16,7 @@ import {
   Briefcase,
   Maximize2,
   FolderOpen,
+  TriangleAlert,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -344,13 +345,15 @@ export function ContentBlockEditor({
       <div className="space-y-4">
         {contents.map((c, idx) => {
           const meta = CONTENT_TYPE_META[c.contentType]
-          const Icon = meta.icon
+          // 알 수 없는(레거시) contentType — 렌더 크래시 방지, 삭제만 허용
+          const isUnsupported = !meta
+          const Icon = meta?.icon ?? TriangleAlert
           return (
             <div key={c.id} className="space-y-3 rounded-lg border p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Icon className="size-4 text-muted-foreground" />
-                  {meta.label} 블록
+                  {meta?.label ?? '지원하지 않는'} 블록
                 </div>
                 <div className="flex items-center gap-1">
                   {c.contentType === 'text' && (
@@ -385,7 +388,11 @@ export function ContentBlockEditor({
                 </div>
               </div>
 
-              {c.contentType === 'text' ? (
+              {isUnsupported ? (
+                <p className="text-xs text-muted-foreground">
+                  지원하지 않는 블록입니다. 삭제 후 새 블록을 추가하세요.
+                </p>
+              ) : c.contentType === 'text' ? (
                 <Editor
                   key={`${c.id}-${remountTick}`}
                   initialDoc={c.data ?? undefined}
