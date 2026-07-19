@@ -26,10 +26,15 @@ export type PricingFullSettings = {
   //   아래 defaultChannelFeePct 등 나머지 비율 필드는 0~1 단위.
   //   이 두 필드를 직접 계산에 사용할 때는 반드시 /100 변환 필요.
   //   변환 예시: liveFromSettings() — adCostPct: s.defaultAdCostPct / 100
+  //
+  // ⚠️ 이 다이얼로그는 일부 필드(ad/operating/channelFee/shipping/auto*)를 더는 편집하지 않는다.
+  //   광고비는 채널별 설정(Channel.adCostPct)으로, 채널수수료율·배송비는 채널 설정이 소스,
+  //   운영비·자동적용 토글은 계산 미반영(레거시)이라 UI에서 제거됨.
+  //   단 값은 savedRef를 통해 그대로 통과 저장한다(API/Zod 15필드 계약 유지).
   defaultOperatingCostPct: number
   defaultAdCostPct: number
   defaultPackagingCost: number
-  // 채널 및 배송 (0~1 단위 DB 저장, UI에서 % 표시)
+  // 채널 및 배송 (0~1 단위 DB 저장) — UI 미편집, 통과 저장
   defaultChannelFeePct: number
   defaultShippingCost: number
   autoApplyChannelFee: boolean
@@ -96,16 +101,7 @@ function SuffixInput({
 
 export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onSaved }: Props) {
   // 기본 비용
-  const adId = useId()
-  const opId = useId()
   const packId = useId()
-
-  // 채널 및 배송
-  const chFeeId = useId()
-  const shipId = useId()
-  const autoChId = useId()
-  const autoAdId = useId()
-  const autoShipId = useId()
 
   // 반품 / 교환
   const retRateId = useId()
@@ -120,24 +116,13 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const plFairId = useId()
   const minMgnId = useId()
 
-  // 저장 완료 기준점 (dirty 체크용)
+  // 저장 완료 기준점 (dirty 체크용 + 미편집 필드 통과 저장 소스)
   const savedRef = useRef<PricingFullSettings>(initialSettings)
 
-  // ── 편집 상태 ─────────────────────────────────────────────────────────────
+  // ── 편집 상태 (편집 가능한 필드만) ─────────────────────────────────────────
 
-  // 기본 비용 (0~100 그대로)
-  const [adCost, setAdCost] = useState(String(initialSettings.defaultAdCostPct))
-  const [opCost, setOpCost] = useState(String(initialSettings.defaultOperatingCostPct))
+  // 기본 비용
   const [packCost, setPackCost] = useState(String(initialSettings.defaultPackagingCost))
-
-  // 채널 및 배송 (0~1 → % 표시)
-  const [channelFeePct, setChannelFeePct] = useState(
-    String(initialSettings.defaultChannelFeePct * 100)
-  )
-  const [shippingCost, setShippingCost] = useState(String(initialSettings.defaultShippingCost))
-  const [autoChannelFee, setAutoChannelFee] = useState(initialSettings.autoApplyChannelFee)
-  const [autoAdCost, setAutoAdCost] = useState(initialSettings.autoApplyAdCost)
-  const [autoShipping, setAutoShipping] = useState(initialSettings.autoApplyShipping)
 
   // 반품 / 교환 (0~1 → % 표시)
   const [returnRate, setReturnRate] = useState(String(initialSettings.defaultReturnRate * 100))
@@ -160,14 +145,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
   useEffect(() => {
     const s = initialSettings
-    setAdCost(String(s.defaultAdCostPct))
-    setOpCost(String(s.defaultOperatingCostPct))
     setPackCost(String(s.defaultPackagingCost))
-    setChannelFeePct(String(s.defaultChannelFeePct * 100))
-    setShippingCost(String(s.defaultShippingCost))
-    setAutoChannelFee(s.autoApplyChannelFee)
-    setAutoAdCost(s.autoApplyAdCost)
-    setAutoShipping(s.autoApplyShipping)
     setReturnRate(String(s.defaultReturnRate * 100))
     setReturnShipping(String(s.defaultReturnShipping))
     setIncludeVat(s.defaultIncludeVat)
@@ -178,14 +156,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     savedRef.current = s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    initialSettings.defaultAdCostPct,
-    initialSettings.defaultOperatingCostPct,
     initialSettings.defaultPackagingCost,
-    initialSettings.defaultChannelFeePct,
-    initialSettings.defaultShippingCost,
-    initialSettings.autoApplyChannelFee,
-    initialSettings.autoApplyAdCost,
-    initialSettings.autoApplyShipping,
     initialSettings.defaultReturnRate,
     initialSettings.defaultReturnShipping,
     initialSettings.defaultIncludeVat,
@@ -199,14 +170,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
   function resetToSaved() {
     const s = savedRef.current
-    setAdCost(String(s.defaultAdCostPct))
-    setOpCost(String(s.defaultOperatingCostPct))
     setPackCost(String(s.defaultPackagingCost))
-    setChannelFeePct(String(s.defaultChannelFeePct * 100))
-    setShippingCost(String(s.defaultShippingCost))
-    setAutoChannelFee(s.autoApplyChannelFee)
-    setAutoAdCost(s.autoApplyAdCost)
-    setAutoShipping(s.autoApplyShipping)
     setReturnRate(String(s.defaultReturnRate * 100))
     setReturnShipping(String(s.defaultReturnShipping))
     setIncludeVat(s.defaultIncludeVat)
@@ -225,11 +189,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
   // ── dirty 체크 ─────────────────────────────────────────────────────────────
 
-  const adVal = parseFloat(adCost)
-  const opVal = parseFloat(opCost)
   const packVal = parseFloat(packCost)
-  const chFeeVal = parseFloat(channelFeePct)
-  const shipVal = parseFloat(shippingCost)
   const retRateVal = parseFloat(returnRate)
   const retShipVal = parseFloat(returnShipping)
   const vatRateVal = parseFloat(vatRate)
@@ -238,11 +198,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const minMgnVal = parseFloat(minMargin)
 
   const allValid =
-    !isNaN(adVal) &&
-    !isNaN(opVal) &&
     !isNaN(packVal) &&
-    !isNaN(chFeeVal) &&
-    !isNaN(shipVal) &&
     !isNaN(retRateVal) &&
     !isNaN(retShipVal) &&
     !isNaN(vatRateVal) &&
@@ -253,14 +209,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const ref = savedRef.current
   const isDirty =
     allValid &&
-    (adVal !== ref.defaultAdCostPct ||
-      opVal !== ref.defaultOperatingCostPct ||
-      packVal !== ref.defaultPackagingCost ||
-      chFeeVal / 100 !== ref.defaultChannelFeePct ||
-      shipVal !== ref.defaultShippingCost ||
-      autoChannelFee !== ref.autoApplyChannelFee ||
-      autoAdCost !== ref.autoApplyAdCost ||
-      autoShipping !== ref.autoApplyShipping ||
+    (packVal !== ref.defaultPackagingCost ||
       retRateVal / 100 !== ref.defaultReturnRate ||
       retShipVal !== ref.defaultReturnShipping ||
       includeVat !== ref.defaultIncludeVat ||
@@ -283,22 +232,25 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
     setSaving(true)
     try {
+      // 미편집 필드(광고비·운영비·채널수수료율·배송비·자동적용 토글)는 savedRef 값을 그대로 통과
+      // — API/Zod는 15필드 전체를 요구하므로 누락 금지.
+      const prev = savedRef.current
       const res = await fetch('/api/sh/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          defaultAdCostPct: adVal,
-          defaultOperatingCostPct: opVal,
+          defaultAdCostPct: prev.defaultAdCostPct,
+          defaultOperatingCostPct: prev.defaultOperatingCostPct,
           defaultPackagingCost: packVal,
-          defaultChannelFeePct: chFeeVal / 100,
-          defaultShippingCost: shipVal,
+          defaultChannelFeePct: prev.defaultChannelFeePct,
+          defaultShippingCost: prev.defaultShippingCost,
           defaultReturnRate: retRateVal / 100,
           defaultReturnShipping: retShipVal,
           defaultIncludeVat: includeVat,
           defaultVatRate: vatRateVal / 100,
-          autoApplyChannelFee: autoChannelFee,
-          autoApplyAdCost: autoAdCost,
-          autoApplyShipping: autoShipping,
+          autoApplyChannelFee: prev.autoApplyChannelFee,
+          autoApplyAdCost: prev.autoApplyAdCost,
+          autoApplyShipping: prev.autoApplyShipping,
           platformTargetGood: plGoodVal / 100,
           platformTargetFair: plFairVal / 100,
           minimumAcceptableMargin: minMgnVal / 100,
@@ -311,14 +263,14 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
       const s = data.settings ?? data
 
       const saved: PricingFullSettings = {
-        defaultAdCostPct: Number(s.defaultAdCostPct ?? adVal),
-        defaultOperatingCostPct: Number(s.defaultOperatingCostPct ?? opVal),
+        defaultAdCostPct: Number(s.defaultAdCostPct ?? prev.defaultAdCostPct),
+        defaultOperatingCostPct: Number(s.defaultOperatingCostPct ?? prev.defaultOperatingCostPct),
         defaultPackagingCost: Number(s.defaultPackagingCost ?? packVal),
-        defaultChannelFeePct: Number(s.defaultChannelFeePct ?? chFeeVal / 100),
-        defaultShippingCost: Number(s.defaultShippingCost ?? shipVal),
-        autoApplyChannelFee: Boolean(s.autoApplyChannelFee ?? autoChannelFee),
-        autoApplyAdCost: Boolean(s.autoApplyAdCost ?? autoAdCost),
-        autoApplyShipping: Boolean(s.autoApplyShipping ?? autoShipping),
+        defaultChannelFeePct: Number(s.defaultChannelFeePct ?? prev.defaultChannelFeePct),
+        defaultShippingCost: Number(s.defaultShippingCost ?? prev.defaultShippingCost),
+        autoApplyChannelFee: Boolean(s.autoApplyChannelFee ?? prev.autoApplyChannelFee),
+        autoApplyAdCost: Boolean(s.autoApplyAdCost ?? prev.autoApplyAdCost),
+        autoApplyShipping: Boolean(s.autoApplyShipping ?? prev.autoApplyShipping),
         defaultReturnRate: Number(s.defaultReturnRate ?? retRateVal / 100),
         defaultReturnShipping: Number(s.defaultReturnShipping ?? retShipVal),
         defaultIncludeVat: Boolean(s.defaultIncludeVat ?? includeVat),
@@ -330,14 +282,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
       savedRef.current = saved
       Promise.resolve().then(() => {
-        setAdCost(String(saved.defaultAdCostPct))
-        setOpCost(String(saved.defaultOperatingCostPct))
         setPackCost(String(saved.defaultPackagingCost))
-        setChannelFeePct(String(saved.defaultChannelFeePct * 100))
-        setShippingCost(String(saved.defaultShippingCost))
-        setAutoChannelFee(saved.autoApplyChannelFee)
-        setAutoAdCost(saved.autoApplyAdCost)
-        setAutoShipping(saved.autoApplyShipping)
         setReturnRate(String(saved.defaultReturnRate * 100))
         setReturnShipping(String(saved.defaultReturnShipping))
         setIncludeVat(saved.defaultIncludeVat)
@@ -370,12 +315,9 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         </DialogHeader>
 
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="basic" className="text-xs">
               기본 비용
-            </TabsTrigger>
-            <TabsTrigger value="channel" className="text-xs">
-              채널 및 배송
             </TabsTrigger>
             <TabsTrigger value="return" className="text-xs">
               반품 / VAT
@@ -387,46 +329,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
           {/* ── 탭 1: 기본 비용 ── */}
           <TabsContent value="basic" className="mt-4 space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor={adId} className="text-xs">
-                광고비 (%)
-              </Label>
-              <SuffixInput
-                id={adId}
-                value={adCost}
-                onChange={setAdCost}
-                suffix="%"
-                min={0}
-                max={100}
-                step={0.1}
-                placeholder="10"
-                dirty={!isNaN(adVal) && adVal !== ref.defaultAdCostPct}
-              />
-              <p className="text-xs text-muted-foreground">
-                채널 광고비, 프로모션 비용을 매출 대비 퍼센트로 설정
-              </p>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor={opId} className="text-xs">
-                운영비 (%)
-              </Label>
-              <SuffixInput
-                id={opId}
-                value={opCost}
-                onChange={setOpCost}
-                suffix="%"
-                min={0}
-                max={100}
-                step={0.1}
-                placeholder="5"
-                dirty={!isNaN(opVal) && opVal !== ref.defaultOperatingCostPct}
-              />
-              <p className="text-xs text-muted-foreground">
-                인건비, 임대료 등 운영비를 매출 대비 퍼센트로 설정
-              </p>
-            </div>
-
             <div className="space-y-1.5">
               <Label htmlFor={packId} className="text-xs">
                 포장비 (원/건)
@@ -445,80 +347,13 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
                 1건당 포장 재료비 (박스, 테이프, 완충재 등)
               </p>
             </div>
+            <p className="text-xs text-muted-foreground">
+              채널 수수료율·배송비·광고비는 채널 설정(채널 관리 → 채널 수정)에서 채널별로
+              관리합니다.
+            </p>
           </TabsContent>
 
-          {/* ── 탭 2: 채널 및 배송 ── */}
-          <TabsContent value="channel" className="mt-4 space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor={chFeeId} className="text-xs">
-                  채널 수수료율 (%)
-                </Label>
-                <SuffixInput
-                  id={chFeeId}
-                  value={channelFeePct}
-                  onChange={setChannelFeePct}
-                  suffix="%"
-                  min={0}
-                  max={100}
-                  step={0.01}
-                  placeholder="10.8"
-                  dirty={!isNaN(chFeeVal) && chFeeVal / 100 !== ref.defaultChannelFeePct}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor={shipId} className="text-xs">
-                  배송비 (원)
-                </Label>
-                <SuffixInput
-                  id={shipId}
-                  value={shippingCost}
-                  onChange={setShippingCost}
-                  suffix="₩"
-                  min={0}
-                  step={100}
-                  placeholder="3000"
-                  dirty={!isNaN(shipVal) && shipVal !== ref.defaultShippingCost}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3 rounded-md border p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor={autoChId} className="text-xs">
-                    채널 수수료 자동 적용
-                  </Label>
-                  <p className="text-xs text-muted-foreground">시뮬레이션 생성 시 자동 채움</p>
-                </div>
-                <Switch
-                  id={autoChId}
-                  checked={autoChannelFee}
-                  onCheckedChange={setAutoChannelFee}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor={autoAdId} className="text-xs">
-                    광고비 자동 적용
-                  </Label>
-                  <p className="text-xs text-muted-foreground">시뮬레이션 생성 시 자동 채움</p>
-                </div>
-                <Switch id={autoAdId} checked={autoAdCost} onCheckedChange={setAutoAdCost} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor={autoShipId} className="text-xs">
-                    배송비 자동 적용
-                  </Label>
-                  <p className="text-xs text-muted-foreground">시뮬레이션 생성 시 자동 채움</p>
-                </div>
-                <Switch id={autoShipId} checked={autoShipping} onCheckedChange={setAutoShipping} />
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* ── 탭 3: 반품 / 교환 ── */}
+          {/* ── 탭 2: 반품 / VAT ── */}
           <TabsContent value="return" className="mt-4 space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -591,7 +426,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
             </div>
           </TabsContent>
 
-          {/* ── 탭 4: 마진 등급 ── */}
+          {/* ── 탭 3: 마진 등급 ── */}
           <TabsContent value="margin" className="mt-4 space-y-4">
             <p className="text-xs text-muted-foreground">
               마진율을 등급으로 분류하는 임계값입니다. 모든 채널에 동일하게 적용됩니다.

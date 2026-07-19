@@ -50,6 +50,7 @@ type Channel = {
   feeRates: { categoryName: string; ratePercent: number }[]
   usesMarketingBudget: boolean
   applyAdCost: boolean
+  adCostPct: number | null
   shippingFeeType: 'FIXED' | 'PERCENT'
   shippingFee: number | null
   shippingFeePct: number | null

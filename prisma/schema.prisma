@@ -1584,6 +1584,7 @@ model Channel {
   freeShippingThreshold   Decimal? @db.Decimal(18, 2) // 무료배송 최소 주문금액
   usesMarketingBudget     Boolean  @default(false)
   applyAdCost             Boolean  @default(false) // 시뮬레이션 시 광고비 자동 적용
+  adCostPct               Decimal? @db.Decimal(6, 4) // 광고비율 (0~1, null=미설정 → 시뮬 앱 기본값 폴백)
   // 배송비 산정 방식: FIXED=정액(shippingFee 원), PERCENT=판매가 대비 비율(shippingFeePct 0~1)
   shippingFeeType         ChannelShippingFeeType @default(FIXED)
   shippingFee             Decimal? @db.Decimal(18, 2)
