@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { PostingStatusBadge, type PostingStatus } from '@/components/hiring-posts/status-badge'
+import { PreviewFrame } from '@/components/hiring-posts/preview-frame'
+import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
 import { RECRUITING_POSTINGS_PATH, getRecruitingPostingBuildPath } from '@/lib/deck-routes'
 
 type Posting = {
@@ -114,7 +116,7 @@ export function PostingDetail({ posting, origin, embedHtml }: Props) {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_680px]">
         <div className="space-y-6">
           <div className="space-y-3 rounded-lg border p-6">
             <div>
@@ -187,14 +189,14 @@ export function PostingDetail({ posting, origin, embedHtml }: Props) {
           </div>
         </div>
 
-        {/* 우측 — 공고 미리보기(임베드 HTML과 동일한 결과) */}
-        <aside className="lg:sticky lg:top-6 lg:self-start">
-          <div className="space-y-3 rounded-lg border p-4">
-            <h2 className="font-medium">공고 미리보기</h2>
-            <div className="overflow-auto rounded-md border bg-white p-4">
-              <div dangerouslySetInnerHTML={{ __html: embedHtml }} />
+        {/* 우측 — 공고 미리보기(임베드 HTML과 동일한 결과, PC/모바일 폭 전환) */}
+        <aside className="space-y-3 lg:sticky lg:top-6 lg:self-start">
+          <h2 className="font-medium">공고 미리보기</h2>
+          <PreviewFrame>
+            <div className="rounded-md border bg-white p-4">
+              <div className={HIRING_PROSE_CLASS} dangerouslySetInnerHTML={{ __html: embedHtml }} />
             </div>
-          </div>
+          </PreviewFrame>
         </aside>
       </div>
     </div>

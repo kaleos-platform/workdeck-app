@@ -88,18 +88,29 @@ export function PricingChannelBoardCard({
   const recommended =
     rawRecommended != null && snap ? snapPrice(rawRecommended, 'end900') : rawRecommended
 
+  // 소비자가 상한 — 권장가는 소비자가를 초과할 수 없음(항목7).
+  // 소비자가 = Σ(컴포넌트 소비자가 × 수량). 0/미입력이면 상한 없음(null).
+  const retailCap = useMemo(() => {
+    const sum = bundle.components.reduce((s, c) => s + (c.retailPrice ?? 0) * c.quantity, 0)
+    return sum > 0 ? sum : null
+  }, [bundle])
+  // 판별은 미클램프 recommended 기준. 스냅 금지(retailCap=정확 소비자가).
+  const exceedsRetail = recommended != null && retailCap != null && recommended > retailCap
+  // 상한 클램프값 — 매트릭스·게이지·생성가에 모두 주입(표시가와 불일치 방지).
+  const effectiveRecommended = exceedsRetail ? retailCap : recommended
+
   // 권장가 기준 매트릭스 (프로모션 NONE) — 헤드라인 마진·스택바·민감도 차트 소스.
   // 헤드라인은 항상 "권장가에서 목표 마진 달성" 상태를 보여야 하므로 프로모션 미적용.
   const headlineMatrix = useMemo(() => {
-    if (recommended == null) return null
+    if (effectiveRecommended == null) return null
     return calculateMatrix({
-      bundle: { ...bundle, salePrice: recommended },
+      bundle: { ...bundle, salePrice: effectiveRecommended },
       channel,
       promotion: { type: 'NONE', value: 0 },
       globals,
       thresholds,
     })
-  }, [recommended, bundle, channel, globals, thresholds])
+  }, [effectiveRecommended, bundle, channel, globals, thresholds])
 
   const cell = headlineMatrix?.cells[0] ?? null
 
@@ -109,15 +120,15 @@ export function PricingChannelBoardCard({
   // 프로모션 적용 매트릭스 (실제 promotion) — 게이지 fill·하한 경고 소스.
   const hasPromo = promotion.type !== 'NONE'
   const promoMatrix = useMemo(() => {
-    if (recommended == null || !hasPromo) return null
+    if (effectiveRecommended == null || !hasPromo) return null
     return calculateMatrix({
-      bundle: { ...bundle, salePrice: recommended },
+      bundle: { ...bundle, salePrice: effectiveRecommended },
       channel,
       promotion,
       globals,
       thresholds,
     })
-  }, [recommended, hasPromo, bundle, channel, promotion, globals, thresholds])
+  }, [effectiveRecommended, hasPromo, bundle, channel, promotion, globals, thresholds])
   const promoCell = promoMatrix?.cells[0] ?? null
   const currentDiscount =
     promoCell != null && cell != null && cell.finalPrice > 0
@@ -162,18 +173,34 @@ export function PricingChannelBoardCard({
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] text-muted-foreground">권장 판매가</p>
+          <p className="text-[10px] text-muted-foreground">
+            권장 판매가{exceedsRetail ? ' (소비자가 상한)' : ''}
+          </p>
           <p className="text-2xl font-bold tabular-nums">₩{fmt(cell.finalPrice)}</p>
+          {retailCap != null && cell.finalPrice > 0 && (
+            <p className="mt-0.5 text-[10px] text-muted-foreground tabular-nums">
+              소비자가 대비{' '}
+              {Math.round(Math.max(0, (retailCap - cell.finalPrice) / retailCap) * 100)}% 할인
+            </p>
+          )}
           <div className="mt-0.5 flex items-center justify-end gap-1.5">
             <Badge
               variant="outline"
               className={`px-1.5 py-0 text-[11px] ${tierBadgeClass(cell.tier)}`}
             >
-              ✓ {(cell.margin * 100).toFixed(1)}%
+              {exceedsRetail ? '' : '✓ '}
+              {(cell.margin * 100).toFixed(1)}%{exceedsRetail ? ' (소비자가 기준)' : ''}
             </Badge>
           </div>
+          {exceedsRetail && (
+            <div className="mt-1 flex items-center justify-end gap-1 text-[10px] font-medium text-amber-600">
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              목표 마진 달성 불가
+            </div>
+          )}
           <p className="mt-0.5 text-[10px] text-muted-foreground tabular-nums">
-            공급가 ₩{fmt(cell.revenue)} · VAT {globals.includeVat ? '포함' : '미포함'} · 마진 ₩{fmt(cell.netProfit)} / 건
+            공급가 ₩{fmt(cell.revenue)} · VAT {globals.includeVat ? '포함' : '미포함'} · 마진 ₩
+            {fmt(cell.netProfit)} / 건
           </p>
         </div>
       </div>

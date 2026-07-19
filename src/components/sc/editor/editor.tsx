@@ -1,12 +1,37 @@
 'use client'
 
-import { useEditor, EditorContent } from '@tiptap/react'
+import {
+  useEditor,
+  EditorContent,
+  useEditorState,
+  type Editor as TiptapEditor,
+} from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import CharacterCount from '@tiptap/extension-character-count'
-import { useEffect, useState } from 'react'
+import TextAlign from '@tiptap/extension-text-align'
+import { TextStyle, Color } from '@tiptap/extension-text-style'
+import Highlight from '@tiptap/extension-highlight'
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Minus,
+  Highlighter,
+  Link2,
+} from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { cn } from '@/lib/utils'
+import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -24,13 +49,9 @@ type Props = {
   variant?: 'compact' | 'full'
 }
 
-const PROSE_CLASS =
-  '[&_a]:text-primary [&_a]:underline [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mb-1 [&_h3]:text-base [&_h3]:font-semibold [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:text-sm [&_p]:mb-2 [&_p]:text-sm [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-sm [&_.ProseMirror]:outline-none'
-
-// 경량 TipTap 에디터. DQ5 조합: StarterKit + Link + Image + Placeholder + CharacterCount.
-// imageSlot/ctaSlot 등 커스텀 노드는 doc JSON 에 그대로 보존되며, 그 자체로는
-// TipTap 이 렌더하지 못하지만 에디터는 미지의 노드를 무시하거나 pre 처리로 출력한다.
-// 추후 NodeView 확장을 덧붙여 전용 UI 로 교체 가능.
+// 경량 TipTap 에디터. StarterKit(Bold/Italic/Underline/Link/Heading/List/HR 등 번들)
+// + Image + Placeholder + CharacterCount + TextAlign + TextStyle/Color + Highlight.
+// 렌더는 src/lib/hiring/render-tiptap.ts 와 확장 목록을 맞춰야 한다.
 export function Editor({ initialDoc, editable = true, onChange, variant = 'compact' }: Props) {
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [linkUrl, setLinkUrl] = useState('')
@@ -40,14 +61,16 @@ export function Editor({ initialDoc, editable = true, onChange, variant = 'compa
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3] },
+        heading: { levels: [1, 2, 3] },
+        link: { openOnClick: false, autolink: true },
       }),
-      Link.configure({ openOnClick: false, autolink: true }),
       Image,
-      Placeholder.configure({
-        placeholder: '여기에 본문을 작성하세요…',
-      }),
+      Placeholder.configure({ placeholder: '여기에 본문을 작성하세요…' }),
       CharacterCount.configure({ limit: 20000 }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TextStyle,
+      Color,
+      Highlight.configure({ multicolor: false }),
     ],
     content: initialDoc as never,
     editable,
@@ -103,23 +126,16 @@ export function Editor({ initialDoc, editable = true, onChange, variant = 'compa
 
   return (
     <div className="space-y-2">
-      <Toolbar
-        onBold={() => editor.chain().focus().toggleBold().run()}
-        onItalic={() => editor.chain().focus().toggleItalic().run()}
-        onHeading2={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        onHeading3={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        onBulletList={() => editor.chain().focus().toggleBulletList().run()}
-        onOrderedList={() => editor.chain().focus().toggleOrderedList().run()}
-        onLink={openLinkDialog}
-        disabled={!editable}
-      />
+      <Toolbar editor={editor} disabled={!editable} onLink={openLinkDialog} />
       <EditorContent
         editor={editor}
-        className={
+        className={cn(
+          HIRING_PROSE_CLASS,
+          'prose prose-sm max-w-none [&_.ProseMirror]:outline-none',
           variant === 'full'
-            ? `${PROSE_CLASS} prose prose-sm min-h-[50vh] max-w-none focus-within:border-primary/40 [&_.ProseMirror]:min-h-[50vh]`
-            : `${PROSE_CLASS} prose prose-sm max-h-80 min-h-24 max-w-none overflow-y-auto focus-within:ring-1 focus-within:ring-primary/40 [&_.ProseMirror]:min-h-24`
-        }
+            ? 'min-h-[50vh] focus-within:border-primary/40 [&_.ProseMirror]:min-h-[50vh]'
+            : 'max-h-80 min-h-24 overflow-y-auto focus-within:ring-1 focus-within:ring-primary/40 [&_.ProseMirror]:min-h-24'
+        )}
       />
       <p className="text-right text-xs text-muted-foreground">
         {editor.storage.characterCount.characters()} / 20000 자
@@ -158,41 +174,213 @@ export function Editor({ initialDoc, editable = true, onChange, variant = 'compa
   )
 }
 
-function Toolbar(props: {
-  onBold: () => void
-  onItalic: () => void
-  onHeading2: () => void
-  onHeading3: () => void
-  onBulletList: () => void
-  onOrderedList: () => void
-  onLink: () => void
+function Toolbar({
+  editor,
+  disabled,
+  onLink,
+}: {
+  editor: TiptapEditor
   disabled?: boolean
+  onLink: () => void
 }) {
-  const btn =
-    'rounded px-2 py-1 text-xs hover:bg-accent disabled:opacity-40 disabled:hover:bg-transparent'
+  const colorRef = useRef<HTMLInputElement>(null)
+
+  // 선택 영역 변화에 따라 활성 상태를 다시 계산(툴바 하이라이트).
+  const state = useEditorState({
+    editor,
+    selector: ({ editor }) => ({
+      bold: editor.isActive('bold'),
+      italic: editor.isActive('italic'),
+      underline: editor.isActive('underline'),
+      h1: editor.isActive('heading', { level: 1 }),
+      h2: editor.isActive('heading', { level: 2 }),
+      h3: editor.isActive('heading', { level: 3 }),
+      bullet: editor.isActive('bulletList'),
+      ordered: editor.isActive('orderedList'),
+      alignLeft: editor.isActive({ textAlign: 'left' }),
+      alignCenter: editor.isActive({ textAlign: 'center' }),
+      alignRight: editor.isActive({ textAlign: 'right' }),
+      highlight: editor.isActive('highlight'),
+      link: editor.isActive('link'),
+      color: (editor.getAttributes('textStyle').color as string | undefined) ?? '#18181b',
+    }),
+  })
+
+  const run = (fn: () => void) => () => fn()
+
   return (
-    <div className="flex flex-wrap items-center gap-1 rounded-md border bg-muted/40 p-1">
-      <button type="button" className={btn} onClick={props.onBold} disabled={props.disabled}>
-        <b>B</b>
+    <div className="flex flex-wrap items-center gap-0.5 rounded-md border bg-muted/40 p-1">
+      <TB
+        active={state.bold}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().toggleBold().run())}
+        label="굵게"
+      >
+        <Bold className="size-3.5" />
+      </TB>
+      <TB
+        active={state.italic}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().toggleItalic().run())}
+        label="기울임"
+      >
+        <Italic className="size-3.5" />
+      </TB>
+      <TB
+        active={state.underline}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().toggleUnderline().run())}
+        label="밑줄"
+      >
+        <UnderlineIcon className="size-3.5" />
+      </TB>
+
+      <Sep />
+      <TB
+        active={state.h1}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().toggleHeading({ level: 1 }).run())}
+        label="제목 1"
+      >
+        <Heading1 className="size-3.5" />
+      </TB>
+      <TB
+        active={state.h2}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().toggleHeading({ level: 2 }).run())}
+        label="제목 2"
+      >
+        <Heading2 className="size-3.5" />
+      </TB>
+      <TB
+        active={state.h3}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().toggleHeading({ level: 3 }).run())}
+        label="제목 3"
+      >
+        <Heading3 className="size-3.5" />
+      </TB>
+
+      <Sep />
+      <TB
+        active={state.bullet}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().toggleBulletList().run())}
+        label="글머리 목록"
+      >
+        <List className="size-3.5" />
+      </TB>
+      <TB
+        active={state.ordered}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().toggleOrderedList().run())}
+        label="번호 목록"
+      >
+        <ListOrdered className="size-3.5" />
+      </TB>
+
+      <Sep />
+      <TB
+        active={state.alignLeft}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().setTextAlign('left').run())}
+        label="왼쪽 정렬"
+      >
+        <AlignLeft className="size-3.5" />
+      </TB>
+      <TB
+        active={state.alignCenter}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().setTextAlign('center').run())}
+        label="가운데 정렬"
+      >
+        <AlignCenter className="size-3.5" />
+      </TB>
+      <TB
+        active={state.alignRight}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().setTextAlign('right').run())}
+        label="오른쪽 정렬"
+      >
+        <AlignRight className="size-3.5" />
+      </TB>
+
+      <Sep />
+      <TB
+        active={state.highlight}
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().toggleHighlight().run())}
+        label="형광펜"
+      >
+        <Highlighter className="size-3.5" />
+      </TB>
+      {/* 글자색 — 스와치 클릭 시 네이티브 색 선택기 */}
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => colorRef.current?.click()}
+        aria-label="글자색"
+        className="relative inline-flex size-7 items-center justify-center rounded hover:bg-accent disabled:opacity-40"
+      >
+        <span className="text-xs leading-none font-bold">가</span>
+        <span
+          className="absolute inset-x-1 bottom-1 h-0.5 rounded"
+          style={{ backgroundColor: state.color }}
+        />
+        <input
+          ref={colorRef}
+          type="color"
+          value={state.color}
+          onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
+          className="sr-only"
+          tabIndex={-1}
+        />
       </button>
-      <button type="button" className={btn} onClick={props.onItalic} disabled={props.disabled}>
-        <i>I</i>
-      </button>
-      <button type="button" className={btn} onClick={props.onHeading2} disabled={props.disabled}>
-        H2
-      </button>
-      <button type="button" className={btn} onClick={props.onHeading3} disabled={props.disabled}>
-        H3
-      </button>
-      <button type="button" className={btn} onClick={props.onBulletList} disabled={props.disabled}>
-        • 목록
-      </button>
-      <button type="button" className={btn} onClick={props.onOrderedList} disabled={props.disabled}>
-        1. 목록
-      </button>
-      <button type="button" className={btn} onClick={props.onLink} disabled={props.disabled}>
-        🔗 링크
-      </button>
+
+      <Sep />
+      <TB
+        disabled={disabled}
+        onClick={run(() => editor.chain().focus().setHorizontalRule().run())}
+        label="구분선"
+      >
+        <Minus className="size-3.5" />
+      </TB>
+      <TB active={state.link} disabled={disabled} onClick={onLink} label="링크">
+        <Link2 className="size-3.5" />
+      </TB>
     </div>
   )
+}
+
+function TB({
+  active,
+  disabled,
+  onClick,
+  label,
+  children,
+}: {
+  active?: boolean
+  disabled?: boolean
+  onClick: () => void
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+      data-active={active ? 'true' : undefined}
+      className="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent data-[active=true]:bg-accent data-[active=true]:text-foreground"
+    >
+      {children}
+    </button>
+  )
+}
+
+function Sep() {
+  return <span className="mx-0.5 h-4 w-px bg-border" />
 }

@@ -496,10 +496,25 @@ async function downloadSalesAnalysisVendor(
   // 구조다. hashed 클래스(_container_hgdwt_6 등)는 Wing 재배포 시 회전하므로
   // 텍스트 "엑셀 다운로드"(고유 — "모바일 앱 다운로드"/"Download for…" 와 안 겹침)로
   // span 을 잡고 클릭 가능한 조상 div 를 타깃한다.
-  // 클릭 대상은 span 자체(이벤트 위임) — 조상 div 매칭(xpath _container|_wrapper)은
-  // 2026-07 Wing 개편 후 거대 레이아웃 div에 걸려 중심 좌표(좌측 내비)를 클릭,
-  // 글로벌 메뉴가 열리는 오발사가 실증됨(sales-analysis-excel-menu-open 스크린샷).
-  const excelTextSpan = page.getByText('엑셀 다운로드', { exact: true }).first()
+  // 클릭 대상은 span 자체(이벤트 위임). 2026-07 Wing 개편 후 '엑셀 다운로드' 텍스트가
+  // 좌측 글로벌 내비 DOM에도 존재해 first()가 내비 쪽을 잡아 클릭 시 내비 패널이
+  // 열리는 오발사가 실증됨 — 좌측 내비 폭(~250px) 밖(x>300)의 보이는 매치를 고른다.
+  const excelSpans = page.getByText('엑셀 다운로드', { exact: true })
+  let excelTextSpan = excelSpans.first()
+  const spanCount = await excelSpans.count().catch(() => 0)
+  if (spanCount > 1) {
+    console.log(`[inventory]   → '엑셀 다운로드' 매치 ${spanCount}개 — 컨텐츠 영역(x>300) 선택`)
+    for (let i = 0; i < spanCount; i++) {
+      const box = await excelSpans
+        .nth(i)
+        .boundingBox()
+        .catch(() => null)
+      if (box && box.x > 300) {
+        excelTextSpan = excelSpans.nth(i)
+        break
+      }
+    }
+  }
 
   if (!(await excelTextSpan.isVisible({ timeout: 5000 }).catch(() => false))) {
     await saveScreenshot(page, 'sales-analysis-no-excel-btn')
@@ -508,17 +523,53 @@ async function downloadSalesAnalysisVendor(
     )
   }
 
+  // 계측: 실제로 무엇을 클릭하는지 확정하기 위해 트리거의 좌표·HTML을 로그로 남긴다
+  // (2026-07-19 반복 실패 진단 — 매치 1개인데 클릭해도 드롭다운이 열리지 않음).
+  const trigBox = await excelTextSpan.boundingBox().catch(() => null)
+  const trigHtml = await excelTextSpan
+    .evaluate((el) => (el.parentElement ?? el).outerHTML.slice(0, 400))
+    .catch(() => 'n/a')
+  console.log(
+    `[inventory]   → 엑셀 트리거 실측: count=${spanCount} box=${JSON.stringify(trigBox)} html=${trigHtml}`
+  )
+
   console.log('[inventory]   → 판매분석 엑셀 다운로드 메뉴 열기')
   await clickWithJsFallback(excelTextSpan, '엑셀 다운로드')
   await page.waitForTimeout(1000)
 
-  // TODO: 실제 DOM 확인 필요 — "상품별 엑셀 다운로드" 메뉴 항목 텍스트 추정값
-  let vendorMenuBtn = page.locator('text=상품별 엑셀 다운로드').first()
+  // 2026-07 Wing 개편으로 메뉴 항목이 "상품별 엑셀 다운로드" → "상품별 판매 리포트"로
+  // 변경됨(2026-07-19 계측 덤프 실증: 드롭다운 _active 안에 기간별/상품별 판매 리포트).
+  // 신규 텍스트 우선, 구 텍스트는 폴백 체인에 유지.
+  let vendorMenuBtn = page.locator('text=상품별 판매 리포트').first()
+  if (!(await vendorMenuBtn.isVisible({ timeout: 1500 }).catch(() => false))) {
+    vendorMenuBtn = page.locator('text=상품별 엑셀 다운로드').first()
+  }
 
   // 드롭다운이 안 열렸으면(모달·오클릭으로 열린 내비 등 잔여 오버레이) Escape로 정리 후
   // span에 직접 JS 클릭으로 재시도한다.
   const menuOpened = await vendorMenuBtn.isVisible({ timeout: 2000 }).catch(() => false)
   if (!menuOpened) {
+    // 계측: 드롭다운 미열림 시 페이지의 '엑셀'/'다운로드' 포함 요소 전수 덤프(원인 확정용).
+    const candidates = await page
+      .locator(':is(span,button,div,a):has-text("엑셀")')
+      .evaluateAll((els) =>
+        els
+          .filter((e) => (e.textContent ?? '').trim().length < 40)
+          .slice(0, 12)
+          .map((e) => {
+            const r = e.getBoundingClientRect()
+            return {
+              tag: e.tagName,
+              t: (e.textContent ?? '').trim().slice(0, 30),
+              cls: String((e as HTMLElement).className).slice(0, 60),
+              x: Math.round(r.x),
+              y: Math.round(r.y),
+              w: Math.round(r.width),
+            }
+          })
+      )
+      .catch(() => [])
+    console.log(`[inventory]   → 엑셀 후보 덤프: ${JSON.stringify(candidates).slice(0, 1500)}`)
     await dismissModals(page)
     await page.keyboard.press('Escape').catch(() => {})
     await page.waitForTimeout(500)
@@ -531,7 +582,11 @@ async function downloadSalesAnalysisVendor(
 
   // fallback 셀렉터들
   if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-    vendorMenuBtn = page.locator('.backdrop div:has-text("상품별 엑셀 다운로드")').first()
+    vendorMenuBtn = page
+      .locator(
+        '.backdrop div:has-text("상품별 판매 리포트"), .backdrop div:has-text("상품별 엑셀 다운로드")'
+      )
+      .first()
   }
   if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
     vendorMenuBtn = page
