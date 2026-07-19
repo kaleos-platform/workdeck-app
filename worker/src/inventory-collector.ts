@@ -537,8 +537,13 @@ async function downloadSalesAnalysisVendor(
   await clickWithJsFallback(excelTextSpan, '엑셀 다운로드')
   await page.waitForTimeout(1000)
 
-  // TODO: 실제 DOM 확인 필요 — "상품별 엑셀 다운로드" 메뉴 항목 텍스트 추정값
-  let vendorMenuBtn = page.locator('text=상품별 엑셀 다운로드').first()
+  // 2026-07 Wing 개편으로 메뉴 항목이 "상품별 엑셀 다운로드" → "상품별 판매 리포트"로
+  // 변경됨(2026-07-19 계측 덤프 실증: 드롭다운 _active 안에 기간별/상품별 판매 리포트).
+  // 신규 텍스트 우선, 구 텍스트는 폴백 체인에 유지.
+  let vendorMenuBtn = page.locator('text=상품별 판매 리포트').first()
+  if (!(await vendorMenuBtn.isVisible({ timeout: 1500 }).catch(() => false))) {
+    vendorMenuBtn = page.locator('text=상품별 엑셀 다운로드').first()
+  }
 
   // 드롭다운이 안 열렸으면(모달·오클릭으로 열린 내비 등 잔여 오버레이) Escape로 정리 후
   // span에 직접 JS 클릭으로 재시도한다.
@@ -577,7 +582,11 @@ async function downloadSalesAnalysisVendor(
 
   // fallback 셀렉터들
   if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-    vendorMenuBtn = page.locator('.backdrop div:has-text("상품별 엑셀 다운로드")').first()
+    vendorMenuBtn = page
+      .locator(
+        '.backdrop div:has-text("상품별 판매 리포트"), .backdrop div:has-text("상품별 엑셀 다운로드")'
+      )
+      .first()
   }
   if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
     vendorMenuBtn = page
