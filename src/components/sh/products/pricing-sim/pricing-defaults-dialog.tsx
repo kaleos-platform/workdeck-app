@@ -315,19 +315,16 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         </DialogHeader>
 
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="basic" className="text-xs">
-              기본 비용
-            </TabsTrigger>
-            <TabsTrigger value="return" className="text-xs">
-              반품 / VAT
+              비용 · 반품
             </TabsTrigger>
             <TabsTrigger value="margin" className="text-xs">
               마진 등급
             </TabsTrigger>
           </TabsList>
 
-          {/* ── 탭 1: 기본 비용 ── */}
+          {/* ── 탭 1: 비용 · 반품 (포장비 + 반품/VAT 통합) ── */}
           <TabsContent value="basic" className="mt-4 space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor={packId} className="text-xs">
@@ -347,14 +344,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
                 1건당 포장 재료비 (박스, 테이프, 완충재 등)
               </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              채널 수수료율·배송비·광고비는 채널 설정(채널 관리 → 채널 수정)에서 채널별로
-              관리합니다.
-            </p>
-          </TabsContent>
-
-          {/* ── 탭 2: 반품 / VAT ── */}
-          <TabsContent value="return" className="mt-4 space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor={retRateId} className="text-xs">
@@ -424,9 +413,13 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
                 </div>
               )}
             </div>
+            <p className="text-xs text-muted-foreground">
+              채널 수수료율·배송비·광고비는 채널 설정(채널 관리 → 채널 수정)에서 채널별로
+              관리합니다.
+            </p>
           </TabsContent>
 
-          {/* ── 탭 3: 마진 등급 ── */}
+          {/* ── 탭 2: 마진 등급 ── */}
           <TabsContent value="margin" className="mt-4 space-y-4">
             <p className="text-xs text-muted-foreground">
               마진율을 등급으로 분류하는 임계값입니다. 모든 채널에 동일하게 적용됩니다.
