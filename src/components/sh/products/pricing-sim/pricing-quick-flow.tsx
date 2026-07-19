@@ -123,7 +123,8 @@ type ChOverride = {
 // 채널·설정 모두 미설정일 때 원가 과소평가를 막기 위한 앱 내장 기본값
 // (Space의 ProductPricingSettings는 DB 기본값이 0이라 실제로 비어있는 경우가 많음)
 const FALLBACK_SHIPPING_COST = 3000 // 배송비 (원)
-const FALLBACK_AD_PCT = 8 // 광고비율 (%, 0~100)
+// 광고 미설정 채널에서 사용자가 광고를 켤 때 채울 기본 광고비율(rate) = 1/ROAS. ROAS 300% 기준.
+const DEFAULT_AD_ROAS_RATE = 1 / 3
 
 /**
  * 채널 DB 값에서 ChOverride 초기값 생성.
@@ -137,18 +138,17 @@ function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
     c.shippingFee != null
       ? Number(c.shippingFee)
       : settings.defaultShippingCost || FALLBACK_SHIPPING_COST
-  // PG는 채널 설정값 그대로. 설정된 값(paymentFeePct)이 없으면 0% 미포함.
-  const hasPg = c.paymentFeePct != null
   return {
     feePct: feeBasic ? Number(feeBasic.ratePercent) : settings.defaultChannelFeePct,
     shippingFeeType: c.shippingFeeType ?? 'FIXED',
     shippingFee,
     shippingFeePct: c.shippingFeePct != null ? Number(c.shippingFeePct) : 0,
-    paymentFeeIncluded: hasPg ? c.paymentFeeIncluded : false,
-    paymentFeePct: hasPg ? Number(c.paymentFeePct) : 0,
-    // 광고비는 기본 적용, 채널별로 끌 수 있음. rate는 채널 설정값 우선, 미설정 시 앱 기본값 폴백.
-    applyAdCost: true,
-    adPct: c.adCostPct != null ? Number(c.adCostPct) : FALLBACK_AD_PCT / 100,
+    // PG는 채널 설정값 그대로 반영(true=수수료에 포함=미부과). 미설정 채널 기본(포함)도 그대로.
+    paymentFeeIncluded: c.paymentFeeIncluded,
+    paymentFeePct: c.paymentFeePct != null ? Number(c.paymentFeePct) : 0,
+    // 광고비(ROAS)는 채널 설정값이 있을 때만 적용. 미설정=OFF(사용자가 목표 ROAS 입력 시 켬).
+    applyAdCost: c.adCostPct != null,
+    adPct: c.adCostPct != null ? Number(c.adCostPct) : DEFAULT_AD_ROAS_RATE,
   }
 }
 
@@ -1158,7 +1158,9 @@ export function PricingQuickFlow({
                           {ov.shippingFeeType === 'PERCENT'
                             ? `${(ov.shippingFeePct * 100).toFixed(1)}%`
                             : `₩${fmt(ov.shippingFee)}`}
-                          {ov.applyAdCost ? ` · 광고 ${(ov.adPct * 100).toFixed(1)}%` : ''}
+                          {ov.applyAdCost && ov.adPct > 0
+                            ? ` · ROAS ${Math.round(100 / ov.adPct)}%`
+                            : ''}
                         </span>
                       </div>
                       <button
@@ -1249,11 +1251,11 @@ export function PricingQuickFlow({
                               />
                             )}
                             <div className="flex items-center gap-1">
-                              <span className="text-[10px] text-muted-foreground">포함</span>
+                              <span className="text-[10px] text-muted-foreground">별도 부과</span>
                               <Switch
-                                checked={ov.paymentFeeIncluded}
+                                checked={!ov.paymentFeeIncluded}
                                 onCheckedChange={(v) =>
-                                  setOverride(bc.api, { paymentFeeIncluded: v })
+                                  setOverride(bc.api, { paymentFeeIncluded: !v })
                                 }
                               />
                             </div>
@@ -1261,17 +1263,21 @@ export function PricingQuickFlow({
                         </div>
                         <div className="col-span-2 flex items-center justify-between gap-2">
                           <span className="text-[10px] text-muted-foreground">
-                            광고비 적용{ov.applyAdCost ? '' : ' (OFF · 광고비 0)'}
+                            목표 광고 ROAS{ov.applyAdCost ? '' : ' (OFF · 광고비 0)'}
                           </span>
                           <div className="flex items-center gap-2">
                             {ov.applyAdCost && (
                               <SuffixInput
-                                value={String(Math.round(ov.adPct * 1000) / 10)}
+                                value={
+                                  ov.adPct > 0 ? String(Math.round((100 / ov.adPct) * 10) / 10) : ''
+                                }
                                 onChange={(v) =>
-                                  setOverride(bc.api, { adPct: (Number(v) || 0) / 100 })
+                                  setOverride(bc.api, {
+                                    adPct: Number(v) > 0 ? 100 / Number(v) : 0,
+                                  })
                                 }
                                 suffix="%"
-                                step={0.1}
+                                step={10}
                                 className="w-20"
                               />
                             )}
