@@ -19,6 +19,7 @@ import {
   notifyCollectionFailed,
   notifyInventoryDone,
   notifyVendorSalesDone,
+  notifyVendorSalesFailed,
   notifyLoginFailed,
 } from './slack-notifier.js'
 import {
@@ -354,6 +355,10 @@ async function executeCollectionPipeline(
     vendorRows?: number
     gapVendorRows?: number
     errors: string[]
+    /** 이번 run 에서 VENDOR 수집(다운로드/업로드)에 실패한 KST 일자 — 실패 알림 대상. */
+    failedVendorDates?: string[]
+    /** 실패 일자별 오류 메시지(알림 요약용). */
+    vendorErrors?: string[]
   } = {
     errors: [],
   }
@@ -409,6 +414,21 @@ async function executeCollectionPipeline(
   await triggerSellerOpsSync(salesDateKst, vendorCollected, isManual, credential.workspaceId).catch(
     (err) => console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err)
   )
+
+  // ── Step 12.5: 판매(VENDOR) 수집 실패 Slack 알림 ──
+  // 이번 run 에서 실패한 일자를 모아 1건으로 발송(재시도 도배 방지). 실패 일자가 없으면 발송 안 함.
+  const failedVendorDates = inventoryResult.failedVendorDates ?? []
+  if (failedVendorDates.length > 0) {
+    const errSummary =
+      inventoryResult.vendorErrors && inventoryResult.vendorErrors.length > 0
+        ? inventoryResult.vendorErrors.join(' / ')
+        : '판매분석 데이터 수집에 실패했습니다 (상세는 워커 로그 확인).'
+    await notifyVendorSalesFailed({
+      failedDates: failedVendorDates,
+      error: errSummary,
+      workspaceId: credential.workspaceId,
+    }).catch((err) => console.error('[slack] 판매 실패 알림 전송 실패:', err))
+  }
 
   return result.filePath
 }
@@ -510,6 +530,8 @@ async function collectAndUploadInventory(credential: {
   vendorRows?: number
   gapVendorRows?: number
   errors: string[]
+  failedVendorDates?: string[]
+  vendorErrors?: string[]
 }> {
   const password =
     credential.passwordIv === 'none'
@@ -540,6 +562,9 @@ async function collectAndUploadInventory(credential: {
   const errors: string[] = []
   let healthRows: number | undefined
   let vendorRows: number | undefined
+  // VENDOR 실패 집계 — run 말미에 실패 일자를 모아 Slack 알림 1건으로 발송.
+  let mainVendorFailed = false
+  const vendorErrors: string[] = []
 
   // 재고 건강성 업로드
   if (inventoryData.inventoryHealth) {
@@ -587,6 +612,10 @@ async function collectAndUploadInventory(credential: {
       const msg = err instanceof Error ? err.message : String(err)
       console.error(`[inventory] 판매분석(VENDOR) 업로드 실패: ${msg}`)
       errors.push(`판매분석 VENDOR 업로드: ${msg}`)
+      if (shouldCollectVendor) {
+        mainVendorFailed = true
+        vendorErrors.push(`${yesterdayKst} 업로드: ${msg}`)
+      }
     } finally {
       // 임시 파일 삭제
       try {
@@ -595,8 +624,15 @@ async function collectAndUploadInventory(credential: {
     }
   } else if (inventoryData.salesVendorError) {
     errors.push(`판매분석 VENDOR 다운로드: ${inventoryData.salesVendorError}`)
+    mainVendorFailed = true
+    vendorErrors.push(`${yesterdayKst} 다운로드: ${inventoryData.salesVendorError}`)
   } else {
     errors.push('판매분석 VENDOR 다운로드: 결과 파일 없음 (원인 미식별)')
+    // collectVendorSales=false 인 경우엔 애초에 수집을 안 한 것이므로 실패로 집계하지 않는다.
+    if (shouldCollectVendor) {
+      mainVendorFailed = true
+      vendorErrors.push(`${yesterdayKst}: 결과 파일 없음 (원인 미식별)`)
+    }
   }
 
   // self-heal: 같은 세션에서 추가 수집한 누락 일자 VENDOR 업로드 + 변환.
@@ -618,6 +654,7 @@ async function collectAndUploadInventory(credential: {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       console.error(`[inventory] self-heal VENDOR 업로드 실패 (${gv.dateKst}): ${msg}`)
+      vendorErrors.push(`${gv.dateKst} 업로드: ${msg}`)
     } finally {
       try {
         fs.unlinkSync(gv.filePath)
@@ -641,7 +678,18 @@ async function collectAndUploadInventory(credential: {
     }
   }
 
-  return { healthRows, vendorRows, gapVendorRows, errors }
+  // VENDOR 실패 일자 집계 — 어제(main) + self-heal 요청했으나 성공 업로드가 없는 gap 일자.
+  // gapDates(로컬)는 shouldCollectVendor=false면 []이므로 별도 가드 불필요.
+  // healedDates = 성공 업로드된 gap 일자. 다운로드 단계에서 조용히 실패한 gap 은 gapVendors 에
+  // 없어 healedDates 에도 없으므로 자동으로 실패로 잡힌다.
+  const failedVendorDates = Array.from(
+    new Set([
+      ...(mainVendorFailed ? [yesterdayKst] : []),
+      ...gapDates.filter((d) => d !== yesterdayKst && !healedDates.includes(d)),
+    ])
+  )
+
+  return { healthRows, vendorRows, gapVendorRows, errors, failedVendorDates, vendorErrors }
 }
 
 /** 재고 분석 트리거 — 재고 수집 완료 후 항상 실행, Slack 발송 포함 */
