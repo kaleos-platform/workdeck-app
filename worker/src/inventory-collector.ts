@@ -175,7 +175,9 @@ async function clickAndDownload(
   const downloadPromise = page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT })
   downloadPromise.catch(() => {})
 
-  await btnLocator.click({ force: true })
+  // force 클릭은 hit-target 검사를 생략해 요소가 뷰포트 밖이면 엉뚱한 좌표(사이드 내비 등)를
+  // 때린다 — 일반 클릭 실패 시 요소에 직접 dispatch 하는 JS 클릭으로 폴백한다.
+  await clickWithJsFallback(btnLocator, '다운로드 트리거')
 
   const download = await downloadPromise
   const suggestedName = download.suggestedFilename()
@@ -511,7 +513,9 @@ async function downloadSalesAnalysisVendor(
   }
 
   console.log('[inventory]   → 판매분석 엑셀 다운로드 메뉴 열기')
-  await excelMainBtn.click({ force: true })
+  // 상단 프로모션 배너로 레이아웃이 밀리면 force 클릭 좌표가 좌측 내비 햄버거에 떨어져
+  // 글로벌 메뉴가 열린다(2026-07-19 백필 7일 전패 실증) — 폴백 클릭으로 교체.
+  await clickWithJsFallback(excelMainBtn, '엑셀 다운로드')
   await page.waitForTimeout(1000)
 
   // 모달이 늦게 뜨면 드롭다운이 닫힐 수 있으므로 dismissModals 후 재시도
@@ -521,7 +525,7 @@ async function downloadSalesAnalysisVendor(
     await page.waitForTimeout(500)
     const isMenuOpen = await vendorMenuBtn.isVisible({ timeout: 1000 }).catch(() => false)
     if (!isMenuOpen) {
-      await excelMainBtn.click({ force: true })
+      await clickWithJsFallback(excelMainBtn, '엑셀 다운로드')
       await page.waitForTimeout(1000)
     }
   }
