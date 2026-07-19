@@ -146,8 +146,9 @@ export function PricingChannelBoardCard({
         <div className="flex items-center justify-between">
           <span className="text-base font-bold">{channel.name}</span>
           <span className="text-xs text-muted-foreground">
-            수수료 {(channelFeePct * 100).toFixed(1)}% · 광고 {(adPct * 100).toFixed(0)}% · PG{' '}
-            {((channel.paymentFeeIncluded ? 0 : channel.paymentFeePct) * 100).toFixed(0)}%
+            수수료 {(channelFeePct * 100).toFixed(1)}% ·{' '}
+            {channel.applyAdCost && adPct > 0 ? `ROAS ${Math.round(100 / adPct)}%` : '광고 없음'} ·
+            PG {((channel.paymentFeeIncluded ? 0 : channel.paymentFeePct) * 100).toFixed(0)}%
           </span>
         </div>
         <div className="mt-3 flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
@@ -168,8 +169,9 @@ export function PricingChannelBoardCard({
             <span className="text-base font-bold">{channel.name}</span>
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
-            수수료 {(channelFeePct * 100).toFixed(1)}% · 광고 {(adPct * 100).toFixed(0)}% · PG{' '}
-            {((channel.paymentFeeIncluded ? 0 : channel.paymentFeePct) * 100).toFixed(0)}%
+            수수료 {(channelFeePct * 100).toFixed(1)}% ·{' '}
+            {channel.applyAdCost && adPct > 0 ? `ROAS ${Math.round(100 / adPct)}%` : '광고 없음'} ·
+            PG {((channel.paymentFeeIncluded ? 0 : channel.paymentFeePct) * 100).toFixed(0)}%
           </p>
         </div>
         <div className="text-right">
