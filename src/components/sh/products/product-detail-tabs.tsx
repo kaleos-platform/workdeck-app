@@ -1,11 +1,13 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Copy, Loader2 } from 'lucide-react'
+import { Copy, Loader2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { SELLER_HUB_PRICING_SIM_NEW_PATH, getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
 import { ProductBasicForm } from '@/components/sh/products/product-basic-form'
 import { ProductAttributesEditor } from '@/components/sh/products/product-attributes-editor'
 import { ProductOptionsTable } from '@/components/sh/products/product-options-table'
@@ -270,20 +272,43 @@ export function ProductDetailTabs({ productId }: Props) {
         }}
         className="scroll-mt-24 space-y-4 border-t pt-8"
       >
-        <SectionHeader title={SECTIONS[4].title} description={SECTIONS[4].description} />
-        <PricingScenarioHistoryPanel productId={productId} />
+        <SectionHeader
+          title={SECTIONS[4].title}
+          description={SECTIONS[4].description}
+          action={
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`${SELLER_HUB_PRICING_SIM_NEW_PATH}?productId=${productId}`}>
+                <Plus className="mr-1 h-4 w-4" />
+                가격 시나리오 생성
+              </Link>
+            </Button>
+          }
+        />
+        <PricingScenarioHistoryPanel
+          productId={productId}
+          onRowClick={(id) => router.push(getSellerHubPricingScenarioPath(id))}
+        />
       </section>
     </div>
   )
 }
 
-function SectionHeader({ title, description }: { title: string; description?: string }) {
+function SectionHeader({
+  title,
+  description,
+  action,
+}: {
+  title: string
+  description?: string
+  action?: React.ReactNode
+}) {
   return (
-    <div className="flex items-baseline justify-between">
+    <div className="flex items-baseline justify-between gap-4">
       <div>
         <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
+      {action}
     </div>
   )
 }

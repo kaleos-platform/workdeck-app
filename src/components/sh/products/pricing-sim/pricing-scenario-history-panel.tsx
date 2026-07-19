@@ -13,16 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { PricingSimSnapshot, PricingSimSummary } from '@/lib/sh/pricing-scenario-snapshot'
-
-type ScenarioRow = {
-  id: string
-  name: string
-  memo: string | null
-  productIds: string[]
-  summary: PricingSimSummary | null
-  updatedAt: string
-}
+import { cn } from '@/lib/utils'
+import type { PricingSimSnapshot } from '@/lib/sh/pricing-scenario-snapshot'
+import { type ScenarioRow, priceRangeText } from './pricing-scenario-format'
 
 type Props = {
   /** 이 상품(InvProduct.id)이 포함된 시나리오만 조회 */
@@ -31,25 +24,17 @@ type Props = {
   onLoad?: (snapshot: PricingSimSnapshot) => void
   /** true면 삭제 버튼 노출 (시뮬 화면 관리용). 상품 상세는 조회 전용이라 미노출. */
   allowDelete?: boolean
+  /** 있으면 행 클릭 시 호출(예: 시나리오 상세로 이동). load·delete 버튼은 전파 차단. */
+  onRowClick?: (id: string) => void
   /** 값이 바뀌면 목록 재조회 (저장 직후 갱신용) */
   refreshSignal?: number
-}
-
-function fmt(n: number): string {
-  return Math.round(n).toLocaleString('ko-KR')
-}
-
-function priceRangeText(s: PricingSimSummary | null): string {
-  if (!s || s.priceMin == null || s.priceMax == null) return '—'
-  return s.priceMin === s.priceMax
-    ? `₩${fmt(s.priceMin)}`
-    : `₩${fmt(s.priceMin)}~${fmt(s.priceMax)}`
 }
 
 export function PricingScenarioHistoryPanel({
   productId,
   onLoad,
   allowDelete,
+  onRowClick,
   refreshSignal,
 }: Props) {
   const [rows, setRows] = useState<ScenarioRow[]>([])
@@ -144,7 +129,24 @@ export function PricingScenarioHistoryPanel({
         </TableHeader>
         <TableBody>
           {rows.map((r) => (
-            <TableRow key={r.id} className="hover:bg-muted/40">
+            <TableRow
+              key={r.id}
+              className={cn('hover:bg-muted/40', onRowClick && 'cursor-pointer')}
+              onClick={onRowClick ? () => onRowClick(r.id) : undefined}
+              onKeyDown={
+                onRowClick
+                  ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onRowClick(r.id)
+                      }
+                    }
+                  : undefined
+              }
+              tabIndex={onRowClick ? 0 : undefined}
+              role={onRowClick ? 'button' : undefined}
+              aria-label={onRowClick ? `${r.name} 상세` : undefined}
+            >
               <TableCell>
                 <div className="text-sm font-medium">{r.name}</div>
                 {r.memo && <div className="text-xs text-muted-foreground">{r.memo}</div>}
@@ -167,7 +169,10 @@ export function PricingScenarioHistoryPanel({
                       variant="ghost"
                       size="sm"
                       className="h-7 gap-1 px-2 text-xs"
-                      onClick={() => handleLoad(r.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleLoad(r.id)
+                      }}
                       disabled={loadingId === r.id}
                       aria-label={`${r.name} 불러오기`}
                     >
@@ -182,7 +187,10 @@ export function PricingScenarioHistoryPanel({
                   {allowDelete && (
                     <button
                       type="button"
-                      onClick={() => handleDelete(r.id, r.name)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(r.id, r.name)
+                      }}
                       disabled={deletingId === r.id}
                       aria-label={`${r.name} 삭제`}
                       className="inline-flex text-muted-foreground hover:text-destructive disabled:opacity-50"
