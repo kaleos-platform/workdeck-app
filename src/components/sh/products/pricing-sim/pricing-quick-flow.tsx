@@ -439,10 +439,11 @@ export function PricingQuickFlow({
   const addChannel = (id: string) => {
     if (!id || selectedChannelIds.includes(id)) return
     setSelectedChannelIds((prev) => [...prev, id])
-    // 선택 시 채널 DB 값으로 override 고정 (이후 채널 설정이 바뀌어도 세션값 유지)
+    // 채널 추가 시 항상 현재 채널 관리 설정값으로 재시드한다(수수료·배송·PG·광고 최신 반영).
+    // 저장 시나리오의 초기 채널은 applySnapshot이 동결 복원하지만, 사용자가 명시적으로
+    // 추가하는 채널은 현재 채널 설정을 반영해야 한다. 이후 채널별 인라인 편집은 세션 유지.
     const c = allChannels.find((ch) => ch.id === id)
-    if (c)
-      setChOverrides((prev) => (prev[id] ? prev : { ...prev, [id]: seedOverride(c, settings) }))
+    if (c) setChOverrides((prev) => ({ ...prev, [id]: seedOverride(c, settings) }))
     // 채널별 설정 편집 영역을 기본으로 펼쳐 바로 확인·조정 가능하게 한다
     setExpandedChannels((prev) => new Set(prev).add(id))
     setChannelPickerId('')
@@ -450,6 +451,13 @@ export function PricingQuickFlow({
 
   const removeChannel = (id: string) => {
     setSelectedChannelIds((prev) => prev.filter((c) => c !== id))
+    // override도 함께 정리 — 재추가 시 stale 세션값이 남아 현재 채널 설정을 덮지 않도록.
+    setChOverrides((prev) => {
+      if (!prev[id]) return prev
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
   }
 
   // 가격 시뮬레이션 사용(useSimulation) 채널만 대상
