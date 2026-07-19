@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, History, Info, Plus, RotateCcw, Save } from 'lucide-react'
+import { ChevronDown, History, Info, Plus, RotateCcw, Save, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -1148,14 +1148,9 @@ export function PricingQuickFlow({
                     className="rounded-md border border-[var(--ps-border)] bg-[var(--ps-card)]"
                   >
                     <div className="flex items-center gap-2 px-3 py-2">
-                      <button
-                        type="button"
-                        onClick={() => removeChannel(bc.api.id)}
-                        className="text-emerald-600"
-                        aria-label={`${bc.api.name} 선택 해제`}
-                      >
+                      <span className="text-emerald-600" aria-hidden>
                         ✓
-                      </button>
+                      </span>
                       <div className="min-w-0 flex-1">
                         <span className="text-sm font-medium">{bc.api.name}</span>
                         <span className="ml-1.5 text-[10px] text-muted-foreground">
@@ -1176,6 +1171,15 @@ export function PricingQuickFlow({
                         <ChevronDown
                           className={cn('h-4 w-4 transition-transform', open && 'rotate-180')}
                         />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeChannel(bc.api.id)}
+                        className="text-muted-foreground hover:text-destructive"
+                        aria-label={`${bc.api.name} 제거`}
+                        title="채널 제거"
+                      >
+                        <X className="h-4 w-4" />
                       </button>
                     </div>
                     {open && (
