@@ -496,10 +496,25 @@ async function downloadSalesAnalysisVendor(
   // 구조다. hashed 클래스(_container_hgdwt_6 등)는 Wing 재배포 시 회전하므로
   // 텍스트 "엑셀 다운로드"(고유 — "모바일 앱 다운로드"/"Download for…" 와 안 겹침)로
   // span 을 잡고 클릭 가능한 조상 div 를 타깃한다.
-  // 클릭 대상은 span 자체(이벤트 위임) — 조상 div 매칭(xpath _container|_wrapper)은
-  // 2026-07 Wing 개편 후 거대 레이아웃 div에 걸려 중심 좌표(좌측 내비)를 클릭,
-  // 글로벌 메뉴가 열리는 오발사가 실증됨(sales-analysis-excel-menu-open 스크린샷).
-  const excelTextSpan = page.getByText('엑셀 다운로드', { exact: true }).first()
+  // 클릭 대상은 span 자체(이벤트 위임). 2026-07 Wing 개편 후 '엑셀 다운로드' 텍스트가
+  // 좌측 글로벌 내비 DOM에도 존재해 first()가 내비 쪽을 잡아 클릭 시 내비 패널이
+  // 열리는 오발사가 실증됨 — 좌측 내비 폭(~250px) 밖(x>300)의 보이는 매치를 고른다.
+  const excelSpans = page.getByText('엑셀 다운로드', { exact: true })
+  let excelTextSpan = excelSpans.first()
+  const spanCount = await excelSpans.count().catch(() => 0)
+  if (spanCount > 1) {
+    console.log(`[inventory]   → '엑셀 다운로드' 매치 ${spanCount}개 — 컨텐츠 영역(x>300) 선택`)
+    for (let i = 0; i < spanCount; i++) {
+      const box = await excelSpans
+        .nth(i)
+        .boundingBox()
+        .catch(() => null)
+      if (box && box.x > 300) {
+        excelTextSpan = excelSpans.nth(i)
+        break
+      }
+    }
+  }
 
   if (!(await excelTextSpan.isVisible({ timeout: 5000 }).catch(() => false))) {
     await saveScreenshot(page, 'sales-analysis-no-excel-btn')
