@@ -163,8 +163,9 @@ export const channelSchema = z.object({
   freeShippingThreshold: z.preprocess(toOptionalNumber, z.number().nonnegative().optional()),
   usesMarketingBudget: z.boolean().default(false),
   applyAdCost: z.boolean().default(false),
-  // 채널별 광고비율 (0~1). null/''=미설정 → 시뮬 앱 기본값 폴백.
-  adCostPct: z.preprocess(toOptionalNumber, z.number().min(0).max(1).optional()),
+  // 채널별 광고비율 rate (=1/ROAS, UI는 목표 ROAS%로 표시). null=미설정=광고 미적용.
+  // max 2 = ROAS 50%까지 허용(ratio-vs-% 오타 방어). Decimal(6,4)와 정합.
+  adCostPct: z.preprocess(toOptionalNumber, z.number().min(0).max(2).optional()),
   shippingFeeType: z.enum(['FIXED', 'PERCENT']).default('FIXED'),
   shippingFee: z.preprocess(toOptionalNumber, z.number().nonnegative().optional()),
   shippingFeePct: z.preprocess(toOptionalNumber, z.number().min(0).max(1).optional()),

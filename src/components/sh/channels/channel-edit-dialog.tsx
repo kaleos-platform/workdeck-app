@@ -183,8 +183,12 @@ export function ChannelEditDialog({
       setFPaymentFeeIncluded(channel.paymentFeeIncluded)
       // paymentFeePct는 DB 0~1 → UI * 100
       setFPaymentFeePct(channel.paymentFeePct != null ? String(channel.paymentFeePct * 100) : '')
-      // adCostPct는 DB 0~1 → UI * 100 (null=미설정=빈값)
-      setFAdCostPct(channel.adCostPct != null ? String(channel.adCostPct * 100) : '')
+      // adCostPct(DB, 광고비율 rate) → UI는 목표 ROAS% = 100/rate. null/0=미설정=빈값.
+      setFAdCostPct(
+        channel.adCostPct != null && channel.adCostPct > 0
+          ? String(Math.round(100 / channel.adCostPct))
+          : ''
+      )
 
       // feeRates 초기화 — '기본'이 없으면 첫 행에 추가
       const rows = channel.feeRates.map((fr) => ({
@@ -340,9 +344,12 @@ export function ChannelEditDialog({
         body.paymentFeePct = null
       }
 
-      // adCostPct: UI % → DB 소수 (0~1). 빈값=null(미설정 → 시뮬 앱 기본값 폴백).
+      // 목표 ROAS%(UI) → DB adCostPct(광고비율 rate) = 100/ROAS%. 빈값/0=null(광고 미적용).
       // 항상 키 전송 → PATCH가 빈값으로 초기화 가능.
-      body.adCostPct = fAdCostPct ? parseFloat(fAdCostPct) / 100 : null
+      {
+        const roas = parseFloat(fAdCostPct)
+        body.adCostPct = fAdCostPct && roas > 0 ? 100 / roas : null
+      }
 
       // externalSource: '__none__' 선택 시 null(해제), 그 외 값 그대로 전송
       body.externalSource = fExternalSource === EXTERNAL_SOURCE_NONE ? null : fExternalSource
@@ -678,22 +685,21 @@ export function ChannelEditDialog({
               />
             </div>
 
-            {/* 광고비율 — 시뮬레이션 광고비 채널 기본값 */}
+            {/* 목표 광고 ROAS — 시뮬레이션 광고비 채널 기본값 (광고비 = 판매가 / (ROAS/100)) */}
             <div className="space-y-2">
-              <Label htmlFor="ch-ad-cost">광고비율 (%)</Label>
+              <Label htmlFor="ch-ad-cost">목표 광고 ROAS (%)</Label>
               <Input
                 id="ch-ad-cost"
                 type="number"
                 min="0"
-                max="100"
-                step="0.1"
+                step="10"
                 value={fAdCostPct}
                 onChange={(e) => setFAdCostPct(e.target.value)}
-                placeholder="예: 8"
+                placeholder="예: 300"
               />
               <p className="text-xs text-muted-foreground">
-                가격 시뮬레이션에서 이 채널의 광고비 기본값으로 사용됩니다. 비우면 앱 기본값(8%)이
-                적용됩니다.
+                가격 시뮬레이션에서 이 채널의 광고비 기준으로 사용됩니다. 광고비 = 판매가 ÷
+                (ROAS/100). 예: ROAS 300% → 광고비는 판매가의 1/3. 비우면 광고 미적용.
               </p>
             </div>
 
