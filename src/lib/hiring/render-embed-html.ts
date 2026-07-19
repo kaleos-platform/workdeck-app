@@ -20,7 +20,7 @@ function escapeHtml(value: string): string {
 }
 
 type ContentBlock = {
-  contentType: 'image' | 'text' | 'button' | 'positions'
+  contentType: 'image' | 'text' | 'button' | 'positions' | 'design'
   data: unknown
   imagePath: string | null
 }
@@ -53,7 +53,7 @@ export function renderPostingEmbedHtml(params: {
       continue
     }
 
-    if (content.contentType === 'image') {
+    if (content.contentType === 'image' || content.contentType === 'design') {
       if (!content.imagePath) continue
       const src = escapeHtml(hiringAssetPublicUrl(content.imagePath))
       parts.push(

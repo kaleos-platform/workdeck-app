@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
 import {
   Plus,
@@ -17,6 +18,7 @@ import {
   Maximize2,
   FolderOpen,
   TriangleAlert,
+  Shapes,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -40,8 +42,21 @@ import { BUTTON_DEFAULT_COLOR, BUTTON_PRESET_COLORS } from '@/lib/hiring/button-
 import { AutoSaveIndicator } from './autosave-indicator'
 import { getPostingAssetPublicUrl, type WizardContentData } from './build-types'
 import { buttonDataSchema, type ButtonData } from '@/lib/validations/hiring-posts'
+import type { ExcalidrawScene } from './excalidraw-canvas'
 
-type ContentType = 'text' | 'image' | 'button' | 'positions'
+const ExcalidrawCanvas = dynamic(
+  () => import('./excalidraw-canvas').then((m) => m.ExcalidrawCanvas),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[480px] items-center justify-center rounded-lg border text-sm text-muted-foreground">
+        캔버스 불러오는 중…
+      </div>
+    ),
+  }
+)
+
+type ContentType = 'text' | 'image' | 'button' | 'positions' | 'design'
 
 type TemplateItem = {
   id: string
@@ -77,6 +92,7 @@ const CONTENT_TYPE_META: Record<ContentType, { icon: typeof Type; label: string 
   image: { icon: ImageIcon, label: '이미지' },
   button: { icon: MousePointerClick, label: '버튼' },
   positions: { icon: Briefcase, label: '직무 정보' },
+  design: { icon: Shapes, label: '디자인' },
 }
 
 export function ContentBlockEditor({
@@ -204,6 +220,27 @@ export function ContentBlockEditor({
   function handleButtonSave(contentId: string, data: ButtonData) {
     onChange(contents.map((c) => (c.id === contentId ? { ...c, data } : c)))
     return patchContent(contentId, { data })
+  }
+
+  async function handleDesignSave(contentId: string, scene: unknown, imageBase64: string) {
+    // 서버 라우트의 JSON 바디 파싱 한도(~10MB) 아래에서 사전 차단해 친절한 안내를 제공한다.
+    // (초과 시 서버는 "잘못된 요청 형식" 400을 반환하므로 여기서 먼저 막는다.)
+    const payloadChars = JSON.stringify(scene).length + imageBase64.length
+    if (payloadChars > 8 * 1024 * 1024) {
+      toast.error('디자인이 너무 큽니다. 캔버스에 넣은 이미지 수·크기를 줄여주세요')
+      return
+    }
+    try {
+      const updated = await patchContent(contentId, { data: scene, imageBase64 })
+      onChange(
+        contents.map((c) =>
+          c.id === contentId ? { ...c, data: scene, imagePath: updated.imagePath } : c
+        )
+      )
+      toast.success('디자인을 저장했습니다')
+    } catch {
+      toast.error('디자인 저장에 실패했습니다')
+    }
   }
 
   function openSaveDialog() {
@@ -406,6 +443,12 @@ export function ContentBlockEditor({
                 />
               ) : c.contentType === 'positions' ? (
                 <PositionsBlock positions={positions} />
+              ) : c.contentType === 'design' ? (
+                <DesignBlock
+                  key={`${c.id}-${remountTick}`}
+                  scene={c.data}
+                  onSave={(scene, imageBase64) => handleDesignSave(c.id, scene, imageBase64)}
+                />
               ) : (
                 <ImageBlock
                   imagePath={c.imagePath}
@@ -435,6 +478,9 @@ export function ContentBlockEditor({
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleAdd('positions')} disabled={hasPositionsBlock}>
             <Briefcase /> 직무 정보 블록
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleAdd('design')}>
+            <Shapes /> 디자인 블록
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -809,6 +855,39 @@ function PositionsBlock({ positions }: { positions: { id: string; name: string }
         1단계 기본 정보에서 직무를 편집하세요. 공개 페이지에는 이 위치에 근무조건 카드가 표시됩니다.
       </p>
     </div>
+  )
+}
+
+function DesignBlock({
+  scene,
+  onSave,
+}: {
+  scene: unknown
+  onSave: (scene: ExcalidrawScene, imageBase64: string) => Promise<void>
+}) {
+  const [saving, setSaving] = useState(false)
+  // 저장된 scene → excalidraw initialData 복원 (files 포함, 재편집 보장)
+  const initialData =
+    scene && typeof scene === 'object' && 'elements' in (scene as Record<string, unknown>)
+      ? {
+          elements: (scene as { elements?: unknown[] }).elements as never,
+          appState: (scene as { appState?: object }).appState as never,
+          files: (scene as { files?: unknown }).files as never,
+        }
+      : null
+  return (
+    <ExcalidrawCanvas
+      initialData={initialData}
+      saving={saving}
+      onSave={async (s, img) => {
+        setSaving(true)
+        try {
+          await onSave(s, img)
+        } finally {
+          setSaving(false)
+        }
+      }}
+    />
   )
 }
 

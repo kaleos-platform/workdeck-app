@@ -67,7 +67,7 @@ export function PostingPreview({
         {ordered.length > 0 && (
           <div className="space-y-4">
             {ordered.map((c) =>
-              c.contentType === 'image' ? (
+              c.contentType === 'image' || c.contentType === 'design' ? (
                 c.imagePath ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
