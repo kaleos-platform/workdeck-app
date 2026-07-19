@@ -496,16 +496,12 @@ async function downloadSalesAnalysisVendor(
   // 구조다. hashed 클래스(_container_hgdwt_6 등)는 Wing 재배포 시 회전하므로
   // 텍스트 "엑셀 다운로드"(고유 — "모바일 앱 다운로드"/"Download for…" 와 안 겹침)로
   // span 을 잡고 클릭 가능한 조상 div 를 타깃한다.
+  // 클릭 대상은 span 자체(이벤트 위임) — 조상 div 매칭(xpath _container|_wrapper)은
+  // 2026-07 Wing 개편 후 거대 레이아웃 div에 걸려 중심 좌표(좌측 내비)를 클릭,
+  // 글로벌 메뉴가 열리는 오발사가 실증됨(sales-analysis-excel-menu-open 스크린샷).
   const excelTextSpan = page.getByText('엑셀 다운로드', { exact: true }).first()
-  let excelMainBtn = excelTextSpan.locator(
-    'xpath=ancestor-or-self::div[contains(@class,"_container") or contains(@class,"_wrapper")][1]'
-  )
-  if (!(await excelMainBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
-    // fallback: span 자체 클릭(이벤트 위임이 처리하는 경우)
-    excelMainBtn = excelTextSpan
-  }
 
-  if (!(await excelMainBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+  if (!(await excelTextSpan.isVisible({ timeout: 5000 }).catch(() => false))) {
     await saveScreenshot(page, 'sales-analysis-no-excel-btn')
     throw new Error(
       '[inventory] 판매분석의 "엑셀 다운로드" 버튼을 찾을 수 없습니다 — TODO: 실제 셀렉터 확인 필요'
@@ -513,21 +509,22 @@ async function downloadSalesAnalysisVendor(
   }
 
   console.log('[inventory]   → 판매분석 엑셀 다운로드 메뉴 열기')
-  // 상단 프로모션 배너로 레이아웃이 밀리면 force 클릭 좌표가 좌측 내비 햄버거에 떨어져
-  // 글로벌 메뉴가 열린다(2026-07-19 백필 7일 전패 실증) — 폴백 클릭으로 교체.
-  await clickWithJsFallback(excelMainBtn, '엑셀 다운로드')
+  await clickWithJsFallback(excelTextSpan, '엑셀 다운로드')
   await page.waitForTimeout(1000)
 
-  // 모달이 늦게 뜨면 드롭다운이 닫힐 수 있으므로 dismissModals 후 재시도
   // TODO: 실제 DOM 확인 필요 — "상품별 엑셀 다운로드" 메뉴 항목 텍스트 추정값
   let vendorMenuBtn = page.locator('text=상품별 엑셀 다운로드').first()
-  if (await dismissModals(page)) {
+
+  // 드롭다운이 안 열렸으면(모달·오클릭으로 열린 내비 등 잔여 오버레이) Escape로 정리 후
+  // span에 직접 JS 클릭으로 재시도한다.
+  const menuOpened = await vendorMenuBtn.isVisible({ timeout: 2000 }).catch(() => false)
+  if (!menuOpened) {
+    await dismissModals(page)
+    await page.keyboard.press('Escape').catch(() => {})
     await page.waitForTimeout(500)
-    const isMenuOpen = await vendorMenuBtn.isVisible({ timeout: 1000 }).catch(() => false)
-    if (!isMenuOpen) {
-      await clickWithJsFallback(excelMainBtn, '엑셀 다운로드')
-      await page.waitForTimeout(1000)
-    }
+    console.log('[inventory]   → 드롭다운 미열림 — 오버레이 정리 후 JS 클릭 재시도')
+    await excelTextSpan.evaluate((el) => (el as HTMLElement).click())
+    await page.waitForTimeout(1000)
   }
 
   await saveScreenshot(page, 'sales-analysis-excel-menu-open')
