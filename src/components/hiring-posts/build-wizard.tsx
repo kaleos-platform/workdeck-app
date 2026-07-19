@@ -8,6 +8,7 @@ import {
   RECRUITING_POSTINGS_PATH,
   getHiringPublicApplyPath,
   getHiringPublicPostingPath,
+  getRecruitingPostingDetailPath,
 } from '@/lib/deck-routes'
 import { PostingStatusBadge, type PostingStatus } from './status-badge'
 import { WizardStepper, WIZARD_STEPS, type WizardStepKey } from './wizard-stepper'
@@ -254,15 +255,20 @@ export function BuildWizard({ data }: { data: WizardData }) {
             </Button>
           )}
           {step === 'decorate' ? (
-            <PublishBar
-              postingId={data.posting.id}
-              uuid={data.posting.uuid}
-              title={state.title}
-              status={state.status}
-              positionCount={state.positions.length}
-              formFields={state.formFields}
-              onStatusChange={(status: PostingStatus) => patch({ status })}
-            />
+            <>
+              <PublishBar
+                postingId={data.posting.id}
+                uuid={data.posting.uuid}
+                title={state.title}
+                status={state.status}
+                positionCount={state.positions.length}
+                formFields={state.formFields}
+                onStatusChange={(status: PostingStatus) => patch({ status })}
+              />
+              <Button className="min-w-28" asChild>
+                <Link href={getRecruitingPostingDetailPath(data.posting.id)}>완료</Link>
+              </Button>
+            </>
           ) : (
             <Button className="min-w-28" onClick={goNext}>
               다음 <ArrowRight />
