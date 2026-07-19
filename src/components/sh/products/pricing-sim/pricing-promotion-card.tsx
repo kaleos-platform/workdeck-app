@@ -48,10 +48,10 @@ const TYPE_ORDER: PromotionValue['type'][] = ['NONE', 'MIN_PRICE', 'PERCENT', 'F
 
 const TYPE_LABELS: Record<PromotionValue['type'], string> = {
   NONE: '없음',
-  MIN_PRICE: '최소 판매가 (Recommended)',
-  PERCENT: '정률 (%) (legacy)',
-  FLAT: '정액 (원) (legacy)',
-  COUPON: '쿠폰 (원) (legacy)',
+  MIN_PRICE: '최소 판매가',
+  PERCENT: '정률 (%)',
+  FLAT: '정액 (원)',
+  COUPON: '쿠폰 (원)',
 }
 
 // 값 입력 필드 라벨

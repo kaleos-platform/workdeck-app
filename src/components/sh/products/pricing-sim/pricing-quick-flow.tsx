@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, History, Info, Plus, RotateCcw, Save, Settings2 } from 'lucide-react'
+import { ChevronDown, History, Info, Plus, RotateCcw, Save } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -56,7 +56,8 @@ import { getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
 import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
 import { PricingChannelBoardCard } from './pricing-channel-board-card'
 import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
-import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
+import { type PricingFullSettings } from './pricing-defaults-dialog'
+import { mapPricingSettings } from '@/lib/sh/pricing-settings'
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
 
@@ -121,7 +122,6 @@ type ChOverride = {
 
 // 채널·설정 모두 미설정일 때 원가 과소평가를 막기 위한 앱 내장 기본값
 // (Space의 ProductPricingSettings는 DB 기본값이 0이라 실제로 비어있는 경우가 많음)
-const DEFAULT_PG_PCT = 0.02 // 결제수수료율 (0~1)
 const FALLBACK_SHIPPING_COST = 3000 // 배송비 (원)
 const FALLBACK_AD_PCT = 8 // 광고비율 (%, 0~100)
 
@@ -137,15 +137,15 @@ function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
     c.shippingFee != null
       ? Number(c.shippingFee)
       : settings.defaultShippingCost || FALLBACK_SHIPPING_COST
-  // PG를 명시(별도 부과)한 채널만 채널값 사용, 그 외엔 기본 2% 별도 부과.
-  const pgExplicit = c.paymentFeeIncluded === false && c.paymentFeePct != null
+  // PG는 채널 설정값 그대로. 설정된 값(paymentFeePct)이 없으면 0% 미포함.
+  const hasPg = c.paymentFeePct != null
   return {
     feePct: feeBasic ? Number(feeBasic.ratePercent) : settings.defaultChannelFeePct,
     shippingFeeType: c.shippingFeeType ?? 'FIXED',
     shippingFee,
     shippingFeePct: c.shippingFeePct != null ? Number(c.shippingFeePct) : 0,
-    paymentFeeIncluded: false,
-    paymentFeePct: pgExplicit ? Number(c.paymentFeePct) : DEFAULT_PG_PCT,
+    paymentFeeIncluded: hasPg ? c.paymentFeeIncluded : false,
+    paymentFeePct: hasPg ? Number(c.paymentFeePct) : 0,
     // 광고비는 기본 적용, 채널별로 끌 수 있음. rate는 채널 설정값 우선, 미설정 시 앱 기본값 폴백.
     applyAdCost: true,
     adPct: c.adCostPct != null ? Number(c.adCostPct) : FALLBACK_AD_PCT / 100,
@@ -287,7 +287,6 @@ export function PricingQuickFlow({
 
   // ── 글로벌 설정 (초기 로드) ────────────────────────────────────────────────
   const [settings, setSettings] = useState<PricingFullSettings>(DEFAULT_SETTINGS)
-  const [settingsOpen, setSettingsOpen] = useState(false)
 
   // ── 라이브 시뮬 설정 (세션 한정 override) ─────────────────────────────────
   const [live, setLive] = useState<LiveSim>(() => liveFromSettings(DEFAULT_SETTINGS))
@@ -321,28 +320,7 @@ export function PricingQuickFlow({
         ])
         if (stRes.ok) {
           const d: { settings: SettingsRaw } = await stRes.json()
-          const s = d.settings ?? {}
-          if (!cancelled) {
-            // 15필드 전부 round-trip — 다이얼로그가 PUT으로 전체를 보내므로
-            // 비계산 필드(channelFee/shipping/auto*)도 보존해야 저장 시 0 덮어쓰기 방지.
-            setSettings({
-              defaultOperatingCostPct: Number(s.defaultOperatingCostPct ?? 0) || 0,
-              defaultAdCostPct: Number(s.defaultAdCostPct ?? 8) || 0,
-              defaultPackagingCost: Number(s.defaultPackagingCost ?? 0) || 0,
-              defaultChannelFeePct: Number(s.defaultChannelFeePct ?? 0) || 0,
-              defaultShippingCost: Number(s.defaultShippingCost ?? 3000) || 0,
-              autoApplyChannelFee: s.autoApplyChannelFee ?? false,
-              autoApplyAdCost: s.autoApplyAdCost ?? false,
-              autoApplyShipping: s.autoApplyShipping ?? false,
-              defaultReturnRate: Number(s.defaultReturnRate ?? 0.15),
-              defaultReturnShipping: Number(s.defaultReturnShipping ?? 6000) || 0,
-              defaultIncludeVat: s.defaultIncludeVat ?? true,
-              defaultVatRate: Number(s.defaultVatRate ?? 0.1),
-              platformTargetGood: Number(s.platformTargetGood ?? 0.3),
-              platformTargetFair: Number(s.platformTargetFair ?? 0.2),
-              minimumAcceptableMargin: Number(s.minimumAcceptableMargin ?? 0.12),
-            })
-          }
+          if (!cancelled) setSettings(mapPricingSettings(d.settings))
         }
         if (chRes.ok) {
           const d: { channels?: ApiCh[] } = await chRes.json()
@@ -610,9 +588,12 @@ export function PricingQuickFlow({
     [selectedApiChannels, overrideOf]
   )
 
-  // KPI — 통과 채널 수 + 권장가 범위. 카드와 동일 역산(good)을 한 번 더 계산.
+  // KPI — 권장가 범위 + 소비자가 대비 할인율. 카드와 동일 역산(good) + 소비자가 상한 클램프.
   const boardSummary = useMemo(() => {
     if (!matrixBundle || boardChannels.length === 0) return null
+    // 소비자가 상한(0/미입력이면 null → 클램프 없음). board card와 동일 공식 유지.
+    const retailCap =
+      bundleCostSummary && bundleCostSummary.totalRetail > 0 ? bundleCostSummary.totalRetail : null
     const prices: number[] = []
     for (const bc of boardChannels) {
       const m = calculateMatrix({
@@ -623,15 +604,28 @@ export function PricingQuickFlow({
         thresholds: tierThresholds,
       })
       const good = m.recommendedRetail.good
-      if (good != null) prices.push(snap ? snapPrice(good, 'end900') : Math.round(good))
+      if (good != null) {
+        const snapped = snap ? snapPrice(good, 'end900') : Math.round(good)
+        // 권장가는 소비자가를 초과할 수 없음(항목7). 상한 클램프 후 범위 산출.
+        prices.push(retailCap != null ? Math.min(snapped, retailCap) : snapped)
+      }
     }
+    const min = prices.length ? Math.min(...prices) : null
+    const max = prices.length ? Math.max(...prices) : null
+    // 소비자가 대비 할인율 범위: 낮은 권장가=높은 할인. R 없으면 null.
+    const discountMax =
+      retailCap != null && min != null ? Math.max(0, (retailCap - min) / retailCap) : null
+    const discountMin =
+      retailCap != null && max != null ? Math.max(0, (retailCap - max) / retailCap) : null
     return {
       total: boardChannels.length,
       pass: prices.length,
-      min: prices.length ? Math.min(...prices) : null,
-      max: prices.length ? Math.max(...prices) : null,
+      min,
+      max,
+      discountMin,
+      discountMax,
     }
-  }, [matrixBundle, boardChannels, live, tierThresholds, snap])
+  }, [matrixBundle, boardChannels, live, tierThresholds, snap, bundleCostSummary])
 
   // ── 스냅샷 직렬화 / 복원 ───────────────────────────────────────────────────
   // 선택 상품(대표 = 첫 확정행). 번들이면 productIds에 전부 담아 구성 상품 모두 조회 대상.
@@ -964,9 +958,13 @@ export function PricingQuickFlow({
       {/* ── KPI 스트립 ── */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiCell
-          label="목표 마진율"
-          value={`${Math.round(live.targetMargin * 100)}%`}
-          sub={`마진 하한 ${Math.round(live.minMargin * 100)}%`}
+          label="소비자가"
+          value={
+            bundleCostSummary && bundleCostSummary.totalRetail > 0
+              ? `₩${fmt(bundleCostSummary.totalRetail)}`
+              : '—'
+          }
+          sub={bundleName || '상품 미선택'}
           accent="emerald"
         />
         <KpiCell
@@ -975,9 +973,15 @@ export function PricingQuickFlow({
           sub={bundleName || '상품 미선택'}
         />
         <KpiCell
-          label="통과 채널"
-          value={boardSummary ? `${boardSummary.pass}` : '0'}
-          sub={`/ ${boardChannels.length}개 · 권장가 기준`}
+          label="소비자가 대비 할인율"
+          value={
+            boardSummary && boardSummary.discountMin != null && boardSummary.discountMax != null
+              ? boardSummary.discountMin === boardSummary.discountMax
+                ? `${Math.round(boardSummary.discountMax * 100)}%`
+                : `${Math.round(boardSummary.discountMin * 100)}~${Math.round(boardSummary.discountMax * 100)}%`
+              : '—'
+          }
+          sub="권장가 범위 기준"
         />
         <KpiCell
           label="권장가 범위"
@@ -1035,40 +1039,10 @@ export function PricingQuickFlow({
                 />
               </div>
             )}
-            {bundleCostSummary && (
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 rounded-md bg-[var(--ps-muted)] px-3 py-2 text-xs">
-                <span>
-                  총 원가{' '}
-                  <span className="font-semibold tabular-nums">
-                    {fmt(bundleCostSummary.totalCost)}원
-                  </span>
-                </span>
-                <span>
-                  참고 시장가{' '}
-                  <span className="font-semibold tabular-nums">
-                    {fmt(bundleCostSummary.totalRetail)}원
-                  </span>
-                </span>
-              </div>
-            )}
           </StepCard>
 
-          {/* ② 시뮬레이션 설정 */}
-          <StepCard
-            step={2}
-            title="시뮬레이션 설정"
-            action={
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 gap-1 text-[11px] text-muted-foreground"
-                onClick={() => setSettingsOpen(true)}
-              >
-                <Settings2 className="h-3.5 w-3.5" /> 기본값
-              </Button>
-            }
-          >
+          {/* ② 시뮬레이션 설정 — 이 시나리오에만 적용(세션 한정). 기본값 편집은 목록 화면에서. */}
+          <StepCard step={2} title="시뮬레이션 설정">
             <TooltipProvider delayDuration={200}>
               {/* 목표 마진율 */}
               <SliderRow
@@ -1376,14 +1350,6 @@ export function PricingQuickFlow({
           )}
         </div>
       </div>
-
-      {/* 설정 팝업 */}
-      <PricingDefaultsDialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        initialSettings={settings}
-        onSaved={setSettings}
-      />
 
       {/* 채널별 생성 확인 다이얼로그 */}
       <Dialog

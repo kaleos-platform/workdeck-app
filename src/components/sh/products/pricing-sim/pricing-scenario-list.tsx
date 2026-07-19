@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Settings2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Input } from '@/components/ui/input'
@@ -25,7 +25,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { productDisplayName } from '@/lib/sh/product-display'
 import { SELLER_HUB_PRICING_SIM_NEW_PATH, getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
+import { mapPricingSettings } from '@/lib/sh/pricing-settings'
 import { type ScenarioRow, priceRangeText } from './pricing-scenario-format'
+import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
 
 type ProductOption = { id: string; label: string }
 
@@ -42,7 +44,28 @@ export function PricingScenarioList() {
   const [total, setTotal] = useState(0)
   const [products, setProducts] = useState<ProductOption[]>([])
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settings, setSettings] = useState<PricingFullSettings | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // 시뮬레이션 기본값 로드 (기본값 설정 다이얼로그용)
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await fetch('/api/sh/settings')
+        if (!res.ok) return
+        const json = await res.json()
+        if (!cancelled) setSettings(mapPricingSettings(json.settings))
+      } catch {
+        // 무시 — 열 때 null이면 버튼 비활성
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // 상품 필터 옵션 로드
   useEffect(() => {
@@ -135,13 +158,33 @@ export function PricingScenarioList() {
           <h1 className="text-2xl font-bold tracking-tight">가격 시뮬레이션</h1>
           <p className="text-sm text-muted-foreground">저장된 가격 시나리오 목록</p>
         </div>
-        <Button size="sm" asChild>
-          <Link href={SELLER_HUB_PRICING_SIM_NEW_PATH}>
-            <Plus className="mr-1 h-4 w-4" />
-            시나리오 생성
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setSettingsOpen(true)}
+            disabled={!settings}
+          >
+            <Settings2 className="mr-1 h-4 w-4" />
+            기본값 설정
+          </Button>
+          <Button size="sm" asChild>
+            <Link href={SELLER_HUB_PRICING_SIM_NEW_PATH}>
+              <Plus className="mr-1 h-4 w-4" />
+              시나리오 생성
+            </Link>
+          </Button>
+        </div>
       </div>
+
+      {settings && (
+        <PricingDefaultsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          initialSettings={settings}
+          onSaved={setSettings}
+        />
+      )}
 
       {/* 필터 바 */}
       <div className="flex flex-wrap items-center gap-2">
