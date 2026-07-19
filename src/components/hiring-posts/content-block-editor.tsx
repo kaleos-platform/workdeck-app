@@ -845,9 +845,15 @@ function ImageBlock({
           e.target.value = ''
         }}
       />
-      <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
-        <Upload /> {imagePath ? '이미지 교체' : '이미지 업로드'}
-      </Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
+          <Upload /> {imagePath ? '이미지 교체' : '이미지 업로드'}
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          권장: 가로 1280px 이상(표시 폭 640px · 선명도 2x) · JPG/PNG · 10MB 이하. 세로 길이는
+          자유입니다.
+        </p>
+      </div>
     </div>
   )
 }

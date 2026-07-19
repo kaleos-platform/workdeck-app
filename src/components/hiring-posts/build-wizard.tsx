@@ -21,6 +21,7 @@ import { PublishBar } from './step-publish'
 import { ApplicationFormPreview } from './application-form-preview'
 import { ContentBlockEditor } from './content-block-editor'
 import { PostingPreview } from './posting-preview'
+import { PreviewFrame } from './preview-frame'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 import type {
   WizardContentData,
@@ -215,29 +216,32 @@ export function BuildWizard({ data }: { data: WizardData }) {
             <div
               className={`space-y-3 lg:sticky ${TOP_BAR_OFFSET} ${RIGHT_COL_MAX_H} lg:self-start lg:overflow-y-auto`}
             >
-              <div className="flex justify-end">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    window.open(
-                      `${getHiringPublicPostingPath(data.posting.uuid)}?preview=1`,
-                      '_blank'
-                    )
-                  }
-                >
-                  <ExternalLink /> 새 탭 미리보기
-                </Button>
-              </div>
-              <PostingPreview
-                status={state.status}
-                title={state.title}
-                positions={state.positions}
-                stores={state.stores}
-                storeIds={state.storeIds}
-                noStores={state.noStores}
-                contents={state.contents}
-              />
+              <PreviewFrame
+                actions={
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      window.open(
+                        `${getHiringPublicPostingPath(data.posting.uuid)}?preview=1`,
+                        '_blank'
+                      )
+                    }
+                  >
+                    <ExternalLink /> 새 탭 미리보기
+                  </Button>
+                }
+              >
+                <PostingPreview
+                  status={state.status}
+                  title={state.title}
+                  positions={state.positions}
+                  stores={state.stores}
+                  storeIds={state.storeIds}
+                  noStores={state.noStores}
+                  contents={state.contents}
+                />
+              </PreviewFrame>
             </div>
           </div>
         )}
