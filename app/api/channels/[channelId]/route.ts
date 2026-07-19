@@ -85,6 +85,7 @@ export async function PATCH(
     freeShippingThreshold,
     usesMarketingBudget,
     applyAdCost,
+    adCostPct,
     shippingFeeType,
     shippingFee,
     shippingFeePct,
@@ -137,6 +138,11 @@ export async function PATCH(
           }),
           ...(usesMarketingBudget !== undefined && { usesMarketingBudget }),
           ...(applyAdCost !== undefined && { applyAdCost }),
+          // adCostPct: body에 키가 있으면 처리(빈값→null=미설정으로 초기화 허용). Zod가 null/''→undefined로
+          // 정규화하므로 raw body 키 존재 여부로 판별한다.
+          ...(body !== null &&
+            typeof body === 'object' &&
+            'adCostPct' in body && { adCostPct: adCostPct ?? null }),
           ...(shippingFeeType !== undefined && { shippingFeeType }),
           ...(shippingFee !== undefined && { shippingFee: shippingFee ?? null }),
           ...(shippingFeePct !== undefined && { shippingFeePct: shippingFeePct ?? null }),

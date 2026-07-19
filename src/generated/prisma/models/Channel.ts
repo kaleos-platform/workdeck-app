@@ -28,6 +28,7 @@ export type AggregateChannel = {
 
 export type ChannelAvgAggregateOutputType = {
   freeShippingThreshold: runtime.Decimal | null
+  adCostPct: runtime.Decimal | null
   shippingFee: runtime.Decimal | null
   shippingFeePct: runtime.Decimal | null
   paymentFeePct: runtime.Decimal | null
@@ -36,6 +37,7 @@ export type ChannelAvgAggregateOutputType = {
 
 export type ChannelSumAggregateOutputType = {
   freeShippingThreshold: runtime.Decimal | null
+  adCostPct: runtime.Decimal | null
   shippingFee: runtime.Decimal | null
   shippingFeePct: runtime.Decimal | null
   paymentFeePct: runtime.Decimal | null
@@ -56,6 +58,7 @@ export type ChannelMinAggregateOutputType = {
   freeShippingThreshold: runtime.Decimal | null
   usesMarketingBudget: boolean | null
   applyAdCost: boolean | null
+  adCostPct: runtime.Decimal | null
   shippingFeeType: $Enums.ChannelShippingFeeType | null
   shippingFee: runtime.Decimal | null
   shippingFeePct: runtime.Decimal | null
@@ -84,6 +87,7 @@ export type ChannelMaxAggregateOutputType = {
   freeShippingThreshold: runtime.Decimal | null
   usesMarketingBudget: boolean | null
   applyAdCost: boolean | null
+  adCostPct: runtime.Decimal | null
   shippingFeeType: $Enums.ChannelShippingFeeType | null
   shippingFee: runtime.Decimal | null
   shippingFeePct: runtime.Decimal | null
@@ -112,6 +116,7 @@ export type ChannelCountAggregateOutputType = {
   freeShippingThreshold: number
   usesMarketingBudget: number
   applyAdCost: number
+  adCostPct: number
   shippingFeeType: number
   shippingFee: number
   shippingFeePct: number
@@ -130,6 +135,7 @@ export type ChannelCountAggregateOutputType = {
 
 export type ChannelAvgAggregateInputType = {
   freeShippingThreshold?: true
+  adCostPct?: true
   shippingFee?: true
   shippingFeePct?: true
   paymentFeePct?: true
@@ -138,6 +144,7 @@ export type ChannelAvgAggregateInputType = {
 
 export type ChannelSumAggregateInputType = {
   freeShippingThreshold?: true
+  adCostPct?: true
   shippingFee?: true
   shippingFeePct?: true
   paymentFeePct?: true
@@ -158,6 +165,7 @@ export type ChannelMinAggregateInputType = {
   freeShippingThreshold?: true
   usesMarketingBudget?: true
   applyAdCost?: true
+  adCostPct?: true
   shippingFeeType?: true
   shippingFee?: true
   shippingFeePct?: true
@@ -186,6 +194,7 @@ export type ChannelMaxAggregateInputType = {
   freeShippingThreshold?: true
   usesMarketingBudget?: true
   applyAdCost?: true
+  adCostPct?: true
   shippingFeeType?: true
   shippingFee?: true
   shippingFeePct?: true
@@ -214,6 +223,7 @@ export type ChannelCountAggregateInputType = {
   freeShippingThreshold?: true
   usesMarketingBudget?: true
   applyAdCost?: true
+  adCostPct?: true
   shippingFeeType?: true
   shippingFee?: true
   shippingFeePct?: true
@@ -329,6 +339,7 @@ export type ChannelGroupByOutputType = {
   freeShippingThreshold: runtime.Decimal | null
   usesMarketingBudget: boolean
   applyAdCost: boolean
+  adCostPct: runtime.Decimal | null
   shippingFeeType: $Enums.ChannelShippingFeeType
   shippingFee: runtime.Decimal | null
   shippingFeePct: runtime.Decimal | null
@@ -380,6 +391,7 @@ export type ChannelWhereInput = {
   freeShippingThreshold?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFilter<"Channel"> | boolean
   applyAdCost?: Prisma.BoolFilter<"Channel"> | boolean
+  adCostPct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFilter<"Channel"> | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -421,6 +433,7 @@ export type ChannelOrderByWithRelationInput = {
   freeShippingThreshold?: Prisma.SortOrderInput | Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
   applyAdCost?: Prisma.SortOrder
+  adCostPct?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingFeeType?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingFeePct?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -467,6 +480,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   freeShippingThreshold?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFilter<"Channel"> | boolean
   applyAdCost?: Prisma.BoolFilter<"Channel"> | boolean
+  adCostPct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFilter<"Channel"> | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -508,6 +522,7 @@ export type ChannelOrderByWithAggregationInput = {
   freeShippingThreshold?: Prisma.SortOrderInput | Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
   applyAdCost?: Prisma.SortOrder
+  adCostPct?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingFeeType?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrderInput | Prisma.SortOrder
   shippingFeePct?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -544,6 +559,7 @@ export type ChannelScalarWhereWithAggregatesInput = {
   freeShippingThreshold?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   applyAdCost?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
+  adCostPct?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeWithAggregatesFilter<"Channel"> | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -569,6 +585,7 @@ export type ChannelCreateInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -610,6 +627,7 @@ export type ChannelUncheckedCreateInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -645,6 +663,7 @@ export type ChannelUpdateInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -686,6 +705,7 @@ export type ChannelUncheckedUpdateInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -724,6 +744,7 @@ export type ChannelCreateManyInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -749,6 +770,7 @@ export type ChannelUpdateManyMutationInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -777,6 +799,7 @@ export type ChannelUncheckedUpdateManyInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -835,6 +858,7 @@ export type ChannelCountOrderByAggregateInput = {
   freeShippingThreshold?: Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
   applyAdCost?: Prisma.SortOrder
+  adCostPct?: Prisma.SortOrder
   shippingFeeType?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   shippingFeePct?: Prisma.SortOrder
@@ -851,6 +875,7 @@ export type ChannelCountOrderByAggregateInput = {
 
 export type ChannelAvgOrderByAggregateInput = {
   freeShippingThreshold?: Prisma.SortOrder
+  adCostPct?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   shippingFeePct?: Prisma.SortOrder
   paymentFeePct?: Prisma.SortOrder
@@ -871,6 +896,7 @@ export type ChannelMaxOrderByAggregateInput = {
   freeShippingThreshold?: Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
   applyAdCost?: Prisma.SortOrder
+  adCostPct?: Prisma.SortOrder
   shippingFeeType?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   shippingFeePct?: Prisma.SortOrder
@@ -899,6 +925,7 @@ export type ChannelMinOrderByAggregateInput = {
   freeShippingThreshold?: Prisma.SortOrder
   usesMarketingBudget?: Prisma.SortOrder
   applyAdCost?: Prisma.SortOrder
+  adCostPct?: Prisma.SortOrder
   shippingFeeType?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   shippingFeePct?: Prisma.SortOrder
@@ -915,6 +942,7 @@ export type ChannelMinOrderByAggregateInput = {
 
 export type ChannelSumOrderByAggregateInput = {
   freeShippingThreshold?: Prisma.SortOrder
+  adCostPct?: Prisma.SortOrder
   shippingFee?: Prisma.SortOrder
   shippingFeePct?: Prisma.SortOrder
   paymentFeePct?: Prisma.SortOrder
@@ -1212,6 +1240,7 @@ export type ChannelCreateWithoutSpaceInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1251,6 +1280,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1318,6 +1348,7 @@ export type ChannelScalarWhereInput = {
   freeShippingThreshold?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFilter<"Channel"> | boolean
   applyAdCost?: Prisma.BoolFilter<"Channel"> | boolean
+  adCostPct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFilter<"Channel"> | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1343,6 +1374,7 @@ export type ChannelCreateWithoutInvMovementsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1383,6 +1415,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1433,6 +1466,7 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1473,6 +1507,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1507,6 +1542,7 @@ export type ChannelCreateWithoutDelOrdersInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1547,6 +1583,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1597,6 +1634,7 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1637,6 +1675,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1671,6 +1710,7 @@ export type ChannelCreateWithoutProductAliasesInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1711,6 +1751,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1761,6 +1802,7 @@ export type ChannelUpdateWithoutProductAliasesInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1801,6 +1843,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1835,6 +1878,7 @@ export type ChannelCreateWithoutColumnMappingPresetsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1875,6 +1919,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1925,6 +1970,7 @@ export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1965,6 +2011,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1999,6 +2046,7 @@ export type ChannelCreateWithoutChannelTypeDefInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2038,6 +2086,7 @@ export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2099,6 +2148,7 @@ export type ChannelCreateWithoutFulfillmentChannelsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2139,6 +2189,7 @@ export type ChannelUncheckedCreateWithoutFulfillmentChannelsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2178,6 +2229,7 @@ export type ChannelCreateWithoutRepresentativeChannelInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2217,6 +2269,7 @@ export type ChannelUncheckedCreateWithoutRepresentativeChannelInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2273,6 +2326,7 @@ export type ChannelUpdateWithoutFulfillmentChannelsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2313,6 +2367,7 @@ export type ChannelUncheckedUpdateWithoutFulfillmentChannelsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2363,6 +2418,7 @@ export type ChannelCreateWithoutFeeRatesInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2403,6 +2459,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2453,6 +2510,7 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2493,6 +2551,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2527,6 +2586,7 @@ export type ChannelCreateWithoutPricingScenariosInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2567,6 +2627,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2617,6 +2678,7 @@ export type ChannelUpdateWithoutPricingScenariosInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2657,6 +2719,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2691,6 +2754,7 @@ export type ChannelCreateWithoutPricingScenarioChannelsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2731,6 +2795,7 @@ export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2781,6 +2846,7 @@ export type ChannelUpdateWithoutPricingScenarioChannelsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2821,6 +2887,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2855,6 +2922,7 @@ export type ChannelCreateWithoutProductListingsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2895,6 +2963,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2945,6 +3014,7 @@ export type ChannelUpdateWithoutProductListingsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2985,6 +3055,7 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3019,6 +3090,7 @@ export type ChannelCreateWithoutChannelProductsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3059,6 +3131,7 @@ export type ChannelUncheckedCreateWithoutChannelProductsInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3109,6 +3182,7 @@ export type ChannelUpdateWithoutChannelProductsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3149,6 +3223,7 @@ export type ChannelUncheckedUpdateWithoutChannelProductsInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3185,6 +3260,7 @@ export type ChannelCreateManySpaceInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3210,6 +3286,7 @@ export type ChannelUpdateWithoutSpaceInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3249,6 +3326,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3286,6 +3364,7 @@ export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3313,6 +3392,7 @@ export type ChannelCreateManyChannelTypeDefInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3338,6 +3418,7 @@ export type ChannelUpdateWithoutChannelTypeDefInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3377,6 +3458,7 @@ export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3414,6 +3496,7 @@ export type ChannelUncheckedUpdateManyWithoutChannelTypeDefInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3441,6 +3524,7 @@ export type ChannelCreateManyRepresentativeChannelInput = {
   freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: $Enums.ChannelShippingFeeType
   shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3466,6 +3550,7 @@ export type ChannelUpdateWithoutRepresentativeChannelInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3505,6 +3590,7 @@ export type ChannelUncheckedUpdateWithoutRepresentativeChannelInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3542,6 +3628,7 @@ export type ChannelUncheckedUpdateManyWithoutRepresentativeChannelInput = {
   freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
   shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3682,6 +3769,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   freeShippingThreshold?: boolean
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: boolean
   shippingFeeType?: boolean
   shippingFee?: boolean
   shippingFeePct?: boolean
@@ -3724,6 +3812,7 @@ export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   freeShippingThreshold?: boolean
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: boolean
   shippingFeeType?: boolean
   shippingFee?: boolean
   shippingFeePct?: boolean
@@ -3755,6 +3844,7 @@ export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   freeShippingThreshold?: boolean
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: boolean
   shippingFeeType?: boolean
   shippingFee?: boolean
   shippingFeePct?: boolean
@@ -3786,6 +3876,7 @@ export type ChannelSelectScalar = {
   freeShippingThreshold?: boolean
   usesMarketingBudget?: boolean
   applyAdCost?: boolean
+  adCostPct?: boolean
   shippingFeeType?: boolean
   shippingFee?: boolean
   shippingFeePct?: boolean
@@ -3800,7 +3891,7 @@ export type ChannelSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "externalSource" | "representativeChannelId" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "shippingFeeType" | "shippingFee" | "shippingFeePct" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
+export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "externalSource" | "representativeChannelId" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "adCostPct" | "shippingFeeType" | "shippingFee" | "shippingFeePct" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
@@ -3859,6 +3950,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     freeShippingThreshold: runtime.Decimal | null
     usesMarketingBudget: boolean
     applyAdCost: boolean
+    adCostPct: runtime.Decimal | null
     shippingFeeType: $Enums.ChannelShippingFeeType
     shippingFee: runtime.Decimal | null
     shippingFeePct: runtime.Decimal | null
@@ -4320,6 +4412,7 @@ export interface ChannelFieldRefs {
   readonly freeShippingThreshold: Prisma.FieldRef<"Channel", 'Decimal'>
   readonly usesMarketingBudget: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly applyAdCost: Prisma.FieldRef<"Channel", 'Boolean'>
+  readonly adCostPct: Prisma.FieldRef<"Channel", 'Decimal'>
   readonly shippingFeeType: Prisma.FieldRef<"Channel", 'ChannelShippingFeeType'>
   readonly shippingFee: Prisma.FieldRef<"Channel", 'Decimal'>
   readonly shippingFeePct: Prisma.FieldRef<"Channel", 'Decimal'>

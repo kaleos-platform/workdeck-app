@@ -11256,6 +11256,7 @@ export const ChannelScalarFieldEnum = {
   freeShippingThreshold: 'freeShippingThreshold',
   usesMarketingBudget: 'usesMarketingBudget',
   applyAdCost: 'applyAdCost',
+  adCostPct: 'adCostPct',
   shippingFeeType: 'shippingFeeType',
   shippingFee: 'shippingFee',
   shippingFeePct: 'shippingFeePct',
