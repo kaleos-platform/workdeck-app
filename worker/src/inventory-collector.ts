@@ -11,7 +11,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import type { BrowserContext, Page } from 'playwright'
+import type { BrowserContext, Locator, Page } from 'playwright'
 import { launchStealthPersistentContext, renewProfileLock } from './browser.js'
 import { LoginError, classifyLoginFailure, reasonLabel } from './login-guard.js'
 
@@ -119,7 +119,10 @@ async function performWingLogin(
   if (!formShown) {
     await saveScreenshot(page, 'wing-login-noform')
     const reason = await classifyLoginFailure(page)
-    throw new LoginError(reason, `[inventory] Wing 로그인 실패 — ${reasonLabel(reason)} (로그인 폼 미표시)`)
+    throw new LoginError(
+      reason,
+      `[inventory] Wing 로그인 실패 — ${reasonLabel(reason)} (로그인 폼 미표시)`
+    )
   }
   await pwField.fill(credentials.password)
 
@@ -382,6 +385,23 @@ async function downloadInventoryHealth(
  * 셀렉터는 2026-06 Wing live DOM 에서 확인. 실패 시 스크린샷을 남기고 throw —
  * 조용히 기본 기간(최근 7일)으로 export 되어 7배 과대 집계되는 것을 막기 위함이다.
  */
+/**
+ * 요소를 클릭하되, 뷰포트 밖으로 밀린 경우 JS 클릭으로 폴백한다.
+ * 판매분석 date picker 는 오버레이라, 상단에 프로모션 배너가 새로 뜨면 picker 가
+ * 뷰포트 밖으로 밀려 일반 click 이 "element is outside of the viewport" 로 타임아웃된다
+ * (스크롤로도 뷰포트에 들일 수 없음). visible·enabled 가 이미 확인된 요소에 한해
+ * evaluate 클릭으로 우회한다.
+ */
+async function clickWithJsFallback(locator: Locator, label: string): Promise<void> {
+  try {
+    await locator.scrollIntoViewIfNeeded().catch(() => {})
+    await locator.click({ timeout: 10000 })
+  } catch {
+    console.log(`[inventory]   → "${label}" viewport 밖 — JS 클릭 폴백`)
+    await locator.evaluate((el) => (el as HTMLElement).click())
+  }
+}
+
 async function selectSalesAnalysisOneDay(page: Page, targetDateKst: string): Promise<void> {
   // 1) 기간 트리거 열기 — 툴바 내 기간 라벨(텍스트 가변)
   const trigger = page
@@ -404,7 +424,7 @@ async function selectSalesAnalysisOneDay(page: Page, targetDateKst: string): Pro
     if (await cell.isVisible({ timeout: 1000 }).catch(() => false)) break
     const prevMonth = page.locator('[class*="_prev_"]').first()
     if (!(await prevMonth.isVisible({ timeout: 800 }).catch(() => false))) break
-    await prevMonth.click().catch(() => {})
+    await clickWithJsFallback(prevMonth, '이전 달').catch(() => {})
     await page.waitForTimeout(300)
     cell = page.locator(`${cellSelector}[aria-selected]`).first()
   }
@@ -417,9 +437,9 @@ async function selectSalesAnalysisOneDay(page: Page, targetDateKst: string): Pro
   }
 
   // 시작=종료=targetDate → 1일 범위
-  await cell.click()
+  await clickWithJsFallback(cell, `${targetDateKst} 날짜 셀`)
   await page.waitForTimeout(300)
-  await cell.click()
+  await clickWithJsFallback(cell, `${targetDateKst} 날짜 셀`)
   await page.waitForTimeout(500)
 
   // vue-datepicker 는 "선택 완료" 버튼을 눌러야 기간이 적용된다(즉시 적용 아님).
@@ -433,7 +453,7 @@ async function selectSalesAnalysisOneDay(page: Page, targetDateKst: string): Pro
       `[inventory] 판매분석 기간 "선택 완료" 버튼을 찾지 못했습니다 (${targetDateKst}) — DOM 변경 의심`
     )
   }
-  await confirmBtn.click()
+  await clickWithJsFallback(confirmBtn, '선택 완료')
   await page.waitForTimeout(500)
   console.log(`[inventory]   → 판매분석 기간 1일 선택 완료: ${targetDateKst}`)
 }

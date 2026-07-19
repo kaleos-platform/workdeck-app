@@ -64,6 +64,12 @@ export const DECK_NOTIFICATION_EVENTS: Record<string, DeckNotificationEvent[]> =
       description: '쿠팡 로켓그로스 판매 데이터 수집이 완료되면 알립니다',
       togglable: true,
     },
+    {
+      key: 'vendor_sales_failed',
+      label: '판매 수집 실패',
+      description: '쿠팡 로켓그로스 판매 데이터 수집이 실패하면 알립니다',
+      togglable: false,
+    },
   ],
 }
 

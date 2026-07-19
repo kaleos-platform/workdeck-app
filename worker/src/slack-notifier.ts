@@ -410,3 +410,29 @@ export async function notifyVendorSalesDone(params: {
     'vendor_sales_done'
   )
 }
+
+/**
+ * 로켓그로스 판매(VENDOR) 수집 실패 알림 — 한 수집 run 에서 실패한 일자를 모아 1건으로 발송.
+ * togglable=false 이벤트라 UI 노출 없이 항상 발송된다(오류성 알림 규약).
+ */
+export async function notifyVendorSalesFailed(params: {
+  failedDates: string[]
+  error: string
+  workspaceId?: string
+}): Promise<void> {
+  const dateList = params.failedDates.length > 0 ? params.failedDates.join(', ') : '(미상)'
+  const blocks: Block[] = [
+    header(`:warning: [${DECK_SELLER_OPS}] 쿠팡 판매 데이터 수집 실패`),
+    divider(),
+    section(`*상태*\n실패`, `*실패 일자*\n${dateList}`),
+    section(`*오류*\n${params.error.slice(0, 200)}`),
+  ]
+
+  await postMessage(
+    blocks,
+    `[${DECK_SELLER_OPS}] 쿠팡 판매 데이터 수집 실패 (${dateList})`,
+    params.workspaceId,
+    DECK_KEY_SELLER_HUB,
+    'vendor_sales_failed'
+  )
+}
