@@ -22,6 +22,10 @@ export const SELLER_HUB_PRODUCTS_LIST_PATH = `${SELLER_HUB_BASE_PATH}/products/l
 export const SELLER_HUB_PRODUCT_NEW_PATH = `${SELLER_HUB_BASE_PATH}/products/new`
 export const SELLER_HUB_BRANDS_PATH = `${SELLER_HUB_BASE_PATH}/settings/brands`
 export const SELLER_HUB_PRICING_SIM_PATH = `${SELLER_HUB_BASE_PATH}/products/pricing-sim`
+export const SELLER_HUB_PRICING_SIM_NEW_PATH = `${SELLER_HUB_PRICING_SIM_PATH}/new`
+export function getSellerHubPricingScenarioPath(id: string) {
+  return `${SELLER_HUB_PRICING_SIM_PATH}/${id}`
+}
 export const SELLER_HUB_LISTINGS_PATH = `${SELLER_HUB_BASE_PATH}/products/listings`
 export const SELLER_HUB_LISTING_NEW_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/new`
 export const SELLER_HUB_PRODUCTION_PATH = `${SELLER_HUB_BASE_PATH}/products/production`

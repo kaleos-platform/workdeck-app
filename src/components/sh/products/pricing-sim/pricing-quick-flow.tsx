@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ChevronDown, History, Info, Plus, RotateCcw, Save, Settings2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -47,11 +48,15 @@ import type {
 import type { TierThresholds } from '@/lib/sh/margin-tier'
 import { snapPrice } from '@/lib/sh/price-snap'
 
+import { productDisplayName } from '@/lib/sh/product-display'
+import { resolveFirstPriceGroup } from '@/lib/sh/resolve-product-price-group'
+import type { OptionInput } from '@/lib/sh/price-group'
+import { getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
+
 import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
 import { PricingChannelBoardCard } from './pricing-channel-board-card'
 import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
 import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
-import { PricingScenarioHistoryPanel } from './pricing-scenario-history-panel'
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
 
@@ -257,7 +262,28 @@ function SuffixInput({
 
 // ─── 컴포넌트 ──────────────────────────────────────────────────────────────────
 
-export function PricingQuickFlow() {
+type PricingQuickFlowProps = {
+  /** 있으면 저장 시나리오를 불러와 편집 모드로 시작 (저장=덮어쓰기) */
+  initialScenarioId?: string
+  /** 있으면 신규 진입 시 해당 상품을 자동 선택 (scenarioId 없을 때만) */
+  initialProductId?: string
+}
+
+export function PricingQuickFlow({
+  initialScenarioId,
+  initialProductId,
+}: PricingQuickFlowProps = {}) {
+  const router = useRouter()
+  // 편집 대상 시나리오 (있으면 저장=PATCH 덮어쓰기, 없으면 POST 신규)
+  const [editingScenarioId, setEditingScenarioId] = useState<string | null>(
+    initialScenarioId ?? null
+  )
+  // 로드된 시나리오 이름/메모 (저장 다이얼로그 프리필)
+  const [loadedName, setLoadedName] = useState('')
+  const [loadedMemo, setLoadedMemo] = useState('')
+  // 명시 진입(상세 편집/상품 프리셀렉트)은 임시저장 draft 비활성 — 의도한 내용을 draft가 덮지 않게
+  const draftEnabled = !initialScenarioId && !initialProductId
+
   // ── 글로벌 설정 (초기 로드) ────────────────────────────────────────────────
   const [settings, setSettings] = useState<PricingFullSettings>(DEFAULT_SETTINGS)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -562,6 +588,10 @@ export function PricingQuickFlow() {
     setSnap(true)
     setRestorable(null)
     clearDraft()
+    // 편집 모드 해제 — 초기화 후 저장은 원본 덮어쓰기가 아니라 새 시나리오여야 안전
+    setEditingScenarioId(null)
+    setLoadedName('')
+    setLoadedMemo('')
     toast.success('시뮬레이션을 초기화했습니다')
   }
 
@@ -604,7 +634,6 @@ export function PricingQuickFlow() {
 
   // ── 스냅샷 직렬화 / 복원 ───────────────────────────────────────────────────
   // 선택 상품(대표 = 첫 확정행). 번들이면 productIds에 전부 담아 구성 상품 모두 조회 대상.
-  const primaryProductId = confirmedRows[0]?.productId ?? null
   const scenarioProductIds = useMemo(
     () => [...new Set(confirmedRows.map((r) => r.productId))],
     [confirmedRows]
@@ -665,9 +694,95 @@ export function PricingQuickFlow() {
     setSnap(s.snap)
   }, [])
 
+  // ── 진입점 ①: 저장 시나리오 로드 (편집 모드) ──────────────────────────────
+  useEffect(() => {
+    if (!initialScenarioId) return
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await fetch(`/api/sh/pricing-scenarios/${initialScenarioId}`)
+        if (!res.ok) throw new Error()
+        const data: {
+          name: string
+          memo: string | null
+          snapshot: PricingSimSnapshot | null
+        } = await res.json()
+        if (cancelled) return
+        if (data.snapshot) applySnapshot(data.snapshot)
+        setLoadedName(data.name)
+        setLoadedMemo(data.memo ?? '')
+      } catch {
+        if (!cancelled) toast.error('시나리오를 불러오지 못했습니다')
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [initialScenarioId, applySnapshot])
+
+  // ── 진입점 ②: 상품 자동 선택 (신규 + productId) ───────────────────────────
+  useEffect(() => {
+    if (!initialProductId || initialScenarioId) return
+    let cancelled = false
+    void (async () => {
+      try {
+        const [optRes, prodRes] = await Promise.all([
+          fetch(`/api/sh/products/${initialProductId}/options`),
+          fetch(`/api/sh/products/${initialProductId}`),
+        ])
+        if (!optRes.ok) return
+        const optJson: {
+          options: Array<{
+            id: string
+            name: string
+            costPrice: string | number | null
+            retailPrice: string | number | null
+            attributeValues?: Record<string, string> | null
+            sizeLabel?: string | null
+          }>
+        } = await optRes.json()
+        const options: OptionInput[] = (optJson.options ?? []).map((o) => ({
+          optionId: o.id,
+          optionName: o.name,
+          costPrice: o.costPrice != null ? Number(o.costPrice) : null,
+          retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
+          attributeValues: o.attributeValues ?? null,
+          sizeLabel: o.sizeLabel ?? null,
+        }))
+        const grp = resolveFirstPriceGroup(options)
+        if (!grp || cancelled) return
+        let productName = ''
+        if (prodRes.ok) {
+          const p = await prodRes.json()
+          productName = productDisplayName(p.product ?? p)
+        }
+        setRows([
+          {
+            id: nextRowId(),
+            resolved: {
+              productId: initialProductId,
+              productName: productName || '선택한 상품',
+              optionId: grp.optionId,
+              optionIds: grp.optionIds,
+              costPrice: grp.costPrice,
+              retailPrice: grp.retailPrice,
+              quantity: 1,
+            },
+          },
+        ])
+      } catch {
+        // 무시 — 사용자가 직접 선택 가능
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [initialProductId, initialScenarioId])
+
   // ── 작성중 내용 자동 임시저장 (localStorage, debounce) ─────────────────────
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
+    if (!draftEnabled) return
     const snapshot = buildSnapshot()
     // 빈/기본 상태는 저장 안 함 — 기존 임시저장을 빈 내용으로 덮어쓰지 않도록
     if (!isMeaningfulSnapshot(snapshot)) return
@@ -681,7 +796,7 @@ export function PricingQuickFlow() {
     return () => {
       if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
     }
-  }, [buildSnapshot])
+  }, [buildSnapshot, draftEnabled])
 
   const clearDraft = useCallback(() => {
     // 대기 중인 자동저장 타이머 취소 — 저장 직후 debounce가 draft를 되살리는 경쟁 방지
@@ -696,6 +811,7 @@ export function PricingQuickFlow() {
   // ── 복원 배너 (mount 시 임시저장 감지) ────────────────────────────────────
   const [restorable, setRestorable] = useState<PricingSimSnapshot | null>(null)
   useEffect(() => {
+    if (!draftEnabled) return
     try {
       const raw = localStorage.getItem(PRICING_DRAFT_KEY)
       if (!raw) return
@@ -705,26 +821,26 @@ export function PricingQuickFlow() {
       // 파싱 실패 — 조용히 무시
     }
     // mount 1회만
-  }, [])
+  }, [draftEnabled])
 
   // ── 시나리오 저장 다이얼로그 ──────────────────────────────────────────────
   const [saveOpen, setSaveOpen] = useState(false)
   const [saveName, setSaveName] = useState('')
   const [saveMemo, setSaveMemo] = useState('')
   const [saving, setSaving] = useState(false)
-  const [historyRefresh, setHistoryRefresh] = useState(0)
 
   const openSaveDialog = () => {
     if (confirmedRows.length === 0) {
       toast.error('저장할 상품을 먼저 선택해 주세요')
       return
     }
-    setSaveName(bundleName)
-    setSaveMemo('')
+    setSaveName(editingScenarioId ? loadedName : bundleName)
+    setSaveMemo(editingScenarioId ? loadedMemo : '')
     setSaveOpen(true)
   }
 
-  const handleSaveScenario = async () => {
+  // asNew=true면 편집 중이어도 새 시나리오로 저장(POST)
+  const handleSaveScenario = async (asNew = false) => {
     const name = saveName.trim()
     if (!name) {
       toast.error('시나리오 이름을 입력해 주세요')
@@ -732,23 +848,45 @@ export function PricingQuickFlow() {
     }
     setSaving(true)
     try {
-      const res = await fetch('/api/sh/pricing-scenarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          memo: saveMemo.trim() || undefined,
-          productIds: scenarioProductIds,
-          inputSnapshot: buildSnapshot(),
-        }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
-      toast.success('시나리오를 저장했습니다')
-      clearDraft()
-      setRestorable(null)
-      setSaveOpen(false)
-      setHistoryRefresh((n) => n + 1)
+      const payload = {
+        name,
+        memo: saveMemo.trim() || undefined,
+        productIds: scenarioProductIds,
+        inputSnapshot: buildSnapshot(),
+      }
+      const headers = { 'Content-Type': 'application/json' }
+      if (editingScenarioId && !asNew) {
+        // 덮어쓰기
+        const res = await fetch(`/api/sh/pricing-scenarios/${editingScenarioId}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify(payload),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
+        toast.success('시나리오를 저장했습니다')
+        setLoadedName(name)
+        setLoadedMemo(saveMemo.trim())
+        setSaveOpen(false)
+      } else {
+        // 신규 생성
+        const res = await fetch('/api/sh/pricing-scenarios', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
+        toast.success('시나리오를 저장했습니다')
+        clearDraft()
+        setRestorable(null)
+        setSaveOpen(false)
+        // 저장된 시나리오 상세(편집 모드)로 이동
+        if (data.id) {
+          setEditingScenarioId(data.id)
+          router.replace(getSellerHubPricingScenarioPath(data.id))
+        }
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
     } finally {
@@ -1238,25 +1376,6 @@ export function PricingQuickFlow() {
         </div>
       </div>
 
-      {/* ── 저장된 시나리오 내역 (선택 상품 단위) ── */}
-      {primaryProductId && (
-        <div className="mt-8 space-y-3">
-          <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">저장된 가격 시나리오</h2>
-            <span className="text-[11px] text-muted-foreground">
-              {confirmedRows[0]?.productName} 기준
-            </span>
-          </div>
-          <PricingScenarioHistoryPanel
-            productId={primaryProductId}
-            onLoad={applySnapshot}
-            allowDelete
-            refreshSignal={historyRefresh}
-          />
-        </div>
-      )}
-
       {/* 설정 팝업 */}
       <PricingDefaultsDialog
         open={settingsOpen}
@@ -1306,10 +1425,14 @@ export function PricingQuickFlow() {
       <Dialog open={saveOpen} onOpenChange={(v) => !saving && setSaveOpen(v)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>시나리오 저장</DialogTitle>
+            <DialogTitle>
+              {editingScenarioId ? '시나리오 저장 (덮어쓰기)' : '시나리오 저장'}
+            </DialogTitle>
             <DialogDescription>
-              현재 시뮬레이션 구성(상품·채널·마진·프로모션)을 저장합니다. 저장된 시나리오는 아래
-              목록과 상품 상세에서 다시 불러올 수 있습니다.
+              현재 시뮬레이션 구성(상품·채널·마진·프로모션)을 저장합니다.
+              {editingScenarioId
+                ? ' 기존 시나리오를 덮어쓰거나 새 시나리오로 저장할 수 있습니다.'
+                : ' 저장된 시나리오는 목록과 상품 상세에서 다시 불러올 수 있습니다.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -1339,7 +1462,7 @@ export function PricingQuickFlow() {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -1348,8 +1471,18 @@ export function PricingQuickFlow() {
             >
               취소
             </Button>
-            <Button size="sm" onClick={handleSaveScenario} disabled={saving}>
-              {saving ? '저장 중...' : '저장'}
+            {editingScenarioId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSaveScenario(true)}
+                disabled={saving}
+              >
+                새 시나리오로 저장
+              </Button>
+            )}
+            <Button size="sm" onClick={() => handleSaveScenario()} disabled={saving}>
+              {saving ? '저장 중...' : editingScenarioId ? '덮어쓰기' : '저장'}
             </Button>
           </DialogFooter>
         </DialogContent>

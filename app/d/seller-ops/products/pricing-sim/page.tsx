@@ -1,8 +1,6 @@
-'use client'
+import { PricingScenarioList } from '@/components/sh/products/pricing-sim/pricing-scenario-list'
 
-import { PricingQuickFlow } from '@/components/sh/products/pricing-sim/pricing-quick-flow'
-
+// 가격 시뮬레이션 = 저장된 시나리오 목록 (시뮬레이터는 /new·/[scenarioId] 상세로 분리)
 export default function PricingSimPage() {
-  // 헤더·KPI·2단 레이아웃은 PricingQuickFlow가 자체 렌더 (스크린샷 시안)
-  return <PricingQuickFlow />
+  return <PricingScenarioList />
 }
