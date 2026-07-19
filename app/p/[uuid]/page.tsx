@@ -18,6 +18,7 @@ import {
   hiringAssetPublicUrl,
 } from '@/components/hiring-public/posting-labels'
 import { renderTiptapHtml } from '@/lib/hiring/render-tiptap'
+import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
 import { buttonBlockStyle } from '@/lib/hiring/button-color'
 
 type Params = { params: Promise<{ uuid: string }>; searchParams: Promise<{ preview?: string }> }
@@ -143,7 +144,7 @@ export default async function PublicPostingPage({ params, searchParams }: Params
             ) : c.contentType === 'text' && c.data ? (
               <div
                 key={c.id}
-                className="p-6 [&_a]:text-primary [&_a]:underline [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mb-1 [&_h3]:text-base [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:text-sm [&_p]:mb-2 [&_p]:text-sm [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:text-sm"
+                className={`p-6 ${HIRING_PROSE_CLASS} [&_img]:h-auto [&_img]:max-w-full`}
                 dangerouslySetInnerHTML={{ __html: renderTiptapHtml(c.data) }}
               />
             ) : c.contentType === 'button' && c.data ? (
