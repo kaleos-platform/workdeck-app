@@ -114,71 +114,88 @@ export function PostingDetail({ posting, origin, embedHtml }: Props) {
         </div>
       )}
 
-      <div className="space-y-3 rounded-lg border p-6">
-        <div>
-          <h2 className="font-medium">지원서 링크</h2>
-          <p className="text-sm text-muted-foreground">
-            링크를 채용 사이트에 등록하면 지원자를 바로 모을 수 있어요.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Input readOnly value={applyUrl} className="font-mono text-sm" />
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-11 shrink-0"
-            onClick={() => window.open(`${applyUrl}${previewSuffix}`, '_blank')}
-          >
-            <ExternalLink />
-            <span className="sr-only">열기</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-11 shrink-0"
-            onClick={() => copyText(applyUrl, '지원서 링크를 복사했습니다')}
-          >
-            <Copy /> 복사
-          </Button>
-        </div>
-      </div>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
+        <div className="space-y-6">
+          <div className="space-y-3 rounded-lg border p-6">
+            <div>
+              <h2 className="font-medium">지원서 링크</h2>
+              <p className="text-sm text-muted-foreground">
+                링크를 채용 사이트에 등록하면 지원자를 바로 모을 수 있어요.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input readOnly value={applyUrl} className="font-mono text-sm" />
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-11 shrink-0"
+                onClick={() => window.open(`${applyUrl}${previewSuffix}`, '_blank')}
+              >
+                <ExternalLink />
+                <span className="sr-only">열기</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 shrink-0"
+                onClick={() => copyText(applyUrl, '지원서 링크를 복사했습니다')}
+              >
+                <Copy /> 복사
+              </Button>
+            </div>
+          </div>
 
-      <div className="space-y-3 rounded-lg border p-6">
-        <div>
-          <h2 className="font-medium">공고 링크</h2>
-          <p className="text-sm text-muted-foreground">공고 상세 페이지 링크입니다.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Input readOnly value={postingUrl} className="font-mono text-sm" />
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-11 shrink-0"
-            onClick={() => window.open(`${postingUrl}${previewSuffix}`, '_blank')}
-          >
-            <ExternalLink />
-            <span className="sr-only">열기</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-11 shrink-0"
-            onClick={() => copyText(postingUrl, '공고 링크를 복사했습니다')}
-          >
-            <Copy /> 복사
-          </Button>
-        </div>
-      </div>
+          <div className="space-y-3 rounded-lg border p-6">
+            <div>
+              <h2 className="font-medium">공고 링크</h2>
+              <p className="text-sm text-muted-foreground">공고 상세 페이지 링크입니다.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input readOnly value={postingUrl} className="font-mono text-sm" />
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-11 shrink-0"
+                onClick={() => window.open(`${postingUrl}${previewSuffix}`, '_blank')}
+              >
+                <ExternalLink />
+                <span className="sr-only">열기</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 shrink-0"
+                onClick={() => copyText(postingUrl, '공고 링크를 복사했습니다')}
+              >
+                <Copy /> 복사
+              </Button>
+            </div>
+          </div>
 
-      <div className="space-y-3 rounded-lg border p-6">
-        <div>
-          <h2 className="font-medium">공고 HTML 코드</h2>
-          <p className="text-sm text-muted-foreground">
-            채용 사이트의 공고 상세에 붙여넣으면 동일한 공고가 표시됩니다.
-          </p>
+          <div className="space-y-3 rounded-lg border p-6">
+            <div>
+              <h2 className="font-medium">공고 HTML 코드</h2>
+              <p className="text-sm text-muted-foreground">
+                채용 사이트의 공고 상세에 붙여넣으면 동일한 공고가 표시됩니다.
+              </p>
+            </div>
+            <Textarea readOnly value={embedHtml} rows={6} className="font-mono text-xs" />
+            <Button
+              variant="outline"
+              onClick={() => copyText(embedHtml, 'HTML 코드를 복사했습니다')}
+            >
+              <Copy /> 복사
+            </Button>
+          </div>
         </div>
-        <Textarea readOnly value={embedHtml} rows={6} className="font-mono text-xs" />
-        <Button variant="outline" onClick={() => copyText(embedHtml, 'HTML 코드를 복사했습니다')}>
-          <Copy /> 복사
-        </Button>
+
+        {/* 우측 — 공고 미리보기(임베드 HTML과 동일한 결과) */}
+        <aside className="lg:sticky lg:top-6 lg:self-start">
+          <div className="space-y-3 rounded-lg border p-4">
+            <h2 className="font-medium">공고 미리보기</h2>
+            <div className="overflow-auto rounded-md border bg-white p-4">
+              <div dangerouslySetInnerHTML={{ __html: embedHtml }} />
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   )
