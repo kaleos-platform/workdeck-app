@@ -53,6 +53,7 @@ type Channel = {
   feeRates: { categoryName: string; ratePercent: number }[]
   usesMarketingBudget: boolean
   applyAdCost: boolean
+  adCostPct: number | null // DB/API는 0~1 소수, null=미설정
   shippingFeeType: 'FIXED' | 'PERCENT'
   shippingFee: number | null
   shippingFeePct: number | null // DB/API는 0~1 소수
@@ -117,6 +118,7 @@ export function ChannelEditDialog({
   const [fVatIncluded, setFVatIncluded] = useState(false)
   const [fPaymentFeeIncluded, setFPaymentFeeIncluded] = useState(true)
   const [fPaymentFeePct, setFPaymentFeePct] = useState('') // UI: %, 저장 시 /100
+  const [fAdCostPct, setFAdCostPct] = useState('') // 광고비율 UI: %, 저장 시 /100. 빈값=미설정
   const [feeRows, setFeeRows] = useState<FeeRateRow[]>([{ categoryName: '기본', ratePercent: '0' }])
 
   // ── 배송 탭 ──
@@ -181,6 +183,8 @@ export function ChannelEditDialog({
       setFPaymentFeeIncluded(channel.paymentFeeIncluded)
       // paymentFeePct는 DB 0~1 → UI * 100
       setFPaymentFeePct(channel.paymentFeePct != null ? String(channel.paymentFeePct * 100) : '')
+      // adCostPct는 DB 0~1 → UI * 100 (null=미설정=빈값)
+      setFAdCostPct(channel.adCostPct != null ? String(channel.adCostPct * 100) : '')
 
       // feeRates 초기화 — '기본'이 없으면 첫 행에 추가
       const rows = channel.feeRates.map((fr) => ({
@@ -215,6 +219,7 @@ export function ChannelEditDialog({
       setFVatIncluded(true)
       setFPaymentFeeIncluded(true)
       setFPaymentFeePct('')
+      setFAdCostPct('')
       setFeeRows([{ categoryName: '기본', ratePercent: '0' }])
 
       setFShippingFeeType('FIXED')
@@ -334,6 +339,10 @@ export function ChannelEditDialog({
       } else {
         body.paymentFeePct = null
       }
+
+      // adCostPct: UI % → DB 소수 (0~1). 빈값=null(미설정 → 시뮬 앱 기본값 폴백).
+      // 항상 키 전송 → PATCH가 빈값으로 초기화 가능.
+      body.adCostPct = fAdCostPct ? parseFloat(fAdCostPct) / 100 : null
 
       // externalSource: '__none__' 선택 시 null(해제), 그 외 값 그대로 전송
       body.externalSource = fExternalSource === EXTERNAL_SOURCE_NONE ? null : fExternalSource
@@ -667,6 +676,25 @@ export function ChannelEditDialog({
                 placeholder={fPaymentFeeIncluded ? '결제 수수료 포함 시 사용 안 함' : '예: 3.5'}
                 disabled={fPaymentFeeIncluded}
               />
+            </div>
+
+            {/* 광고비율 — 시뮬레이션 광고비 채널 기본값 */}
+            <div className="space-y-2">
+              <Label htmlFor="ch-ad-cost">광고비율 (%)</Label>
+              <Input
+                id="ch-ad-cost"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={fAdCostPct}
+                onChange={(e) => setFAdCostPct(e.target.value)}
+                placeholder="예: 8"
+              />
+              <p className="text-xs text-muted-foreground">
+                가격 시뮬레이션에서 이 채널의 광고비 기본값으로 사용됩니다. 비우면 앱 기본값(8%)이
+                적용됩니다.
+              </p>
             </div>
 
             <div className="border-t pt-3">

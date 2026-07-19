@@ -163,6 +163,8 @@ export const channelSchema = z.object({
   freeShippingThreshold: z.preprocess(toOptionalNumber, z.number().nonnegative().optional()),
   usesMarketingBudget: z.boolean().default(false),
   applyAdCost: z.boolean().default(false),
+  // 채널별 광고비율 (0~1). null/''=미설정 → 시뮬 앱 기본값 폴백.
+  adCostPct: z.preprocess(toOptionalNumber, z.number().min(0).max(1).optional()),
   shippingFeeType: z.enum(['FIXED', 'PERCENT']).default('FIXED'),
   shippingFee: z.preprocess(toOptionalNumber, z.number().nonnegative().optional()),
   shippingFeePct: z.preprocess(toOptionalNumber, z.number().min(0).max(1).optional()),

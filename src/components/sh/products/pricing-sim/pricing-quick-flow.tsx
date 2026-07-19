@@ -72,6 +72,7 @@ type ApiCh = {
   shippingFeePct: string | number | null
   freeShippingThreshold: string | number | null
   applyAdCost: boolean
+  adCostPct: string | number | null // 0~1, null=미설정 → 앱 기본값 폴백
   paymentFeeIncluded: boolean
   paymentFeePct: string | number | null
 }
@@ -145,9 +146,9 @@ function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
     shippingFeePct: c.shippingFeePct != null ? Number(c.shippingFeePct) : 0,
     paymentFeeIncluded: false,
     paymentFeePct: pgExplicit ? Number(c.paymentFeePct) : DEFAULT_PG_PCT,
-    // 광고비는 기본 적용(글로벌 기본값), 채널별로 끌 수 있음.
+    // 광고비는 기본 적용, 채널별로 끌 수 있음. rate는 채널 설정값 우선, 미설정 시 앱 기본값 폴백.
     applyAdCost: true,
-    adPct: (settings.defaultAdCostPct || FALLBACK_AD_PCT) / 100,
+    adPct: c.adCostPct != null ? Number(c.adCostPct) : FALLBACK_AD_PCT / 100,
   }
 }
 
