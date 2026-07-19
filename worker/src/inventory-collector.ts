@@ -523,6 +523,16 @@ async function downloadSalesAnalysisVendor(
     )
   }
 
+  // 계측: 실제로 무엇을 클릭하는지 확정하기 위해 트리거의 좌표·HTML을 로그로 남긴다
+  // (2026-07-19 반복 실패 진단 — 매치 1개인데 클릭해도 드롭다운이 열리지 않음).
+  const trigBox = await excelTextSpan.boundingBox().catch(() => null)
+  const trigHtml = await excelTextSpan
+    .evaluate((el) => (el.parentElement ?? el).outerHTML.slice(0, 400))
+    .catch(() => 'n/a')
+  console.log(
+    `[inventory]   → 엑셀 트리거 실측: count=${spanCount} box=${JSON.stringify(trigBox)} html=${trigHtml}`
+  )
+
   console.log('[inventory]   → 판매분석 엑셀 다운로드 메뉴 열기')
   await clickWithJsFallback(excelTextSpan, '엑셀 다운로드')
   await page.waitForTimeout(1000)
@@ -534,6 +544,27 @@ async function downloadSalesAnalysisVendor(
   // span에 직접 JS 클릭으로 재시도한다.
   const menuOpened = await vendorMenuBtn.isVisible({ timeout: 2000 }).catch(() => false)
   if (!menuOpened) {
+    // 계측: 드롭다운 미열림 시 페이지의 '엑셀'/'다운로드' 포함 요소 전수 덤프(원인 확정용).
+    const candidates = await page
+      .locator(':is(span,button,div,a):has-text("엑셀")')
+      .evaluateAll((els) =>
+        els
+          .filter((e) => (e.textContent ?? '').trim().length < 40)
+          .slice(0, 12)
+          .map((e) => {
+            const r = e.getBoundingClientRect()
+            return {
+              tag: e.tagName,
+              t: (e.textContent ?? '').trim().slice(0, 30),
+              cls: String((e as HTMLElement).className).slice(0, 60),
+              x: Math.round(r.x),
+              y: Math.round(r.y),
+              w: Math.round(r.width),
+            }
+          })
+      )
+      .catch(() => [])
+    console.log(`[inventory]   → 엑셀 후보 덤프: ${JSON.stringify(candidates).slice(0, 1500)}`)
     await dismissModals(page)
     await page.keyboard.press('Escape').catch(() => {})
     await page.waitForTimeout(500)
