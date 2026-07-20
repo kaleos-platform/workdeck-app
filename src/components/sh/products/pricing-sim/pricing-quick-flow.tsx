@@ -151,8 +151,8 @@ function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
     // PG는 채널 설정값 그대로 반영(true=수수료에 포함=미부과). 미설정 채널 기본(포함)도 그대로.
     paymentFeeIncluded: c.paymentFeeIncluded,
     paymentFeePct: c.paymentFeePct != null ? Number(c.paymentFeePct) : 0,
-    // 광고비(ROAS)는 채널 설정값이 있을 때만 적용. 미설정=OFF(사용자가 목표 ROAS 입력 시 켬).
-    applyAdCost: c.adCostPct != null,
+    // 광고비(ROAS)는 기본 OFF(보드에서 켜서 마진 에로전 확인). 켤 때 쓸 ROAS는 채널값→기본값.
+    applyAdCost: false,
     adPct: c.adCostPct != null ? Number(c.adCostPct) : DEFAULT_AD_ROAS_RATE,
   }
 }
