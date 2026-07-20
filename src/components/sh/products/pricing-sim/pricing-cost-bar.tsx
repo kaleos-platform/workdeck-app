@@ -118,9 +118,13 @@ export function PricingCostBar({ cell, showLegend = true }: Props) {
                   </div>
                   <p className="tabular-nums">₩{fmt(amount)}</p>
                   <p className="text-muted-foreground tabular-nums">
-                    {isMargin ? '이익율' : '판매가 대비'}{' '}
-                    {isMargin ? (cell.margin * 100).toFixed(1) : pct.toFixed(1)}%
+                    판매가 대비 {pct.toFixed(1)}%
                   </p>
+                  {isMargin && (
+                    <p className="text-muted-foreground tabular-nums">
+                      이익율 {(cell.margin * 100).toFixed(1)}%
+                    </p>
+                  )}
                 </TooltipContent>
               </Tooltip>
             )
@@ -148,9 +152,9 @@ export function PricingCostBar({ cell, showLegend = true }: Props) {
       {showLegend && (
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
           {segments.map((s) => {
-            // 비용 항목은 판매가(결제금액) 대비 비율 표기. 마진은 이익율(net 분모)과 혼동되므로 비율 미표기.
+            // 모든 항목 판매가(결제금액) 대비 비율 표기 — 스택바 폭 기준과 동일. 마진 포함.
             const amount = s.key === 'margin' ? cell.netProfit : s.value
-            const pct = s.key !== 'margin' && base > 0 ? Math.round((s.value / base) * 100) : null
+            const pct = base > 0 ? Math.round((amount / base) * 100) : null
             return (
               <span key={s.key} className="inline-flex items-center gap-1.5 tabular-nums">
                 <span
