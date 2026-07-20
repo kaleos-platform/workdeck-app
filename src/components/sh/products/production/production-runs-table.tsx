@@ -145,7 +145,7 @@ function fmtDate(iso: string) {
 
 // ─── 상태 배지 ────────────────────────────────────────────────────────────────
 
-function StatusBadge({ status }: { status: ProductionRunStatus }) {
+export function StatusBadge({ status }: { status: ProductionRunStatus }) {
   if (status === 'STOCKED_IN') {
     return (
       <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
