@@ -70,6 +70,7 @@ export function PricingChannelBoardCard({
   canCreate,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
+  const [suggestOpen, setSuggestOpen] = useState(false)
 
   // 채널 수수료율 (0~1) — 표시용
   const channelFeePct = useMemo(() => {
@@ -157,51 +158,69 @@ export function PricingChannelBoardCard({
     )
   }, [infeasible, retailCap, bundle, channel, globals, thresholds, target])
 
-  // 제안 블록 렌더 (광고·배송 레버 각각, 해당 비용 존재 시에만)
+  // 제안 블록 — "목표 마진 달성 불가"를 제목(접기 토글)으로, 펼치면 광고·배송 레버 제안.
   const suggestionBlock =
     suggestion && (suggestion.ad || suggestion.shipping) ? (
-      <div className="mt-3 space-y-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-snug">
-        <p className="font-medium text-amber-800">
-          소비자가 ₩{fmt(retailCap!)} 기준 목표 마진 {(target * 100).toFixed(0)}% 달성 제안
-        </p>
-        {suggestion.ad &&
-          (suggestion.ad.achievable ? (
-            <p className="text-amber-700">
-              · 광고비:{' '}
-              {suggestion.ad.roasPct != null ? (
-                <span className="font-semibold tabular-nums">
-                  ROAS {suggestion.ad.roasPct}% 이상
-                </span>
-              ) : (
-                <span className="font-semibold">광고 제거(0%)</span>
-              )}
-              {suggestion.ad.adCostPct != null && (
-                <span className="text-amber-600">
-                  {' '}
-                  (광고비율 {(suggestion.ad.adCostPct * 100).toFixed(1)}% 이하)
-                </span>
-              )}
-            </p>
+      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 text-[11px] leading-snug">
+        <button
+          type="button"
+          onClick={() => setSuggestOpen((v) => !v)}
+          className="flex w-full items-center gap-1.5 px-3 py-2 text-left font-medium text-amber-800"
+        >
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+          목표 마진 {(target * 100).toFixed(0)}% 달성 불가
+          <span className="ml-auto text-[10px] font-normal text-amber-600">
+            {suggestOpen ? '접기' : '제안 보기'}
+          </span>
+          {suggestOpen ? (
+            <ChevronUp className="h-3.5 w-3.5 shrink-0" />
           ) : (
-            <p className="text-amber-700">· 광고비를 없애도 목표 마진에 도달할 수 없습니다.</p>
-          ))}
-        {suggestion.shipping &&
-          (suggestion.shipping.achievable ? (
-            <p className="text-amber-700">
-              · 배송비:{' '}
-              {suggestion.shipping.type === 'FIXED' ? (
-                <span className="font-semibold tabular-nums">
-                  ₩{fmt(suggestion.shipping.feeWon!)} 이하로 조정
-                </span>
+            <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+          )}
+        </button>
+        {suggestOpen && (
+          <div className="space-y-1 border-t border-amber-200 px-3 py-2">
+            <p className="text-amber-700">소비자가 ₩{fmt(retailCap!)} 기준 달성 제안:</p>
+            {suggestion.ad &&
+              (suggestion.ad.achievable ? (
+                <p className="text-amber-700">
+                  · 광고비:{' '}
+                  {suggestion.ad.roasPct != null ? (
+                    <span className="font-semibold tabular-nums">
+                      ROAS {suggestion.ad.roasPct}% 이상
+                    </span>
+                  ) : (
+                    <span className="font-semibold">광고 제거(0%)</span>
+                  )}
+                  {suggestion.ad.adCostPct != null && (
+                    <span className="text-amber-600">
+                      {' '}
+                      (광고비율 {(suggestion.ad.adCostPct * 100).toFixed(1)}% 이하)
+                    </span>
+                  )}
+                </p>
               ) : (
-                <span className="font-semibold tabular-nums">
-                  {(suggestion.shipping.feePct! * 100).toFixed(1)}% 이하로 조정
-                </span>
-              )}
-            </p>
-          ) : (
-            <p className="text-amber-700">· 배송비를 없애도 목표 마진에 도달할 수 없습니다.</p>
-          ))}
+                <p className="text-amber-700">· 광고비를 없애도 목표 마진에 도달할 수 없습니다.</p>
+              ))}
+            {suggestion.shipping &&
+              (suggestion.shipping.achievable ? (
+                <p className="text-amber-700">
+                  · 배송비:{' '}
+                  {suggestion.shipping.type === 'FIXED' ? (
+                    <span className="font-semibold tabular-nums">
+                      ₩{fmt(suggestion.shipping.feeWon!)} 이하로 조정
+                    </span>
+                  ) : (
+                    <span className="font-semibold tabular-nums">
+                      {(suggestion.shipping.feePct! * 100).toFixed(1)}% 이하로 조정
+                    </span>
+                  )}
+                </p>
+              ) : (
+                <p className="text-amber-700">· 배송비를 없애도 목표 마진에 도달할 수 없습니다.</p>
+              ))}
+          </div>
+        )}
       </div>
     ) : null
 
@@ -217,12 +236,13 @@ export function PricingChannelBoardCard({
             PG {((channel.paymentFeeIncluded ? 0 : channel.paymentFeePct) * 100).toFixed(0)}%
           </span>
         </div>
-        <div className="mt-3 flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          목표 마진 {(thresholds.platformTargetGood * 100).toFixed(0)}% 달성 불가 — 수수료·원가가
-          너무 높습니다.
-        </div>
-        {suggestionBlock}
+        {suggestionBlock ?? (
+          <div className="mt-3 flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            목표 마진 {(thresholds.platformTargetGood * 100).toFixed(0)}% 달성 불가 — 수수료·원가가
+            너무 높습니다.
+          </div>
+        )}
       </div>
     )
   }
@@ -245,17 +265,16 @@ export function PricingChannelBoardCard({
           <p className="text-[10px] text-muted-foreground">
             권장 판매가{exceedsRetail ? ' (소비자가 상한)' : ''}
           </p>
-          {/* 항목4: 판매가 우측에 소비자가 대비 할인율 배지 */}
+          {/* 항목1: 판매가 우측 소비자가 대비 할인율 — 배경 없는 텍스트(마진 배지와 스타일 구분) */}
           <div className="flex items-center justify-end gap-2">
             <p className="text-2xl font-bold tabular-nums">₩{fmt(cell.finalPrice)}</p>
             {retailCap != null && cell.finalPrice > 0 && (
-              <Badge
-                variant="outline"
-                className="border-emerald-300 bg-emerald-50 px-1.5 py-0 text-[11px] font-semibold text-emerald-700 tabular-nums"
+              <span
+                className="text-xs font-semibold text-emerald-600 tabular-nums"
                 title="소비자가 대비 할인율"
               >
                 −{Math.round(Math.max(0, (retailCap - cell.finalPrice) / retailCap) * 100)}%
-              </Badge>
+              </span>
             )}
           </div>
           <div className="mt-0.5 flex items-center justify-end gap-1.5">
@@ -267,12 +286,7 @@ export function PricingChannelBoardCard({
               {(cell.margin * 100).toFixed(1)}%{exceedsRetail ? ' (소비자가 기준)' : ''}
             </Badge>
           </div>
-          {exceedsRetail && (
-            <div className="mt-1 flex items-center justify-end gap-1 text-[10px] font-medium text-amber-600">
-              <AlertTriangle className="h-3 w-3 shrink-0" />
-              목표 마진 달성 불가
-            </div>
-          )}
+          {/* 항목3: "목표 마진 달성 불가"는 아래 제안 블록 제목으로 이동(중복 제거) */}
           {/* 항목5: 공급가만 유지(마진 금액·마진율은 스택바·배지와 중복 → 제거) + 툴팁 설명 */}
           <TooltipProvider>
             <Tooltip>
