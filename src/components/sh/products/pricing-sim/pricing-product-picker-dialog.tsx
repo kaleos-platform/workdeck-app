@@ -48,6 +48,8 @@ type ApiProductOption = {
   name: string
   sku: string | null
   costPrice: string | number | null
+  /** 생산차수 원가 연동 시 파생 원가 (아니면 costPrice와 동일) */
+  effectiveCostPrice?: string | number | null
   retailPrice: string | number | null
   sizeLabel: string | null
   attributeValues: Record<string, string> | null
@@ -109,7 +111,10 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
       const converted = options.map((o) => ({
         optionId: o.id,
         optionName: o.name,
-        costPrice: o.costPrice != null ? Number(o.costPrice) : null,
+        costPrice:
+          (o.effectiveCostPrice ?? o.costPrice) != null
+            ? Number(o.effectiveCostPrice ?? o.costPrice)
+            : null,
         retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
         attributeValues: o.attributeValues,
         sizeLabel: o.sizeLabel,
