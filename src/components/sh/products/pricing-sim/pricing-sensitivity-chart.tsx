@@ -32,24 +32,70 @@ function fmtWon(n: number) {
 
 // ─── 커스텀 툴팁 ───────────────────────────────────────────────────────────────
 
+type ChartDatum = {
+  discount: string
+  discountRate: number
+  netProfit: number
+  finalPrice: number
+  revenue: number
+  fee: number
+  margin: number
+}
+
+function won(n: number) {
+  return `${Math.round(n).toLocaleString('ko-KR')}원`
+}
+
 function CustomTooltip({
   active,
   payload,
   label,
 }: {
   active?: boolean
-  payload?: { value: number }[]
+  payload?: { value: number; payload: ChartDatum }[]
   label?: string
 }) {
   if (!active || !payload?.length) return null
-  const profit = payload[0].value
+  const d = payload[0].payload
+  const profit = d.netProfit
   return (
-    <div className="rounded-md border bg-white px-3 py-2 text-xs shadow-md">
+    <div className="min-w-[168px] space-y-1 rounded-md border bg-white px-3 py-2 text-xs shadow-md">
       <p className="font-medium text-muted-foreground">할인 {label}</p>
-      <p className={profit >= 0 ? 'font-semibold text-emerald-700' : 'font-semibold text-rose-700'}>
-        순이익 {profit >= 0 ? '+' : ''}
-        {Math.round(profit).toLocaleString('ko-KR')}원
-      </p>
+      <div className="space-y-0.5 tabular-nums">
+        <p className="flex justify-between gap-3">
+          <span className="text-muted-foreground">판매가</span>
+          <span>{won(d.finalPrice)}</span>
+        </p>
+        <p className="flex justify-between gap-3">
+          <span className="text-muted-foreground">매출(VAT 제외)</span>
+          <span>{won(d.revenue)}</span>
+        </p>
+        <p className="flex justify-between gap-3">
+          <span className="text-muted-foreground">수수료</span>
+          <span>{won(d.fee)}</span>
+        </p>
+        <p className="flex justify-between gap-3 border-t pt-0.5">
+          <span className="text-muted-foreground">순이익</span>
+          <span
+            className={
+              profit >= 0 ? 'font-semibold text-emerald-700' : 'font-semibold text-rose-700'
+            }
+          >
+            {profit >= 0 ? '+' : ''}
+            {won(profit)}
+          </span>
+        </p>
+        <p className="flex justify-between gap-3">
+          <span className="text-muted-foreground">이익율</span>
+          <span
+            className={
+              d.margin >= 0 ? 'font-semibold text-emerald-700' : 'font-semibold text-rose-700'
+            }
+          >
+            {(d.margin * 100).toFixed(1)}%
+          </span>
+        </p>
+      </div>
     </div>
   )
 }
@@ -77,11 +123,15 @@ function CustomDot(props: { cx?: number; cy?: number; payload?: { netProfit: num
 export function PricingSensitivityChart({ matrix, channelName }: Props) {
   const { cells } = matrix
 
-  // 차트 데이터 변환
-  const data = cells.map((cell) => ({
+  // 차트 데이터 변환 (툴팁 상세 표시용 필드 포함)
+  const data: ChartDatum[] = cells.map((cell) => ({
     discount: `${(cell.discountRate * 100).toFixed(0)}%`,
     discountRate: cell.discountRate,
     netProfit: cell.netProfit,
+    finalPrice: cell.finalPrice,
+    revenue: cell.revenue,
+    fee: cell.fee,
+    margin: cell.margin,
   }))
 
   // 적자 전환점 탐색 (처음으로 netProfit < 0 되는 할인율)
