@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   generateOptionSku,
@@ -52,6 +53,12 @@ type ProductResp = {
   code: string | null
   optionAttributes: unknown
   options: OptionRow[]
+}
+
+/** 완료(입고완료) 생산 차수 가중평균 단가 — options API가 계산해 내려줌 */
+type ProductionCostInfo = {
+  unitCost: number
+  runCount: number
 }
 
 type Props = {
@@ -99,6 +106,9 @@ export function ProductOptionsTable({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false)
+  const [productionCost, setProductionCost] = useState<ProductionCostInfo | null>(null)
+  const [useProductionCost, setUseProductionCost] = useState(false)
+  const [toggleSaving, setToggleSaving] = useState(false)
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeSavePromiseRef = useRef<Promise<void> | null>(null)
   const dirtyIdsRef = useRef<Set<string>>(new Set())
@@ -116,6 +126,8 @@ export function ProductOptionsTable({
       const opts: OptionRow[] = optsJson.options ?? optsJson ?? prod.options ?? []
       setProduct(prod)
       setOptions(opts)
+      setProductionCost(optsJson.productionCost ?? null)
+      setUseProductionCost(optsJson.useProductionCost === true)
       const d: Record<string, OptionDraft> = {}
       opts.forEach((o) => {
         d[o.id] = {
@@ -449,9 +461,34 @@ export function ProductOptionsTable({
     }
   }
 
+  async function toggleUseProductionCost(next: boolean) {
+    setToggleSaving(true)
+    try {
+      const res = await fetch(`/api/sh/products/${productId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ useProductionCost: next }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        throw new Error(d?.message ?? '생산차수 원가 연동 설정 저장 실패')
+      }
+      setUseProductionCost(next)
+      onChanged?.()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '생산차수 원가 연동 설정 저장 실패')
+    } finally {
+      setToggleSaving(false)
+    }
+  }
+
   if (loading) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>
   }
+
+  // 생산차수 원가 연동 ON + 완료 차수 존재 → 공급원가 입력 잠금(파생 표시)
+  const costLocked = useProductionCost && productionCost != null
+  const derivedCostStr = costLocked ? String(Math.round(productionCost.unitCost)) : null
 
   const allChecked = options.length > 0 && selected.size === options.length
   const attrNames = attributes.map((a) => a.name)
@@ -459,7 +496,30 @@ export function ProductOptionsTable({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold">옵션 ({options.length})</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">옵션 ({options.length})</h3>
+        <div className="flex items-center gap-2">
+          <Switch
+            id="use-production-cost"
+            checked={useProductionCost}
+            disabled={toggleSaving || productionCost == null}
+            onCheckedChange={(v) => void toggleUseProductionCost(v === true)}
+          />
+          <Label
+            htmlFor="use-production-cost"
+            className={`text-xs ${productionCost == null ? 'text-muted-foreground' : ''}`}
+          >
+            생산차수 원가 연동
+          </Label>
+          <span className="text-xs text-muted-foreground">
+            {productionCost != null
+              ? `완료 ${productionCost.runCount}개 차수 가중평균 ${Math.round(
+                  productionCost.unitCost
+                ).toLocaleString('ko-KR')}원`
+              : '완료(입고완료)된 생산 차수가 없습니다'}
+          </span>
+        </div>
+      </div>
 
       <FloatingActionBar
         open={selected.size > 0}
@@ -534,7 +594,7 @@ export function ProductOptionsTable({
                           <Info className="h-3.5 w-3.5" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent>생산원가에 운영, 광고비 등이 포함된 금액</TooltipContent>
+                      <TooltipContent>상품 생산에 발생된 금액 합계</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </span>
@@ -611,8 +671,16 @@ export function ProductOptionsTable({
                       <Input
                         type="number"
                         min="0"
-                        value={draft.costPrice}
-                        onChange={(e) => updateDraft(opt.id, 'costPrice', e.target.value)}
+                        value={costLocked ? (derivedCostStr ?? '') : draft.costPrice}
+                        onChange={(e) => {
+                          if (!costLocked) updateDraft(opt.id, 'costPrice', e.target.value)
+                        }}
+                        disabled={costLocked}
+                        title={
+                          costLocked
+                            ? '생산차수 원가 연동 중 — 완료 차수 가중평균 단가가 적용됩니다'
+                            : undefined
+                        }
                         placeholder="0"
                         className="h-8"
                       />
@@ -628,7 +696,10 @@ export function ProductOptionsTable({
                       />
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground tabular-nums">
-                      {marginPercent(draft.costPrice, draft.retailPrice)}
+                      {marginPercent(
+                        costLocked ? (derivedCostStr ?? '') : draft.costPrice,
+                        draft.retailPrice
+                      )}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {(opt.totalStock ?? 0).toLocaleString('ko-KR')}
@@ -720,7 +791,10 @@ export function ProductOptionsTable({
                 min="0"
                 value={bulkCost}
                 onChange={(e) => setBulkCost(e.target.value)}
-                placeholder="변경 없으면 비워두세요"
+                disabled={costLocked}
+                placeholder={
+                  costLocked ? '생산차수 원가 연동 중 — 편집 불가' : '변경 없으면 비워두세요'
+                }
               />
             </div>
             <div className="space-y-1.5">

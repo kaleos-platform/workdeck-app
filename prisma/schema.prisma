@@ -1056,6 +1056,9 @@ model InvProduct {
   // 발주 라운딩 단위 (10 = 10단위 라운딩, 100 = 100단위 등)
   reorderRoundUnit Int @default(10)
 
+  // 공급원가를 완료(입고완료) 생산 차수 가중평균 단가로 파생 표시할지 여부 (값 복사 없음)
+  useProductionCost Boolean @default(false)
+
   space            Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   group            InvProductGroup    @relation(fields: [groupId], references: [id], onDelete: Restrict)
   brand            Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)

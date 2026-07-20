@@ -794,6 +794,7 @@ export const InvProductScalarFieldEnum = {
   description: 'description',
   optionAttributes: 'optionAttributes',
   reorderRoundUnit: 'reorderRoundUnit',
+  useProductionCost: 'useProductionCost',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -92,6 +92,8 @@ export const productSchema = z.object({
     z.string().max(100).optional()
   ),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+  // 공급원가를 완료 생산 차수 가중평균 단가로 파생 표시할지 여부
+  useProductionCost: z.boolean().optional(),
   brandId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike.optional()),
   // 카테고리 — POST에선 required, PATCH에선 partial()로 optional이 된다.
   groupId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike),
