@@ -972,13 +972,40 @@ export function PricingQuickFlow({
               ? `₩${fmt(bundleCostSummary.totalRetail)}`
               : '—'
           }
-          sub={bundleName || '상품 미선택'}
           accent="emerald"
         />
         <KpiCell
           label="원가 · 매입"
           value={bundleCostSummary ? `₩${fmt(bundleCostSummary.totalCost)}` : '—'}
-          sub={bundleName || '상품 미선택'}
+          sub={
+            bundleCostSummary && bundleCostSummary.totalRetail > 0
+              ? `소비자가 대비 ${Math.round((bundleCostSummary.totalCost / bundleCostSummary.totalRetail) * 100)}%`
+              : undefined
+          }
+          tooltip={
+            confirmedRows.length > 0 ? (
+              <div className="space-y-1">
+                <p className="font-medium">원가 항목별 (소비자가 대비)</p>
+                {confirmedRows.map((r, i) => {
+                  const cost = r.costPrice * r.quantity
+                  const retail = r.retailPrice * r.quantity
+                  const pct = retail > 0 ? Math.round((cost / retail) * 100) : null
+                  return (
+                    <p key={i} className="flex justify-between gap-3 tabular-nums">
+                      <span className="truncate text-muted-foreground">
+                        {r.productName}
+                        {r.quantity > 1 ? ` ×${r.quantity}` : ''}
+                      </span>
+                      <span>
+                        ₩{fmt(cost)}
+                        {pct != null && <span className="text-muted-foreground"> ({pct}%)</span>}
+                      </span>
+                    </p>
+                  )
+                })}
+              </div>
+            ) : undefined
+          }
         />
         <KpiCell
           label="소비자가 대비 할인율"
@@ -989,7 +1016,6 @@ export function PricingQuickFlow({
                 : `${Math.round(boardSummary.discountMin * 100)}~${Math.round(boardSummary.discountMax * 100)}%`
               : '—'
           }
-          sub="권장가 범위 기준"
         />
         <KpiCell
           label="권장가 범위"
@@ -1000,7 +1026,6 @@ export function PricingQuickFlow({
                 : `${fmt(boardSummary.min)}~${fmt(boardSummary.max)}`
               : '—'
           }
-          sub={`${live.includeVat ? 'VAT 포함' : 'VAT 미포함'} · 채널별 상이`}
         />
       </div>
 
@@ -1483,23 +1508,41 @@ function KpiCell({
   value,
   sub,
   accent,
+  tooltip,
 }: {
   label: string
   value: string
   sub?: string
   accent?: 'emerald'
+  /** 값에 hover 시 상세 설명 (예: 원가 항목별 내역) */
+  tooltip?: React.ReactNode
 }) {
+  const valueEl = (
+    <p
+      className={cn(
+        'mt-0.5 text-xl font-bold tabular-nums',
+        accent === 'emerald' && 'text-emerald-700',
+        tooltip && 'w-fit cursor-default underline decoration-dotted underline-offset-2'
+      )}
+    >
+      {value}
+    </p>
+  )
   return (
     <div className="rounded-xl border border-[var(--ps-border)] bg-[var(--ps-card)] px-4 py-3">
       <p className="text-[11px] text-muted-foreground">{label}</p>
-      <p
-        className={cn(
-          'mt-0.5 text-xl font-bold tabular-nums',
-          accent === 'emerald' && 'text-emerald-700'
-        )}
-      >
-        {value}
-      </p>
+      {tooltip ? (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>{valueEl}</TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-[260px] text-xs">
+              {tooltip}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : (
+        valueEl
+      )}
       {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
     </div>
   )

@@ -403,6 +403,106 @@ function calcTargetAchievable(recommendedGood: number | null, inputs: MatrixInpu
   return cell.margin >= inputs.thresholds.platformTargetGood - EPSILON
 }
 
+/** 광고 레버 제안 */
+export type AdSuggestion = {
+  achievable: boolean // 광고비만으로 목표 마진 달성 가능 여부
+  adCostPct: number | null // 목표 달성 광고비율 (0~1), 불가시 null
+  roasPct: number | null // 목표 달성 최소 ROAS (%), 0 광고면 null
+}
+
+/** 배송 레버 제안 */
+export type ShippingSuggestion =
+  | { type: 'FIXED'; achievable: boolean; feeWon: number | null }
+  | { type: 'PERCENT'; achievable: boolean; feePct: number | null }
+
+/** 목표 마진 달성 불가 시 개별 비용 레버 조정 제안 */
+export type FeasibilitySuggestion = {
+  ad: AdSuggestion | null // 광고 미적용/0이면 null
+  shipping: ShippingSuggestion | null // 배송비 0이면 null
+}
+
+/**
+ * 기준가(referencePrice, 보통 소비자가 상한)에서 목표 마진(target)을 달성하기 위해
+ * 개별 비용 항목(광고비·배송비)을 얼마까지 낮춰야 하는지 역산한다.
+ * 프로모션·컬럼 할인 미적용(0%) 기준. 각 레버는 "다른 비용은 현행 유지" 가정으로 독립 계산.
+ *
+ * gross-basis: net = P/(1+v), 목표 달성 필요조건 totalCost = net·(1−target).
+ * 광고: adPct* = [net·(1−t) − 고정비 − P·(카테고리+PG+배송%)] / P
+ * 배송(FIXED): shipping* = net·(1−t) − [고정비 + P·(카테고리+PG+광고%)]
+ * 배송(PERCENT): shipPct* 는 위 식을 P로 나눈 값
+ */
+export function suggestFeasibility(
+  inputs: MatrixInputs,
+  referencePrice: number,
+  target: number
+): FeasibilitySuggestion {
+  const { bundle, channel, globals } = inputs
+  const P = n(referencePrice)
+  const result: FeasibilitySuggestion = { ad: null, shipping: null }
+  if (P <= 0) return result
+
+  const vatDivisor = globals.includeVat ? 1 + n(globals.vatRate) : 1
+  const need = (P / vatDivisor) * (1 - target) // 허용 총비용 상한
+
+  const categoryPct = lookupCategoryFeePct(channel.feeRates)
+  const pgPct = channel.paymentFeeIncluded ? 0 : n(channel.paymentFeePct)
+  const isPercentShipping = channel.shippingFeeType === 'PERCENT'
+  const shippingPct = isPercentShipping ? n(channel.shippingFeePct) : 0
+  const adPctCurrent = channel.applyAdCost ? n(globals.adCostPct) : 0
+
+  const setCost = bundleSetCost(bundle)
+  const packaging = n(bundle.packagingCost)
+  const returnCost =
+    globals.applyReturnAdjustment && globals.expectedReturnRate > 0
+      ? r2(n(globals.returnHandlingCost) * n(globals.expectedReturnRate))
+      : 0
+  const fixedBase = setCost + packaging + returnCost
+
+  // FIXED 배송비 — 무료배송 임계값 도달 시 판매자 부담(고정비로 취급)
+  const fixedShipping =
+    !isPercentShipping &&
+    channel.freeShippingThreshold != null &&
+    channel.freeShippingThreshold > 0 &&
+    P >= channel.freeShippingThreshold
+      ? r2(n(channel.shippingFee))
+      : 0
+
+  // ── 광고 레버 ── (다른 비용·배송 현행 유지)
+  if (channel.applyAdCost && n(globals.adCostPct) > 0) {
+    const other = fixedBase + fixedShipping + P * (categoryPct + pgPct + shippingPct)
+    const adPctStar = (need - other) / P
+    result.ad =
+      adPctStar >= 0
+        ? {
+            achievable: true,
+            adCostPct: r4(adPctStar),
+            roasPct: adPctStar > 0 ? Math.round(100 / adPctStar) : null,
+          }
+        : { achievable: false, adCostPct: null, roasPct: null }
+  }
+
+  // ── 배송 레버 ── (다른 비용·광고 현행 유지)
+  const hasShipping = isPercentShipping ? shippingPct > 0 : fixedShipping > 0
+  if (hasShipping) {
+    const otherNoShip = fixedBase + P * (categoryPct + pgPct + adPctCurrent)
+    const budget = need - otherNoShip
+    if (isPercentShipping) {
+      const shipPctStar = budget / P
+      result.shipping =
+        shipPctStar >= 0
+          ? { type: 'PERCENT', achievable: true, feePct: r4(shipPctStar) }
+          : { type: 'PERCENT', achievable: false, feePct: null }
+    } else {
+      result.shipping =
+        budget >= 0
+          ? { type: 'FIXED', achievable: true, feeWon: r2(budget) }
+          : { type: 'FIXED', achievable: false, feeWon: null }
+    }
+  }
+
+  return result
+}
+
 // ─── 공개 API ──────────────────────────────────────────────────────────────────
 
 /**
