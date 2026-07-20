@@ -4,6 +4,7 @@
 import {
   calculateMatrix,
   optionToBundle,
+  suggestFeasibility,
   type MatrixBundle,
   type MatrixChannel,
   type MatrixPromotion,
@@ -433,5 +434,108 @@ describe('스크린샷 시안 회귀 벡터 — 목표마진 30% 권장가', () 
       // 프로모션 마진 < 헤드라인 마진
       expect(promo.margin).toBeLessThan(headline.margin)
     })
+  })
+})
+
+describe('suggestFeasibility — 목표 마진 달성 불가 시 항목별 제안', () => {
+  // 로켓그로스 회귀 벡터: PERCENT 배송 10%, 카테고리 11.6%, 광고 25%(ROAS 400%), 원가 19,574
+  const rocketChannel: MatrixChannel = {
+    channelType: 'OPEN_MARKET',
+    feeRates: [{ categoryName: '기본', ratePercent: 11.6 }],
+    paymentFeeIncluded: true,
+    paymentFeePct: 0,
+    applyAdCost: true,
+    shippingFeeType: 'PERCENT',
+    shippingFee: 0,
+    shippingFeePct: 0.1,
+    freeShippingThreshold: null,
+  }
+  const rocketGlobals: MatrixGlobals = {
+    includeVat: true,
+    vatRate: 0.1,
+    adCostPct: 0.25, // ROAS 400%
+    operatingCostPct: 0,
+    applyReturnAdjustment: false,
+    expectedReturnRate: 0,
+    returnHandlingCost: 0,
+    minimumAcceptableMargin: 0.1,
+  }
+  const rocketBundle: MatrixBundle = {
+    components: [{ costPrice: 19574, retailPrice: 57800, quantity: 1 }],
+    packagingCost: 0,
+    salePrice: 0,
+  }
+  const rocketInputs: MatrixInputs = {
+    bundle: rocketBundle,
+    channel: rocketChannel,
+    promotion: noPromotion,
+    globals: rocketGlobals,
+    thresholds,
+  }
+
+  it('광고 레버: 소비자가 57,800·목표 15%에서 적정 ROAS ≈ 459%', () => {
+    const s = suggestFeasibility(rocketInputs, 57800, 0.15)
+    expect(s.ad).not.toBeNull()
+    expect(s.ad!.achievable).toBe(true)
+    // adPct* = [net·0.85 − 원가 − P·(0.116+0.10)] / P ≈ 0.2181
+    expect(s.ad!.adCostPct).toBeCloseTo(0.2181, 3)
+    expect(s.ad!.roasPct).toBe(459)
+  })
+
+  it('배송 레버(PERCENT): 배송비율 제안 산출', () => {
+    const s = suggestFeasibility(rocketInputs, 57800, 0.15)
+    expect(s.shipping).not.toBeNull()
+    expect(s.shipping!.type).toBe('PERCENT')
+    expect(s.shipping!.achievable).toBe(true)
+    // shipPct* = [net·0.85 − 원가 − P·(0.116+0.25)] / P
+    // net·0.85=44663.64, 원가19574, P·0.366=21154.8 → budget=3934.84 /57800 = 0.0681
+    if (s.shipping!.type === 'PERCENT') {
+      expect(s.shipping!.feePct).toBeCloseTo(0.0681, 3)
+    }
+  })
+
+  it('FIXED 배송비 레버: 임계값 도달 시 허용 배송비(원) 역산', () => {
+    // 카테고리 10% + PG 3% + 광고 5%, 배송 정액 3,000(임계 30,000), 원가 15,000, 포장 2,000
+    const s = suggestFeasibility(
+      {
+        bundle: makeBundle(15000, 40000, 1, 2000),
+        channel,
+        promotion: noPromotion,
+        globals,
+        thresholds,
+      },
+      40000,
+      0.3
+    )
+    expect(s.shipping).not.toBeNull()
+    expect(s.shipping!.type).toBe('FIXED')
+    expect(s.shipping!.achievable).toBe(true)
+    // net·0.7=25454.5, 고정비17000, P·0.18=7200 → budget=1254.5
+    if (s.shipping!.type === 'FIXED') {
+      expect(s.shipping!.feeWon).toBeCloseTo(1254.5, 0)
+    }
+  })
+
+  it('달성 불가: 광고·배송을 없애도 목표 미달이면 achievable=false', () => {
+    const s = suggestFeasibility(
+      {
+        bundle: makeBundle(15000, 40000, 1, 2000),
+        channel,
+        promotion: noPromotion,
+        globals,
+        thresholds,
+      },
+      40000,
+      0.5
+    )
+    expect(s.ad!.achievable).toBe(false)
+    expect(s.ad!.adCostPct).toBeNull()
+    expect(s.shipping!.achievable).toBe(false)
+  })
+
+  it('기준가 0 또는 음수면 제안 없음', () => {
+    const s = suggestFeasibility(rocketInputs, 0, 0.15)
+    expect(s.ad).toBeNull()
+    expect(s.shipping).toBeNull()
   })
 })
