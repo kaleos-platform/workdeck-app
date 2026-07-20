@@ -254,114 +254,123 @@ export function PricingChannelBoardCard({
           </TooltipProvider>
         </div>
       </div>
-      {/* 판매가 조정 (입력 + 슬라이더) — 마진을 직접 확인 */}
+      {/* 판매가 조정 + 광고 ROAS — 좌우 배치로 높이 축소 */}
       <div className="mt-4 rounded-lg border border-[var(--ps-border)] bg-[var(--ps-muted)] px-3 py-2.5">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-medium">판매가 조정</span>
-          <div className="flex items-center gap-2">
-            <div className="relative flex items-center">
-              <Input
-                type="number"
-                value={effectivePrice != null ? String(Math.round(effectivePrice)) : ''}
-                onChange={(e) => {
-                  const v = Number(e.target.value)
-                  setManualPrice(v > 0 ? v : null)
-                }}
-                step={100}
-                min={0}
-                className="h-8 w-28 [appearance:textfield] pr-6 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
-              />
-              <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
-                ₩
-              </span>
-            </div>
-            {isManual && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-[11px] text-muted-foreground"
-                onClick={() => setManualPrice(null)}
-              >
-                권장가로 리셋
-              </Button>
-            )}
-          </div>
-        </div>
-        <Slider
-          className="mt-2.5"
-          min={sliderMin}
-          max={sliderMax}
-          step={100}
-          value={[Math.min(sliderMax, Math.max(sliderMin, effectivePrice ?? sliderMin))]}
-          onValueChange={(v) => setManualPrice(v[0])}
-        />
-        <div className="mt-1 flex justify-between text-[9px] text-muted-foreground tabular-nums">
-          <span>₩{fmt(sliderMin)}</span>
-          {recommended != null && <span>권장 ₩{fmt(recommended)}</span>}
-          <span>₩{fmt(sliderMax)}</span>
-        </div>
-      </div>
-
-      {/* 광고 ROAS (보드에서 조정) — 판매가 불변, 마진만 감소(에로전) */}
-      {onAdChange && (
-        <div className="mt-3 rounded-lg border border-[var(--ps-border)] px-3 py-2.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-medium">
-              목표 광고 ROAS{channel.applyAdCost ? '' : ' (OFF · 광고비 0)'}
-            </span>
-            <div className="flex items-center gap-2">
-              {channel.applyAdCost && (
+        <div className="grid grid-cols-2 gap-x-4">
+          {/* 좌: 판매가 조정 (입력 + 슬라이더) */}
+          <div>
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[11px] font-medium">판매가 조정</span>
+              <div className="flex items-center gap-1">
+                {isManual && (
+                  <button
+                    type="button"
+                    className="text-[10px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                    onClick={() => setManualPrice(null)}
+                  >
+                    권장가
+                  </button>
+                )}
                 <div className="relative flex items-center">
                   <Input
                     type="number"
-                    value={roasPct > 0 ? String(roasPct) : ''}
+                    value={effectivePrice != null ? String(Math.round(effectivePrice)) : ''}
                     onChange={(e) => {
-                      const r = Number(e.target.value)
-                      onAdChange({ adPct: r > 0 ? 100 / r : 0 })
+                      const v = Number(e.target.value)
+                      setManualPrice(v > 0 ? v : null)
                     }}
-                    step={10}
+                    step={100}
                     min={0}
-                    className="h-8 w-20 [appearance:textfield] pr-6 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
+                    className="h-7 w-24 [appearance:textfield] pr-5 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
-                    %
+                  <span className="pointer-events-none absolute right-1.5 text-[11px] text-muted-foreground">
+                    ₩
                   </span>
                 </div>
-              )}
-              <Switch
-                checked={channel.applyAdCost}
-                onCheckedChange={(v) => onAdChange({ applyAdCost: v })}
-              />
+              </div>
+            </div>
+            <Slider
+              className="mt-2"
+              min={sliderMin}
+              max={sliderMax}
+              step={100}
+              value={[Math.min(sliderMax, Math.max(sliderMin, effectivePrice ?? sliderMin))]}
+              onValueChange={(v) => setManualPrice(v[0])}
+            />
+            <div className="mt-1 flex justify-between text-[9px] text-muted-foreground tabular-nums">
+              <span>₩{fmt(sliderMin)}</span>
+              {recommended != null && <span>권장 ₩{fmt(recommended)}</span>}
+              <span>₩{fmt(sliderMax)}</span>
             </div>
           </div>
-          {/* 마진 에로전 — 광고 적용 시 마진 감소 표시 */}
-          {adActive && preAdMargin != null && (
-            <p
-              className={`mt-1.5 text-[11px] leading-snug ${
-                cell.margin < floorPct
-                  ? 'text-destructive'
-                  : cell.margin < target
-                    ? 'text-amber-700'
-                    : 'text-muted-foreground'
-              }`}
-            >
-              광고 적용 시 마진{' '}
-              <span className="font-semibold tabular-nums">{(preAdMargin * 100).toFixed(1)}%</span>{' '}
-              →{' '}
-              <span className="font-semibold tabular-nums">{(cell.margin * 100).toFixed(1)}%</span>{' '}
-              <span className="tabular-nums">
-                (−{((preAdMargin - cell.margin) * 100).toFixed(1)}%p)
-              </span>
-              {cell.margin < floorPct
-                ? ` · 마진 하한 ${(floorPct * 100).toFixed(0)}% 미달`
-                : cell.margin < target
-                  ? ` · 목표 ${(target * 100).toFixed(0)}% 미달`
-                  : ''}
-            </p>
+
+          {/* 우: 광고 ROAS (보드에서 조정) — 판매가 불변, 마진만 감소 */}
+          {onAdChange && (
+            <div className="border-l border-[var(--ps-border)] pl-4">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[11px] font-medium">광고 ROAS</span>
+                <div className="flex items-center gap-1.5">
+                  {channel.applyAdCost && (
+                    <div className="relative flex items-center">
+                      <Input
+                        type="number"
+                        value={roasPct > 0 ? String(roasPct) : ''}
+                        onChange={(e) => {
+                          const r = Number(e.target.value)
+                          onAdChange({ adPct: r > 0 ? 100 / r : 0 })
+                        }}
+                        step={10}
+                        min={0}
+                        className="h-7 w-16 [appearance:textfield] pr-5 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <span className="pointer-events-none absolute right-1.5 text-[11px] text-muted-foreground">
+                        %
+                      </span>
+                    </div>
+                  )}
+                  <Switch
+                    checked={channel.applyAdCost}
+                    onCheckedChange={(v) => onAdChange({ applyAdCost: v })}
+                  />
+                </div>
+              </div>
+              {/* 마진 에로전 — 광고 적용 시 마진 감소 */}
+              {adActive && preAdMargin != null ? (
+                <p
+                  className={`mt-2 text-[10px] leading-snug ${
+                    cell.margin < floorPct
+                      ? 'text-destructive'
+                      : cell.margin < target
+                        ? 'text-amber-700'
+                        : 'text-muted-foreground'
+                  }`}
+                >
+                  마진{' '}
+                  <span className="font-semibold tabular-nums">
+                    {(preAdMargin * 100).toFixed(1)}%
+                  </span>{' '}
+                  →{' '}
+                  <span className="font-semibold tabular-nums">
+                    {(cell.margin * 100).toFixed(1)}%
+                  </span>{' '}
+                  <span className="tabular-nums">
+                    (−{((preAdMargin - cell.margin) * 100).toFixed(1)}%p)
+                  </span>
+                  {cell.margin < floorPct
+                    ? ` · 하한 미달`
+                    : cell.margin < target
+                      ? ` · 목표 미달`
+                      : ''}
+                </p>
+              ) : (
+                <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
+                  OFF · 광고비 미반영
+                </p>
+              )}
+            </div>
           )}
         </div>
-      )}
+      </div>
 
       {/* 비용 구성 스택바 */}
       <div className="mt-4">
