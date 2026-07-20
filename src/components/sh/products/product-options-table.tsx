@@ -462,6 +462,12 @@ export function ProductOptionsTable({
   }
 
   async function toggleUseProductionCost(next: boolean) {
+    // 편집 직후 예약된 디바운스 자동저장이 토글 후 발화하지 않도록 먼저 flush
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current)
+      autoSaveTimerRef.current = null
+      await runAutoSaveRef.current()
+    }
     setToggleSaving(true)
     try {
       const res = await fetch(`/api/sh/products/${productId}`, {
@@ -502,7 +508,7 @@ export function ProductOptionsTable({
           <Switch
             id="use-production-cost"
             checked={useProductionCost}
-            disabled={toggleSaving || productionCost == null}
+            disabled={toggleSaving || (!useProductionCost && productionCost == null)}
             onCheckedChange={(v) => void toggleUseProductionCost(v === true)}
           />
           <Label
@@ -622,6 +628,8 @@ export function ProductOptionsTable({
                 const isDirty = dirtyIds.has(opt.id)
                 const skuKey = draft.sku.trim()
                 const isDuplicate = skuKey && (skuCount.get(skuKey) ?? 0) > 1
+                // 잠금 시 파생 단가, 아니면 수동 draft — 표시·마진율 공통 소스
+                const displayCost = costLocked ? (derivedCostStr ?? '') : draft.costPrice
                 return (
                   <TableRow
                     key={opt.id}
@@ -671,10 +679,8 @@ export function ProductOptionsTable({
                       <Input
                         type="number"
                         min="0"
-                        value={costLocked ? (derivedCostStr ?? '') : draft.costPrice}
-                        onChange={(e) => {
-                          if (!costLocked) updateDraft(opt.id, 'costPrice', e.target.value)
-                        }}
+                        value={displayCost}
+                        onChange={(e) => updateDraft(opt.id, 'costPrice', e.target.value)}
                         disabled={costLocked}
                         title={
                           costLocked
@@ -696,10 +702,7 @@ export function ProductOptionsTable({
                       />
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground tabular-nums">
-                      {marginPercent(
-                        costLocked ? (derivedCostStr ?? '') : draft.costPrice,
-                        draft.retailPrice
-                      )}
+                      {marginPercent(displayCost, draft.retailPrice)}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {(opt.totalStock ?? 0).toLocaleString('ko-KR')}

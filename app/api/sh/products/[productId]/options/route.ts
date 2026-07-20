@@ -38,7 +38,8 @@ export async function GET(
     where: {
       spaceId: resolved.space.id,
       status: 'STOCKED_IN',
-      totalCost: { not: null },
+      // 0 = BREAKDOWN 모드 비용 미입력 저장값일 수 있어 제외 (가중평균 왜곡 방지)
+      totalCost: { gt: 0 },
       items: { some: { option: { productId } } },
     },
     select: { totalCost: true, items: { select: { quantity: true } } },
