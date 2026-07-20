@@ -71,6 +71,7 @@ type ApiCh = {
   shippingFeeType: 'FIXED' | 'PERCENT'
   shippingFee: string | number | null
   shippingFeePct: string | number | null
+  freeShipping: boolean
   freeShippingThreshold: string | number | null
   applyAdCost: boolean
   adCostPct: string | number | null // 0~1, null=미설정 → 앱 기본값 폴백
@@ -110,8 +111,10 @@ type LiveSim = {
 type ChOverride = {
   feePct: number // 기본 카테고리 수수료율 (0~100, UI %)
   shippingFeeType: 'FIXED' | 'PERCENT' // 배송비 산정 방식
-  shippingFee: number // 원 (FIXED) — 주문당 판매자 부담 배송비 (항상 비용 반영)
+  shippingFee: number // 원 (FIXED) — 주문당 판매자 부담 배송비
   shippingFeePct: number // 0~1 (PERCENT, 판매가 대비)
+  freeShipping: boolean // 항상 무료배송(고객 미부담=판매자 항상 부담)
+  freeShippingThreshold: number | null // 무료배송 최소 주문금액(이상=판매자 부담, 미만=고객 부담). null=미설정
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1 PG
   applyAdCost: boolean
@@ -143,6 +146,8 @@ function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
     shippingFeeType: c.shippingFeeType ?? 'FIXED',
     shippingFee,
     shippingFeePct: c.shippingFeePct != null ? Number(c.shippingFeePct) : 0,
+    freeShipping: c.freeShipping ?? false,
+    freeShippingThreshold: c.freeShippingThreshold != null ? Number(c.freeShippingThreshold) : null,
     // PG는 채널 설정값 그대로 반영(true=수수료에 포함=미부과). 미설정 채널 기본(포함)도 그대로.
     paymentFeeIncluded: c.paymentFeeIncluded,
     paymentFeePct: c.paymentFeePct != null ? Number(c.paymentFeePct) : 0,
@@ -166,8 +171,20 @@ function apiChToMatrixChannel(c: ApiCh, ov: ChOverride): MatrixChannel {
     shippingFeeType: ov.shippingFeeType,
     shippingFee: ov.shippingFee,
     shippingFeePct: ov.shippingFeePct,
-    // FIXED 배송비는 항상 부과(threshold=1). PERCENT는 엔진이 threshold 무시.
-    freeShippingThreshold: ov.shippingFee > 0 ? 1 : null,
+    // FIXED 배송비 임계값 매핑 (엔진: P>=threshold → shippingFee, else 0).
+    //   항상무료 → 판매자 항상 부담(threshold=1)
+    //   기준 설정 → 기준 이상 주문만 부담
+    //   기준 미설정 → 항상 부담(threshold=1, 마켓 안전). PERCENT는 엔진이 threshold 무시.
+    freeShippingThreshold:
+      ov.shippingFeeType === 'PERCENT'
+        ? null
+        : ov.shippingFee > 0
+          ? ov.freeShipping
+            ? 1
+            : ov.freeShippingThreshold && ov.freeShippingThreshold > 0
+              ? ov.freeShippingThreshold
+              : 1
+          : null,
   }
 }
 
@@ -234,12 +251,14 @@ function SuffixInput({
   suffix,
   step = 1,
   className,
+  placeholder,
 }: {
   value: string
   onChange: (v: string) => void
   suffix: string
   step?: number
   className?: string
+  placeholder?: string
 }) {
   return (
     <div className="relative flex items-center">
@@ -249,6 +268,7 @@ function SuffixInput({
         onChange={(e) => onChange(e.target.value)}
         step={step}
         min={0}
+        placeholder={placeholder}
         className={cn(
           'h-8 [appearance:textfield] pr-7 text-right text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
           className
@@ -691,7 +711,16 @@ export function PricingQuickFlow({
     )
     setBundleNameInput(s.bundleNameInput)
     setSelectedChannelIds(s.selectedChannelIds)
-    setChOverrides(s.chOverrides)
+    // 구 스냅샷 호환 — 무료배송 필드 기본값 채움
+    const restoredOverrides: Record<string, ChOverride> = {}
+    for (const [id, o] of Object.entries(s.chOverrides)) {
+      restoredOverrides[id] = {
+        ...o,
+        freeShipping: o.freeShipping ?? false,
+        freeShippingThreshold: o.freeShippingThreshold ?? null,
+      }
+    }
+    setChOverrides(restoredOverrides)
     setExpandedChannels(new Set())
     setPromotion(s.promotion)
     setSnap(s.snap)
@@ -1267,6 +1296,41 @@ export function PricingQuickFlow({
                             />
                           )}
                         </label>
+                        {/* 무료배송 (FIXED 전용) — 기준 이상 주문은 판매자 배송비 부담 */}
+                        {ov.shippingFeeType === 'FIXED' && (
+                          <div className="col-span-2 flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-muted-foreground">
+                                무료배송 기준{ov.freeShipping ? ' (항상무료)' : ''}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {!ov.freeShipping && (
+                                <SuffixInput
+                                  value={
+                                    ov.freeShippingThreshold ? String(ov.freeShippingThreshold) : ''
+                                  }
+                                  onChange={(v) =>
+                                    setOverride(bc.api, {
+                                      freeShippingThreshold: Number(v) > 0 ? Number(v) : null,
+                                    })
+                                  }
+                                  suffix="₩"
+                                  step={1000}
+                                  placeholder="미설정"
+                                  className="w-24"
+                                />
+                              )}
+                              <div className="flex items-center gap-1">
+                                <span className="text-[10px] text-muted-foreground">항상무료</span>
+                                <Switch
+                                  checked={ov.freeShipping}
+                                  onCheckedChange={(v) => setOverride(bc.api, { freeShipping: v })}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
                         <div className="col-span-2 flex items-center justify-between gap-2">
                           <span className="text-[10px] text-muted-foreground">
                             PG 결제수수료{ov.paymentFeeIncluded ? ' (채널수수료에 포함)' : ''}

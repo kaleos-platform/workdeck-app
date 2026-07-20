@@ -23,6 +23,10 @@ export type SnapChOverride = {
   shippingFeeType: 'FIXED' | 'PERCENT'
   shippingFee: number // 원
   shippingFeePct: number // 0~1
+  /** 항상 무료배송(판매자 항상 부담). 구 스냅샷엔 없어 optional */
+  freeShipping?: boolean
+  /** 무료배송 최소 주문금액(원). null/미설정=기준 없음. 구 스냅샷엔 없어 optional */
+  freeShippingThreshold?: number | null
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1
   applyAdCost: boolean
