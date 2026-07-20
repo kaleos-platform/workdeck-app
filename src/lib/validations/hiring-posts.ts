@@ -103,8 +103,13 @@ export type PositionInput = z.infer<typeof positionSchema>
 
 // ─── 상세 콘텐츠 블록 ──────────────────────────────────────────────────────────
 // contentType: 'text' — Tiptap JSON, 'image' — Supabase 업로드 이미지, 'button' — CTA 버튼,
-// 'positions' — 모집 부문·근무조건 카드(직무 데이터는 HiringPostingPosition 참조, data는 null)
-export const contentTypeEnum = z.enum(['image', 'text', 'button', 'positions'])
+// 'positions' — 모집 부문·근무조건 카드(직무 데이터는 HiringPostingPosition 참조, data는 null),
+// 'design' — excalidraw 캔버스, scene JSON은 data·export PNG는 imagePath
+export const contentTypeEnum = z.enum(['image', 'text', 'button', 'positions', 'design'])
+
+// design/image 블록 data·imageBase64 크기 상한 — MAX_ASSET_BYTES(10MB) 기준
+// base64 인코딩 오버헤드(~33%)를 감안해 13.5MB 문자 길이 상한 적용
+export const MAX_CONTENT_DATA_CHARS = Math.ceil(10 * 1024 * 1024 * 1.35)
 
 // 버튼 블록 data 스키마
 export const buttonDataSchema = z
@@ -154,9 +159,8 @@ export const updateContentSchema = z.object({
   // Tiptap JSON 형태는 { type, content, ... } 이지만 버전별 shape 변동이 있으므로
   // 서버는 저장만 담당하고 구조 검증은 하지 않는다.
   data: z.unknown().optional(),
-  // image 블록 전용 — base64 data URL 또는 순수 base64. MAX_ASSET_BYTES(10MB) 기준
-  // base64 인코딩 오버헤드(~33%)를 감안해 13.5MB 문자 길이 상한 적용
-  imageBase64: emptyToUndefined.pipe(z.string().max(Math.ceil(10 * 1024 * 1024 * 1.35))).optional(),
+  // image 블록 전용 — base64 data URL 또는 순수 base64
+  imageBase64: emptyToUndefined.pipe(z.string().max(MAX_CONTENT_DATA_CHARS)).optional(),
   mimeType: emptyToUndefined.pipe(z.string()).optional(),
   sortOrder: z.number().int().optional(),
 })

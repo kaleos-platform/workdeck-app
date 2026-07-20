@@ -22,7 +22,7 @@ export type WizardPositionData = {
 
 export type WizardContentData = {
   id: string
-  contentType: 'image' | 'text' | 'button' | 'positions'
+  contentType: 'image' | 'text' | 'button' | 'positions' | 'design'
   data: unknown
   imagePath: string | null
   sortOrder: number
