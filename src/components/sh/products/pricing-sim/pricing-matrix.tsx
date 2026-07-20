@@ -74,8 +74,8 @@ function revenueStyle(cell: MatrixCell, maxRevenue: number): React.CSSProperties
 }
 
 function feeStyle(cell: MatrixCell): React.CSSProperties {
-  // 수수료는 매출 대비 비율 — 높을수록 rose
-  const ratio = cell.revenue > 0 ? cell.fee / cell.revenue : 0
+  // 수수료는 판매가(결제금액) 대비 비율 — 마켓 수수료 부과 기준과 동일. 높을수록 rose
+  const ratio = cell.finalPrice > 0 ? cell.fee / cell.finalPrice : 0
   const intensity = Math.min(1, ratio * 3) // 0~33%+ 범위를 0~1로
   if (intensity < 0.3) return { backgroundColor: emeraldBg(0.3 - intensity) }
   if (intensity < 0.6) return { backgroundColor: amberBg((intensity - 0.3) * 2) }
@@ -247,14 +247,14 @@ export function PricingMatrix({ option, bundle, channel, promotion, globals, thr
                       <div className="cursor-default">
                         <p className="text-[11px]">{fmt(cell.fee)}</p>
                         <p className="text-[9px] text-muted-foreground">
-                          {cell.revenue > 0 ? fmtPct(cell.fee / cell.revenue) : '—'}
+                          {cell.finalPrice > 0 ? fmtPct(cell.fee / cell.finalPrice) : '—'}
                         </p>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="text-xs">
                       <p>수수료 합계: {fmt(cell.fee)}원</p>
                       <p className="text-muted-foreground">
-                        매출 대비 {cell.revenue > 0 ? fmtPct(cell.fee / cell.revenue) : '—'}
+                        판매가 대비 {cell.finalPrice > 0 ? fmtPct(cell.fee / cell.finalPrice) : '—'}
                       </p>
                     </TooltipContent>
                   </Tooltip>
