@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { MatrixCell } from '@/lib/sh/pricing-matrix-calc'
 
 // ─── 세그먼트 정의 ───────────────────────────────────────────────────────────
@@ -90,27 +91,58 @@ export function PricingCostBar({ cell, showLegend = true }: Props) {
 
   return (
     <div className="space-y-2">
-      {/* 스택 막대 */}
-      <div className="flex h-6 w-full overflow-hidden rounded-md">
-        {segments.map((s) =>
-          s.widthPct > 0 ? (
-            <div
-              key={s.key}
-              className="h-full"
-              style={{ width: `${s.widthPct}%`, backgroundColor: s.color }}
-              title={`${s.label} ${fmt(s.value)}원`}
-            />
-          ) : null
-        )}
-        {loss && (
-          <div
-            className="flex h-full flex-1 items-center justify-end bg-destructive/15 px-1.5 text-[10px] font-semibold text-destructive"
-            title={`적자 ${fmt(cell.netProfit)}원`}
-          >
-            적자
-          </div>
-        )}
-      </div>
+      {/* 스택 막대 — 세그먼트 hover 시 상세(항목·금액·판매가 대비 비율) */}
+      <TooltipProvider>
+        <div className="flex h-6 w-full overflow-hidden rounded-md">
+          {segments.map((s) => {
+            if (s.widthPct <= 0) return null
+            const isMargin = s.key === 'margin'
+            const amount = isMargin ? cell.netProfit : s.value
+            const pct = base > 0 ? (s.value / base) * 100 : 0
+            return (
+              <Tooltip key={s.key}>
+                <TooltipTrigger asChild>
+                  <div
+                    className="h-full cursor-default"
+                    style={{ width: `${s.widthPct}%`, backgroundColor: s.color }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  <div className="flex items-center gap-1.5 font-medium">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-[2px]"
+                      style={{ backgroundColor: s.color }}
+                      aria-hidden
+                    />
+                    {s.label}
+                  </div>
+                  <p className="tabular-nums">₩{fmt(amount)}</p>
+                  <p className="text-muted-foreground tabular-nums">
+                    {isMargin ? '이익율' : '판매가 대비'}{' '}
+                    {isMargin ? (cell.margin * 100).toFixed(1) : pct.toFixed(1)}%
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )
+          })}
+          {loss && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex h-full flex-1 cursor-default items-center justify-end bg-destructive/15 px-1.5 text-[10px] font-semibold text-destructive">
+                  적자
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                <p className="font-medium text-destructive">적자</p>
+                <p className="tabular-nums">₩{fmt(cell.netProfit)}</p>
+                <p className="text-muted-foreground tabular-nums">
+                  이익율 {(cell.margin * 100).toFixed(1)}%
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      </TooltipProvider>
 
       {/* 레전드 — 값·판매가 대비 비율 동반 */}
       {showLegend && (
