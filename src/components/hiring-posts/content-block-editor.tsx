@@ -223,10 +223,11 @@ export function ContentBlockEditor({
   }
 
   async function handleDesignSave(contentId: string, scene: unknown, imageBase64: string) {
-    // 서버 라우트의 JSON 바디 파싱 한도(~10MB) 아래에서 사전 차단해 친절한 안내를 제공한다.
-    // (초과 시 서버는 "잘못된 요청 형식" 400을 반환하므로 여기서 먼저 막는다.)
+    // Vercel serverless 함수의 요청 바디 한도(~4.5MB) 아래에서 사전 차단해 친절한 안내를 제공한다.
+    // (초과 시 플랫폼이 413/제네릭 실패로 떨어뜨려 원인 불명 토스트만 뜨므로 여기서 먼저 막는다.)
+    // scene(붙여넣은 이미지 dataURL 포함) + PNG 를 합산, JSON 오버헤드 여유로 4MB 로 보수적 설정.
     const payloadChars = JSON.stringify(scene).length + imageBase64.length
-    if (payloadChars > 8 * 1024 * 1024) {
+    if (payloadChars > 4 * 1024 * 1024) {
       toast.error('디자인이 너무 큽니다. 캔버스에 넣은 이미지 수·크기를 줄여주세요')
       return
     }
