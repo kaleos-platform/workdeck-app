@@ -107,7 +107,7 @@ export function PricingSensitivityChart({ matrix, channelName }: Props) {
       )}
       <div style={{ height: 240 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
+          <LineChart data={data} margin={{ top: 16, right: 16, left: 0, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
             <XAxis
               dataKey="discount"
@@ -131,7 +131,12 @@ export function PricingSensitivityChart({ matrix, channelName }: Props) {
               y={0}
               stroke="rgba(0,0,0,0.25)"
               strokeDasharray="4 3"
-              label={{ value: '손익분기', position: 'right', fontSize: 9, fill: 'rgba(0,0,0,0.4)' }}
+              label={{
+                value: '손익분기',
+                position: 'insideBottomRight',
+                fontSize: 9,
+                fill: 'rgba(0,0,0,0.45)',
+              }}
             />
 
             {/* 적자 전환점 수직선 */}
@@ -140,7 +145,12 @@ export function PricingSensitivityChart({ matrix, channelName }: Props) {
                 x={breakEvenX}
                 stroke="rgba(244,63,94,0.5)"
                 strokeDasharray="4 3"
-                label={{ value: '적자', position: 'top', fontSize: 9, fill: 'rgba(244,63,94,0.8)' }}
+                label={{
+                  value: '적자 전환',
+                  position: 'insideTopRight',
+                  fontSize: 9,
+                  fill: 'rgba(244,63,94,0.85)',
+                }}
               />
             )}
 

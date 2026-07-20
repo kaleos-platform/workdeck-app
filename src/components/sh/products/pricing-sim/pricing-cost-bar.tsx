@@ -112,23 +112,35 @@ export function PricingCostBar({ cell, showLegend = true }: Props) {
         )}
       </div>
 
-      {/* 레전드 — 값 동반 */}
+      {/* 레전드 — 값·판매가 대비 비율 동반 */}
       {showLegend && (
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-          {segments.map((s) => (
-            <span key={s.key} className="inline-flex items-center gap-1 tabular-nums">
-              <span
-                className="inline-block h-2 w-2 rounded-[2px]"
-                style={{ backgroundColor: s.color }}
-                aria-hidden
-              />
-              {s.label}{' '}
-              <span className={s.key === 'margin' && !loss ? 'font-semibold text-foreground' : ''}>
-                ₩{fmt(s.key === 'margin' ? cell.netProfit : s.value)}
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+          {segments.map((s) => {
+            // 비용 항목은 판매가(결제금액) 대비 비율 표기. 마진은 이익율(net 분모)과 혼동되므로 비율 미표기.
+            const amount = s.key === 'margin' ? cell.netProfit : s.value
+            const pct = s.key !== 'margin' && base > 0 ? Math.round((s.value / base) * 100) : null
+            return (
+              <span key={s.key} className="inline-flex items-center gap-1.5 tabular-nums">
+                <span
+                  className="inline-block h-2.5 w-2.5 rounded-[2px]"
+                  style={{ backgroundColor: s.color }}
+                  aria-hidden
+                />
+                <span className="text-muted-foreground">{s.label}</span>{' '}
+                <span
+                  className={
+                    s.key === 'margin' && !loss
+                      ? 'font-semibold text-emerald-700'
+                      : 'font-medium text-foreground'
+                  }
+                >
+                  ₩{fmt(amount)}
+                </span>
+                {pct != null && <span className="text-muted-foreground">({pct}%)</span>}
               </span>
-            </span>
-          ))}
-          <span className="ml-auto inline-flex items-center gap-1 text-muted-foreground tabular-nums">
+            )
+          })}
+          <span className="ml-auto inline-flex items-center gap-1.5 tabular-nums">
             판매가 <span className="font-semibold text-foreground">₩{fmt(base)}</span>
           </span>
         </div>

@@ -5,7 +5,12 @@ import { AlertTriangle, ChevronDown, ChevronUp, Plus } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { calculateMatrix, type MatrixChannel } from '@/lib/sh/pricing-matrix-calc'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  calculateMatrix,
+  suggestFeasibility,
+  type MatrixChannel,
+} from '@/lib/sh/pricing-matrix-calc'
 import type { MatrixBundle, MatrixPromotion, MatrixGlobals } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
 import { snapPrice } from '@/lib/sh/price-snap'
@@ -134,10 +139,71 @@ export function PricingChannelBoardCard({
     promoCell != null && cell != null && cell.finalPrice > 0
       ? Math.max(0, 1 - promoCell.finalPrice / cell.finalPrice)
       : 0
-  const gaugeDomain = Math.max(maxDiscount ?? 0, currentDiscount, 0.05)
   const overFloor = promoCell != null && promoCell.margin < floorPct - 0.005
   const headroomAmount =
     maxDiscount != null && cell != null ? Math.max(0, cell.finalPrice * maxDiscount) : 0
+
+  // ── 목표 마진 달성 불가 시 항목별 제안 ─────────────────────────────────────
+  // 구조적 불가(recommended==null) 또는 권장가가 소비자가 상한 초과(exceedsRetail).
+  // 소비자가(retailCap) 기준으로 광고비·배송비를 얼마까지 낮춰야 목표 달성인지 역산.
+  const target = thresholds.platformTargetGood
+  const infeasible = recommended == null || exceedsRetail
+  const suggestion = useMemo(() => {
+    if (!infeasible || retailCap == null) return null
+    return suggestFeasibility(
+      { bundle, channel, promotion: { type: 'NONE', value: 0 }, globals, thresholds },
+      retailCap,
+      target
+    )
+  }, [infeasible, retailCap, bundle, channel, globals, thresholds, target])
+
+  // 제안 블록 렌더 (광고·배송 레버 각각, 해당 비용 존재 시에만)
+  const suggestionBlock =
+    suggestion && (suggestion.ad || suggestion.shipping) ? (
+      <div className="mt-3 space-y-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-snug">
+        <p className="font-medium text-amber-800">
+          소비자가 ₩{fmt(retailCap!)} 기준 목표 마진 {(target * 100).toFixed(0)}% 달성 제안
+        </p>
+        {suggestion.ad &&
+          (suggestion.ad.achievable ? (
+            <p className="text-amber-700">
+              · 광고비:{' '}
+              {suggestion.ad.roasPct != null ? (
+                <span className="font-semibold tabular-nums">
+                  ROAS {suggestion.ad.roasPct}% 이상
+                </span>
+              ) : (
+                <span className="font-semibold">광고 제거(0%)</span>
+              )}
+              {suggestion.ad.adCostPct != null && (
+                <span className="text-amber-600">
+                  {' '}
+                  (광고비율 {(suggestion.ad.adCostPct * 100).toFixed(1)}% 이하)
+                </span>
+              )}
+            </p>
+          ) : (
+            <p className="text-amber-700">· 광고비를 없애도 목표 마진에 도달할 수 없습니다.</p>
+          ))}
+        {suggestion.shipping &&
+          (suggestion.shipping.achievable ? (
+            <p className="text-amber-700">
+              · 배송비:{' '}
+              {suggestion.shipping.type === 'FIXED' ? (
+                <span className="font-semibold tabular-nums">
+                  ₩{fmt(suggestion.shipping.feeWon!)} 이하로 조정
+                </span>
+              ) : (
+                <span className="font-semibold tabular-nums">
+                  {(suggestion.shipping.feePct! * 100).toFixed(1)}% 이하로 조정
+                </span>
+              )}
+            </p>
+          ) : (
+            <p className="text-amber-700">· 배송비를 없애도 목표 마진에 도달할 수 없습니다.</p>
+          ))}
+      </div>
+    ) : null
 
   // ── 권장가 역산 불가 (구조적) ──────────────────────────────────────────────
   if (recommended == null || cell == null) {
@@ -156,6 +222,7 @@ export function PricingChannelBoardCard({
           목표 마진 {(thresholds.platformTargetGood * 100).toFixed(0)}% 달성 불가 — 수수료·원가가
           너무 높습니다.
         </div>
+        {suggestionBlock}
       </div>
     )
   }
@@ -178,13 +245,19 @@ export function PricingChannelBoardCard({
           <p className="text-[10px] text-muted-foreground">
             권장 판매가{exceedsRetail ? ' (소비자가 상한)' : ''}
           </p>
-          <p className="text-2xl font-bold tabular-nums">₩{fmt(cell.finalPrice)}</p>
-          {retailCap != null && cell.finalPrice > 0 && (
-            <p className="mt-0.5 text-[10px] text-muted-foreground tabular-nums">
-              소비자가 대비{' '}
-              {Math.round(Math.max(0, (retailCap - cell.finalPrice) / retailCap) * 100)}% 할인
-            </p>
-          )}
+          {/* 항목4: 판매가 우측에 소비자가 대비 할인율 배지 */}
+          <div className="flex items-center justify-end gap-2">
+            <p className="text-2xl font-bold tabular-nums">₩{fmt(cell.finalPrice)}</p>
+            {retailCap != null && cell.finalPrice > 0 && (
+              <Badge
+                variant="outline"
+                className="border-emerald-300 bg-emerald-50 px-1.5 py-0 text-[11px] font-semibold text-emerald-700 tabular-nums"
+                title="소비자가 대비 할인율"
+              >
+                −{Math.round(Math.max(0, (retailCap - cell.finalPrice) / retailCap) * 100)}%
+              </Badge>
+            )}
+          </div>
           <div className="mt-0.5 flex items-center justify-end gap-1.5">
             <Badge
               variant="outline"
@@ -200,12 +273,24 @@ export function PricingChannelBoardCard({
               목표 마진 달성 불가
             </div>
           )}
-          <p className="mt-0.5 text-[10px] text-muted-foreground tabular-nums">
-            공급가 ₩{fmt(cell.revenue)} · VAT {globals.includeVat ? '포함' : '미포함'} · 마진 ₩
-            {fmt(cell.netProfit)} / 건
-          </p>
+          {/* 항목5: 공급가만 유지(마진 금액·마진율은 스택바·배지와 중복 → 제거) + 툴팁 설명 */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="mt-0.5 cursor-default text-[10px] text-muted-foreground tabular-nums underline decoration-dotted underline-offset-2">
+                  공급가(VAT 제외) ₩{fmt(cell.revenue)}
+                </p>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+                <p>판매가에서 VAT를 제외한 실매출액입니다.</p>
+                <p className="text-muted-foreground">마진율(이익율) 계산의 분모로 쓰입니다.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
+      {/* 항목7: 소비자가 상한 초과(목표 미달) 시 항목별 제안 */}
+      {exceedsRetail && suggestionBlock}
 
       {/* 비용 구성 스택바 */}
       <div className="mt-4">
@@ -239,20 +324,7 @@ export function PricingChannelBoardCard({
             )}
           </span>
         </div>
-        {/* 게이지 트랙 */}
-        <div className="relative mt-1.5 h-2 overflow-hidden rounded-full bg-[var(--ps-track)]">
-          <div
-            className={`absolute inset-y-0 left-0 rounded-full ${overFloor ? 'bg-destructive' : 'bg-amber-500'}`}
-            style={{ width: `${Math.min(100, (currentDiscount / gaugeDomain) * 100)}%` }}
-          />
-          {maxDiscount != null && (
-            <div
-              className="absolute inset-y-[-2px] w-0.5 rounded-full bg-foreground"
-              style={{ left: `${Math.min(100, (maxDiscount / gaugeDomain) * 100)}%` }}
-              aria-hidden
-            />
-          )}
-        </div>
+        {/* 항목6: 여력 게이지 그래프 제거 — 텍스트만으로 설명 */}
         <p className="mt-1.5 text-[11px] leading-snug">
           {maxDiscount == null ? (
             <span className="text-destructive">
