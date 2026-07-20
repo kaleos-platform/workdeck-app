@@ -768,6 +768,8 @@ export function PricingQuickFlow({
             id: string
             name: string
             costPrice: string | number | null
+            /** 생산차수 원가 연동 시 파생 원가 (아니면 costPrice와 동일) */
+            effectiveCostPrice?: string | number | null
             retailPrice: string | number | null
             attributeValues?: Record<string, string> | null
             sizeLabel?: string | null
@@ -776,7 +778,10 @@ export function PricingQuickFlow({
         const options: OptionInput[] = (optJson.options ?? []).map((o) => ({
           optionId: o.id,
           optionName: o.name,
-          costPrice: o.costPrice != null ? Number(o.costPrice) : null,
+          costPrice:
+            (o.effectiveCostPrice ?? o.costPrice) != null
+              ? Number(o.effectiveCostPrice ?? o.costPrice)
+              : null,
           retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
           attributeValues: o.attributeValues ?? null,
           sizeLabel: o.sizeLabel ?? null,

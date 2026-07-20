@@ -14,12 +14,16 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SELLER_HUB_PRODUCTION_PATH } from '@/lib/deck-routes'
+import type { ProductionRunStatus } from '@/lib/sh/production-runs-query'
 import { ProductionRunFormDialog } from './production-run-form-dialog'
+import { StatusBadge } from './production-runs-table'
 
 type ProductionRunForProduct = {
   id: string
   runNo: string
+  status: ProductionRunStatus
   orderedConfirmedAt: string | null
+  stockedInAt: string | null
   totalCost: number | null
   costMode: 'TOTAL' | 'BREAKDOWN'
   totalQuantity: number
@@ -130,7 +134,9 @@ export function ProductProductionRunsPanel({ productId }: Props) {
             <TableHeader>
               <TableRow>
                 <TableHead>차수 번호</TableHead>
+                <TableHead>상태</TableHead>
                 <TableHead>발주일</TableHead>
+                <TableHead>입고일</TableHead>
                 <TableHead>이 상품 옵션</TableHead>
                 <TableHead className="text-right">총 수량</TableHead>
                 <TableHead className="text-right">총 원가</TableHead>
@@ -150,10 +156,16 @@ export function ProductProductionRunsPanel({ productId }: Props) {
                 return (
                   <TableRow key={r.id} className="hover:bg-muted/40">
                     <TableCell className="font-mono text-sm">{r.runNo}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={r.status} />
+                    </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {r.orderedConfirmedAt
                         ? new Date(r.orderedConfirmedAt).toLocaleDateString('ko-KR')
                         : '-'}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {r.stockedInAt ? new Date(r.stockedInAt).toLocaleDateString('ko-KR') : '-'}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{myComposition}</TableCell>
                     <TableCell className="text-right tabular-nums">

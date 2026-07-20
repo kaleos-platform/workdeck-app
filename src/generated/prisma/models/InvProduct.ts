@@ -52,6 +52,7 @@ export type InvProductMinAggregateOutputType = {
   msrp: runtime.Decimal | null
   description: string | null
   reorderRoundUnit: number | null
+  useProductionCost: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -72,6 +73,7 @@ export type InvProductMaxAggregateOutputType = {
   msrp: runtime.Decimal | null
   description: string | null
   reorderRoundUnit: number | null
+  useProductionCost: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -95,6 +97,7 @@ export type InvProductCountAggregateOutputType = {
   description: number
   optionAttributes: number
   reorderRoundUnit: number
+  useProductionCost: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -127,6 +130,7 @@ export type InvProductMinAggregateInputType = {
   msrp?: true
   description?: true
   reorderRoundUnit?: true
+  useProductionCost?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -147,6 +151,7 @@ export type InvProductMaxAggregateInputType = {
   msrp?: true
   description?: true
   reorderRoundUnit?: true
+  useProductionCost?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -170,6 +175,7 @@ export type InvProductCountAggregateInputType = {
   description?: true
   optionAttributes?: true
   reorderRoundUnit?: true
+  useProductionCost?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -280,6 +286,7 @@ export type InvProductGroupByOutputType = {
   description: string | null
   optionAttributes: runtime.JsonValue | null
   reorderRoundUnit: number
+  useProductionCost: boolean
   createdAt: Date
   updatedAt: Date
   _count: InvProductCountAggregateOutputType | null
@@ -326,6 +333,7 @@ export type InvProductWhereInput = {
   description?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   optionAttributes?: Prisma.JsonNullableFilter<"InvProduct">
   reorderRoundUnit?: Prisma.IntFilter<"InvProduct"> | number
+  useProductionCost?: Prisma.BoolFilter<"InvProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -356,6 +364,7 @@ export type InvProductOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   optionAttributes?: Prisma.SortOrderInput | Prisma.SortOrder
   reorderRoundUnit?: Prisma.SortOrder
+  useProductionCost?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -390,6 +399,7 @@ export type InvProductWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   optionAttributes?: Prisma.JsonNullableFilter<"InvProduct">
   reorderRoundUnit?: Prisma.IntFilter<"InvProduct"> | number
+  useProductionCost?: Prisma.BoolFilter<"InvProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -420,6 +430,7 @@ export type InvProductOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   optionAttributes?: Prisma.SortOrderInput | Prisma.SortOrder
   reorderRoundUnit?: Prisma.SortOrder
+  useProductionCost?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.InvProductCountOrderByAggregateInput
@@ -451,6 +462,7 @@ export type InvProductScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"InvProduct"> | string | null
   optionAttributes?: Prisma.JsonNullableWithAggregatesFilter<"InvProduct">
   reorderRoundUnit?: Prisma.IntWithAggregatesFilter<"InvProduct"> | number
+  useProductionCost?: Prisma.BoolWithAggregatesFilter<"InvProduct"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"InvProduct"> | Date | string
 }
@@ -471,6 +483,7 @@ export type InvProductCreateInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
@@ -501,6 +514,7 @@ export type InvProductUncheckedCreateInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -525,6 +539,7 @@ export type InvProductUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
@@ -555,6 +570,7 @@ export type InvProductUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -582,6 +598,7 @@ export type InvProductCreateManyInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -602,6 +619,7 @@ export type InvProductUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -625,6 +643,7 @@ export type InvProductUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -663,6 +682,7 @@ export type InvProductCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   optionAttributes?: Prisma.SortOrder
   reorderRoundUnit?: Prisma.SortOrder
+  useProductionCost?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -688,6 +708,7 @@ export type InvProductMaxOrderByAggregateInput = {
   msrp?: Prisma.SortOrder
   description?: Prisma.SortOrder
   reorderRoundUnit?: Prisma.SortOrder
+  useProductionCost?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -708,6 +729,7 @@ export type InvProductMinOrderByAggregateInput = {
   msrp?: Prisma.SortOrder
   description?: Prisma.SortOrder
   reorderRoundUnit?: Prisma.SortOrder
+  useProductionCost?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -931,6 +953,7 @@ export type InvProductCreateWithoutSpaceInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
@@ -959,6 +982,7 @@ export type InvProductUncheckedCreateWithoutSpaceInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -1015,6 +1039,7 @@ export type InvProductScalarWhereInput = {
   description?: Prisma.StringNullableFilter<"InvProduct"> | string | null
   optionAttributes?: Prisma.JsonNullableFilter<"InvProduct">
   reorderRoundUnit?: Prisma.IntFilter<"InvProduct"> | number
+  useProductionCost?: Prisma.BoolFilter<"InvProduct"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProduct"> | Date | string
 }
@@ -1035,6 +1060,7 @@ export type InvProductCreateWithoutGroupInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
@@ -1063,6 +1089,7 @@ export type InvProductUncheckedCreateWithoutGroupInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -1113,6 +1140,7 @@ export type InvProductCreateWithoutOptionsInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
@@ -1142,6 +1170,7 @@ export type InvProductUncheckedCreateWithoutOptionsInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
@@ -1181,6 +1210,7 @@ export type InvProductUpdateWithoutOptionsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
@@ -1210,6 +1240,7 @@ export type InvProductUncheckedUpdateWithoutOptionsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
@@ -1233,6 +1264,7 @@ export type InvProductCreateWithoutReorderConfigInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
@@ -1262,6 +1294,7 @@ export type InvProductUncheckedCreateWithoutReorderConfigInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -1301,6 +1334,7 @@ export type InvProductUpdateWithoutReorderConfigInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
@@ -1330,6 +1364,7 @@ export type InvProductUncheckedUpdateWithoutReorderConfigInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -1353,6 +1388,7 @@ export type InvProductCreateWithoutBrandInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
@@ -1381,6 +1417,7 @@ export type InvProductUncheckedCreateWithoutBrandInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -1431,6 +1468,7 @@ export type InvProductCreateWithoutReorderPlansInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
@@ -1460,6 +1498,7 @@ export type InvProductUncheckedCreateWithoutReorderPlansInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -1499,6 +1538,7 @@ export type InvProductUpdateWithoutReorderPlansInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
@@ -1528,6 +1568,7 @@ export type InvProductUncheckedUpdateWithoutReorderPlansInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -1551,6 +1592,7 @@ export type InvProductCreateWithoutReorderPlanItemsInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
@@ -1580,6 +1622,7 @@ export type InvProductUncheckedCreateWithoutReorderPlanItemsInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
@@ -1619,6 +1662,7 @@ export type InvProductUpdateWithoutReorderPlanItemsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
@@ -1648,6 +1692,7 @@ export type InvProductUncheckedUpdateWithoutReorderPlanItemsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -1673,6 +1718,7 @@ export type InvProductCreateManySpaceInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1693,6 +1739,7 @@ export type InvProductUpdateWithoutSpaceInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
@@ -1721,6 +1768,7 @@ export type InvProductUncheckedUpdateWithoutSpaceInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -1747,6 +1795,7 @@ export type InvProductUncheckedUpdateManyWithoutSpaceInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1769,6 +1818,7 @@ export type InvProductCreateManyGroupInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1789,6 +1839,7 @@ export type InvProductUpdateWithoutGroupInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
@@ -1817,6 +1868,7 @@ export type InvProductUncheckedUpdateWithoutGroupInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -1843,6 +1895,7 @@ export type InvProductUncheckedUpdateManyWithoutGroupInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1865,6 +1918,7 @@ export type InvProductCreateManyBrandInput = {
   description?: string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: number
+  useProductionCost?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1885,6 +1939,7 @@ export type InvProductUpdateWithoutBrandInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
@@ -1913,6 +1968,7 @@ export type InvProductUncheckedUpdateWithoutBrandInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
@@ -1939,6 +1995,7 @@ export type InvProductUncheckedUpdateManyWithoutBrandInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2011,6 +2068,7 @@ export type InvProductSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   description?: boolean
   optionAttributes?: boolean
   reorderRoundUnit?: boolean
+  useProductionCost?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -2042,6 +2100,7 @@ export type InvProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   description?: boolean
   optionAttributes?: boolean
   reorderRoundUnit?: boolean
+  useProductionCost?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -2068,6 +2127,7 @@ export type InvProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   description?: boolean
   optionAttributes?: boolean
   reorderRoundUnit?: boolean
+  useProductionCost?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -2094,11 +2154,12 @@ export type InvProductSelectScalar = {
   description?: boolean
   optionAttributes?: boolean
   reorderRoundUnit?: boolean
+  useProductionCost?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "groupId" | "status" | "brandId" | "internalName" | "nameEn" | "manufacturer" | "manufactureCountry" | "manufactureDate" | "features" | "certifications" | "msrp" | "description" | "optionAttributes" | "reorderRoundUnit" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
+export type InvProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "code" | "groupId" | "status" | "brandId" | "internalName" | "nameEn" | "manufacturer" | "manufactureCountry" | "manufactureDate" | "features" | "certifications" | "msrp" | "description" | "optionAttributes" | "reorderRoundUnit" | "useProductionCost" | "createdAt" | "updatedAt", ExtArgs["result"]["invProduct"]>
 export type InvProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   group?: boolean | Prisma.InvProductGroupDefaultArgs<ExtArgs>
@@ -2150,6 +2211,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
     description: string | null
     optionAttributes: runtime.JsonValue | null
     reorderRoundUnit: number
+    useProductionCost: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["invProduct"]>
@@ -2600,6 +2662,7 @@ export interface InvProductFieldRefs {
   readonly description: Prisma.FieldRef<"InvProduct", 'String'>
   readonly optionAttributes: Prisma.FieldRef<"InvProduct", 'Json'>
   readonly reorderRoundUnit: Prisma.FieldRef<"InvProduct", 'Int'>
+  readonly useProductionCost: Prisma.FieldRef<"InvProduct", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"InvProduct", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvProduct", 'DateTime'>
 }
