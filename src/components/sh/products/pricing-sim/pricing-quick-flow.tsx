@@ -1358,32 +1358,7 @@ export function PricingQuickFlow({
                             </div>
                           </div>
                         </div>
-                        <div className="col-span-2 flex items-center justify-between gap-2">
-                          <span className="text-[10px] text-muted-foreground">
-                            목표 광고 ROAS{ov.applyAdCost ? '' : ' (OFF · 광고비 0)'}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            {ov.applyAdCost && (
-                              <SuffixInput
-                                value={
-                                  ov.adPct > 0 ? String(Math.round((100 / ov.adPct) * 10) / 10) : ''
-                                }
-                                onChange={(v) =>
-                                  setOverride(bc.api, {
-                                    adPct: Number(v) > 0 ? 100 / Number(v) : 0,
-                                  })
-                                }
-                                suffix="%"
-                                step={10}
-                                className="w-20"
-                              />
-                            )}
-                            <Switch
-                              checked={ov.applyAdCost}
-                              onCheckedChange={(v) => setOverride(bc.api, { applyAdCost: v })}
-                            />
-                          </div>
-                        </div>
+                        {/* 광고 ROAS는 채널별 마진 보드에서 조정(판매가 순환 인플레 방지) */}
                       </div>
                     )}
                   </div>
@@ -1442,6 +1417,7 @@ export function PricingQuickFlow({
                   onCreate={(ch, price) => setConfirmTarget({ channel: ch, price })}
                   creating={creatingChannelId === bc.api.id}
                   canCreate={canCreate}
+                  onAdChange={(patch) => setOverride(bc.api, patch)}
                 />
               ))}
               {confirmedRows.length > 1 && !isSingleProduct && (

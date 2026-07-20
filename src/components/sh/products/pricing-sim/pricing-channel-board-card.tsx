@@ -5,12 +5,11 @@ import { AlertTriangle, ChevronDown, ChevronUp, Plus } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import {
-  calculateMatrix,
-  suggestFeasibility,
-  type MatrixChannel,
-} from '@/lib/sh/pricing-matrix-calc'
+import { calculateMatrix, type MatrixChannel } from '@/lib/sh/pricing-matrix-calc'
 import type { MatrixBundle, MatrixPromotion, MatrixGlobals } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
 import { snapPrice } from '@/lib/sh/price-snap'
@@ -48,6 +47,8 @@ type Props = {
   onCreate?: (channel: MatrixChannel, recommendedPrice: number) => void
   creating?: boolean
   canCreate?: boolean
+  /** 광고 ROAS를 이 보드에서 조정 — ChOverride(applyAdCost·adPct) 갱신 콜백 */
+  onAdChange?: (patch: { applyAdCost?: boolean; adPct?: number }) => void
 }
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
@@ -68,9 +69,11 @@ export function PricingChannelBoardCard({
   onCreate,
   creating,
   canCreate,
+  onAdChange,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
-  const [suggestOpen, setSuggestOpen] = useState(false)
+  // 판매가 수동 조정값 (null=권장가 자동)
+  const [manualPrice, setManualPrice] = useState<number | null>(null)
 
   // 채널 수수료율 (0~1) — 표시용
   const channelFeePct = useMemo(() => {
@@ -78,47 +81,69 @@ export function PricingChannelBoardCard({
     return basic ? Number(basic.ratePercent) / 100 : 0
   }, [channel])
 
-  // 권장 판매가 역산 — salePrice=0 번들로 매트릭스 계산 후 recommendedRetail.good
+  // 광고 제외 채널 — 권장가 역산·광고 전 마진 비교에 사용.
+  // (광고비가 역산 분모에 들어가면 권장가↑→광고비↑ 순환 인플레 발생하므로 제외)
+  const adlessChannel = useMemo<MatrixChannel>(
+    () => ({ ...channel, applyAdCost: false }),
+    [channel]
+  )
+  const adActive = channel.applyAdCost && adPct > 0
+
+  // 권장 판매가 역산 — 광고 제외 기준(salePrice=0 번들) recommendedRetail.good
   const recoMatrix = useMemo(
     () =>
       calculateMatrix({
         bundle: { ...bundle, salePrice: 0 },
-        channel,
+        channel: adlessChannel,
         promotion: { type: 'NONE', value: 0 },
         globals,
         thresholds,
       }),
-    [bundle, channel, globals, thresholds]
+    [bundle, adlessChannel, globals, thresholds]
   )
   const rawRecommended = recoMatrix.recommendedRetail.good
   const recommended =
     rawRecommended != null && snap ? snapPrice(rawRecommended, 'end900') : rawRecommended
 
-  // 소비자가 상한 — 권장가는 소비자가를 초과할 수 없음(항목7).
+  // 소비자가 상한 — 자동 권장가는 소비자가를 초과할 수 없음.
   // 소비자가 = Σ(컴포넌트 소비자가 × 수량). 0/미입력이면 상한 없음(null).
   const retailCap = useMemo(() => {
     const sum = bundle.components.reduce((s, c) => s + (c.retailPrice ?? 0) * c.quantity, 0)
     return sum > 0 ? sum : null
   }, [bundle])
-  // 판별은 미클램프 recommended 기준. 스냅 금지(retailCap=정확 소비자가).
   const exceedsRetail = recommended != null && retailCap != null && recommended > retailCap
-  // 상한 클램프값 — 매트릭스·게이지·생성가에 모두 주입(표시가와 불일치 방지).
-  const effectiveRecommended = exceedsRetail ? retailCap : recommended
+  // 자동 권장가(상한 클램프). 수동가는 클램프 없이 사용자 값 그대로.
+  const autoPrice = exceedsRetail ? retailCap : recommended
+  const effectivePrice = manualPrice ?? autoPrice
+  const isManual = manualPrice != null
 
-  // 권장가 기준 매트릭스 (프로모션 NONE) — 헤드라인 마진·스택바·민감도 차트 소스.
-  // 헤드라인은 항상 "권장가에서 목표 마진 달성" 상태를 보여야 하므로 프로모션 미적용.
+  // 헤드라인 매트릭스 — 실채널(광고 적용) × effectivePrice. 마진은 광고 반영(에로전).
   const headlineMatrix = useMemo(() => {
-    if (effectiveRecommended == null) return null
+    if (effectivePrice == null) return null
     return calculateMatrix({
-      bundle: { ...bundle, salePrice: effectiveRecommended },
+      bundle: { ...bundle, salePrice: effectivePrice },
       channel,
       promotion: { type: 'NONE', value: 0 },
       globals,
       thresholds,
     })
-  }, [effectiveRecommended, bundle, channel, globals, thresholds])
+  }, [effectivePrice, bundle, channel, globals, thresholds])
 
   const cell = headlineMatrix?.cells[0] ?? null
+
+  // 광고 전 마진 (같은 판매가, 광고 제외) — 에로전 표시용.
+  const preAdMargin = useMemo(() => {
+    if (effectivePrice == null) return null
+    return calculateMatrix({
+      bundle: { ...bundle, salePrice: effectivePrice },
+      channel: adlessChannel,
+      promotion: { type: 'NONE', value: 0 },
+      globals,
+      thresholds,
+    }).cells[0].margin
+  }, [effectivePrice, bundle, adlessChannel, globals, thresholds])
+
+  const target = thresholds.platformTargetGood
 
   // ── 프로모션 여력 게이지 ──────────────────────────────────────────────────
   const floorPct = globals.minimumAcceptableMargin
@@ -126,15 +151,15 @@ export function PricingChannelBoardCard({
   // 프로모션 적용 매트릭스 (실제 promotion) — 게이지 fill·하한 경고 소스.
   const hasPromo = promotion.type !== 'NONE'
   const promoMatrix = useMemo(() => {
-    if (effectiveRecommended == null || !hasPromo) return null
+    if (effectivePrice == null || !hasPromo) return null
     return calculateMatrix({
-      bundle: { ...bundle, salePrice: effectiveRecommended },
+      bundle: { ...bundle, salePrice: effectivePrice },
       channel,
       promotion,
       globals,
       thresholds,
     })
-  }, [effectiveRecommended, hasPromo, bundle, channel, promotion, globals, thresholds])
+  }, [effectivePrice, hasPromo, bundle, channel, promotion, globals, thresholds])
   const promoCell = promoMatrix?.cells[0] ?? null
   const currentDiscount =
     promoCell != null && cell != null && cell.finalPrice > 0
@@ -144,85 +169,13 @@ export function PricingChannelBoardCard({
   const headroomAmount =
     maxDiscount != null && cell != null ? Math.max(0, cell.finalPrice * maxDiscount) : 0
 
-  // ── 목표 마진 달성 불가 시 항목별 제안 ─────────────────────────────────────
-  // 구조적 불가(recommended==null) 또는 권장가가 소비자가 상한 초과(exceedsRetail).
-  // 소비자가(retailCap) 기준으로 광고비·배송비를 얼마까지 낮춰야 목표 달성인지 역산.
-  const target = thresholds.platformTargetGood
-  const infeasible = recommended == null || exceedsRetail
-  const suggestion = useMemo(() => {
-    if (!infeasible || retailCap == null) return null
-    return suggestFeasibility(
-      { bundle, channel, promotion: { type: 'NONE', value: 0 }, globals, thresholds },
-      retailCap,
-      target
-    )
-  }, [infeasible, retailCap, bundle, channel, globals, thresholds, target])
+  // 판매가 조정 슬라이더 범위 — 권장가 주변(없으면 소비자가 기준).
+  const sliderBase = recommended ?? retailCap ?? 10000
+  const sliderMin = Math.max(0, Math.round((sliderBase * 0.5) / 100) * 100)
+  const sliderMax = Math.round((retailCap ?? sliderBase * 1.5) / 100) * 100
 
-  // 제안 블록 — "목표 마진 달성 불가"를 제목(접기 토글)으로, 펼치면 광고·배송 레버 제안.
-  const suggestionBlock =
-    suggestion && (suggestion.ad || suggestion.shipping) ? (
-      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 text-[11px] leading-snug">
-        <button
-          type="button"
-          onClick={() => setSuggestOpen((v) => !v)}
-          className="flex w-full items-center gap-1.5 px-3 py-2 text-left font-medium text-amber-800"
-        >
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-          목표 마진 {(target * 100).toFixed(0)}% 달성 불가
-          <span className="ml-auto text-[10px] font-normal text-amber-600">
-            {suggestOpen ? '접기' : '제안 보기'}
-          </span>
-          {suggestOpen ? (
-            <ChevronUp className="h-3.5 w-3.5 shrink-0" />
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-          )}
-        </button>
-        {suggestOpen && (
-          <div className="space-y-1 border-t border-amber-200 px-3 py-2">
-            <p className="text-amber-700">소비자가 ₩{fmt(retailCap!)} 기준 달성 제안:</p>
-            {suggestion.ad &&
-              (suggestion.ad.achievable ? (
-                <p className="text-amber-700">
-                  · 광고비:{' '}
-                  {suggestion.ad.roasPct != null ? (
-                    <span className="font-semibold tabular-nums">
-                      ROAS {suggestion.ad.roasPct}% 이상
-                    </span>
-                  ) : (
-                    <span className="font-semibold">광고 제거(0%)</span>
-                  )}
-                  {suggestion.ad.adCostPct != null && (
-                    <span className="text-amber-600">
-                      {' '}
-                      (광고비율 {(suggestion.ad.adCostPct * 100).toFixed(1)}% 이하)
-                    </span>
-                  )}
-                </p>
-              ) : (
-                <p className="text-amber-700">· 광고비를 없애도 목표 마진에 도달할 수 없습니다.</p>
-              ))}
-            {suggestion.shipping &&
-              (suggestion.shipping.achievable ? (
-                <p className="text-amber-700">
-                  · 배송비:{' '}
-                  {suggestion.shipping.type === 'FIXED' ? (
-                    <span className="font-semibold tabular-nums">
-                      ₩{fmt(suggestion.shipping.feeWon!)} 이하로 조정
-                    </span>
-                  ) : (
-                    <span className="font-semibold tabular-nums">
-                      {(suggestion.shipping.feePct! * 100).toFixed(1)}% 이하로 조정
-                    </span>
-                  )}
-                </p>
-              ) : (
-                <p className="text-amber-700">· 배송비를 없애도 목표 마진에 도달할 수 없습니다.</p>
-              ))}
-          </div>
-        )}
-      </div>
-    ) : null
+  // 광고 ROAS 컨트롤 핸들러 (보드에서 조정)
+  const roasPct = adPct > 0 ? Math.round(100 / adPct) : 0
 
   // ── 권장가 역산 불가 (구조적) ──────────────────────────────────────────────
   if (recommended == null || cell == null) {
@@ -236,13 +189,11 @@ export function PricingChannelBoardCard({
             PG {((channel.paymentFeeIncluded ? 0 : channel.paymentFeePct) * 100).toFixed(0)}%
           </span>
         </div>
-        {suggestionBlock ?? (
-          <div className="mt-3 flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
-            목표 마진 {(thresholds.platformTargetGood * 100).toFixed(0)}% 달성 불가 — 수수료·원가가
-            너무 높습니다.
-          </div>
-        )}
+        <div className="mt-3 flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          목표 마진 {(thresholds.platformTargetGood * 100).toFixed(0)}% 달성 불가 — 수수료·원가가
+          너무 높습니다.
+        </div>
       </div>
     )
   }
@@ -263,7 +214,7 @@ export function PricingChannelBoardCard({
         </div>
         <div className="text-right">
           <p className="text-[10px] text-muted-foreground">
-            권장 판매가{exceedsRetail ? ' (소비자가 상한)' : ''}
+            {isManual ? '판매가 (수동)' : `권장 판매가${exceedsRetail ? ' (소비자가 상한)' : ''}`}
           </p>
           {/* 항목1: 판매가 우측 소비자가 대비 할인율 — 배경 없는 텍스트(마진 배지와 스타일 구분) */}
           <div className="flex items-center justify-end gap-2">
@@ -303,8 +254,114 @@ export function PricingChannelBoardCard({
           </TooltipProvider>
         </div>
       </div>
-      {/* 항목7: 소비자가 상한 초과(목표 미달) 시 항목별 제안 */}
-      {exceedsRetail && suggestionBlock}
+      {/* 판매가 조정 (입력 + 슬라이더) — 마진을 직접 확인 */}
+      <div className="mt-4 rounded-lg border border-[var(--ps-border)] bg-[var(--ps-muted)] px-3 py-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-medium">판매가 조정</span>
+          <div className="flex items-center gap-2">
+            <div className="relative flex items-center">
+              <Input
+                type="number"
+                value={effectivePrice != null ? String(Math.round(effectivePrice)) : ''}
+                onChange={(e) => {
+                  const v = Number(e.target.value)
+                  setManualPrice(v > 0 ? v : null)
+                }}
+                step={100}
+                min={0}
+                className="h-8 w-28 [appearance:textfield] pr-6 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
+                ₩
+              </span>
+            </div>
+            {isManual && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-[11px] text-muted-foreground"
+                onClick={() => setManualPrice(null)}
+              >
+                권장가로 리셋
+              </Button>
+            )}
+          </div>
+        </div>
+        <Slider
+          className="mt-2.5"
+          min={sliderMin}
+          max={sliderMax}
+          step={100}
+          value={[Math.min(sliderMax, Math.max(sliderMin, effectivePrice ?? sliderMin))]}
+          onValueChange={(v) => setManualPrice(v[0])}
+        />
+        <div className="mt-1 flex justify-between text-[9px] text-muted-foreground tabular-nums">
+          <span>₩{fmt(sliderMin)}</span>
+          {recommended != null && <span>권장 ₩{fmt(recommended)}</span>}
+          <span>₩{fmt(sliderMax)}</span>
+        </div>
+      </div>
+
+      {/* 광고 ROAS (보드에서 조정) — 판매가 불변, 마진만 감소(에로전) */}
+      {onAdChange && (
+        <div className="mt-3 rounded-lg border border-[var(--ps-border)] px-3 py-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-medium">
+              목표 광고 ROAS{channel.applyAdCost ? '' : ' (OFF · 광고비 0)'}
+            </span>
+            <div className="flex items-center gap-2">
+              {channel.applyAdCost && (
+                <div className="relative flex items-center">
+                  <Input
+                    type="number"
+                    value={roasPct > 0 ? String(roasPct) : ''}
+                    onChange={(e) => {
+                      const r = Number(e.target.value)
+                      onAdChange({ adPct: r > 0 ? 100 / r : 0 })
+                    }}
+                    step={10}
+                    min={0}
+                    className="h-8 w-20 [appearance:textfield] pr-6 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
+                    %
+                  </span>
+                </div>
+              )}
+              <Switch
+                checked={channel.applyAdCost}
+                onCheckedChange={(v) => onAdChange({ applyAdCost: v })}
+              />
+            </div>
+          </div>
+          {/* 마진 에로전 — 광고 적용 시 마진 감소 표시 */}
+          {adActive && preAdMargin != null && (
+            <p
+              className={`mt-1.5 text-[11px] leading-snug ${
+                cell.margin < floorPct
+                  ? 'text-destructive'
+                  : cell.margin < target
+                    ? 'text-amber-700'
+                    : 'text-muted-foreground'
+              }`}
+            >
+              광고 적용 시 마진{' '}
+              <span className="font-semibold tabular-nums">{(preAdMargin * 100).toFixed(1)}%</span>{' '}
+              →{' '}
+              <span className="font-semibold tabular-nums">{(cell.margin * 100).toFixed(1)}%</span>{' '}
+              <span className="tabular-nums">
+                (−{((preAdMargin - cell.margin) * 100).toFixed(1)}%p)
+              </span>
+              {cell.margin < floorPct
+                ? ` · 마진 하한 ${(floorPct * 100).toFixed(0)}% 미달`
+                : cell.margin < target
+                  ? ` · 목표 ${(target * 100).toFixed(0)}% 미달`
+                  : ''}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* 비용 구성 스택바 */}
       <div className="mt-4">
