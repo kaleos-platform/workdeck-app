@@ -8,7 +8,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { AlertTriangle, ArrowRight, CheckCircle, FileDown, Trash2, Upload } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle,
+  FileDown,
+  Loader2,
+  MapPin,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -68,6 +77,7 @@ export default function ShippingRegistrationPage() {
   const [bulkMemo, setBulkMemo] = useState('')
   const [bulkSelectKey, setBulkSelectKey] = useState(0)
   const [importedCount, setImportedCount] = useState<number | null>(null)
+  const [postalLookupLoading, setPostalLookupLoading] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState<{
     title: string
     description: string
@@ -402,6 +412,65 @@ export default function ShippingRegistrationPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
       setRefreshKey((k) => k + 1)
+    }
+  }
+
+  // 우편번호 자동조회 — 주소가 있고 우편번호가 빈 행을 카카오 API로 일괄 조회.
+  async function handlePostalLookup() {
+    const targets = rows
+      .filter((r) => !r.postalCode.trim() && r.address.trim())
+      .map((r) => ({ id: r.tempId, address: r.address }))
+    if (targets.length === 0) {
+      toast.info('조회할 행이 없습니다 (주소가 있고 우편번호가 빈 행 대상)')
+      return
+    }
+    setPostalLookupLoading(true)
+    try {
+      const res = await fetch('/api/sh/shipping/postal-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: targets }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error((data as { message?: string })?.message ?? '우편번호 조회 실패')
+      }
+      const { results, rateLimited } = (await res.json()) as {
+        results: { id: string; postalCode: string | null }[]
+        rateLimited?: boolean
+      }
+      const found = new Map(
+        results.filter((r) => r.postalCode).map((r) => [r.id, r.postalCode as string])
+      )
+      if (found.size > 0) {
+        // 로컬 갱신 (임시행은 저장 시 saveNewRows POST body에 postalCode 포함)
+        setRows((prev) =>
+          prev.map((r) =>
+            found.has(r.tempId) ? { ...r, postalCode: found.get(r.tempId) as string } : r
+          )
+        )
+        // 저장된 행은 즉시 PATCH
+        await Promise.allSettled(
+          [...found.entries()]
+            .filter(([id]) => !id.startsWith('temp-'))
+            .map(([id, postalCode]) => handleRowPatch(id, { postalCode }))
+        )
+      }
+      const failCount = targets.length - found.size
+      if (found.size === 0) {
+        toast.warning('우편번호를 조회하지 못했습니다')
+      } else if (failCount > 0) {
+        toast.warning(`${found.size}건 조회 완료, ${failCount}건 실패`)
+      } else {
+        toast.success(`${found.size}건 우편번호 조회 완료`)
+      }
+      if (rateLimited) {
+        toast.error('카카오 API 호출 한도 초과 — 잠시 후 다시 시도하세요')
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '우편번호 조회 실패')
+    } finally {
+      setPostalLookupLoading(false)
     }
   }
 
@@ -913,6 +982,19 @@ export default function ShippingRegistrationPage() {
         >
           <Upload className="mr-1 h-4 w-4" />
           파일 업로드
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={postalLookupLoading}
+          onClick={handlePostalLookup}
+        >
+          {postalLookupLoading ? (
+            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+          ) : (
+            <MapPin className="mr-1 h-4 w-4" />
+          )}
+          우편번호 자동조회
         </Button>
       </div>
 
