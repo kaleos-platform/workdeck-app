@@ -87,8 +87,6 @@ export function PricingChannelBoardCard({
     () => ({ ...channel, applyAdCost: false }),
     [channel]
   )
-  const adActive = channel.applyAdCost && adPct > 0
-
   // 권장 판매가 역산 — 광고 제외 기준(salePrice=0 번들) recommendedRetail.good
   const recoMatrix = useMemo(
     () =>
@@ -130,18 +128,6 @@ export function PricingChannelBoardCard({
   }, [effectivePrice, bundle, channel, globals, thresholds])
 
   const cell = headlineMatrix?.cells[0] ?? null
-
-  // 광고 전 마진 (같은 판매가, 광고 제외) — 에로전 표시용.
-  const preAdMargin = useMemo(() => {
-    if (effectivePrice == null) return null
-    return calculateMatrix({
-      bundle: { ...bundle, salePrice: effectivePrice },
-      channel: adlessChannel,
-      promotion: { type: 'NONE', value: 0 },
-      globals,
-      thresholds,
-    }).cells[0].margin
-  }, [effectivePrice, bundle, adlessChannel, globals, thresholds])
 
   const target = thresholds.platformTargetGood
 
@@ -229,6 +215,12 @@ export function PricingChannelBoardCard({
             )}
           </div>
           <div className="mt-0.5 flex items-center justify-end gap-1.5">
+            {!exceedsRetail &&
+              (cell.margin < floorPct ? (
+                <span className="text-[10px] font-medium text-destructive">하한 미달</span>
+              ) : cell.margin < target ? (
+                <span className="text-[10px] font-medium text-amber-700">목표 미달</span>
+              ) : null)}
             <Badge
               variant="outline"
               className={`px-1.5 py-0 text-[11px] ${tierBadgeClass(cell.tier)}`}
@@ -349,33 +341,6 @@ export function PricingChannelBoardCard({
             </div>
           )}
         </div>
-
-        {/* 마진 에로전 — 광고 적용 시 마진 감소 (그리드 하단 전체폭) */}
-        {onAdChange &&
-          (adActive && preAdMargin != null ? (
-            <p
-              className={`mt-2.5 text-[10px] leading-snug ${
-                cell.margin < floorPct
-                  ? 'text-destructive'
-                  : cell.margin < target
-                    ? 'text-amber-700'
-                    : 'text-muted-foreground'
-              }`}
-            >
-              광고 반영 마진{' '}
-              <span className="font-semibold tabular-nums">{(preAdMargin * 100).toFixed(1)}%</span>{' '}
-              →{' '}
-              <span className="font-semibold tabular-nums">{(cell.margin * 100).toFixed(1)}%</span>{' '}
-              <span className="tabular-nums">
-                (−{((preAdMargin - cell.margin) * 100).toFixed(1)}%p)
-              </span>
-              {cell.margin < floorPct ? ` · 하한 미달` : cell.margin < target ? ` · 목표 미달` : ''}
-            </p>
-          ) : (
-            <p className="mt-2.5 text-[10px] leading-snug text-muted-foreground">
-              광고 OFF · 광고비 미반영
-            </p>
-          ))}
       </div>
 
       {/* 비용 구성 스택바 */}
