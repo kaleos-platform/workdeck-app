@@ -217,7 +217,8 @@ function AccountSparkline({ data }: { data: (number | null)[] }) {
 
 export function DashboardView() {
   const [period, setPeriod] = useState<'month' | 'year'>('month')
-  const [anchor, setAnchor] = useState<string>(currentYm())
+  // 기본 표시월 = 직전월(당월은 데이터가 비어 보임).
+  const [anchor, setAnchor] = useState<string>(addMonthsToYm(currentYm(), -1))
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -312,7 +313,7 @@ export function DashboardView() {
   function handlePeriodChange(next: 'month' | 'year') {
     setPeriod(next)
     if (next === 'month') {
-      setAnchor(currentYm())
+      setAnchor(addMonthsToYm(currentYm(), -1))
     } else {
       setAnchor(String(new Date().getFullYear()))
     }
