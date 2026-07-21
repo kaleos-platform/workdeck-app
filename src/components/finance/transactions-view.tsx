@@ -42,9 +42,9 @@ import {
 import { classStatusBadge, accountKindLabel, formatWon } from '@/components/finance/format'
 import { MEMO_MAX } from '@/lib/finance/memo'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
+import { AddCategoryDialog } from '@/components/finance/add-category-dialog'
 import {
   buildClassifyOptions,
-  buildParentOptions,
   comboOptionLabel,
   type ComboOption,
 } from '@/lib/finance/category-options'
@@ -2160,102 +2160,3 @@ function SuggestCell({
   )
 }
 
-/**
- * 계정과목 추가 다이얼로그 — 상위 계정과목(수익/비용/이체) 아래에 새 계정과목을 만들고
- * 생성된 계정과목을 호출자에게 넘겨 즉시 매칭하게 한다. POST /api/finance/categories 재사용.
- */
-function AddCategoryDialog({
-  open,
-  onOpenChange,
-  categoryTree,
-  onCreated,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  categoryTree: CategoryNode[]
-  onCreated: (category: { id: string }) => Promise<void> | void
-}) {
-  const [parentId, setParentId] = useState('')
-  const [name, setName] = useState('')
-  const [saving, setSaving] = useState(false)
-  const parentOptions = useMemo(() => buildParentOptions(categoryTree), [categoryTree])
-
-  async function handleSave() {
-    if (!parentId) {
-      toast.error('상위 계정과목을 선택해 주세요')
-      return
-    }
-    if (!name.trim()) {
-      toast.error('계정과목 이름을 입력해 주세요')
-      return
-    }
-    setSaving(true)
-    try {
-      const res = await fetch('/api/finance/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parentId, name: name.trim() }),
-      })
-      const data = (await res.json().catch(() => ({}))) as {
-        message?: string
-        category?: { id: string }
-      }
-      if (!res.ok || !data.category) throw new Error(data?.message ?? '계정과목 추가 실패')
-      toast.success('계정과목이 추가되어 이 거래에 적용되었습니다')
-      setName('')
-      setParentId('')
-      onOpenChange(false)
-      await onCreated(data.category)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '계정과목 추가 실패')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>계정과목 추가</DialogTitle>
-          <DialogDescription>
-            상위 계정과목 아래에 새 계정과목을 추가하고 이 거래에 바로 적용합니다.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs">상위 계정과목</Label>
-            <CategoryCombobox
-              options={parentOptions}
-              value={parentId || null}
-              onChange={setParentId}
-              placeholder="수익 / 비용 / 이체 선택"
-              triggerClassName="h-9 w-full text-sm"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs">계정과목 이름</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="예: 플랫폼 수수료"
-              className="h-9 text-sm"
-              maxLength={100}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') void handleSave()
-              }}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            취소
-          </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? '추가 중...' : '추가하고 적용'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
