@@ -1603,7 +1603,17 @@ function PanelTxnRow({
             )}
           </button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="w-72 p-3">
+        <PopoverContent
+          align="end"
+          className="w-72 p-3"
+          // 내부 계정과목 콤보(중첩 Popover, portal)와의 상호작용으로 이 팝오버가
+          // 닫히지 않도록 가드 — 클릭/포커스 대상이 다른 popper 안이면 무시.
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onInteractOutside={(e) => {
+            const t = e.target as HTMLElement | null
+            if (t?.closest('[data-radix-popper-content-wrapper]')) e.preventDefault()
+          }}
+        >
           <TxnEditPopover
             txn={txn}
             options={options}
