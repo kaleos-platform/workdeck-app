@@ -10,7 +10,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CategoryCombobox } from '@/components/finance/category-combobox'
 import {
   Table,
   TableBody,
@@ -59,6 +62,12 @@ import {
   bucketLabel,
   type Grain,
 } from '@/lib/finance/periods'
+import {
+  buildClassifyOptions,
+  type CategoryTreeNode,
+  type ComboOption,
+} from '@/lib/finance/category-options'
+import { MEMO_MAX } from '@/lib/finance/memo'
 import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
@@ -273,27 +282,66 @@ export function FinanceCashflowView() {
     [pathname, router, searchParams]
   )
 
-  const load = useCallback(async (g: Grain, periods: string[], exclude: string) => {
-    if (periods.length === 0) return
-    setLoading(true)
-    setSelected(null)
-    try {
-      const qs = new URLSearchParams({ grain: g, periods: periods.join(',') })
-      if (exclude) qs.set('exclude', exclude)
-      const res = await fetch(`/api/finance/cashflow?${qs}`)
-      if (!res.ok) throw new Error('현금흐름 데이터 조회 실패')
-      const json: CashflowData = await res.json()
-      setData(json)
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '조회 실패')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  // 계정과목 트리 — 패널 내역 편집(재분류) 콤보 옵션 소스.
+  const [categoryTree, setCategoryTree] = useState<CategoryTreeNode[]>([])
+  const categoryOptions = useMemo(() => buildClassifyOptions(categoryTree), [categoryTree])
+
+  const fetchCashflow = useCallback(
+    async (g: Grain, periods: string[], exclude: string, showLoading: boolean) => {
+      if (periods.length === 0) return
+      if (showLoading) setLoading(true)
+      try {
+        const qs = new URLSearchParams({ grain: g, periods: periods.join(',') })
+        if (exclude) qs.set('exclude', exclude)
+        const res = await fetch(`/api/finance/cashflow?${qs}`)
+        if (!res.ok) throw new Error('현금흐름 데이터 조회 실패')
+        const json: CashflowData = await res.json()
+        setData(json)
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '조회 실패')
+      } finally {
+        if (showLoading) setLoading(false)
+      }
+    },
+    []
+  )
+
+  // 초기·기간/제외 변경 — 선택(우측 패널) 초기화 + 로딩 표시.
+  const load = useCallback(
+    (g: Grain, periods: string[], exclude: string) => {
+      setSelected(null)
+      return fetchCashflow(g, periods, exclude, true)
+    },
+    [fetchCashflow]
+  )
+
+  // 편집 후 표·요약 조용히 갱신 — 선택(패널) 유지, 스피너 없음.
+  const refreshData = useCallback(
+    () => fetchCashflow(grain, selectedPeriods, excludeParam, false),
+    [fetchCashflow, grain, selectedPeriods, excludeParam]
+  )
 
   useEffect(() => {
     void load(grain, selectedPeriods, excludeParam)
   }, [load, grain, selectedPeriods, excludeParam])
+
+  // 계정과목 옵션 로드(1회). 실패해도 편집 콤보만 비므로 조용히 넘어감.
+  useEffect(() => {
+    let active = true
+    void (async () => {
+      try {
+        const res = await fetch('/api/finance/categories')
+        if (!res.ok) return
+        const json = await res.json()
+        if (active) setCategoryTree(json.tree ?? [])
+      } catch {
+        /* noop */
+      }
+    })()
+    return () => {
+      active = false
+    }
+  }, [])
 
   // grain 변경: 테이블 기본 기간·핀 초기화 + 흐름도 기간을 해당 grain 최신으로 리셋.
   function handleGrainChange(g: Grain) {
@@ -405,7 +453,7 @@ export function FinanceCashflowView() {
       ) : (
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
           <div className="min-w-0 flex-1 space-y-4 overflow-x-auto">
-            <PnlSummaryCards pnlLeaves={data.pnlLeaves} buckets={data.buckets} />
+            <PnlSummaryCards pnlLeaves={data.pnlLeaves} buckets={data.buckets} grain={data.grain} />
             <CashflowTable
               data={data}
               mode={displayMode}
@@ -421,6 +469,8 @@ export function FinanceCashflowView() {
               selected={selected}
               from={data.from}
               to={data.to}
+              options={categoryOptions}
+              onEdited={refreshData}
               onClose={() => setSelected(null)}
             />
           )}
@@ -575,8 +625,23 @@ function ratioClass(r: number | null): string {
   return 'text-emerald-700 dark:text-emerald-400'
 }
 
-function PnlSummaryCards({ pnlLeaves, buckets }: { pnlLeaves: PnlLeaf[]; buckets: string[] }) {
+function PnlSummaryCards({
+  pnlLeaves,
+  buckets,
+  grain,
+}: {
+  pnlLeaves: PnlLeaf[]
+  buckets: string[]
+  grain: Grain
+}) {
   const s = useMemo(() => buildPnlSummary(pnlLeaves, buckets), [pnlLeaves, buckets])
+  // 요약은 선택된 버킷 전체의 합계 — 어느 기간 합계인지 명시(단일 소스=data.buckets).
+  const rangeLabel =
+    buckets.length === 0
+      ? ''
+      : buckets.length === 1
+        ? bucketLabel(buckets[0], grain)
+        : `${bucketLabel(buckets[0], grain)} ~ ${bucketLabel(buckets[buckets.length - 1], grain)}`
   const cards: {
     label: string
     ratioName: string
@@ -616,7 +681,13 @@ function PnlSummaryCards({ pnlLeaves, buckets }: { pnlLeaves: PnlLeaf[]; buckets
     },
   ]
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+    <div className="space-y-2">
+      {rangeLabel && (
+        <p className="text-xs text-muted-foreground">
+          선택 기간 <span className="font-medium text-foreground">{rangeLabel}</span> 합계
+        </p>
+      )}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
       {cards.map((c) => (
         <Card key={c.label} className={cn('gap-1 p-3', c.accent && 'border-primary/30')}>
           <p className="text-xs text-muted-foreground">{c.label}</p>
@@ -668,6 +739,7 @@ function PnlSummaryCards({ pnlLeaves, buckets }: { pnlLeaves: PnlLeaf[]; buckets
           </span>
         </div>
       </Card>
+      </div>
     </div>
   )
 }
@@ -1185,6 +1257,8 @@ interface PanelTxn {
   description: string | null
   counterparty: string | null
   classStatus: FinClassStatus
+  categoryId: string | null
+  memo: string | null
   category: { name: string; parent: { name: string } | null } | null
   account: { name: string; kind: FinAccountKind }
 }
@@ -1248,15 +1322,22 @@ function CashflowTxnPanel({
   selected,
   from,
   to,
+  options,
+  onEdited,
   onClose,
 }: {
   selected: Selection
   from: string
   to: string
+  options: ComboOption[]
+  /** 편집 저장 후 상위 표·요약 갱신(선택 유지). */
+  onEdited: () => void
   onClose: () => void
 }) {
   const [data, setData] = useState<PanelData | null>(null)
   const [loading, setLoading] = useState(true)
+  // 편집 저장 후 패널 자체 재조회 트리거(재분류로 필터를 벗어난 행은 자연 이탈).
+  const [refreshTick, setRefreshTick] = useState(0)
   // 검색·정렬(클라이언트) — 스코프된 조회 결과(≤300)를 즉시 필터/정렬.
   const [search, setSearch] = useState('')
   const [sortField, setSortField] = useState<'date' | 'amount'>('date')
@@ -1327,7 +1408,13 @@ function CashflowTxnPanel({
     const ctrl = new AbortController()
     void load(ctrl.signal)
     return () => ctrl.abort()
-  }, [load])
+  }, [load, refreshTick])
+
+  // 편집 저장 성공 — 패널 재조회 + 상위 표·요약 갱신.
+  const handleSaved = useCallback(() => {
+    setRefreshTick((t) => t + 1)
+    onEdited()
+  }, [onEdited])
 
   const isIncome = selected.direction === 'IN'
   // 검색 중이면 합계도 필터 결과(visibleRows) 기준 — 건수와 정합. 미검색 시 서버 전체 합계(대사용).
@@ -1435,52 +1522,200 @@ function CashflowTxnPanel({
           <p className="py-8 text-center text-sm text-muted-foreground">검색 결과가 없습니다</p>
         ) : (
           <ul className="divide-y">
-            {visibleRows.map((txn) => {
-              const status = classStatusBadge(txn.classStatus)
-              return (
-                <li key={txn.id} className="px-4 py-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {fmtDate(txn.txnDate)}
-                    </span>
-                    <span
-                      className={cn(
-                        'font-mono text-xs font-medium tabular-nums',
-                        isIncome
-                          ? 'text-emerald-700 dark:text-emerald-400'
-                          : 'text-red-600 dark:text-red-400'
-                      )}
-                    >
-                      {isIncome ? '+' : '-'}
-                      {formatWon(txn.amount)}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-xs" title={txn.description ?? ''}>
-                    {txn.description ?? txn.counterparty ?? '-'}
-                  </p>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px]">
-                      <span className="text-muted-foreground">
-                        {accountKindLabel(txn.account.kind)}
-                      </span>
-                      <span className="font-medium">{txn.account.name}</span>
-                    </span>
-                    {txn.category ? (
-                      <span className="truncate text-[10px] text-muted-foreground">
-                        {txn.category.name}
-                      </span>
-                    ) : (
-                      <Badge variant="outline" className={cn('text-[10px]', status.className)}>
-                        {status.label}
-                      </Badge>
-                    )}
-                  </div>
-                </li>
-              )
-            })}
+            {visibleRows.map((txn) => (
+              <PanelTxnRow
+                key={txn.id}
+                txn={txn}
+                isIncome={isIncome}
+                options={options}
+                onSaved={handleSaved}
+              />
+            ))}
           </ul>
         )}
       </div>
+    </div>
+  )
+}
+
+// ─── 패널 내역 행 (클릭 → 편집 팝오버) ────────────────────────────────────────
+
+function PanelTxnRow({
+  txn,
+  isIncome,
+  options,
+  onSaved,
+}: {
+  txn: PanelTxn
+  isIncome: boolean
+  options: ComboOption[]
+  /** 저장 성공 시 패널·표 갱신. */
+  onSaved: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const status = classStatusBadge(txn.classStatus)
+  return (
+    <li>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="w-full px-4 py-2.5 text-left transition-colors hover:bg-accent"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-xs text-muted-foreground">
+                {fmtDate(txn.txnDate)}
+              </span>
+              <span
+                className={cn(
+                  'font-mono text-xs font-medium tabular-nums',
+                  isIncome
+                    ? 'text-emerald-700 dark:text-emerald-400'
+                    : 'text-red-600 dark:text-red-400'
+                )}
+              >
+                {isIncome ? '+' : '-'}
+                {formatWon(txn.amount)}
+              </span>
+            </div>
+            <p className="mt-0.5 truncate text-xs" title={txn.description ?? ''}>
+              {txn.description ?? txn.counterparty ?? '-'}
+            </p>
+            <div className="mt-1 flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px]">
+                <span className="text-muted-foreground">{accountKindLabel(txn.account.kind)}</span>
+                <span className="font-medium">{txn.account.name}</span>
+              </span>
+              {txn.category ? (
+                <span className="truncate text-[10px] text-muted-foreground">
+                  {txn.category.name}
+                </span>
+              ) : (
+                <Badge variant="outline" className={cn('text-[10px]', status.className)}>
+                  {status.label}
+                </Badge>
+              )}
+            </div>
+            {txn.memo && (
+              <p className="mt-1 truncate text-[10px] text-muted-foreground" title={txn.memo}>
+                📝 {txn.memo}
+              </p>
+            )}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-72 p-3">
+          <TxnEditPopover
+            txn={txn}
+            options={options}
+            onSaved={() => {
+              setOpen(false)
+              onSaved()
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    </li>
+  )
+}
+
+// ─── 내역 편집 팝오버 (계정과목 재분류 + 메모) ────────────────────────────────
+
+function TxnEditPopover({
+  txn,
+  options,
+  onSaved,
+}: {
+  txn: PanelTxn
+  options: ComboOption[]
+  onSaved: () => void
+}) {
+  const [categoryId, setCategoryId] = useState<string | null>(txn.categoryId)
+  const [memo, setMemo] = useState(txn.memo ?? '')
+  const [learn, setLearn] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  const normMemo = memo.trim() === '' ? null : memo.trim()
+  const dirtyCategory = categoryId != null && categoryId !== txn.categoryId
+  const dirtyMemo = normMemo !== (txn.memo ?? null)
+  const dirty = dirtyCategory || dirtyMemo
+
+  const save = async () => {
+    if (!dirty) {
+      onSaved()
+      return
+    }
+    const body: { categoryId?: string; memo?: string | null; learn?: boolean } = {}
+    if (dirtyCategory && categoryId) {
+      body.categoryId = categoryId
+      body.learn = learn
+    }
+    if (dirtyMemo) body.memo = normMemo
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/finance/transactions/${txn.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}))
+        throw new Error(j?.error ?? '저장 실패')
+      }
+      toast.success('저장되었습니다')
+      onSaved()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '저장 실패')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1">
+        <Label className="text-xs">계정과목</Label>
+        <CategoryCombobox
+          options={options}
+          value={categoryId}
+          onChange={setCategoryId}
+          triggerClassName="h-8 w-full text-xs"
+          groupByType
+          defaultType={txn.direction === 'IN' ? 'INCOME' : 'EXPENSE'}
+          blockType={txn.direction === 'IN' ? 'EXPENSE' : 'INCOME'}
+        />
+      </div>
+      {dirtyCategory && (
+        <label className="flex items-start gap-2 text-xs">
+          <Checkbox
+            checked={learn}
+            onCheckedChange={(v) => setLearn(v === true)}
+            className="mt-0.5"
+          />
+          <span>
+            이 분류를 규칙으로 저장
+            <span className="block text-[11px] text-muted-foreground">
+              동일 적요는 다음 업로드부터 자동 분류됩니다
+            </span>
+          </span>
+        </label>
+      )}
+      <div className="space-y-1">
+        <Label className="text-xs">메모</Label>
+        <Textarea
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+          maxLength={MEMO_MAX}
+          rows={2}
+          placeholder="메모 입력 (선택)"
+          className="text-xs"
+        />
+        <p className="text-right text-[10px] text-muted-foreground">
+          {memo.length}/{MEMO_MAX}
+        </p>
+      </div>
+      <Button size="sm" className="w-full" onClick={() => void save()} disabled={saving || !dirty}>
+        {saving ? '저장 중...' : '저장'}
+      </Button>
     </div>
   )
 }
