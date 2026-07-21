@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { ChevronRight, Plus } from 'lucide-react'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -13,15 +14,31 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { SELLER_HUB_PRODUCTION_PATH } from '@/lib/deck-routes'
 import type { ProductionRunStatus } from '@/lib/sh/production-runs-query'
 import { ProductionRunFormDialog } from './production-run-form-dialog'
 import { StatusBadge } from './production-runs-table'
 
+type MyOptionItem = {
+  optionId: string
+  optionName: string
+  quantity: number
+  stockedInQty: number | null
+}
+
 type ProductionRunForProduct = {
   id: string
   runNo: string
   status: ProductionRunStatus
+  memo: string | null
+  dueAt: string | null
+  brand: { id: string; name: string } | null
   orderedConfirmedAt: string | null
   stockedInAt: string | null
   totalCost: number | null
@@ -29,17 +46,62 @@ type ProductionRunForProduct = {
   totalQuantity: number
   itemCount: number
   averageUnitCost: number | null
-  myItems: Array<{
-    optionId: string
-    optionName: string
-    quantity: number
-    stockedInQty: number | null
-  }>
+  myItems: MyOptionItem[]
   updatedAt: string
 }
 
 type Props = {
   productId: string
+}
+
+// ─── 옵션 요약 칩 (앞 2개 + 외 N개 툴팁) ──────────────────────────────────────
+
+const MAX_OPTION_CHIPS = 2
+
+function optionLabel(i: MyOptionItem) {
+  return i.stockedInQty != null && i.stockedInQty !== i.quantity
+    ? `${i.optionName} ×${i.quantity}→${i.stockedInQty}`
+    : `${i.optionName} ×${i.quantity}`
+}
+
+function MyOptionChips({ items }: { items: MyOptionItem[] }) {
+  if (items.length === 0) {
+    return <span className="text-sm text-muted-foreground">-</span>
+  }
+  const visible = items.slice(0, MAX_OPTION_CHIPS)
+  const rest = items.slice(MAX_OPTION_CHIPS)
+
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {visible.map((i) => (
+        <Badge
+          key={i.optionId}
+          variant="secondary"
+          className="max-w-[160px] truncate text-xs"
+        >
+          {i.optionName}
+        </Badge>
+      ))}
+      {rest.length > 0 && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline" className="cursor-default text-xs">
+                외 {rest.length}개
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <ul className="space-y-0.5 text-xs">
+                {items.map((i) => (
+                  <li key={i.optionId}>{optionLabel(i)}</li>
+                ))}
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
+  )
 }
 
 export function ProductProductionRunsPanel({ productId }: Props) {
@@ -133,68 +195,69 @@ export function ProductProductionRunsPanel({ productId }: Props) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>차수 번호</TableHead>
-                <TableHead>상태</TableHead>
-                <TableHead>발주일</TableHead>
-                <TableHead>입고일</TableHead>
+                <TableHead className="w-[110px]">차수 번호</TableHead>
+                <TableHead className="w-[220px]">메모</TableHead>
+                <TableHead className="w-[80px]">상태</TableHead>
+                <TableHead className="w-[90px]">발주일</TableHead>
+                <TableHead className="w-[90px]">입고일</TableHead>
+                <TableHead className="w-[90px]">납기일</TableHead>
+                <TableHead className="w-[90px]">브랜드</TableHead>
                 <TableHead>이 상품 옵션</TableHead>
-                <TableHead className="text-right">총 수량</TableHead>
-                <TableHead className="text-right">총 원가</TableHead>
-                <TableHead className="text-right">평균 단가</TableHead>
-                <TableHead className="w-10" />
+                <TableHead className="w-[70px] text-right">총 수량</TableHead>
+                <TableHead className="w-[110px] text-right">총 원가</TableHead>
+                <TableHead className="w-[100px] text-right">평균 단가</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((r) => {
-                const myComposition = r.myItems
-                  .map((i) =>
-                    i.stockedInQty != null && i.stockedInQty !== i.quantity
-                      ? `${i.optionName} ×${i.quantity}→${i.stockedInQty}`
-                      : `${i.optionName} ×${i.quantity}`
-                  )
-                  .join(' · ')
-                return (
-                  <TableRow key={r.id} className="hover:bg-muted/40">
-                    <TableCell className="font-mono text-sm">{r.runNo}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={r.status} />
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {r.orderedConfirmedAt
-                        ? new Date(r.orderedConfirmedAt).toLocaleDateString('ko-KR')
-                        : '-'}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {r.stockedInAt ? new Date(r.stockedInAt).toLocaleDateString('ko-KR') : '-'}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{myComposition}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {r.totalQuantity.toLocaleString('ko-KR')}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {r.totalCost != null ? `${r.totalCost.toLocaleString('ko-KR')}원` : '-'}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground tabular-nums">
-                      {r.averageUnitCost != null
-                        ? `${Math.round(r.averageUnitCost).toLocaleString('ko-KR')}원`
-                        : '-'}
-                    </TableCell>
-                    <TableCell>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditRunId(r.id)
-                          setFormOpen(true)
-                        }}
-                        aria-label={`${r.runNo} 수정`}
-                        className="inline-flex text-muted-foreground hover:text-foreground"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+              {rows.map((r) => (
+                <TableRow
+                  key={r.id}
+                  className="cursor-pointer hover:bg-muted/40"
+                  onClick={() => {
+                    setEditRunId(r.id)
+                    setFormOpen(true)
+                  }}
+                >
+                  <TableCell className="font-mono text-sm">{r.runNo}</TableCell>
+                  <TableCell
+                    className="max-w-[220px] truncate text-sm text-muted-foreground"
+                    title={r.memo ?? undefined}
+                  >
+                    {r.memo ?? '-'}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={r.status} />
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {r.orderedConfirmedAt
+                      ? new Date(r.orderedConfirmedAt).toLocaleDateString('ko-KR')
+                      : '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {r.stockedInAt ? new Date(r.stockedInAt).toLocaleDateString('ko-KR') : '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {r.dueAt ? new Date(r.dueAt).toLocaleDateString('ko-KR') : '-'}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {r.brand?.name ?? '-'}
+                  </TableCell>
+                  <TableCell>
+                    <MyOptionChips items={r.myItems} />
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {r.totalQuantity.toLocaleString('ko-KR')}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {r.totalCost != null ? `${r.totalCost.toLocaleString('ko-KR')}원` : '-'}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground tabular-nums">
+                    {r.averageUnitCost != null
+                      ? `${Math.round(r.averageUnitCost).toLocaleString('ko-KR')}원`
+                      : '-'}
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </div>
