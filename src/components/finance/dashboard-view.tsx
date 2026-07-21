@@ -131,6 +131,19 @@ function addMonthsToYm(ym: string, offset: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
+/** YYYY-MM → YYYY-Qn (해당 월이 속한 분기) */
+function ymToYq(ym: string): string {
+  const [y, m] = ym.split('-').map(Number)
+  return `${y}-Q${Math.floor((m - 1) / 3) + 1}`
+}
+
+/** YYYY-Qn에 offset 분기를 더한다 */
+function addQuartersToYq(yq: string, offset: number): string {
+  const [y, q] = yq.split('-Q').map(Number)
+  const idx = y * 4 + (q - 1) + offset
+  return `${Math.floor(idx / 4)}-Q${(idx % 4) + 1}`
+}
+
 // ─── 숫자 포맷 헬퍼 ───────────────────────────────────────────────────────────
 
 /** 만/억 단위 축약 (Y축 레이블용) */
@@ -216,7 +229,7 @@ function AccountSparkline({ data }: { data: (number | null)[] }) {
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 export function DashboardView() {
-  const [period, setPeriod] = useState<'month' | 'year'>('month')
+  const [period, setPeriod] = useState<'month' | 'quarter' | 'year'>('month')
   // 기본 표시월 = 직전월(당월은 데이터가 비어 보임).
   const [anchor, setAnchor] = useState<string>(addMonthsToYm(currentYm(), -1))
   const [data, setData] = useState<DashboardData | null>(null)
@@ -310,10 +323,13 @@ export function DashboardView() {
   )
 
   // period 전환 시 anchor 초기화
-  function handlePeriodChange(next: 'month' | 'year') {
+  function handlePeriodChange(next: 'month' | 'quarter' | 'year') {
     setPeriod(next)
     if (next === 'month') {
       setAnchor(addMonthsToYm(currentYm(), -1))
+    } else if (next === 'quarter') {
+      // 직전월이 속한 분기(당월 초 진입 시 빈 분기 회피).
+      setAnchor(ymToYq(addMonthsToYm(currentYm(), -1)))
     } else {
       setAnchor(String(new Date().getFullYear()))
     }
@@ -322,6 +338,8 @@ export function DashboardView() {
   function stepAnchor(dir: -1 | 1) {
     if (period === 'month') {
       setAnchor((prev) => addMonthsToYm(prev, dir))
+    } else if (period === 'quarter') {
+      setAnchor((prev) => addQuartersToYq(prev, dir))
     } else {
       setAnchor((prev) => String(Number(prev) + dir))
     }
@@ -345,11 +363,12 @@ export function DashboardView() {
       <div className="flex flex-wrap items-center gap-3">
         <Tabs
           value={period}
-          onValueChange={(v) => handlePeriodChange(v as 'month' | 'year')}
+          onValueChange={(v) => handlePeriodChange(v as 'month' | 'quarter' | 'year')}
           className="shrink-0"
         >
           <TabsList>
             <TabsTrigger value="month">월간</TabsTrigger>
+            <TabsTrigger value="quarter">분기</TabsTrigger>
             <TabsTrigger value="year">연간</TabsTrigger>
           </TabsList>
         </Tabs>

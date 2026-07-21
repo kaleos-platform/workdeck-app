@@ -3,7 +3,7 @@
  * 요약 대시보드 집계 — KPI(총현금/수입/지출/순현금흐름 + 전기 대비), 12개월 추이,
  * 계좌별 잔고 스냅샷, 계정과목별 지출 Top, 부채 현황.
  *
- * query: period?(month|year, 기본 month), anchor?(month=YYYY-MM, year=YYYY; 기본 현재)
+ * query: period?(month|quarter|year, 기본 month), anchor?(month=YYYY-MM, quarter=YYYY-Qn, year=YYYY; 기본 현재)
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
@@ -19,7 +19,8 @@ export async function GET(req: NextRequest) {
   await ensureFinanceSeeded(spaceId)
 
   const sp = req.nextUrl.searchParams
-  const period = sp.get('period') === 'year' ? 'year' : 'month'
+  const rawPeriod = sp.get('period')
+  const period = rawPeriod === 'year' ? 'year' : rawPeriod === 'quarter' ? 'quarter' : 'month'
 
   return NextResponse.json(await queryDashboard(spaceId, { period, anchor: sp.get('anchor') }))
 }
