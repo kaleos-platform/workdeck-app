@@ -29,7 +29,7 @@ export default async function PostingDetailPage({ params }: PageProps) {
     posting: {
       uuid: posting.uuid,
       contents: posting.contents.map((c) => ({
-        contentType: c.contentType as 'image' | 'text' | 'button' | 'positions',
+        contentType: c.contentType as 'image' | 'text' | 'button' | 'positions' | 'design',
         data: c.data,
         imagePath: c.imagePath,
       })),

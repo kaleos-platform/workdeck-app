@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
-import { buttonDataSchema, updateContentSchema } from '@/lib/validations/hiring-posts'
+import {
+  buttonDataSchema,
+  updateContentSchema,
+  MAX_CONTENT_DATA_CHARS,
+} from '@/lib/validations/hiring-posts'
 import { uploadContentImage } from '@/lib/hiring/postings'
 
 type Params = { params: Promise<{ id: string; contentId: string }> }
@@ -51,6 +55,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       if (!btn.success) {
         return errorResponse('invalid input', 400, { errors: btn.error.flatten() })
       }
+    }
+  }
+  // design 블록: scene JSON(data) 크기 상한 — image와 동일 상한 재사용
+  if (existing.contentType === 'design' && parsed.data.data !== undefined) {
+    if (JSON.stringify(parsed.data.data).length > MAX_CONTENT_DATA_CHARS) {
+      return errorResponse('디자인 데이터가 너무 큽니다. 캔버스의 이미지를 줄여주세요', 400)
     }
   }
 
