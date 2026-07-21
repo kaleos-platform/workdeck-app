@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
+import { AddCategoryDialog } from '@/components/finance/add-category-dialog'
 import {
   Table,
   TableBody,
@@ -325,23 +326,21 @@ export function FinanceCashflowView() {
     void load(grain, selectedPeriods, excludeParam)
   }, [load, grain, selectedPeriods, excludeParam])
 
-  // 계정과목 옵션 로드(1회). 실패해도 편집 콤보만 비므로 조용히 넘어감.
-  useEffect(() => {
-    let active = true
-    void (async () => {
-      try {
-        const res = await fetch('/api/finance/categories')
-        if (!res.ok) return
-        const json = await res.json()
-        if (active) setCategoryTree(json.tree ?? [])
-      } catch {
-        /* noop */
-      }
-    })()
-    return () => {
-      active = false
+  // 계정과목 옵션 로드. 편집 팝오버에서 신규 추가 후 재호출로 목록 갱신.
+  const loadCategories = useCallback(async () => {
+    try {
+      const res = await fetch('/api/finance/categories')
+      if (!res.ok) return
+      const json = await res.json()
+      setCategoryTree(json.tree ?? [])
+    } catch {
+      /* 실패해도 편집 콤보만 비므로 조용히 넘어감 */
     }
   }, [])
+
+  useEffect(() => {
+    void loadCategories()
+  }, [loadCategories])
 
   // grain 변경: 테이블 기본 기간·핀 초기화 + 흐름도 기간을 해당 grain 최신으로 리셋.
   function handleGrainChange(g: Grain) {
@@ -470,6 +469,8 @@ export function FinanceCashflowView() {
               from={data.from}
               to={data.to}
               options={categoryOptions}
+              categoryTree={categoryTree}
+              onCategoryAdded={loadCategories}
               onEdited={refreshData}
               onClose={() => setSelected(null)}
             />
@@ -1323,6 +1324,8 @@ function CashflowTxnPanel({
   from,
   to,
   options,
+  categoryTree,
+  onCategoryAdded,
   onEdited,
   onClose,
 }: {
@@ -1330,6 +1333,9 @@ function CashflowTxnPanel({
   from: string
   to: string
   options: ComboOption[]
+  categoryTree: CategoryTreeNode[]
+  /** 신규 계정과목 추가 후 옵션 재조회. */
+  onCategoryAdded: () => Promise<void>
   /** 편집 저장 후 상위 표·요약 갱신(선택 유지). */
   onEdited: () => void
   onClose: () => void
@@ -1528,6 +1534,8 @@ function CashflowTxnPanel({
                 txn={txn}
                 isIncome={isIncome}
                 options={options}
+                categoryTree={categoryTree}
+                onCategoryAdded={onCategoryAdded}
                 onSaved={handleSaved}
               />
             ))}
@@ -1544,11 +1552,15 @@ function PanelTxnRow({
   txn,
   isIncome,
   options,
+  categoryTree,
+  onCategoryAdded,
   onSaved,
 }: {
   txn: PanelTxn
   isIncome: boolean
   options: ComboOption[]
+  categoryTree: CategoryTreeNode[]
+  onCategoryAdded: () => Promise<void>
   /** 저장 성공 시 패널·표 갱신. */
   onSaved: () => void
 }) {
@@ -1611,12 +1623,16 @@ function PanelTxnRow({
           onOpenAutoFocus={(e) => e.preventDefault()}
           onInteractOutside={(e) => {
             const t = e.target as HTMLElement | null
-            if (t?.closest('[data-radix-popper-content-wrapper]')) e.preventDefault()
+            // 중첩 콤보(popper) + 계정과목 추가 다이얼로그(role=dialog) 상호작용 시 유지.
+            if (t?.closest('[data-radix-popper-content-wrapper],[role="dialog"]'))
+              e.preventDefault()
           }}
         >
           <TxnEditPopover
             txn={txn}
             options={options}
+            categoryTree={categoryTree}
+            onCategoryAdded={onCategoryAdded}
             onSaved={() => {
               setOpen(false)
               onSaved()
@@ -1633,16 +1649,21 @@ function PanelTxnRow({
 function TxnEditPopover({
   txn,
   options,
+  categoryTree,
+  onCategoryAdded,
   onSaved,
 }: {
   txn: PanelTxn
   options: ComboOption[]
+  categoryTree: CategoryTreeNode[]
+  onCategoryAdded: () => Promise<void>
   onSaved: () => void
 }) {
   const [categoryId, setCategoryId] = useState<string | null>(txn.categoryId)
   const [memo, setMemo] = useState(txn.memo ?? '')
   const [learn, setLearn] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
 
   const normMemo = memo.trim() === '' ? null : memo.trim()
   const dirtyCategory = categoryId != null && categoryId !== txn.categoryId
@@ -1692,6 +1713,16 @@ function TxnEditPopover({
           groupByType
           defaultType={txn.direction === 'IN' ? 'INCOME' : 'EXPENSE'}
           blockType={txn.direction === 'IN' ? 'EXPENSE' : 'INCOME'}
+          onAddNew={() => setAddOpen(true)}
+        />
+        <AddCategoryDialog
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          categoryTree={categoryTree}
+          onCreated={async (cat) => {
+            await onCategoryAdded()
+            setCategoryId(cat.id)
+          }}
         />
       </div>
       {dirtyCategory && (
