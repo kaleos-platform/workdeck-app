@@ -209,6 +209,7 @@ export function RegistrationTable({
               <TableHead className="w-[112px]">받는분</TableHead>
               <TableHead className="w-[150px]">전화</TableHead>
               <TableHead className="min-w-[260px]">주소</TableHead>
+              <TableHead className="w-[80px]">우편번호</TableHead>
               <TableHead className="w-[100px]">배송메시지</TableHead>
               <TableHead className="min-w-[220px]">상품</TableHead>
               <TableHead className="w-[64px]">수량</TableHead>
@@ -223,7 +224,7 @@ export function RegistrationTable({
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={selectionEnabled ? 14 : 13}
+                  colSpan={selectionEnabled ? 15 : 14}
                   className="py-8 text-center text-muted-foreground"
                 >
                   주문을 추가해 주세요
@@ -383,6 +384,28 @@ export function RegistrationTable({
                           })
                         }}
                         placeholder="주소"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        inputMode="numeric"
+                        className="h-8 text-xs tabular-nums"
+                        value={row.postalCode}
+                        onFocus={() => {
+                          focusSnapRef.current.set(`${row.tempId}:postalCode`, row.postalCode)
+                        }}
+                        onChange={(e) =>
+                          updateRow(
+                            row.tempId,
+                            'postalCode',
+                            e.target.value.replace(/[^0-9-]/g, '')
+                          )
+                        }
+                        onBlur={(e) => {
+                          const current = e.target.value.trim()
+                          patchIfChanged(row.tempId, 'postalCode', current, { postalCode: current })
+                        }}
+                        placeholder="12345"
                       />
                     </TableCell>
                     <TableCell>
