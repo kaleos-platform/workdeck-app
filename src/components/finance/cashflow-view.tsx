@@ -1560,9 +1560,9 @@ function PanelTxnRow({
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="w-full px-4 py-2.5 text-left transition-colors hover:bg-accent"
+            className="block w-full px-4 py-2.5 text-left transition-colors hover:bg-accent"
           >
-            <div className="flex items-center justify-between gap-2">
+            <span className="flex items-center justify-between gap-2">
               <span className="font-mono text-xs text-muted-foreground">
                 {fmtDate(txn.txnDate)}
               </span>
@@ -1577,11 +1577,11 @@ function PanelTxnRow({
                 {isIncome ? '+' : '-'}
                 {formatWon(txn.amount)}
               </span>
-            </div>
-            <p className="mt-0.5 truncate text-xs" title={txn.description ?? ''}>
+            </span>
+            <span className="mt-0.5 block truncate text-xs" title={txn.description ?? ''}>
               {txn.description ?? txn.counterparty ?? '-'}
-            </p>
-            <div className="mt-1 flex items-center gap-1.5">
+            </span>
+            <span className="mt-1 flex items-center gap-1.5">
               <span className="inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px]">
                 <span className="text-muted-foreground">{accountKindLabel(txn.account.kind)}</span>
                 <span className="font-medium">{txn.account.name}</span>
@@ -1595,11 +1595,11 @@ function PanelTxnRow({
                   {status.label}
                 </Badge>
               )}
-            </div>
+            </span>
             {txn.memo && (
-              <p className="mt-1 truncate text-[10px] text-muted-foreground" title={txn.memo}>
+              <span className="mt-1 block truncate text-[10px] text-muted-foreground" title={txn.memo}>
                 📝 {txn.memo}
-              </p>
+              </span>
             )}
           </button>
         </PopoverTrigger>
