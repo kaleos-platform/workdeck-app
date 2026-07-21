@@ -491,7 +491,7 @@ export async function queryAccounts(spaceId: string) {
 // ────────────────────────────────────────────────────────────────────────────
 
 export interface QueryDashboardOptions {
-  period: 'month' | 'year'
+  period: 'month' | 'quarter' | 'year'
   anchor?: string | null
 }
 
@@ -513,6 +513,28 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
     prevMonths = monthList(`${Y - 1}-01`, `${Y - 1}-12`)
     trendMonths = curMonths
     label = `${Y}`
+  } else if (period === 'quarter') {
+    // anchor = YYYY-Qn. 없거나 형식 오류면 현재월(KST) 기준 분기로 폴백.
+    const m = /^(\d{4})-Q([1-4])$/.exec(opts.anchor ?? '')
+    let Y: number
+    let Q: number
+    if (m) {
+      Y = Number(m[1])
+      Q = Number(m[2])
+    } else {
+      const [ny, nm] = nowYm.split('-').map(Number)
+      Y = ny
+      Q = Math.floor((nm - 1) / 3) + 1
+    }
+    const startM = (Q - 1) * 3 + 1
+    const qStart = `${Y}-${String(startM).padStart(2, '0')}`
+    const qEnd = `${Y}-${String(startM + 2).padStart(2, '0')}`
+    curMonths = monthList(qStart, qEnd)
+    // 직전 분기(3개월).
+    prevMonths = monthList(addMonths(qStart, -3), addMonths(qStart, -1))
+    // 최근 12개월 추이(분기말 기준).
+    trendMonths = monthList(addMonths(qEnd, -11), qEnd)
+    label = `${Y} ${Q}분기`
   } else {
     const anchor = /^\d{4}-\d{2}$/.test(opts.anchor ?? '') ? opts.anchor! : nowYm
     curMonths = [anchor]
