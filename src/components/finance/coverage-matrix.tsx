@@ -5,7 +5,7 @@
  * 셀 판정: 확정 거래 있음=등록됨(건수), DRAFT 스테이징만=검토중, 둘 다 없음=미등록.
  * 업로드 페이지(요약)와 등록 이력 페이지(상세)에서 공용.
  */
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { CreditCard, Landmark, Loader2 } from 'lucide-react'
 
@@ -27,6 +27,20 @@ type CoverageAccount = {
 type CoverageResponse = {
   months: string[]
   accounts: CoverageAccount[]
+}
+
+// 계좌 종류 메타 — 그룹 헤더/아이콘 단일 소스. 표시 순서: 계좌 → 카드.
+const KIND_ORDER = ['BANK', 'CARD'] as const
+const KIND_META: Record<string, { label: string; Icon: typeof Landmark }> = {
+  BANK: { label: '계좌', Icon: Landmark },
+  CARD: { label: '카드', Icon: CreditCard },
+}
+
+/** 그룹 내 정렬 — 은행/카드사명 → 계좌명(생성순 대신 가독성). */
+function sortAccounts(accounts: CoverageAccount[]): CoverageAccount[] {
+  return [...accounts].sort((a, b) =>
+    `${a.institution ?? ''} ${a.name}`.localeCompare(`${b.institution ?? ''} ${b.name}`, 'ko')
+  )
 }
 
 type CoverageMatrixProps = {
@@ -100,6 +114,83 @@ export function CoverageMatrix({
     )
   }
 
+  const monthCols = data.months
+  // 종류별 그룹(계좌/카드) — 각 그룹 내 정렬. 빈 그룹 제외. (enum은 BANK|CARD)
+  const groups = KIND_ORDER.map((kind) => ({
+    kind,
+    accounts: sortAccounts(data.accounts.filter((a) => a.kind === kind)),
+  })).filter((g) => g.accounts.length > 0)
+
+  const renderAccountRow = (acct: CoverageAccount) => {
+    const label = [acct.institution, acct.name].filter(Boolean).join(' ')
+    return (
+      <tr key={acct.id} className="border-b last:border-b-0">
+        <td className="sticky left-0 z-10 bg-background px-3 py-2 whitespace-nowrap">
+          <span className="flex flex-col gap-0.5">
+            <span className="flex items-center gap-1.5">
+              {acct.kind === 'CARD' ? (
+                <CreditCard className="size-3.5 shrink-0 text-muted-foreground" />
+              ) : (
+                <Landmark className="size-3.5 shrink-0 text-muted-foreground" />
+              )}
+              <span className="max-w-40 truncate text-xs font-medium">{label}</span>
+            </span>
+            {acct.accountNumber && (
+              <span className="max-w-40 truncate pl-5 font-mono text-[10px] text-muted-foreground">
+                {acct.accountNumber}
+              </span>
+            )}
+          </span>
+        </td>
+        {monthCols.map((m) => {
+          const cell = acct.cells[m]
+          const confirmed = cell?.confirmed ?? 0
+          const staged = cell?.staged ?? 0
+          const state = confirmed > 0 ? 'confirmed' : staged > 0 ? 'staged' : 'empty'
+          const cellLabel =
+            state === 'confirmed'
+              ? `확정 ${confirmed}건${staged > 0 ? ` · 검토중 ${staged}건` : ''}`
+              : state === 'staged'
+                ? `검토중 ${staged}건 — 거래내역에서 저장 처리 필요`
+                : '미등록'
+          const inner = (
+            <span
+              title={`${m} · ${cellLabel}`}
+              className={cn(
+                'mx-auto flex h-7 min-w-9 items-center justify-center rounded px-1 text-xs font-medium',
+                state === 'confirmed' &&
+                  'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400',
+                state === 'staged' &&
+                  'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400',
+                state === 'empty' && 'text-muted-foreground/40'
+              )}
+            >
+              {state === 'confirmed' ? confirmed : state === 'staged' ? '검토' : '–'}
+              {state === 'confirmed' && staged > 0 && (
+                <span className="ml-0.5 size-1.5 rounded-full bg-amber-500" />
+              )}
+            </span>
+          )
+          return (
+            <td key={m} className="px-1 py-1.5 text-center">
+              {onCellClick ? (
+                <button
+                  type="button"
+                  className="w-full cursor-pointer"
+                  onClick={() => onCellClick({ accountId: acct.id, accountLabel: label, month: m, confirmed, staged })}
+                >
+                  {inner}
+                </button>
+              ) : (
+                <Link href={`${FINANCE_IMPORTS_PATH}?accountId=${acct.id}`}>{inner}</Link>
+              )}
+            </td>
+          )
+        })}
+      </tr>
+    )
+  }
+
   return (
     <div className={cn('space-y-2', className)}>
       <div className="overflow-x-auto rounded-md border">
@@ -125,75 +216,29 @@ export function CoverageMatrix({
             </tr>
           </thead>
           <tbody>
-            {data.accounts.map((acct) => (
-              <tr key={acct.id} className="border-b last:border-b-0">
-                <td className="sticky left-0 z-10 bg-background px-3 py-2 whitespace-nowrap">
-                  <span className="flex items-center gap-1.5">
-                    {acct.kind === 'CARD' ? (
-                      <CreditCard className="size-3.5 shrink-0 text-muted-foreground" />
-                    ) : (
-                      <Landmark className="size-3.5 shrink-0 text-muted-foreground" />
-                    )}
-                    <span className="max-w-40 truncate text-xs font-medium">
-                      {[acct.institution, acct.name].filter(Boolean).join(' ')}
-                    </span>
-                  </span>
-                </td>
-                {data.months.map((m) => {
-                  const cell = acct.cells[m]
-                  const confirmed = cell?.confirmed ?? 0
-                  const staged = cell?.staged ?? 0
-                  const state = confirmed > 0 ? 'confirmed' : staged > 0 ? 'staged' : 'empty'
-                  const label =
-                    state === 'confirmed'
-                      ? `확정 ${confirmed}건${staged > 0 ? ` · 검토중 ${staged}건` : ''}`
-                      : state === 'staged'
-                        ? `검토중 ${staged}건 — 거래내역에서 저장 처리 필요`
-                        : '미등록'
-                  const inner = (
-                    <span
-                      title={`${m} · ${label}`}
-                      className={cn(
-                        'mx-auto flex h-7 min-w-9 items-center justify-center rounded px-1 text-xs font-medium',
-                        state === 'confirmed' &&
-                          'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400',
-                        state === 'staged' &&
-                          'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400',
-                        state === 'empty' && 'text-muted-foreground/40'
-                      )}
+            {groups.map((g) => {
+              const meta = KIND_META[g.kind]
+              return (
+                <Fragment key={g.kind}>
+                  {/* 그룹 헤더 — 계좌/카드 구분 */}
+                  <tr className="border-b bg-muted/30">
+                    <td
+                      colSpan={monthCols.length + 1}
+                      className="sticky left-0 px-3 py-1.5 text-left text-xs font-semibold text-muted-foreground"
                     >
-                      {state === 'confirmed' ? confirmed : state === 'staged' ? '검토' : '–'}
-                      {state === 'confirmed' && staged > 0 && (
-                        <span className="ml-0.5 size-1.5 rounded-full bg-amber-500" />
-                      )}
-                    </span>
-                  )
-                  return (
-                    <td key={m} className="px-1 py-1.5 text-center">
-                      {onCellClick ? (
-                        <button
-                          type="button"
-                          className="w-full cursor-pointer"
-                          onClick={() =>
-                            onCellClick({
-                              accountId: acct.id,
-                              accountLabel: [acct.institution, acct.name].filter(Boolean).join(' '),
-                              month: m,
-                              confirmed,
-                              staged,
-                            })
-                          }
-                        >
-                          {inner}
-                        </button>
-                      ) : (
-                        <Link href={`${FINANCE_IMPORTS_PATH}?accountId=${acct.id}`}>{inner}</Link>
-                      )}
+                      <span className="flex items-center gap-1.5">
+                        <meta.Icon className="size-3.5 shrink-0" />
+                        {meta.label}
+                        <span className="rounded-full bg-muted px-1.5 text-[10px] font-medium tabular-nums">
+                          {g.accounts.length}
+                        </span>
+                      </span>
                     </td>
-                  )
-                })}
-              </tr>
-            ))}
+                  </tr>
+                  {g.accounts.map(renderAccountRow)}
+                </Fragment>
+              )
+            })}
           </tbody>
         </table>
       </div>
