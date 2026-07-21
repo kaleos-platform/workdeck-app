@@ -60,6 +60,8 @@ type Props = {
  * 마진이 음수면 마진 세그먼트는 폭 0, 막대 끝에 적자 표시.
  */
 export function PricingCostBar({ cell, showLegend = true }: Props) {
+  const loss = cell.netProfit < 0
+
   const { base, segments } = useMemo(() => {
     const values: Record<SegmentKey, number> = {
       cogs: cell.cogs,
@@ -70,24 +72,27 @@ export function PricingCostBar({ cell, showLegend = true }: Props) {
       packaging: cell.packaging,
       paymentFee: cell.paymentFee,
       vat: cell.vat,
-      margin: Math.max(0, cell.netProfit),
+      // 마진 폭은 절댓값 기준 — 적자(음수)도 손실 크기에 비례해 세그먼트가 커진다.
+      margin: Math.abs(cell.netProfit),
     }
-    // 폭 분모 = 비용 합 + 양(+)마진 + VAT (= finalPrice 근사). 0 방지.
+    // 폭 분모 = 비용 합 + |마진|. 이익 시 = finalPrice, 적자 시 = 비용 + 손실(→적자 폭 증가). 0 방지.
     const total = Math.max(
       1,
       SEGMENTS.reduce((s, d) => s + Math.max(0, values[d.key]), 0)
     )
+    const isLoss = cell.netProfit < 0
     return {
       base: cell.finalPrice,
       segments: SEGMENTS.map((d) => ({
         ...d,
+        // 마진 세그먼트는 적자 시 라벨·색을 적자(빨강)로 분기.
+        label: d.key === 'margin' && isLoss ? '적자' : d.label,
+        color: d.key === 'margin' && isLoss ? '#ef4444' : d.color, // red-500 / emerald-500
         value: values[d.key],
         widthPct: (Math.max(0, values[d.key]) / total) * 100,
       })),
     }
   }, [cell])
-
-  const loss = cell.netProfit < 0
 
   return (
     <div className="space-y-2">
@@ -129,22 +134,6 @@ export function PricingCostBar({ cell, showLegend = true }: Props) {
               </Tooltip>
             )
           })}
-          {loss && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex h-full flex-1 cursor-default items-center justify-end bg-destructive/15 px-1.5 text-[10px] font-semibold text-destructive">
-                  적자
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="text-xs">
-                <p className="font-medium text-destructive">적자</p>
-                <p className="tabular-nums">₩{fmt(cell.netProfit)}</p>
-                <p className="text-muted-foreground tabular-nums">
-                  이익율 {(cell.margin * 100).toFixed(1)}%
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          )}
         </div>
       </TooltipProvider>
 
@@ -165,8 +154,10 @@ export function PricingCostBar({ cell, showLegend = true }: Props) {
                 <span className="text-muted-foreground">{s.label}</span>{' '}
                 <span
                   className={
-                    s.key === 'margin' && !loss
-                      ? 'font-semibold text-emerald-700'
+                    s.key === 'margin'
+                      ? loss
+                        ? 'font-semibold text-destructive'
+                        : 'font-semibold text-emerald-700'
                       : 'font-medium text-foreground'
                   }
                 >

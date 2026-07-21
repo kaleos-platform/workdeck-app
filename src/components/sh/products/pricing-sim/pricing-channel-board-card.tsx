@@ -254,7 +254,7 @@ export function PricingChannelBoardCard({
           </TooltipProvider>
         </div>
       </div>
-      {/* 판매가 조정 + 광고 ROAS — 좌우 배치로 높이 축소 */}
+      {/* 판매가 조정 + 광고 ROAS — 좌우 배치, 동일 구조(헤더행·슬라이더·min/max)로 통일 */}
       <div className="mt-4 rounded-lg border border-[var(--ps-border)] bg-[var(--ps-muted)] px-3 py-2.5">
         <div className="grid grid-cols-2 gap-x-4">
           {/* 좌: 판매가 조정 (입력 + 슬라이더) */}
@@ -281,7 +281,7 @@ export function PricingChannelBoardCard({
                     }}
                     step={100}
                     min={0}
-                    className="h-7 w-24 [appearance:textfield] pr-5 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
+                    className="h-7 w-24 [appearance:textfield] bg-background pr-5 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <span className="pointer-events-none absolute right-1.5 text-[11px] text-muted-foreground">
                     ₩
@@ -290,7 +290,7 @@ export function PricingChannelBoardCard({
               </div>
             </div>
             <Slider
-              className="mt-2"
+              className="mt-2 [&_[data-slot=slider-track]]:bg-background"
               min={sliderMin}
               max={sliderMax}
               step={100}
@@ -304,72 +304,78 @@ export function PricingChannelBoardCard({
             </div>
           </div>
 
-          {/* 우: 광고 ROAS (보드에서 조정) — 판매가 불변, 마진만 감소 */}
+          {/* 우: 광고 ROAS (보드에서 조정) — 판매가 불변, 마진만 감소. 판매가 조정과 동일 구조 */}
           {onAdChange && (
             <div className="border-l border-[var(--ps-border)] pl-4">
               <div className="flex items-center justify-between gap-1">
                 <span className="text-[11px] font-medium">광고 ROAS</span>
                 <div className="flex items-center gap-1.5">
-                  {channel.applyAdCost && (
-                    <div className="relative flex items-center">
-                      <Input
-                        type="number"
-                        value={roasPct > 0 ? String(roasPct) : ''}
-                        onChange={(e) => {
-                          const r = Number(e.target.value)
-                          onAdChange({ adPct: r > 0 ? 100 / r : 0 })
-                        }}
-                        step={10}
-                        min={0}
-                        className="h-7 w-16 [appearance:textfield] pr-5 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                      <span className="pointer-events-none absolute right-1.5 text-[11px] text-muted-foreground">
-                        %
-                      </span>
-                    </div>
-                  )}
+                  <div className="relative flex items-center">
+                    <Input
+                      type="number"
+                      value={roasPct > 0 ? String(roasPct) : ''}
+                      onChange={(e) => {
+                        const r = Number(e.target.value)
+                        onAdChange({ adPct: r > 0 ? 100 / r : 0 })
+                      }}
+                      step={10}
+                      min={0}
+                      disabled={!channel.applyAdCost}
+                      className="h-7 w-16 [appearance:textfield] bg-background pr-5 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="pointer-events-none absolute right-1.5 text-[11px] text-muted-foreground">
+                      %
+                    </span>
+                  </div>
                   <Switch
                     checked={channel.applyAdCost}
                     onCheckedChange={(v) => onAdChange({ applyAdCost: v })}
                   />
                 </div>
               </div>
-              {/* 마진 에로전 — 광고 적용 시 마진 감소 */}
-              {adActive && preAdMargin != null ? (
-                <p
-                  className={`mt-2 text-[10px] leading-snug ${
-                    cell.margin < floorPct
-                      ? 'text-destructive'
-                      : cell.margin < target
-                        ? 'text-amber-700'
-                        : 'text-muted-foreground'
-                  }`}
-                >
-                  마진{' '}
-                  <span className="font-semibold tabular-nums">
-                    {(preAdMargin * 100).toFixed(1)}%
-                  </span>{' '}
-                  →{' '}
-                  <span className="font-semibold tabular-nums">
-                    {(cell.margin * 100).toFixed(1)}%
-                  </span>{' '}
-                  <span className="tabular-nums">
-                    (−{((preAdMargin - cell.margin) * 100).toFixed(1)}%p)
-                  </span>
-                  {cell.margin < floorPct
-                    ? ` · 하한 미달`
-                    : cell.margin < target
-                      ? ` · 목표 미달`
-                      : ''}
-                </p>
-              ) : (
-                <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
-                  OFF · 광고비 미반영
-                </p>
-              )}
+              <Slider
+                className="mt-2 [&_[data-slot=slider-track]]:bg-background"
+                min={100}
+                max={1000}
+                step={50}
+                disabled={!channel.applyAdCost}
+                value={[Math.min(1000, Math.max(100, roasPct || 100))]}
+                onValueChange={(v) => onAdChange({ adPct: v[0] > 0 ? 100 / v[0] : 0 })}
+              />
+              <div className="mt-1 flex justify-between text-[9px] text-muted-foreground tabular-nums">
+                <span>100%</span>
+                <span>1000%</span>
+              </div>
             </div>
           )}
         </div>
+
+        {/* 마진 에로전 — 광고 적용 시 마진 감소 (그리드 하단 전체폭) */}
+        {onAdChange &&
+          (adActive && preAdMargin != null ? (
+            <p
+              className={`mt-2.5 text-[10px] leading-snug ${
+                cell.margin < floorPct
+                  ? 'text-destructive'
+                  : cell.margin < target
+                    ? 'text-amber-700'
+                    : 'text-muted-foreground'
+              }`}
+            >
+              광고 반영 마진{' '}
+              <span className="font-semibold tabular-nums">{(preAdMargin * 100).toFixed(1)}%</span>{' '}
+              →{' '}
+              <span className="font-semibold tabular-nums">{(cell.margin * 100).toFixed(1)}%</span>{' '}
+              <span className="tabular-nums">
+                (−{((preAdMargin - cell.margin) * 100).toFixed(1)}%p)
+              </span>
+              {cell.margin < floorPct ? ` · 하한 미달` : cell.margin < target ? ` · 목표 미달` : ''}
+            </p>
+          ) : (
+            <p className="mt-2.5 text-[10px] leading-snug text-muted-foreground">
+              광고 OFF · 광고비 미반영
+            </p>
+          ))}
       </div>
 
       {/* 비용 구성 스택바 */}
