@@ -49,6 +49,10 @@ type Props = {
   canCreate?: boolean
   /** 광고 ROAS를 이 보드에서 조정 — ChOverride(applyAdCost·adPct) 갱신 콜백 */
   onAdChange?: (patch: { applyAdCost?: boolean; adPct?: number }) => void
+  /** 판매가 수동조정값 (null=권장가 자동). 부모가 시나리오 저장/복원 위해 관리 */
+  manualPrice: number | null
+  /** 판매가 수동조정 변경 콜백 (null=권장가로 리셋) */
+  onManualPriceChange: (v: number | null) => void
 }
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
@@ -70,10 +74,10 @@ export function PricingChannelBoardCard({
   creating,
   canCreate,
   onAdChange,
+  manualPrice,
+  onManualPriceChange,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
-  // 판매가 수동 조정값 (null=권장가 자동)
-  const [manualPrice, setManualPrice] = useState<number | null>(null)
 
   // 채널 수수료율 (0~1) — 표시용
   const channelFeePct = useMemo(() => {
@@ -258,7 +262,7 @@ export function PricingChannelBoardCard({
                   <button
                     type="button"
                     className="text-[10px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
-                    onClick={() => setManualPrice(null)}
+                    onClick={() => onManualPriceChange(null)}
                   >
                     권장가
                   </button>
@@ -269,7 +273,7 @@ export function PricingChannelBoardCard({
                     value={effectivePrice != null ? String(Math.round(effectivePrice)) : ''}
                     onChange={(e) => {
                       const v = Number(e.target.value)
-                      setManualPrice(v > 0 ? v : null)
+                      onManualPriceChange(v > 0 ? v : null)
                     }}
                     step={100}
                     min={0}
@@ -287,7 +291,7 @@ export function PricingChannelBoardCard({
               max={sliderMax}
               step={100}
               value={[Math.min(sliderMax, Math.max(sliderMin, effectivePrice ?? sliderMin))]}
-              onValueChange={(v) => setManualPrice(v[0])}
+              onValueChange={(v) => onManualPriceChange(v[0])}
             />
             <div className="mt-1 flex justify-between text-[9px] text-muted-foreground tabular-nums">
               <span>₩{fmt(sliderMin)}</span>
