@@ -5,7 +5,7 @@
  * 탭 1: 확인·처리(스테이징 DRAFT 행)
  * 탭 2: 전체 거래(확정 FinTransaction)
  */
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus, Trash2, Sparkles, Tag, X, ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react'
@@ -385,14 +385,13 @@ export function TransactionsView() {
     })
   }, [loadCategories, loadAccounts, loadStaging])
 
-  // counts 변화에 따른 기본 탭 결정 (초기 1회). 딥링크 진입 시 전체 거래 탭 강제.
+  // 기본 탭 결정 — mainTabReady 시점(스테이징 counts 확정)에 정확히 1회.
+  // 딥링크 진입=전체 거래 강제. ref 게이트로 이후 스테이징 분류에 의한 재강제 방지.
+  const tabInitializedRef = useRef(false)
   useEffect(() => {
-    if (!mainTabReady) return
-    if (hasDeepLink) {
-      setMainTab('transactions')
-      return
-    }
-    setMainTab(stagingCounts.total > 0 ? 'staging' : 'transactions')
+    if (!mainTabReady || tabInitializedRef.current) return
+    tabInitializedRef.current = true
+    setMainTab(hasDeepLink ? 'transactions' : stagingCounts.total > 0 ? 'staging' : 'transactions')
   }, [mainTabReady, stagingCounts.total, hasDeepLink])
 
   // 전체 거래 탭 전환 시 조회
