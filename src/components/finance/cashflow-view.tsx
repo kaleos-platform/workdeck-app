@@ -4,7 +4,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState, type CSSProperties
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Pin, X, Search, ArrowUp, ArrowDown, ListFilter } from 'lucide-react'
+import { Pin, X, Search, ArrowUp, ArrowDown, ListFilter, ExternalLink } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -69,7 +69,7 @@ import {
   type ComboOption,
 } from '@/lib/finance/category-options'
 import { MEMO_MAX } from '@/lib/finance/memo'
-import { FINANCE_UPLOAD_PATH } from '@/lib/deck-routes'
+import { FINANCE_UPLOAD_PATH, FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-routes'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
@@ -1285,6 +1285,28 @@ function monthRangeToDays(from: string, to: string): { fromDay: string; toDay: s
   return { fromDay: `${from}-01`, toDay: `${to}-${String(lastDay).padStart(2, '0')}` }
 }
 
+/**
+ * 패널 선택(기간 + 계정과목 + 방향)을 거래내역 화면 필터 딥링크로 변환.
+ * 단일 리프=categoryId(콤보 반영), 다중/미분류=categoryIds(+uncategorized)+label(배너).
+ */
+function buildTxnDeepLink(selected: Selection, from: string, to: string): string {
+  const { fromDay, toDay } = monthRangeToDays(from, to)
+  const p = new URLSearchParams({
+    from: fromDay,
+    to: toDay,
+    direction: selected.direction,
+    excludeTransfer: '1',
+  })
+  if (selected.categoryIds.length === 1 && !selected.uncategorized) {
+    p.set('categoryId', selected.categoryIds[0])
+  } else if (selected.categoryIds.length || selected.uncategorized) {
+    if (selected.categoryIds.length) p.set('categoryIds', selected.categoryIds.join(','))
+    if (selected.uncategorized) p.set('uncategorized', '1')
+    p.set('label', selected.title)
+  }
+  return `${FINANCE_TRANSACTIONS_PATH}?${p.toString()}`
+}
+
 /** 패널 정렬 칩(일자/금액) — 활성 시 방향 화살표. */
 function PanelSortChip({
   label,
@@ -1461,15 +1483,23 @@ function CashflowTxnPanel({
                 : ` · 총 ${data.total.toLocaleString('ko-KR')}건`)}
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7 shrink-0"
-          onClick={onClose}
-          aria-label="패널 닫기"
-        >
-          <X className="size-4" />
-        </Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button asChild variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
+            <Link href={buildTxnDeepLink(selected, from, to)} title="이 기간·계정과목 필터를 적용해 거래내역 화면으로 이동">
+              <ExternalLink className="size-3.5" />
+              거래내역
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            onClick={onClose}
+            aria-label="패널 닫기"
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
       </div>
 
       {/* 합계 */}
