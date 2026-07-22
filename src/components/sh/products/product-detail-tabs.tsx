@@ -3,11 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Copy, Loader2, Plus } from 'lucide-react'
+import { ArrowLeft, Copy, Loader2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { SELLER_HUB_PRICING_SIM_NEW_PATH, getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
+import {
+  SELLER_HUB_PRICING_SIM_NEW_PATH,
+  SELLER_HUB_PRODUCTS_LIST_PATH,
+  getSellerHubPricingScenarioPath,
+} from '@/lib/deck-routes'
 import { ProductBasicForm } from '@/components/sh/products/product-basic-form'
 import { ProductAttributesEditor } from '@/components/sh/products/product-attributes-editor'
 import { ProductOptionsTable } from '@/components/sh/products/product-options-table'
@@ -146,25 +150,38 @@ export function ProductDetailTabs({ productId }: Props) {
     <div className="space-y-8">
       <header className="sticky top-0 z-20 -mx-8 border-b bg-background/95 px-8 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/75">
         <div className="flex items-center justify-between gap-4">
-          <nav className="flex gap-1" aria-label="상품 상세 섹션">
-            {SECTIONS.map((s) => (
-              <Button
-                key={s.key}
-                variant="ghost"
-                size="sm"
-                onClick={() => goto(s.key)}
-                className={cn(
-                  'transition-colors',
-                  active === s.key
-                    ? 'bg-muted font-semibold text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-                aria-current={active === s.key ? 'true' : undefined}
-              >
-                {s.label}
-              </Button>
-            ))}
-          </nav>
+          <div className="flex min-w-0 items-center gap-2">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="shrink-0 gap-1 px-2 text-muted-foreground hover:text-foreground"
+            >
+              <Link href={SELLER_HUB_PRODUCTS_LIST_PATH}>
+                <ArrowLeft className="h-4 w-4" /> 상품 목록
+              </Link>
+            </Button>
+            <span className="h-5 w-px shrink-0 bg-border" aria-hidden />
+            <nav className="flex gap-1" aria-label="상품 상세 섹션">
+              {SECTIONS.map((s) => (
+                <Button
+                  key={s.key}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => goto(s.key)}
+                  className={cn(
+                    'transition-colors',
+                    active === s.key
+                      ? 'bg-muted font-semibold text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  aria-current={active === s.key ? 'true' : undefined}
+                >
+                  {s.label}
+                </Button>
+              ))}
+            </nav>
+          </div>
           <div className="flex items-center gap-2">
             <SaveStatusChip
               saving={saving}

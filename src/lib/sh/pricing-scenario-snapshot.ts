@@ -51,6 +51,8 @@ export type PricingSimSnapshot = {
   bundleNameInput: string
   selectedChannelIds: string[]
   chOverrides: Record<string, SnapChOverride>
+  /** 채널별 판매가 수동조정값 (채널 id → 원). 없거나 null=권장가 자동. 구 스냅샷엔 없어 optional */
+  manualPrices?: Record<string, number | null>
   promotion: PromotionValue
   snap: boolean
   summary: PricingSimSummary
@@ -80,6 +82,10 @@ export function parseSnapshot(raw: unknown): PricingSimSnapshot | null {
     bundleNameInput: typeof o.bundleNameInput === 'string' ? o.bundleNameInput : '',
     selectedChannelIds: o.selectedChannelIds as string[],
     chOverrides: o.chOverrides as Record<string, SnapChOverride>,
+    manualPrices:
+      typeof o.manualPrices === 'object' && o.manualPrices !== null
+        ? (o.manualPrices as Record<string, number | null>)
+        : undefined,
     promotion: o.promotion as PromotionValue,
     snap: o.snap !== false,
     summary: (o.summary as PricingSimSummary) ?? {
