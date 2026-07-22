@@ -41,6 +41,7 @@ export type HiringContentMinAggregateOutputType = {
   postingId: string | null
   templateId: string | null
   contentType: string | null
+  title: string | null
   imagePath: string | null
   sortOrder: number | null
   createdAt: Date | null
@@ -54,6 +55,7 @@ export type HiringContentMaxAggregateOutputType = {
   postingId: string | null
   templateId: string | null
   contentType: string | null
+  title: string | null
   imagePath: string | null
   sortOrder: number | null
   createdAt: Date | null
@@ -67,6 +69,7 @@ export type HiringContentCountAggregateOutputType = {
   postingId: number
   templateId: number
   contentType: number
+  title: number
   data: number
   imagePath: number
   sortOrder: number
@@ -91,6 +94,7 @@ export type HiringContentMinAggregateInputType = {
   postingId?: true
   templateId?: true
   contentType?: true
+  title?: true
   imagePath?: true
   sortOrder?: true
   createdAt?: true
@@ -104,6 +108,7 @@ export type HiringContentMaxAggregateInputType = {
   postingId?: true
   templateId?: true
   contentType?: true
+  title?: true
   imagePath?: true
   sortOrder?: true
   createdAt?: true
@@ -117,6 +122,7 @@ export type HiringContentCountAggregateInputType = {
   postingId?: true
   templateId?: true
   contentType?: true
+  title?: true
   data?: true
   imagePath?: true
   sortOrder?: true
@@ -218,6 +224,7 @@ export type HiringContentGroupByOutputType = {
   postingId: string | null
   templateId: string | null
   contentType: string
+  title: string | null
   data: runtime.JsonValue | null
   imagePath: string | null
   sortOrder: number
@@ -255,6 +262,7 @@ export type HiringContentWhereInput = {
   postingId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   templateId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   contentType?: Prisma.StringFilter<"HiringContent"> | string
+  title?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   data?: Prisma.JsonNullableFilter<"HiringContent">
   imagePath?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   sortOrder?: Prisma.IntFilter<"HiringContent"> | number
@@ -272,6 +280,7 @@ export type HiringContentOrderByWithRelationInput = {
   postingId?: Prisma.SortOrderInput | Prisma.SortOrder
   templateId?: Prisma.SortOrderInput | Prisma.SortOrder
   contentType?: Prisma.SortOrder
+  title?: Prisma.SortOrderInput | Prisma.SortOrder
   data?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePath?: Prisma.SortOrderInput | Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -292,6 +301,7 @@ export type HiringContentWhereUniqueInput = Prisma.AtLeast<{
   postingId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   templateId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   contentType?: Prisma.StringFilter<"HiringContent"> | string
+  title?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   data?: Prisma.JsonNullableFilter<"HiringContent">
   imagePath?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   sortOrder?: Prisma.IntFilter<"HiringContent"> | number
@@ -309,6 +319,7 @@ export type HiringContentOrderByWithAggregationInput = {
   postingId?: Prisma.SortOrderInput | Prisma.SortOrder
   templateId?: Prisma.SortOrderInput | Prisma.SortOrder
   contentType?: Prisma.SortOrder
+  title?: Prisma.SortOrderInput | Prisma.SortOrder
   data?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePath?: Prisma.SortOrderInput | Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -331,6 +342,7 @@ export type HiringContentScalarWhereWithAggregatesInput = {
   postingId?: Prisma.StringNullableWithAggregatesFilter<"HiringContent"> | string | null
   templateId?: Prisma.StringNullableWithAggregatesFilter<"HiringContent"> | string | null
   contentType?: Prisma.StringWithAggregatesFilter<"HiringContent"> | string
+  title?: Prisma.StringNullableWithAggregatesFilter<"HiringContent"> | string | null
   data?: Prisma.JsonNullableWithAggregatesFilter<"HiringContent">
   imagePath?: Prisma.StringNullableWithAggregatesFilter<"HiringContent"> | string | null
   sortOrder?: Prisma.IntWithAggregatesFilter<"HiringContent"> | number
@@ -342,6 +354,7 @@ export type HiringContentCreateInput = {
   id?: string
   sourceType: $Enums.HiringContentSourceType
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -359,6 +372,7 @@ export type HiringContentUncheckedCreateInput = {
   postingId?: string | null
   templateId?: string | null
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -370,6 +384,7 @@ export type HiringContentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -387,6 +402,7 @@ export type HiringContentUncheckedUpdateInput = {
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -401,6 +417,7 @@ export type HiringContentCreateManyInput = {
   postingId?: string | null
   templateId?: string | null
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -412,6 +429,7 @@ export type HiringContentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -426,6 +444,7 @@ export type HiringContentUncheckedUpdateManyInput = {
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -450,6 +469,7 @@ export type HiringContentCountOrderByAggregateInput = {
   postingId?: Prisma.SortOrder
   templateId?: Prisma.SortOrder
   contentType?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   data?: Prisma.SortOrder
   imagePath?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -468,6 +488,7 @@ export type HiringContentMaxOrderByAggregateInput = {
   postingId?: Prisma.SortOrder
   templateId?: Prisma.SortOrder
   contentType?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   imagePath?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -481,6 +502,7 @@ export type HiringContentMinOrderByAggregateInput = {
   postingId?: Prisma.SortOrder
   templateId?: Prisma.SortOrder
   contentType?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   imagePath?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -625,6 +647,7 @@ export type HiringContentCreateWithoutSpaceInput = {
   id?: string
   sourceType: $Enums.HiringContentSourceType
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -640,6 +663,7 @@ export type HiringContentUncheckedCreateWithoutSpaceInput = {
   postingId?: string | null
   templateId?: string | null
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -683,6 +707,7 @@ export type HiringContentScalarWhereInput = {
   postingId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   templateId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   contentType?: Prisma.StringFilter<"HiringContent"> | string
+  title?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   data?: Prisma.JsonNullableFilter<"HiringContent">
   imagePath?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   sortOrder?: Prisma.IntFilter<"HiringContent"> | number
@@ -694,6 +719,7 @@ export type HiringContentCreateWithoutPostingInput = {
   id?: string
   sourceType: $Enums.HiringContentSourceType
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -709,6 +735,7 @@ export type HiringContentUncheckedCreateWithoutPostingInput = {
   sourceType: $Enums.HiringContentSourceType
   templateId?: string | null
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -746,6 +773,7 @@ export type HiringContentCreateWithoutTemplateInput = {
   id?: string
   sourceType: $Enums.HiringContentSourceType
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -761,6 +789,7 @@ export type HiringContentUncheckedCreateWithoutTemplateInput = {
   sourceType: $Enums.HiringContentSourceType
   postingId?: string | null
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -800,6 +829,7 @@ export type HiringContentCreateManySpaceInput = {
   postingId?: string | null
   templateId?: string | null
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -811,6 +841,7 @@ export type HiringContentUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -826,6 +857,7 @@ export type HiringContentUncheckedUpdateWithoutSpaceInput = {
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -839,6 +871,7 @@ export type HiringContentUncheckedUpdateManyWithoutSpaceInput = {
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -852,6 +885,7 @@ export type HiringContentCreateManyPostingInput = {
   sourceType: $Enums.HiringContentSourceType
   templateId?: string | null
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -863,6 +897,7 @@ export type HiringContentUpdateWithoutPostingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -878,6 +913,7 @@ export type HiringContentUncheckedUpdateWithoutPostingInput = {
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -891,6 +927,7 @@ export type HiringContentUncheckedUpdateManyWithoutPostingInput = {
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -904,6 +941,7 @@ export type HiringContentCreateManyTemplateInput = {
   sourceType: $Enums.HiringContentSourceType
   postingId?: string | null
   contentType?: string
+  title?: string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
   sortOrder?: number
@@ -915,6 +953,7 @@ export type HiringContentUpdateWithoutTemplateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -930,6 +969,7 @@ export type HiringContentUncheckedUpdateWithoutTemplateInput = {
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -943,6 +983,7 @@ export type HiringContentUncheckedUpdateManyWithoutTemplateInput = {
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -959,6 +1000,7 @@ export type HiringContentSelect<ExtArgs extends runtime.Types.Extensions.Interna
   postingId?: boolean
   templateId?: boolean
   contentType?: boolean
+  title?: boolean
   data?: boolean
   imagePath?: boolean
   sortOrder?: boolean
@@ -976,6 +1018,7 @@ export type HiringContentSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   postingId?: boolean
   templateId?: boolean
   contentType?: boolean
+  title?: boolean
   data?: boolean
   imagePath?: boolean
   sortOrder?: boolean
@@ -993,6 +1036,7 @@ export type HiringContentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   postingId?: boolean
   templateId?: boolean
   contentType?: boolean
+  title?: boolean
   data?: boolean
   imagePath?: boolean
   sortOrder?: boolean
@@ -1010,6 +1054,7 @@ export type HiringContentSelectScalar = {
   postingId?: boolean
   templateId?: boolean
   contentType?: boolean
+  title?: boolean
   data?: boolean
   imagePath?: boolean
   sortOrder?: boolean
@@ -1017,7 +1062,7 @@ export type HiringContentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type HiringContentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "sourceType" | "postingId" | "templateId" | "contentType" | "data" | "imagePath" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["hiringContent"]>
+export type HiringContentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "sourceType" | "postingId" | "templateId" | "contentType" | "title" | "data" | "imagePath" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["hiringContent"]>
 export type HiringContentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   posting?: boolean | Prisma.HiringContent$postingArgs<ExtArgs>
@@ -1048,6 +1093,7 @@ export type $HiringContentPayload<ExtArgs extends runtime.Types.Extensions.Inter
     postingId: string | null
     templateId: string | null
     contentType: string
+    title: string | null
     data: runtime.JsonValue | null
     imagePath: string | null
     sortOrder: number
@@ -1485,6 +1531,7 @@ export interface HiringContentFieldRefs {
   readonly postingId: Prisma.FieldRef<"HiringContent", 'String'>
   readonly templateId: Prisma.FieldRef<"HiringContent", 'String'>
   readonly contentType: Prisma.FieldRef<"HiringContent", 'String'>
+  readonly title: Prisma.FieldRef<"HiringContent", 'String'>
   readonly data: Prisma.FieldRef<"HiringContent", 'Json'>
   readonly imagePath: Prisma.FieldRef<"HiringContent", 'String'>
   readonly sortOrder: Prisma.FieldRef<"HiringContent", 'Int'>

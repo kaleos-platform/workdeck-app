@@ -2085,6 +2085,7 @@ export const HiringContentScalarFieldEnum = {
   postingId: 'postingId',
   templateId: 'templateId',
   contentType: 'contentType',
+  title: 'title',
   data: 'data',
   imagePath: 'imagePath',
   sortOrder: 'sortOrder',

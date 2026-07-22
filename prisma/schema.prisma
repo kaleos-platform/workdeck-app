@@ -3273,6 +3273,7 @@ model HiringContent {
   postingId   String? // sourceType=POSTING_DETAIL 일 때
   templateId  String? // sourceType=DETAIL_TEMPLATE 일 때
   contentType String                  @default("excalidraw")
+  title       String? // 블록 리스트에 표시할 사용자 지정 제목 (null이면 "카드 N")
   data        Json? // excalidraw scene JSON
   imagePath   String? // hiring-assets 버킷 내 export PNG 경로
   sortOrder   Int                     @default(0)
