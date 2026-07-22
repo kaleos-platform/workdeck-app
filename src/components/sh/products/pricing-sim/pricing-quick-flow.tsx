@@ -431,6 +431,20 @@ export function PricingQuickFlow({
   // 채널별 편집 영역 펼침 상태
   const [expandedChannels, setExpandedChannels] = useState<Set<string>>(() => new Set())
 
+  // 채널별 판매가 수동조정값 (세션 한정, 시나리오 저장 대상). 채널 id → 원, null/미설정=권장가 자동.
+  const [manualPrices, setManualPrices] = useState<Record<string, number | null>>({})
+  const setChannelManualPrice = useCallback((channelId: string, v: number | null) => {
+    setManualPrices((prev) => {
+      if (v == null) {
+        if (prev[channelId] == null) return prev
+        const next = { ...prev }
+        delete next[channelId]
+        return next
+      }
+      return { ...prev, [channelId]: v }
+    })
+  }, [])
+
   // 채널 override 조회 — 미설정이면 채널 DB 값 + 설정 기본값에서 즉석 seed (렌더 순수성 유지)
   const overrideOf = useCallback(
     (c: ApiCh): ChOverride => chOverrides[c.id] ?? seedOverride(c, settings),
@@ -474,6 +488,13 @@ export function PricingQuickFlow({
     // override도 함께 정리 — 재추가 시 stale 세션값이 남아 현재 채널 설정을 덮지 않도록.
     setChOverrides((prev) => {
       if (!prev[id]) return prev
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    // 수동 판매가도 정리 — 재추가 시 stale 세션값 방지
+    setManualPrices((prev) => {
+      if (prev[id] == null) return prev
       const next = { ...prev }
       delete next[id]
       return next
@@ -589,6 +610,7 @@ export function PricingQuickFlow({
     setBundleNameInput('')
     setSelectedChannelIds([])
     setChOverrides({})
+    setManualPrices({})
     setExpandedChannels(new Set())
     setPromotion({ type: 'NONE', value: 0 })
     setLive(liveFromSettings(settings))
@@ -664,9 +686,12 @@ export function PricingQuickFlow({
 
   const buildSnapshot = useCallback((): PricingSimSnapshot => {
     const chOverrides: Record<string, SnapChOverride> = {}
+    const snapManualPrices: Record<string, number | null> = {}
     for (const id of selectedChannelIds) {
       const c = allChannels.find((ch) => ch.id === id)
       if (c) chOverrides[id] = overrideOf(c)
+      // 선택 채널의 수동 판매가만 담는다(제거된 채널의 stale 값 배제)
+      if (manualPrices[id] != null) snapManualPrices[id] = manualPrices[id]
     }
     const summary: PricingSimSummary = {
       productNames: [...new Set(confirmedRows.map((r) => r.productName))],
@@ -683,6 +708,7 @@ export function PricingQuickFlow({
       bundleNameInput,
       selectedChannelIds,
       chOverrides,
+      manualPrices: snapManualPrices,
       promotion,
       snap,
       summary,
@@ -696,6 +722,7 @@ export function PricingQuickFlow({
     boardSummary,
     bundleCostSummary,
     bundleNameInput,
+    manualPrices,
     promotion,
     snap,
   ])
@@ -721,6 +748,7 @@ export function PricingQuickFlow({
       }
     }
     setChOverrides(restoredOverrides)
+    setManualPrices(s.manualPrices ?? {})
     setExpandedChannels(new Set())
     setPromotion(s.promotion)
     setSnap(s.snap)
@@ -1423,6 +1451,8 @@ export function PricingQuickFlow({
                   creating={creatingChannelId === bc.api.id}
                   canCreate={canCreate}
                   onAdChange={(patch) => setOverride(bc.api, patch)}
+                  manualPrice={manualPrices[bc.api.id] ?? null}
+                  onManualPriceChange={(v) => setChannelManualPrice(bc.api.id, v)}
                 />
               ))}
               {confirmedRows.length > 1 && !isSingleProduct && (
