@@ -1,8 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, History, Info, Plus, RotateCcw, Save, X } from 'lucide-react'
+import { ArrowLeft, ChevronDown, History, Info, Plus, RotateCcw, Save, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -51,7 +52,7 @@ import { snapPrice } from '@/lib/sh/price-snap'
 import { productDisplayName } from '@/lib/sh/product-display'
 import { resolveFirstPriceGroup } from '@/lib/sh/resolve-product-price-group'
 import type { OptionInput } from '@/lib/sh/price-group'
-import { getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
+import { SELLER_HUB_PRICING_SIM_PATH, getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
 
 import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
 import { PricingChannelBoardCard } from './pricing-channel-board-card'
@@ -1005,6 +1006,18 @@ export function PricingQuickFlow({
           </div>
         </div>
       )}
+
+      {/* ── 목록으로 돌아가기 ── */}
+      <Button
+        asChild
+        variant="ghost"
+        size="sm"
+        className="mb-3 -ml-2 gap-1 px-2 text-muted-foreground hover:text-foreground"
+      >
+        <Link href={SELLER_HUB_PRICING_SIM_PATH}>
+          <ArrowLeft className="h-4 w-4" /> 시나리오 목록
+        </Link>
+      </Button>
 
       {/* ── 헤더 ── */}
       <div className="mb-6 flex items-start justify-between gap-4">
