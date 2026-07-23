@@ -3,7 +3,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ChevronDown, History, Info, Plus, RotateCcw, Save, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ChevronDown,
+  History,
+  Info,
+  Plus,
+  RotateCcw,
+  Save,
+  X,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -1069,15 +1079,31 @@ export function PricingQuickFlow({
         <KpiCell
           label="원가 · 매입"
           value={bundleCostSummary ? `₩${fmt(bundleCostSummary.totalCost)}` : '—'}
-          sub={
+          valueRight={
             bundleCostSummary && bundleCostSummary.totalRetail > 0
-              ? `소비자가 대비 ${Math.round((bundleCostSummary.totalCost / bundleCostSummary.totalRetail) * 100)}%`
+              ? (() => {
+                  const rate = Math.round(
+                    (bundleCostSummary.totalCost / bundleCostSummary.totalRetail) * 100
+                  )
+                  const high = rate > 33 // 33% 초과 = 원가율 높음(주의)
+                  return (
+                    <span
+                      className={cn(
+                        'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums',
+                        high ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'
+                      )}
+                    >
+                      {high && <AlertTriangle className="h-3 w-3" />}
+                      원가율 {rate}%
+                    </span>
+                  )
+                })()
               : undefined
           }
           tooltip={
             confirmedRows.length > 0 ? (
               <div className="space-y-1">
-                <p className="font-medium">원가 항목별 (소비자가 대비)</p>
+                <p className="font-medium">원가 항목별 (원가율)</p>
                 {confirmedRows.map((r, i) => {
                   const cost = r.costPrice * r.quantity
                   const retail = r.retailPrice * r.quantity
@@ -1644,6 +1670,7 @@ function KpiCell({
   sub,
   accent,
   tooltip,
+  valueRight,
 }: {
   label: string
   value: string
@@ -1651,6 +1678,8 @@ function KpiCell({
   accent?: 'emerald'
   /** 값에 hover 시 상세 설명 (예: 원가 항목별 내역) */
   tooltip?: React.ReactNode
+  /** 값 우측 인라인 배지 (예: 원가율) */
+  valueRight?: React.ReactNode
 }) {
   const valueEl = (
     <p
@@ -1666,18 +1695,21 @@ function KpiCell({
   return (
     <div className="rounded-xl border border-[var(--ps-border)] bg-[var(--ps-card)] px-4 py-3">
       <p className="text-[11px] text-muted-foreground">{label}</p>
-      {tooltip ? (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>{valueEl}</TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-[260px] text-xs">
-              {tooltip}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      ) : (
-        valueEl
-      )}
+      <div className="flex items-baseline justify-between gap-2">
+        {tooltip ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>{valueEl}</TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[260px] text-xs">
+                {tooltip}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          valueEl
+        )}
+        {valueRight}
+      </div>
       {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
     </div>
   )
