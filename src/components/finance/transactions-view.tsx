@@ -43,6 +43,7 @@ import {
 import { classStatusBadge, accountKindLabel, formatWon } from '@/components/finance/format'
 import { MEMO_MAX } from '@/lib/finance/memo'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
+import { CategoryMultiCombobox } from '@/components/finance/category-multi-combobox'
 import { AddCategoryDialog } from '@/components/finance/add-category-dialog'
 import {
   buildClassifyOptions,
@@ -197,10 +198,16 @@ export function TransactionsView() {
   // 필터 (전체 거래) — 'all'은 파라미터 미포함 센티넬. 초기값은 딥링크 파라미터에서 주입.
   const [filterQ, setFilterQ] = useState('')
   const [filterAccountId, setFilterAccountId] = useState('')
-  // 계정과목 필터 — 단일 스칼라(리프 id | 대분류 id | 미분류 sentinel). 대분류면 서버가 자손 확장.
-  const [filterCategoryId, setFilterCategoryId] = useState(() => {
-    if (searchParams.get('uncategorized') === '1') return UNCATEGORIZED_OPTION_ID
-    return searchParams.get('categoryId') ?? ''
+  // 계정과목 필터 — 다중 선택(리프 id | 대분류 id | 미분류 sentinel). 대분류면 서버가 자손 확장.
+  // 딥링크 초기값: categoryIds(콤마) + categoryId(단일) + uncategorized=1 → sentinel 를 합집합으로.
+  const [filterCategoryIds, setFilterCategoryIds] = useState<string[]>(() => {
+    const ids = new Set<string>()
+    const multi = searchParams.get('categoryIds')
+    if (multi) multi.split(',').filter(Boolean).forEach((id) => ids.add(id))
+    const single = searchParams.get('categoryId')
+    if (single) ids.add(single)
+    if (searchParams.get('uncategorized') === '1') ids.add(UNCATEGORIZED_OPTION_ID)
+    return [...ids]
   })
   const [filterDirection, setFilterDirection] = useState<'all' | 'IN' | 'OUT'>(() => {
     const d = searchParams.get('direction')
@@ -215,7 +222,7 @@ export function TransactionsView() {
   )
   // 딥링크 진입 여부 — 스테이징 대신 전체 거래 탭을 강제로 연다.
   const hasDeepLink = useMemo(() => {
-    for (const k of ['from', 'to', 'direction', 'categoryId', 'uncategorized']) {
+    for (const k of ['from', 'to', 'direction', 'categoryId', 'categoryIds', 'uncategorized']) {
       if (searchParams.get(k)) return true
     }
     return false
@@ -324,12 +331,14 @@ export function TransactionsView() {
         const params = new URLSearchParams()
         if (filterQ) params.set('q', filterQ)
         if (filterAccountId) params.set('accountId', filterAccountId)
-        // 계정과목: 미분류 sentinel → uncategorized, 그 외 → categoryId(+대분류 자손 확장).
-        if (filterCategoryId === UNCATEGORIZED_OPTION_ID) {
-          params.set('uncategorized', '1')
-        } else if (filterCategoryId) {
-          params.set('categoryId', filterCategoryId)
-          params.set('expandCategory', '1')
+        // 계정과목(다중): 미분류 sentinel → uncategorized, 그 외 id들 → categoryIds(+대분류 자손 확장).
+        {
+          const catIds = filterCategoryIds.filter((id) => id !== UNCATEGORIZED_OPTION_ID)
+          if (filterCategoryIds.includes(UNCATEGORIZED_OPTION_ID)) params.set('uncategorized', '1')
+          if (catIds.length) {
+            params.set('categoryIds', catIds.join(','))
+            params.set('expandCategory', '1')
+          }
         }
         if (filterDirection !== 'all') params.set('direction', filterDirection)
         if (dateFrom) params.set('from', dateFrom)
@@ -361,7 +370,7 @@ export function TransactionsView() {
     [
       filterQ,
       filterAccountId,
-      filterCategoryId,
+      filterCategoryIds,
       filterDirection,
       dateFrom,
       dateTo,
@@ -694,6 +703,14 @@ export function TransactionsView() {
     setDateTo('')
     setFilterReloadTick((t) => t + 1)
   }, [])
+  // 계정과목 다중선택 반영(콤보 닫힘·전체 해제) — 즉시 재조회.
+  const reloadCategoryFilter = useCallback(() => {
+    setFilterReloadTick((t) => t + 1)
+  }, [])
+  const clearCategories = useCallback(() => {
+    setFilterCategoryIds([])
+    setFilterReloadTick((t) => t + 1)
+  }, [])
 
   // 더 보기 — 현재 로드된 수 기준으로 다음 페이지 추가 로드
   const handleTxnLoadMore = useCallback(() => {
@@ -753,7 +770,7 @@ export function TransactionsView() {
           loading={txnLoading}
           filterQ={filterQ}
           filterAccountId={filterAccountId}
-          filterCategoryId={filterCategoryId}
+          filterCategoryIds={filterCategoryIds}
           filterDirection={filterDirection}
           dateFrom={dateFrom}
           dateTo={dateTo}
@@ -769,7 +786,9 @@ export function TransactionsView() {
           reloadCategories={loadCategories}
           onFilterQChange={setFilterQ}
           onFilterAccountIdChange={setFilterAccountId}
-          onFilterCategoryIdChange={setFilterCategoryId}
+          onFilterCategoryIdsChange={setFilterCategoryIds}
+          onCategoryFilterClose={reloadCategoryFilter}
+          onClearCategories={clearCategories}
           onFilterDirectionChange={setFilterDirection}
           onSearch={handleTxnSearch}
           onLoadMore={handleTxnLoadMore}
@@ -1347,7 +1366,7 @@ function TransactionsPanel({
   loading,
   filterQ,
   filterAccountId,
-  filterCategoryId,
+  filterCategoryIds,
   filterDirection,
   dateFrom,
   dateTo,
@@ -1363,7 +1382,9 @@ function TransactionsPanel({
   reloadCategories,
   onFilterQChange,
   onFilterAccountIdChange,
-  onFilterCategoryIdChange,
+  onFilterCategoryIdsChange,
+  onCategoryFilterClose,
+  onClearCategories,
   onFilterDirectionChange,
   onSearch,
   onLoadMore,
@@ -1382,7 +1403,7 @@ function TransactionsPanel({
   loading: boolean
   filterQ: string
   filterAccountId: string
-  filterCategoryId: string
+  filterCategoryIds: string[]
   filterDirection: 'all' | 'IN' | 'OUT'
   dateFrom: string
   dateTo: string
@@ -1406,7 +1427,9 @@ function TransactionsPanel({
   reloadCategories: () => Promise<void>
   onFilterQChange: (v: string) => void
   onFilterAccountIdChange: (v: string) => void
-  onFilterCategoryIdChange: (v: string) => void
+  onFilterCategoryIdsChange: (ids: string[]) => void
+  onCategoryFilterClose: () => void
+  onClearCategories: () => void
   onFilterDirectionChange: (v: 'all' | 'IN' | 'OUT') => void
   onSearch: () => void
   onLoadMore: () => void
@@ -1555,21 +1578,22 @@ function TransactionsPanel({
         )}
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">계정과목</span>
-          <CategoryCombobox
+          <CategoryMultiCombobox
             options={filterCatOptions}
-            value={filterCategoryId || null}
-            onChange={onFilterCategoryIdChange}
+            value={filterCategoryIds}
+            onChange={onFilterCategoryIdsChange}
+            onClose={onCategoryFilterClose}
             groupByType
             defaultType="EXPENSE"
             placeholder="전체 계정과목"
             searchPlaceholder="계정과목 검색..."
             triggerClassName="h-8 w-44 text-xs"
           />
-          {filterCategoryId && (
+          {filterCategoryIds.length > 0 && (
             <Button
               size="icon"
               variant="ghost"
-              onClick={() => onFilterCategoryIdChange('')}
+              onClick={onClearCategories}
               className="h-8 w-8 shrink-0 text-muted-foreground"
               aria-label="계정과목 필터 해제"
             >
