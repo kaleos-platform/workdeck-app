@@ -14,9 +14,9 @@ type SegmentKey =
   | 'adCost'
   | 'shipping'
   | 'returnCost'
-  | 'packaging'
   | 'paymentFee'
   | 'vat'
+  | 'promotion'
   | 'margin'
 
 type SegmentDef = {
@@ -24,6 +24,8 @@ type SegmentDef = {
   label: string
   /** 막대 채움 색 (인라인 — Tailwind JIT 동적 클래스 회피) */
   color: string
+  /** 툴팁 하단 보조 설명 (계산식 등, 선택) */
+  note?: string
 }
 
 // 표시 순서 = 레전드 순서.
@@ -34,10 +36,20 @@ const SEGMENTS: SegmentDef[] = [
   { key: 'channelFee', label: '채널수수료', color: '#b45309' }, // amber-700
   { key: 'adCost', label: '광고비', color: '#d97706' }, // amber-600
   { key: 'shipping', label: '물류', color: '#f59e0b' }, // amber-500
-  { key: 'returnCost', label: '반품', color: '#fbbf24' }, // amber-400
-  { key: 'packaging', label: '포장', color: '#fcd34d' }, // amber-300
+  {
+    key: 'returnCost',
+    label: '반품',
+    color: '#fbbf24', // amber-400
+    note: '반품처리비 × 반품율 (매출 차감 아님, 건당 비용만 반영)',
+  },
   { key: 'paymentFee', label: 'PG', color: '#fde68a' }, // amber-200
   { key: 'vat', label: 'VAT', color: '#cbd5e1' }, // slate-300 (세금 = 중립 회색)
+  {
+    key: 'promotion',
+    label: '프로모션 할인',
+    color: '#8b5cf6', // violet-500 (비용/마진과 구분되는 할인 별색)
+    note: '프로모션 적용으로 판매가에서 차감된 금액 (마진에서 빠짐)',
+  },
   { key: 'margin', label: '마진', color: '#10b981' }, // emerald-500 (마진 = success)
 ]
 
@@ -48,8 +60,12 @@ function fmt(n: number): string {
 // ─── 컴포넌트 ────────────────────────────────────────────────────────────────
 
 type Props = {
-  /** 권장가(또는 현재 판매가) 0% 할인 셀 */
+  /** 비용 구성을 분해할 셀. 프로모션 적용 시 = 프로모션 후(promoCell) */
   cell: MatrixCell
+  /** 프로모션 할인액 (원). >0이면 '프로모션 할인' 세그먼트 표시. 기본 0 */
+  discount?: number
+  /** 막대 총합·비율 분모로 쓸 프로모션 전 판매가. 미지정 시 cell.finalPrice */
+  basePrice?: number
   /** 레전드 표시 여부 (기본 true) */
   showLegend?: boolean
 }
@@ -59,30 +75,33 @@ type Props = {
  * 원가/수수료/광고/물류/반품/PG/VAT/마진을 finalPrice 대비 폭 %로 표현.
  * 마진이 음수면 마진 세그먼트는 폭 0, 막대 끝에 적자 표시.
  */
-export function PricingCostBar({ cell, showLegend = true }: Props) {
+export function PricingCostBar({ cell, discount = 0, basePrice, showLegend = true }: Props) {
   const loss = cell.netProfit < 0
 
   const { base, segments } = useMemo(() => {
+    const promoDiscount = Math.max(0, discount)
     const values: Record<SegmentKey, number> = {
       cogs: cell.cogs,
       channelFee: cell.channelFee,
       adCost: cell.adCost,
       shipping: cell.shipping,
       returnCost: cell.returnCost,
-      packaging: cell.packaging,
       paymentFee: cell.paymentFee,
       vat: cell.vat,
+      // 프로모션 할인 — 판매가에서 차감된 금액 (마진에서 빠져나감). 없으면 0 → 폭 0 → 미표시.
+      promotion: promoDiscount,
       // 마진 폭은 절댓값 기준 — 적자(음수)도 손실 크기에 비례해 세그먼트가 커진다.
       margin: Math.abs(cell.netProfit),
     }
-    // 폭 분모 = 비용 합 + |마진|. 이익 시 = finalPrice, 적자 시 = 비용 + 손실(→적자 폭 증가). 0 방지.
+    // 폭 분모 = 비용 합 + |마진| + 프로모션 할인. 이익·프로모션 시 = 프로모션 전 판매가. 0 방지.
     const total = Math.max(
       1,
       SEGMENTS.reduce((s, d) => s + Math.max(0, values[d.key]), 0)
     )
     const isLoss = cell.netProfit < 0
     return {
-      base: cell.finalPrice,
+      // 비율 분모 = 프로모션 전 판매가(basePrice). 미지정 시 셀 판매가.
+      base: basePrice ?? cell.finalPrice,
       segments: SEGMENTS.map((d) => ({
         ...d,
         // 마진 세그먼트는 적자 시 라벨·색을 적자(빨강)로 분기.
@@ -92,7 +111,7 @@ export function PricingCostBar({ cell, showLegend = true }: Props) {
         widthPct: (Math.max(0, values[d.key]) / total) * 100,
       })),
     }
-  }, [cell])
+  }, [cell, discount, basePrice])
 
   return (
     <div className="space-y-2">
@@ -130,6 +149,7 @@ export function PricingCostBar({ cell, showLegend = true }: Props) {
                       이익율 {(cell.margin * 100).toFixed(1)}%
                     </p>
                   )}
+                  {s.note && <p className="mt-0.5 max-w-[180px] text-muted-foreground">{s.note}</p>}
                 </TooltipContent>
               </Tooltip>
             )
