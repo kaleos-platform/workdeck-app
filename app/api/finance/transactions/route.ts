@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
       categoryIds: sp.get('categoryIds')?.split(',').filter(Boolean) ?? [],
       uncategorized: sp.get('uncategorized') === '1',
       categoryId: sp.get('categoryId'),
+      expandCategory: sp.get('expandCategory') === '1',
       excludeTransfer: sp.get('excludeTransfer') === '1',
       q: sp.get('q'),
       take,
