@@ -88,9 +88,12 @@ export function CategoryCombobox({
   const base = options.filter(
     (o) => (o.isActive !== false && (blockType == null || o.type !== blockType)) || o.id === value
   )
-  // groupByType + 검색어 없음 → 활성 탭만. 검색 중엔 전 타입 교차 검색(탭 필터 우회).
+  // groupByType + 검색어 없음 → 활성 탭만(단 type 없는 옵션=미분류 sentinel은 탭 무관 항상 노출).
+  // 검색 중엔 전 타입 교차 검색(탭 필터 우회).
   const visibleOptions =
-    groupByType && !query.trim() ? base.filter((o) => o.type === activeType) : base
+    groupByType && !query.trim()
+      ? base.filter((o) => o.type === activeType || o.type == null)
+      : base
 
   return (
     <Popover
