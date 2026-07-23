@@ -66,84 +66,94 @@ export function PostingPreview({
 
         {ordered.length > 0 && (
           <div className="space-y-4">
-            {ordered.map((c) =>
-              c.contentType === 'image' || c.contentType === 'design' ? (
-                c.imagePath ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={c.id}
-                    src={getPostingAssetPublicUrl(c.imagePath)}
-                    alt=""
-                    className="w-full rounded-md"
-                  />
-                ) : null
-              ) : c.contentType === 'button' ? (
-                (() => {
-                  const btn = c.data as {
-                    title?: string
-                    linkType?: string
-                    url?: string
-                    color?: string
-                  } | null
-                  if (!btn?.title) return null
-                  return (
-                    <a
-                      key={c.id}
-                      href={btn.linkType === 'url' && btn.url ? btn.url : '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={buttonBlockStyle(btn.color)}
-                      className="inline-flex w-full items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium shadow transition-opacity hover:opacity-90"
-                    >
-                      {btn.title}
-                    </a>
-                  )
-                })()
-              ) : c.contentType === 'positions' ? (
-                <div key={c.id} className="space-y-2">
-                  <div className="text-sm font-medium">모집 직무</div>
-                  {positions.length > 0 ? (
-                    positions.map((p) => (
-                      <div key={p.id} className="space-y-1 rounded-lg border px-4 py-3">
-                        <div className="text-sm font-medium">{p.name}</div>
-                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                          {p.jobType && <span>{JOB_TYPE_LABELS[p.jobType]}</span>}
-                          {p.payFrequency && (
-                            <span>
-                              {PAY_FREQUENCY_LABELS[p.payFrequency]}
-                              {p.payAmount != null && ` ${p.payAmount.toLocaleString('ko-KR')}원`}
-                            </span>
-                          )}
-                          {p.headcount != null && <span>{p.headcount}명</span>}
-                          {p.workDays && p.workDays.length > 0 && (
-                            <span>{p.workDays.map((d) => WEEKDAYS[d]).join('·')}</span>
-                          )}
-                          {p.workStartAt && p.workEndAt && (
-                            <span>
-                              {p.workStartAt}~{p.workEndAt}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="rounded-lg border border-dashed px-4 py-6 text-center text-xs text-muted-foreground">
-                      등록된 직무가 없습니다
-                    </div>
-                  )}
-                </div>
-              ) : c.contentType === 'text' && c.data ? (
-                // 공개 페이지(app/p/[uuid])와 동일한 렌더 — 에디터 박스 없이 본문만 표시
-                <div
-                  key={c.id}
-                  className={`${HIRING_PROSE_CLASS} [&_img]:h-auto [&_img]:max-w-full`}
-                  dangerouslySetInnerHTML={{ __html: renderTiptapHtml(c.data) }}
-                />
-              ) : null
-            )}
+            {ordered.map((c) => (
+              <ContentBlockPreview key={c.id} content={c} positions={positions} />
+            ))}
           </div>
         )}
       </CardContent>
     </Card>
   )
+}
+
+// 단일 블록 렌더 — 공개 페이지/미리보기/리스트 썸네일에서 재사용(동작 불변).
+export function ContentBlockPreview({
+  content: c,
+  positions,
+}: {
+  content: WizardContentData
+  positions: WizardPositionData[]
+}) {
+  if (c.contentType === 'image' || c.contentType === 'design') {
+    return c.imagePath ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={getPostingAssetPublicUrl(c.imagePath)} alt="" className="w-full rounded-md" />
+    ) : null
+  }
+  if (c.contentType === 'button') {
+    const btn = c.data as {
+      title?: string
+      linkType?: string
+      url?: string
+      color?: string
+    } | null
+    if (!btn?.title) return null
+    return (
+      <a
+        href={btn.linkType === 'url' && btn.url ? btn.url : '#'}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={buttonBlockStyle(btn.color)}
+        className="inline-flex w-full items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium shadow transition-opacity hover:opacity-90"
+      >
+        {btn.title}
+      </a>
+    )
+  }
+  if (c.contentType === 'positions') {
+    return (
+      <div className="space-y-2">
+        <div className="text-sm font-medium">모집 직무</div>
+        {positions.length > 0 ? (
+          positions.map((p) => (
+            <div key={p.id} className="space-y-1 rounded-lg border px-4 py-3">
+              <div className="text-sm font-medium">{p.name}</div>
+              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                {p.jobType && <span>{JOB_TYPE_LABELS[p.jobType]}</span>}
+                {p.payFrequency && (
+                  <span>
+                    {PAY_FREQUENCY_LABELS[p.payFrequency]}
+                    {p.payAmount != null && ` ${p.payAmount.toLocaleString('ko-KR')}원`}
+                  </span>
+                )}
+                {p.headcount != null && <span>{p.headcount}명</span>}
+                {p.workDays && p.workDays.length > 0 && (
+                  <span>{p.workDays.map((d) => WEEKDAYS[d]).join('·')}</span>
+                )}
+                {p.workStartAt && p.workEndAt && (
+                  <span>
+                    {p.workStartAt}~{p.workEndAt}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-lg border border-dashed px-4 py-6 text-center text-xs text-muted-foreground">
+            등록된 직무가 없습니다
+          </div>
+        )}
+      </div>
+    )
+  }
+  if (c.contentType === 'text' && c.data) {
+    // 공개 페이지(app/p/[uuid])와 동일한 렌더 — 에디터 박스 없이 본문만 표시
+    return (
+      <div
+        className={`${HIRING_PROSE_CLASS} [&_img]:h-auto [&_img]:max-w-full`}
+        dangerouslySetInnerHTML={{ __html: renderTiptapHtml(c.data) }}
+      />
+    )
+  }
+  return null
 }

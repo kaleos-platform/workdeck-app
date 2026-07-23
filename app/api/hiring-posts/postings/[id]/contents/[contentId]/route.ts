@@ -83,6 +83,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const content = await prisma.hiringContent.update({
     where: { id: contentId },
     data: {
+      // title 은 모든 블록 타입 공통 필드 — null 이면 리스트에서 "카드 N" 폴백으로 표시.
+      ...(parsed.data.title !== undefined && { title: parsed.data.title }),
       ...(parsed.data.data !== undefined && {
         data: parsed.data.data as Prisma.InputJsonValue,
       }),

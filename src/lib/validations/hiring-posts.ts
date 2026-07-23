@@ -155,6 +155,17 @@ export const createContentSchema = z.object({
 export type CreateContentInput = z.infer<typeof createContentSchema>
 
 export const updateContentSchema = z.object({
+  // 블록 제목 — 빈 문자열/공백은 null 로 정규화(리스트에서 "카드 N" 폴백). trim 후 최대 100자.
+  title: z
+    .preprocess((v) => {
+      if (v === undefined || v === null) return v
+      if (typeof v === 'string') {
+        const t = v.trim()
+        return t === '' ? null : t
+      }
+      return v
+    }, z.string().max(100).nullable())
+    .optional(),
   // text 블록 전용 — Tiptap doc JSON. z.record/z.any 대신 z.unknown() 사용:
   // Tiptap JSON 형태는 { type, content, ... } 이지만 버전별 shape 변동이 있으므로
   // 서버는 저장만 담당하고 구조 검증은 하지 않는다.
