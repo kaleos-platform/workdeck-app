@@ -347,9 +347,13 @@ export function PricingChannelBoardCard({
         </div>
       </div>
 
-      {/* 비용 구성 스택바 */}
+      {/* 비용 구성 스택바 — 프로모션 적용 시 프로모션 후(promoCell) 비용/마진 + 할인 세그먼트 */}
       <div className="mt-4">
-        <PricingCostBar cell={cell} />
+        <PricingCostBar
+          cell={hasPromo && promoCell ? promoCell : cell}
+          discount={hasPromo && promoCell ? Math.max(0, cell.finalPrice - promoCell.finalPrice) : 0}
+          basePrice={cell.finalPrice}
+        />
       </div>
 
       {/* 프로모션 여력 */}

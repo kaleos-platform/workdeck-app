@@ -418,10 +418,11 @@ export function PricingQuickFlow({
         retailPrice: r.retailPrice,
         quantity: r.quantity,
       })),
-      packagingCost: settings.defaultPackagingCost,
+      // 포장비 항목 제거 — 원가에 포함으로 간주(별도 비용 미반영)
+      packagingCost: 0,
       salePrice: 0,
     }
-  }, [confirmedRows, settings.defaultPackagingCost])
+  }, [confirmedRows])
 
   // ── 채널 선택 ─────────────────────────────────────────────────────────────
   const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>([])
@@ -1212,7 +1213,7 @@ export function PricingQuickFlow({
               <FieldRow
                 label="반품율"
                 sub={`반품 1건 ₩${fmt(live.returnHandling)} 처리`}
-                tooltip="전체 주문 대비 반품 비율. 반품 1건당 처리비만 비용에 반영합니다(매출 차감 아님)."
+                tooltip="전체 주문 대비 반품 비율. 반품 비용 = 반품 처리비 × 반품율 (매출 차감이 아니라 건당 처리비만 비용에 반영)."
               >
                 <SuffixInput
                   value={String(Math.round(live.returnRate * 1000) / 10)}
@@ -1227,7 +1228,7 @@ export function PricingQuickFlow({
               <FieldRow
                 label="반품 처리비"
                 sub="왕복 물류 + 검수 · 건당"
-                tooltip="반품 1건당 왕복 물류·검수 비용. 반품율과 곱해 건당 비용으로 반영합니다."
+                tooltip="반품 1건당 왕복 물류·검수 비용. 반품 비용 = 반품 처리비 × 반품율 로 반영합니다."
               >
                 <SuffixInput
                   value={String(live.returnHandling)}
@@ -1434,10 +1435,15 @@ export function PricingQuickFlow({
           {/* ④ 프로모션 */}
           <StepCard step={4} title="프로모션">
             <PricingPromotionCard value={promotion} onChange={setPromotion} embedded />
-            <div className="mt-3 flex items-center justify-between rounded-md bg-[var(--ps-muted)] px-3 py-2">
-              <span className="text-[11px] text-muted-foreground">권장가 …900원 스냅</span>
-              <Switch checked={snap} onCheckedChange={setSnap} />
-            </div>
+            <TooltipProvider delayDuration={200}>
+              <div className="mt-3 flex items-center justify-between rounded-md bg-[var(--ps-muted)] px-3 py-2">
+                <span className="text-[11px] text-muted-foreground">
+                  권장 판매가 끝자리 올림 표시
+                  <HelpTip text="권장 판매가의 끝자리를 900으로 올려 표시합니다(예: 32,350원 → 32,900원). 마진 계산에는 영향이 없고 표시 가격만 정돈하는 심리적 가격 기능입니다." />
+                </span>
+                <Switch checked={snap} onCheckedChange={setSnap} />
+              </div>
+            </TooltipProvider>
           </StepCard>
         </div>
 

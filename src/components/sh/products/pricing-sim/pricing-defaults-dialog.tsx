@@ -100,9 +100,6 @@ function SuffixInput({
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
 
 export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onSaved }: Props) {
-  // 기본 비용
-  const packId = useId()
-
   // 반품 / 교환
   const retRateId = useId()
   const retShipId = useId()
@@ -120,9 +117,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const savedRef = useRef<PricingFullSettings>(initialSettings)
 
   // ── 편집 상태 (편집 가능한 필드만) ─────────────────────────────────────────
-
-  // 기본 비용
-  const [packCost, setPackCost] = useState(String(initialSettings.defaultPackagingCost))
 
   // 반품 / 교환 (0~1 → % 표시)
   const [returnRate, setReturnRate] = useState(String(initialSettings.defaultReturnRate * 100))
@@ -145,7 +139,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
   useEffect(() => {
     const s = initialSettings
-    setPackCost(String(s.defaultPackagingCost))
     setReturnRate(String(s.defaultReturnRate * 100))
     setReturnShipping(String(s.defaultReturnShipping))
     setIncludeVat(s.defaultIncludeVat)
@@ -156,7 +149,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     savedRef.current = s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    initialSettings.defaultPackagingCost,
     initialSettings.defaultReturnRate,
     initialSettings.defaultReturnShipping,
     initialSettings.defaultIncludeVat,
@@ -170,7 +162,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
   function resetToSaved() {
     const s = savedRef.current
-    setPackCost(String(s.defaultPackagingCost))
     setReturnRate(String(s.defaultReturnRate * 100))
     setReturnShipping(String(s.defaultReturnShipping))
     setIncludeVat(s.defaultIncludeVat)
@@ -189,7 +180,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
   // ── dirty 체크 ─────────────────────────────────────────────────────────────
 
-  const packVal = parseFloat(packCost)
   const retRateVal = parseFloat(returnRate)
   const retShipVal = parseFloat(returnShipping)
   const vatRateVal = parseFloat(vatRate)
@@ -198,7 +188,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const minMgnVal = parseFloat(minMargin)
 
   const allValid =
-    !isNaN(packVal) &&
     !isNaN(retRateVal) &&
     !isNaN(retShipVal) &&
     !isNaN(vatRateVal) &&
@@ -209,8 +198,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const ref = savedRef.current
   const isDirty =
     allValid &&
-    (packVal !== ref.defaultPackagingCost ||
-      retRateVal / 100 !== ref.defaultReturnRate ||
+    (retRateVal / 100 !== ref.defaultReturnRate ||
       retShipVal !== ref.defaultReturnShipping ||
       includeVat !== ref.defaultIncludeVat ||
       vatRateVal / 100 !== ref.defaultVatRate ||
@@ -241,7 +229,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         body: JSON.stringify({
           defaultAdCostPct: prev.defaultAdCostPct,
           defaultOperatingCostPct: prev.defaultOperatingCostPct,
-          defaultPackagingCost: packVal,
+          defaultPackagingCost: prev.defaultPackagingCost,
           defaultChannelFeePct: prev.defaultChannelFeePct,
           defaultShippingCost: prev.defaultShippingCost,
           defaultReturnRate: retRateVal / 100,
@@ -265,7 +253,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
       const saved: PricingFullSettings = {
         defaultAdCostPct: Number(s.defaultAdCostPct ?? prev.defaultAdCostPct),
         defaultOperatingCostPct: Number(s.defaultOperatingCostPct ?? prev.defaultOperatingCostPct),
-        defaultPackagingCost: Number(s.defaultPackagingCost ?? packVal),
+        defaultPackagingCost: Number(s.defaultPackagingCost ?? prev.defaultPackagingCost),
         defaultChannelFeePct: Number(s.defaultChannelFeePct ?? prev.defaultChannelFeePct),
         defaultShippingCost: Number(s.defaultShippingCost ?? prev.defaultShippingCost),
         autoApplyChannelFee: Boolean(s.autoApplyChannelFee ?? prev.autoApplyChannelFee),
@@ -282,7 +270,6 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
 
       savedRef.current = saved
       Promise.resolve().then(() => {
-        setPackCost(String(saved.defaultPackagingCost))
         setReturnRate(String(saved.defaultReturnRate * 100))
         setReturnShipping(String(saved.defaultReturnShipping))
         setIncludeVat(saved.defaultIncludeVat)
@@ -317,33 +304,15 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="basic" className="text-xs">
-              비용 · 반품
+              반품 · VAT
             </TabsTrigger>
             <TabsTrigger value="margin" className="text-xs">
               마진 등급
             </TabsTrigger>
           </TabsList>
 
-          {/* ── 탭 1: 비용 · 반품 (포장비 + 반품/VAT 통합) ── */}
+          {/* ── 탭 1: 반품 · VAT ── */}
           <TabsContent value="basic" className="mt-4 space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor={packId} className="text-xs">
-                포장비 (원/건)
-              </Label>
-              <SuffixInput
-                id={packId}
-                value={packCost}
-                onChange={setPackCost}
-                suffix="₩"
-                min={0}
-                step={1}
-                placeholder="500"
-                dirty={!isNaN(packVal) && packVal !== ref.defaultPackagingCost}
-              />
-              <p className="text-xs text-muted-foreground">
-                1건당 포장 재료비 (박스, 테이프, 완충재 등)
-              </p>
-            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor={retRateId} className="text-xs">
