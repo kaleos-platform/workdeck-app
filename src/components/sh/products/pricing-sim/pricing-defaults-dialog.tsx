@@ -50,6 +50,8 @@ export type PricingFullSettings = {
   platformTargetGood: number
   platformTargetFair: number
   minimumAcceptableMargin: number
+  // 적정 원가율 상한 (0~1 단위 DB 저장, UI에서 % 표시) — 초과 시 KPI 경고
+  maxCostRatio: number
 }
 
 type Props = {
@@ -113,6 +115,9 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const plFairId = useId()
   const minMgnId = useId()
 
+  // 원가율
+  const maxCostId = useId()
+
   // 저장 완료 기준점 (dirty 체크용 + 미편집 필드 통과 저장 소스)
   const savedRef = useRef<PricingFullSettings>(initialSettings)
 
@@ -133,6 +138,9 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const [platformFair, setPlatformFair] = useState(String(initialSettings.platformTargetFair * 100))
   const [minMargin, setMinMargin] = useState(String(initialSettings.minimumAcceptableMargin * 100))
 
+  // 적정 원가율 상한 (0~1 → % 표시)
+  const [maxCostRatio, setMaxCostRatio] = useState(String(initialSettings.maxCostRatio * 100))
+
   const [saving, setSaving] = useState(false)
 
   // ── initialSettings 외부 변경 시 동기화 ────────────────────────────────────
@@ -146,6 +154,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     setPlatformGood(String(s.platformTargetGood * 100))
     setPlatformFair(String(s.platformTargetFair * 100))
     setMinMargin(String(s.minimumAcceptableMargin * 100))
+    setMaxCostRatio(String(s.maxCostRatio * 100))
     savedRef.current = s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -156,6 +165,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     initialSettings.platformTargetGood,
     initialSettings.platformTargetFair,
     initialSettings.minimumAcceptableMargin,
+    initialSettings.maxCostRatio,
   ])
 
   // ── Dialog 닫힐 때 미저장 변경사항 리셋 ───────────────────────────────────
@@ -169,6 +179,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     setPlatformGood(String(s.platformTargetGood * 100))
     setPlatformFair(String(s.platformTargetFair * 100))
     setMinMargin(String(s.minimumAcceptableMargin * 100))
+    setMaxCostRatio(String(s.maxCostRatio * 100))
   }
 
   function handleOpenChange(next: boolean) {
@@ -186,6 +197,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
   const plGoodVal = parseFloat(platformGood)
   const plFairVal = parseFloat(platformFair)
   const minMgnVal = parseFloat(minMargin)
+  const maxCostVal = parseFloat(maxCostRatio)
 
   const allValid =
     !isNaN(retRateVal) &&
@@ -193,7 +205,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
     !isNaN(vatRateVal) &&
     !isNaN(plGoodVal) &&
     !isNaN(plFairVal) &&
-    !isNaN(minMgnVal)
+    !isNaN(minMgnVal) &&
+    !isNaN(maxCostVal)
 
   const ref = savedRef.current
   const isDirty =
@@ -204,7 +217,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
       vatRateVal / 100 !== ref.defaultVatRate ||
       plGoodVal / 100 !== ref.platformTargetGood ||
       plFairVal / 100 !== ref.platformTargetFair ||
-      minMgnVal / 100 !== ref.minimumAcceptableMargin)
+      minMgnVal / 100 !== ref.minimumAcceptableMargin ||
+      maxCostVal / 100 !== ref.maxCostRatio)
 
   // ── 저장 ───────────────────────────────────────────────────────────────────
 
@@ -242,6 +256,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
           platformTargetGood: plGoodVal / 100,
           platformTargetFair: plFairVal / 100,
           minimumAcceptableMargin: minMgnVal / 100,
+          maxCostRatio: maxCostVal / 100,
         }),
       })
 
@@ -266,6 +281,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         platformTargetGood: Number(s.platformTargetGood ?? plGoodVal / 100),
         platformTargetFair: Number(s.platformTargetFair ?? plFairVal / 100),
         minimumAcceptableMargin: Number(s.minimumAcceptableMargin ?? minMgnVal / 100),
+        maxCostRatio: Number(s.maxCostRatio ?? maxCostVal / 100),
       }
 
       savedRef.current = saved
@@ -277,6 +293,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
         setPlatformGood(String(saved.platformTargetGood * 100))
         setPlatformFair(String(saved.platformTargetFair * 100))
         setMinMargin(String(saved.minimumAcceptableMargin * 100))
+        setMaxCostRatio(String(saved.maxCostRatio * 100))
       })
 
       toast.success('기본값이 저장되었습니다')
@@ -307,7 +324,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
               반품 · VAT
             </TabsTrigger>
             <TabsTrigger value="margin" className="text-xs">
-              마진 등급
+              마진 · 원가율
             </TabsTrigger>
           </TabsList>
 
@@ -452,6 +469,27 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
               />
               <p className="text-xs text-muted-foreground">
                 할인 한계 계산 시 기준이 되는 최소 마진율입니다.
+              </p>
+            </div>
+
+            {/* 적정 원가율 상한 */}
+            <div className="space-y-1.5 border-t pt-4">
+              <Label htmlFor={maxCostId} className="text-xs">
+                적정 원가율 상한 (%)
+              </Label>
+              <SuffixInput
+                id={maxCostId}
+                value={maxCostRatio}
+                onChange={setMaxCostRatio}
+                suffix="%"
+                min={0}
+                max={100}
+                step={0.1}
+                placeholder="33"
+                dirty={!isNaN(maxCostVal) && maxCostVal / 100 !== ref.maxCostRatio}
+              />
+              <p className="text-xs text-muted-foreground">
+                원가율(원가 ÷ 소비자가)이 이 값을 초과하면 요약 지표에서 경고로 표시됩니다.
               </p>
             </div>
           </TabsContent>
