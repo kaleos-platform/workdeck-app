@@ -63,6 +63,7 @@ export default async function BuildPage({ params }: PageProps) {
       contents: posting.contents.map((c) => ({
         id: c.id,
         contentType: c.contentType as WizardData['posting']['contents'][number]['contentType'],
+        title: c.title,
         data: c.data,
         imagePath: c.imagePath,
         sortOrder: c.sortOrder,

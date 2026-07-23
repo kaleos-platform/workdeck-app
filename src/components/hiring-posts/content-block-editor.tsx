@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useId, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
 import {
   Plus,
@@ -11,14 +10,14 @@ import {
   ArrowDown,
   Type,
   ImageIcon,
-  Upload,
   Save,
   MousePointerClick,
   Briefcase,
-  Maximize2,
   FolderOpen,
   TriangleAlert,
   Shapes,
+  Pencil,
+  SquarePen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,27 +35,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Editor } from '@/components/sc/editor/editor'
-import { cn } from '@/lib/utils'
-import { BUTTON_DEFAULT_COLOR, BUTTON_PRESET_COLORS } from '@/lib/hiring/button-color'
-import { AutoSaveIndicator } from './autosave-indicator'
-import { getPostingAssetPublicUrl, type WizardContentData } from './build-types'
-import { buttonDataSchema, type ButtonData } from '@/lib/validations/hiring-posts'
+import type { WizardContentData, WizardPositionData } from './build-types'
+import type { ButtonData } from '@/lib/validations/hiring-posts'
 import type { ExcalidrawScene } from './excalidraw-canvas'
-
-const ExcalidrawCanvas = dynamic(
-  () => import('./excalidraw-canvas').then((m) => m.ExcalidrawCanvas),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-[480px] items-center justify-center rounded-lg border text-sm text-muted-foreground">
-        캔버스 불러오는 중…
-      </div>
-    ),
-  }
-)
-
-type ContentType = 'text' | 'image' | 'button' | 'positions' | 'design'
+import { CONTENT_TYPE_META, type ContentType } from './block-editors'
+import { BlockEditOverlay } from './block-edit-overlay'
+import { ContentBlockPreview } from './posting-preview'
 
 type TemplateItem = {
   id: string
@@ -74,7 +58,7 @@ type AppliedTemplate = {
 type Props = {
   postingId: string
   contents: WizardContentData[]
-  positions: { id: string; name: string }[]
+  positions: WizardPositionData[]
   appliedTemplate: AppliedTemplate | null
   onChange: (contents: WizardContentData[]) => void
 }
@@ -87,12 +71,36 @@ function formatTemplateAt(at: string | null): string | null {
   return d.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-const CONTENT_TYPE_META: Record<ContentType, { icon: typeof Type; label: string }> = {
-  text: { icon: Type, label: '텍스트' },
-  image: { icon: ImageIcon, label: '이미지' },
-  button: { icon: MousePointerClick, label: '버튼' },
-  positions: { icon: Briefcase, label: '직무 정보' },
-  design: { icon: Shapes, label: '디자인' },
+// Tiptap doc 에 실제 내용(텍스트/이미지 등)이 있는지 — 빈 문단만 있는 doc 은 false.
+// (에디터를 열었다 닫으면 onChange 가 빈 문단 doc 를 내보내 c.data 가 truthy 가 되므로 값만으로 판단 불가.)
+function textDocHasContent(data: unknown): boolean {
+  if (!data || typeof data !== 'object') return false
+  const walk = (node: unknown): boolean => {
+    if (!node || typeof node !== 'object') return false
+    const n = node as { type?: string; text?: string; content?: unknown[] }
+    if (typeof n.text === 'string' && n.text.trim() !== '') return true
+    // 텍스트가 아닌 leaf 노드(이미지·구분선 등)도 내용으로 간주.
+    if (n.type && n.type !== 'doc' && n.type !== 'paragraph' && !n.content) return true
+    return Array.isArray(n.content) && n.content.some(walk)
+  }
+  return walk(data)
+}
+
+// 리스트 썸네일에 표시할 실제 내용이 있는지 — 없으면 "편집을 눌러 작성" 안내.
+function blockHasContent(c: WizardContentData): boolean {
+  switch (c.contentType) {
+    case 'image':
+    case 'design':
+      return Boolean(c.imagePath)
+    case 'button':
+      return Boolean((c.data as { title?: string } | null)?.title)
+    case 'positions':
+      return true
+    case 'text':
+      return textDocHasContent(c.data)
+    default:
+      return false
+  }
 }
 
 export function ContentBlockEditor({
@@ -108,8 +116,13 @@ export function ContentBlockEditor({
   const [savingTemplate, setSavingTemplate] = useState(false)
   // 텍스트 블록별 debounce 타이머 (data 저장)
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
-  const [focusBlockId, setFocusBlockId] = useState<string | null>(null)
-  const [remountTick, setRemountTick] = useState(0)
+  // 풀스크린 편집 오버레이 대상 블록
+  const [editingBlockId, setEditingBlockId] = useState<string | null>(null)
+  // 제목 인라인 편집
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
+  const [titleDraft, setTitleDraft] = useState('')
+  // 한 편집 세션에서 커밋/취소를 1회만 — Enter·blur·Escape 가 겹쳐 중복 PATCH·취소 무효화되는 것 방지.
+  const titleHandledRef = useRef(false)
   // 템플릿 저장/불러오기 다이얼로그
   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
   const [loadDialogOpen, setLoadDialogOpen] = useState(false)
@@ -122,6 +135,9 @@ export function ContentBlockEditor({
   const [saveMode, setSaveMode] = useState<'overwrite' | 'new'>('new')
 
   const hasPositionsBlock = contents.some((c) => c.contentType === 'positions')
+  // 비동기 저장 완료 후 최신 contents 를 참조하기 위한 ref(await 동안 부모 state 가 갱신될 수 있음)
+  const contentsRef = useRef(contents)
+  contentsRef.current = contents
 
   async function patchContent(contentId: string, body: Record<string, unknown>) {
     const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents/${contentId}`, {
@@ -187,12 +203,45 @@ export function ContentBlockEditor({
     }
   }
 
+  // 제목 인라인 편집 커밋 — 빈 값은 null(리스트에서 "카드 N" 폴백)
+  function startEditTitle(c: WizardContentData) {
+    titleHandledRef.current = false
+    setEditingTitleId(c.id)
+    setTitleDraft(c.title ?? '')
+  }
+  // Escape 취소 — blur 재커밋을 막기 위해 handled 플래그를 세운 뒤 닫는다.
+  function cancelTitle() {
+    titleHandledRef.current = true
+    setEditingTitleId(null)
+  }
+  async function commitTitle(contentId: string) {
+    if (titleHandledRef.current) return
+    titleHandledRef.current = true
+    const prev = contents.find((c) => c.id === contentId)?.title ?? null
+    const raw = titleDraft.trim()
+    const title = raw === '' ? null : raw
+    setEditingTitleId(null)
+    if (title === prev) return
+    onChange(contents.map((c) => (c.id === contentId ? { ...c, title } : c)))
+    try {
+      await patchContent(contentId, { title })
+    } catch {
+      toast.error('제목 저장에 실패했습니다')
+      // 저장 실패 → 낙관적 갱신 롤백(진행 중 다른 저장 보존 위해 최신 ref 기준).
+      onChange(contentsRef.current.map((c) => (c.id === contentId ? { ...c, title: prev } : c)))
+    }
+  }
+
   // 텍스트 편집 → 로컬 즉시 반영 + debounce(700ms) PATCH
   function handleTextChange(contentId: string, doc: unknown) {
     onChange(contents.map((c) => (c.id === contentId ? { ...c, data: doc } : c)))
     clearTimeout(timers.current[contentId])
     timers.current[contentId] = setTimeout(() => {
-      patchContent(contentId, { data: doc }).catch(() => toast.error('본문 저장에 실패했습니다'))
+      patchContent(contentId, { data: doc })
+        .catch(() => toast.error('본문 저장에 실패했습니다'))
+        .finally(() => {
+          delete timers.current[contentId]
+        })
     }, 700)
   }
 
@@ -209,7 +258,9 @@ export function ContentBlockEditor({
         mimeType: file.type || undefined,
       })
       onChange(
-        contents.map((c) => (c.id === contentId ? { ...c, imagePath: updated.imagePath } : c))
+        contentsRef.current.map((c) =>
+          c.id === contentId ? { ...c, imagePath: updated.imagePath } : c
+        )
       )
       toast.success('이미지를 업로드했습니다')
     } catch (err) {
@@ -222,9 +273,8 @@ export function ContentBlockEditor({
     return patchContent(contentId, { data })
   }
 
-  async function handleDesignSave(contentId: string, scene: unknown, imageBase64: string) {
+  async function handleDesignSave(contentId: string, scene: ExcalidrawScene, imageBase64: string) {
     // Vercel serverless 함수의 요청 바디 한도(~4.5MB) 아래에서 사전 차단해 친절한 안내를 제공한다.
-    // (초과 시 플랫폼이 413/제네릭 실패로 떨어뜨려 원인 불명 토스트만 뜨므로 여기서 먼저 막는다.)
     // scene(붙여넣은 이미지 dataURL 포함) + PNG 를 합산, JSON 오버헤드 여유로 4MB 로 보수적 설정.
     const payloadChars = JSON.stringify(scene).length + imageBase64.length
     if (payloadChars > 4 * 1024 * 1024) {
@@ -234,7 +284,7 @@ export function ContentBlockEditor({
     try {
       const updated = await patchContent(contentId, { data: scene, imageBase64 })
       onChange(
-        contents.map((c) =>
+        contentsRef.current.map((c) =>
           c.id === contentId ? { ...c, data: scene, imagePath: updated.imagePath } : c
         )
       )
@@ -242,6 +292,23 @@ export function ContentBlockEditor({
     } catch {
       toast.error('디자인 저장에 실패했습니다')
     }
+  }
+
+  // 오버레이 닫기 — 열린 블록의 pending 텍스트 저장을 flush.
+  function handleOverlayClose() {
+    const id = editingBlockId
+    if (id) {
+      const t = timers.current[id]
+      if (t) {
+        clearTimeout(t)
+        delete timers.current[id]
+        const c = contents.find((x) => x.id === id)
+        if (c && c.contentType === 'text') {
+          patchContent(id, { data: c.data }).catch(() => toast.error('본문 저장에 실패했습니다'))
+        }
+      }
+    }
+    setEditingBlockId(null)
   }
 
   function openSaveDialog() {
@@ -324,7 +391,6 @@ export function ContentBlockEditor({
       setTemplateInfo(
         applied ? { id: applied.id, name: applied.name, at: new Date().toISOString() } : null
       )
-      setRemountTick((t) => t + 1)
       setLoadDialogOpen(false)
       toast.success('템플릿을 적용했습니다')
       router.refresh()
@@ -335,7 +401,9 @@ export function ContentBlockEditor({
     }
   }
 
-  const focusBlock = focusBlockId ? contents.find((c) => c.id === focusBlockId) : null
+  const editingBlock = editingBlockId
+    ? (contents.find((c) => c.id === editingBlockId) ?? null)
+    : null
 
   return (
     <div className="space-y-4">
@@ -380,28 +448,61 @@ export function ContentBlockEditor({
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {contents.map((c, idx) => {
-          const meta = CONTENT_TYPE_META[c.contentType]
+          const meta = CONTENT_TYPE_META[c.contentType as ContentType]
           // 알 수 없는(레거시) contentType — 렌더 크래시 방지, 삭제만 허용
           const isUnsupported = !meta
           const Icon = meta?.icon ?? TriangleAlert
           return (
             <div key={c.id} className="space-y-3 rounded-lg border p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Icon className="size-4 text-muted-foreground" />
-                  {meta?.label ?? '지원하지 않는'} 블록
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                  <Icon className="size-4 shrink-0 text-muted-foreground" />
+                  {editingTitleId === c.id ? (
+                    <Input
+                      autoFocus
+                      value={titleDraft}
+                      onChange={(e) => setTitleDraft(e.target.value)}
+                      onBlur={() => commitTitle(c.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          commitTitle(c.id)
+                        } else if (e.key === 'Escape') {
+                          e.preventDefault()
+                          cancelTitle()
+                        }
+                      }}
+                      maxLength={100}
+                      className="h-7 w-48"
+                    />
+                  ) : (
+                    <>
+                      <span className="truncate">{c.title?.trim() || `카드 ${idx + 1}`}</span>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        aria-label="제목 편집"
+                        onClick={() => startEditTitle(c)}
+                      >
+                        <Pencil />
+                      </Button>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {meta?.label ?? '지원하지 않는'}
+                      </span>
+                    </>
+                  )}
                 </div>
-                <div className="flex items-center gap-1">
-                  {c.contentType === 'text' && (
+                <div className="flex shrink-0 items-center gap-1">
+                  {!isUnsupported && (
                     <Button
-                      size="icon-sm"
-                      variant="ghost"
-                      aria-label="크게 작성"
-                      onClick={() => setFocusBlockId(c.id)}
+                      size="sm"
+                      variant="outline"
+                      className="mr-1"
+                      onClick={() => setEditingBlockId(c.id)}
                     >
-                      <Maximize2 />
+                      <SquarePen /> 편집
                     </Button>
                   )}
                   <Button
@@ -430,31 +531,14 @@ export function ContentBlockEditor({
                 <p className="text-xs text-muted-foreground">
                   지원하지 않는 블록입니다. 삭제 후 새 블록을 추가하세요.
                 </p>
-              ) : c.contentType === 'text' ? (
-                <Editor
-                  key={`${c.id}-${remountTick}`}
-                  initialDoc={c.data ?? undefined}
-                  editable
-                  onChange={(doc) => handleTextChange(c.id, doc)}
-                />
-              ) : c.contentType === 'button' ? (
-                <ButtonBlock
-                  data={c.data as ButtonData | null}
-                  onSave={(data) => handleButtonSave(c.id, data)}
-                />
-              ) : c.contentType === 'positions' ? (
-                <PositionsBlock positions={positions} />
-              ) : c.contentType === 'design' ? (
-                <DesignBlock
-                  key={`${c.id}-${remountTick}`}
-                  scene={c.data}
-                  onSave={(scene, imageBase64) => handleDesignSave(c.id, scene, imageBase64)}
-                />
+              ) : blockHasContent(c) ? (
+                <div className="pointer-events-none max-h-32 overflow-hidden rounded-md border bg-muted/20 p-3">
+                  <ContentBlockPreview content={c} positions={positions} />
+                </div>
               ) : (
-                <ImageBlock
-                  imagePath={c.imagePath}
-                  onSelect={(file) => handleImageSelect(c.id, file)}
-                />
+                <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
+                  아직 내용이 없습니다. 편집을 눌러 작성하세요.
+                </div>
               )}
             </div>
           )
@@ -485,6 +569,18 @@ export function ContentBlockEditor({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* 풀스크린 편집 오버레이 */}
+      <BlockEditOverlay
+        open={editingBlockId !== null}
+        content={editingBlock}
+        positions={positions}
+        onClose={handleOverlayClose}
+        onTextChange={handleTextChange}
+        onButtonSave={handleButtonSave}
+        onImageSelect={handleImageSelect}
+        onDesignSave={handleDesignSave}
+      />
 
       {/* 템플릿으로 저장 다이얼로그 */}
       <Dialog
@@ -631,309 +727,6 @@ export function ContentBlockEditor({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <Dialog
-        open={focusBlockId !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setFocusBlockId(null)
-            setRemountTick((t) => t + 1)
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>본문 작성</DialogTitle>
-          </DialogHeader>
-          {focusBlock && (
-            <Editor
-              initialDoc={focusBlock.data ?? undefined}
-              editable
-              variant="full"
-              onChange={(doc) => handleTextChange(focusBlock.id, doc)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
-
-function ButtonBlock({
-  data,
-  onSave,
-}: {
-  data: ButtonData | null
-  onSave: (data: ButtonData) => Promise<unknown>
-}) {
-  const [title, setTitle] = useState(data?.title ?? '지원하기')
-  const [linkType, setLinkType] = useState<'form' | 'url'>(data?.linkType ?? 'form')
-  const [url, setUrl] = useState(data?.url ?? '')
-  const [color, setColor] = useState(data?.color ?? BUTTON_DEFAULT_COLOR)
-  const [error, setError] = useState<string | null>(null)
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const uid = useId()
-
-  type ButtonDraft = { title: string; linkType: 'form' | 'url'; url: string; color: string }
-
-  function attemptSave(next: ButtonDraft) {
-    const result = buttonDataSchema.safeParse({
-      title: next.title,
-      linkType: next.linkType,
-      url: next.url || undefined,
-      color: next.color,
-    })
-    if (!result.success) {
-      const first = result.error.issues[0]
-      setError(first?.message ?? '입력 값을 확인하세요')
-      return
-    }
-    setError(null)
-    setStatus('saving')
-    onSave(result.data)
-      .then(() => setStatus('saved'))
-      .catch(() => {
-        toast.error('버튼 저장에 실패했습니다')
-        setStatus('idle')
-      })
-  }
-
-  function debouncedSave(next: ButtonDraft) {
-    clearTimeout(timer.current)
-    timer.current = setTimeout(() => attemptSave(next), 600)
-  }
-
-  useEffect(() => {
-    return () => clearTimeout(timer.current)
-  }, [])
-
-  function handleTitleChange(value: string) {
-    setTitle(value)
-    debouncedSave({ title: value, linkType, url, color })
-  }
-  function handleTitleBlur() {
-    clearTimeout(timer.current)
-    attemptSave({ title, linkType, url, color })
-  }
-  function handleUrlChange(value: string) {
-    setUrl(value)
-    debouncedSave({ title, linkType, url: value, color })
-  }
-  function handleUrlBlur() {
-    clearTimeout(timer.current)
-    attemptSave({ title, linkType, url, color })
-  }
-  function handleLinkTypeChange(value: 'form' | 'url') {
-    setLinkType(value)
-    clearTimeout(timer.current)
-    // url 전환 직후 빈 URL로 즉시 검증하면 에러가 뜨므로 입력을 기다린다
-    if (value === 'url' && !url.trim()) {
-      setError(null)
-      return
-    }
-    attemptSave({ title, linkType: value, url, color })
-  }
-  function handleColorChange(value: string, immediate: boolean) {
-    setColor(value)
-    const next = { title, linkType, url, color: value }
-    if (immediate) {
-      clearTimeout(timer.current)
-      attemptSave(next)
-    } else {
-      debouncedSave(next)
-    }
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <Label htmlFor={`${uid}-btn-title`}>버튼 제목</Label>
-          <AutoSaveIndicator status={status} />
-        </div>
-        <Input
-          id={`${uid}-btn-title`}
-          value={title}
-          onChange={(e) => handleTitleChange(e.target.value)}
-          onBlur={handleTitleBlur}
-          placeholder="예: 지금 바로 지원하기"
-          maxLength={50}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label>링크 유형</Label>
-        <div className="flex gap-4 text-sm">
-          <label className="flex cursor-pointer items-center gap-1.5">
-            <input
-              type="radio"
-              name={`${uid}-btn-linktype`}
-              value="form"
-              checked={linkType === 'form'}
-              onChange={() => handleLinkTypeChange('form')}
-            />
-            지원서 폼 연결
-          </label>
-          <label className="flex cursor-pointer items-center gap-1.5">
-            <input
-              type="radio"
-              name={`${uid}-btn-linktype`}
-              value="url"
-              checked={linkType === 'url'}
-              onChange={() => handleLinkTypeChange('url')}
-            />
-            URL 직접 입력
-          </label>
-        </div>
-      </div>
-      {linkType === 'url' && (
-        <div className="space-y-1.5">
-          <Label htmlFor={`${uid}-btn-url`}>URL</Label>
-          <Input
-            id={`${uid}-btn-url`}
-            value={url}
-            onChange={(e) => handleUrlChange(e.target.value)}
-            onBlur={handleUrlBlur}
-            placeholder="https://example.com"
-          />
-        </div>
-      )}
-      <div className="space-y-1.5">
-        <Label>버튼 색상</Label>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {BUTTON_PRESET_COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              aria-label={`버튼 색상 ${c}`}
-              className={cn(
-                'size-7 cursor-pointer rounded-full border transition',
-                color.toLowerCase() === c.toLowerCase()
-                  ? 'ring-2 ring-primary ring-offset-2 ring-offset-background'
-                  : 'hover:scale-110'
-              )}
-              style={{ backgroundColor: c }}
-              onClick={() => handleColorChange(c, true)}
-            />
-          ))}
-          <label
-            className="relative ml-1 flex size-7 cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)]"
-            aria-label="커스텀 색상"
-            title="커스텀 색상"
-          >
-            <input
-              type="color"
-              value={color}
-              className="absolute inset-0 size-full cursor-pointer opacity-0"
-              onChange={(e) => handleColorChange(e.target.value, false)}
-              onBlur={() => handleColorChange(color, true)}
-            />
-          </label>
-        </div>
-      </div>
-      {error && <p className="text-xs text-destructive">{error}</p>}
-    </div>
-  )
-}
-
-function PositionsBlock({ positions }: { positions: { id: string; name: string }[] }) {
-  return (
-    <div className="space-y-2">
-      {positions.length > 0 ? (
-        <ul className="space-y-1">
-          {positions.map((p) => (
-            <li key={p.id} className="rounded-md border px-3 py-2 text-sm">
-              {p.name}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground">
-          등록된 직무가 없습니다
-        </p>
-      )}
-      <p className="text-xs text-muted-foreground">
-        1단계 기본 정보에서 직무를 편집하세요. 공개 페이지에는 이 위치에 근무조건 카드가 표시됩니다.
-      </p>
-    </div>
-  )
-}
-
-function DesignBlock({
-  scene,
-  onSave,
-}: {
-  scene: unknown
-  onSave: (scene: ExcalidrawScene, imageBase64: string) => Promise<void>
-}) {
-  const [saving, setSaving] = useState(false)
-  // 저장된 scene → excalidraw initialData 복원 (files 포함, 재편집 보장)
-  const initialData =
-    scene && typeof scene === 'object' && 'elements' in (scene as Record<string, unknown>)
-      ? {
-          elements: (scene as { elements?: unknown[] }).elements as never,
-          appState: (scene as { appState?: object }).appState as never,
-          files: (scene as { files?: unknown }).files as never,
-        }
-      : null
-  return (
-    <ExcalidrawCanvas
-      initialData={initialData}
-      saving={saving}
-      onSave={async (s, img) => {
-        setSaving(true)
-        try {
-          await onSave(s, img)
-        } finally {
-          setSaving(false)
-        }
-      }}
-    />
-  )
-}
-
-function ImageBlock({
-  imagePath,
-  onSelect,
-}: {
-  imagePath: string | null
-  onSelect: (file: File) => void
-}) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  return (
-    <div className="space-y-2">
-      {imagePath ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={getPostingAssetPublicUrl(imagePath)}
-          alt="블록 이미지"
-          className="max-h-64 w-full rounded-md border object-contain"
-        />
-      ) : (
-        <div className="flex h-32 items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-          이미지가 없습니다
-        </div>
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) onSelect(file)
-          e.target.value = ''
-        }}
-      />
-      <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
-          <Upload /> {imagePath ? '이미지 교체' : '이미지 업로드'}
-        </Button>
-        <p className="text-xs text-muted-foreground">
-          권장: 가로 1280px 이상(표시 폭 640px · 선명도 2x) · JPG/PNG · 10MB 이하. 세로 길이는
-          자유입니다.
-        </p>
-      </div>
     </div>
   )
 }

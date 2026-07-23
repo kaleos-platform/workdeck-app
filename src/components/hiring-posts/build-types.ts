@@ -1,6 +1,10 @@
 import type { PostingStatus } from './status-badge'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 
+// 디자인 블록 캔버스 아트보드 치수 (excalidraw-canvas 와 공유 — 여기 두어 SSR 안전 모듈에서 값 import 가능)
+export const CANVAS_WIDTH = 640
+export const DEFAULT_CANVAS_HEIGHT = 480
+
 // 위저드가 서버에서 받는 직렬화된 공고 상세 형태
 export type WizardPositionData = {
   id: string
@@ -23,6 +27,7 @@ export type WizardPositionData = {
 export type WizardContentData = {
   id: string
   contentType: 'image' | 'text' | 'button' | 'positions' | 'design'
+  title: string | null
   data: unknown
   imagePath: string | null
   sortOrder: number
