@@ -1282,6 +1282,7 @@ export const ProductPricingSettingsScalarFieldEnum = {
   platformTargetGood: 'platformTargetGood',
   platformTargetFair: 'platformTargetFair',
   minimumAcceptableMargin: 'minimumAcceptableMargin',
+  maxCostRatio: 'maxCostRatio',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
