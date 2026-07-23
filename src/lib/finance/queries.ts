@@ -87,7 +87,8 @@ export interface QueryTransactionsOptions {
  * space 내 categoryId의 self + 재귀 자손 id 집합.
  * 재무 트리는 대분류→리프 1단계지만 깊어져도 안전하도록 BFS. 카테고리 수가 적어 1쿼리로 로드.
  */
-async function collectSelfAndDescendants(spaceId: string, rootId: string): Promise<string[]> {
+async function collectSelfAndDescendants(spaceId: string, rootIds: string[]): Promise<string[]> {
+  if (rootIds.length === 0) return []
   const cats = await prisma.finCategory.findMany({
     where: { spaceId },
     select: { id: true, parentId: true },
@@ -100,7 +101,7 @@ async function collectSelfAndDescendants(spaceId: string, rootId: string): Promi
     else childrenOf.set(c.parentId, [c.id])
   }
   const out: string[] = []
-  const stack = [rootId]
+  const stack = [...rootIds]
   const seen = new Set<string>()
   while (stack.length) {
     const id = stack.pop() as string
@@ -125,14 +126,20 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
   const order: 'asc' | 'desc' = opts.order
   const orderBy = buildOrderBy(opts.sort ?? null, order)
 
-  // 계정과목 필터(현금흐름 상세 → 행 클릭):
-  //  - categoryIds: 콤마 구분 다중(대분류 클릭 시 그 하위 리프 id들). 정확 일치 in.
-  //  - uncategorized=1: 미분류(categoryId null).
-  //  - 둘 다 있으면(leaf 모드 서브그룹에 미분류 리프 혼합) OR로 결합.
-  //  - categoryId(단일, 정확): 기존 전체 거래 탭 하위호환.
-  const categoryIds = opts.categoryIds ?? []
+  // 계정과목 필터(거래내역 다중 선택 · 현금흐름 딥링크):
+  //  - categoryIds: 콤마 구분 다중(대분류/리프 혼재 가능). expandCategory=1이면 각 id를 자손 리프로 확장.
+  //  - categoryId(단일): 기존 전체 거래 탭 하위호환(categoryIds 없을 때만).
+  //  - uncategorized=1: 미분류(categoryId null). 위와 OR로 결합.
   const wantUncat = opts.uncategorized === true
   const singleCat = opts.categoryId ?? null
+  // 원본 선택 id 집합(sentinel 유입 방어). categoryIds 우선, 없으면 단일 categoryId.
+  const rawCatIds = (opts.categoryIds?.length ? opts.categoryIds : singleCat ? [singleCat] : []).filter(
+    (id) => id && id !== '__uncategorized__'
+  )
+  // expandCategory=1이면 대분류→자손 리프 확장(리프는 self로 확장=정확 일치, 하위호환). 아니면 정확 일치.
+  const categoryIds = opts.expandCategory
+    ? await collectSelfAndDescendants(spaceId, rawCatIds)
+    : rawCatIds
 
   const where: Prisma.FinTransactionWhereInput = {
     spaceId,
@@ -153,21 +160,13 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
       : {}),
   }
 
-  // 계정과목 조건 구성.
+  // 계정과목 조건 구성. 선택 계정과목(들)과 미분류를 OR로 결합.
   if (categoryIds.length && wantUncat) {
     where.OR = [{ categoryId: { in: categoryIds } }, { categoryId: null }]
   } else if (categoryIds.length) {
     where.categoryId = { in: categoryIds }
   } else if (wantUncat) {
     where.categoryId = null
-  } else if (singleCat) {
-    if (opts.expandCategory) {
-      // 대분류 선택 시 자손 리프까지. 리프 단건이면 자손 없어 in [self] = 정확 일치(하위호환).
-      const ids = await collectSelfAndDescendants(spaceId, singleCat)
-      where.categoryId = { in: ids }
-    } else {
-      where.categoryId = singleCat
-    }
   }
 
   // 적요/가맹점 검색 — 위 계정과목 OR와 키 충돌 방지 위해 OR 병존 시 AND로 감쌈.
