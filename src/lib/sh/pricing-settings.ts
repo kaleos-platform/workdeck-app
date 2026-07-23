@@ -29,5 +29,6 @@ export function mapPricingSettings(
     platformTargetGood: Number(s.platformTargetGood ?? 0.3),
     platformTargetFair: Number(s.platformTargetFair ?? 0.2),
     minimumAcceptableMargin: Number(s.minimumAcceptableMargin ?? 0.12),
+    maxCostRatio: Number(s.maxCostRatio ?? 0.33),
   }
 }

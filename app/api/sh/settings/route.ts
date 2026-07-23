@@ -29,6 +29,7 @@ function serializeSettings(s: {
   platformTargetGood: Decimal
   platformTargetFair: Decimal
   minimumAcceptableMargin: Decimal
+  maxCostRatio: Decimal
   createdAt: Date
   updatedAt: Date
 }) {
@@ -45,6 +46,7 @@ function serializeSettings(s: {
     platformTargetGood: d(s.platformTargetGood),
     platformTargetFair: d(s.platformTargetFair),
     minimumAcceptableMargin: d(s.minimumAcceptableMargin),
+    maxCostRatio: d(s.maxCostRatio),
   }
 }
 
@@ -73,6 +75,7 @@ export async function GET() {
       platformTargetGood: 0.25,
       platformTargetFair: 0.15,
       minimumAcceptableMargin: 0.1,
+      maxCostRatio: 0.33,
     },
   })
 
@@ -111,6 +114,7 @@ export async function PUT(req: NextRequest) {
     platformTargetGood,
     platformTargetFair,
     minimumAcceptableMargin,
+    maxCostRatio,
   } = parsed.data
 
   const updateData = {
@@ -129,6 +133,7 @@ export async function PUT(req: NextRequest) {
     platformTargetGood,
     platformTargetFair,
     minimumAcceptableMargin,
+    maxCostRatio,
   }
 
   const settings = await prisma.productPricingSettings.upsert({

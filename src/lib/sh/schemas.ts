@@ -233,6 +233,8 @@ export const pricingSettingsSchema = z.object({
   platformTargetGood: z.number().min(0).max(1).default(0.25),
   platformTargetFair: z.number().min(0).max(1).default(0.15),
   minimumAcceptableMargin: z.number().min(0).max(1).default(0.1),
+  // 적정 원가율 상한 (0~1) — KPI 원가율 경고 임계
+  maxCostRatio: z.number().min(0).max(1).default(0.33),
 })
 export type PricingSettingsInput = z.infer<typeof pricingSettingsSchema>
 
