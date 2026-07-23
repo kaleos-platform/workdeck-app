@@ -12,6 +12,7 @@ import {
   Plus,
   RotateCcw,
   Save,
+  Settings2,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -69,7 +70,7 @@ import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
 import { ManualProductRow } from './pricing-manual-row'
 import { PricingChannelBoardCard } from './pricing-channel-board-card'
 import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
-import { type PricingFullSettings } from './pricing-defaults-dialog'
+import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
 import { mapPricingSettings } from '@/lib/sh/pricing-settings'
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
@@ -244,6 +245,7 @@ const DEFAULT_SETTINGS: PricingFullSettings = {
   platformTargetGood: 0.3,
   platformTargetFair: 0.2,
   minimumAcceptableMargin: 0.12,
+  maxCostRatio: 0.33,
 }
 
 /** 숫자 포맷 */
@@ -327,6 +329,10 @@ export function PricingQuickFlow({
 
   // ── 글로벌 설정 (초기 로드) ────────────────────────────────────────────────
   const [settings, setSettings] = useState<PricingFullSettings>(DEFAULT_SETTINGS)
+  // 기본값 설정 다이얼로그 (상세 화면에서도 열기)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  // 서버 설정 로드 완료 여부 — 로드 전엔 기본값 설정 열기 차단(DEFAULT_SETTINGS로 실제 저장값 덮어쓰기 방지)
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
 
   // ── 라이브 시뮬 설정 (세션 한정 override) ─────────────────────────────────
   const [live, setLive] = useState<LiveSim>(() => liveFromSettings(DEFAULT_SETTINGS))
@@ -342,6 +348,12 @@ export function PricingQuickFlow({
     }
     setLive(liveFromSettings(settings))
   }, [settings])
+
+  // 기본값 저장 → settings 반영. 단 live(좌측 슬라이더)는 리셋하지 않음(편집 중 시나리오 마진 보존).
+  const handleDefaultsSaved = useCallback((s: PricingFullSettings) => {
+    skipNextLiveResetRef.current = true
+    setSettings(s)
+  }, [])
 
   const setLiveField = useCallback(<K extends keyof LiveSim>(key: K, value: LiveSim[K]) => {
     setLive((prev) => ({ ...prev, [key]: value }))
@@ -360,7 +372,10 @@ export function PricingQuickFlow({
         ])
         if (stRes.ok) {
           const d: { settings: SettingsRaw } = await stRes.json()
-          if (!cancelled) setSettings(mapPricingSettings(d.settings))
+          if (!cancelled) {
+            setSettings(mapPricingSettings(d.settings))
+            setSettingsLoaded(true) // 실제 서버값 로드 완료 → 기본값 설정 열기 허용
+          }
         }
         if (chRes.ok) {
           const d: { channels?: ApiCh[] } = await chRes.json()
@@ -1055,6 +1070,16 @@ export function PricingQuickFlow({
             variant="outline"
             size="sm"
             className="h-8 gap-1.5"
+            onClick={() => setSettingsOpen(true)}
+            disabled={!settingsLoaded}
+          >
+            <Settings2 className="h-3.5 w-3.5" /> 기본값 설정
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5"
             onClick={handleReset}
           >
             <RotateCcw className="h-3.5 w-3.5" /> 초기화
@@ -1065,17 +1090,8 @@ export function PricingQuickFlow({
         </div>
       </div>
 
-      {/* ── KPI 스트립 ── */}
+      {/* ── KPI 스트립 (순서: 원가매입 → 소비자가 → 판매 권장가 → 할인율) ── */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCell
-          label="소비자가"
-          value={
-            bundleCostSummary && bundleCostSummary.totalRetail > 0
-              ? `₩${fmt(bundleCostSummary.totalRetail)}`
-              : '—'
-          }
-          accent="emerald"
-        />
         <KpiCell
           label="원가 · 매입"
           value={bundleCostSummary ? `₩${fmt(bundleCostSummary.totalCost)}` : '—'}
@@ -1085,7 +1101,7 @@ export function PricingQuickFlow({
                   const rate = Math.round(
                     (bundleCostSummary.totalCost / bundleCostSummary.totalRetail) * 100
                   )
-                  const high = rate > 33 // 33% 초과 = 원가율 높음(주의)
+                  const high = rate > Math.round(settings.maxCostRatio * 100) // 상한 초과 = 원가율 높음(주의)
                   return (
                     <span
                       className={cn(
@@ -1126,6 +1142,25 @@ export function PricingQuickFlow({
           }
         />
         <KpiCell
+          label="소비자가"
+          value={
+            bundleCostSummary && bundleCostSummary.totalRetail > 0
+              ? `₩${fmt(bundleCostSummary.totalRetail)}`
+              : '—'
+          }
+          accent="emerald"
+        />
+        <KpiCell
+          label="판매 권장가"
+          value={
+            boardSummary && boardSummary.min != null && boardSummary.max != null
+              ? boardSummary.min === boardSummary.max
+                ? `₩${fmt(boardSummary.min)}`
+                : `${fmt(boardSummary.min)}~${fmt(boardSummary.max)}`
+              : '—'
+          }
+        />
+        <KpiCell
           label="소비자가 대비 할인율"
           value={
             boardSummary && boardSummary.discountMin != null && boardSummary.discountMax != null
@@ -1135,17 +1170,17 @@ export function PricingQuickFlow({
               : '—'
           }
         />
-        <KpiCell
-          label="권장가 범위"
-          value={
-            boardSummary && boardSummary.min != null && boardSummary.max != null
-              ? boardSummary.min === boardSummary.max
-                ? `₩${fmt(boardSummary.min)}`
-                : `${fmt(boardSummary.min)}~${fmt(boardSummary.max)}`
-              : '—'
-          }
-        />
       </div>
+
+      {/* 기본값 설정 다이얼로그 (헤더 버튼으로 열기) — 서버 로드 완료 후에만 렌더(DEFAULT_SETTINGS 저장 방지) */}
+      {settingsLoaded && (
+        <PricingDefaultsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          initialSettings={settings}
+          onSaved={handleDefaultsSaved}
+        />
+      )}
 
       {/* ── 본문 2단 ── */}
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">

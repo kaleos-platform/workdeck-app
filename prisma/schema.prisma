@@ -1854,6 +1854,7 @@ model ProductPricingSettings {
   platformTargetGood      Decimal @default(0.25) @db.Decimal(5, 4) // '높음' 임계
   platformTargetFair      Decimal @default(0.15) @db.Decimal(5, 4) // '적합' 하한
   minimumAcceptableMargin Decimal @default(0.10) @db.Decimal(5, 4) // 최소 허용 마진 (할인 한계 계산용)
+  maxCostRatio            Decimal @default(0.33) @db.Decimal(5, 4) // 적정 원가율 상한 (초과 시 KPI 경고)
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 

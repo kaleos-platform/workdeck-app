@@ -38,6 +38,7 @@ export type ProductPricingSettingsAvgAggregateOutputType = {
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
+  maxCostRatio: runtime.Decimal | null
 }
 
 export type ProductPricingSettingsSumAggregateOutputType = {
@@ -52,6 +53,7 @@ export type ProductPricingSettingsSumAggregateOutputType = {
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
+  maxCostRatio: runtime.Decimal | null
 }
 
 export type ProductPricingSettingsMinAggregateOutputType = {
@@ -72,6 +74,7 @@ export type ProductPricingSettingsMinAggregateOutputType = {
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
+  maxCostRatio: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -94,6 +97,7 @@ export type ProductPricingSettingsMaxAggregateOutputType = {
   platformTargetGood: runtime.Decimal | null
   platformTargetFair: runtime.Decimal | null
   minimumAcceptableMargin: runtime.Decimal | null
+  maxCostRatio: runtime.Decimal | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -116,6 +120,7 @@ export type ProductPricingSettingsCountAggregateOutputType = {
   platformTargetGood: number
   platformTargetFair: number
   minimumAcceptableMargin: number
+  maxCostRatio: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -134,6 +139,7 @@ export type ProductPricingSettingsAvgAggregateInputType = {
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
+  maxCostRatio?: true
 }
 
 export type ProductPricingSettingsSumAggregateInputType = {
@@ -148,6 +154,7 @@ export type ProductPricingSettingsSumAggregateInputType = {
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
+  maxCostRatio?: true
 }
 
 export type ProductPricingSettingsMinAggregateInputType = {
@@ -168,6 +175,7 @@ export type ProductPricingSettingsMinAggregateInputType = {
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
+  maxCostRatio?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -190,6 +198,7 @@ export type ProductPricingSettingsMaxAggregateInputType = {
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
+  maxCostRatio?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -212,6 +221,7 @@ export type ProductPricingSettingsCountAggregateInputType = {
   platformTargetGood?: true
   platformTargetFair?: true
   minimumAcceptableMargin?: true
+  maxCostRatio?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -321,6 +331,7 @@ export type ProductPricingSettingsGroupByOutputType = {
   platformTargetGood: runtime.Decimal
   platformTargetFair: runtime.Decimal
   minimumAcceptableMargin: runtime.Decimal
+  maxCostRatio: runtime.Decimal
   createdAt: Date
   updatedAt: Date
   _count: ProductPricingSettingsCountAggregateOutputType | null
@@ -366,6 +377,7 @@ export type ProductPricingSettingsWhereInput = {
   platformTargetGood?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"ProductPricingSettings"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductPricingSettings"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -389,6 +401,7 @@ export type ProductPricingSettingsOrderByWithRelationInput = {
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
+  maxCostRatio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -415,6 +428,7 @@ export type ProductPricingSettingsWhereUniqueInput = Prisma.AtLeast<{
   platformTargetGood?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: Prisma.DecimalFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"ProductPricingSettings"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductPricingSettings"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -438,6 +452,7 @@ export type ProductPricingSettingsOrderByWithAggregationInput = {
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
+  maxCostRatio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProductPricingSettingsCountOrderByAggregateInput
@@ -468,6 +483,7 @@ export type ProductPricingSettingsScalarWhereWithAggregatesInput = {
   platformTargetGood?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: Prisma.DecimalWithAggregatesFilter<"ProductPricingSettings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProductPricingSettings"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ProductPricingSettings"> | Date | string
 }
@@ -489,6 +505,7 @@ export type ProductPricingSettingsCreateInput = {
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutProductPricingSettingsInput
@@ -512,6 +529,7 @@ export type ProductPricingSettingsUncheckedCreateInput = {
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -533,6 +551,7 @@ export type ProductPricingSettingsUpdateInput = {
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutProductPricingSettingsNestedInput
@@ -556,6 +575,7 @@ export type ProductPricingSettingsUncheckedUpdateInput = {
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -578,6 +598,7 @@ export type ProductPricingSettingsCreateManyInput = {
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -599,6 +620,7 @@ export type ProductPricingSettingsUpdateManyMutationInput = {
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -621,6 +643,7 @@ export type ProductPricingSettingsUncheckedUpdateManyInput = {
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -648,6 +671,7 @@ export type ProductPricingSettingsCountOrderByAggregateInput = {
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
+  maxCostRatio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -664,6 +688,7 @@ export type ProductPricingSettingsAvgOrderByAggregateInput = {
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
+  maxCostRatio?: Prisma.SortOrder
 }
 
 export type ProductPricingSettingsMaxOrderByAggregateInput = {
@@ -684,6 +709,7 @@ export type ProductPricingSettingsMaxOrderByAggregateInput = {
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
+  maxCostRatio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -706,6 +732,7 @@ export type ProductPricingSettingsMinOrderByAggregateInput = {
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
+  maxCostRatio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -722,6 +749,7 @@ export type ProductPricingSettingsSumOrderByAggregateInput = {
   platformTargetGood?: Prisma.SortOrder
   platformTargetFair?: Prisma.SortOrder
   minimumAcceptableMargin?: Prisma.SortOrder
+  maxCostRatio?: Prisma.SortOrder
 }
 
 export type ProductPricingSettingsCreateNestedOneWithoutSpaceInput = {
@@ -773,6 +801,7 @@ export type ProductPricingSettingsCreateWithoutSpaceInput = {
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -794,6 +823,7 @@ export type ProductPricingSettingsUncheckedCreateWithoutSpaceInput = {
   platformTargetGood?: runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -831,6 +861,7 @@ export type ProductPricingSettingsUpdateWithoutSpaceInput = {
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -852,6 +883,7 @@ export type ProductPricingSettingsUncheckedUpdateWithoutSpaceInput = {
   platformTargetGood?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   platformTargetFair?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   minimumAcceptableMargin?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  maxCostRatio?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -876,6 +908,7 @@ export type ProductPricingSettingsSelect<ExtArgs extends runtime.Types.Extension
   platformTargetGood?: boolean
   platformTargetFair?: boolean
   minimumAcceptableMargin?: boolean
+  maxCostRatio?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -899,6 +932,7 @@ export type ProductPricingSettingsSelectCreateManyAndReturn<ExtArgs extends runt
   platformTargetGood?: boolean
   platformTargetFair?: boolean
   minimumAcceptableMargin?: boolean
+  maxCostRatio?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -922,6 +956,7 @@ export type ProductPricingSettingsSelectUpdateManyAndReturn<ExtArgs extends runt
   platformTargetGood?: boolean
   platformTargetFair?: boolean
   minimumAcceptableMargin?: boolean
+  maxCostRatio?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -945,11 +980,12 @@ export type ProductPricingSettingsSelectScalar = {
   platformTargetGood?: boolean
   platformTargetFair?: boolean
   minimumAcceptableMargin?: boolean
+  maxCostRatio?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductPricingSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "defaultOperatingCostPct" | "defaultAdCostPct" | "defaultPackagingCost" | "defaultChannelFeePct" | "defaultShippingCost" | "defaultReturnRate" | "defaultReturnShipping" | "defaultIncludeVat" | "defaultVatRate" | "autoApplyChannelFee" | "autoApplyAdCost" | "autoApplyShipping" | "platformTargetGood" | "platformTargetFair" | "minimumAcceptableMargin" | "createdAt" | "updatedAt", ExtArgs["result"]["productPricingSettings"]>
+export type ProductPricingSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "defaultOperatingCostPct" | "defaultAdCostPct" | "defaultPackagingCost" | "defaultChannelFeePct" | "defaultShippingCost" | "defaultReturnRate" | "defaultReturnShipping" | "defaultIncludeVat" | "defaultVatRate" | "autoApplyChannelFee" | "autoApplyAdCost" | "autoApplyShipping" | "platformTargetGood" | "platformTargetFair" | "minimumAcceptableMargin" | "maxCostRatio" | "createdAt" | "updatedAt", ExtArgs["result"]["productPricingSettings"]>
 export type ProductPricingSettingsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }
@@ -983,6 +1019,7 @@ export type $ProductPricingSettingsPayload<ExtArgs extends runtime.Types.Extensi
     platformTargetGood: runtime.Decimal
     platformTargetFair: runtime.Decimal
     minimumAcceptableMargin: runtime.Decimal
+    maxCostRatio: runtime.Decimal
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["productPricingSettings"]>
@@ -1426,6 +1463,7 @@ export interface ProductPricingSettingsFieldRefs {
   readonly platformTargetGood: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
   readonly platformTargetFair: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
   readonly minimumAcceptableMargin: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
+  readonly maxCostRatio: Prisma.FieldRef<"ProductPricingSettings", 'Decimal'>
   readonly createdAt: Prisma.FieldRef<"ProductPricingSettings", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ProductPricingSettings", 'DateTime'>
 }
