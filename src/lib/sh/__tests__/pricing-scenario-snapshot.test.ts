@@ -7,6 +7,7 @@ import {
 function makeSnapshot(): PricingSimSnapshot {
   return {
     v: 1,
+    mode: 'existing',
     live: {
       targetMargin: 0.3,
       minMargin: 0.12,
@@ -49,6 +50,7 @@ function makeSnapshot(): PricingSimSnapshot {
       priceMin: 15900,
       priceMax: 18900,
       totalCost: 5000,
+      mode: 'existing',
     },
   }
 }
@@ -81,7 +83,53 @@ describe('pricing-scenario-snapshot', () => {
       priceMin: null,
       priceMax: null,
       totalCost: 0,
+      mode: 'existing',
     })
+  })
+
+  it('mode="new" 스냅샷이 round-trip으로 보존된다', () => {
+    const s: PricingSimSnapshot = {
+      ...makeSnapshot(),
+      mode: 'new',
+      rows: [
+        {
+          productId: '',
+          productName: '신규 개발 상품',
+          optionId: '',
+          optionIds: [],
+          costPrice: 3000,
+          retailPrice: 9900,
+          quantity: 1,
+        },
+      ],
+      summary: {
+        productNames: ['신규 개발 상품'],
+        channelCount: 2,
+        targetMarginPct: 30,
+        priceMin: 12900,
+        priceMax: 15900,
+        totalCost: 3000,
+        mode: 'new',
+      },
+    }
+    const parsed = parseSnapshot(JSON.parse(JSON.stringify(s)))
+    expect(parsed).toEqual(s)
+    expect(parsed!.mode).toBe('new')
+    expect(parsed!.summary.mode).toBe('new')
+  })
+
+  it('레거시 스냅샷(mode 없음)은 existing으로 폴백', () => {
+    const raw = JSON.parse(JSON.stringify(makeSnapshot())) as Record<string, unknown>
+    delete raw.mode
+    const parsed = parseSnapshot(raw)
+    expect(parsed!.mode).toBe('existing')
+  })
+
+  it('이상값 mode는 existing으로 폴백', () => {
+    const raw = JSON.parse(JSON.stringify(makeSnapshot())) as Record<string, unknown>
+    raw.mode = 'garbage'
+    const parsed = parseSnapshot(raw)
+    expect(parsed!.mode).toBe('existing')
   })
 
   it('isMeaningfulSnapshot: 상품/채널 있으면 true, 빈 상태 false', () => {

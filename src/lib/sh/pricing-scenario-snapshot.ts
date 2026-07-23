@@ -33,6 +33,9 @@ export type SnapChOverride = {
   adPct: number // 0~1
 }
 
+/** 시나리오 생성 방식 — 기존 등록 상품 선택 vs 신규 개발 상품 직접 입력 */
+export type PricingSimMode = 'existing' | 'new'
+
 /** 내역 카드/요약 표시용 (스냅샷 저장 시점에 계산해 함께 보관) */
 export type PricingSimSummary = {
   productNames: string[]
@@ -41,11 +44,15 @@ export type PricingSimSummary = {
   priceMin: number | null // 권장가 범위
   priceMax: number | null
   totalCost: number // 번들 총 원가
+  /** 생성 방식 (목록 배지용). 구 스냅샷엔 없어 optional (parseSnapshot이 'existing' 폴백) */
+  mode?: PricingSimMode
 }
 
 /** 시뮬 화면 전체 상태 스냅샷 (버전 태그 포함) */
 export type PricingSimSnapshot = {
   v: 1
+  /** 생성 방식. 구 스냅샷엔 없어 optional (parseSnapshot이 'existing' 폴백) */
+  mode?: PricingSimMode
   live: SnapLiveSim
   rows: ResolvedComponent[]
   bundleNameInput: string
@@ -77,6 +84,8 @@ export function parseSnapshot(raw: unknown): PricingSimSnapshot | null {
   // 신뢰 후 구조 반환 (필드 단위 강제 변환은 과함 — 자체 생성 데이터)
   return {
     v: 1,
+    // 레거시·이상값은 'existing'으로 폴백 (신규 모드는 명시 저장된 경우만)
+    mode: o.mode === 'new' ? 'new' : 'existing',
     live: o.live as SnapLiveSim,
     rows: o.rows as ResolvedComponent[],
     bundleNameInput: typeof o.bundleNameInput === 'string' ? o.bundleNameInput : '',
@@ -95,6 +104,7 @@ export function parseSnapshot(raw: unknown): PricingSimSnapshot | null {
       priceMin: null,
       priceMax: null,
       totalCost: 0,
+      mode: 'existing',
     },
   }
 }
