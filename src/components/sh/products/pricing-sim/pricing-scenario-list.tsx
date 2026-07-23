@@ -3,9 +3,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Loader2, Plus, Settings2, Trash2 } from 'lucide-react'
+import { ChevronDown, Loader2, Plus, Settings2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -24,7 +31,11 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { productDisplayName } from '@/lib/sh/product-display'
-import { SELLER_HUB_PRICING_SIM_NEW_PATH, getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
+import {
+  SELLER_HUB_PRICING_SIM_NEW_PATH,
+  SELLER_HUB_PRICING_SIM_NEW_PRODUCT_PATH,
+  getSellerHubPricingScenarioPath,
+} from '@/lib/deck-routes'
 import { mapPricingSettings } from '@/lib/sh/pricing-settings'
 import { type ScenarioRow, priceRangeText } from './pricing-scenario-format'
 import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
@@ -168,12 +179,23 @@ export function PricingScenarioList() {
             <Settings2 className="mr-1 h-4 w-4" />
             기본값 설정
           </Button>
-          <Button size="sm" asChild>
-            <Link href={SELLER_HUB_PRICING_SIM_NEW_PATH}>
-              <Plus className="mr-1 h-4 w-4" />
-              시나리오 생성
-            </Link>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm">
+                <Plus className="mr-1 h-4 w-4" />
+                시나리오 생성
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={SELLER_HUB_PRICING_SIM_NEW_PATH}>기존 상품으로 생성</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={SELLER_HUB_PRICING_SIM_NEW_PRODUCT_PATH}>신규 상품으로 생성</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -265,7 +287,16 @@ export function PricingScenarioList() {
                       <div className="font-medium">{row.name}</div>
                       {row.memo && <div className="text-xs text-muted-foreground">{row.memo}</div>}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{productLabel}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        {row.summary?.mode === 'new' && (
+                          <Badge variant="secondary" className="shrink-0 text-[10px]">
+                            신규 상품
+                          </Badge>
+                        )}
+                        <span className="truncate">{productLabel}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {row.summary ? `${row.summary.targetMarginPct}%` : '—'}
                     </TableCell>

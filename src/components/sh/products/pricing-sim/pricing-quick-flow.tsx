@@ -34,6 +34,7 @@ import {
   PRICING_DRAFT_KEY,
   isMeaningfulSnapshot,
   parseSnapshot,
+  type PricingSimMode,
   type PricingSimSnapshot,
   type PricingSimSummary,
   type SnapChOverride,
@@ -55,6 +56,7 @@ import type { OptionInput } from '@/lib/sh/price-group'
 import { SELLER_HUB_PRICING_SIM_PATH, getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
 
 import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
+import { ManualProductRow } from './pricing-manual-row'
 import { PricingChannelBoardCard } from './pricing-channel-board-card'
 import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
 import { type PricingFullSettings } from './pricing-defaults-dialog'
@@ -289,13 +291,20 @@ type PricingQuickFlowProps = {
   initialScenarioId?: string
   /** 있으면 신규 진입 시 해당 상품을 자동 선택 (scenarioId 없을 때만) */
   initialProductId?: string
+  /** 신규 진입 생성 방식 (scenarioId·productId 없을 때만). 기본 'existing' */
+  initialMode?: PricingSimMode
 }
 
 export function PricingQuickFlow({
   initialScenarioId,
   initialProductId,
+  initialMode,
 }: PricingQuickFlowProps = {}) {
   const router = useRouter()
+  // 생성 방식 — 기존 상품 선택 vs 신규 상품 직접 입력. 상품 프리셀렉트는 항상 기존.
+  const [mode, setMode] = useState<PricingSimMode>(
+    initialProductId ? 'existing' : (initialMode ?? 'existing')
+  )
   // 편집 대상 시나리오 (있으면 저장=PATCH 덮어쓰기, 없으면 POST 신규)
   const [editingScenarioId, setEditingScenarioId] = useState<string | null>(
     initialScenarioId ?? null
@@ -553,7 +562,8 @@ export function PricingQuickFlow({
     return confirmedRows.every((r) => r.productId === first)
   }, [confirmedRows])
 
-  const canCreate = isSingleProduct && confirmedRows.length > 0
+  // 신규 상품 모드는 실제 옵션(optionIds)이 없어 판매채널 상품 자동 생성 불가
+  const canCreate = mode === 'existing' && isSingleProduct && confirmedRows.length > 0
   const groupOptionIds = useMemo(
     () => (confirmedRows.length > 0 ? confirmedRows[0].optionIds : []),
     [confirmedRows]
@@ -681,8 +691,10 @@ export function PricingQuickFlow({
 
   // ── 스냅샷 직렬화 / 복원 ───────────────────────────────────────────────────
   // 선택 상품(대표 = 첫 확정행). 번들이면 productIds에 전부 담아 구성 상품 모두 조회 대상.
+  // 신규 모드 행은 productId='' → filter(Boolean)로 제거해 빈 배열 유지
+  // (['']로 저장 시 POST가 존재하지 않는 상품 검증 실패 → 저장 거부)
   const scenarioProductIds = useMemo(
-    () => [...new Set(confirmedRows.map((r) => r.productId))],
+    () => [...new Set(confirmedRows.map((r) => r.productId).filter(Boolean))],
     [confirmedRows]
   )
 
@@ -702,9 +714,11 @@ export function PricingQuickFlow({
       priceMin: boardSummary?.min ?? null,
       priceMax: boardSummary?.max ?? null,
       totalCost: bundleCostSummary?.totalCost ?? 0,
+      mode,
     }
     return {
       v: 1,
+      mode,
       live,
       rows: confirmedRows,
       bundleNameInput,
@@ -716,6 +730,7 @@ export function PricingQuickFlow({
       summary,
     }
   }, [
+    mode,
     confirmedRows,
     selectedChannelIds,
     allChannels,
@@ -732,6 +747,7 @@ export function PricingQuickFlow({
   const applySnapshot = useCallback((s: PricingSimSnapshot) => {
     // 초기 settings 로드가 아직이면, 뒤늦게 도착할 리셋 1회를 건너뛰도록 arm
     if (!settingsLoadedRef.current) skipNextLiveResetRef.current = true
+    setMode(s.mode ?? 'existing')
     setLive(s.live)
     setRows(
       s.rows.length > 0
@@ -1112,41 +1128,59 @@ export function PricingQuickFlow({
           {/* ① 상품 선택 */}
           <StepCard
             step={1}
-            title="상품 선택"
-            badge={confirmedRows.length > 0 ? bundleName : '미선택'}
+            title={mode === 'new' ? '상품 설정' : '상품 선택'}
+            badge={
+              mode === 'new'
+                ? confirmedRows.length > 0
+                  ? confirmedRows[0].productName
+                  : '미입력'
+                : confirmedRows.length > 0
+                  ? bundleName
+                  : '미선택'
+            }
           >
-            <div className="space-y-2">
-              {rows.map((row, idx) => (
-                <BundleRow
-                  key={row.id}
-                  rowId={row.id}
-                  rowIndex={idx}
-                  resolved={row.resolved}
-                  onChange={handleRowChange}
-                  onRemove={handleRemoveRow}
-                  showRemove={rows.length > 1}
-                />
-              ))}
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2 w-full text-xs"
-              onClick={addRow}
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" /> 상품 추가
-            </Button>
-            {confirmedRows.length >= 2 && (
-              <div className="mt-2 space-y-1">
-                <Label className="text-[11px] text-muted-foreground">번들 이름 (선택)</Label>
-                <Input
-                  value={bundleNameInput}
-                  onChange={(e) => setBundleNameInput(e.target.value)}
-                  placeholder={defaultBundleName}
-                  className="h-8 text-sm"
-                />
-              </div>
+            {mode === 'new' ? (
+              /* ── 신규 상품: 원가·소비자가 직접 입력 (단일 상품) ── */
+              <ManualProductRow
+                resolved={rows[0]?.resolved ?? null}
+                onChange={(c) => handleRowChange(rows[0].id, c)}
+              />
+            ) : (
+              <>
+                <div className="space-y-2">
+                  {rows.map((row, idx) => (
+                    <BundleRow
+                      key={row.id}
+                      rowId={row.id}
+                      rowIndex={idx}
+                      resolved={row.resolved}
+                      onChange={handleRowChange}
+                      onRemove={handleRemoveRow}
+                      showRemove={rows.length > 1}
+                    />
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 w-full text-xs"
+                  onClick={addRow}
+                >
+                  <Plus className="mr-1.5 h-3.5 w-3.5" /> 상품 추가
+                </Button>
+                {confirmedRows.length >= 2 && (
+                  <div className="mt-2 space-y-1">
+                    <Label className="text-[11px] text-muted-foreground">번들 이름 (선택)</Label>
+                    <Input
+                      value={bundleNameInput}
+                      onChange={(e) => setBundleNameInput(e.target.value)}
+                      placeholder={defaultBundleName}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                )}
+              </>
             )}
           </StepCard>
 
@@ -1474,10 +1508,17 @@ export function PricingQuickFlow({
                   onManualPriceChange={(v) => setChannelManualPrice(bc.api.id, v)}
                 />
               ))}
-              {confirmedRows.length > 1 && !isSingleProduct && (
+              {mode === 'new' ? (
                 <p className="text-center text-[11px] text-muted-foreground">
-                  다중 상품 번들은 판매채널 상품 자동 생성을 지원하지 않습니다 (단일 상품만 가능).
+                  신규 상품은 등록된 옵션이 없어 판매채널 상품 자동 생성을 지원하지 않습니다.
                 </p>
+              ) : (
+                confirmedRows.length > 1 &&
+                !isSingleProduct && (
+                  <p className="text-center text-[11px] text-muted-foreground">
+                    다중 상품 번들은 판매채널 상품 자동 생성을 지원하지 않습니다 (단일 상품만 가능).
+                  </p>
+                )
               )}
             </div>
           ) : (
