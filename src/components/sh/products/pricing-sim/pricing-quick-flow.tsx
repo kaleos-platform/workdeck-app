@@ -331,6 +331,8 @@ export function PricingQuickFlow({
   const [settings, setSettings] = useState<PricingFullSettings>(DEFAULT_SETTINGS)
   // 기본값 설정 다이얼로그 (상세 화면에서도 열기)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // 서버 설정 로드 완료 여부 — 로드 전엔 기본값 설정 열기 차단(DEFAULT_SETTINGS로 실제 저장값 덮어쓰기 방지)
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
 
   // ── 라이브 시뮬 설정 (세션 한정 override) ─────────────────────────────────
   const [live, setLive] = useState<LiveSim>(() => liveFromSettings(DEFAULT_SETTINGS))
@@ -370,7 +372,10 @@ export function PricingQuickFlow({
         ])
         if (stRes.ok) {
           const d: { settings: SettingsRaw } = await stRes.json()
-          if (!cancelled) setSettings(mapPricingSettings(d.settings))
+          if (!cancelled) {
+            setSettings(mapPricingSettings(d.settings))
+            setSettingsLoaded(true) // 실제 서버값 로드 완료 → 기본값 설정 열기 허용
+          }
         }
         if (chRes.ok) {
           const d: { channels?: ApiCh[] } = await chRes.json()
@@ -1066,6 +1071,7 @@ export function PricingQuickFlow({
             size="sm"
             className="h-8 gap-1.5"
             onClick={() => setSettingsOpen(true)}
+            disabled={!settingsLoaded}
           >
             <Settings2 className="h-3.5 w-3.5" /> 기본값 설정
           </Button>
@@ -1166,13 +1172,15 @@ export function PricingQuickFlow({
         />
       </div>
 
-      {/* 기본값 설정 다이얼로그 (헤더 버튼으로 열기) */}
-      <PricingDefaultsDialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        initialSettings={settings}
-        onSaved={handleDefaultsSaved}
-      />
+      {/* 기본값 설정 다이얼로그 (헤더 버튼으로 열기) — 서버 로드 완료 후에만 렌더(DEFAULT_SETTINGS 저장 방지) */}
+      {settingsLoaded && (
+        <PricingDefaultsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          initialSettings={settings}
+          onSaved={handleDefaultsSaved}
+        />
+      )}
 
       {/* ── 본문 2단 ── */}
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
