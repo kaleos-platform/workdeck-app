@@ -46,7 +46,9 @@ import { CategoryCombobox } from '@/components/finance/category-combobox'
 import { AddCategoryDialog } from '@/components/finance/add-category-dialog'
 import {
   buildClassifyOptions,
+  buildFilterCategoryOptions,
   comboOptionLabel,
+  UNCATEGORIZED_OPTION_ID,
   type ComboOption,
 } from '@/lib/finance/category-options'
 import type {
@@ -152,6 +154,8 @@ export function TransactionsView() {
   // 카테고리 트리 + 잎 목록
   const [categoryTree, setCategoryTree] = useState<CategoryNode[]>([])
   const leafTargets = useMemo(() => buildClassifyOptions(categoryTree), [categoryTree])
+  // 필터 콤보 옵션 — 대분류 선택 가능 + 미분류 sentinel(분류용 leafTargets와 분리).
+  const filterCatOptions = useMemo(() => buildFilterCategoryOptions(categoryTree), [categoryTree])
 
   // 계좌 목록 (전체 거래 출처 필터)
   const [accounts, setAccounts] = useState<
@@ -193,7 +197,11 @@ export function TransactionsView() {
   // 필터 (전체 거래) — 'all'은 파라미터 미포함 센티넬. 초기값은 딥링크 파라미터에서 주입.
   const [filterQ, setFilterQ] = useState('')
   const [filterAccountId, setFilterAccountId] = useState('')
-  const [filterCategoryId, setFilterCategoryId] = useState(() => searchParams.get('categoryId') ?? '')
+  // 계정과목 필터 — 단일 스칼라(리프 id | 대분류 id | 미분류 sentinel). 대분류면 서버가 자손 확장.
+  const [filterCategoryId, setFilterCategoryId] = useState(() => {
+    if (searchParams.get('uncategorized') === '1') return UNCATEGORIZED_OPTION_ID
+    return searchParams.get('categoryId') ?? ''
+  })
   const [filterDirection, setFilterDirection] = useState<'all' | 'IN' | 'OUT'>(() => {
     const d = searchParams.get('direction')
     return d === 'IN' || d === 'OUT' ? d : 'all'
@@ -201,25 +209,13 @@ export function TransactionsView() {
   // 기간 필터(YYYY-MM-DD) — 필터 바 날짜 입력칸으로 편집.
   const [dateFrom, setDateFrom] = useState(() => searchParams.get('from') ?? '')
   const [dateTo, setDateTo] = useState(() => searchParams.get('to') ?? '')
-  // 다중 계정과목/미분류(대분류 딥링크) — 단일 콤보에 안 들어가므로 배너로 표시.
-  const [filterCategoryIds, setFilterCategoryIds] = useState<string[]>(() => {
-    const raw = searchParams.get('categoryIds')
-    return raw ? raw.split(',').filter(Boolean) : []
-  })
-  const [filterUncategorized, setFilterUncategorized] = useState(
-    () => searchParams.get('uncategorized') === '1'
-  )
-  const [filterCatLabel, setFilterCatLabel] = useState<string | null>(
-    () => searchParams.get('label')
-  )
+  // 이체 제외 — 필터 바 표준 토글. 딥링크(excludeTransfer=1)만 초기 ON, 직접 진입은 OFF.
   const [filterExcludeTransfer, setFilterExcludeTransfer] = useState(
     () => searchParams.get('excludeTransfer') === '1'
   )
-  // 배너(그룹/미분류 계정과목) 활성 여부 — 활성 중엔 단일 계정과목 콤보 무시.
-  const catBannerActive = filterCategoryIds.length > 0 || filterUncategorized
   // 딥링크 진입 여부 — 스테이징 대신 전체 거래 탭을 강제로 연다.
   const hasDeepLink = useMemo(() => {
-    for (const k of ['from', 'to', 'direction', 'categoryId', 'categoryIds', 'uncategorized']) {
+    for (const k of ['from', 'to', 'direction', 'categoryId', 'uncategorized']) {
       if (searchParams.get(k)) return true
     }
     return false
@@ -328,13 +324,16 @@ export function TransactionsView() {
         const params = new URLSearchParams()
         if (filterQ) params.set('q', filterQ)
         if (filterAccountId) params.set('accountId', filterAccountId)
-        // 배너(다중/미분류) 활성 시 단일 계정과목은 무시(충돌 방지).
-        if (filterCategoryId && !catBannerActive) params.set('categoryId', filterCategoryId)
+        // 계정과목: 미분류 sentinel → uncategorized, 그 외 → categoryId(+대분류 자손 확장).
+        if (filterCategoryId === UNCATEGORIZED_OPTION_ID) {
+          params.set('uncategorized', '1')
+        } else if (filterCategoryId) {
+          params.set('categoryId', filterCategoryId)
+          params.set('expandCategory', '1')
+        }
         if (filterDirection !== 'all') params.set('direction', filterDirection)
         if (dateFrom) params.set('from', dateFrom)
         if (dateTo) params.set('to', dateTo)
-        if (filterCategoryIds.length) params.set('categoryIds', filterCategoryIds.join(','))
-        if (filterUncategorized) params.set('uncategorized', '1')
         if (filterExcludeTransfer) params.set('excludeTransfer', '1')
         params.set('sort', txnSort.field)
         params.set('order', txnSort.order)
@@ -363,12 +362,9 @@ export function TransactionsView() {
       filterQ,
       filterAccountId,
       filterCategoryId,
-      catBannerActive,
       filterDirection,
       dateFrom,
       dateTo,
-      filterCategoryIds,
-      filterUncategorized,
       filterExcludeTransfer,
       txnSort.field,
       txnSort.order,
@@ -683,20 +679,14 @@ export function TransactionsView() {
     void loadTransactions(0)
   }, [loadTransactions])
 
-  // 딥링크 배너 해제 후 재조회 — setState 반영된 최신 loadTransactions로 실행되도록 tick effect 경유.
+  // 즉시 적용 필터(토글·기간 해제) 재조회 — setState 반영된 최신 loadTransactions로 실행되도록 tick effect 경유.
   const [filterReloadTick, setFilterReloadTick] = useState(0)
   useEffect(() => {
     if (filterReloadTick > 0 && mainTab === 'transactions') void loadTransactions(0)
   }, [filterReloadTick]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const clearCategoryBanner = useCallback(() => {
-    setFilterCategoryIds([])
-    setFilterUncategorized(false)
-    setFilterCatLabel(null)
-    setFilterReloadTick((t) => t + 1)
-  }, [])
-  const clearExcludeTransfer = useCallback(() => {
-    setFilterExcludeTransfer(false)
+  const toggleExcludeTransfer = useCallback((next: boolean) => {
+    setFilterExcludeTransfer(next)
     setFilterReloadTick((t) => t + 1)
   }, [])
   const clearDates = useCallback(() => {
@@ -769,15 +759,12 @@ export function TransactionsView() {
           dateTo={dateTo}
           onDateFromChange={setDateFrom}
           onDateToChange={setDateTo}
-          catBannerActive={catBannerActive}
-          filterCatLabel={filterCatLabel}
-          filterUncategorized={filterUncategorized}
           filterExcludeTransfer={filterExcludeTransfer}
-          onClearCategoryBanner={clearCategoryBanner}
-          onClearExcludeTransfer={clearExcludeTransfer}
+          onToggleExcludeTransfer={toggleExcludeTransfer}
           onClearDates={clearDates}
           accounts={accounts}
           leafTargets={leafTargets}
+          filterCatOptions={filterCatOptions}
           categoryTree={categoryTree}
           reloadCategories={loadCategories}
           onFilterQChange={setFilterQ}
@@ -1366,15 +1353,12 @@ function TransactionsPanel({
   dateTo,
   onDateFromChange,
   onDateToChange,
-  catBannerActive,
-  filterCatLabel,
-  filterUncategorized,
   filterExcludeTransfer,
-  onClearCategoryBanner,
-  onClearExcludeTransfer,
+  onToggleExcludeTransfer,
   onClearDates,
   accounts,
   leafTargets,
+  filterCatOptions,
   categoryTree,
   reloadCategories,
   onFilterQChange,
@@ -1404,12 +1388,8 @@ function TransactionsPanel({
   dateTo: string
   onDateFromChange: (v: string) => void
   onDateToChange: (v: string) => void
-  catBannerActive: boolean
-  filterCatLabel: string | null
-  filterUncategorized: boolean
   filterExcludeTransfer: boolean
-  onClearCategoryBanner: () => void
-  onClearExcludeTransfer: () => void
+  onToggleExcludeTransfer: (next: boolean) => void
   onClearDates: () => void
   sort: { field: TxnSortField; order: 'asc' | 'desc' }
   onSort: (field: TxnSortField) => void
@@ -1421,6 +1401,7 @@ function TransactionsPanel({
     accountNumber: string | null
   }[]
   leafTargets: ComboOption[]
+  filterCatOptions: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onFilterQChange: (v: string) => void
@@ -1500,39 +1481,6 @@ function TransactionsPanel({
 
   return (
     <div className="space-y-3">
-      {/* 현금흐름 딥링크 필터 배너 — 다중/미분류 계정과목·이체 제외(단일 콤보에 안 들어가는 조건) */}
-      {(catBannerActive || filterExcludeTransfer) && (
-        <div className="flex flex-wrap items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2">
-          <span className="text-xs font-medium text-muted-foreground">현금흐름 필터</span>
-          {catBannerActive && (
-            <Badge variant="secondary" className="h-6 gap-1 pr-1 font-normal">
-              <span className="text-muted-foreground">계정과목</span>
-              {filterCatLabel ?? (filterUncategorized ? '미분류' : '다중')}
-              <button
-                type="button"
-                onClick={onClearCategoryBanner}
-                aria-label="계정과목 필터 해제"
-                className="ml-0.5 rounded-sm text-muted-foreground hover:text-foreground"
-              >
-                <X className="size-3" />
-              </button>
-            </Badge>
-          )}
-          {filterExcludeTransfer && (
-            <Badge variant="secondary" className="h-6 gap-1 pr-1 font-normal">
-              이체 제외
-              <button
-                type="button"
-                onClick={onClearExcludeTransfer}
-                aria-label="이체 제외 해제"
-                className="ml-0.5 rounded-sm text-muted-foreground hover:text-foreground"
-              >
-                <X className="size-3" />
-              </button>
-            </Badge>
-          )}
-        </div>
-      )}
       {/* 필터 바 — 각 컨트롤 앞에 필드 라벨을 붙여 무엇을 거르는지 명시 */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Input
@@ -1608,17 +1556,16 @@ function TransactionsPanel({
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">계정과목</span>
           <CategoryCombobox
-            options={leafTargets}
+            options={filterCatOptions}
             value={filterCategoryId || null}
             onChange={onFilterCategoryIdChange}
             groupByType
             defaultType="EXPENSE"
-            placeholder={catBannerActive ? '배너 필터 적용 중' : '전체 계정과목'}
+            placeholder="전체 계정과목"
             searchPlaceholder="계정과목 검색..."
             triggerClassName="h-8 w-44 text-xs"
-            disabled={catBannerActive}
           />
-          {filterCategoryId && !catBannerActive && (
+          {filterCategoryId && (
             <Button
               size="icon"
               variant="ghost"
@@ -1646,6 +1593,15 @@ function TransactionsPanel({
             </SelectContent>
           </Select>
         </div>
+        {/* 이체 제외 — 계좌 간 이체 거래를 결과에서 뺀다(현금흐름 딥링크가 자동 체크). 변경 즉시 재조회. */}
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+          <Checkbox
+            checked={filterExcludeTransfer}
+            onCheckedChange={(v) => onToggleExcludeTransfer(v === true)}
+            aria-label="이체 제외"
+          />
+          이체 제외
+        </label>
         <Button size="sm" variant="outline" onClick={onSearch} className="h-8">
           검색
         </Button>

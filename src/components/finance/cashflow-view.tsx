@@ -147,6 +147,8 @@ interface Selection {
   categoryIds: string[]
   /** 미분류 거래 포함 여부(미분류 리프 클릭/혼합 서브그룹). */
   uncategorized: boolean
+  /** 단일 대분류로 떨어지면 그 대분류 id(딥링크에서 서버 자손 확장용). 여러 대분류 걸치면 null. */
+  parentId: string | null
 }
 
 /** 리프 key(`${type}:${id}` | `__none_${type}`) → 계정과목 id(미분류면 null). */
@@ -163,17 +165,23 @@ function selectionFromLeaf(leaf: CashflowLeaf): Selection {
     direction: leaf.type === 'INCOME' ? 'IN' : 'OUT',
     categoryIds: id ? [id] : [],
     uncategorized: id === null,
+    parentId: null,
   }
 }
 
 function selectionFromGroup(group: CashflowGroup, section: '수입' | '지출'): Selection {
   const ids = group.leaves.map(leafCategoryId)
+  // 그룹 리프들이 단일 non-null 대분류에 속하면 그 대분류 id(딥링크 서버 확장). 여럿이면 null.
+  const parentSet = new Set(group.leaves.map((l) => l.parentId))
+  const parentId =
+    parentSet.size === 1 && !parentSet.has(null) ? (group.leaves[0].parentId ?? null) : null
   return {
     key: group.key,
     title: group.label,
     direction: section === '수입' ? 'IN' : 'OUT',
     categoryIds: ids.filter((x): x is string => x !== null),
     uncategorized: ids.some((x) => x === null),
+    parentId,
   }
 }
 
@@ -875,6 +883,9 @@ function CashflowTable({
                           direction: r.direction ?? 'IN',
                           categoryIds: r.categoryIds ?? [],
                           uncategorized: r.uncategorized ?? false,
+                          // 손익계산서 그룹은 flowRole 버킷(다중 대분류)이라 단일 대분류 id 없음.
+                          // 단일 리프 행은 categoryIds 경로로 딥링크, 다중 그룹은 버튼 숨김.
+                          parentId: null,
                         })
                     : undefined
                 }
@@ -1287,9 +1298,14 @@ function monthRangeToDays(from: string, to: string): { fromDay: string; toDay: s
 
 /**
  * 패널 선택(기간 + 계정과목 + 방향)을 거래내역 화면 필터 딥링크로 변환.
- * 단일 리프=categoryId(콤보 반영), 다중/미분류=categoryIds(+uncategorized)+label(배너).
+ * 거래내역은 계정과목을 단일 스칼라(리프 id | 대분류 id | 미분류)로만 필터하므로,
+ * 스칼라로 안 떨어지는 선택(여러 대분류에 걸친 leaf-모드 서브그룹)은 null을 반환해 버튼을 숨긴다.
+ *  - 미분류만        → uncategorized=1
+ *  - 단일 리프       → categoryId=<리프>
+ *  - 단일 대분류     → categoryId=<대분류>&expandCategory=1 (서버가 자손 리프로 확장)
+ *  - 다중 대분류     → null (숨김)
  */
-function buildTxnDeepLink(selected: Selection, from: string, to: string): string {
+function buildTxnDeepLink(selected: Selection, from: string, to: string): string | null {
   const { fromDay, toDay } = monthRangeToDays(from, to)
   const p = new URLSearchParams({
     from: fromDay,
@@ -1297,12 +1313,15 @@ function buildTxnDeepLink(selected: Selection, from: string, to: string): string
     direction: selected.direction,
     excludeTransfer: '1',
   })
-  if (selected.categoryIds.length === 1 && !selected.uncategorized) {
+  if (selected.uncategorized && selected.categoryIds.length === 0) {
+    p.set('uncategorized', '1')
+  } else if (selected.categoryIds.length === 1 && !selected.uncategorized) {
     p.set('categoryId', selected.categoryIds[0])
-  } else if (selected.categoryIds.length || selected.uncategorized) {
-    if (selected.categoryIds.length) p.set('categoryIds', selected.categoryIds.join(','))
-    if (selected.uncategorized) p.set('uncategorized', '1')
-    p.set('label', selected.title)
+  } else if (selected.parentId && !selected.uncategorized) {
+    p.set('categoryId', selected.parentId)
+    p.set('expandCategory', '1')
+  } else {
+    return null
   }
   return `${FINANCE_TRANSACTIONS_PATH}?${p.toString()}`
 }
@@ -1445,6 +1464,8 @@ function CashflowTxnPanel({
   }, [onEdited])
 
   const isIncome = selected.direction === 'IN'
+  // 거래내역 딥링크 — 단일 스칼라로 안 떨어지는 선택(다중 대분류)이면 null → 버튼 숨김.
+  const txnHref = buildTxnDeepLink(selected, from, to)
   // 검색 중이면 합계도 필터 결과(visibleRows) 기준 — 건수와 정합. 미검색 시 서버 전체 합계(대사용).
   const sum = !data
     ? 0
@@ -1484,12 +1505,14 @@ function CashflowTxnPanel({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          <Button asChild variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
-            <Link href={buildTxnDeepLink(selected, from, to)} title="이 기간·계정과목 필터를 적용해 거래내역 화면으로 이동">
-              <ExternalLink className="size-3.5" />
-              거래내역
-            </Link>
-          </Button>
+          {txnHref && (
+            <Button asChild variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
+              <Link href={txnHref} title="이 기간·계정과목 필터를 적용해 거래내역 화면으로 이동">
+                <ExternalLink className="size-3.5" />
+                거래내역
+              </Link>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
