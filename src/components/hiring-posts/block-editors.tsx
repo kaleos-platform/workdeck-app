@@ -59,6 +59,8 @@ export function ButtonBlock({
   const draftRef = useRef<ButtonDraft>({ title, linkType, url, color })
   draftRef.current = { title, linkType, url, color }
   const pendingRef = useRef(false)
+  // unmount cleanup flush 는 언마운트 후 attemptSave 를 부르므로 setState 는 no-op 가드.
+  const mountedRef = useRef(true)
 
   function attemptSave(next: ButtonDraft) {
     pendingRef.current = false
@@ -70,16 +72,20 @@ export function ButtonBlock({
     })
     if (!result.success) {
       const first = result.error.issues[0]
-      setError(first?.message ?? '입력 값을 확인하세요')
+      if (mountedRef.current) setError(first?.message ?? '입력 값을 확인하세요')
       return
     }
-    setError(null)
-    setStatus('saving')
+    if (mountedRef.current) {
+      setError(null)
+      setStatus('saving')
+    }
     onSave(result.data)
-      .then(() => setStatus('saved'))
+      .then(() => {
+        if (mountedRef.current) setStatus('saved')
+      })
       .catch(() => {
         toast.error('버튼 저장에 실패했습니다')
-        setStatus('idle')
+        if (mountedRef.current) setStatus('idle')
       })
   }
 
@@ -91,6 +97,7 @@ export function ButtonBlock({
 
   useEffect(() => {
     return () => {
+      mountedRef.current = false
       clearTimeout(timer.current)
       // 오버레이가 debounce 창 안에 닫혀 타이머가 취소되면 마지막 입력을 잃으므로 flush.
       if (pendingRef.current) attemptSave(draftRef.current)

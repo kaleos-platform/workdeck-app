@@ -71,6 +71,21 @@ function formatTemplateAt(at: string | null): string | null {
   return d.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
+// Tiptap doc 에 실제 내용(텍스트/이미지 등)이 있는지 — 빈 문단만 있는 doc 은 false.
+// (에디터를 열었다 닫으면 onChange 가 빈 문단 doc 를 내보내 c.data 가 truthy 가 되므로 값만으로 판단 불가.)
+function textDocHasContent(data: unknown): boolean {
+  if (!data || typeof data !== 'object') return false
+  const walk = (node: unknown): boolean => {
+    if (!node || typeof node !== 'object') return false
+    const n = node as { type?: string; text?: string; content?: unknown[] }
+    if (typeof n.text === 'string' && n.text.trim() !== '') return true
+    // 텍스트가 아닌 leaf 노드(이미지·구분선 등)도 내용으로 간주.
+    if (n.type && n.type !== 'doc' && n.type !== 'paragraph' && !n.content) return true
+    return Array.isArray(n.content) && n.content.some(walk)
+  }
+  return walk(data)
+}
+
 // 리스트 썸네일에 표시할 실제 내용이 있는지 — 없으면 "편집을 눌러 작성" 안내.
 function blockHasContent(c: WizardContentData): boolean {
   switch (c.contentType) {
@@ -82,7 +97,7 @@ function blockHasContent(c: WizardContentData): boolean {
     case 'positions':
       return true
     case 'text':
-      return Boolean(c.data)
+      return textDocHasContent(c.data)
     default:
       return false
   }
@@ -106,6 +121,8 @@ export function ContentBlockEditor({
   // 제목 인라인 편집
   const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
   const [titleDraft, setTitleDraft] = useState('')
+  // 한 편집 세션에서 커밋/취소를 1회만 — Enter·blur·Escape 가 겹쳐 중복 PATCH·취소 무효화되는 것 방지.
+  const titleHandledRef = useRef(false)
   // 템플릿 저장/불러오기 다이얼로그
   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
   const [loadDialogOpen, setLoadDialogOpen] = useState(false)
@@ -188,18 +205,30 @@ export function ContentBlockEditor({
 
   // 제목 인라인 편집 커밋 — 빈 값은 null(리스트에서 "카드 N" 폴백)
   function startEditTitle(c: WizardContentData) {
+    titleHandledRef.current = false
     setEditingTitleId(c.id)
     setTitleDraft(c.title ?? '')
   }
+  // Escape 취소 — blur 재커밋을 막기 위해 handled 플래그를 세운 뒤 닫는다.
+  function cancelTitle() {
+    titleHandledRef.current = true
+    setEditingTitleId(null)
+  }
   async function commitTitle(contentId: string) {
+    if (titleHandledRef.current) return
+    titleHandledRef.current = true
+    const prev = contents.find((c) => c.id === contentId)?.title ?? null
     const raw = titleDraft.trim()
     const title = raw === '' ? null : raw
     setEditingTitleId(null)
+    if (title === prev) return
     onChange(contents.map((c) => (c.id === contentId ? { ...c, title } : c)))
     try {
       await patchContent(contentId, { title })
     } catch {
       toast.error('제목 저장에 실패했습니다')
+      // 저장 실패 → 낙관적 갱신 롤백(진행 중 다른 저장 보존 위해 최신 ref 기준).
+      onChange(contentsRef.current.map((c) => (c.id === contentId ? { ...c, title: prev } : c)))
     }
   }
 
@@ -442,7 +471,7 @@ export function ContentBlockEditor({
                           commitTitle(c.id)
                         } else if (e.key === 'Escape') {
                           e.preventDefault()
-                          setEditingTitleId(null)
+                          cancelTitle()
                         }
                       }}
                       maxLength={100}
