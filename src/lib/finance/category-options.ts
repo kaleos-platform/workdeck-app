@@ -100,6 +100,78 @@ export function buildClassifyOptions(
   return out
 }
 
+/** 미분류 필터 sentinel id — 거래내역 필터 콤보에서 categoryId null 거래 선택용. */
+export const UNCATEGORIZED_OPTION_ID = '__uncategorized__'
+
+/**
+ * 거래내역 필터 콤보 옵션 — 분류(buildClassifyOptions)와 달리 **대분류(lvl1)도 선택 가능**하게 하고
+ * 맨 앞에 "미분류" sentinel을 넣는다. 대분류 선택 = 그 하위 리프 전체 필터(서버 expandCategory).
+ * (분류 경로는 리프에만 배정해야 하므로 buildClassifyOptions는 그대로 두고 별도 빌더로 분리.)
+ */
+export function buildFilterCategoryOptions(
+  tree: CategoryTreeNode[],
+  types: FinCategoryType[] = CLASSIFY_TYPES
+): ComboOption[] {
+  const allow = new Set(types)
+  const out: ComboOption[] = [
+    {
+      id: UNCATEGORIZED_OPTION_ID,
+      label: '미분류',
+      hint: null,
+      badge: null,
+      indent: false,
+      keywords: ['미분류', '미지정'],
+    },
+  ]
+  for (const root of tree) {
+    if (!allow.has(root.type as FinCategoryType)) continue
+    const rootType = root.type as FinCategoryType
+    const badge = categoryTypeBadge(rootType)
+    const lvl1IsLeaf = root.type === 'TRANSFER'
+    for (const lvl1 of root.children) {
+      if (lvl1IsLeaf) {
+        out.push({
+          id: lvl1.id,
+          label: lvl1.name,
+          hint: null,
+          type: rootType,
+          badge: { label: badge.label, className: badge.className },
+          indent: false,
+          isActive: lvl1.isActive,
+          keywords: [lvl1.name, badge.label],
+        })
+        continue
+      }
+      // 대분류(lvl1) 자체를 선택 가능 옵션으로(그룹 전체 필터) — indent=false.
+      const groupActive = lvl1.isActive !== false
+      out.push({
+        id: lvl1.id,
+        label: lvl1.name,
+        hint: null,
+        type: rootType,
+        badge: { label: badge.label, className: badge.className },
+        indent: false,
+        isActive: groupActive,
+        keywords: [lvl1.name, badge.label],
+      })
+      // 하위 리프.
+      for (const sub of lvl1.children ?? []) {
+        out.push({
+          id: sub.id,
+          label: sub.name,
+          hint: lvl1.name,
+          type: rootType,
+          badge: { label: badge.label, className: badge.className },
+          indent: true,
+          isActive: groupActive && sub.isActive !== false,
+          keywords: [sub.name, lvl1.name, badge.label],
+        })
+      }
+    }
+  }
+  return out
+}
+
 /** 추가 팝업 상위 선택 옵션: root(수익/비용/이체) + lvl1(상위 breadcrumb). */
 export function buildParentOptions(tree: CategoryTreeNode[]): ComboOption[] {
   const allow = new Set(CLASSIFY_TYPES)
