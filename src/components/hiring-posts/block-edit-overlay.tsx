@@ -3,20 +3,18 @@
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Editor } from '@/components/sc/editor/editor'
 import type { ButtonData } from '@/lib/validations/hiring-posts'
-import {
-  ButtonBlock,
-  DesignBlock,
-  ImageBlock,
-  PositionsBlock,
-  CONTENT_TYPE_META,
-} from './block-editors'
+import { ButtonBlock, DesignBlock, ImageBlock, CONTENT_TYPE_META } from './block-editors'
+import { StepPositions } from './step-positions'
 import type { ExcalidrawScene } from './excalidraw-canvas'
-import type { WizardContentData, WizardPositionData } from './build-types'
+import type { WizardContentData, WizardPositionData, WizardPosition } from './build-types'
 
 type Props = {
   open: boolean
   content: WizardContentData | null
+  postingId: string
   positions: WizardPositionData[]
+  spacePositions: WizardPosition[]
+  onPositionsChange: (positions: WizardPositionData[]) => void
   onClose: () => void
   onTextChange: (contentId: string, doc: unknown) => void
   onButtonSave: (contentId: string, data: ButtonData) => Promise<unknown>
@@ -29,7 +27,10 @@ type Props = {
 export function BlockEditOverlay({
   open,
   content,
+  postingId,
   positions,
+  spacePositions,
+  onPositionsChange,
   onClose,
   onTextChange,
   onButtonSave,
@@ -74,7 +75,13 @@ export function BlockEditOverlay({
                   onSelect={(file) => onImageSelect(content.id, file)}
                 />
               ) : content.contentType === 'positions' ? (
-                <PositionsBlock positions={positions.map((p) => ({ id: p.id, name: p.name }))} />
+                // 기본 정보 화면과 동일한 직무 관리 UI(직무 추가 팝업 + 목록/편집/삭제) 재사용.
+                <StepPositions
+                  postingId={postingId}
+                  positions={positions}
+                  spacePositions={spacePositions}
+                  onChange={onPositionsChange}
+                />
               ) : content.contentType === 'design' ? (
                 <div className="mx-auto w-fit">
                   <p className="mb-2 text-xs text-muted-foreground">

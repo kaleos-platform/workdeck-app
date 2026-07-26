@@ -201,6 +201,8 @@ export function BuildWizard({ data }: { data: WizardData }) {
                 postingId={data.posting.id}
                 contents={state.contents}
                 positions={state.positions}
+                spacePositions={data.spacePositions}
+                onPositionsChange={(positions: WizardPositionData[]) => patch({ positions })}
                 appliedTemplate={
                   data.posting.appliedTemplateName
                     ? {
