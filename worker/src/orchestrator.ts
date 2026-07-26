@@ -113,7 +113,10 @@ function verifyDownloadedFile(buffer: Buffer, fileName: string, dateTo: string):
  * 기존 CollectionRun을 이어받아 수집 실행 (수동 수집 폴링용)
  * Step 1(레코드 생성)을 건너뛰고 기존 runId로 Step 2~9 실행
  */
-export async function runCollectionForRun(runId: string): Promise<void> {
+export async function runCollectionForRun(
+  runId: string,
+  scope?: { collectAds?: boolean; collectInventory?: boolean }
+): Promise<void> {
   // 봇차단(BOT_BLOCKED) 쿨다운 중이면 수동 재시도도 실행하지 않는다 — 재로그인은 Akamai
   // 차단을 풀지 못하고 오히려 악화시키므로(2026-07-03: 사용자 수동 재시도 연타가 격상 연료였음).
   // 단 CREDENTIAL_INVALID 쿨다운은 우회 허용 — 사용자가 비번을 고친 뒤 즉시 재시도하는 정상 흐름.
@@ -138,8 +141,8 @@ export async function runCollectionForRun(runId: string): Promise<void> {
     await updateCollectionRun(runId, { status: 'RUNNING' })
     console.log(`[manual] 상태: RUNNING (runId: ${runId})`)
 
-    // ── Step 3~7: 공통 파이프라인 ──
-    downloadedFilePath = await executeCollectionPipeline(runId, true, ctx)
+    // ── Step 3~7: 공통 파이프라인 (수동은 scope 로 광고/재고 분기) ──
+    downloadedFilePath = await executeCollectionPipeline(runId, true, ctx, scope)
     // 사용자 직접 트리거(manual)가 성공 = 자격증명/차단이 정상 복구됨 → 자동 쿨다운 해제.
     clearLoginCooldown()
   } catch (error) {
@@ -249,8 +252,13 @@ export async function runCollection(triggeredBy: string = 'scheduled'): Promise<
 async function executeCollectionPipeline(
   runId: string,
   isManual = false,
-  ctx?: CollectionContext
+  ctx?: CollectionContext,
+  scope?: { collectAds?: boolean; collectInventory?: boolean }
 ): Promise<string | null> {
+  // 수동 수집 scope — 미지정(자동 cron)은 전체 수집. 앱 API가 둘 다 false 는 거부하므로 최소 1개 실행.
+  const collectAds = scope?.collectAds ?? true
+  const collectInventory = scope?.collectInventory ?? true
+
   // ── Step 3: 자격증명 복호화 ──
   console.log('자격증명 조회 및 복호화 중...')
   const credential = await getCredentials()
@@ -261,11 +269,6 @@ async function executeCollectionPipeline(
     credential.passwordIv === 'none'
       ? credential.encryptedPassword
       : decrypt(credential.encryptedPassword, credential.passwordIv)
-
-  // ── Step 4: Playwright로 Excel 다운로드 ──
-  console.log('쿠팡 광고센터 수집 시작...')
-  await updateCollectionRun(runId, { status: 'DOWNLOADING' })
-  console.log('상태: DOWNLOADING')
 
   // 수동 수집: 최근 7일. 자동 수집: 최근 14일(self-heal).
   // cron 1회 실패 = 그 날짜 영구 누락이므로(같은 날 재시도 불가), 자동 경로는
@@ -278,159 +281,207 @@ async function executeCollectionPipeline(
     kst.setDate(kst.getDate() + offsetDays)
     return kst.toISOString().split('T')[0]
   }
-  const AD_LOOKBACK_DAYS = 14
-  const dateFrom = isManual ? kstDate(-7) : kstDate(-AD_LOOKBACK_DAYS)
-  const dateTo = kstDate(-1)
-  const dateOptions = { dateFrom, dateTo }
-
-  const result = await collectCoupangReport(
-    {
-      loginId: credential.loginId,
-      password,
-    },
-    dateOptions
-  )
-
-  console.log(`파일 다운로드 완료: ${result.fileName}`)
-
-  // ── Step 4.5: 다운로드 파일 날짜 범위 검증 ──
-  const fileBuffer = fs.readFileSync(result.filePath)
-  verifyDownloadedFile(Buffer.from(fileBuffer), result.fileName, dateTo)
-
-  // ── Step 5: 상태 → PARSING ──
-  await updateCollectionRun(runId, { status: 'PARSING' })
-  console.log('상태: PARSING')
-
-  // ── Step 6: 파일 읽기 → 업로드 API 호출 ──
-  console.log('파일 업로드 중...')
-  const uploadResult = await uploadReport(
-    Buffer.from(fileBuffer),
-    result.fileName,
-    credential.workspaceId
-  )
-
-  console.log(
-    `업로드 완료 — 삽입: ${uploadResult.insertedRows}, 중복: ${uploadResult.duplicateRows}, 전체: ${uploadResult.totalRows}`
-  )
-
-  // ── Step 7: 상태 → COMPLETED ──
-  await updateCollectionRun(runId, {
-    status: 'COMPLETED',
-    uploadId: uploadResult.uploadId,
-  })
-  console.log('상태: COMPLETED')
-
-  // ── Step 8: Slack 알림 전송 ──
-  // 실제 수집 기간 (upload 응답의 ISO 날짜를 KST로 변환) 또는 의도된 기간 (fallback)
   function toKSTDateStr(isoStr: string): string {
     const d = new Date(isoStr)
     return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
   }
-  const actualStart = uploadResult.periodStart ? toKSTDateStr(uploadResult.periodStart) : dateFrom
-  const actualEnd = uploadResult.periodEnd ? toKSTDateStr(uploadResult.periodEnd) : dateTo
-  await notifyCollectionDone({
-    dateRange: `${actualStart} ~ ${actualEnd}`,
-    totalRows: uploadResult.totalRows,
-    insertedRows: uploadResult.insertedRows,
-    duplicateRows: uploadResult.duplicateRows,
-    workspaceId: credential.workspaceId,
-  }).catch((err) => console.error('[slack] 알림 전송 실패:', err))
+  const AD_LOOKBACK_DAYS = 14
+  const dateFrom = isManual ? kstDate(-7) : kstDate(-AD_LOOKBACK_DAYS)
+  const dateTo = kstDate(-1)
 
-  // ── Step 9: 재고 데이터 수집 (Wing) ──
-  // 광고 수집기 context.close() 후 브라우저 데이터 디렉토리 잠금 해제 대기
-  await new Promise((r) => setTimeout(r, 3000))
+  // 광고 수집 기간(분석 트리거·재고-only COMPLETED 에서 사용). 광고 스킵 시 기본값 유지.
+  let actualStart = dateFrom
+  let actualEnd = dateTo
+  let adFilePath: string | null = null
 
-  // self-heal 누락 일자 조회 — 자동 cron 만(수동은 UI 백필로 보충).
-  // 같은 Wing 세션에서 어제+누락 일자를 함께 수집해 추가 로그인이 없도록 한다.
-  let gapDates: string[] = []
-  if (!isManual && credential.collectVendorSales !== false) {
-    gapDates = await fetchSalesGapDates(credential.workspaceId).catch((err) => {
-      console.error('[orchestrator] sales-gaps 조회 실패:', err)
-      return []
+  // ── 광고 데이터 수집 (Step 4~8) — collectAds scope ──
+  if (collectAds) {
+    // ── Step 4: Playwright로 Excel 다운로드 ──
+    console.log('쿠팡 광고센터 수집 시작...')
+    await updateCollectionRun(runId, { status: 'DOWNLOADING' })
+    console.log('상태: DOWNLOADING')
+
+    const result = await collectCoupangReport(
+      {
+        loginId: credential.loginId,
+        password,
+      },
+      { dateFrom, dateTo }
+    )
+
+    console.log(`파일 다운로드 완료: ${result.fileName}`)
+    adFilePath = result.filePath
+
+    // ── Step 4.5: 다운로드 파일 날짜 범위 검증 ──
+    const fileBuffer = fs.readFileSync(result.filePath)
+    verifyDownloadedFile(Buffer.from(fileBuffer), result.fileName, dateTo)
+
+    // ── Step 5: 상태 → PARSING ──
+    await updateCollectionRun(runId, { status: 'PARSING' })
+    console.log('상태: PARSING')
+
+    // ── Step 6: 파일 읽기 → 업로드 API 호출 ──
+    console.log('파일 업로드 중...')
+    const uploadResult = await uploadReport(
+      Buffer.from(fileBuffer),
+      result.fileName,
+      credential.workspaceId
+    )
+
+    console.log(
+      `업로드 완료 — 삽입: ${uploadResult.insertedRows}, 중복: ${uploadResult.duplicateRows}, 전체: ${uploadResult.totalRows}`
+    )
+
+    // ── Step 7: 상태 → COMPLETED ──
+    await updateCollectionRun(runId, {
+      status: 'COMPLETED',
+      uploadId: uploadResult.uploadId,
     })
+    console.log('상태: COMPLETED')
+
+    // ── Step 8: Slack 알림 전송 ──
+    // 실제 수집 기간 (upload 응답의 ISO 날짜를 KST로 변환) 또는 의도된 기간 (fallback)
+    actualStart = uploadResult.periodStart ? toKSTDateStr(uploadResult.periodStart) : dateFrom
+    actualEnd = uploadResult.periodEnd ? toKSTDateStr(uploadResult.periodEnd) : dateTo
+    await notifyCollectionDone({
+      dateRange: `${actualStart} ~ ${actualEnd}`,
+      totalRows: uploadResult.totalRows,
+      insertedRows: uploadResult.insertedRows,
+      duplicateRows: uploadResult.duplicateRows,
+      workspaceId: credential.workspaceId,
+    }).catch((err) => console.error('[slack] 알림 전송 실패:', err))
+  } else {
+    console.log('[orchestrator] collectAds=false — 광고 데이터 수집 건너뜀')
   }
 
-  let inventoryResult: {
-    healthRows?: number
-    vendorRows?: number
-    gapVendorRows?: number
-    errors: string[]
-    /** 이번 run 에서 VENDOR 수집(다운로드/업로드)에 실패한 KST 일자 — 실패 알림 대상. */
-    failedVendorDates?: string[]
-    /** 실패 일자별 오류 메시지(알림 요약용). */
-    vendorErrors?: string[]
-  } = {
-    errors: [],
-  }
-  try {
-    console.log('\n[orchestrator] 재고 데이터 수집 시작...')
-    // collectVendorSales 플래그를 credential에서 그대로 전달. gapDates 는 같은 세션 self-heal.
-    inventoryResult = await collectAndUploadInventory({
-      ...credential,
-      collectVendorSales: credential.collectVendorSales,
-      gapDates,
-    })
-    console.log(`[orchestrator] 재고 수집 완료 — 건강성: ${inventoryResult.healthRows ?? 0}건`)
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error(`[orchestrator] 재고 수집 실패 (광고 데이터는 정상): ${msg}`)
-    inventoryResult.errors.push(msg)
+  // 재고 수집이 통째로 실패했는지(재고-only 수집의 최종 상태 판정용).
+  let inventoryFailed = false
+
+  // ── 재고 데이터 수집 (Step 9~10.5 + seller-ops) — collectInventory scope ──
+  if (collectInventory) {
+    // 광고 수집기 context.close() 후 브라우저 데이터 디렉토리 잠금 해제 대기
+    await new Promise((r) => setTimeout(r, 3000))
+
+    // self-heal 누락 일자 조회 — 자동 cron 만(수동은 UI 백필로 보충).
+    // 같은 Wing 세션에서 어제+누락 일자를 함께 수집해 추가 로그인이 없도록 한다.
+    let gapDates: string[] = []
+    if (!isManual && credential.collectVendorSales !== false) {
+      gapDates = await fetchSalesGapDates(credential.workspaceId).catch((err) => {
+        console.error('[orchestrator] sales-gaps 조회 실패:', err)
+        return []
+      })
+    }
+
+    let inventoryResult: {
+      healthRows?: number
+      vendorRows?: number
+      gapVendorRows?: number
+      errors: string[]
+      /** 이번 run 에서 VENDOR 수집(다운로드/업로드)에 실패한 KST 일자 — 실패 알림 대상. */
+      failedVendorDates?: string[]
+      /** 실패 일자별 오류 메시지(알림 요약용). */
+      vendorErrors?: string[]
+    } = {
+      errors: [],
+    }
+    try {
+      console.log('\n[orchestrator] 재고 데이터 수집 시작...')
+      // collectVendorSales 플래그를 credential에서 그대로 전달. gapDates 는 같은 세션 self-heal.
+      inventoryResult = await collectAndUploadInventory({
+        ...credential,
+        collectVendorSales: credential.collectVendorSales,
+        gapDates,
+      })
+      console.log(`[orchestrator] 재고 수집 완료 — 건강성: ${inventoryResult.healthRows ?? 0}건`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[orchestrator] 재고 수집 실패 (광고 데이터는 정상): ${msg}`)
+      inventoryResult.errors.push(msg)
+      inventoryFailed = true
+    }
+
+    // ── Step 10: 재고 수집 결과 Slack 알림 ──
+    await notifyInventoryDone({ ...inventoryResult, workspaceId: credential.workspaceId }).catch(
+      (err) => console.error('[slack] 재고 알림 전송 실패:', err)
+    )
+
+    // ── Step 10.1: 재고 실패를 CollectionRun에 가시화 ──
+    // 상태는 COMPLETED 유지(광고 수집은 성공)하되, 재고 단계 오류를 error 필드에 남겨
+    // 이력 UI에서 "완료"인데 재고가 비는 무음 실패를 사용자가 인지할 수 있게 한다.
+    if (inventoryResult.errors.length > 0) {
+      const inventoryError = `재고 수집 일부 실패: ${inventoryResult.errors.join(' / ')}`
+      await updateCollectionRun(runId, { error: inventoryError.slice(0, 500) }).catch((err) =>
+        console.error('[orchestrator] 재고 실패 가시화 업데이트 실패:', err)
+      )
+    }
+
+    // ── Step 10.5: 재고 분석 트리거 ──
+    await triggerInventoryAnalysis(credential.workspaceId).catch((err) =>
+      console.error('[orchestrator] 재고 분석 트리거 실패:', err)
+    )
+
+    // ── Step 12: seller-ops 연동 — 로켓그로스 판매 OUTBOUND 변환 트리거 + 판매 Slack 알림 ──
+    // collectInventory 블록 내부이므로 광고만 수집(collectInventory=false)하면 스킵된다 —
+    // 신규 VENDOR 스냅샷이 없어 변환할 대상이 없으므로 정당(기존 "항상 호출"은 재고를 늘 수집했기 때문).
+    // 수집 직후 호출해야 정확(VENDOR 스냅샷이 방금 적재됨).
+    // 자동 재고 대조(inventory-sync)는 제거됨 — 재고 truth = OUTBOUND 차감 + 사용자 수동 대조.
+    // VENDOR 수집을 한 경우에만 판매 알림(변환 트리거는 전 Space 대상이라 항상 호출).
+    // cron 일일 수집 = 어제 1일치 VENDOR.
+    const salesDateKst = new Date(Date.now() + 9 * 3600 * 1000 - 86400 * 1000)
+      .toISOString()
+      .slice(0, 10)
+    const vendorCollected = (inventoryResult.vendorRows ?? 0) > 0
+    await triggerSellerOpsSync(
+      salesDateKst,
+      vendorCollected,
+      isManual,
+      credential.workspaceId
+    ).catch((err) => console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err))
+
+    // ── Step 12.5: 판매(VENDOR) 수집 실패 Slack 알림 ──
+    // 이번 run 에서 실패한 일자를 모아 1건으로 발송(재시도 도배 방지). 실패 일자가 없으면 발송 안 함.
+    const failedVendorDates = inventoryResult.failedVendorDates ?? []
+    if (failedVendorDates.length > 0) {
+      const errSummary =
+        inventoryResult.vendorErrors && inventoryResult.vendorErrors.length > 0
+          ? inventoryResult.vendorErrors.join(' / ')
+          : '판매분석 데이터 수집에 실패했습니다 (상세는 워커 로그 확인).'
+      await notifyVendorSalesFailed({
+        failedDates: failedVendorDates,
+        error: errSummary,
+        workspaceId: credential.workspaceId,
+      }).catch((err) => console.error('[slack] 판매 실패 알림 전송 실패:', err))
+    }
+  } else {
+    console.log('[orchestrator] collectInventory=false — 재고 수집 건너뜀')
   }
 
-  // ── Step 10: 재고 수집 결과 Slack 알림 ──
-  await notifyInventoryDone({ ...inventoryResult, workspaceId: credential.workspaceId }).catch(
-    (err) => console.error('[slack] 재고 알림 전송 실패:', err)
-  )
-
-  // ── Step 10.1: 재고 실패를 CollectionRun에 가시화 ──
-  // 상태는 COMPLETED 유지(광고 수집은 성공)하되, 재고 단계 오류를 error 필드에 남겨
-  // 이력 UI에서 "완료"인데 재고가 비는 무음 실패를 사용자가 인지할 수 있게 한다.
-  if (inventoryResult.errors.length > 0) {
-    const inventoryError = `재고 수집 일부 실패: ${inventoryResult.errors.join(' / ')}`
-    await updateCollectionRun(runId, { error: inventoryError.slice(0, 500) }).catch((err) =>
-      console.error('[orchestrator] 재고 실패 가시화 업데이트 실패:', err)
+  // ── Step 11: 수집 후 자동 분석 트리거 (광고 데이터 분석) — collectAds 일 때만 ──
+  if (collectAds) {
+    await triggerAnalysisAfterCollection(credential.workspaceId, actualStart, actualEnd).catch(
+      (err) => console.error('[orchestrator] 수집 후 분석 트리거 실패:', err)
     )
   }
 
-  // ── Step 10.5: 재고 분석 트리거 ──
-  await triggerInventoryAnalysis(credential.workspaceId).catch((err) =>
-    console.error('[orchestrator] 재고 분석 트리거 실패:', err)
-  )
-
-  // ── Step 11: 수집 후 자동 분석 트리거 ──
-  await triggerAnalysisAfterCollection(credential.workspaceId, actualStart, actualEnd).catch(
-    (err) => console.error('[orchestrator] 수집 후 분석 트리거 실패:', err)
-  )
-
-  // ── Step 12: seller-ops 연동 — 로켓그로스 판매 OUTBOUND 변환 트리거 + 판매 Slack 알림 ──
-  // 수집 직후 호출해야 정확(VENDOR 스냅샷이 방금 적재됨).
-  // 자동 재고 대조(inventory-sync)는 제거됨 — 재고 truth = OUTBOUND 차감 + 사용자 수동 대조.
-  // VENDOR 수집을 한 경우에만 판매 알림(변환 트리거는 전 Space 대상이라 항상 호출).
-  // cron 일일 수집 = 어제 1일치 VENDOR.
-  const salesDateKst = new Date(Date.now() + 9 * 3600 * 1000 - 86400 * 1000)
-    .toISOString()
-    .slice(0, 10)
-  const vendorCollected = (inventoryResult.vendorRows ?? 0) > 0
-  await triggerSellerOpsSync(salesDateKst, vendorCollected, isManual, credential.workspaceId).catch(
-    (err) => console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err)
-  )
-
-  // ── Step 12.5: 판매(VENDOR) 수집 실패 Slack 알림 ──
-  // 이번 run 에서 실패한 일자를 모아 1건으로 발송(재시도 도배 방지). 실패 일자가 없으면 발송 안 함.
-  const failedVendorDates = inventoryResult.failedVendorDates ?? []
-  if (failedVendorDates.length > 0) {
-    const errSummary =
-      inventoryResult.vendorErrors && inventoryResult.vendorErrors.length > 0
-        ? inventoryResult.vendorErrors.join(' / ')
-        : '판매분석 데이터 수집에 실패했습니다 (상세는 워커 로그 확인).'
-    await notifyVendorSalesFailed({
-      failedDates: failedVendorDates,
-      error: errSummary,
-      workspaceId: credential.workspaceId,
-    }).catch((err) => console.error('[slack] 판매 실패 알림 전송 실패:', err))
+  // 광고를 수집하지 않은 경우(재고만) 최종 상태를 설정 — 광고 블록의 Step 7 을 안 탔으므로.
+  // 재고 수집이 통째로 실패했으면 COMPLETED 오표기 대신 FAILED(사용자가 재고만 요청했는데 아무것도 못 받음).
+  // 부분 실패(HEALTH 성공·VENDOR 일부 실패 등)는 error 필드만 남기고 COMPLETED 유지.
+  if (!collectAds) {
+    if (inventoryFailed) {
+      const failMsg = '재고 수집 실패 (재고만 수집 요청)'
+      await updateCollectionRun(runId, { status: 'FAILED', error: failMsg }).catch((err) =>
+        console.error('[orchestrator] 상태 FAILED 업데이트 실패:', err)
+      )
+      console.log('상태: FAILED (재고만·수집 실패)')
+    } else {
+      await updateCollectionRun(runId, { status: 'COMPLETED' }).catch((err) =>
+        console.error('[orchestrator] 상태 COMPLETED 업데이트 실패:', err)
+      )
+      console.log('상태: COMPLETED (재고만)')
+    }
   }
 
-  return result.filePath
+  return adFilePath
 }
 
 /**
