@@ -14,7 +14,7 @@ import type {
 } from '@excalidraw/excalidraw/types'
 import '@excalidraw/excalidraw/index.css'
 import { toast } from 'sonner'
-import { Save, Settings2 } from 'lucide-react'
+import { Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -129,6 +129,9 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
       elements: elements as never,
       appState: {
         ...(initialData?.appState as object | undefined),
+        // 편집 뷰포트는 회색 — 아트보드(점선 프레임) 시각 구분용. 저장 카드는 handleSave 의
+        // export 에서 흰색으로 강제하므로 이 회색은 데이터/카드에 새어나가지 않는다.
+        viewBackgroundColor: '#f4f4f5',
         // 편집 중 프레임 외곽선만 표시(export 시엔 라이브러리가 clip:true·outline:false 강제).
         frameRendering: { enabled: true, clip: true, name: false, outline: true },
       },
@@ -189,7 +192,9 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
     try {
       const blob = await exportToBlob({
         elements,
-        appState,
+        // 저장 카드는 항상 흰색 배경 — 편집 뷰포트의 회색(viewBackgroundColor)이 크롭 영역에
+        // 새어나가지 않도록 export 호출에서만 흰색을 강제한다.
+        appState: { ...appState, viewBackgroundColor: '#ffffff', exportBackground: true },
         files,
         // 아트보드(640×height)만 정확히 크롭 — 프레임과 겹치는(frameId 없는) 요소 포함, 밖은 클립.
         exportingFrame: (frame as never) ?? null,
@@ -202,7 +207,9 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
       const imageBase64 = await blobToBase64(blob)
       const scene: ExcalidrawScene = {
         elements,
-        appState: { viewBackgroundColor: appState.viewBackgroundColor },
+        // 편집 회색값을 데이터에 남기지 않음 — 카드/재편집 모두 흰색 기준. 재편집 시엔
+        // restored 가 다시 회색으로 오버라이드하므로 편집 뷰는 동일하게 회색.
+        appState: { viewBackgroundColor: '#ffffff' },
         files,
         canvasHeight: clampHeight(height),
       }
@@ -213,7 +220,7 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
   }
 
   return (
-    <div className="space-y-2">
+    <div className="flex h-full min-h-0 flex-col gap-2">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex items-end gap-2">
           <div className="space-y-1">
@@ -238,20 +245,21 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
             />
           </div>
           <Button size="sm" variant="outline" onClick={applyCanvasSize} disabled={!api}>
-            <Settings2 /> 설정
+            적용
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          폭 640px 고정 · 아트보드(점선 프레임) 안에 그린 내용이 카드로 저장됩니다.
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-xs text-muted-foreground">
+            폭 640px 고정 · 아트보드(점선 프레임) 안에 그린 내용이 카드로 저장됩니다 · 카드저장을
+            눌러야 반영됩니다
+          </p>
+          <Button size="sm" onClick={handleSave} disabled={saving || !api}>
+            <Save /> 카드저장
+          </Button>
+        </div>
       </div>
-      <div className="h-[520px] overflow-hidden rounded-lg border">
+      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border">
         <Excalidraw excalidrawAPI={setApi} initialData={restored} />
-      </div>
-      <div className="flex justify-end">
-        <Button size="sm" onClick={handleSave} disabled={saving || !api}>
-          <Save /> 카드저장
-        </Button>
       </div>
     </div>
   )
