@@ -70,11 +70,19 @@ export async function DELETE(
 
   const { campaignId } = await params
 
-  const exists = await prisma.adRecord.findFirst({
-    where: { workspaceId: workspace.id, campaignId },
-    select: { id: true },
-  })
-  if (!exists) {
+  // AdRecord가 없고 메타/타겟만 남은 고아 캠페인도 삭제 가능하도록
+  // 존재 확인을 AdRecord OR CampaignMeta로 확장 (둘 다 없을 때만 404)
+  const [adExists, metaExists] = await Promise.all([
+    prisma.adRecord.findFirst({
+      where: { workspaceId: workspace.id, campaignId },
+      select: { id: true },
+    }),
+    prisma.campaignMeta.findFirst({
+      where: { workspaceId: workspace.id, campaignId },
+      select: { id: true },
+    }),
+  ])
+  if (!adExists && !metaExists) {
     return errorResponse('캠페인을 찾을 수 없습니다', 404)
   }
 
