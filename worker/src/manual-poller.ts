@@ -16,11 +16,16 @@ export function startManualPoller(): void {
       const run = await getPendingRun()
       if (!run) return
 
-      console.log(`\n[manual-poller] PENDING 수집 발견: ${run.id}`)
+      console.log(
+        `\n[manual-poller] PENDING 수집 발견: ${run.id} (광고=${run.collectAds}, 재고=${run.collectInventory})`
+      )
       isProcessing = true
 
       try {
-        await runCollectionForRun(run.id)
+        await runCollectionForRun(run.id, {
+          collectAds: run.collectAds,
+          collectInventory: run.collectInventory,
+        })
         console.log(`[manual-poller] 수집 완료: ${run.id}`)
       } catch (err) {
         console.error(`[manual-poller] 수집 실패: ${run.id}`, err)
