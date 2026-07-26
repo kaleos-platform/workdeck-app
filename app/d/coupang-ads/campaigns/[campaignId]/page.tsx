@@ -1213,21 +1213,60 @@ export default function CampaignDetailPage({
         </Button>
       </div>
 
-      {/* 공통 필터 바 */}
-      <Card className="py-3">
-        <CardContent>
-          <FilterBar adTypeOptions={adTypeOptions} showAdTypeFilter={adTypes.length > 1} />
-        </CardContent>
-      </Card>
+      {/* 공통 필터 바 (좌) + 예산/목표 ROAS 현황 (우) 나란히 */}
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Card className="py-3">
+          <CardContent>
+            <FilterBar adTypeOptions={adTypeOptions} showAdTypeFilter={adTypes.length > 1} />
+          </CardContent>
+        </Card>
 
-      {/* 예산/목표 ROAS 현황 (필터 아래) */}
-      <CampaignTargetSection
-        campaignId={campaignId}
-        from={from}
-        to={to}
-        initialTargets={targets}
-        initialSummary={targetSummary}
-      />
+        <CampaignTargetSection
+          campaignId={campaignId}
+          from={from}
+          to={to}
+          initialTargets={targets}
+          initialSummary={targetSummary}
+        />
+      </div>
+
+      {/* KPI 카드 (전탭 공통, 탭 위) */}
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
+        {kpiCards.map((card) => {
+          const Icon = card.icon
+          const { diff, prevValue } = card
+          const diffColor = getDeltaColor(diff)
+          return (
+            <Card key={card.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+                <Icon className={`h-4 w-4 ${card.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{card.value}</div>
+                {diff !== null && (
+                  <div className={`mt-1 flex items-center gap-0.5 text-xs ${diffColor}`}>
+                    {diff > 0 ? (
+                      <ArrowUp className="h-3 w-3" />
+                    ) : diff < 0 ? (
+                      <ArrowDown className="h-3 w-3" />
+                    ) : (
+                      <Minus className="h-3 w-3" />
+                    )}
+                    <span>
+                      {diff > 0 ? `+${diff}` : diff === 0 ? '변동 없음' : `${diff}`}
+                      {diff !== 0 && '%'}
+                    </span>
+                  </div>
+                )}
+                {prevValue !== null && (
+                  <p className="mt-0.5 text-xs text-muted-foreground">이전: {prevValue}</p>
+                )}
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
 
       {/* 탭 영역 */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -1266,44 +1305,6 @@ export default function CampaignDetailPage({
 
         {/* ── 대시보드 탭 ── */}
         <TabsContent value="dashboard" className="space-y-6">
-          {/* KPI 카드 */}
-          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-            {kpiCards.map((card) => {
-              const Icon = card.icon
-              const { diff, prevValue } = card
-              const diffColor = getDeltaColor(diff)
-              return (
-                <Card key={card.title}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-                    <Icon className={`h-4 w-4 ${card.color}`} />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{card.value}</div>
-                    {diff !== null && (
-                      <div className={`mt-1 flex items-center gap-0.5 text-xs ${diffColor}`}>
-                        {diff > 0 ? (
-                          <ArrowUp className="h-3 w-3" />
-                        ) : diff < 0 ? (
-                          <ArrowDown className="h-3 w-3" />
-                        ) : (
-                          <Minus className="h-3 w-3" />
-                        )}
-                        <span>
-                          {diff > 0 ? `+${diff}` : diff === 0 ? '변동 없음' : `${diff}`}
-                          {diff !== 0 && '%'}
-                        </span>
-                      </div>
-                    )}
-                    {prevValue !== null && (
-                      <p className="mt-0.5 text-xs text-muted-foreground">이전: {prevValue}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-
           {/* 시계열 차트 */}
           <Card>
             <CardHeader>

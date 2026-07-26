@@ -77,7 +77,7 @@ function formatLeftAxisTick(value: number): string {
 
 function formatRightAxisTick(value: number): string {
   if (!Number.isFinite(value)) return ''
-  return `${Math.round(value)}%`
+  return value % 1 === 0 ? `${value}%` : `${value.toFixed(1)}%`
 }
 
 function calcLeftTicks(dataMax: number): number[] {
@@ -90,32 +90,15 @@ function calcLeftTicks(dataMax: number): number[] {
   return result
 }
 
-function computeAxisDomain(values: number[], fallback: [number, number]): [number, number] {
-  if (values.length === 0) return fallback
-
-  const min = Math.min(...values)
-  const max = Math.max(...values)
-
-  if (min === max) {
-    const pad = Math.max(Math.abs(max) * 0.1, 1)
-    return [Math.max(0, min - pad), max + pad]
-  }
-
-  const pad = (max - min) * 0.1
-  return [Math.max(0, min - pad), max + pad]
-}
-
-function buildInteriorTicks([min, max]: [number, number], stepCount = 4): number[] {
-  if (!Number.isFinite(min) || !Number.isFinite(max) || stepCount < 1 || min >= max) return []
-
-  const interval = (max - min) / (stepCount + 1)
-  return Array.from({ length: stepCount }, (_, idx) => min + interval * (idx + 1))
-}
-
-function buildRightAxisTicks(maxValue: number, step = 50): number[] {
-  const ceiling = Math.ceil(maxValue / step) * step || step
+// 우측 축(%) 눈금 — 선택된 지표 최대값 크기에 맞춰 nice-number 스텝 자동 선택.
+// CTR/CVR만(≈5%)이면 0~5%, ROAS 포함(≈800%)이면 0~800%로 적응.
+function calcRightTicks(dataMax: number): number[] {
+  if (dataMax <= 0) return [0]
+  const steps = [0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000]
+  const step = steps.find((s) => dataMax / s <= 5) ?? Math.ceil(dataMax / 5)
+  const max = Math.ceil(dataMax / step) * step
   const ticks: number[] = []
-  for (let v = 0; v <= ceiling; v += step) ticks.push(v)
+  for (let v = 0; v <= max; v += step) ticks.push(v)
   return ticks
 }
 
@@ -173,7 +156,7 @@ export function CampaignChart({ data, memos = [], onChartClick }: CampaignChartP
 
   const rightValues = activeRightMetrics.length > 0 ? getMetricValues(activeRightMetrics) : []
   const rightMax = rightValues.length > 0 ? Math.max(...rightValues) : 100
-  const rightTicks = buildRightAxisTicks(rightMax)
+  const rightTicks = calcRightTicks(rightMax)
   const rightDomain: [number, number] = [0, rightTicks[rightTicks.length - 1]]
 
   // 차트 클릭 시 활성화된 tooltip index를 기준으로 원본 날짜를 계산

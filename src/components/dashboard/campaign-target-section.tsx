@@ -336,7 +336,7 @@ export function CampaignTargetSection({
             {/* 값 표시 영역: 4개 박스 통일 스타일 */}
             {currentTarget !== null ? (
               <>
-                <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div className="mt-3 grid grid-cols-2 gap-3">
                   {/* 일 예산 */}
                   <div className="rounded-lg border bg-muted/30 p-3">
                     <p className="text-xs font-medium text-muted-foreground">일 예산</p>
