@@ -331,13 +331,13 @@ export function CampaignTargetSection({
               </div>
             </div>
 
-            {/* 값 영역: 2박스 세로 스택, 각 박스 좌(값)/우(율·배지) */}
+            {/* 값 영역: 2박스 좌/우 배치, 각 박스 좌(값)/우(율·배지) */}
             {currentTarget !== null ? (
-              <div className="mt-3 flex flex-1 flex-col gap-3">
+              <div className="mt-3 grid flex-1 grid-cols-2 gap-3">
                 {/* 일 예산 + 소진율 */}
                 <div className="flex flex-1 flex-col justify-center rounded-lg border bg-muted/30 p-3">
                   <p className="text-xs font-medium text-muted-foreground">일 예산</p>
-                  <div className="mt-1 flex items-center justify-between gap-3">
+                  <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     <p className="text-xl font-bold">{formatBudget(currentTarget.dailyBudget)}</p>
                     {isLoading ? (
                       <p className="text-sm text-muted-foreground">계산 중...</p>
@@ -368,7 +368,7 @@ export function CampaignTargetSection({
                 {/* 목표 ROAS + 달성율 */}
                 <div className="flex flex-1 flex-col justify-center rounded-lg border bg-muted/30 p-3">
                   <p className="text-xs font-medium text-muted-foreground">목표 ROAS</p>
-                  <div className="mt-1 flex items-center justify-between gap-3">
+                  <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     <p className="text-xl font-bold">{formatRoas(currentTarget.targetRoas)}</p>
                     {isLoading ? (
                       <p className="text-sm text-muted-foreground">계산 중...</p>
