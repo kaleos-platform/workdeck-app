@@ -1213,10 +1213,10 @@ export default function CampaignDetailPage({
         </Button>
       </div>
 
-      {/* 공통 필터 바 (좌) + 예산/목표 ROAS 현황 (우) 나란히 */}
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <Card className="py-3">
-          <CardContent>
+      {/* 공통 필터 바 (좌, 좁게) + 예산/목표 ROAS (우, 넓게) 나란히·동일 높이 */}
+      <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <Card className="h-full py-3">
+          <CardContent className="flex h-full flex-col justify-center">
             <FilterBar adTypeOptions={adTypeOptions} showAdTypeFilter={adTypes.length > 1} />
           </CardContent>
         </Card>
