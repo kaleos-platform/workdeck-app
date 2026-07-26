@@ -124,10 +124,22 @@ export async function getCredentials(): Promise<CredentialResponse> {
  * GET /api/collection/runs/pending
  * @returns 가장 오래된 PENDING 레코드 1건 또는 null
  */
-export async function getPendingRun(): Promise<{ id: string; workspaceId: string } | null> {
+export async function getPendingRun(): Promise<{
+  id: string
+  workspaceId: string
+  collectAds: boolean
+  collectInventory: boolean
+} | null> {
   const response = await workerFetch('/api/collection/runs/pending')
   const data = await response.json()
-  return data.run ?? null
+  if (!data.run) return null
+  return {
+    id: data.run.id,
+    workspaceId: data.run.workspaceId,
+    // 앱이 필드를 안 보내는 구버전 호환: 미정의는 전체 수집(true)로 폴백.
+    collectAds: data.run.collectAds ?? true,
+    collectInventory: data.run.collectInventory ?? true,
+  }
 }
 
 /**
