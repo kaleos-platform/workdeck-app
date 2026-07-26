@@ -1,11 +1,12 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { AlertTriangle, ChevronDown, ChevronUp, Plus } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronUp, Plus, Settings2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -16,6 +17,7 @@ import { snapPrice } from '@/lib/sh/price-snap'
 
 import { PricingCostBar } from './pricing-cost-bar'
 import { PricingMatrix } from './pricing-matrix'
+import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
 import { PricingSensitivityChart } from './pricing-sensitivity-chart'
 
 // ─── 헬퍼 ─────────────────────────────────────────────────────────────────────
@@ -38,7 +40,12 @@ type Props = {
   bundle: MatrixBundle
   /** 채널 광고비율 (0~1) — 표시용 */
   adPct: number
+  /** 엔진 단위 프로모션 (채널별). 마진/스택바/여력 계산용 */
   promotion: MatrixPromotion
+  /** 프로모션 원본값 (팝오버 편집기용) */
+  promotionValue: PromotionValue
+  /** 프로모션 변경 콜백 (채널별) */
+  onPromotionChange: (v: PromotionValue) => void
   globals: MatrixGlobals
   thresholds: TierThresholds
   /** …900 스냅 적용 여부 */
@@ -67,6 +74,8 @@ export function PricingChannelBoardCard({
   bundle,
   adPct,
   promotion,
+  promotionValue,
+  onPromotionChange,
   globals,
   thresholds,
   snap,
@@ -356,10 +365,33 @@ export function PricingChannelBoardCard({
         />
       </div>
 
-      {/* 프로모션 여력 */}
+      {/* 프로모션 여력 (+ 채널별 프로모션 설정 팝오버) */}
       <div className="mt-4 rounded-lg border border-[var(--ps-border)] bg-[var(--ps-muted)] px-3 py-2.5">
         <div className="flex items-baseline justify-between text-[11px]">
-          <span className="font-medium">프로모션 여력</span>
+          <span className="flex items-center gap-1.5 font-medium">
+            프로모션 여력
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={`inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] transition hover:bg-background ${
+                    hasPromo ? 'text-foreground' : 'text-muted-foreground'
+                  }`}
+                  title="이 채널 프로모션 설정"
+                >
+                  <Settings2 className="h-3 w-3" />
+                  {hasPromo ? '설정됨' : '설정'}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-72">
+                <PricingPromotionCard
+                  value={promotionValue}
+                  onChange={onPromotionChange}
+                  embedded
+                />
+              </PopoverContent>
+            </Popover>
+          </span>
           <span className="text-muted-foreground">
             {hasPromo ? (
               <>
