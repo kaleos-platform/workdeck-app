@@ -74,6 +74,10 @@ test-results/
 # 민감 — 의식주의 실제 재고 참조 파일 (QA용)
 docs/source_ref/
 
+# 참조/QA 스크린샷 (로컬 보관, 커밋 안 함)
+docs/finance-ops/
+docs/seller-ops/
+
 # Prisma 로컬 SQLite (개발 중 임시 파일)
 prisma/dev.db
 # Prisma 로컬 스크립트 (QA/디버그용, 커밋 안 함)

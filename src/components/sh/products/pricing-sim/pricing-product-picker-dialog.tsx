@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select'
 
 import { groupOptionsByPrice, type PriceGroup } from '@/lib/sh/price-group'
+import { productDisplayName } from '@/lib/sh/product-display'
 import type { ResolvedComponent } from './pricing-bundle-row'
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
@@ -35,6 +36,7 @@ type PricingOptionRaw = {
   sku: string | null
   productId: string
   productName: string
+  internalName: string | null
   brandName: string | null
   costPrice: number | null
   retailPrice: number | null
@@ -92,6 +94,7 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
   const [selectedProduct, setSelectedProduct] = useState<{
     productId: string
     productName: string
+    internalName: string | null
   } | null>(null)
 
   // ── step2: 가격 그룹 + 수량 ──────────────────────────────────────────────
@@ -139,7 +142,11 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
     setSearchResults([])
     if (initial) {
       // 수정 모드: 상품·수량 복원 후 가격 그룹 로드 → 기존 그룹 선택
-      setSelectedProduct({ productId: initial.productId, productName: initial.productName })
+      setSelectedProduct({
+        productId: initial.productId,
+        productName: initial.productName,
+        internalName: null,
+      })
       setQuantity(Math.max(1, initial.quantity))
       setSelectedGroupKey('')
       loadGroups(initial.productId).then((groups) => {
@@ -190,18 +197,26 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
   // 검색 결과 → 상품 단위 dedup
   const productHits = useMemo(() => {
     const seen = new Set<string>()
-    const hits: { productId: string; productName: string }[] = []
+    const hits: { productId: string; productName: string; internalName: string | null }[] = []
     for (const r of searchResults) {
       if (!seen.has(r.productId)) {
         seen.add(r.productId)
-        hits.push({ productId: r.productId, productName: r.productName })
+        hits.push({
+          productId: r.productId,
+          productName: r.productName,
+          internalName: r.internalName ?? null,
+        })
       }
     }
     return hits
   }, [searchResults])
 
   // ── 상품 선택 → step2 ────────────────────────────────────────────────────
-  const handlePickProduct = (hit: { productId: string; productName: string }) => {
+  const handlePickProduct = (hit: {
+    productId: string
+    productName: string
+    internalName: string | null
+  }) => {
     setSelectedProduct(hit)
     setSearch('')
     setSearchResults([])
@@ -278,7 +293,17 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
                           onClick={() => handlePickProduct(hit)}
                           className="w-full px-4 py-3 text-left text-sm transition hover:bg-muted/60"
                         >
-                          {hit.productName}
+                          <span className="block font-medium">
+                            {productDisplayName({
+                              name: hit.productName,
+                              internalName: hit.internalName,
+                            })}
+                          </span>
+                          {hit.internalName?.trim() ? (
+                            <span className="block text-xs text-muted-foreground">
+                              {hit.productName}
+                            </span>
+                          ) : null}
                         </button>
                       </li>
                     ))}
@@ -305,7 +330,15 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
               </Button>
 
               <div className="rounded-md border bg-muted/20 px-3 py-2">
-                <p className="text-sm font-medium">{selectedProduct.productName}</p>
+                <p className="text-sm font-medium">
+                  {productDisplayName({
+                    name: selectedProduct.productName,
+                    internalName: selectedProduct.internalName,
+                  })}
+                </p>
+                {selectedProduct.internalName?.trim() ? (
+                  <p className="text-xs text-muted-foreground">{selectedProduct.productName}</p>
+                ) : null}
               </div>
 
               <div className="space-y-1.5">
