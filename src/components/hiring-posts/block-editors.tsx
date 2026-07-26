@@ -29,7 +29,7 @@ const ExcalidrawCanvas = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[520px] items-center justify-center rounded-lg border text-sm text-muted-foreground">
+      <div className="flex h-full min-h-[320px] items-center justify-center rounded-lg border text-sm text-muted-foreground">
         캔버스 불러오는 중…
       </div>
     ),

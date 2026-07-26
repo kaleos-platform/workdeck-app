@@ -14,7 +14,7 @@ import type {
 } from '@excalidraw/excalidraw/types'
 import '@excalidraw/excalidraw/index.css'
 import { toast } from 'sonner'
-import { Save, Settings2 } from 'lucide-react'
+import { Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -48,14 +48,49 @@ function blobToBase64(blob: Blob): Promise<string> {
   })
 }
 
-type El = Record<string, unknown> & { type?: string; x?: number; y?: number }
+type El = Record<string, unknown> & {
+  type?: string
+  x?: number
+  y?: number
+  customData?: { artboard?: boolean }
+}
 
 const isFrame = (e: unknown): boolean => (e as El)?.type === 'frame'
+// 아트보드 = 프레임 영역을 흰색으로 채우는 잠금 사각형 sentinel(테두리 없음·직각). 프레임은
+// fill 을 지원하지 않아(FRAME_STYLE 하드코딩) 흰 배경·회색 뷰포트 구분을 이 요소로 구현한다.
+const isArtboard = (e: unknown): boolean => (e as El)?.customData?.artboard === true
+// 프레임·아트보드는 사용자 콘텐츠가 아닌 '틀' — 둘 다 제외해야 빈 캔버스 판정이 정확하다.
+const isChrome = (e: unknown): boolean => isFrame(e) || isArtboard(e)
 
-// 프레임 제외 요소 개수 — 빈 캔버스 판정·StrictMode 복원 판정에 사용(프레임 상주가 항상-참을
-// 만들어 복원을 스킵하는 버그 방지).
-function nonFrameCount(elements: readonly unknown[]): number {
-  return elements.filter((e) => !isFrame(e)).length
+// 콘텐츠(틀 제외) 개수 — 빈 캔버스 판정·StrictMode 복원 판정에 사용(틀 상주가 항상-참을
+// 만들어 복원을 스킵하거나 빈 캔버스를 저장 가능하게 만드는 버그 방지).
+function contentCount(elements: readonly unknown[]): number {
+  return elements.filter((e) => !isChrome(e)).length
+}
+
+// 프레임과 동일 위치·크기를 채우는 흰색 아트보드 사각형을 생성한다. 테두리 없음(투명·0폭),
+// 직각(roundness null), 잠금, 프레임 자식(frameId)으로 export 크롭에 포함된다.
+function buildArtboard(
+  frameId: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): unknown {
+  const [rect] = convertToExcalidrawElements([
+    { type: 'rectangle', x, y, width, height, backgroundColor: '#ffffff' },
+  ])
+  return {
+    ...(rect as object),
+    frameId,
+    backgroundColor: '#ffffff',
+    fillStyle: 'solid',
+    strokeColor: 'transparent',
+    strokeWidth: 0,
+    roundness: null,
+    locked: true,
+    customData: { artboard: true },
+  }
 }
 
 // 레거시(프레임 없는) scene 의 콘텐츠 bbox 좌상단 — 그 위치에 프레임을 주입한다.
@@ -106,11 +141,27 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
       return rest
     })
     const hasFrame = content.some(isFrame)
+    const hasArtboard = content.some(isArtboard)
     let elements: unknown[]
     if (hasFrame) {
-      elements = content
+      // 기존 scene 에 프레임은 있으나 아트보드(흰 배경)가 없으면 프레임 규격으로 주입한다.
+      if (hasArtboard) {
+        elements = content
+      } else {
+        const frame = content.find(isFrame) as El
+        const artboard = buildArtboard(
+          (frame as El & { id?: string }).id ?? '',
+          typeof frame.x === 'number' ? frame.x : 0,
+          typeof frame.y === 'number' ? frame.y : 0,
+          CANVAS_WIDTH,
+          clampHeight(canvasHeight)
+        )
+        // [프레임, 아트보드, ...콘텐츠] — 아트보드는 콘텐츠 아래(뒤), 프레임 바로 위.
+        elements = [frame, artboard, ...content.filter((e) => !isFrame(e))]
+      }
     } else {
       const origin = content.length > 0 ? contentTopLeft(content) : { x: 0, y: 0 }
+      const h = clampHeight(canvasHeight)
       const [frameEl] = convertToExcalidrawElements([
         {
           type: 'frame',
@@ -118,19 +169,29 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
           x: origin.x,
           y: origin.y,
           width: CANVAS_WIDTH,
-          height: clampHeight(canvasHeight),
+          height: h,
           locked: true,
           name: '카드 영역',
         },
       ])
-      elements = [frameEl, ...content]
+      const artboard = buildArtboard(
+        (frameEl as { id?: string }).id ?? '',
+        origin.x,
+        origin.y,
+        CANVAS_WIDTH,
+        h
+      )
+      elements = [frameEl, artboard, ...content]
     }
     return {
       elements: elements as never,
       appState: {
         ...(initialData?.appState as object | undefined),
-        // 편집 중 프레임 외곽선만 표시(export 시엔 라이브러리가 clip:true·outline:false 강제).
-        frameRendering: { enabled: true, clip: true, name: false, outline: true },
+        // 편집 뷰포트는 회색 — 흰색 아트보드(사각형 sentinel)와 색으로만 구분된다.
+        // 저장 카드는 아트보드 흰 배경 + handleSave export 흰색 강제로 항상 흰색.
+        viewBackgroundColor: '#f4f4f5',
+        // 프레임 외곽선(회색·둥근 모서리) 숨김 — 아트보드 흰색만으로 작업 영역 구분. clip 은 유지.
+        frameRendering: { enabled: true, clip: true, name: false, outline: false },
       },
       files: initialData?.files,
     }
@@ -143,7 +204,7 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
     if (!api) return
     const id = setTimeout(() => {
       const current = api.getSceneElements()
-      if (nonFrameCount(current) === 0 && nonFrameCount(restored.elements ?? []) > 0) {
+      if (contentCount(current) === 0 && contentCount(restored.elements ?? []) > 0) {
         if (restored.files) {
           const list = Object.values(restored.files) as BinaryFileData[]
           if (list.length > 0) api.addFiles(list)
@@ -168,8 +229,9 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
     setHeightInput(String(h))
     const elements = api.getSceneElements()
     if (!elements.some(isFrame)) return
+    // 프레임과 아트보드(흰 배경)를 함께 리사이즈 — 둘은 항상 같은 규격(640×h)을 유지한다.
     const next = elements.map((e) =>
-      isFrame(e) ? { ...(e as object), width: CANVAS_WIDTH, height: h } : e
+      isChrome(e) ? { ...(e as object), width: CANVAS_WIDTH, height: h } : e
     )
     api.updateScene({ elements: next as never, captureUpdate: CaptureUpdateAction.IMMEDIATELY })
     const frame = next.find(isFrame)
@@ -181,7 +243,7 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
     const elements = api.getSceneElements()
     const appState = api.getAppState()
     const files = api.getFiles()
-    if (nonFrameCount(elements) === 0) {
+    if (contentCount(elements) === 0) {
       toast.error('내용이 없는 캔버스는 저장할 수 없습니다')
       return
     }
@@ -189,7 +251,9 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
     try {
       const blob = await exportToBlob({
         elements,
-        appState,
+        // 저장 카드는 항상 흰색 배경 — 편집 뷰포트의 회색(viewBackgroundColor)이 크롭 영역에
+        // 새어나가지 않도록 export 호출에서만 흰색을 강제한다.
+        appState: { ...appState, viewBackgroundColor: '#ffffff', exportBackground: true },
         files,
         // 아트보드(640×height)만 정확히 크롭 — 프레임과 겹치는(frameId 없는) 요소 포함, 밖은 클립.
         exportingFrame: (frame as never) ?? null,
@@ -202,7 +266,9 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
       const imageBase64 = await blobToBase64(blob)
       const scene: ExcalidrawScene = {
         elements,
-        appState: { viewBackgroundColor: appState.viewBackgroundColor },
+        // 편집 회색값을 데이터에 남기지 않음 — 카드/재편집 모두 흰색 기준. 재편집 시엔
+        // restored 가 다시 회색으로 오버라이드하므로 편집 뷰는 동일하게 회색.
+        appState: { viewBackgroundColor: '#ffffff' },
         files,
         canvasHeight: clampHeight(height),
       }
@@ -213,7 +279,7 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
   }
 
   return (
-    <div className="space-y-2">
+    <div className="flex h-full min-h-0 flex-col gap-2">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex items-end gap-2">
           <div className="space-y-1">
@@ -238,20 +304,21 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
             />
           </div>
           <Button size="sm" variant="outline" onClick={applyCanvasSize} disabled={!api}>
-            <Settings2 /> 설정
+            적용
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          폭 640px 고정 · 아트보드(점선 프레임) 안에 그린 내용이 카드로 저장됩니다.
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-xs text-muted-foreground">
+            폭 640px 고정 · 흰색 아트보드 안에 그린 내용이 카드로 저장됩니다 · 카드저장을 눌러야
+            반영됩니다
+          </p>
+          <Button size="sm" onClick={handleSave} disabled={saving || !api}>
+            <Save /> 카드저장
+          </Button>
+        </div>
       </div>
-      <div className="h-[520px] overflow-hidden rounded-lg border">
+      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border">
         <Excalidraw excalidrawAPI={setApi} initialData={restored} />
-      </div>
-      <div className="flex justify-end">
-        <Button size="sm" onClick={handleSave} disabled={saving || !api}>
-          <Save /> 카드저장
-        </Button>
       </div>
     </div>
   )

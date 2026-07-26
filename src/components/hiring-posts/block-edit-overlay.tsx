@@ -43,6 +43,8 @@ export function BlockEditOverlay({
   const heading = content?.title?.trim() || (meta ? `${meta.label} 블록` : '블록 편집')
   // 이미지·버튼은 입력이 적어 중앙 컴팩트 팝업으로. 텍스트/디자인/직무는 넓은 풀스크린 오버레이 유지.
   const isPopup = content?.contentType === 'button' || content?.contentType === 'image'
+  // 디자인 블록은 캔버스가 오버레이 전폭·전고를 채우도록 폭 제한/스크롤을 제거하고 flex 로 높이 전달.
+  const isDesign = content?.contentType === 'design'
 
   return (
     <Dialog
@@ -61,9 +63,21 @@ export function BlockEditOverlay({
         <div className="flex items-center justify-between border-b px-6 py-4">
           <DialogTitle>{heading}</DialogTitle>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-6">
+        <div
+          className={
+            isDesign ? 'flex min-h-0 flex-1 flex-col p-4' : 'min-h-0 flex-1 overflow-y-auto p-6'
+          }
+        >
           {content && (
-            <div className={isPopup ? 'w-full' : 'mx-auto w-full max-w-3xl'}>
+            <div
+              className={
+                isPopup
+                  ? 'w-full'
+                  : isDesign
+                    ? 'flex min-h-0 flex-1 flex-col'
+                    : 'mx-auto w-full max-w-3xl'
+              }
+            >
               {content.contentType === 'text' ? (
                 <Editor
                   key={content.id}
@@ -91,16 +105,11 @@ export function BlockEditOverlay({
                   onChange={onPositionsChange}
                 />
               ) : content.contentType === 'design' ? (
-                <div className="mx-auto w-fit">
-                  <p className="mb-2 text-xs text-muted-foreground">
-                    카드저장을 눌러야 저장됩니다. 저장하지 않고 닫으면 변경 사항이 사라집니다.
-                  </p>
-                  <DesignBlock
-                    key={content.id}
-                    scene={content.data}
-                    onSave={(scene, imageBase64) => onDesignSave(content.id, scene, imageBase64)}
-                  />
-                </div>
+                <DesignBlock
+                  key={content.id}
+                  scene={content.data}
+                  onSave={(scene, imageBase64) => onDesignSave(content.id, scene, imageBase64)}
+                />
               ) : (
                 <p className="text-sm text-muted-foreground">지원하지 않는 블록입니다.</p>
               )}
