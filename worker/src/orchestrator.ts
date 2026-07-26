@@ -354,6 +354,9 @@ async function executeCollectionPipeline(
     console.log('[orchestrator] collectAds=false — 광고 데이터 수집 건너뜀')
   }
 
+  // 재고 수집이 통째로 실패했는지(재고-only 수집의 최종 상태 판정용).
+  let inventoryFailed = false
+
   // ── 재고 데이터 수집 (Step 9~10.5 + seller-ops) — collectInventory scope ──
   if (collectInventory) {
     // 광고 수집기 context.close() 후 브라우저 데이터 디렉토리 잠금 해제 대기
@@ -394,6 +397,7 @@ async function executeCollectionPipeline(
       const msg = err instanceof Error ? err.message : String(err)
       console.error(`[orchestrator] 재고 수집 실패 (광고 데이터는 정상): ${msg}`)
       inventoryResult.errors.push(msg)
+      inventoryFailed = true
     }
 
     // ── Step 10: 재고 수집 결과 Slack 알림 ──
@@ -417,6 +421,8 @@ async function executeCollectionPipeline(
     )
 
     // ── Step 12: seller-ops 연동 — 로켓그로스 판매 OUTBOUND 변환 트리거 + 판매 Slack 알림 ──
+    // collectInventory 블록 내부이므로 광고만 수집(collectInventory=false)하면 스킵된다 —
+    // 신규 VENDOR 스냅샷이 없어 변환할 대상이 없으므로 정당(기존 "항상 호출"은 재고를 늘 수집했기 때문).
     // 수집 직후 호출해야 정확(VENDOR 스냅샷이 방금 적재됨).
     // 자동 재고 대조(inventory-sync)는 제거됨 — 재고 truth = OUTBOUND 차감 + 사용자 수동 대조.
     // VENDOR 수집을 한 경우에만 판매 알림(변환 트리거는 전 Space 대상이라 항상 호출).
@@ -457,12 +463,22 @@ async function executeCollectionPipeline(
     )
   }
 
-  // 광고를 수집하지 않은 경우(재고만) COMPLETED 상태를 보장한다 — 광고 블록의 Step 7 을 안 탔으므로.
+  // 광고를 수집하지 않은 경우(재고만) 최종 상태를 설정 — 광고 블록의 Step 7 을 안 탔으므로.
+  // 재고 수집이 통째로 실패했으면 COMPLETED 오표기 대신 FAILED(사용자가 재고만 요청했는데 아무것도 못 받음).
+  // 부분 실패(HEALTH 성공·VENDOR 일부 실패 등)는 error 필드만 남기고 COMPLETED 유지.
   if (!collectAds) {
-    await updateCollectionRun(runId, { status: 'COMPLETED' }).catch((err) =>
-      console.error('[orchestrator] 상태 COMPLETED 업데이트 실패:', err)
-    )
-    console.log('상태: COMPLETED (재고만)')
+    if (inventoryFailed) {
+      const failMsg = '재고 수집 실패 (재고만 수집 요청)'
+      await updateCollectionRun(runId, { status: 'FAILED', error: failMsg }).catch((err) =>
+        console.error('[orchestrator] 상태 FAILED 업데이트 실패:', err)
+      )
+      console.log('상태: FAILED (재고만·수집 실패)')
+    } else {
+      await updateCollectionRun(runId, { status: 'COMPLETED' }).catch((err) =>
+        console.error('[orchestrator] 상태 COMPLETED 업데이트 실패:', err)
+      )
+      console.log('상태: COMPLETED (재고만)')
+    }
   }
 
   return adFilePath
