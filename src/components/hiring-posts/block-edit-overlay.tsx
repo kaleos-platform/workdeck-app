@@ -74,7 +74,7 @@ export function BlockEditOverlay({
                 isPopup
                   ? 'w-full'
                   : isDesign
-                    ? 'flex min-h-0 flex-1 flex-col'
+                    ? 'mx-auto flex min-h-0 w-full max-w-[1200px] flex-1 flex-col'
                     : 'mx-auto w-full max-w-3xl'
               }
             >
