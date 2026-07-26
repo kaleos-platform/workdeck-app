@@ -35,7 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { WizardContentData, WizardPositionData } from './build-types'
+import type { WizardContentData, WizardPositionData, WizardPosition } from './build-types'
 import type { ButtonData } from '@/lib/validations/hiring-posts'
 import type { ExcalidrawScene } from './excalidraw-canvas'
 import { CONTENT_TYPE_META, type ContentType } from './block-editors'
@@ -59,6 +59,8 @@ type Props = {
   postingId: string
   contents: WizardContentData[]
   positions: WizardPositionData[]
+  spacePositions: WizardPosition[]
+  onPositionsChange: (positions: WizardPositionData[]) => void
   appliedTemplate: AppliedTemplate | null
   onChange: (contents: WizardContentData[]) => void
 }
@@ -107,6 +109,8 @@ export function ContentBlockEditor({
   postingId,
   contents,
   positions,
+  spacePositions,
+  onPositionsChange,
   appliedTemplate,
   onChange,
 }: Props) {
@@ -574,7 +578,10 @@ export function ContentBlockEditor({
       <BlockEditOverlay
         open={editingBlockId !== null}
         content={editingBlock}
+        postingId={postingId}
         positions={positions}
+        spacePositions={spacePositions}
+        onPositionsChange={onPositionsChange}
         onClose={handleOverlayClose}
         onTextChange={handleTextChange}
         onButtonSave={handleButtonSave}
