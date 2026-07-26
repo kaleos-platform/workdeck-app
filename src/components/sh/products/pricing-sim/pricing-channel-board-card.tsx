@@ -32,6 +32,22 @@ function tierBadgeClass(tier: 'good' | 'fair' | 'bad'): string {
   return 'border-destructive/40 bg-destructive/10 text-destructive'
 }
 
+/** 프로모션 요약 라벨 (설정된 프로모션 종류 + 값). NONE이면 null */
+function promoLabel(p: PromotionValue): string | null {
+  switch (p.type) {
+    case 'PERCENT':
+      return `정률 ${p.value}%`
+    case 'FLAT':
+      return `정액 ₩${fmt(p.value)}`
+    case 'COUPON':
+      return `쿠폰 ₩${fmt(p.value)}`
+    case 'MIN_PRICE':
+      return `최소가 ₩${fmt(p.value)}`
+    default:
+      return null
+  }
+}
+
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
 type Props = {
@@ -149,6 +165,7 @@ export function PricingChannelBoardCard({
   const maxDiscount = headlineMatrix?.maxDiscountForMinMargin ?? null
   // 프로모션 적용 매트릭스 (실제 promotion) — 게이지 fill·하한 경고 소스.
   const hasPromo = promotion.type !== 'NONE'
+  const promoLabelText = promoLabel(promotionValue)
   const promoMatrix = useMemo(() => {
     if (effectivePrice == null || !hasPromo) return null
     return calculateMatrix({
@@ -265,12 +282,12 @@ export function PricingChannelBoardCard({
           {/* 좌: 판매가 조정 (입력 + 슬라이더) */}
           <div>
             <div className="flex items-center justify-between gap-1">
-              <span className="text-[11px] font-medium">판매가 조정</span>
-              <div className="flex items-center gap-1">
+              <span className="text-sm font-medium">판매가 조정</span>
+              <div className="flex items-center gap-1.5">
                 {isManual && (
                   <button
                     type="button"
-                    className="text-[10px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                    className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
                     onClick={() => onManualPriceChange(null)}
                   >
                     권장가
@@ -286,23 +303,23 @@ export function PricingChannelBoardCard({
                     }}
                     step={100}
                     min={0}
-                    className="h-7 w-24 [appearance:textfield] bg-background pr-5 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
+                    className="h-8 w-28 [appearance:textfield] bg-background pr-6 text-right text-base tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="pointer-events-none absolute right-1.5 text-[11px] text-muted-foreground">
+                  <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
                     ₩
                   </span>
                 </div>
               </div>
             </div>
             <Slider
-              className="mt-2 [&_[data-slot=slider-track]]:bg-background"
+              className="mt-2.5 [&_[data-slot=slider-track]]:bg-background"
               min={sliderMin}
               max={sliderMax}
               step={100}
               value={[Math.min(sliderMax, Math.max(sliderMin, effectivePrice ?? sliderMin))]}
               onValueChange={(v) => onManualPriceChange(v[0])}
             />
-            <div className="mt-1 flex justify-between text-[9px] text-muted-foreground tabular-nums">
+            <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground tabular-nums">
               <span>₩{fmt(sliderMin)}</span>
               {recommended != null && <span>권장 ₩{fmt(recommended)}</span>}
               <span>₩{fmt(sliderMax)}</span>
@@ -313,7 +330,7 @@ export function PricingChannelBoardCard({
           {onAdChange && (
             <div className="border-l border-[var(--ps-border)] pl-4">
               <div className="flex items-center justify-between gap-1">
-                <span className="text-[11px] font-medium">광고 ROAS</span>
+                <span className="text-sm font-medium">광고 ROAS</span>
                 <div className="flex items-center gap-1.5">
                   <div className="relative flex items-center">
                     <Input
@@ -326,9 +343,9 @@ export function PricingChannelBoardCard({
                       step={10}
                       min={0}
                       disabled={!channel.applyAdCost}
-                      className="h-7 w-16 [appearance:textfield] bg-background pr-5 text-right text-sm tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
+                      className="h-8 w-20 [appearance:textfield] bg-background pr-6 text-right text-base tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <span className="pointer-events-none absolute right-1.5 text-[11px] text-muted-foreground">
+                    <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
                       %
                     </span>
                   </div>
@@ -339,7 +356,7 @@ export function PricingChannelBoardCard({
                 </div>
               </div>
               <Slider
-                className="mt-2 [&_[data-slot=slider-track]]:bg-background"
+                className="mt-2.5 [&_[data-slot=slider-track]]:bg-background"
                 min={100}
                 max={1000}
                 step={50}
@@ -347,7 +364,7 @@ export function PricingChannelBoardCard({
                 value={[Math.min(1000, Math.max(100, roasPct || 100))]}
                 onValueChange={(v) => onAdChange({ adPct: v[0] > 0 ? 100 / v[0] : 0 })}
               />
-              <div className="mt-1 flex justify-between text-[9px] text-muted-foreground tabular-nums">
+              <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground tabular-nums">
                 <span>100%</span>
                 <span>1000%</span>
               </div>
@@ -365,58 +382,75 @@ export function PricingChannelBoardCard({
         />
       </div>
 
-      {/* 프로모션 여력 (+ 채널별 프로모션 설정 팝오버) */}
-      <div className="mt-4 rounded-lg border border-[var(--ps-border)] bg-[var(--ps-muted)] px-3 py-2.5">
-        <div className="flex items-baseline justify-between text-[11px]">
-          <span className="flex items-center gap-1.5 font-medium">
-            프로모션 여력
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className={`inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] transition hover:bg-background ${
-                    hasPromo ? 'text-foreground' : 'text-muted-foreground'
-                  }`}
-                  title="이 채널 프로모션 설정"
-                >
-                  <Settings2 className="h-3 w-3" />
-                  {hasPromo ? '설정됨' : '설정'}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-72">
-                <PricingPromotionCard
-                  value={promotionValue}
-                  onChange={onPromotionChange}
-                  embedded
-                />
-              </PopoverContent>
-            </Popover>
-          </span>
-          <span className="text-muted-foreground">
-            {hasPromo ? (
-              <>
-                현재 할인{' '}
-                <span className="font-semibold text-foreground tabular-nums">
-                  {(currentDiscount * 100).toFixed(0)}%
-                </span>
-              </>
-            ) : (
-              '현재 할인 0%'
+      {/* 프로모션 — 채널별 설정(강조 버튼+툴팁) + 현재 할인·여력 정보 통합 */}
+      <div className="mt-4 rounded-lg border border-[var(--ps-border)] bg-[var(--ps-muted)] px-4 py-3">
+        {/* 헤더: 제목 + 설정 버튼 */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold">프로모션</span>
+            {hasPromo && promoLabelText && (
+              <Badge
+                variant="outline"
+                className="border-violet-300 bg-violet-50 px-1.5 py-0 text-[11px] font-medium text-violet-700"
+              >
+                {promoLabelText}
+              </Badge>
             )}
-            {maxDiscount != null ? (
-              <>
-                {' · '}하한 한계{' '}
-                <span className="font-semibold text-destructive tabular-nums">
-                  −{(maxDiscount * 100).toFixed(0)}%
-                </span>
-              </>
-            ) : (
-              <span className="ml-1 font-semibold text-destructive">여력 없음</span>
-            )}
-          </span>
+          </div>
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <Popover>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={hasPromo ? 'secondary' : 'outline'}
+                      className="h-8 gap-1.5 text-xs font-medium"
+                    >
+                      <Settings2 className="h-3.5 w-3.5" />
+                      프로모션 설정
+                    </Button>
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <PopoverContent align="end" className="w-72">
+                  <PricingPromotionCard
+                    value={promotionValue}
+                    onChange={onPromotionChange}
+                    embedded
+                  />
+                </PopoverContent>
+              </Popover>
+              <TooltipContent side="top" className="max-w-[240px] text-xs">
+                이 채널에만 적용되는 프로모션(할인)을 설정합니다. 유형·할인율을 지정하면 아래
+                판매가·마진과 비용 구성에 즉시 반영됩니다.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
-        {/* 항목6: 여력 게이지 그래프 제거 — 텍스트만으로 설명 */}
-        <p className="mt-1.5 text-[11px] leading-snug">
+
+        {/* 현재 할인 · 하한 한계 요약 */}
+        <div className="mt-2.5 flex items-baseline justify-between text-[13px]">
+          <span className="text-muted-foreground">
+            현재 할인{' '}
+            <span className="font-semibold text-foreground tabular-nums">
+              {(currentDiscount * 100).toFixed(0)}%
+            </span>
+          </span>
+          {maxDiscount != null ? (
+            <span className="text-muted-foreground">
+              하한 한계{' '}
+              <span className="font-semibold text-destructive tabular-nums">
+                −{(maxDiscount * 100).toFixed(0)}%
+              </span>
+            </span>
+          ) : (
+            <span className="font-semibold text-destructive">여력 없음</span>
+          )}
+        </div>
+
+        {/* 여력 상세 (하단 통합) */}
+        <p className="mt-1.5 text-[13px] leading-snug">
           {maxDiscount == null ? (
             <span className="text-destructive">
               0% 할인에서도 마진 하한 {(floorPct * 100).toFixed(0)}% 미달
