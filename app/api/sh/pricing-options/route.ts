@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         name: true,
+        internalName: true,
         msrp: true,
         brand: { select: { name: true } },
       },
@@ -56,6 +57,7 @@ export async function GET(req: NextRequest) {
     sku: null,
     productId: p.id,
     productName: p.name,
+    internalName: p.internalName ?? null,
     brandName: p.brand?.name ?? null,
     costPrice: null,
     retailPrice: null,
