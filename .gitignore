@@ -95,3 +95,6 @@ qa-*.png
 # agent / gstack 런타임 산출물
 .agents/
 .gstack/
+
+# Deck 문서 — QA 스크린샷은 전이성이라 추적 안 함 (assets/ 는 추적)
+docs/decks/**/screenshot/

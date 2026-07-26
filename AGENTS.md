@@ -24,6 +24,7 @@ This repository is a Next.js 16 + TypeScript app-router project.
 - `src/hooks/`: reusable React hooks (auth/user state).
 - `prisma/`: database schema and Prisma configuration.
 - `public/`: static assets.
+- `docs/decks/<deck-id>/`: deck별 문서(PRD·로드맵·가이드 등). deck id는 `src/lib/deck-meta.ts`의 `DeckVariant`를 따른다. **반드시 커밋한다** — untracked면 워크트리에서 소멸한다. QA 스크린샷은 `screenshot/`(gitignore), 영구 이미지는 `assets/`. 컨벤션: `docs/decks/README.md`.
 
 Prefer `@/` imports instead of deep relative paths.
 
