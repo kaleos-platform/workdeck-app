@@ -345,9 +345,15 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
             적용
           </Button>
         </div>
-        <Button size="sm" onClick={handleSave} disabled={saving || !api}>
-          <Save /> 카드저장
-        </Button>
+        <div className="flex items-center gap-3">
+          <p className="hidden text-xs text-muted-foreground lg:block">
+            폭 640px 고정 · 흰색 아트보드 안에 그린 내용이 카드로 저장됩니다 · 카드저장을 눌러야
+            반영됩니다
+          </p>
+          <Button size="sm" onClick={handleSave} disabled={saving || !api}>
+            <Save /> 카드저장
+          </Button>
+        </div>
       </div>
       <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg border">
         <Excalidraw excalidrawAPI={setApi} initialData={restored} onChange={handleChange} />
