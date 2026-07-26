@@ -189,7 +189,7 @@ export function PricingScenarioList() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link href={SELLER_HUB_PRICING_SIM_NEW_PATH}>기존 상품으로 생성</Link>
+                <Link href={SELLER_HUB_PRICING_SIM_NEW_PATH}>상품 목록에서 생성</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href={SELLER_HUB_PRICING_SIM_NEW_PRODUCT_PATH}>신규 상품으로 생성</Link>
