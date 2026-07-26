@@ -132,9 +132,12 @@ export function Editor({ initialDoc, editable = true, onChange, variant = 'compa
         className={cn(
           HIRING_PROSE_CLASS,
           'prose prose-sm max-w-none [&_.ProseMirror]:outline-none',
+          // 작성 영역을 주변 여백과 구분 — 편집 시 테두리·패딩·배경으로 카드처럼 표시.
+          editable &&
+            'rounded-md border bg-background p-4 focus-within:ring-1 focus-within:ring-ring',
           variant === 'full'
-            ? 'min-h-[50vh] focus-within:border-primary/40 [&_.ProseMirror]:min-h-[50vh]'
-            : 'max-h-80 min-h-24 overflow-y-auto focus-within:ring-1 focus-within:ring-primary/40 [&_.ProseMirror]:min-h-24'
+            ? 'min-h-[50vh] [&_.ProseMirror]:min-h-[50vh]'
+            : 'max-h-80 min-h-24 overflow-y-auto [&_.ProseMirror]:min-h-24'
         )}
       />
       <p className="text-right text-xs text-muted-foreground">

@@ -3,20 +3,18 @@
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Editor } from '@/components/sc/editor/editor'
 import type { ButtonData } from '@/lib/validations/hiring-posts'
-import {
-  ButtonBlock,
-  DesignBlock,
-  ImageBlock,
-  PositionsBlock,
-  CONTENT_TYPE_META,
-} from './block-editors'
+import { ButtonBlock, DesignBlock, ImageBlock, CONTENT_TYPE_META } from './block-editors'
+import { StepPositions } from './step-positions'
 import type { ExcalidrawScene } from './excalidraw-canvas'
-import type { WizardContentData, WizardPositionData } from './build-types'
+import type { WizardContentData, WizardPositionData, WizardPosition } from './build-types'
 
 type Props = {
   open: boolean
   content: WizardContentData | null
+  postingId: string
   positions: WizardPositionData[]
+  spacePositions: WizardPosition[]
+  onPositionsChange: (positions: WizardPositionData[]) => void
   onClose: () => void
   onTextChange: (contentId: string, doc: unknown) => void
   onButtonSave: (contentId: string, data: ButtonData) => Promise<unknown>
@@ -29,7 +27,10 @@ type Props = {
 export function BlockEditOverlay({
   open,
   content,
+  postingId,
   positions,
+  spacePositions,
+  onPositionsChange,
   onClose,
   onTextChange,
   onButtonSave,
@@ -40,6 +41,8 @@ export function BlockEditOverlay({
     ? CONTENT_TYPE_META[content.contentType as keyof typeof CONTENT_TYPE_META]
     : null
   const heading = content?.title?.trim() || (meta ? `${meta.label} 블록` : '블록 편집')
+  // 이미지·버튼은 입력이 적어 중앙 컴팩트 팝업으로. 텍스트/디자인/직무는 넓은 풀스크린 오버레이 유지.
+  const isPopup = content?.contentType === 'button' || content?.contentType === 'image'
 
   return (
     <Dialog
@@ -48,13 +51,19 @@ export function BlockEditOverlay({
         if (!next) onClose()
       }}
     >
-      <DialogContent className="flex h-dvh w-screen max-w-none flex-col gap-0 rounded-none border-0 p-0">
+      <DialogContent
+        className={
+          isPopup
+            ? 'flex max-h-[85vh] w-full max-w-lg flex-col gap-0 p-0'
+            : 'flex h-dvh w-screen max-w-none flex-col gap-0 rounded-none border-0 p-0'
+        }
+      >
         <div className="flex items-center justify-between border-b px-6 py-4">
           <DialogTitle>{heading}</DialogTitle>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto p-6">
           {content && (
-            <div className="mx-auto w-full max-w-3xl">
+            <div className={isPopup ? 'w-full' : 'mx-auto w-full max-w-3xl'}>
               {content.contentType === 'text' ? (
                 <Editor
                   key={content.id}
@@ -74,7 +83,13 @@ export function BlockEditOverlay({
                   onSelect={(file) => onImageSelect(content.id, file)}
                 />
               ) : content.contentType === 'positions' ? (
-                <PositionsBlock positions={positions.map((p) => ({ id: p.id, name: p.name }))} />
+                // 기본 정보 화면과 동일한 직무 관리 UI(직무 추가 팝업 + 목록/편집/삭제) 재사용.
+                <StepPositions
+                  postingId={postingId}
+                  positions={positions}
+                  spacePositions={spacePositions}
+                  onChange={onPositionsChange}
+                />
               ) : content.contentType === 'design' ? (
                 <div className="mx-auto w-fit">
                   <p className="mb-2 text-xs text-muted-foreground">
