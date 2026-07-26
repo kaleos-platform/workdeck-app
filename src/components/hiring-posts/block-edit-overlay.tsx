@@ -41,6 +41,8 @@ export function BlockEditOverlay({
     ? CONTENT_TYPE_META[content.contentType as keyof typeof CONTENT_TYPE_META]
     : null
   const heading = content?.title?.trim() || (meta ? `${meta.label} 블록` : '블록 편집')
+  // 이미지·버튼은 입력이 적어 중앙 컴팩트 팝업으로. 텍스트/디자인/직무는 넓은 풀스크린 오버레이 유지.
+  const isPopup = content?.contentType === 'button' || content?.contentType === 'image'
 
   return (
     <Dialog
@@ -49,13 +51,19 @@ export function BlockEditOverlay({
         if (!next) onClose()
       }}
     >
-      <DialogContent className="flex h-dvh w-screen max-w-none flex-col gap-0 rounded-none border-0 p-0">
+      <DialogContent
+        className={
+          isPopup
+            ? 'flex max-h-[85vh] w-full max-w-lg flex-col gap-0 p-0'
+            : 'flex h-dvh w-screen max-w-none flex-col gap-0 rounded-none border-0 p-0'
+        }
+      >
         <div className="flex items-center justify-between border-b px-6 py-4">
           <DialogTitle>{heading}</DialogTitle>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto p-6">
           {content && (
-            <div className="mx-auto w-full max-w-3xl">
+            <div className={isPopup ? 'w-full' : 'mx-auto w-full max-w-3xl'}>
               {content.contentType === 'text' ? (
                 <Editor
                   key={content.id}
