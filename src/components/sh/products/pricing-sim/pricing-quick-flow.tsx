@@ -69,7 +69,7 @@ import { SELLER_HUB_PRICING_SIM_PATH, getSellerHubPricingScenarioPath } from '@/
 import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
 import { ManualProductRow } from './pricing-manual-row'
 import { PricingChannelBoardCard } from './pricing-channel-board-card'
-import { PricingPromotionCard, type PromotionValue } from './pricing-promotion-card'
+import { type PromotionValue } from './pricing-promotion-card'
 import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
 import { mapPricingSettings } from '@/lib/sh/pricing-settings'
 
@@ -557,15 +557,32 @@ export function PricingQuickFlow({
     [simChannels, selectedChannelIds]
   )
 
-  // ── 프로모션 ──────────────────────────────────────────────────────────────
-  const [promotion, setPromotion] = useState<PromotionValue>({ type: 'NONE', value: 0 })
-  const matrixPromotion = useMemo<MatrixPromotion>(
-    () => ({
-      type: promotion.type,
-      value: promotion.type === 'PERCENT' ? promotion.value / 100 : promotion.value,
-      minThreshold: promotion.minThreshold,
+  // ── 프로모션 (채널별) ───────────────────────────────────────────────────────
+  // 채널 id → PromotionValue. 미설정=프로모션 없음(NONE). manualPrices 패턴과 동형.
+  const [chPromotions, setChPromotions] = useState<Record<string, PromotionValue>>({})
+  const promotionOf = useCallback(
+    (channelId: string): PromotionValue => chPromotions[channelId] ?? { type: 'NONE', value: 0 },
+    [chPromotions]
+  )
+  const setChannelPromotion = useCallback((channelId: string, v: PromotionValue) => {
+    setChPromotions((prev) => {
+      if (v.type === 'NONE') {
+        if (prev[channelId] == null) return prev
+        const next = { ...prev }
+        delete next[channelId]
+        return next
+      }
+      return { ...prev, [channelId]: v }
+    })
+  }, [])
+  // PromotionValue → 엔진 단위(MatrixPromotion). PERCENT는 % → 0~1.
+  const toMatrixPromotion = useCallback(
+    (p: PromotionValue): MatrixPromotion => ({
+      type: p.type,
+      value: p.type === 'PERCENT' ? p.value / 100 : p.value,
+      minThreshold: p.minThreshold,
     }),
-    [promotion]
+    []
   )
 
   // ── 등급 임계값 (목표마진 라이브 반영) ────────────────────────────────────
@@ -649,7 +666,7 @@ export function PricingQuickFlow({
     setChOverrides({})
     setManualPrices({})
     setExpandedChannels(new Set())
-    setPromotion({ type: 'NONE', value: 0 })
+    setChPromotions({})
     setLive(liveFromSettings(settings))
     setSnap(true)
     setRestorable(null)
@@ -726,11 +743,15 @@ export function PricingQuickFlow({
   const buildSnapshot = useCallback((): PricingSimSnapshot => {
     const chOverrides: Record<string, SnapChOverride> = {}
     const snapManualPrices: Record<string, number | null> = {}
+    const snapPromotions: Record<string, PromotionValue> = {}
     for (const id of selectedChannelIds) {
       const c = allChannels.find((ch) => ch.id === id)
       if (c) chOverrides[id] = overrideOf(c)
       // 선택 채널의 수동 판매가만 담는다(제거된 채널의 stale 값 배제)
       if (manualPrices[id] != null) snapManualPrices[id] = manualPrices[id]
+      // 선택 채널의 프로모션(NONE 아님)만 담는다
+      const p = chPromotions[id]
+      if (p && p.type !== 'NONE') snapPromotions[id] = p
     }
     const summary: PricingSimSummary = {
       productNames: [...new Set(confirmedRows.map((r) => r.productName))],
@@ -750,7 +771,9 @@ export function PricingQuickFlow({
       selectedChannelIds,
       chOverrides,
       manualPrices: snapManualPrices,
-      promotion,
+      chPromotions: snapPromotions,
+      // 레거시 계약 충족(구 뷰어 안전). 실 복원 소스는 chPromotions.
+      promotion: { type: 'NONE', value: 0 },
       snap,
       summary,
     }
@@ -765,7 +788,7 @@ export function PricingQuickFlow({
     bundleCostSummary,
     bundleNameInput,
     manualPrices,
-    promotion,
+    chPromotions,
     snap,
   ])
 
@@ -793,7 +816,14 @@ export function PricingQuickFlow({
     setChOverrides(restoredOverrides)
     setManualPrices(s.manualPrices ?? {})
     setExpandedChannels(new Set())
-    setPromotion(s.promotion)
+    // 프로모션 복원: 채널별(chPromotions) 우선, 없으면 레거시 전역 프로모션을 전 채널에 동일 적용
+    if (s.chPromotions) {
+      setChPromotions(s.chPromotions)
+    } else if (s.promotion?.type !== 'NONE') {
+      setChPromotions(Object.fromEntries(s.selectedChannelIds.map((id) => [id, s.promotion])))
+    } else {
+      setChPromotions({})
+    }
     setSnap(s.snap)
   }, [])
 
@@ -1526,27 +1556,25 @@ export function PricingQuickFlow({
               있습니다.
             </p>
           </StepCard>
-
-          {/* ④ 프로모션 */}
-          <StepCard step={4} title="프로모션">
-            <PricingPromotionCard value={promotion} onChange={setPromotion} embedded />
-            <TooltipProvider delayDuration={200}>
-              <div className="mt-3 flex items-center justify-between rounded-md bg-[var(--ps-muted)] px-3 py-2">
-                <span className="text-[11px] text-muted-foreground">
-                  권장 판매가 끝자리 올림 표시
-                  <HelpTip text="권장 판매가의 끝자리를 900으로 올려 표시합니다(예: 32,350원 → 32,900원). 마진 계산에는 영향이 없고 표시 가격만 정돈하는 심리적 가격 기능입니다." />
-                </span>
-                <Switch checked={snap} onCheckedChange={setSnap} />
-              </div>
-            </TooltipProvider>
-          </StepCard>
+          {/* 프로모션은 우측 채널별 마진 보드 카드에서 채널별로 설정 */}
         </div>
 
         {/* ── 우측: 채널별 마진 보드 ── */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold">채널별 마진 보드</h2>
-            <span className="text-[11px] text-muted-foreground">실시간 갱신</span>
+            <div className="flex items-center gap-3">
+              <TooltipProvider delayDuration={200}>
+                <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <span>
+                    끝자리 올림
+                    <HelpTip text="권장 판매가의 끝자리를 900으로 올려 표시합니다(예: 32,350원 → 32,900원). 마진 계산에는 영향이 없고 표시 가격만 정돈하는 심리적 가격 기능입니다." />
+                  </span>
+                  <Switch checked={snap} onCheckedChange={setSnap} />
+                </label>
+              </TooltipProvider>
+              <span className="text-[11px] text-muted-foreground">실시간 갱신</span>
+            </div>
           </div>
 
           {matrixBundle && boardChannels.length > 0 ? (
@@ -1557,7 +1585,9 @@ export function PricingQuickFlow({
                   channel={bc.channel}
                   bundle={matrixBundle}
                   adPct={bc.adPct}
-                  promotion={matrixPromotion}
+                  promotion={toMatrixPromotion(promotionOf(bc.api.id))}
+                  promotionValue={promotionOf(bc.api.id)}
+                  onPromotionChange={(v) => setChannelPromotion(bc.api.id, v)}
                   globals={buildGlobals(live, bc.adPct)}
                   thresholds={tierThresholds}
                   snap={snap}
