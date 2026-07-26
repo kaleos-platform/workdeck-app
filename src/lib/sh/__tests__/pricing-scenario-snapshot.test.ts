@@ -132,6 +132,33 @@ describe('pricing-scenario-snapshot', () => {
     expect(parsed!.mode).toBe('existing')
   })
 
+  it('채널별 프로모션(chPromotions)이 round-trip으로 보존된다', () => {
+    const s: PricingSimSnapshot = {
+      ...makeSnapshot(),
+      chPromotions: {
+        'ch-1': { type: 'PERCENT', value: 15 },
+        'ch-2': { type: 'FLAT', value: 2000 },
+      },
+      // 신 스냅샷은 레거시 전역 promotion을 NONE으로 기록
+      promotion: { type: 'NONE', value: 0 },
+    }
+    const parsed = parseSnapshot(JSON.parse(JSON.stringify(s)))
+    expect(parsed).toEqual(s)
+    expect(parsed!.chPromotions).toEqual({
+      'ch-1': { type: 'PERCENT', value: 15 },
+      'ch-2': { type: 'FLAT', value: 2000 },
+    })
+  })
+
+  it('레거시 스냅샷(chPromotions 없음)은 chPromotions undefined', () => {
+    const raw = JSON.parse(JSON.stringify(makeSnapshot())) as Record<string, unknown>
+    // makeSnapshot엔 chPromotions 필드가 없음(레거시 전역 promotion만)
+    const parsed = parseSnapshot(raw)
+    expect(parsed!.chPromotions).toBeUndefined()
+    // 레거시 전역 프로모션은 그대로 보존(복원 시 applySnapshot이 전 채널 적용)
+    expect(parsed!.promotion).toEqual({ type: 'PERCENT', value: 10 })
+  })
+
   it('isMeaningfulSnapshot: 상품/채널 있으면 true, 빈 상태 false', () => {
     const s = makeSnapshot()
     expect(isMeaningfulSnapshot(s)).toBe(true)
