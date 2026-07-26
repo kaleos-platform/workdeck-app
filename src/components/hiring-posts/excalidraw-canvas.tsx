@@ -309,8 +309,8 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
         </div>
         <div className="flex items-center gap-3">
           <p className="text-xs text-muted-foreground">
-            폭 640px 고정 · 아트보드(점선 프레임) 안에 그린 내용이 카드로 저장됩니다 · 카드저장을
-            눌러야 반영됩니다
+            폭 640px 고정 · 흰색 아트보드 안에 그린 내용이 카드로 저장됩니다 · 카드저장을 눌러야
+            반영됩니다
           </p>
           <Button size="sm" onClick={handleSave} disabled={saving || !api}>
             <Save /> 카드저장
