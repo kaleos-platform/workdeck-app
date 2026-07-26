@@ -5,6 +5,7 @@ import {
   Excalidraw,
   exportToBlob,
   convertToExcalidrawElements,
+  sceneCoordsToViewportCoords,
   CaptureUpdateAction,
 } from '@excalidraw/excalidraw'
 import type {
@@ -62,6 +63,14 @@ const isArtboard = (e: unknown): boolean => (e as El)?.customData?.artboard === 
 // 프레임·아트보드는 사용자 콘텐츠가 아닌 '틀' — 둘 다 제외해야 빈 캔버스 판정이 정확하다.
 const isChrome = (e: unknown): boolean => isFrame(e) || isArtboard(e)
 
+// 재흡수 가드 — 아트보드가 프레임 자식으로 흡수(frameId 부여)되면 z-order 가 무너지므로
+// frameId 를 항상 제거해 자식이 아닌 상태를 유지한다.
+function stripFrameId(el: unknown): unknown {
+  const rest = { ...(el as Record<string, unknown>) }
+  rest.frameId = null
+  return rest
+}
+
 // 콘텐츠(틀 제외) 개수 — 빈 캔버스 판정·StrictMode 복원 판정에 사용(틀 상주가 항상-참을
 // 만들어 복원을 스킵하거나 빈 캔버스를 저장 가능하게 만드는 버그 방지).
 function contentCount(elements: readonly unknown[]): number {
@@ -69,20 +78,15 @@ function contentCount(elements: readonly unknown[]): number {
 }
 
 // 프레임과 동일 위치·크기를 채우는 흰색 아트보드 사각형을 생성한다. 테두리 없음(투명·0폭),
-// 직각(roundness null), 잠금, 프레임 자식(frameId)으로 export 크롭에 포함된다.
-function buildArtboard(
-  frameId: string,
-  x: number,
-  y: number,
-  width: number,
-  height: number
-): unknown {
+// 직각(roundness null), 잠금. ⚠️ frameId 를 붙이지 않는다(프레임 자식 아님) — 프레임 자식은
+// 새 요소 삽입 시 z-order 가 재정렬돼 아트보드가 콘텐츠 위로 올라가 덮어버린다. 자식이 아니면
+// 배열 최하단(뒤)에 고정되고, export 는 exportingFrame 크롭이 겹치는 non-frameId 요소를 포함한다.
+function buildArtboard(x: number, y: number, width: number, height: number): unknown {
   const [rect] = convertToExcalidrawElements([
     { type: 'rectangle', x, y, width, height, backgroundColor: '#ffffff' },
   ])
   return {
     ...(rect as object),
-    frameId,
     backgroundColor: '#ffffff',
     fillStyle: 'solid',
     strokeColor: 'transparent',
@@ -121,6 +125,49 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
   const [height, setHeight] = useState(() => clampHeight(canvasHeight))
   // 입력 필드는 빈 문자열(지우는 중)을 허용 — height(적용값)는 유효한 숫자일 때만 갱신한다.
   const [heightInput, setHeightInput] = useState(() => String(clampHeight(canvasHeight)))
+  // 아트보드 위 placeholder 안내 — 빈 캔버스일 때만 프레임 화면좌표에 맞춰 표시(내용 추가 시 숨김).
+  const [hint, setHint] = useState<{
+    left: number
+    top: number
+    width: number
+    height: number
+  } | null>(null)
+
+  // Excalidraw 변경 시 프레임의 화면 rect 를 계산해 placeholder 위치를 갱신한다. 빈 캔버스가
+  // 아니면 숨김(early return)해 드로잉 중 불필요한 추적을 피한다.
+  function handleChange(
+    elements: readonly unknown[],
+    appState: Parameters<typeof sceneCoordsToViewportCoords>[1]
+  ) {
+    if (contentCount(elements) > 0) {
+      setHint((h) => (h === null ? h : null))
+      return
+    }
+    const frame = elements.find(isFrame) as (El & { width?: number; height?: number }) | undefined
+    if (!frame || typeof frame.x !== 'number' || typeof frame.y !== 'number') return
+    const tl = sceneCoordsToViewportCoords({ sceneX: frame.x, sceneY: frame.y }, appState)
+    const br = sceneCoordsToViewportCoords(
+      { sceneX: frame.x + (frame.width ?? CANVAS_WIDTH), sceneY: frame.y + (frame.height ?? 0) },
+      appState
+    )
+    const next = {
+      left: Math.round(tl.x - appState.offsetLeft),
+      top: Math.round(tl.y - appState.offsetTop),
+      width: Math.round(br.x - tl.x),
+      height: Math.round(br.y - tl.y),
+    }
+    // 값이 실제로 바뀔 때만 갱신 — onChange 는 매 렌더마다 호출되므로 무조건 setState 하면
+    // setState→렌더→onChange 무한 루프(Maximum update depth)에 빠진다.
+    setHint((prev) =>
+      prev &&
+      prev.left === next.left &&
+      prev.top === next.top &&
+      prev.width === next.width &&
+      prev.height === next.height
+        ? prev
+        : next
+    )
+  }
 
   function handleHeightInputChange(value: string) {
     setHeightInput(value)
@@ -141,24 +188,21 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
       return rest
     })
     const hasFrame = content.some(isFrame)
-    const hasArtboard = content.some(isArtboard)
     let elements: unknown[]
     if (hasFrame) {
-      // 기존 scene 에 프레임은 있으나 아트보드(흰 배경)가 없으면 프레임 규격으로 주입한다.
-      if (hasArtboard) {
-        elements = content
-      } else {
-        const frame = content.find(isFrame) as El
-        const artboard = buildArtboard(
-          (frame as El & { id?: string }).id ?? '',
+      const frame = content.find(isFrame) as El
+      const rest = content.filter((e) => !isFrame(e) && !isArtboard(e))
+      // 아트보드는 항상 배열 맨 앞(z-order 최하단)에 둔다 — 기존 것이 있어도 재구성해 순서 고정.
+      const artboard =
+        content.find(isArtboard) ?? // 기존 아트보드 재사용
+        buildArtboard(
           typeof frame.x === 'number' ? frame.x : 0,
           typeof frame.y === 'number' ? frame.y : 0,
           CANVAS_WIDTH,
           clampHeight(canvasHeight)
         )
-        // [프레임, 아트보드, ...콘텐츠] — 아트보드는 콘텐츠 아래(뒤), 프레임 바로 위.
-        elements = [frame, artboard, ...content.filter((e) => !isFrame(e))]
-      }
+      // [아트보드(최하단), 프레임, ...콘텐츠] — 아트보드가 항상 콘텐츠 뒤.
+      elements = [stripFrameId(artboard), frame, ...rest]
     } else {
       const origin = content.length > 0 ? contentTopLeft(content) : { x: 0, y: 0 }
       const h = clampHeight(canvasHeight)
@@ -174,14 +218,8 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
           name: '카드 영역',
         },
       ])
-      const artboard = buildArtboard(
-        (frameEl as { id?: string }).id ?? '',
-        origin.x,
-        origin.y,
-        CANVAS_WIDTH,
-        h
-      )
-      elements = [frameEl, artboard, ...content]
+      const artboard = buildArtboard(origin.x, origin.y, CANVAS_WIDTH, h)
+      elements = [artboard, frameEl, ...content]
     }
     return {
       elements: elements as never,
@@ -307,18 +345,23 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
             적용
           </Button>
         </div>
-        <div className="flex items-center gap-3">
-          <p className="text-xs text-muted-foreground">
-            폭 640px 고정 · 흰색 아트보드 안에 그린 내용이 카드로 저장됩니다 · 카드저장을 눌러야
-            반영됩니다
-          </p>
-          <Button size="sm" onClick={handleSave} disabled={saving || !api}>
-            <Save /> 카드저장
-          </Button>
-        </div>
+        <Button size="sm" onClick={handleSave} disabled={saving || !api}>
+          <Save /> 카드저장
+        </Button>
       </div>
-      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border">
-        <Excalidraw excalidrawAPI={setApi} initialData={restored} />
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg border">
+        <Excalidraw excalidrawAPI={setApi} initialData={restored} onChange={handleChange} />
+        {hint && (
+          <div
+            className="pointer-events-none absolute z-[3] flex items-center justify-center p-4 text-center"
+            style={{ left: hint.left, top: hint.top, width: hint.width, height: hint.height }}
+          >
+            <p className="text-sm leading-relaxed break-keep text-muted-foreground">
+              폭 640px 고정 · 흰색 아트보드 안에 그린 내용이 카드로 저장됩니다 · 카드저장을 눌러야
+              반영됩니다
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
