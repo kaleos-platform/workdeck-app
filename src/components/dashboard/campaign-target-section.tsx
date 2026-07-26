@@ -296,123 +296,109 @@ export function CampaignTargetSection({
     <>
       {/* ── 통합 카드 (mode 미지정 시) ── */}
       {showCombinedCard && (
-        <Card className="py-0">
-          <CardContent className="p-4">
-            {/* 행 1: 제목 + 추가 버튼 */}
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-base font-semibold">예산/목표 ROAS 현황</span>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 shrink-0 gap-1 text-sm"
-                onClick={openNewDialog}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                예산/목표 ROAS 추가
-              </Button>
-            </div>
-
-            {/* 행 2: 적용 시작일 + 이력보기 버튼 */}
-            <div className="mt-1 flex items-center justify-between gap-3">
-              {currentTarget !== null ? (
-                <p className="text-xs text-muted-foreground">
-                  적용 시작일: {currentTarget.effectiveDate}
-                </p>
-              ) : (
-                <span />
-              )}
-              {targets.length > 0 && (
+        <Card className="h-full py-0">
+          <CardContent className="flex h-full flex-col p-4">
+            {/* 헤더 1행: 제목·적용시작일(좌) / 변경이력·추가 버튼(우) */}
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <div className="flex items-baseline gap-2">
+                <span className="text-base font-semibold">예산/목표 ROAS</span>
+                {currentTarget !== null && (
+                  <span className="text-xs whitespace-nowrap text-muted-foreground">
+                    · 적용 {currentTarget.effectiveDate}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {targets.length > 0 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => setHistoryDialogOpen(true)}
+                  >
+                    변경 이력 {targets.length}건
+                  </Button>
+                )}
                 <Button
                   size="sm"
-                  variant="ghost"
-                  className="h-7 shrink-0 px-2 text-xs text-muted-foreground hover:text-foreground"
-                  onClick={() => setHistoryDialogOpen(true)}
+                  variant="outline"
+                  className="h-7 shrink-0 gap-1 text-sm"
+                  onClick={openNewDialog}
                 >
-                  변경 이력 {targets.length}건 보기
+                  <Plus className="h-3.5 w-3.5" />
+                  예산/목표 ROAS 추가
                 </Button>
-              )}
+              </div>
             </div>
 
-            {/* 값 표시 영역: 4개 박스 통일 스타일 */}
+            {/* 값 영역: 2박스 세로 스택, 각 박스 좌(값)/우(율·배지) */}
             {currentTarget !== null ? (
-              <>
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  {/* 일 예산 */}
-                  <div className="rounded-lg border bg-muted/30 p-3">
-                    <p className="text-xs font-medium text-muted-foreground">일 예산</p>
-                    <p className="mt-1 text-xl font-bold">
-                      {formatBudget(currentTarget.dailyBudget)}
-                    </p>
-                  </div>
-                  {/* 일 예산 평균 소진율 */}
-                  <div className="rounded-lg border bg-muted/30 p-3">
-                    <p className="text-xs font-medium text-muted-foreground">일 예산 평균 소진율</p>
+              <div className="mt-3 flex flex-1 flex-col gap-3">
+                {/* 일 예산 + 소진율 */}
+                <div className="flex flex-1 flex-col justify-center rounded-lg border bg-muted/30 p-3">
+                  <p className="text-xs font-medium text-muted-foreground">일 예산</p>
+                  <div className="mt-1 flex items-center justify-between gap-3">
+                    <p className="text-xl font-bold">{formatBudget(currentTarget.dailyBudget)}</p>
                     {isLoading ? (
-                      <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
+                      <p className="text-sm text-muted-foreground">계산 중...</p>
                     ) : pct(summary?.budgetUtilization ?? null) !== null ? (
-                      <>
-                        {(() => {
-                          const status = getBudgetStatus(summary!.budgetUtilization)
-                          return (
-                            <div className="mt-1 flex items-center gap-2">
-                              <p className={`text-xl font-bold ${status?.textColor ?? ''}`}>
-                                {pct(summary!.budgetUtilization)}
-                              </p>
-                              {status && (
-                                <span
-                                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${status.bgColor} ${status.textColor}`}
-                                >
-                                  {status.label}
-                                </span>
-                              )}
-                            </div>
-                          )
-                        })()}
-                      </>
+                      (() => {
+                        const status = getBudgetStatus(summary!.budgetUtilization)
+                        return (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">소진율</span>
+                            <span className={`text-base font-semibold ${status?.textColor ?? ''}`}>
+                              {pct(summary!.budgetUtilization)}
+                            </span>
+                            {status && (
+                              <span
+                                className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${status.bgColor} ${status.textColor}`}
+                              >
+                                {status.label}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })()
                     ) : (
-                      <p className="mt-1 text-sm text-muted-foreground">데이터 없음</p>
-                    )}
-                  </div>
-                  {/* 목표 ROAS */}
-                  <div className="rounded-lg border bg-muted/30 p-3">
-                    <p className="text-xs font-medium text-muted-foreground">목표 ROAS</p>
-                    <p className="mt-1 text-xl font-bold">{formatRoas(currentTarget.targetRoas)}</p>
-                  </div>
-                  {/* 목표 ROAS 평균 달성율 */}
-                  <div className="rounded-lg border bg-muted/30 p-3">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      목표 ROAS 평균 달성율
-                    </p>
-                    {isLoading ? (
-                      <p className="mt-1 text-sm text-muted-foreground">계산 중...</p>
-                    ) : pct(summary?.roasAchievement ?? null) !== null ? (
-                      <>
-                        {(() => {
-                          const status = getRoasStatus(summary!.roasAchievement)
-                          return (
-                            <div className="mt-1 flex items-center gap-2">
-                              <p className={`text-xl font-bold ${status?.textColor ?? ''}`}>
-                                {pct(summary!.roasAchievement)}
-                              </p>
-                              {status && (
-                                <span
-                                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${status.bgColor} ${status.textColor}`}
-                                >
-                                  {status.label}
-                                </span>
-                              )}
-                            </div>
-                          )
-                        })()}
-                      </>
-                    ) : (
-                      <p className="mt-1 text-sm text-muted-foreground">데이터 없음</p>
+                      <p className="text-sm text-muted-foreground">데이터 없음</p>
                     )}
                   </div>
                 </div>
-              </>
+                {/* 목표 ROAS + 달성율 */}
+                <div className="flex flex-1 flex-col justify-center rounded-lg border bg-muted/30 p-3">
+                  <p className="text-xs font-medium text-muted-foreground">목표 ROAS</p>
+                  <div className="mt-1 flex items-center justify-between gap-3">
+                    <p className="text-xl font-bold">{formatRoas(currentTarget.targetRoas)}</p>
+                    {isLoading ? (
+                      <p className="text-sm text-muted-foreground">계산 중...</p>
+                    ) : pct(summary?.roasAchievement ?? null) !== null ? (
+                      (() => {
+                        const status = getRoasStatus(summary!.roasAchievement)
+                        return (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">달성율</span>
+                            <span className={`text-base font-semibold ${status?.textColor ?? ''}`}>
+                              {pct(summary!.roasAchievement)}
+                            </span>
+                            {status && (
+                              <span
+                                className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${status.bgColor} ${status.textColor}`}
+                              >
+                                {status.label}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })()
+                    ) : (
+                      <p className="text-sm text-muted-foreground">데이터 없음</p>
+                    )}
+                  </div>
+                </div>
+              </div>
             ) : (
-              <div className="mt-3 rounded-lg border border-dashed p-3 text-center text-sm text-muted-foreground">
+              <div className="mt-3 flex flex-1 items-center justify-center rounded-lg border border-dashed p-3 text-center text-sm text-muted-foreground">
                 아직 설정된 예산/목표 ROAS가 없습니다.
               </div>
             )}
