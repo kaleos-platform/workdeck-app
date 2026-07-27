@@ -21,6 +21,8 @@ export type MatrixChannel = {
   channelType: string | null // 'SELF_MALL' | 'OPEN_MARKET' | ... | null
   /** 카테고리별 수수료율 배열 — 항상 '기본' 1건 이상 포함 */
   feeRates: FeeRateInput[]
+  /** 수수료율에 VAT 포함 여부. false=VAT 별도 → 카테고리+결제 수수료를 (1+vatRate)배 gross-up. 미지정=true(포함, gross-up 없음). */
+  vatIncludedInFee?: boolean
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1 (paymentFeeIncluded=false 일 때 사용)
   applyAdCost: boolean
@@ -198,6 +200,15 @@ function bundleTotalUnits(bundle: MatrixBundle): number {
 
 // ─── 계산 함수 ─────────────────────────────────────────────────────────────────
 
+/**
+ * 수수료 VAT gross-up 배수.
+ * vatIncludedInFee=false(수수료율에 VAT 미포함) 이고 글로벌 VAT 모델 ON일 때만 (1+vatRate),
+ * 그 외(포함/미지정, 또는 글로벌 VAT OFF)엔 1. 카테고리 수수료·결제 수수료(PG)에만 적용(광고·배송% 제외).
+ */
+function feeVatMultiplier(channel: MatrixChannel, globals: MatrixGlobals): number {
+  return channel.vatIncludedInFee === false && globals.includeVat ? 1 + n(globals.vatRate) : 1
+}
+
 /** 단일 셀 계산 */
 function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   const { bundle, channel, promotion, globals, thresholds } = inputs
@@ -228,10 +239,14 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
 
   // 4. 채널 수수료 — 판매가(gross) 기준. categoryName fallback '기본'.
   //    쿠팡 등 마켓 수수료는 결제금액(판매가) 기준 부과 → finalPrice × 수수료율.
-  const channelFee = r2(finalPrice * lookupCategoryFeePct(channel.feeRates))
+  //    수수료율에 VAT 미포함(vatIncludedInFee=false)이면 (1+vatRate)배 gross-up.
+  const feeVatMult = feeVatMultiplier(channel, globals)
+  const channelFee = r2(finalPrice * lookupCategoryFeePct(channel.feeRates) * feeVatMult)
 
   // 5. 결제 수수료 (PG) — 판매가 기준. paymentFeeIncluded=true 이면 채널 수수료에 포함.
-  const paymentFee = channel.paymentFeeIncluded ? 0 : r2(finalPrice * n(channel.paymentFeePct))
+  const paymentFee = channel.paymentFeeIncluded
+    ? 0
+    : r2(finalPrice * n(channel.paymentFeePct) * feeVatMult)
 
   // 6. 광고비 (채널 설정이 결정) — 판매가 기준
   const adCost = channel.applyAdCost ? r2(finalPrice * n(globals.adCostPct)) : 0
@@ -321,8 +336,10 @@ function calcRetailForTarget(target: number, inputs: MatrixInputs): number | nul
 
     const isPercentShipping = channel.shippingFeeType === 'PERCENT'
 
+    // 카테고리 수수료 + PG는 VAT gross-up 대상, 광고·배송%는 제외 → 멀티플라이어는 이 둘까지만 적용.
     let feePct = lookupCategoryFeePct(channel.feeRates)
     if (!channel.paymentFeeIncluded) feePct += n(channel.paymentFeePct)
+    feePct *= feeVatMultiplier(channel, globals)
     if (channel.applyAdCost) feePct += n(globals.adCostPct)
     // PERCENT 배송비는 판매가 비례 → 분모항(Σfee%)에 포함
     if (isPercentShipping) feePct += n(channel.shippingFeePct)
@@ -444,8 +461,10 @@ export function suggestFeasibility(
   const vatDivisor = globals.includeVat ? 1 + n(globals.vatRate) : 1
   const need = (P / vatDivisor) * (1 - target) // 허용 총비용 상한
 
-  const categoryPct = lookupCategoryFeePct(channel.feeRates)
-  const pgPct = channel.paymentFeeIncluded ? 0 : n(channel.paymentFeePct)
+  // 카테고리 수수료 + PG는 VAT gross-up 대상(광고·배송% 제외).
+  const feeVatMult = feeVatMultiplier(channel, globals)
+  const categoryPct = lookupCategoryFeePct(channel.feeRates) * feeVatMult
+  const pgPct = (channel.paymentFeeIncluded ? 0 : n(channel.paymentFeePct)) * feeVatMult
   const isPercentShipping = channel.shippingFeeType === 'PERCENT'
   const shippingPct = isPercentShipping ? n(channel.shippingFeePct) : 0
   const adPctCurrent = channel.applyAdCost ? n(globals.adCostPct) : 0

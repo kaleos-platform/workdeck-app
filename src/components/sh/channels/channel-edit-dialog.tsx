@@ -636,55 +636,6 @@ export function ChannelEditDialog({
               </div>
             )}
 
-            {/* VAT 포함 */}
-            <div className="flex items-center justify-between rounded-md border px-3 py-2">
-              <div>
-                <Label htmlFor="ch-vat" className="cursor-pointer">
-                  수수료에 VAT 포함
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  채널 전체 수수료율에 부가세 포함 기준
-                </p>
-              </div>
-              <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
-            </div>
-
-            {/* 결제 수수료 */}
-            <div className="flex items-center justify-between rounded-md border px-3 py-2">
-              <div>
-                <Label htmlFor="ch-payment-included" className="cursor-pointer">
-                  결제 수수료 포함
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  수수료율에 결제 수수료가 합산되어 있으면 ON
-                </p>
-              </div>
-              <Switch
-                id="ch-payment-included"
-                checked={fPaymentFeeIncluded}
-                onCheckedChange={setFPaymentFeeIncluded}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label
-                htmlFor="ch-payment-fee"
-                className={fPaymentFeeIncluded ? 'text-muted-foreground' : undefined}
-              >
-                결제 수수료율 (%)
-              </Label>
-              <Input
-                id="ch-payment-fee"
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={fPaymentFeeIncluded ? '' : fPaymentFeePct}
-                onChange={(e) => setFPaymentFeePct(e.target.value)}
-                placeholder={fPaymentFeeIncluded ? '결제 수수료 포함 시 사용 안 함' : '예: 3.5'}
-                disabled={fPaymentFeeIncluded}
-              />
-            </div>
-
             {/* 목표 광고 ROAS — 시뮬레이션 광고비 채널 기본값 (광고비 = 판매가 / (ROAS/100)) */}
             <div className="space-y-2">
               <Label htmlFor="ch-ad-cost">목표 광고 ROAS (%)</Label>
@@ -703,8 +654,21 @@ export function ChannelEditDialog({
               </p>
             </div>
 
-            <div className="border-t pt-3">
-              <p className="mb-3 text-xs font-medium text-muted-foreground">카테고리별 수수료</p>
+            <div className="space-y-3 border-t pt-3">
+              <p className="text-xs font-medium text-muted-foreground">카테고리별 수수료</p>
+
+              {/* VAT 포함 — 카테고리+결제 수수료율에 부가세 포함 기준 */}
+              <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                <div>
+                  <Label htmlFor="ch-vat" className="cursor-pointer">
+                    수수료에 VAT 포함
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    채널 전체 수수료율에 부가세 포함 기준
+                  </p>
+                </div>
+                <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
+              </div>
 
               {/* 8개 초과 시 스크롤 */}
               <div className={feeRows.length > 8 ? 'max-h-80 overflow-y-auto' : undefined}>
@@ -757,13 +721,50 @@ export function ChannelEditDialog({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="mt-2 w-full"
+                className="w-full"
                 onClick={addFeeRow}
               >
                 <Plus className="mr-1 h-3.5 w-3.5" />
                 카테고리 추가
               </Button>
-              <p className="mt-2 text-xs text-muted-foreground">
+
+              {/* 결제 수수료 포함 토글 + 결제 수수료율 — 카테고리별 수수료 하단 */}
+              <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                <div>
+                  <Label htmlFor="ch-payment-included" className="cursor-pointer">
+                    결제 수수료 포함
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    수수료율에 결제 수수료가 합산되어 있으면 ON
+                  </p>
+                </div>
+                <Switch
+                  id="ch-payment-included"
+                  checked={fPaymentFeeIncluded}
+                  onCheckedChange={setFPaymentFeeIncluded}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="ch-payment-fee"
+                  className={fPaymentFeeIncluded ? 'text-muted-foreground' : undefined}
+                >
+                  결제 수수료율 (%)
+                </Label>
+                <Input
+                  id="ch-payment-fee"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={fPaymentFeeIncluded ? '' : fPaymentFeePct}
+                  onChange={(e) => setFPaymentFeePct(e.target.value)}
+                  placeholder={fPaymentFeeIncluded ? '결제 수수료 포함 시 사용 안 함' : '예: 3.5'}
+                  disabled={fPaymentFeeIncluded}
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground">
                 수수료 수정은 이 다이얼로그 [수수료] 탭에서 처리합니다
               </p>
             </div>
