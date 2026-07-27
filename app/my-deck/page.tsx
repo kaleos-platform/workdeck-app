@@ -15,7 +15,10 @@ export default async function MyDeckPage() {
           id: true,
           name: true,
           deckInstances: {
-            where: { isActive: true },
+            // 전역 비활성(DeckApp.isActive=false) deck은 설치돼 있어도 노출 금지.
+            // 구 분리형 hiring-posts/hiring-applicants가 recruiting으로 통합된 뒤
+            // orphan DeckInstance로 남아 my-deck에 새어나오던 문제 차단.
+            where: { isActive: true, deckApp: { isActive: true } },
             include: {
               deckApp: {
                 select: { id: true, name: true, description: true },
