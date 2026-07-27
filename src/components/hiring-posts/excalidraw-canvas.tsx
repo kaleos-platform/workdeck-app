@@ -63,14 +63,6 @@ const isArtboard = (e: unknown): boolean => (e as El)?.customData?.artboard === 
 // 프레임·아트보드는 사용자 콘텐츠가 아닌 '틀' — 둘 다 제외해야 빈 캔버스 판정이 정확하다.
 const isChrome = (e: unknown): boolean => isFrame(e) || isArtboard(e)
 
-// 재흡수 가드 — 아트보드가 프레임 자식으로 흡수(frameId 부여)되면 z-order 가 무너지므로
-// frameId 를 항상 제거해 자식이 아닌 상태를 유지한다.
-function stripFrameId(el: unknown): unknown {
-  const rest = { ...(el as Record<string, unknown>) }
-  rest.frameId = null
-  return rest
-}
-
 // 콘텐츠(틀 제외) 개수 — 빈 캔버스 판정·StrictMode 복원 판정에 사용(틀 상주가 항상-참을
 // 만들어 복원을 스킵하거나 빈 캔버스를 저장 가능하게 만드는 버그 방지).
 function contentCount(elements: readonly unknown[]): number {
@@ -95,6 +87,20 @@ function buildArtboard(x: number, y: number, width: number, height: number): unk
     locked: true,
     customData: { artboard: true },
   }
+}
+
+// 아트보드는 프레임의 '실제' 박스와 정확히 일치해야 한다. ⚠️ convertToExcalidrawElements 로
+// 프레임을 만들면 Excalidraw 가 위치를 보정해(예: -10,-10) 명목 좌표(0,0)와 어긋난다 → 흰
+// 아트보드와 export/clip 경계(프레임)가 10px 틀어져 요소가 캔버스 밖으로 표시된다. 따라서
+// 아트보드는 프레임의 실제 x/y/width/height 에서 생성한다.
+function artboardFromFrame(frame: unknown): unknown {
+  const f = frame as El & { width?: number; height?: number }
+  return buildArtboard(
+    typeof f.x === 'number' ? f.x : 0,
+    typeof f.y === 'number' ? f.y : 0,
+    typeof f.width === 'number' ? f.width : CANVAS_WIDTH,
+    typeof f.height === 'number' ? f.height : DEFAULT_CANVAS_HEIGHT
+  )
 }
 
 // 레거시(프레임 없는) scene 의 콘텐츠 bbox 좌상단 — 그 위치에 프레임을 주입한다.
@@ -192,17 +198,11 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
     if (hasFrame) {
       const frame = content.find(isFrame) as El
       const rest = content.filter((e) => !isFrame(e) && !isArtboard(e))
-      // 아트보드는 항상 배열 맨 앞(z-order 최하단)에 둔다 — 기존 것이 있어도 재구성해 순서 고정.
-      const artboard =
-        content.find(isArtboard) ?? // 기존 아트보드 재사용
-        buildArtboard(
-          typeof frame.x === 'number' ? frame.x : 0,
-          typeof frame.y === 'number' ? frame.y : 0,
-          CANVAS_WIDTH,
-          clampHeight(canvasHeight)
-        )
+      // 아트보드는 기존 것을 재사용하지 않고 프레임 실제 박스로 재생성 — 프레임과의 정렬을
+      // 항상 보장(구 scene 의 어긋난 아트보드도 자가 교정)하고 z-order 최하단에 고정한다.
+      const artboard = artboardFromFrame(frame)
       // [아트보드(최하단), 프레임, ...콘텐츠] — 아트보드가 항상 콘텐츠 뒤.
-      elements = [stripFrameId(artboard), frame, ...rest]
+      elements = [artboard, frame, ...rest]
     } else {
       const origin = content.length > 0 ? contentTopLeft(content) : { x: 0, y: 0 }
       const h = clampHeight(canvasHeight)
@@ -218,7 +218,8 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
           name: '카드 영역',
         },
       ])
-      const artboard = buildArtboard(origin.x, origin.y, CANVAS_WIDTH, h)
+      // 프레임의 '실제'(보정된) 박스로 아트보드 생성 — 명목 origin 이 아니라 frameEl 좌표 사용.
+      const artboard = artboardFromFrame(frameEl)
       elements = [artboard, frameEl, ...content]
     }
     return {
@@ -228,6 +229,9 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
         // 편집 뷰포트는 회색 — 흰색 아트보드(사각형 sentinel)와 색으로만 구분된다.
         // 저장 카드는 아트보드 흰 배경 + handleSave export 흰색 강제로 항상 흰색.
         viewBackgroundColor: '#f4f4f5',
+        // 새로 그리는 도형의 기본 모서리를 직각으로 — Excalidraw 기본값('round')은 사각형이
+        // 둥근 모서리로 그려져 카드 디자인에 부적합(사용자가 원하면 Edges 패널에서 변경 가능).
+        currentItemRoundness: 'sharp',
         // 프레임 외곽선(회색·둥근 모서리) 숨김 — 아트보드 흰색만으로 작업 영역 구분. clip 은 유지.
         frameRendering: { enabled: true, clip: true, name: false, outline: false },
       },
@@ -259,21 +263,30 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api])
 
-  // 설정 — 프레임 높이 갱신(폭 640 강제).
+  // 설정 — 프레임 높이 갱신 후 아트보드를 프레임 박스에 맞춰 동기화(정렬 유지).
   function applyCanvasSize() {
     if (!api) return
     const h = clampHeight(height)
     setHeight(h)
     setHeightInput(String(h))
     const elements = api.getSceneElements()
-    if (!elements.some(isFrame)) return
-    // 프레임과 아트보드(흰 배경)를 함께 리사이즈 — 둘은 항상 같은 규격(640×h)을 유지한다.
-    const next = elements.map((e) =>
-      isChrome(e) ? { ...(e as object), width: CANVAS_WIDTH, height: h } : e
-    )
+    const frame = elements.find(isFrame) as (El & { width?: number }) | undefined
+    if (!frame) return
+    // 프레임의 위치·폭은 유지하고 높이만 변경 — 아트보드는 프레임과 동일 박스(x/y/width/height)로.
+    const box = {
+      x: typeof frame.x === 'number' ? frame.x : 0,
+      y: typeof frame.y === 'number' ? frame.y : 0,
+      width: typeof frame.width === 'number' ? frame.width : CANVAS_WIDTH,
+      height: h,
+    }
+    const next = elements.map((e) => {
+      if (isFrame(e)) return { ...(e as object), height: h }
+      if (isArtboard(e)) return { ...(e as object), ...box }
+      return e
+    })
     api.updateScene({ elements: next as never, captureUpdate: CaptureUpdateAction.IMMEDIATELY })
-    const frame = next.find(isFrame)
-    if (frame) api.scrollToContent([frame] as never, { fitToContent: true, animate: false })
+    const nextFrame = next.find(isFrame)
+    if (nextFrame) api.scrollToContent([nextFrame] as never, { fitToContent: true, animate: false })
   }
 
   async function handleSave() {

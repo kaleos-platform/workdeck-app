@@ -1,6 +1,8 @@
 'use client'
 
+import { Check } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { Editor } from '@/components/sc/editor/editor'
 import type { ButtonData } from '@/lib/validations/hiring-posts'
 import { ButtonBlock, DesignBlock, ImageBlock, CONTENT_TYPE_META } from './block-editors'
@@ -62,6 +64,14 @@ export function BlockEditOverlay({
       >
         <div className="flex items-center justify-between border-b px-6 py-4">
           <DialogTitle>{heading}</DialogTitle>
+          {/* 텍스트·직무 블록은 입력이 즉시 반영되므로, 명시적으로 편집을 끝내는 '완료' 버튼을
+              제공한다(우측 X 닫기 아이콘과 겹치지 않도록 여백). 디자인 블록은 '카드저장',
+              이미지·버튼(팝업)은 자체 저장 버튼이 있어 제외. */}
+          {!isPopup && !isDesign && (
+            <Button size="sm" className="mr-8" onClick={onClose}>
+              <Check /> 완료
+            </Button>
+          )}
         </div>
         <div
           className={
