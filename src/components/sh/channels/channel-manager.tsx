@@ -57,6 +57,7 @@ type Channel = {
   vatIncludedInFee: boolean
   paymentFeeIncluded: boolean
   paymentFeePct: number | null
+  paymentFeeVatIncluded: boolean
   isActive: boolean
   requireOrderNumber: boolean
   requirePayment: boolean

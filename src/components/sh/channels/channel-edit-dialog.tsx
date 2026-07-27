@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -60,6 +61,7 @@ type Channel = {
   vatIncludedInFee: boolean
   paymentFeeIncluded: boolean
   paymentFeePct: number | null // DB/API는 0~1 소수
+  paymentFeeVatIncluded: boolean
   isActive: boolean
   requireOrderNumber: boolean
   requirePayment: boolean
@@ -118,6 +120,7 @@ export function ChannelEditDialog({
   const [fVatIncluded, setFVatIncluded] = useState(false)
   const [fPaymentFeeIncluded, setFPaymentFeeIncluded] = useState(true)
   const [fPaymentFeePct, setFPaymentFeePct] = useState('') // UI: %, 저장 시 /100
+  const [fPaymentFeeVatIncluded, setFPaymentFeeVatIncluded] = useState(false)
   const [fAdCostPct, setFAdCostPct] = useState('') // 광고비율 UI: %, 저장 시 /100. 빈값=미설정
   const [feeRows, setFeeRows] = useState<FeeRateRow[]>([{ categoryName: '기본', ratePercent: '0' }])
 
@@ -181,6 +184,7 @@ export function ChannelEditDialog({
 
       setFVatIncluded(channel.vatIncludedInFee)
       setFPaymentFeeIncluded(channel.paymentFeeIncluded)
+      setFPaymentFeeVatIncluded(channel.paymentFeeVatIncluded)
       // paymentFeePct는 DB 0~1 → UI * 100
       setFPaymentFeePct(channel.paymentFeePct != null ? String(channel.paymentFeePct * 100) : '')
       // adCostPct(DB, 광고비율 rate) → UI는 목표 ROAS% = 100/rate. null/0=미설정=빈값.
@@ -220,8 +224,9 @@ export function ChannelEditDialog({
       setFExternalSource(EXTERNAL_SOURCE_NONE)
       setFRepresentativeChannelId(REPRESENTATIVE_NONE)
 
-      setFVatIncluded(true)
+      setFVatIncluded(false)
       setFPaymentFeeIncluded(true)
+      setFPaymentFeeVatIncluded(false)
       setFPaymentFeePct('')
       setFAdCostPct('')
       setFeeRows([{ categoryName: '기본', ratePercent: '0' }])
@@ -311,6 +316,7 @@ export function ChannelEditDialog({
         freeShipping: fFreeShipping,
         vatIncludedInFee: fVatIncluded,
         paymentFeeIncluded: fPaymentFeeIncluded,
+        paymentFeeVatIncluded: fPaymentFeeVatIncluded,
         isActive: fIsActive,
         requireOrderNumber: fRequireOrderNumber,
         requirePayment: fRequirePayment,
@@ -655,20 +661,7 @@ export function ChannelEditDialog({
             </div>
 
             <div className="space-y-3 border-t pt-3">
-              <p className="text-xs font-medium text-muted-foreground">카테고리별 수수료</p>
-
-              {/* VAT 포함 — 카테고리+결제 수수료율에 부가세 포함 기준 */}
-              <div className="flex items-center justify-between rounded-md border px-3 py-2">
-                <div>
-                  <Label htmlFor="ch-vat" className="cursor-pointer">
-                    수수료에 VAT 포함
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    채널 전체 수수료율에 부가세 포함 기준
-                  </p>
-                </div>
-                <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
-              </div>
+              <Label>판매 수수료</Label>
 
               {/* 8개 초과 시 스크롤 */}
               <div className={feeRows.length > 8 ? 'max-h-80 overflow-y-auto' : undefined}>
@@ -728,7 +721,18 @@ export function ChannelEditDialog({
                 카테고리 추가
               </Button>
 
-              {/* 결제 수수료 포함 토글 + 결제 수수료율 — 카테고리별 수수료 하단 */}
+              {/* 수수료에 VAT 포함 — 판매 수수료 하위 항목(컴팩트, 구분라인) */}
+              <div className="flex items-center justify-between border-t pt-2 pl-1">
+                <Label
+                  htmlFor="ch-vat"
+                  className="cursor-pointer text-xs font-normal text-muted-foreground"
+                >
+                  수수료에 VAT 포함
+                </Label>
+                <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
+              </div>
+
+              {/* 결제 수수료 포함 토글 + 결제 수수료율(VAT 독립 체크) */}
               <div className="flex items-center justify-between rounded-md border px-3 py-2">
                 <div>
                   <Label htmlFor="ch-payment-included" className="cursor-pointer">
@@ -745,12 +749,29 @@ export function ChannelEditDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label
-                  htmlFor="ch-payment-fee"
-                  className={fPaymentFeeIncluded ? 'text-muted-foreground' : undefined}
-                >
-                  결제 수수료율 (%)
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label
+                    htmlFor="ch-payment-fee"
+                    className={fPaymentFeeIncluded ? 'text-muted-foreground' : undefined}
+                  >
+                    결제 수수료율 (%)
+                  </Label>
+                  <label
+                    className={`flex cursor-pointer items-center gap-1.5 text-xs ${
+                      fPaymentFeeIncluded
+                        ? 'text-muted-foreground opacity-50'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    <Checkbox
+                      id="ch-pg-vat"
+                      checked={fPaymentFeeVatIncluded}
+                      onCheckedChange={(v) => setFPaymentFeeVatIncluded(v === true)}
+                      disabled={fPaymentFeeIncluded}
+                    />
+                    VAT 포함
+                  </label>
+                </div>
                 <Input
                   id="ch-payment-fee"
                   type="number"
