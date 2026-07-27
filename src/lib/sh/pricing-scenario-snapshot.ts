@@ -27,6 +27,8 @@ export type SnapChOverride = {
   freeShipping?: boolean
   /** 무료배송 최소 주문금액(원). null/미설정=기준 없음. 구 스냅샷엔 없어 optional */
   freeShippingThreshold?: number | null
+  /** 수수료율 VAT 포함 여부. 구 스냅샷엔 없어 optional(복원 시 true 폴백=현행 동작) */
+  vatIncludedInFee?: boolean
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1
   applyAdCost: boolean

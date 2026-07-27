@@ -89,6 +89,7 @@ type ApiCh = {
   freeShippingThreshold: string | number | null
   applyAdCost: boolean
   adCostPct: string | number | null // 0~1, null=미설정 → 앱 기본값 폴백
+  vatIncludedInFee: boolean // 수수료율에 VAT 포함 여부 (false=별도 → gross-up)
   paymentFeeIncluded: boolean
   paymentFeePct: string | number | null
 }
@@ -129,6 +130,7 @@ type ChOverride = {
   shippingFeePct: number // 0~1 (PERCENT, 판매가 대비)
   freeShipping: boolean // 항상 무료배송(고객 미부담=판매자 항상 부담)
   freeShippingThreshold: number | null // 무료배송 최소 주문금액(이상=판매자 부담, 미만=고객 부담). null=미설정
+  vatIncludedInFee: boolean // 수수료율 VAT 포함 여부 (false=별도 부과 → 엔진에서 gross-up)
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1 PG
   applyAdCost: boolean
@@ -162,6 +164,8 @@ function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
     shippingFeePct: c.shippingFeePct != null ? Number(c.shippingFeePct) : 0,
     freeShipping: c.freeShipping ?? false,
     freeShippingThreshold: c.freeShippingThreshold != null ? Number(c.freeShippingThreshold) : null,
+    // 수수료 VAT 포함 여부 — 채널값 그대로. false면 엔진이 카테고리+PG 수수료를 (1+vat)배 gross-up.
+    vatIncludedInFee: c.vatIncludedInFee,
     // PG는 채널 설정값 그대로 반영(true=수수료에 포함=미부과). 미설정 채널 기본(포함)도 그대로.
     paymentFeeIncluded: c.paymentFeeIncluded,
     paymentFeePct: c.paymentFeePct != null ? Number(c.paymentFeePct) : 0,
@@ -179,6 +183,7 @@ function apiChToMatrixChannel(c: ApiCh, ov: ChOverride): MatrixChannel {
     name: c.name,
     channelType,
     feeRates: [{ categoryName: '기본', ratePercent: ov.feePct }],
+    vatIncludedInFee: ov.vatIncludedInFee,
     paymentFeeIncluded: ov.paymentFeeIncluded,
     paymentFeePct: ov.paymentFeePct,
     applyAdCost: ov.applyAdCost,
@@ -811,6 +816,8 @@ export function PricingQuickFlow({
         ...o,
         freeShipping: o.freeShipping ?? false,
         freeShippingThreshold: o.freeShippingThreshold ?? null,
+        // 구 스냅샷 호환 — VAT 포함 여부 미기록이면 true(현행 동작=gross-up 없음)
+        vatIncludedInFee: o.vatIncludedInFee ?? true,
       }
     }
     setChOverrides(restoredOverrides)
