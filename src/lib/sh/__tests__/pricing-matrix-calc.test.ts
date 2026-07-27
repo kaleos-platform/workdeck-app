@@ -540,9 +540,9 @@ describe('suggestFeasibility — 목표 마진 달성 불가 시 항목별 제�
   })
 })
 
-// ─── Test: 수수료 VAT gross-up (vatIncludedInFee) ─────────────────────────────
+// ─── Test: 수수료 VAT gross-up (판매/결제 독립) ───────────────────────────────
 
-describe('수수료 VAT 포함 여부 (vatIncludedInFee)', () => {
+describe('수수료 VAT 포함 여부 (판매·결제 독립)', () => {
   // 광고·배송 제거해 수수료 항목만 격리 (카테고리 10% + PG 3%)
   const feeOnlyBase: MatrixChannel = {
     channelType: 'OPEN_MARKET',
@@ -555,50 +555,69 @@ describe('수수료 VAT 포함 여부 (vatIncludedInFee)', () => {
   }
   const bundle = makeBundle(15000, 40000, 1, 0)
 
-  it('OFF(false)면 카테고리·결제 수수료가 (1+vatRate)배 gross-up, 광고·배송은 불변', () => {
-    const chIncluded: MatrixChannel = { ...feeOnlyBase, vatIncludedInFee: true }
-    const chExcluded: MatrixChannel = { ...feeOnlyBase, vatIncludedInFee: false }
-    const cellIncl = calculateMatrix(makeInputs(bundle, chIncluded)).cells[0]
-    const cellExcl = calculateMatrix(makeInputs(bundle, chExcluded)).cells[0]
-
-    // globals.vatRate = 0.1 → 1.1배
-    expect(cellExcl.channelFee).toBeCloseTo(cellIncl.channelFee * 1.1, 2)
-    expect(cellExcl.paymentFee).toBeCloseTo(cellIncl.paymentFee * 1.1, 2)
-    // 미포함 채널이 비용 증가 → 마진 하락
-    expect(cellExcl.margin).toBeLessThan(cellIncl.margin)
+  it('판매 VAT OFF는 channelFee만 gross-up, paymentFee(PG) 불변', () => {
+    // 기준=둘 다 미지정(gross-up 없음). 판매만 false로.
+    const base = calculateMatrix(makeInputs(bundle, feeOnlyBase)).cells[0]
+    const chSaleOff: MatrixChannel = { ...feeOnlyBase, vatIncludedInFee: false }
+    const cell = calculateMatrix(makeInputs(bundle, chSaleOff)).cells[0]
+    expect(cell.channelFee).toBeCloseTo(base.channelFee * 1.1, 2) // 40000×10%×1.1=4400
+    expect(cell.paymentFee).toBe(base.paymentFee) // PG 불변 = 1200
+    expect(cell.margin).toBeLessThan(base.margin)
   })
 
-  it('미지정(undefined)은 포함(true)과 동일 = 하위호환', () => {
-    const chDefault: MatrixChannel = { ...feeOnlyBase } // vatIncludedInFee 없음
-    const chIncluded: MatrixChannel = { ...feeOnlyBase, vatIncludedInFee: true }
-    const cellDef = calculateMatrix(makeInputs(bundle, chDefault)).cells[0]
-    const cellInc = calculateMatrix(makeInputs(bundle, chIncluded)).cells[0]
-    expect(cellDef.channelFee).toBe(cellInc.channelFee)
-    expect(cellDef.paymentFee).toBe(cellInc.paymentFee)
+  it('결제 VAT OFF는 paymentFee만 gross-up, channelFee 불변 (판매와 독립)', () => {
+    const base = calculateMatrix(makeInputs(bundle, feeOnlyBase)).cells[0]
+    const chPgOff: MatrixChannel = { ...feeOnlyBase, paymentFeeVatIncluded: false }
+    const cell = calculateMatrix(makeInputs(bundle, chPgOff)).cells[0]
+    expect(cell.paymentFee).toBeCloseTo(base.paymentFee * 1.1, 2) // 40000×3%×1.1=1320
+    expect(cell.channelFee).toBe(base.channelFee) // 판매 불변 = 4000
+  })
+
+  it('둘 다 OFF면 각각 독립 gross-up', () => {
+    const chBoth: MatrixChannel = {
+      ...feeOnlyBase,
+      vatIncludedInFee: false,
+      paymentFeeVatIncluded: false,
+    }
+    const cell = calculateMatrix(makeInputs(bundle, chBoth)).cells[0]
+    expect(cell.channelFee).toBeCloseTo(4400, 2) // 4000×1.1
+    expect(cell.paymentFee).toBeCloseTo(1320, 2) // 1200×1.1
+  })
+
+  it('미지정(undefined)은 gross-up 없음 = 하위호환', () => {
+    const cell = calculateMatrix(makeInputs(bundle, feeOnlyBase)).cells[0]
+    expect(cell.channelFee).toBeCloseTo(4000, 2) // 40000×10%
+    expect(cell.paymentFee).toBeCloseTo(1200, 2) // 40000×3%
   })
 
   it('글로벌 VAT OFF면 gross-up 미적용 (모델 일관성)', () => {
     const noVatGlobals: MatrixGlobals = { ...globals, includeVat: false }
-    const chExcluded: MatrixChannel = { ...feeOnlyBase, vatIncludedInFee: false }
-    const inputs: MatrixInputs = {
+    const chBoth: MatrixChannel = {
+      ...feeOnlyBase,
+      vatIncludedInFee: false,
+      paymentFeeVatIncluded: false,
+    }
+    const cell = calculateMatrix({
       bundle,
-      channel: chExcluded,
+      channel: chBoth,
       promotion: noPromotion,
       globals: noVatGlobals,
       thresholds,
-    }
-    const cell = calculateMatrix(inputs).cells[0]
-    // gross-up 없음 → 판매가 40000 × 10% = 4000, PG 40000 × 3% = 1200
+    }).cells[0]
     expect(cell.channelFee).toBeCloseTo(4000, 2)
     expect(cell.paymentFee).toBeCloseTo(1200, 2)
   })
 
-  it('OFF 채널 권장가(good)를 0% 셀에 넣으면 마진 >= 목표 — 정방향·역방향 정합', () => {
-    const chExcluded: MatrixChannel = { ...feeOnlyBase, vatIncludedInFee: false }
-    const { good } = calculateMatrix(makeInputs(bundle, chExcluded)).recommendedRetail
+  it('판매·결제 VAT OFF 채널 권장가(good)를 0% 셀에 넣으면 마진 >= 목표 — 정방향·역방향 정합', () => {
+    const chBoth: MatrixChannel = {
+      ...feeOnlyBase,
+      vatIncludedInFee: false,
+      paymentFeeVatIncluded: false,
+    }
+    const { good } = calculateMatrix(makeInputs(bundle, chBoth)).recommendedRetail
     expect(good).not.toBeNull()
     const checkBundle: MatrixBundle = { ...bundle, salePrice: good! }
-    const cell0 = calculateMatrix(makeInputs(checkBundle, chExcluded)).cells[0]
+    const cell0 = calculateMatrix(makeInputs(checkBundle, chBoth)).cells[0]
     expect(cell0.margin).toBeGreaterThanOrEqual(thresholds.platformTargetGood - 0.005)
   })
 })

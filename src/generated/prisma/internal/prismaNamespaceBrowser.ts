@@ -1123,6 +1123,7 @@ export const ChannelScalarFieldEnum = {
   vatIncludedInFee: 'vatIncludedInFee',
   paymentFeeIncluded: 'paymentFeeIncluded',
   paymentFeePct: 'paymentFeePct',
+  paymentFeeVatIncluded: 'paymentFeeVatIncluded',
   requireOrderNumber: 'requireOrderNumber',
   requirePayment: 'requirePayment',
   requireProducts: 'requireProducts',
