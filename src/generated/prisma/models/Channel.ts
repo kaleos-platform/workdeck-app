@@ -65,6 +65,7 @@ export type ChannelMinAggregateOutputType = {
   vatIncludedInFee: boolean | null
   paymentFeeIncluded: boolean | null
   paymentFeePct: runtime.Decimal | null
+  paymentFeeVatIncluded: boolean | null
   requireOrderNumber: boolean | null
   requirePayment: boolean | null
   requireProducts: boolean | null
@@ -94,6 +95,7 @@ export type ChannelMaxAggregateOutputType = {
   vatIncludedInFee: boolean | null
   paymentFeeIncluded: boolean | null
   paymentFeePct: runtime.Decimal | null
+  paymentFeeVatIncluded: boolean | null
   requireOrderNumber: boolean | null
   requirePayment: boolean | null
   requireProducts: boolean | null
@@ -123,6 +125,7 @@ export type ChannelCountAggregateOutputType = {
   vatIncludedInFee: number
   paymentFeeIncluded: number
   paymentFeePct: number
+  paymentFeeVatIncluded: number
   requireOrderNumber: number
   requirePayment: number
   requireProducts: number
@@ -172,6 +175,7 @@ export type ChannelMinAggregateInputType = {
   vatIncludedInFee?: true
   paymentFeeIncluded?: true
   paymentFeePct?: true
+  paymentFeeVatIncluded?: true
   requireOrderNumber?: true
   requirePayment?: true
   requireProducts?: true
@@ -201,6 +205,7 @@ export type ChannelMaxAggregateInputType = {
   vatIncludedInFee?: true
   paymentFeeIncluded?: true
   paymentFeePct?: true
+  paymentFeeVatIncluded?: true
   requireOrderNumber?: true
   requirePayment?: true
   requireProducts?: true
@@ -230,6 +235,7 @@ export type ChannelCountAggregateInputType = {
   vatIncludedInFee?: true
   paymentFeeIncluded?: true
   paymentFeePct?: true
+  paymentFeeVatIncluded?: true
   requireOrderNumber?: true
   requirePayment?: true
   requireProducts?: true
@@ -346,6 +352,7 @@ export type ChannelGroupByOutputType = {
   vatIncludedInFee: boolean
   paymentFeeIncluded: boolean
   paymentFeePct: runtime.Decimal | null
+  paymentFeeVatIncluded: boolean
   requireOrderNumber: boolean
   requirePayment: boolean
   requireProducts: boolean
@@ -398,6 +405,7 @@ export type ChannelWhereInput = {
   vatIncludedInFee?: Prisma.BoolFilter<"Channel"> | boolean
   paymentFeeIncluded?: Prisma.BoolFilter<"Channel"> | boolean
   paymentFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFilter<"Channel"> | boolean
   requireOrderNumber?: Prisma.BoolFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolFilter<"Channel"> | boolean
@@ -440,6 +448,7 @@ export type ChannelOrderByWithRelationInput = {
   vatIncludedInFee?: Prisma.SortOrder
   paymentFeeIncluded?: Prisma.SortOrder
   paymentFeePct?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentFeeVatIncluded?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -487,6 +496,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   vatIncludedInFee?: Prisma.BoolFilter<"Channel"> | boolean
   paymentFeeIncluded?: Prisma.BoolFilter<"Channel"> | boolean
   paymentFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFilter<"Channel"> | boolean
   requireOrderNumber?: Prisma.BoolFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolFilter<"Channel"> | boolean
@@ -529,6 +539,7 @@ export type ChannelOrderByWithAggregationInput = {
   vatIncludedInFee?: Prisma.SortOrder
   paymentFeeIncluded?: Prisma.SortOrder
   paymentFeePct?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentFeeVatIncluded?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -566,6 +577,7 @@ export type ChannelScalarWhereWithAggregatesInput = {
   vatIncludedInFee?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   paymentFeeIncluded?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   paymentFeePct?: Prisma.DecimalNullableWithAggregatesFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   requireOrderNumber?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
@@ -592,6 +604,7 @@ export type ChannelCreateInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -634,6 +647,7 @@ export type ChannelUncheckedCreateInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -670,6 +684,7 @@ export type ChannelUpdateInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -712,6 +727,7 @@ export type ChannelUncheckedUpdateInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -751,6 +767,7 @@ export type ChannelCreateManyInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -777,6 +794,7 @@ export type ChannelUpdateManyMutationInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -806,6 +824,7 @@ export type ChannelUncheckedUpdateManyInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -865,6 +884,7 @@ export type ChannelCountOrderByAggregateInput = {
   vatIncludedInFee?: Prisma.SortOrder
   paymentFeeIncluded?: Prisma.SortOrder
   paymentFeePct?: Prisma.SortOrder
+  paymentFeeVatIncluded?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -903,6 +923,7 @@ export type ChannelMaxOrderByAggregateInput = {
   vatIncludedInFee?: Prisma.SortOrder
   paymentFeeIncluded?: Prisma.SortOrder
   paymentFeePct?: Prisma.SortOrder
+  paymentFeeVatIncluded?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -932,6 +953,7 @@ export type ChannelMinOrderByAggregateInput = {
   vatIncludedInFee?: Prisma.SortOrder
   paymentFeeIncluded?: Prisma.SortOrder
   paymentFeePct?: Prisma.SortOrder
+  paymentFeeVatIncluded?: Prisma.SortOrder
   requireOrderNumber?: Prisma.SortOrder
   requirePayment?: Prisma.SortOrder
   requireProducts?: Prisma.SortOrder
@@ -1247,6 +1269,7 @@ export type ChannelCreateWithoutSpaceInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1287,6 +1310,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1355,6 +1379,7 @@ export type ChannelScalarWhereInput = {
   vatIncludedInFee?: Prisma.BoolFilter<"Channel"> | boolean
   paymentFeeIncluded?: Prisma.BoolFilter<"Channel"> | boolean
   paymentFeePct?: Prisma.DecimalNullableFilter<"Channel"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFilter<"Channel"> | boolean
   requireOrderNumber?: Prisma.BoolFilter<"Channel"> | boolean
   requirePayment?: Prisma.BoolFilter<"Channel"> | boolean
   requireProducts?: Prisma.BoolFilter<"Channel"> | boolean
@@ -1381,6 +1406,7 @@ export type ChannelCreateWithoutInvMovementsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1422,6 +1448,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1473,6 +1500,7 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1514,6 +1542,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1549,6 +1578,7 @@ export type ChannelCreateWithoutDelOrdersInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1590,6 +1620,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1641,6 +1672,7 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1682,6 +1714,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1717,6 +1750,7 @@ export type ChannelCreateWithoutProductAliasesInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1758,6 +1792,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1809,6 +1844,7 @@ export type ChannelUpdateWithoutProductAliasesInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1850,6 +1886,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1885,6 +1922,7 @@ export type ChannelCreateWithoutColumnMappingPresetsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1926,6 +1964,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -1977,6 +2016,7 @@ export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2018,6 +2058,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2053,6 +2094,7 @@ export type ChannelCreateWithoutChannelTypeDefInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2093,6 +2135,7 @@ export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2155,6 +2198,7 @@ export type ChannelCreateWithoutFulfillmentChannelsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2196,6 +2240,7 @@ export type ChannelUncheckedCreateWithoutFulfillmentChannelsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2236,6 +2281,7 @@ export type ChannelCreateWithoutRepresentativeChannelInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2276,6 +2322,7 @@ export type ChannelUncheckedCreateWithoutRepresentativeChannelInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2333,6 +2380,7 @@ export type ChannelUpdateWithoutFulfillmentChannelsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2374,6 +2422,7 @@ export type ChannelUncheckedUpdateWithoutFulfillmentChannelsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2425,6 +2474,7 @@ export type ChannelCreateWithoutFeeRatesInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2466,6 +2516,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2517,6 +2568,7 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2558,6 +2610,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2593,6 +2646,7 @@ export type ChannelCreateWithoutPricingScenariosInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2634,6 +2688,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2685,6 +2740,7 @@ export type ChannelUpdateWithoutPricingScenariosInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2726,6 +2782,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2761,6 +2818,7 @@ export type ChannelCreateWithoutPricingScenarioChannelsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2802,6 +2860,7 @@ export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2853,6 +2912,7 @@ export type ChannelUpdateWithoutPricingScenarioChannelsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2894,6 +2954,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2929,6 +2990,7 @@ export type ChannelCreateWithoutProductListingsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -2970,6 +3032,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3021,6 +3084,7 @@ export type ChannelUpdateWithoutProductListingsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3062,6 +3126,7 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3097,6 +3162,7 @@ export type ChannelCreateWithoutChannelProductsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3138,6 +3204,7 @@ export type ChannelUncheckedCreateWithoutChannelProductsInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3189,6 +3256,7 @@ export type ChannelUpdateWithoutChannelProductsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3230,6 +3298,7 @@ export type ChannelUncheckedUpdateWithoutChannelProductsInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3267,6 +3336,7 @@ export type ChannelCreateManySpaceInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3293,6 +3363,7 @@ export type ChannelUpdateWithoutSpaceInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3333,6 +3404,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3371,6 +3443,7 @@ export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3399,6 +3472,7 @@ export type ChannelCreateManyChannelTypeDefInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3425,6 +3499,7 @@ export type ChannelUpdateWithoutChannelTypeDefInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3465,6 +3540,7 @@ export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3503,6 +3579,7 @@ export type ChannelUncheckedUpdateManyWithoutChannelTypeDefInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3531,6 +3608,7 @@ export type ChannelCreateManyRepresentativeChannelInput = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3557,6 +3635,7 @@ export type ChannelUpdateWithoutRepresentativeChannelInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3597,6 +3676,7 @@ export type ChannelUncheckedUpdateWithoutRepresentativeChannelInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3635,6 +3715,7 @@ export type ChannelUncheckedUpdateManyWithoutRepresentativeChannelInput = {
   vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3776,6 +3857,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: boolean
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3819,6 +3901,7 @@ export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: boolean
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3851,6 +3934,7 @@ export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: boolean
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3883,6 +3967,7 @@ export type ChannelSelectScalar = {
   vatIncludedInFee?: boolean
   paymentFeeIncluded?: boolean
   paymentFeePct?: boolean
+  paymentFeeVatIncluded?: boolean
   requireOrderNumber?: boolean
   requirePayment?: boolean
   requireProducts?: boolean
@@ -3891,7 +3976,7 @@ export type ChannelSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "externalSource" | "representativeChannelId" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "adCostPct" | "shippingFeeType" | "shippingFee" | "shippingFeePct" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
+export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "channelTypeDefId" | "name" | "externalSource" | "representativeChannelId" | "isActive" | "useSimulation" | "adminUrl" | "freeShipping" | "freeShippingThreshold" | "usesMarketingBudget" | "applyAdCost" | "adCostPct" | "shippingFeeType" | "shippingFee" | "shippingFeePct" | "vatIncludedInFee" | "paymentFeeIncluded" | "paymentFeePct" | "paymentFeeVatIncluded" | "requireOrderNumber" | "requirePayment" | "requireProducts" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   channelTypeDef?: boolean | Prisma.Channel$channelTypeDefArgs<ExtArgs>
@@ -3957,6 +4042,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     vatIncludedInFee: boolean
     paymentFeeIncluded: boolean
     paymentFeePct: runtime.Decimal | null
+    paymentFeeVatIncluded: boolean
     requireOrderNumber: boolean
     requirePayment: boolean
     requireProducts: boolean
@@ -4419,6 +4505,7 @@ export interface ChannelFieldRefs {
   readonly vatIncludedInFee: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly paymentFeeIncluded: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly paymentFeePct: Prisma.FieldRef<"Channel", 'Decimal'>
+  readonly paymentFeeVatIncluded: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly requireOrderNumber: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly requirePayment: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly requireProducts: Prisma.FieldRef<"Channel", 'Boolean'>

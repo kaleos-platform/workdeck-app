@@ -1592,9 +1592,10 @@ model Channel {
   shippingFeeType         ChannelShippingFeeType @default(FIXED)
   shippingFee             Decimal? @db.Decimal(18, 2)
   shippingFeePct          Decimal? @db.Decimal(6, 4) // 배송비율 (0~1, shippingFeeType=PERCENT일 때 사용)
-  vatIncludedInFee        Boolean  @default(true)
+  vatIncludedInFee        Boolean  @default(false) // 판매(카테고리) 수수료율에 VAT 포함 여부
   paymentFeeIncluded      Boolean  @default(true) // 결제 수수료 포함 여부
   paymentFeePct           Decimal? @db.Decimal(6, 4) // 결제 수수료율 (0~1)
+  paymentFeeVatIncluded   Boolean  @default(false) // 결제 수수료율에 VAT 포함 여부 (판매 수수료와 독립)
   requireOrderNumber      Boolean  @default(true)
   requirePayment          Boolean  @default(true)
   requireProducts         Boolean  @default(true)
@@ -1626,7 +1627,7 @@ model Channel {
 
 // 채널별 카테고리 수수료율
 // '기본'은 시스템 보장 카테고리 (모든 채널에 항상 1건 존재)
-// VAT 포함 여부는 Channel.vatIncludedInFee로 통합 관리
+// 판매(카테고리) 수수료 VAT=Channel.vatIncludedInFee, 결제 수수료 VAT=Channel.paymentFeeVatIncluded (독립)
 model ChannelFeeRate {
   id           String  @id @default(cuid())
   channelId    String
