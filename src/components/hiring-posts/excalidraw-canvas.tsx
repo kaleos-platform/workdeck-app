@@ -229,6 +229,9 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
         // 편집 뷰포트는 회색 — 흰색 아트보드(사각형 sentinel)와 색으로만 구분된다.
         // 저장 카드는 아트보드 흰 배경 + handleSave export 흰색 강제로 항상 흰색.
         viewBackgroundColor: '#f4f4f5',
+        // 새로 그리는 도형의 기본 모서리를 직각으로 — Excalidraw 기본값('round')은 사각형이
+        // 둥근 모서리로 그려져 카드 디자인에 부적합(사용자가 원하면 Edges 패널에서 변경 가능).
+        currentItemRoundness: 'sharp',
         // 프레임 외곽선(회색·둥근 모서리) 숨김 — 아트보드 흰색만으로 작업 영역 구분. clip 은 유지.
         frameRendering: { enabled: true, clip: true, name: false, outline: false },
       },
