@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -721,8 +720,8 @@ export function ChannelEditDialog({
                 카테고리 추가
               </Button>
 
-              {/* 수수료에 VAT 포함 — 판매 수수료 하위 항목(컴팩트, 구분라인) */}
-              <div className="flex items-center justify-between border-t pt-2 pl-1">
+              {/* 수수료에 VAT 포함 — 판매 수수료 하위 항목(컴팩트 토글) */}
+              <div className="flex items-center justify-between pl-1">
                 <Label
                   htmlFor="ch-vat"
                   className="cursor-pointer text-xs font-normal text-muted-foreground"
@@ -732,23 +731,23 @@ export function ChannelEditDialog({
                 <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
               </div>
 
-              {/* 결제 수수료 포함 토글 + 결제 수수료율(VAT 독립 체크) */}
-              <div className="flex items-center justify-between rounded-md border px-3 py-2">
-                <div>
-                  <Label htmlFor="ch-payment-included" className="cursor-pointer">
-                    결제 수수료 포함
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    수수료율에 결제 수수료가 합산되어 있으면 ON
-                  </p>
-                </div>
+              {/* 결제 수수료 포함 — 판매 수수료 하위 항목(컴팩트 토글) */}
+              <div className="flex items-center justify-between pl-1">
+                <Label
+                  htmlFor="ch-payment-included"
+                  className="cursor-pointer text-xs font-normal text-muted-foreground"
+                >
+                  결제 수수료 포함
+                </Label>
                 <Switch
                   id="ch-payment-included"
                   checked={fPaymentFeeIncluded}
                   onCheckedChange={setFPaymentFeeIncluded}
                 />
               </div>
-              <div className="space-y-2">
+
+              {/* 결제 수수료율 + VAT 포함 토글(독립) — 구분선으로 토글 그룹과 분리 */}
+              <div className="space-y-2 border-t pt-3">
                 <div className="flex items-center justify-between">
                   <Label
                     htmlFor="ch-payment-fee"
@@ -756,21 +755,22 @@ export function ChannelEditDialog({
                   >
                     결제 수수료율 (%)
                   </Label>
-                  <label
-                    className={`flex cursor-pointer items-center gap-1.5 text-xs ${
-                      fPaymentFeeIncluded
-                        ? 'text-muted-foreground opacity-50'
-                        : 'text-muted-foreground'
-                    }`}
+                  <div
+                    className={`flex items-center gap-1.5 ${fPaymentFeeIncluded ? 'opacity-50' : ''}`}
                   >
-                    <Checkbox
+                    <Label
+                      htmlFor="ch-pg-vat"
+                      className="cursor-pointer text-xs font-normal text-muted-foreground"
+                    >
+                      VAT 포함
+                    </Label>
+                    <Switch
                       id="ch-pg-vat"
                       checked={fPaymentFeeVatIncluded}
-                      onCheckedChange={(v) => setFPaymentFeeVatIncluded(v === true)}
+                      onCheckedChange={setFPaymentFeeVatIncluded}
                       disabled={fPaymentFeeIncluded}
                     />
-                    VAT 포함
-                  </label>
+                  </div>
                 </div>
                 <Input
                   id="ch-payment-fee"
