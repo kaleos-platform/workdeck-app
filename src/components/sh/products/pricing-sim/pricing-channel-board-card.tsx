@@ -182,8 +182,10 @@ export function PricingChannelBoardCard({
       ? Math.max(0, 1 - promoCell.finalPrice / cell.finalPrice)
       : 0
   const overFloor = promoCell != null && promoCell.margin < floorPct - 0.005
-  const headroomAmount =
-    maxDiscount != null && cell != null ? Math.max(0, cell.finalPrice * maxDiscount) : 0
+  // 잔여 할인 여력 = 리스트가 기준 하한 한계(maxDiscount) − 이미 적용된 프로모 할인(currentDiscount).
+  // 프로모로 이미 하한 도달 시 0으로 수렴(기존 headroom은 프로모 무시하고 전체 maxDiscount를 표시).
+  const remainingDiscount = maxDiscount != null ? Math.max(0, maxDiscount - currentDiscount) : 0
+  const headroomAmount = cell != null ? Math.max(0, cell.finalPrice * remainingDiscount) : 0
 
   // 판매가 조정 슬라이더 범위 — 권장가 주변(없으면 소비자가 기준).
   const sliderBase = recommended ?? retailCap ?? 10000
@@ -213,6 +215,11 @@ export function PricingChannelBoardCard({
       </div>
     )
   }
+
+  // 표시 셀 — 프로모션 적용 시 promoCell(할인 후) 기준으로 마진 배지·판정·공급가 노출.
+  // (기존엔 headline NONE 셀을 써서 프로모션이 배지·하한판정에 반영되지 않는 버그가 있었음)
+  // cell 은 위 가드에서 non-null 로 좁혀진 상태.
+  const displayCell = hasPromo && promoCell != null ? promoCell : cell
 
   return (
     <div className="rounded-xl border border-[var(--ps-border)] bg-[var(--ps-card)] p-5 shadow-sm">
@@ -246,17 +253,17 @@ export function PricingChannelBoardCard({
           </div>
           <div className="mt-0.5 flex items-center justify-end gap-1.5">
             {!exceedsRetail &&
-              (cell.margin < floorPct ? (
+              (displayCell.margin < floorPct ? (
                 <span className="text-[10px] font-medium text-destructive">하한 미달</span>
-              ) : cell.margin < target ? (
+              ) : displayCell.margin < target ? (
                 <span className="text-[10px] font-medium text-amber-700">목표 미달</span>
               ) : null)}
             <Badge
               variant="outline"
-              className={`px-1.5 py-0 text-[11px] ${tierBadgeClass(cell.tier)}`}
+              className={`px-1.5 py-0 text-[11px] ${tierBadgeClass(displayCell.tier)}`}
             >
               {exceedsRetail ? '' : '✓ '}
-              {(cell.margin * 100).toFixed(1)}%{exceedsRetail ? ' (소비자가 기준)' : ''}
+              {(displayCell.margin * 100).toFixed(1)}%{exceedsRetail ? ' (소비자가 기준)' : ''}
             </Badge>
           </div>
           {/* 항목3: "목표 마진 달성 불가"는 아래 제안 블록 제목으로 이동(중복 제거) */}
@@ -265,12 +272,14 @@ export function PricingChannelBoardCard({
             <Tooltip>
               <TooltipTrigger asChild>
                 <p className="mt-0.5 cursor-default text-[10px] text-muted-foreground tabular-nums underline decoration-dotted underline-offset-2">
-                  공급가(VAT 제외) ₩{fmt(cell.revenue)}
+                  공급가(VAT 제외) ₩{fmt(displayCell.revenue)}
                 </p>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[220px] text-xs">
-                <p>판매가에서 VAT를 제외한 실매출액입니다.</p>
-                <p className="text-muted-foreground">마진율(이익율) 계산의 분모로 쓰입니다.</p>
+                <p>실결제금액(프로모션 반영)에서 VAT를 제외한 실매출액입니다.</p>
+                <p className="text-muted-foreground">
+                  순이익 = 공급가 − 비용. 마진율(%) 분모는 실결제금액(판매가)입니다.
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -462,11 +471,11 @@ export function PricingChannelBoardCard({
             </span>
           ) : (
             <span className="text-muted-foreground">
-              마진 하한 {(floorPct * 100).toFixed(0)}% 도달 전{' '}
+              마진 하한 {(floorPct * 100).toFixed(0)}% 도달 전 현재가에서{' '}
               <span className="font-semibold text-foreground tabular-nums">
-                −₩{fmt(headroomAmount)} (−{(maxDiscount * 100).toFixed(0)}%)
+                −₩{fmt(headroomAmount)} (−{(remainingDiscount * 100).toFixed(1)}%p)
               </span>
-              까지 할인 가능
+              추가 할인 가능
             </span>
           )}
         </p>
