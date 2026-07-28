@@ -11,6 +11,7 @@ import {
   prorate,
   remainingDaysBetween,
   cycleOrderId,
+  startOrderId,
   prorateOrderId,
   type ChargeLine,
 } from './pricing'
@@ -140,7 +141,7 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
     price: p.monthlyPrice,
   }))
   const amounts = sumLines(lines)
-  const orderId = cycleOrderId(subscription.id, now)
+  const orderId = startOrderId(subscription.id, now)
 
   // 멱등 게이트: orderId 유니크 — 이미 청구 레코드가 있으면 중복 시작 시도
   const charge = await prisma.billingCharge

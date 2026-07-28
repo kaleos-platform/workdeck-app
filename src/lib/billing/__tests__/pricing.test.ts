@@ -55,9 +55,12 @@ describe('remainingDaysBetween', () => {
 })
 
 describe('orderId 멱등키', () => {
-  test('cycleOrderId는 구독×청구월 단위 결정적', () => {
-    const id = cycleOrderId('sub123', new Date('2026-08-01T00:00:00Z'))
-    expect(id).toBe('sub_sub123_202608')
+  test('cycleOrderId는 구독×주기시작시각 단위 결정적', () => {
+    const id = cycleOrderId('sub123', new Date('2026-08-01T09:30:15Z'))
+    expect(id).toBe('sub_sub123_20260801093015')
+    // 같은 입력 → 같은 키 (cron 재실행 멱등), 다른 주기 → 다른 키
+    expect(cycleOrderId('sub123', new Date('2026-08-01T09:30:15Z'))).toBe(id)
+    expect(cycleOrderId('sub123', new Date('2026-09-01T09:30:15Z'))).not.toBe(id)
   })
 
   test('prorateOrderId는 아이템 단위 결정적', () => {
