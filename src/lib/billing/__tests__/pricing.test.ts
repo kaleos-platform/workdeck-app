@@ -61,7 +61,7 @@ describe('orderId 멱등키', () => {
   })
 
   test('prorateOrderId는 아이템 단위 결정적', () => {
-    expect(prorateOrderId('item9')).toBe('prorate_item9')
+    expect(prorateOrderId('item9', new Date('2026-08-05T00:00:00Z'))).toBe('prorate_item9_20260805')
   })
 })
 

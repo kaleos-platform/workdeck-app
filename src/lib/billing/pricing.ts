@@ -44,7 +44,9 @@ export function cycleOrderId(subscriptionId: string, periodStart: Date): string 
   return `sub_${subscriptionId}_${ym}`
 }
 
-// 일할 즉시결제 멱등 orderId: 아이템당 1건 보장
-export function prorateOrderId(itemId: string): string {
-  return `prorate_${itemId}`
+// 일할 즉시결제 멱등 orderId: 아이템×일 단위 1건 보장
+// (같은 날 중복 추가 시도는 멱등 차단, 해제 후 재추가는 다른 날이면 새 청구 허용)
+export function prorateOrderId(itemId: string, date: Date): string {
+  const ymd = `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}${String(date.getUTCDate()).padStart(2, '0')}`
+  return `prorate_${itemId}_${ymd}`
 }
