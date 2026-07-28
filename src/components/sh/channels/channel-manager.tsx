@@ -470,14 +470,19 @@ export function ShChannelManager() {
                               ch.feeRates.find((f) => f.categoryName === '기본') ?? ch.feeRates[0]
                             const extra = ch.feeRates.length - 1
                             return (
-                              <span className="text-sm">
-                                {Number(basic.ratePercent).toFixed(1)}%
-                                {extra > 0 && (
-                                  <span className="ml-1 text-xs text-muted-foreground">
-                                    외 {extra}
-                                  </span>
-                                )}
-                              </span>
+                              <div className="flex flex-col items-end">
+                                <span className="text-sm">
+                                  {Number(basic.ratePercent).toFixed(1)}%
+                                  {extra > 0 && (
+                                    <span className="ml-1 text-xs text-muted-foreground">
+                                      외 {extra}
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground">
+                                  {ch.vatIncludedInFee ? 'VAT 포함' : 'VAT 별도'}
+                                </span>
+                              </div>
                             )
                           })()}
                         </TableCell>
