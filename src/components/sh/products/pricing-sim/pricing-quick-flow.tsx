@@ -1401,7 +1401,8 @@ export function PricingQuickFlow({
                       <div className="min-w-0 flex-1">
                         <span className="text-sm font-medium">{bc.api.name}</span>
                         <span className="ml-1.5 text-[10px] text-muted-foreground">
-                          수수료 {ov.feePct.toFixed(1)}% · 배송{' '}
+                          수수료 {ov.feePct.toFixed(1)}% (
+                          {ov.vatIncludedInFee ? 'VAT 포함' : 'VAT 별도'}) · 배송{' '}
                           {ov.shippingFeeType === 'PERCENT'
                             ? `${(ov.shippingFeePct * 100).toFixed(1)}%`
                             : `₩${fmt(ov.shippingFee)}`}
