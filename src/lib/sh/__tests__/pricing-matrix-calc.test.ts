@@ -139,7 +139,7 @@ describe('gross-basis 0% 할인 셀 수작업 검증', () => {
   //   setCost(cogs) = 15000
   //   totalCost = 15000 + 4000 + 1200 + 2000 + 0 + 2000 + 3000 = 27200
   //   netProfit = r2(36363.64 − 27200) = 9163.64
-  //   margin = r4(9163.64 / 36363.64) ≈ 0.2520
+  //   margin(gross) = r4(9163.64 / 40000) ≈ 0.2291   (분모=실결제 판매가)
 
   const bundle = makeBundle(15000, 40000, 1, 2000)
 
@@ -166,8 +166,8 @@ describe('gross-basis 0% 할인 셀 수작업 검증', () => {
     expect(c.cogs).toBeCloseTo(15000, 2)
     expect(c.vat).toBeCloseTo(3636.36, 1) // 40000 − 공급가
     expect(c.operating).toBe(0)
-    expect(c.revenue).toBeCloseTo(36363.64, 1) // 마진 분모 = 공급가
-    expect(c.margin).toBeCloseTo(0.252, 3)
+    expect(c.revenue).toBeCloseTo(36363.64, 1) // 공급가(순이익 산정 매출)
+    expect(c.margin).toBeCloseTo(0.2291, 3) // 마진율 분모 = 실결제(40000)
   })
 
   test('optionToBundle 변환 후 결과가 직접 번들과 동일', () => {
@@ -341,10 +341,10 @@ describe('스크린샷 시안 회귀 벡터 — 목표마진 30% 권장가', () 
   // 시안 공통값: 원가 62,000 · 물류 3,000 · 반품처리비 6,000 × 반품율 15% = 900
   //   VAT 10% 포함 · 목표마진(good) 30%. 채널별 Σfee% = 채널수수료 + 광고 + PG.
   //   권장가(good) 역산 → 0% 셀에 넣으면 마진 정확히 30.0%.
-  // 검증 앵커 (수식 재현 시 일치해야 함):
-  //   쿠팡   Σfee=0.208 → P≈153,841 → 마진 ₩41,957 / 30.0%
-  //   네이버 Σfee=0.115 → P≈126,399 → 마진 ₩34,473 / 30.0%
-  //   무신사 Σfee=0.34  → P≈222,362 → 마진 ₩60,644 / 30.0%
+  // 검증 앵커 (gross 마진: P = fixedCosts / [1/1.1 − Σfee − 0.3], fixedCosts=원가62000+반품900+물류3000=65900):
+  //   쿠팡   Σfee=0.208 → P≈164,302 → netProfit ₩49,291 / 30.0%
+  //   네이버 Σfee=0.115 → P≈133,376 → netProfit ₩40,013 / 30.0%
+  //   무신사 Σfee=0.34  → P≈244,899 → netProfit ₩73,470 / 30.0%
   const screenshotGlobals: MatrixGlobals = {
     includeVat: true,
     vatRate: 0.1,
@@ -388,9 +388,9 @@ describe('스크린샷 시안 회귀 벡터 — 목표마진 30% 권장가', () 
   }
 
   const cases = [
-    { name: '쿠팡', channelFee: 0.108, ad: 0.08, expectP: 153841, expectMargin: 41957 },
-    { name: '네이버', channelFee: 0.035, ad: 0.06, expectP: 126399, expectMargin: 34473 },
-    { name: '무신사', channelFee: 0.28, ad: 0.04, expectP: 222362, expectMargin: 60644 },
+    { name: '쿠팡', channelFee: 0.108, ad: 0.08, expectP: 164302, expectMargin: 49291 },
+    { name: '네이버', channelFee: 0.035, ad: 0.06, expectP: 133376, expectMargin: 40013 },
+    { name: '무신사', channelFee: 0.28, ad: 0.04, expectP: 244899, expectMargin: 73470 },
   ]
 
   for (const c of cases) {
@@ -473,13 +473,14 @@ describe('suggestFeasibility — 목표 마진 달성 불가 시 항목별 제�
     thresholds,
   }
 
-  it('광고 레버: 소비자가 57,800·목표 15%에서 적정 ROAS ≈ 459%', () => {
+  it('광고 레버: 소비자가 57,800·목표 15%에서 적정 ROAS ≈ 489%', () => {
     const s = suggestFeasibility(rocketInputs, 57800, 0.15)
     expect(s.ad).not.toBeNull()
     expect(s.ad!.achievable).toBe(true)
-    // adPct* = [net·0.85 − 원가 − P·(0.116+0.10)] / P ≈ 0.2181
-    expect(s.ad!.adCostPct).toBeCloseTo(0.2181, 3)
-    expect(s.ad!.roasPct).toBe(459)
+    // gross: need=net−0.15·P=52545.45−8670=43875.45. adPct*=[need−원가−P·(0.116+0.10)]/P
+    //        =(43875.45−19574−12484.8)/57800 ≈ 0.2044
+    expect(s.ad!.adCostPct).toBeCloseTo(0.2044, 3)
+    expect(s.ad!.roasPct).toBe(489)
   })
 
   it('배송 레버(PERCENT): 배송비율 제안 산출', () => {
@@ -487,10 +488,10 @@ describe('suggestFeasibility — 목표 마진 달성 불가 시 항목별 제�
     expect(s.shipping).not.toBeNull()
     expect(s.shipping!.type).toBe('PERCENT')
     expect(s.shipping!.achievable).toBe(true)
-    // shipPct* = [net·0.85 − 원가 − P·(0.116+0.25)] / P
-    // net·0.85=44663.64, 원가19574, P·0.366=21154.8 → budget=3934.84 /57800 = 0.0681
+    // gross: shipPct* = [(net−0.15·P) − 원가 − P·(0.116+0.25)] / P
+    // need=43875.45, 원가19574, P·0.366=21154.8 → budget=3146.65 /57800 = 0.0544
     if (s.shipping!.type === 'PERCENT') {
-      expect(s.shipping!.feePct).toBeCloseTo(0.0681, 3)
+      expect(s.shipping!.feePct).toBeCloseTo(0.0544, 3)
     }
   })
 
@@ -510,9 +511,9 @@ describe('suggestFeasibility — 목표 마진 달성 불가 시 항목별 제�
     expect(s.shipping).not.toBeNull()
     expect(s.shipping!.type).toBe('FIXED')
     expect(s.shipping!.achievable).toBe(true)
-    // net·0.7=25454.5, 고정비17000, P·0.18=7200 → budget=1254.5
+    // gross: need=net−0.3·P=36363.64−12000=24363.64, 고정비17000, P·0.18=7200 → budget=163.64
     if (s.shipping!.type === 'FIXED') {
-      expect(s.shipping!.feeWon).toBeCloseTo(1254.5, 0)
+      expect(s.shipping!.feeWon).toBeCloseTo(163.64, 0)
     }
   })
 
@@ -619,5 +620,73 @@ describe('수수료 VAT 포함 여부 (판매·결제 독립)', () => {
     const checkBundle: MatrixBundle = { ...bundle, salePrice: good! }
     const cell0 = calculateMatrix(makeInputs(checkBundle, chBoth)).cells[0]
     expect(cell0.margin).toBeGreaterThanOrEqual(thresholds.platformTargetGood - 0.005)
+  })
+})
+
+// ─── PRD 수용 기준: 마진율 실결제(gross) 통일 + 프로모 반영 ───────────────────
+// 실제 프로덕션 시나리오(쿠팡) 회귀 벡터. 마진율 분모 = 실결제(finalPrice, VAT 포함).
+describe('PRD TC — 실결제 기준 마진율 + 프로모 반영', () => {
+  // 판매가 45,200 / 원가 13,781 / 수수료 11.6%(vatIncludedInFee=true → gross-up 없음)
+  // 광고 ROAS 350%(adCostPct=1/3.5) / 물류 3,850(FIXED 항상 부과) / PG·반품·포장 0 / VAT 10%
+  const prdChannel: MatrixChannel = {
+    channelType: 'OPEN_MARKET',
+    feeRates: [{ categoryName: '기본', ratePercent: 11.6 }],
+    vatIncludedInFee: true, // 쿠팡 실측: VAT 포함 플래그 → mult=1 (그대로 11.6%)
+    paymentFeeIncluded: true, // PG 0
+    paymentFeePct: 0,
+    applyAdCost: true,
+    shippingFeeType: 'FIXED',
+    shippingFee: 3850,
+    freeShippingThreshold: 1, // 항상 판매자 부담
+  }
+  const prdGlobals: MatrixGlobals = {
+    includeVat: true,
+    vatRate: 0.1,
+    adCostPct: 1 / 3.5, // ROAS 350%
+    operatingCostPct: 0,
+    applyReturnAdjustment: false,
+    expectedReturnRate: 0,
+    returnHandlingCost: 0,
+    minimumAcceptableMargin: 0.1,
+  }
+  const prdBundle: MatrixBundle = {
+    components: [{ costPrice: 13781, retailPrice: 45200, quantity: 1 }],
+    packagingCost: 0,
+    salePrice: 45200,
+  }
+  const prdInputs = (promo: MatrixPromotion): MatrixInputs => ({
+    bundle: prdBundle,
+    channel: prdChannel,
+    promotion: promo,
+    globals: prdGlobals,
+    thresholds,
+  })
+
+  // TC-1: 기준 시나리오(프로모 FLAT 1,900) — 프로덕션 값 회귀 방지
+  it('TC-1: 실결제 43,300 / netProfit 4,338.41 / 마진율 10.02%', () => {
+    const c = calculateMatrix(prdInputs({ type: 'FLAT', value: 1900 })).cells[0]
+    expect(c.finalPrice).toBe(43300) // 45,200 − 1,900
+    expect(c.revenue).toBeCloseTo(39363.64, 1) // 공급가 = 43,300 / 1.1
+    expect(c.vat).toBeCloseTo(3936.36, 1) // 매출세액
+    expect(c.channelFee).toBeCloseTo(5022.8, 1) // 43,300 × 11.6% (gross-up 없음)
+    expect(c.adCost).toBeCloseTo(12371.43, 1) // 43,300 / 3.5
+    expect(c.shipping).toBe(3850)
+    expect(c.cogs).toBe(13781)
+    expect(c.totalCost).toBeCloseTo(35025.23, 1)
+    expect(c.netProfit).toBeCloseTo(4338.41, 1) // 손반올림 PRD 4,338
+    expect(c.margin).toBeCloseTo(0.1002, 4) // = 4,338.41 / 43,300 (실결제 분모)
+  })
+
+  // TC-4: 프로모 변경 시 마진율이 반드시 함께 이동 (배지 프로모 미반영 버그 회귀 방지)
+  it('TC-4: 프로모 0 → 마진율 11.73%, 프로모 1,900 → 10.02% (마진율 이동)', () => {
+    const noPromo = calculateMatrix(prdInputs({ type: 'NONE', value: 0 })).cells[0]
+    expect(noPromo.finalPrice).toBe(45200)
+    expect(noPromo.netProfit).toBeCloseTo(5302.42, 1)
+    expect(noPromo.margin).toBeCloseTo(0.1173, 4) // = 5,302.42 / 45,200
+
+    const withPromo = calculateMatrix(prdInputs({ type: 'FLAT', value: 1900 })).cells[0]
+    expect(withPromo.margin).toBeCloseTo(0.1002, 4)
+    // 프로모 적용 시 마진율이 반드시 하락 (고정 12.9% 표시 = 실패)
+    expect(withPromo.margin).toBeLessThan(noPromo.margin)
   })
 })

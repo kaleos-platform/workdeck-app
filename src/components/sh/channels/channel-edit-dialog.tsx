@@ -730,6 +730,14 @@ export function ChannelEditDialog({
                 </Label>
                 <Switch id="ch-vat" checked={fVatIncluded} onCheckedChange={setFVatIncluded} />
               </div>
+              {/* P0-2: 입력 요율의 VAT 기준 안내 — 채널별 공시 기준에 맞춰 토글 설정 */}
+              <p className="pl-1 text-[11px] leading-snug text-muted-foreground">
+                입력한 수수료율에 VAT가 포함되는지에 따라 켜세요.
+                <br />• <span className="font-medium">켜기</span>: 정산내역서 요율처럼 VAT가 이미
+                포함된 값 (예: 네이버 스마트스토어 4.947%) → 그대로 반영
+                <br />• <span className="font-medium">끄기</span>: VAT 별도로 공시된 요율 (예: 쿠팡
+                11.6%) → 계산 시 VAT를 가산
+              </p>
 
               {/* 결제 수수료 포함 — 판매 수수료 하위 항목(컴팩트 토글) */}
               <div className="flex items-center justify-between pl-1">
