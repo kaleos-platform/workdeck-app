@@ -222,3 +222,4 @@ export const APPROVALS_PATH = '/approvals'
 
 // ─── 설정 (전역, deck-scope 아님) ─────────────────────────────────────────────
 export const SETTINGS_INTEGRATIONS_PATH = '/settings/integrations'
+export const SETTINGS_BILLING_PATH = '/settings/billing'
