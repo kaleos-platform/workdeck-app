@@ -496,6 +496,11 @@ model Space {
   // ─── 하이브리드 workdeck 에이전트 (M4) ───
   agentToggle    SpaceAgent?
   agentLlmUsages AgentLlmUsage[]
+
+  // ─── 구독·결제 (Billing) ───
+  subscription   SpaceSubscription?
+  billingMethods BillingMethod[]
+  billingCharges BillingCharge[]
 }
 
 // 공간 멤버십 + 역할
@@ -3795,4 +3800,135 @@ model BoChannelCredential {
   @@unique([channelId, kind])
   @@index([channelId])
   @@index([spaceId])
+}
+
+// ═══════════════════════════════════════════
+// 구독·결제 (Billing) — deck별 개별 구독 모델
+// ═══════════════════════════════════════════
+
+// deck별 과금 모드. FREE_BETA 기간엔 전원 무료, SUBSCRIPTION 전환 시 구독 필요.
+enum DeckPricingMode {
+  FREE_BETA
+  SUBSCRIPTION
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum SubscriptionItemType {
+  DECK
+  ADDON
+}
+
+enum SubscriptionItemStatus {
+  ACTIVE
+  CANCEL_AT_PERIOD_END
+  ENDED
+}
+
+enum BillingChargeStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELED
+  REFUNDED
+}
+
+// deck 과금 정의 — 운영자가 데이터로 관리 (코드 하드코딩 금지)
+model BillingDeckProduct {
+  id              String          @id // DeckApp.id와 동일 키
+  name            String
+  pricingMode     DeckPricingMode @default(FREE_BETA)
+  monthlyPrice    Int // 공급가 KRW (FREE_BETA 중에도 예정가 보관)
+  paidActivatedAt DateTime? // 유료 전환 시각 — 기존 사용 Space 유예(14일) 판정 기준
+  isActive        Boolean         @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Space당 구독 1개. 단일 결제일에 아이템 합산 청구.
+model SpaceSubscription {
+  id               String             @id @default(cuid())
+  spaceId          String             @unique
+  status           SubscriptionStatus @default(TRIALING)
+  trialEndsAt      DateTime? // 존재 = Trial 이력 (평생 1회 판정)
+  currentPeriodEnd DateTime? // 다음 결제일
+  retryCount       Int                @default(0) // dunning 재시도 횟수
+  exemptFlag       Boolean            @default(false) // 운영자 수동 면제 (무기한 무료)
+  exemptNote       String?
+  provider         String? // "toss"
+  customerKey      String?            @unique // PG 구매자 식별 UUID
+
+  space Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  items SubscriptionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, currentPeriodEnd])
+}
+
+// 구독 라인아이템. type=DECK(현재) / ADDON(추후 확장).
+model SubscriptionItem {
+  id             String                 @id @default(cuid())
+  subscriptionId String
+  type           SubscriptionItemType   @default(DECK)
+  deckAppId      String
+  priceSnapshot  Int // 구독 시점 공급가 스냅샷
+  status         SubscriptionItemStatus @default(ACTIVE)
+  addedAt        DateTime               @default(now())
+  endedAt        DateTime?
+
+  subscription SpaceSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriptionId, type, deckAppId])
+  @@index([subscriptionId, status])
+}
+
+// 결제수단 (빌링키). billingKey는 AES-256-CBC 암호화 보관.
+model BillingMethod {
+  id          String  @id @default(cuid())
+  spaceId     String
+  provider    String // "toss"
+  billingKey  String // 암호화 페이로드 (hex)
+  billingKeyIv String // hex iv
+  cardSummary String? // "신한 ****1234" 표시용
+  isDefault   Boolean @default(true)
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId])
+}
+
+// 결제 이력. orderId 유니크 = 중복 결제 방지 멱등키.
+model BillingCharge {
+  id           String              @id @default(cuid())
+  spaceId      String
+  orderId      String              @unique // sub_{subId}_{yearMonth} | prorate_{itemId}
+  amount       Int // VAT 포함 결제액
+  supplyAmount Int // 공급가
+  vatAmount    Int
+  status       BillingChargeStatus @default(PENDING)
+  provider     String
+  paymentKey   String? // PG 결제 키
+  failReason   String?
+  periodStart  DateTime
+  periodEnd    DateTime
+  breakdown    Json // deck별 라인 [{deckAppId, price, type}]
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, createdAt])
+  @@index([status])
 }

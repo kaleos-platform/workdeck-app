@@ -39,6 +39,28 @@ async function main() {
     console.log(`  ✔ DeckApp [${app.id}] upsert 완료`)
   }
 
+  console.log('🌱 BillingDeckProduct 시드 데이터 적용 중...')
+
+  // deck별 과금 정의. 전 deck FREE_BETA로 시작 — 유료 전환은 운영자 도구에서 수행.
+  // 가격은 공급가(VAT 별도). pricingMode는 운영 데이터라 시드에서 덮어쓰지 않는다.
+  const deckProducts = [
+    { id: 'coupang-ads', name: '쿠팡 광고 자동화', monthlyPrice: 29000 },
+    { id: 'seller-hub', name: '브랜드 운영', monthlyPrice: 29000 },
+    { id: 'finance', name: '재무 관리', monthlyPrice: 19000 },
+    { id: 'sales-content', name: '세일즈 콘텐츠', monthlyPrice: 14900 },
+    { id: 'recruiting', name: '모집 관리', monthlyPrice: 14900 },
+    { id: 'blog-ops', name: '블로그 운영', monthlyPrice: 9900 },
+  ]
+
+  for (const p of deckProducts) {
+    await prisma.billingDeckProduct.upsert({
+      where: { id: p.id },
+      create: p,
+      update: { name: p.name },
+    })
+    console.log(`  ✔ BillingDeckProduct [${p.id}] upsert 완료`)
+  }
+
   console.log('🌱 Sales Content 시스템 템플릿 seed...')
   for (const t of SYSTEM_TEMPLATES) {
     // spaceId=null + name 기준으로 기존 행 탐색 후 update/create.
