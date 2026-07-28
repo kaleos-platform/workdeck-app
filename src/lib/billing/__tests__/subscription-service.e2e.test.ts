@@ -143,7 +143,7 @@ d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
 
   it('cron 멱등: 같은 주기 2회 실행 → 결제 1건', async () => {
     mockCharge.mockResolvedValue({ ok: true, paymentKey: 'pay_2', failReason: null })
-    // 주기 도래로 조작
+    // 주기 도래로 조작 (오프셋은 테스트별 고유 — cycleOrderId가 초 단위라 같은 초면 충돌)
     const past = new Date(Date.now() - 3600_000)
     await prisma.spaceSubscription.update({
       where: { spaceId: SPACE_ID },
@@ -181,7 +181,7 @@ d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
     mockCharge.mockResolvedValue({ ok: true, paymentKey: 'pay_4', failReason: null })
     await prisma.spaceSubscription.update({
       where: { spaceId: SPACE_ID },
-      data: { currentPeriodEnd: new Date(Date.now() - 3600_000) },
+      data: { currentPeriodEnd: new Date(Date.now() - 7300_000) }, // 고유 오프셋 (orderId 충돌 방지)
     })
     const r = await runDueCharges()
     expect(r.find((x) => x.spaceId === SPACE_ID)?.outcome).toBe('paid')
@@ -203,19 +203,102 @@ d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
       data: { currentPeriodEnd: new Date(base), retryCount: 0, status: 'ACTIVE' },
     })
 
-    // 3회 시도 (FAILED 재사용 경로 — 매회 charge 시도)
+    // 초기 시도 1회 + 재시도 3회(+1·+3·+5일 전부 경과) = 4회 실패 → EXPIRED
+    await runDueCharges()
     await runDueCharges()
     await runDueCharges()
     await runDueCharges()
 
     const sub = await prisma.spaceSubscription.findUnique({ where: { spaceId: SPACE_ID } })
     expect(sub?.status).toBe('EXPIRED')
-    expect(mockCharge).toHaveBeenCalledTimes(3)
+    expect(mockCharge).toHaveBeenCalledTimes(4)
 
     const ent = await resolveEntitlement(SPACE_ID)
     expect(ent.decks['coupang-ads'].allowed).toBe(false)
     expect(ent.decks['coupang-ads'].reason).toBe('LOCKED')
     // FREE_BETA deck은 만료와 무관하게 정상
     expect(ent.decks['blog-ops'].reason).toBe('FREE_BETA')
+  })
+
+  it('dunning 첫 재시도는 +1일 (+3일 아님)', async () => {
+    // 결제일 2일 전 경과, retryCount=1 (초기 실패 직후) → +1일 스케줄 도래 = 재시도 실행
+    mockCharge.mockResolvedValue({ ok: false, paymentKey: null, failReason: '한도초과' })
+    await prisma.billingCharge.deleteMany({ where: { spaceId: SPACE_ID } })
+    await prisma.spaceSubscription.update({
+      where: { spaceId: SPACE_ID },
+      data: {
+        currentPeriodEnd: new Date(Date.now() - 2 * 86400000),
+        retryCount: 1,
+        status: 'PAST_DUE',
+      },
+    })
+    const r = await runDueCharges()
+    // 구버그: offset index=retryCount(1)→+3일 대기(waiting_retry). 수정 후: +1일 경과라 즉시 시도
+    expect(r.find((x) => x.spaceId === SPACE_ID)?.outcome).toBe('retry_scheduled')
+    expect(mockCharge).toHaveBeenCalledTimes(1)
+  })
+
+  it('provider 예외(throw) 시 deck 추가 롤백 — 결제 없이 활성화 금지', async () => {
+    // 구독 복구 (이전 테스트에서 PAST_DUE/EXPIRED 상태)
+    await prisma.spaceSubscription.update({
+      where: { spaceId: SPACE_ID },
+      data: {
+        status: 'ACTIVE',
+        retryCount: 0,
+        currentPeriodEnd: new Date(Date.now() + 20 * 86400000),
+      },
+    })
+    // seller-hub 아이템을 ENDED로 명시 (선행 테스트 결과 의존 제거) 후 재추가 시도
+    await prisma.subscriptionItem.updateMany({
+      where: { subscription: { spaceId: SPACE_ID }, deckAppId: 'seller-hub' },
+      data: { status: 'ENDED', endedAt: new Date() },
+    })
+    mockCharge.mockRejectedValue(new Error('network timeout'))
+    await expect(addDeck(SPACE_ID, 'seller-hub')).rejects.toThrow('결제 실패')
+
+    const item = await prisma.subscriptionItem.findFirst({
+      where: { subscription: { spaceId: SPACE_ID }, deckAppId: 'seller-hub' },
+    })
+    expect(item?.status).toBe('ENDED') // 롤백 확인
+
+    const ent = await resolveEntitlement(SPACE_ID)
+    expect(ent.decks['seller-hub'].allowed).toBe(false)
+
+    const charge = await prisma.billingCharge.findFirst({
+      where: { spaceId: SPACE_ID, orderId: { startsWith: 'prorate_' } },
+      orderBy: { createdAt: 'desc' },
+    })
+    expect(charge?.status).toBe('FAILED') // PENDING 잔류 없음
+  })
+
+  it('정기결제 provider 예외 시 PENDING 미잔류 — 다음 cron이 재시도', async () => {
+    await prisma.spaceSubscription.update({
+      where: { spaceId: SPACE_ID },
+      data: { currentPeriodEnd: new Date(Date.now() - 10800_000), retryCount: 0, status: 'ACTIVE' },
+    })
+    mockCharge.mockRejectedValueOnce(new Error('ETIMEDOUT'))
+    const r1 = await runDueCharges()
+    expect(r1.find((x) => x.spaceId === SPACE_ID)?.outcome).toBe('retry_scheduled')
+
+    // 청구가 FAILED로 마감돼야 다음 재시도가 재사용 가능 (구버그: PENDING 잔류→already_processed 영구)
+    const charge = await prisma.billingCharge.findFirst({
+      where: { spaceId: SPACE_ID, orderId: { startsWith: 'sub_' } },
+      orderBy: { createdAt: 'desc' },
+    })
+    expect(charge?.status).toBe('FAILED')
+
+    // +1일 경과 시뮬레이션 → 성공 재시도가 같은 orderId 재사용
+    await prisma.spaceSubscription.update({
+      where: { spaceId: SPACE_ID },
+      data: { currentPeriodEnd: new Date(Date.now() - 2 * 86400000), retryCount: 1 },
+    })
+    // periodStart 바뀌면 orderId도 바뀌므로 기존 FAILED 정리 후 성공 경로 확인
+    mockCharge.mockResolvedValue({ ok: true, paymentKey: 'pay_recover', failReason: null })
+    const r2 = await runDueCharges()
+    expect(r2.find((x) => x.spaceId === SPACE_ID)?.outcome).toBe('paid')
+
+    const sub = await prisma.spaceSubscription.findUnique({ where: { spaceId: SPACE_ID } })
+    expect(sub?.status).toBe('ACTIVE')
+    expect(sub?.retryCount).toBe(0)
   })
 })

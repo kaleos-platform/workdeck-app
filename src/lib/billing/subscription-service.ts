@@ -45,6 +45,20 @@ class BillingError extends Error {
 }
 export { BillingError }
 
+// provider.charge()가 예외를 던져도(네트워크·타임아웃·env 오류) 실패 결과로 정규화한다.
+// 예외가 새어나가면 PENDING 청구·ACTIVE 아이템이 롤백 없이 남아
+// "결제 없이 접근 허용" 또는 "재시도 영구 차단" 상태가 된다 (Codex P1 2건).
+async function safeCharge(
+  provider: ReturnType<typeof getBillingProvider>,
+  params: Parameters<ReturnType<typeof getBillingProvider>['charge']>[0]
+) {
+  try {
+    return await provider.charge(params)
+  } catch (e) {
+    return { ok: false as const, paymentKey: null, failReason: (e as Error).message }
+  }
+}
+
 async function loadProducts(deckIds: string[]) {
   const products = await prisma.billingDeckProduct.findMany({
     where: { id: { in: deckIds }, isActive: true },
@@ -160,7 +174,7 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
     .catch(() => null)
   if (!charge) throw new BillingError('이미 처리 중인 결제가 있습니다', 409)
 
-  const result = await provider.charge({
+  const result = await safeCharge(provider, {
     billingKey: method.decryptedBillingKey,
     customerKey: subscription.customerKey!,
     orderId,
@@ -291,7 +305,7 @@ export async function addDeck(spaceId: string, deckAppId: string) {
     },
   })
 
-  const result = await provider.charge({
+  const result = await safeCharge(provider, {
     billingKey: method.decryptedBillingKey,
     customerKey: subscription.customerKey!,
     orderId,
@@ -343,9 +357,10 @@ export async function cancelDeck(spaceId: string, deckAppId: string) {
 
 // ── 정기결제 cron ──────────────────────────────────────────────
 
+// retryCount = 지금까지 실패 횟수(초기 시도 포함). n번째 재시도는 결제일 + RETRY_OFFSETS_DAYS[n-1].
 function shouldAttemptRetry(currentPeriodEnd: Date, retryCount: number, now: Date): boolean {
-  if (retryCount >= MAX_RETRY) return false
-  const offset = RETRY_OFFSETS_DAYS[retryCount]
+  if (retryCount < 1 || retryCount > MAX_RETRY) return false
+  const offset = RETRY_OFFSETS_DAYS[retryCount - 1]
   return now.getTime() >= currentPeriodEnd.getTime() + offset * 86400000
 }
 
@@ -368,27 +383,20 @@ export async function runDueCharges(now = new Date()) {
   for (const sub of due) {
     try {
       // PAST_DUE는 재시도 스케줄(+1·+3·+5일) 도래 시에만 시도
-      if (
-        sub.status === 'PAST_DUE' &&
-        !shouldAttemptRetry(sub.currentPeriodEnd!, sub.retryCount, now)
-      ) {
-        // 3회 소진 + 마지막 재시도일 경과 → EXPIRED
-        if (
-          sub.retryCount >= MAX_RETRY ||
-          now.getTime() >
-            sub.currentPeriodEnd!.getTime() + RETRY_OFFSETS_DAYS[MAX_RETRY - 1] * 86400000
-        ) {
-          if (sub.retryCount >= MAX_RETRY) {
-            await prisma.spaceSubscription.update({
-              where: { id: sub.id },
-              data: { status: 'EXPIRED' },
-            })
-            results.push({ spaceId: sub.spaceId, outcome: 'expired' })
-            continue
-          }
+      if (sub.status === 'PAST_DUE') {
+        if (sub.retryCount > MAX_RETRY) {
+          // 초기 시도 + 재시도 3회 전부 실패 — 안전망 (실패 브랜치에서 이미 EXPIRED 처리됨)
+          await prisma.spaceSubscription.update({
+            where: { id: sub.id },
+            data: { status: 'EXPIRED' },
+          })
+          results.push({ spaceId: sub.spaceId, outcome: 'expired' })
+          continue
         }
-        results.push({ spaceId: sub.spaceId, outcome: 'waiting_retry' })
-        continue
+        if (!shouldAttemptRetry(sub.currentPeriodEnd!, sub.retryCount, now)) {
+          results.push({ spaceId: sub.spaceId, outcome: 'waiting_retry' })
+          continue
+        }
       }
 
       // 해제 예약 아이템은 이번 주기부터 제외 + ENDED 처리
@@ -441,13 +449,16 @@ export async function runDueCharges(now = new Date()) {
         .catch(() => null)
       if (!charge) {
         const existing = await prisma.billingCharge.findUnique({ where: { orderId } })
-        if (!existing || existing.status !== 'FAILED') {
+        const stalePending =
+          existing?.status === 'PENDING' &&
+          existing.updatedAt.getTime() < now.getTime() - 60 * 60 * 1000
+        if (!existing || (existing.status !== 'FAILED' && !stalePending)) {
           results.push({ spaceId: sub.spaceId, outcome: 'already_processed' })
           continue
         }
-        // FAILED → 재시도: PENDING 선점 (경합 게이트 — 정확히 1회만 통과)
+        // FAILED(또는 1시간+ 잔류 PENDING — 크래시 잔재) → 재시도 선점 (경합 게이트 — 정확히 1회만 통과)
         const claimed = await prisma.billingCharge.updateMany({
-          where: { id: existing.id, status: 'FAILED' },
+          where: { id: existing.id, status: existing.status, updatedAt: existing.updatedAt },
           data: {
             status: 'PENDING',
             ...amounts,
@@ -478,7 +489,7 @@ export async function runDueCharges(now = new Date()) {
         continue
       }
 
-      const result = await provider.charge({
+      const result = await safeCharge(provider, {
         billingKey: method.decryptedBillingKey,
         customerKey: sub.customerKey!,
         orderId,
@@ -504,6 +515,7 @@ export async function runDueCharges(now = new Date()) {
         results.push({ spaceId: sub.spaceId, outcome: 'paid' })
       } else {
         const nextRetryCount = sub.retryCount + 1
+        const exhausted = nextRetryCount > MAX_RETRY // 초기 시도 + 재시도 3회 전부 실패
         await prisma.$transaction([
           prisma.billingCharge.update({
             where: { id: charge.id },
@@ -512,14 +524,14 @@ export async function runDueCharges(now = new Date()) {
           prisma.spaceSubscription.update({
             where: { id: sub.id },
             data: {
-              status: nextRetryCount >= MAX_RETRY ? 'EXPIRED' : 'PAST_DUE',
+              status: exhausted ? 'EXPIRED' : 'PAST_DUE',
               retryCount: nextRetryCount,
             },
           }),
         ])
         results.push({
           spaceId: sub.spaceId,
-          outcome: nextRetryCount >= MAX_RETRY ? 'expired' : 'retry_scheduled',
+          outcome: exhausted ? 'expired' : 'retry_scheduled',
         })
       }
     } catch (e) {
