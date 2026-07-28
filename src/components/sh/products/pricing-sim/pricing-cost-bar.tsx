@@ -43,7 +43,12 @@ const SEGMENTS: SegmentDef[] = [
     note: '반품처리비 × 반품율 (매출 차감 아님, 건당 비용만 반영)',
   },
   { key: 'paymentFee', label: 'PG', color: '#fde68a' }, // amber-200
-  { key: 'vat', label: 'VAT', color: '#cbd5e1' }, // slate-300 (세금 = 중립 회색)
+  {
+    key: 'vat',
+    label: '부가세(매출세액)',
+    color: '#cbd5e1', // slate-300 (세금 = 중립 회색)
+    note: '매출세액입니다. 매입세액 공제 후 실제 납부액은 별도.',
+  },
   {
     key: 'promotion',
     label: '프로모션 할인',
@@ -142,11 +147,11 @@ export function PricingCostBar({ cell, discount = 0, basePrice, showLegend = tru
                   </div>
                   <p className="tabular-nums">₩{fmt(amount)}</p>
                   <p className="text-muted-foreground tabular-nums">
-                    판매가 대비 {pct.toFixed(1)}%
+                    판매가 {fmt(base)}원 대비 {pct.toFixed(1)}%
                   </p>
                   {isMargin && (
                     <p className="text-muted-foreground tabular-nums">
-                      이익율 {(cell.margin * 100).toFixed(1)}%
+                      마진율 {(cell.margin * 100).toFixed(1)}% (실결제 대비)
                     </p>
                   )}
                   {s.note && <p className="mt-0.5 max-w-[180px] text-muted-foreground">{s.note}</p>}

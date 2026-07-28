@@ -235,7 +235,8 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   }
   const finalPrice = Math.max(0, r2(p))
 
-  // 3. VAT 처리 — 공급가(VAT 제외) = 마진 분모. vat = 판매가 − 공급가.
+  // 3. VAT 처리 — 공급가(VAT 제외) = 순이익 산정 매출. vat = 판매가 − 공급가.
+  //    마진율(%) 분모는 공급가가 아니라 실결제(finalPrice, gross) — 아래 12번 참조.
   const nominalRevenue = globals.includeVat ? r2(finalPrice / (1 + n(globals.vatRate))) : finalPrice
   const vat = r2(finalPrice - nominalRevenue)
 
@@ -281,14 +282,15 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
       ? r2(n(globals.returnHandlingCost) * n(globals.expectedReturnRate))
       : 0
 
-  // 12. 합산 — 마진 분모 = 공급가(nominalRevenue)
+  // 12. 합산 — 순이익 = 공급가매출(nominalRevenue) − 비용. 마진율 분모 = 실결제(finalPrice).
+  //     VAT를 마진율 감소로 노출하기 위해 분모를 공급가가 아닌 판매가(gross)로 통일.
   const effectiveRevenue = nominalRevenue
   const fee = r2(channelFee + paymentFee)
   const totalCost = r2(
     setCost + channelFee + paymentFee + adCost + operating + packaging + shipping + returnCost
   )
   const netProfit = r2(effectiveRevenue - totalCost)
-  const margin = effectiveRevenue > 0 ? r4(netProfit / effectiveRevenue) : 0
+  const margin = finalPrice > 0 ? r4(netProfit / finalPrice) : 0
   const totalUnits = bundleTotalUnits(bundle)
   const tier = classifyTier(margin, thresholds)
 
@@ -317,13 +319,13 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
 /**
  * 목표 마진 달성을 위한 추천 판매가 역산 (0% 할인, 프로모션 없음 기준).
  *
- * gross-basis 모델 — 수수료/광고/PG는 판매가(P) 기준, 마진 분모는 공급가(P/(1+v)).
- *   margin = (공급가 − totalCost) / 공급가 = target
+ * gross-basis 모델 — 수수료/광고/PG는 판매가(P) 기준, 마진율 분모는 실결제(P).
+ *   margin = (공급가 − totalCost) / P = target   (순이익=공급가−비용, 분모=판매가)
  *   공급가 = P / (1 + v)   [includeVat=true, 아니면 v=0]
  *   totalCost = cogs + P·Σfee% + packaging + shipping + returnCost
  *   Σfee% = 채널수수료율 + PG율(미포함시) + 광고비율(적용시)
- *   ⇒ P·(1−target)/(1+v) − P·Σfee% = cogs + packaging + shipping + returnCost
- *   ⇒ P = fixedCosts / [ (1−target)/(1+v) − Σfee% ]
+ *   ⇒ P/(1+v) − P·Σfee% − target·P = cogs + packaging + shipping + returnCost
+ *   ⇒ P = fixedCosts / [ 1/(1+v) − Σfee% − target ]
  *
  * 무료배송 임계값 step function 처리:
  *   - threshold null/0: 배송비 비용 = 0 (calcCell과 동일)
@@ -349,9 +351,9 @@ function calcRetailForTarget(target: number, inputs: MatrixInputs): number | nul
     // PERCENT 배송비는 판매가 비례 → 분모항(Σfee%)에 포함
     if (isPercentShipping) feePct += n(channel.shippingFeePct)
 
-    // gross-basis 분모: (1−target)/(1+v) − Σfee%
+    // gross-basis 분모: 1/(1+v) − Σfee% − target  (마진율 분모 = 판매가)
     const vatDivisor = globals.includeVat ? 1 + n(globals.vatRate) : 1
-    const denominator = (1 - target) / vatDivisor - feePct
+    const denominator = 1 / vatDivisor - feePct - target
     if (denominator <= 0) return null
 
     const setCost = bundleSetCost(bundle)
@@ -448,9 +450,9 @@ export type FeasibilitySuggestion = {
  * 개별 비용 항목(광고비·배송비)을 얼마까지 낮춰야 하는지 역산한다.
  * 프로모션·컬럼 할인 미적용(0%) 기준. 각 레버는 "다른 비용은 현행 유지" 가정으로 독립 계산.
  *
- * gross-basis: net = P/(1+v), 목표 달성 필요조건 totalCost = net·(1−target).
- * 광고: adPct* = [net·(1−t) − 고정비 − P·(카테고리+PG+배송%)] / P
- * 배송(FIXED): shipping* = net·(1−t) − [고정비 + P·(카테고리+PG+광고%)]
+ * gross-basis: net = P/(1+v), 마진율 분모=판매가(P). 목표 달성 필요조건 totalCost = net − target·P.
+ * 광고: adPct* = [(net − t·P) − 고정비 − P·(카테고리+PG+배송%)] / P
+ * 배송(FIXED): shipping* = (net − t·P) − [고정비 + P·(카테고리+PG+광고%)]
  * 배송(PERCENT): shipPct* 는 위 식을 P로 나눈 값
  */
 export function suggestFeasibility(
@@ -464,7 +466,7 @@ export function suggestFeasibility(
   if (P <= 0) return result
 
   const vatDivisor = globals.includeVat ? 1 + n(globals.vatRate) : 1
-  const need = (P / vatDivisor) * (1 - target) // 허용 총비용 상한
+  const need = P / vatDivisor - target * P // 허용 총비용 상한 (gross 마진: net − target·P)
 
   // 카테고리·PG 수수료는 각자의 VAT 플래그로 독립 gross-up(광고·배송% 제외).
   const categoryPct =
