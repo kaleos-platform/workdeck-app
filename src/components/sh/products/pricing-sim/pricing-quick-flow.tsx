@@ -1333,7 +1333,7 @@ export function PricingQuickFlow({
               <FieldRow
                 label="부가세 (VAT)"
                 sub="판매가 = VAT 포함"
-                tooltip="켜면 판매가에 VAT가 포함된 것으로 보고 공급가(=판매가÷(1+VAT))로 마진을 계산합니다. 수수료·광고·PG는 판매가 기준."
+                tooltip="켜면 판매가에 VAT가 포함된 것으로 봅니다. 순이익 = 공급가(=판매가÷(1+VAT)) − 비용. 마진율(%) 분모는 실결제금액(판매가)이라 VAT가 마진율 감소로 반영됩니다. 수수료·광고·PG는 판매가 기준."
               >
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold tabular-nums">
@@ -1377,7 +1377,8 @@ export function PricingQuickFlow({
               </FieldRow>
 
               <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">
-                배송비·PG·광고비·수수료율은 ③ 판매채널에서 채널별로 설정합니다.
+                배송비·PG·광고비·수수료율은 ③ 판매채널에서 채널별로 설정합니다. 원가·물류비·반품
+                처리비 등 모든 비용 입력은 VAT 제외(공급가) 기준입니다.
               </p>
             </TooltipProvider>
           </StepCard>

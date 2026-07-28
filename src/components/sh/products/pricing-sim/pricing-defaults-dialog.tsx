@@ -349,7 +349,7 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor={retShipId} className="text-xs">
-                  반품 배송비 (원)
+                  반품 배송비 (원, VAT 제외)
                 </Label>
                 <SuffixInput
                   id={retShipId}
