@@ -541,7 +541,7 @@ describe('suggestFeasibility — 목표 마진 달성 불가 시 항목별 제�
   })
 })
 
-// ─── Test: 수수료 VAT gross-up (판매/결제 독립) ───────────────────────────────
+// ─── Test: 수수료 VAT 제외 (판매/결제 독립, 포함 → ÷(1+vat)) ───────────────────
 
 describe('수수료 VAT 포함 여부 (판매·결제 독립)', () => {
   // 광고·배송 제거해 수수료 항목만 격리 (카테고리 10% + PG 3%)
@@ -556,47 +556,55 @@ describe('수수료 VAT 포함 여부 (판매·결제 독립)', () => {
   }
   const bundle = makeBundle(15000, 40000, 1, 0)
 
-  it('판매 VAT OFF는 channelFee만 gross-up, paymentFee(PG) 불변', () => {
-    // 기준=둘 다 미지정(gross-up 없음). 판매만 false로.
+  it('판매 VAT 포함(true)은 channelFee만 ÷1.1, paymentFee(PG) 불변', () => {
+    // 기준=둘 다 미지정(별도=as-is). 판매만 포함(true)으로.
     const base = calculateMatrix(makeInputs(bundle, feeOnlyBase)).cells[0]
-    const chSaleOff: MatrixChannel = { ...feeOnlyBase, vatIncludedInFee: false }
-    const cell = calculateMatrix(makeInputs(bundle, chSaleOff)).cells[0]
-    expect(cell.channelFee).toBeCloseTo(base.channelFee * 1.1, 2) // 40000×10%×1.1=4400
+    const chSaleIncl: MatrixChannel = { ...feeOnlyBase, vatIncludedInFee: true }
+    const cell = calculateMatrix(makeInputs(bundle, chSaleIncl)).cells[0]
+    expect(cell.channelFee).toBeCloseTo(3636.36, 1) // 40000×10%÷1.1
     expect(cell.paymentFee).toBe(base.paymentFee) // PG 불변 = 1200
-    expect(cell.margin).toBeLessThan(base.margin)
+    expect(cell.margin).toBeGreaterThan(base.margin) // 수수료 감소 → 마진 상향
   })
 
-  it('결제 VAT OFF는 paymentFee만 gross-up, channelFee 불변 (판매와 독립)', () => {
+  it('결제 VAT 포함(true)은 paymentFee만 ÷1.1, channelFee 불변 (판매와 독립)', () => {
     const base = calculateMatrix(makeInputs(bundle, feeOnlyBase)).cells[0]
-    const chPgOff: MatrixChannel = { ...feeOnlyBase, paymentFeeVatIncluded: false }
-    const cell = calculateMatrix(makeInputs(bundle, chPgOff)).cells[0]
-    expect(cell.paymentFee).toBeCloseTo(base.paymentFee * 1.1, 2) // 40000×3%×1.1=1320
+    const chPgIncl: MatrixChannel = { ...feeOnlyBase, paymentFeeVatIncluded: true }
+    const cell = calculateMatrix(makeInputs(bundle, chPgIncl)).cells[0]
+    expect(cell.paymentFee).toBeCloseTo(1090.91, 1) // 40000×3%÷1.1
     expect(cell.channelFee).toBe(base.channelFee) // 판매 불변 = 4000
   })
 
-  it('둘 다 OFF면 각각 독립 gross-up', () => {
+  it('둘 다 포함이면 각각 독립 ÷1.1', () => {
     const chBoth: MatrixChannel = {
+      ...feeOnlyBase,
+      vatIncludedInFee: true,
+      paymentFeeVatIncluded: true,
+    }
+    const cell = calculateMatrix(makeInputs(bundle, chBoth)).cells[0]
+    expect(cell.channelFee).toBeCloseTo(3636.36, 1) // 4000÷1.1
+    expect(cell.paymentFee).toBeCloseTo(1090.91, 1) // 1200÷1.1
+  })
+
+  it('별도(false)·미지정(undefined)은 그대로(×1) — VAT 가산하지 않음', () => {
+    const cellUndef = calculateMatrix(makeInputs(bundle, feeOnlyBase)).cells[0]
+    expect(cellUndef.channelFee).toBeCloseTo(4000, 2) // 40000×10%
+    expect(cellUndef.paymentFee).toBeCloseTo(1200, 2) // 40000×3%
+    const chBoth별도: MatrixChannel = {
       ...feeOnlyBase,
       vatIncludedInFee: false,
       paymentFeeVatIncluded: false,
     }
-    const cell = calculateMatrix(makeInputs(bundle, chBoth)).cells[0]
-    expect(cell.channelFee).toBeCloseTo(4400, 2) // 4000×1.1
-    expect(cell.paymentFee).toBeCloseTo(1320, 2) // 1200×1.1
+    const cellFalse = calculateMatrix(makeInputs(bundle, chBoth별도)).cells[0]
+    expect(cellFalse.channelFee).toBeCloseTo(4000, 2) // 별도도 as-is (구 모델의 ×1.1 아님)
+    expect(cellFalse.paymentFee).toBeCloseTo(1200, 2)
   })
 
-  it('미지정(undefined)은 gross-up 없음 = 하위호환', () => {
-    const cell = calculateMatrix(makeInputs(bundle, feeOnlyBase)).cells[0]
-    expect(cell.channelFee).toBeCloseTo(4000, 2) // 40000×10%
-    expect(cell.paymentFee).toBeCloseTo(1200, 2) // 40000×3%
-  })
-
-  it('글로벌 VAT OFF면 gross-up 미적용 (모델 일관성)', () => {
+  it('글로벌 VAT OFF면 ÷1.1 미적용 (모델 일관성)', () => {
     const noVatGlobals: MatrixGlobals = { ...globals, includeVat: false }
     const chBoth: MatrixChannel = {
       ...feeOnlyBase,
-      vatIncludedInFee: false,
-      paymentFeeVatIncluded: false,
+      vatIncludedInFee: true,
+      paymentFeeVatIncluded: true,
     }
     const cell = calculateMatrix({
       bundle,
@@ -609,11 +617,11 @@ describe('수수료 VAT 포함 여부 (판매·결제 독립)', () => {
     expect(cell.paymentFee).toBeCloseTo(1200, 2)
   })
 
-  it('판매·결제 VAT OFF 채널 권장가(good)를 0% 셀에 넣으면 마진 >= 목표 — 정방향·역방향 정합', () => {
+  it('판매·결제 VAT 포함(true) 채널 권장가(good)를 0% 셀에 넣으면 마진 >= 목표 — 정방향·역방향 정합', () => {
     const chBoth: MatrixChannel = {
       ...feeOnlyBase,
-      vatIncludedInFee: false,
-      paymentFeeVatIncluded: false,
+      vatIncludedInFee: true,
+      paymentFeeVatIncluded: true,
     }
     const { good } = calculateMatrix(makeInputs(bundle, chBoth)).recommendedRetail
     expect(good).not.toBeNull()
@@ -662,31 +670,31 @@ describe('PRD TC — 실결제 기준 마진율 + 프로모 반영', () => {
     thresholds,
   })
 
-  // TC-1: 기준 시나리오(프로모 FLAT 1,900) — 프로덕션 값 회귀 방지
-  it('TC-1: 실결제 43,300 / netProfit 4,338.41 / 마진율 10.02%', () => {
+  // TC-1: 기준 시나리오(프로모 FLAT 1,900). 쿠팡 vatIncludedInFee=true → 수수료 ÷1.1(VAT 제외).
+  it('TC-1: 실결제 43,300 / 채널수수료 ÷1.1 4,566 / netProfit 4,795 / 마진율 11.07%', () => {
     const c = calculateMatrix(prdInputs({ type: 'FLAT', value: 1900 })).cells[0]
     expect(c.finalPrice).toBe(43300) // 45,200 − 1,900
     expect(c.revenue).toBeCloseTo(39363.64, 1) // 공급가 = 43,300 / 1.1
     expect(c.vat).toBeCloseTo(3936.36, 1) // 매출세액
-    expect(c.channelFee).toBeCloseTo(5022.8, 1) // 43,300 × 11.6% (gross-up 없음)
+    expect(c.channelFee).toBeCloseTo(4566.18, 1) // 43,300 × 11.6% ÷ 1.1 (VAT 포함 → 제외)
     expect(c.adCost).toBeCloseTo(12371.43, 1) // 43,300 / 3.5
     expect(c.shipping).toBe(3850)
     expect(c.cogs).toBe(13781)
-    expect(c.totalCost).toBeCloseTo(35025.23, 1)
-    expect(c.netProfit).toBeCloseTo(4338.41, 1) // 손반올림 PRD 4,338
-    expect(c.margin).toBeCloseTo(0.1002, 4) // = 4,338.41 / 43,300 (실결제 분모)
+    expect(c.totalCost).toBeCloseTo(34568.61, 1)
+    expect(c.netProfit).toBeCloseTo(4795.03, 1)
+    expect(c.margin).toBeCloseTo(0.1107, 4) // = 4,795.03 / 43,300 (실결제 분모)
   })
 
   // TC-4: 프로모 변경 시 마진율이 반드시 함께 이동 (배지 프로모 미반영 버그 회귀 방지)
-  it('TC-4: 프로모 0 → 마진율 11.73%, 프로모 1,900 → 10.02% (마진율 이동)', () => {
+  it('TC-4: 프로모 0 → 마진율 12.79%, 프로모 1,900 → 11.07% (마진율 이동)', () => {
     const noPromo = calculateMatrix(prdInputs({ type: 'NONE', value: 0 })).cells[0]
     expect(noPromo.finalPrice).toBe(45200)
-    expect(noPromo.netProfit).toBeCloseTo(5302.42, 1)
-    expect(noPromo.margin).toBeCloseTo(0.1173, 4) // = 5,302.42 / 45,200
+    expect(noPromo.netProfit).toBeCloseTo(5779.07, 1)
+    expect(noPromo.margin).toBeCloseTo(0.1279, 4) // = 5,779.07 / 45,200
 
     const withPromo = calculateMatrix(prdInputs({ type: 'FLAT', value: 1900 })).cells[0]
-    expect(withPromo.margin).toBeCloseTo(0.1002, 4)
-    // 프로모 적용 시 마진율이 반드시 하락 (고정 12.9% 표시 = 실패)
+    expect(withPromo.margin).toBeCloseTo(0.1107, 4)
+    // 프로모 적용 시 마진율이 반드시 하락
     expect(withPromo.margin).toBeLessThan(noPromo.margin)
   })
 })
