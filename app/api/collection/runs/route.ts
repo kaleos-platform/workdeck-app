@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { queryCollectionRuns } from '@/lib/coupang-ads/queries'
+import { canWorkspaceCollect } from '@/lib/billing/entitlement'
 
 // GET /api/collection/runs — 수집 실행 이력 조회
 export async function GET(request: NextRequest) {
@@ -70,6 +71,11 @@ export async function POST(request: NextRequest) {
   })
   if (!credential || !credential.isActive) {
     return errorResponse('쿠팡 자격증명이 설정되지 않았거나 비활성 상태입니다', 400)
+  }
+
+  // 결제 entitlement 게이트: 만료/미구독 Space는 수집(수동+자동) 차단
+  if (!(await canWorkspaceCollect(workspace.id))) {
+    return errorResponse('coupang-ads 구독이 만료되어 수집을 시작할 수 없습니다', 402)
   }
 
   // 이미 진행 중인 실행이 있는지 확인

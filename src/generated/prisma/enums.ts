@@ -701,3 +701,50 @@ export const BoCredentialKind = {
 } as const
 
 export type BoCredentialKind = (typeof BoCredentialKind)[keyof typeof BoCredentialKind]
+
+
+export const DeckPricingMode = {
+  FREE_BETA: 'FREE_BETA',
+  SUBSCRIPTION: 'SUBSCRIPTION'
+} as const
+
+export type DeckPricingMode = (typeof DeckPricingMode)[keyof typeof DeckPricingMode]
+
+
+export const SubscriptionStatus = {
+  TRIALING: 'TRIALING',
+  ACTIVE: 'ACTIVE',
+  PAST_DUE: 'PAST_DUE',
+  CANCELED: 'CANCELED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+
+export const SubscriptionItemType = {
+  DECK: 'DECK',
+  ADDON: 'ADDON'
+} as const
+
+export type SubscriptionItemType = (typeof SubscriptionItemType)[keyof typeof SubscriptionItemType]
+
+
+export const SubscriptionItemStatus = {
+  ACTIVE: 'ACTIVE',
+  CANCEL_AT_PERIOD_END: 'CANCEL_AT_PERIOD_END',
+  ENDED: 'ENDED'
+} as const
+
+export type SubscriptionItemStatus = (typeof SubscriptionItemStatus)[keyof typeof SubscriptionItemStatus]
+
+
+export const BillingChargeStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  FAILED: 'FAILED',
+  CANCELED: 'CANCELED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type BillingChargeStatus = (typeof BillingChargeStatus)[keyof typeof BillingChargeStatus]

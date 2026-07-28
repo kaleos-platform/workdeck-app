@@ -15,9 +15,16 @@
     },
     "app/api/slack/events/route.ts": {
       "maxDuration": 300
+    },
+    "app/api/cron/billing-charge/route.ts": {
+      "maxDuration": 300
     }
   },
   "crons": [
+    {
+      "path": "/api/cron/billing-charge",
+      "schedule": "0 0 * * *"
+    },
     {
       "path": "/api/cron/inventory-stale-check",
       "schedule": "0 1 * * *"

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkerAuth } from '@/lib/api-helpers'
+import { canWorkspaceCollect } from '@/lib/billing/entitlement'
 
 // 10분 이상 된 PENDING은 무시 (stale)
 const STALE_THRESHOLD_MS = 10 * 60 * 1000
@@ -13,28 +14,30 @@ export async function GET(request: NextRequest) {
 
   const staleThreshold = new Date(Date.now() - STALE_THRESHOLD_MS)
 
-  const run = await prisma.collectionRun.findFirst({
+  const runs = await prisma.collectionRun.findMany({
     where: {
       status: 'PENDING',
       createdAt: { gt: staleThreshold },
     },
     orderBy: { createdAt: 'asc' },
-    include: {
-      workspace: { select: { id: true } },
-    },
+    take: 10,
   })
 
-  if (!run) {
-    return NextResponse.json({ run: null })
+  // 결제 entitlement 필터: 만료 workspace의 run은 워커에 넘기지 않는다
+  // (게이트를 통과해 이미 큐에 있던 run 방어 — run 생성 게이트와 이중)
+  for (const run of runs) {
+    if (await canWorkspaceCollect(run.workspaceId)) {
+      return NextResponse.json({
+        run: {
+          id: run.id,
+          workspaceId: run.workspaceId,
+          triggeredBy: run.triggeredBy,
+          collectAds: run.collectAds,
+          collectInventory: run.collectInventory,
+        },
+      })
+    }
   }
 
-  return NextResponse.json({
-    run: {
-      id: run.id,
-      workspaceId: run.workspaceId,
-      triggeredBy: run.triggeredBy,
-      collectAds: run.collectAds,
-      collectInventory: run.collectInventory,
-    },
-  })
+  return NextResponse.json({ run: null })
 }
