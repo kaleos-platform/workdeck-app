@@ -515,7 +515,12 @@ export const ModelName = {
   BoPostVariant: 'BoPostVariant',
   BoDeployment: 'BoDeployment',
   BoJob: 'BoJob',
-  BoChannelCredential: 'BoChannelCredential'
+  BoChannelCredential: 'BoChannelCredential',
+  BillingDeckProduct: 'BillingDeckProduct',
+  SpaceSubscription: 'SpaceSubscription',
+  SubscriptionItem: 'SubscriptionItem',
+  BillingMethod: 'BillingMethod',
+  BillingCharge: 'BillingCharge'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -531,7 +536,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -10303,6 +10308,376 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BillingDeckProduct: {
+      payload: Prisma.$BillingDeckProductPayload<ExtArgs>
+      fields: Prisma.BillingDeckProductFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BillingDeckProductFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BillingDeckProductFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload>
+        }
+        findFirst: {
+          args: Prisma.BillingDeckProductFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BillingDeckProductFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload>
+        }
+        findMany: {
+          args: Prisma.BillingDeckProductFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload>[]
+        }
+        create: {
+          args: Prisma.BillingDeckProductCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload>
+        }
+        createMany: {
+          args: Prisma.BillingDeckProductCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BillingDeckProductCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload>[]
+        }
+        delete: {
+          args: Prisma.BillingDeckProductDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload>
+        }
+        update: {
+          args: Prisma.BillingDeckProductUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload>
+        }
+        deleteMany: {
+          args: Prisma.BillingDeckProductDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BillingDeckProductUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BillingDeckProductUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload>[]
+        }
+        upsert: {
+          args: Prisma.BillingDeckProductUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingDeckProductPayload>
+        }
+        aggregate: {
+          args: Prisma.BillingDeckProductAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBillingDeckProduct>
+        }
+        groupBy: {
+          args: Prisma.BillingDeckProductGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingDeckProductGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BillingDeckProductCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingDeckProductCountAggregateOutputType> | number
+        }
+      }
+    }
+    SpaceSubscription: {
+      payload: Prisma.$SpaceSubscriptionPayload<ExtArgs>
+      fields: Prisma.SpaceSubscriptionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SpaceSubscriptionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SpaceSubscriptionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload>
+        }
+        findFirst: {
+          args: Prisma.SpaceSubscriptionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SpaceSubscriptionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload>
+        }
+        findMany: {
+          args: Prisma.SpaceSubscriptionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload>[]
+        }
+        create: {
+          args: Prisma.SpaceSubscriptionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload>
+        }
+        createMany: {
+          args: Prisma.SpaceSubscriptionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SpaceSubscriptionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload>[]
+        }
+        delete: {
+          args: Prisma.SpaceSubscriptionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload>
+        }
+        update: {
+          args: Prisma.SpaceSubscriptionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload>
+        }
+        deleteMany: {
+          args: Prisma.SpaceSubscriptionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SpaceSubscriptionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SpaceSubscriptionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload>[]
+        }
+        upsert: {
+          args: Prisma.SpaceSubscriptionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceSubscriptionPayload>
+        }
+        aggregate: {
+          args: Prisma.SpaceSubscriptionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpaceSubscription>
+        }
+        groupBy: {
+          args: Prisma.SpaceSubscriptionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceSubscriptionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SpaceSubscriptionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceSubscriptionCountAggregateOutputType> | number
+        }
+      }
+    }
+    SubscriptionItem: {
+      payload: Prisma.$SubscriptionItemPayload<ExtArgs>
+      fields: Prisma.SubscriptionItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SubscriptionItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SubscriptionItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload>
+        }
+        findFirst: {
+          args: Prisma.SubscriptionItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SubscriptionItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload>
+        }
+        findMany: {
+          args: Prisma.SubscriptionItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload>[]
+        }
+        create: {
+          args: Prisma.SubscriptionItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload>
+        }
+        createMany: {
+          args: Prisma.SubscriptionItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SubscriptionItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload>[]
+        }
+        delete: {
+          args: Prisma.SubscriptionItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload>
+        }
+        update: {
+          args: Prisma.SubscriptionItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.SubscriptionItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SubscriptionItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SubscriptionItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.SubscriptionItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionItemPayload>
+        }
+        aggregate: {
+          args: Prisma.SubscriptionItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSubscriptionItem>
+        }
+        groupBy: {
+          args: Prisma.SubscriptionItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubscriptionItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SubscriptionItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubscriptionItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    BillingMethod: {
+      payload: Prisma.$BillingMethodPayload<ExtArgs>
+      fields: Prisma.BillingMethodFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BillingMethodFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BillingMethodFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload>
+        }
+        findFirst: {
+          args: Prisma.BillingMethodFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BillingMethodFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload>
+        }
+        findMany: {
+          args: Prisma.BillingMethodFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload>[]
+        }
+        create: {
+          args: Prisma.BillingMethodCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload>
+        }
+        createMany: {
+          args: Prisma.BillingMethodCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BillingMethodCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload>[]
+        }
+        delete: {
+          args: Prisma.BillingMethodDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload>
+        }
+        update: {
+          args: Prisma.BillingMethodUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload>
+        }
+        deleteMany: {
+          args: Prisma.BillingMethodDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BillingMethodUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BillingMethodUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload>[]
+        }
+        upsert: {
+          args: Prisma.BillingMethodUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingMethodPayload>
+        }
+        aggregate: {
+          args: Prisma.BillingMethodAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBillingMethod>
+        }
+        groupBy: {
+          args: Prisma.BillingMethodGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingMethodGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BillingMethodCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingMethodCountAggregateOutputType> | number
+        }
+      }
+    }
+    BillingCharge: {
+      payload: Prisma.$BillingChargePayload<ExtArgs>
+      fields: Prisma.BillingChargeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BillingChargeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BillingChargeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload>
+        }
+        findFirst: {
+          args: Prisma.BillingChargeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BillingChargeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload>
+        }
+        findMany: {
+          args: Prisma.BillingChargeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload>[]
+        }
+        create: {
+          args: Prisma.BillingChargeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload>
+        }
+        createMany: {
+          args: Prisma.BillingChargeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BillingChargeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload>[]
+        }
+        delete: {
+          args: Prisma.BillingChargeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload>
+        }
+        update: {
+          args: Prisma.BillingChargeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload>
+        }
+        deleteMany: {
+          args: Prisma.BillingChargeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BillingChargeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BillingChargeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload>[]
+        }
+        upsert: {
+          args: Prisma.BillingChargeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingChargePayload>
+        }
+        aggregate: {
+          args: Prisma.BillingChargeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBillingCharge>
+        }
+        groupBy: {
+          args: Prisma.BillingChargeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingChargeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BillingChargeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingChargeCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -12559,6 +12934,87 @@ export const BoChannelCredentialScalarFieldEnum = {
 export type BoChannelCredentialScalarFieldEnum = (typeof BoChannelCredentialScalarFieldEnum)[keyof typeof BoChannelCredentialScalarFieldEnum]
 
 
+export const BillingDeckProductScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  pricingMode: 'pricingMode',
+  monthlyPrice: 'monthlyPrice',
+  paidActivatedAt: 'paidActivatedAt',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BillingDeckProductScalarFieldEnum = (typeof BillingDeckProductScalarFieldEnum)[keyof typeof BillingDeckProductScalarFieldEnum]
+
+
+export const SpaceSubscriptionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  status: 'status',
+  trialEndsAt: 'trialEndsAt',
+  currentPeriodEnd: 'currentPeriodEnd',
+  retryCount: 'retryCount',
+  exemptFlag: 'exemptFlag',
+  exemptNote: 'exemptNote',
+  provider: 'provider',
+  customerKey: 'customerKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceSubscriptionScalarFieldEnum = (typeof SpaceSubscriptionScalarFieldEnum)[keyof typeof SpaceSubscriptionScalarFieldEnum]
+
+
+export const SubscriptionItemScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  type: 'type',
+  deckAppId: 'deckAppId',
+  priceSnapshot: 'priceSnapshot',
+  status: 'status',
+  addedAt: 'addedAt',
+  endedAt: 'endedAt'
+} as const
+
+export type SubscriptionItemScalarFieldEnum = (typeof SubscriptionItemScalarFieldEnum)[keyof typeof SubscriptionItemScalarFieldEnum]
+
+
+export const BillingMethodScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  provider: 'provider',
+  billingKey: 'billingKey',
+  billingKeyIv: 'billingKeyIv',
+  cardSummary: 'cardSummary',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt'
+} as const
+
+export type BillingMethodScalarFieldEnum = (typeof BillingMethodScalarFieldEnum)[keyof typeof BillingMethodScalarFieldEnum]
+
+
+export const BillingChargeScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  orderId: 'orderId',
+  amount: 'amount',
+  supplyAmount: 'supplyAmount',
+  vatAmount: 'vatAmount',
+  status: 'status',
+  provider: 'provider',
+  paymentKey: 'paymentKey',
+  failReason: 'failReason',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  breakdown: 'breakdown',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BillingChargeScalarFieldEnum = (typeof BillingChargeScalarFieldEnum)[keyof typeof BillingChargeScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -13697,6 +14153,76 @@ export type EnumBoCredentialKindFieldRefInput<$PrismaModel> = FieldRefInputType<
 export type ListEnumBoCredentialKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoCredentialKind[]'>
     
 
+
+/**
+ * Reference to a field of type 'DeckPricingMode'
+ */
+export type EnumDeckPricingModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeckPricingMode'>
+    
+
+
+/**
+ * Reference to a field of type 'DeckPricingMode[]'
+ */
+export type ListEnumDeckPricingModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeckPricingMode[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionStatus'
+ */
+export type EnumSubscriptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionStatus[]'
+ */
+export type ListEnumSubscriptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionItemType'
+ */
+export type EnumSubscriptionItemTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionItemType'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionItemType[]'
+ */
+export type ListEnumSubscriptionItemTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionItemType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionItemStatus'
+ */
+export type EnumSubscriptionItemStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionItemStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionItemStatus[]'
+ */
+export type ListEnumSubscriptionItemStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionItemStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BillingChargeStatus'
+ */
+export type EnumBillingChargeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillingChargeStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BillingChargeStatus[]'
+ */
+export type ListEnumBillingChargeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillingChargeStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -13924,6 +14450,11 @@ export type GlobalOmitConfig = {
   boDeployment?: Prisma.BoDeploymentOmit
   boJob?: Prisma.BoJobOmit
   boChannelCredential?: Prisma.BoChannelCredentialOmit
+  billingDeckProduct?: Prisma.BillingDeckProductOmit
+  spaceSubscription?: Prisma.SpaceSubscriptionOmit
+  subscriptionItem?: Prisma.SubscriptionItemOmit
+  billingMethod?: Prisma.BillingMethodOmit
+  billingCharge?: Prisma.BillingChargeOmit
 }
 
 /* Types for Logging */

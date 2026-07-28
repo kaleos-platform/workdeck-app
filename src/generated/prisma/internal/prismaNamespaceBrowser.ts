@@ -182,7 +182,12 @@ export const ModelName = {
   BoPostVariant: 'BoPostVariant',
   BoDeployment: 'BoDeployment',
   BoJob: 'BoJob',
-  BoChannelCredential: 'BoChannelCredential'
+  BoChannelCredential: 'BoChannelCredential',
+  BillingDeckProduct: 'BillingDeckProduct',
+  SpaceSubscription: 'SpaceSubscription',
+  SubscriptionItem: 'SubscriptionItem',
+  BillingMethod: 'BillingMethod',
+  BillingCharge: 'BillingCharge'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -2416,6 +2421,87 @@ export const BoChannelCredentialScalarFieldEnum = {
 } as const
 
 export type BoChannelCredentialScalarFieldEnum = (typeof BoChannelCredentialScalarFieldEnum)[keyof typeof BoChannelCredentialScalarFieldEnum]
+
+
+export const BillingDeckProductScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  pricingMode: 'pricingMode',
+  monthlyPrice: 'monthlyPrice',
+  paidActivatedAt: 'paidActivatedAt',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BillingDeckProductScalarFieldEnum = (typeof BillingDeckProductScalarFieldEnum)[keyof typeof BillingDeckProductScalarFieldEnum]
+
+
+export const SpaceSubscriptionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  status: 'status',
+  trialEndsAt: 'trialEndsAt',
+  currentPeriodEnd: 'currentPeriodEnd',
+  retryCount: 'retryCount',
+  exemptFlag: 'exemptFlag',
+  exemptNote: 'exemptNote',
+  provider: 'provider',
+  customerKey: 'customerKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceSubscriptionScalarFieldEnum = (typeof SpaceSubscriptionScalarFieldEnum)[keyof typeof SpaceSubscriptionScalarFieldEnum]
+
+
+export const SubscriptionItemScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  type: 'type',
+  deckAppId: 'deckAppId',
+  priceSnapshot: 'priceSnapshot',
+  status: 'status',
+  addedAt: 'addedAt',
+  endedAt: 'endedAt'
+} as const
+
+export type SubscriptionItemScalarFieldEnum = (typeof SubscriptionItemScalarFieldEnum)[keyof typeof SubscriptionItemScalarFieldEnum]
+
+
+export const BillingMethodScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  provider: 'provider',
+  billingKey: 'billingKey',
+  billingKeyIv: 'billingKeyIv',
+  cardSummary: 'cardSummary',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt'
+} as const
+
+export type BillingMethodScalarFieldEnum = (typeof BillingMethodScalarFieldEnum)[keyof typeof BillingMethodScalarFieldEnum]
+
+
+export const BillingChargeScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  orderId: 'orderId',
+  amount: 'amount',
+  supplyAmount: 'supplyAmount',
+  vatAmount: 'vatAmount',
+  status: 'status',
+  provider: 'provider',
+  paymentKey: 'paymentKey',
+  failReason: 'failReason',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  breakdown: 'breakdown',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BillingChargeScalarFieldEnum = (typeof BillingChargeScalarFieldEnum)[keyof typeof BillingChargeScalarFieldEnum]
 
 
 export const SortOrder = {

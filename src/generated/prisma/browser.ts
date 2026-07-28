@@ -677,3 +677,28 @@ export type BoJob = Prisma.BoJobModel
  * 
  */
 export type BoChannelCredential = Prisma.BoChannelCredentialModel
+/**
+ * Model BillingDeckProduct
+ * 
+ */
+export type BillingDeckProduct = Prisma.BillingDeckProductModel
+/**
+ * Model SpaceSubscription
+ * 
+ */
+export type SpaceSubscription = Prisma.SpaceSubscriptionModel
+/**
+ * Model SubscriptionItem
+ * 
+ */
+export type SubscriptionItem = Prisma.SubscriptionItemModel
+/**
+ * Model BillingMethod
+ * 
+ */
+export type BillingMethod = Prisma.BillingMethodModel
+/**
+ * Model BillingCharge
+ * 
+ */
+export type BillingCharge = Prisma.BillingChargeModel

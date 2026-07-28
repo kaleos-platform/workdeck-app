@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { errorResponse, resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { seedFinanceCategories, ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
+import { canUseDeck, ensureTrialStarted } from '@/lib/billing/entitlement'
 
 type CreateDeckRequest = {
   deckAppId?: string
@@ -22,6 +23,17 @@ export async function POST(request: NextRequest) {
   })
   if (!deckApp || !deckApp.isActive) {
     return errorResponse('사용 가능한 Deck이 아닙니다', 404)
+  }
+
+  // 유료 deck 첫 사용 시도 → Trial lazy-start (평생 1회, 이력 있으면 no-op)
+  const product = await prisma.billingDeckProduct.findUnique({ where: { id: deckAppId } })
+  if (product?.isActive && product.pricingMode === 'SUBSCRIPTION') {
+    await ensureTrialStarted(resolved.space.id)
+  }
+
+  // entitlement 게이트: 무료 베타·면제·구독·Trial·유예 전부 아니면 402
+  if (!(await canUseDeck(resolved.space.id, deckAppId))) {
+    return errorResponse('구독이 필요한 Deck입니다', 402)
   }
 
   const existing = await prisma.deckInstance.findUnique({
