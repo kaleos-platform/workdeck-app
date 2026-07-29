@@ -32,7 +32,12 @@ type SegmentDef = {
 // 색은 seller-ops 컨벤션 따름: 원가=slate(중립), 비용군=amber 그라데이션(비용=amber),
 // VAT=slate 연회색(세금=중립), 마진=emerald(success). emerald/amber/slate 3색계.
 const SEGMENTS: SegmentDef[] = [
-  { key: 'cogs', label: '원가', color: '#334155' }, // slate-700 (원가 = 큰 중립 덩어리)
+  {
+    key: 'cogs',
+    label: '원가',
+    color: '#334155', // slate-700 (원가 = 큰 중립 덩어리)
+    note: '공급원가(VAT 제외 기준). VAT 포함 매입은 매입세액을 제외한 금액으로 마진 계산.',
+  },
   { key: 'channelFee', label: '채널수수료', color: '#b45309' }, // amber-700
   { key: 'adCost', label: '광고비', color: '#d97706' }, // amber-600
   { key: 'shipping', label: '물류', color: '#f59e0b' }, // amber-500

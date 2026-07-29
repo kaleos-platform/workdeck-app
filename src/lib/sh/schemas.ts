@@ -32,6 +32,7 @@ export const productOptionSchema = z.object({
       z.number().nonnegative()
     )
     .optional(),
+  costVatIncluded: z.boolean().optional(),
   retailPrice: z
     .preprocess(
       (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),

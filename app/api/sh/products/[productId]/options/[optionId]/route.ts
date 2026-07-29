@@ -68,8 +68,16 @@ export async function PATCH(
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  const { name, sku, costPrice, retailPrice, sizeLabel, setSizeLabel, attributeValues } =
-    parsed.data
+  const {
+    name,
+    sku,
+    costPrice,
+    costVatIncluded,
+    retailPrice,
+    sizeLabel,
+    setSizeLabel,
+    attributeValues,
+  } = parsed.data
 
   const option = await prisma.invProductOption.update({
     where: { id: optionId },
@@ -77,6 +85,7 @@ export async function PATCH(
       ...(name !== undefined && { name }),
       ...(sku !== undefined && { sku: sku ?? null }),
       ...(costPrice !== undefined && { costPrice: costPrice ?? null }),
+      ...(costVatIncluded !== undefined && { costVatIncluded }),
       ...(retailPrice !== undefined && { retailPrice: retailPrice ?? null }),
       ...(sizeLabel !== undefined && { sizeLabel: sizeLabel ?? null }),
       ...(setSizeLabel !== undefined && { setSizeLabel: setSizeLabel ?? null }),
