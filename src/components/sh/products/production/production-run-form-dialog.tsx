@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { X, Plus, Trash2, Info } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Dialog,
   DialogContent,
@@ -187,6 +188,38 @@ function TotalCostPreview({ totalCost, items }: { totalCost: number; items: Opti
         </>
       )}
     </div>
+  )
+}
+
+// 원가 테이블 "VAT 포함" 컬럼 헤더 — 미포함(체크 해제) 항목 안내 툴팁 포함
+function VatColumnHeader() {
+  return (
+    <span className="inline-flex items-center justify-center gap-1">
+      VAT 포함
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="cursor-help text-muted-foreground">
+              <Info className="h-3 w-3" />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs text-left">
+            <p className="mb-1 font-medium">
+              VAT 포함 = 입력 금액에 부가세가 포함된 과세매입. 체크 시 매입세액(÷1.1)이 가격 시뮬
+              마진에서 공제됩니다.
+            </p>
+            <p className="mb-0.5">미포함(체크 해제)으로 둘 항목:</p>
+            <ul className="list-disc space-y-0.5 pl-4">
+              <li>간이과세자·면세사업자 매입 — 세금계산서 없어 공제 불가, 전액 원가</li>
+              <li>본인이 간이과세자 — 매입세액 전액 공제 안 됨</li>
+              <li>면세 품목 — 애초에 VAT 없음</li>
+              <li>증빙이 간이영수증·현금거래뿐 — 공제 불가</li>
+              <li>해외 직수입 — 관세·운임·통관비는 원가, 세관 납부 VAT만 수입세금계산서로 공제</li>
+            </ul>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </span>
   )
 }
 
@@ -987,10 +1020,8 @@ export function ProductionRunFormDialog({
                               <th className="w-40 pr-2 pb-1.5 text-right font-medium">
                                 금액 (₩) *
                               </th>
-                              <th className="w-16 pr-2 pb-1.5 text-center font-medium">
-                                <span title="체크 시 입력 금액에 VAT가 포함된 것으로 보고, 가격 시뮬 매입세액 공제에 반영합니다(Phase 2 예정).">
-                                  VAT
-                                </span>
+                              <th className="w-24 pr-2 pb-1.5 text-center font-medium">
+                                <VatColumnHeader />
                               </th>
                               <th className="w-7 pb-1.5" />
                             </tr>
@@ -1081,10 +1112,8 @@ export function ProductionRunFormDialog({
                               <th className="w-24 pr-2 pb-1.5 text-right font-medium">단가 *</th>
                               <th className="w-24 pr-2 pb-1.5 text-right font-medium">금액</th>
                               <th className="w-20 pr-2 pb-1.5 text-left font-medium">비고</th>
-                              <th className="w-14 pr-2 pb-1.5 text-center font-medium">
-                                <span title="체크 시 입력 금액에 VAT가 포함된 것으로 보고, 가격 시뮬 매입세액 공제에 반영합니다(Phase 2 예정).">
-                                  VAT
-                                </span>
+                              <th className="w-24 pr-2 pb-1.5 text-center font-medium">
+                                <VatColumnHeader />
                               </th>
                               <th className="w-7 pb-1.5" />
                             </tr>
