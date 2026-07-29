@@ -255,6 +255,7 @@ export async function POST(req: NextRequest) {
     note?: string
     sortOrder: number
     category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'OTHER'
+    vatIncluded: boolean
   }> = (input.costs ?? []).map((c, i) => ({
     itemName: c.itemName,
     description: c.description,
@@ -265,6 +266,7 @@ export async function POST(req: NextRequest) {
     note: c.note,
     sortOrder: c.sortOrder ?? i,
     category: c.category,
+    vatIncluded: c.vatIncluded,
   }))
   const finalTotalCost: number | undefined =
     input.costMode === 'BREAKDOWN' ? costsData.reduce((s, c) => s + c.amount, 0) : input.totalCost

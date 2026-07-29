@@ -54,6 +54,7 @@ export type ProductionRunCostMinAggregateOutputType = {
   amount: runtime.Decimal | null
   note: string | null
   sortOrder: number | null
+  vatIncluded: boolean | null
 }
 
 export type ProductionRunCostMaxAggregateOutputType = {
@@ -68,6 +69,7 @@ export type ProductionRunCostMaxAggregateOutputType = {
   amount: runtime.Decimal | null
   note: string | null
   sortOrder: number | null
+  vatIncluded: boolean | null
 }
 
 export type ProductionRunCostCountAggregateOutputType = {
@@ -82,6 +84,7 @@ export type ProductionRunCostCountAggregateOutputType = {
   amount: number
   note: number
   sortOrder: number
+  vatIncluded: number
   _all: number
 }
 
@@ -114,6 +117,7 @@ export type ProductionRunCostMinAggregateInputType = {
   amount?: true
   note?: true
   sortOrder?: true
+  vatIncluded?: true
 }
 
 export type ProductionRunCostMaxAggregateInputType = {
@@ -128,6 +132,7 @@ export type ProductionRunCostMaxAggregateInputType = {
   amount?: true
   note?: true
   sortOrder?: true
+  vatIncluded?: true
 }
 
 export type ProductionRunCostCountAggregateInputType = {
@@ -142,6 +147,7 @@ export type ProductionRunCostCountAggregateInputType = {
   amount?: true
   note?: true
   sortOrder?: true
+  vatIncluded?: true
   _all?: true
 }
 
@@ -243,6 +249,7 @@ export type ProductionRunCostGroupByOutputType = {
   amount: runtime.Decimal
   note: string | null
   sortOrder: number
+  vatIncluded: boolean
   _count: ProductionRunCostCountAggregateOutputType | null
   _avg: ProductionRunCostAvgAggregateOutputType | null
   _sum: ProductionRunCostSumAggregateOutputType | null
@@ -280,6 +287,7 @@ export type ProductionRunCostWhereInput = {
   amount?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
   sortOrder?: Prisma.IntFilter<"ProductionRunCost"> | number
+  vatIncluded?: Prisma.BoolFilter<"ProductionRunCost"> | boolean
   run?: Prisma.XOR<Prisma.ProductionRunScalarRelationFilter, Prisma.ProductionRunWhereInput>
 }
 
@@ -295,6 +303,7 @@ export type ProductionRunCostOrderByWithRelationInput = {
   amount?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
+  vatIncluded?: Prisma.SortOrder
   run?: Prisma.ProductionRunOrderByWithRelationInput
 }
 
@@ -313,6 +322,7 @@ export type ProductionRunCostWhereUniqueInput = Prisma.AtLeast<{
   amount?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
   sortOrder?: Prisma.IntFilter<"ProductionRunCost"> | number
+  vatIncluded?: Prisma.BoolFilter<"ProductionRunCost"> | boolean
   run?: Prisma.XOR<Prisma.ProductionRunScalarRelationFilter, Prisma.ProductionRunWhereInput>
 }, "id">
 
@@ -328,6 +338,7 @@ export type ProductionRunCostOrderByWithAggregationInput = {
   amount?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
+  vatIncluded?: Prisma.SortOrder
   _count?: Prisma.ProductionRunCostCountOrderByAggregateInput
   _avg?: Prisma.ProductionRunCostAvgOrderByAggregateInput
   _max?: Prisma.ProductionRunCostMaxOrderByAggregateInput
@@ -350,6 +361,7 @@ export type ProductionRunCostScalarWhereWithAggregatesInput = {
   amount?: Prisma.DecimalWithAggregatesFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.StringNullableWithAggregatesFilter<"ProductionRunCost"> | string | null
   sortOrder?: Prisma.IntWithAggregatesFilter<"ProductionRunCost"> | number
+  vatIncluded?: Prisma.BoolWithAggregatesFilter<"ProductionRunCost"> | boolean
 }
 
 export type ProductionRunCostCreateInput = {
@@ -363,6 +375,7 @@ export type ProductionRunCostCreateInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
   sortOrder?: number
+  vatIncluded?: boolean
   run: Prisma.ProductionRunCreateNestedOneWithoutCostsInput
 }
 
@@ -378,6 +391,7 @@ export type ProductionRunCostUncheckedCreateInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
   sortOrder?: number
+  vatIncluded?: boolean
 }
 
 export type ProductionRunCostUpdateInput = {
@@ -391,6 +405,7 @@ export type ProductionRunCostUpdateInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   run?: Prisma.ProductionRunUpdateOneRequiredWithoutCostsNestedInput
 }
 
@@ -406,6 +421,7 @@ export type ProductionRunCostUncheckedUpdateInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProductionRunCostCreateManyInput = {
@@ -420,6 +436,7 @@ export type ProductionRunCostCreateManyInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
   sortOrder?: number
+  vatIncluded?: boolean
 }
 
 export type ProductionRunCostUpdateManyMutationInput = {
@@ -433,6 +450,7 @@ export type ProductionRunCostUpdateManyMutationInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProductionRunCostUncheckedUpdateManyInput = {
@@ -447,6 +465,7 @@ export type ProductionRunCostUncheckedUpdateManyInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProductionRunCostListRelationFilter = {
@@ -471,6 +490,7 @@ export type ProductionRunCostCountOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   note?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
+  vatIncluded?: Prisma.SortOrder
 }
 
 export type ProductionRunCostAvgOrderByAggregateInput = {
@@ -493,6 +513,7 @@ export type ProductionRunCostMaxOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   note?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
+  vatIncluded?: Prisma.SortOrder
 }
 
 export type ProductionRunCostMinOrderByAggregateInput = {
@@ -507,6 +528,7 @@ export type ProductionRunCostMinOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   note?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
+  vatIncluded?: Prisma.SortOrder
 }
 
 export type ProductionRunCostSumOrderByAggregateInput = {
@@ -574,6 +596,7 @@ export type ProductionRunCostCreateWithoutRunInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
   sortOrder?: number
+  vatIncluded?: boolean
 }
 
 export type ProductionRunCostUncheckedCreateWithoutRunInput = {
@@ -587,6 +610,7 @@ export type ProductionRunCostUncheckedCreateWithoutRunInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
   sortOrder?: number
+  vatIncluded?: boolean
 }
 
 export type ProductionRunCostCreateOrConnectWithoutRunInput = {
@@ -630,6 +654,7 @@ export type ProductionRunCostScalarWhereInput = {
   amount?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
   sortOrder?: Prisma.IntFilter<"ProductionRunCost"> | number
+  vatIncluded?: Prisma.BoolFilter<"ProductionRunCost"> | boolean
 }
 
 export type ProductionRunCostCreateManyRunInput = {
@@ -643,6 +668,7 @@ export type ProductionRunCostCreateManyRunInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
   sortOrder?: number
+  vatIncluded?: boolean
 }
 
 export type ProductionRunCostUpdateWithoutRunInput = {
@@ -656,6 +682,7 @@ export type ProductionRunCostUpdateWithoutRunInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProductionRunCostUncheckedUpdateWithoutRunInput = {
@@ -669,6 +696,7 @@ export type ProductionRunCostUncheckedUpdateWithoutRunInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProductionRunCostUncheckedUpdateManyWithoutRunInput = {
@@ -682,6 +710,7 @@ export type ProductionRunCostUncheckedUpdateManyWithoutRunInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -698,6 +727,7 @@ export type ProductionRunCostSelect<ExtArgs extends runtime.Types.Extensions.Int
   amount?: boolean
   note?: boolean
   sortOrder?: boolean
+  vatIncluded?: boolean
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productionRunCost"]>
 
@@ -713,6 +743,7 @@ export type ProductionRunCostSelectCreateManyAndReturn<ExtArgs extends runtime.T
   amount?: boolean
   note?: boolean
   sortOrder?: boolean
+  vatIncluded?: boolean
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productionRunCost"]>
 
@@ -728,6 +759,7 @@ export type ProductionRunCostSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   amount?: boolean
   note?: boolean
   sortOrder?: boolean
+  vatIncluded?: boolean
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productionRunCost"]>
 
@@ -743,9 +775,10 @@ export type ProductionRunCostSelectScalar = {
   amount?: boolean
   note?: boolean
   sortOrder?: boolean
+  vatIncluded?: boolean
 }
 
-export type ProductionRunCostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "itemName" | "description" | "category" | "spec" | "quantity" | "unitPrice" | "amount" | "note" | "sortOrder", ExtArgs["result"]["productionRunCost"]>
+export type ProductionRunCostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "itemName" | "description" | "category" | "spec" | "quantity" | "unitPrice" | "amount" | "note" | "sortOrder" | "vatIncluded", ExtArgs["result"]["productionRunCost"]>
 export type ProductionRunCostInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
 }
@@ -773,6 +806,7 @@ export type $ProductionRunCostPayload<ExtArgs extends runtime.Types.Extensions.I
     amount: runtime.Decimal
     note: string | null
     sortOrder: number
+    vatIncluded: boolean
   }, ExtArgs["result"]["productionRunCost"]>
   composites: {}
 }
@@ -1208,6 +1242,7 @@ export interface ProductionRunCostFieldRefs {
   readonly amount: Prisma.FieldRef<"ProductionRunCost", 'Decimal'>
   readonly note: Prisma.FieldRef<"ProductionRunCost", 'String'>
   readonly sortOrder: Prisma.FieldRef<"ProductionRunCost", 'Int'>
+  readonly vatIncluded: Prisma.FieldRef<"ProductionRunCost", 'Boolean'>
 }
     
 
