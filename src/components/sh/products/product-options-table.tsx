@@ -612,7 +612,7 @@ export function ProductOptionsTable({
               ))}
               {attrNames.length === 0 && <TableHead className="min-w-[120px]">옵션명</TableHead>}
               <TableHead className="min-w-[140px]">관리코드 (SKU)</TableHead>
-              <TableHead className="min-w-[100px]">
+              <TableHead className="min-w-[180px]">
                 <span className="inline-flex items-center gap-1">
                   공급원가
                   <TooltipProvider>
@@ -623,8 +623,8 @@ export function ProductOptionsTable({
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
-                        상품 생산에 발생된 금액 합계. VAT 제외(ex-VAT) 금액으로 관리됩니다 —
-                        &lsquo;VAT 포함&rsquo; 체크 시 입력값÷1.1이 적용됩니다.
+                        상품 생산에 발생된 금액 합계. VAT 제외 금액으로 관리됩니다 — &lsquo;VAT
+                        포함&rsquo; 체크 시 입력값÷1.1이 적용됩니다.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -707,7 +707,7 @@ export function ProductOptionsTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-1">
+                      <div className="flex items-center gap-2">
                         <Input
                           type="number"
                           min="0"
@@ -720,20 +720,22 @@ export function ProductOptionsTable({
                               : undefined
                           }
                           placeholder="0"
-                          className="h-8"
+                          className="h-8 min-w-0 flex-1"
                         />
                         {!costLocked && (
-                          <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                            <Checkbox
-                              checked={draft.costVatIncluded}
-                              onCheckedChange={(v) => toggleDraftVat(opt.id, v === true)}
-                              aria-label="공급원가 VAT 포함"
-                              className="h-3.5 w-3.5"
-                            />
-                            VAT 포함
+                          <label className="flex shrink-0 flex-col text-[10px] leading-tight text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Checkbox
+                                checked={draft.costVatIncluded}
+                                onCheckedChange={(v) => toggleDraftVat(opt.id, v === true)}
+                                aria-label="공급원가 VAT 포함"
+                                className="h-3.5 w-3.5"
+                              />
+                              VAT 포함
+                            </span>
                             {exVatHint != null && (
                               <span className="tabular-nums">
-                                (제외 ₩{exVatHint.toLocaleString('ko-KR')})
+                                제외 ₩{exVatHint.toLocaleString('ko-KR')}
                               </span>
                             )}
                           </label>
