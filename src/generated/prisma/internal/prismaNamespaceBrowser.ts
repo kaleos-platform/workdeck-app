@@ -1208,7 +1208,8 @@ export const ProductionRunCostScalarFieldEnum = {
   unitPrice: 'unitPrice',
   amount: 'amount',
   note: 'note',
-  sortOrder: 'sortOrder'
+  sortOrder: 'sortOrder',
+  vatIncluded: 'vatIncluded'
 } as const
 
 export type ProductionRunCostScalarFieldEnum = (typeof ProductionRunCostScalarFieldEnum)[keyof typeof ProductionRunCostScalarFieldEnum]
