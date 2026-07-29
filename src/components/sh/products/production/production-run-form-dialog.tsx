@@ -5,6 +5,7 @@ import { X, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -53,12 +54,14 @@ type CostRow = {
   quantity: string
   unitPrice: string
   note: string
+  vatIncluded: boolean
 }
 
 type TotalCostItem = {
   _key: string
   itemName: string
   amount: string
+  vatIncluded: boolean
 }
 
 type RunStatus = 'PLANNED' | 'ORDERED' | 'STOCKED_IN'
@@ -102,6 +105,7 @@ type RunDetail = {
       amount: number
       note: string | null
       sortOrder: number
+      vatIncluded: boolean
     }>
   }
 }
@@ -202,6 +206,7 @@ function newCostRow(): CostRow {
     quantity: '',
     unitPrice: '',
     note: '',
+    vatIncluded: true,
   }
 }
 
@@ -210,6 +215,7 @@ function newTotalCostItem(): TotalCostItem {
     _key: crypto.randomUUID(),
     itemName: '',
     amount: '',
+    vatIncluded: true,
   }
 }
 
@@ -354,11 +360,17 @@ export function ProductionRunFormDialog({
                   _key: crypto.randomUUID(),
                   itemName: c.itemName,
                   amount: String(c.unitPrice),
+                  vatIncluded: c.vatIncluded ?? true,
                 }))
               )
             } else if (r.totalCost != null && r.totalCost > 0) {
               setTotalCostItems([
-                { _key: crypto.randomUUID(), itemName: '총 원가', amount: String(r.totalCost) },
+                {
+                  _key: crypto.randomUUID(),
+                  itemName: '총 원가',
+                  amount: String(r.totalCost),
+                  vatIncluded: true,
+                },
               ])
             } else {
               setTotalCostItems([newTotalCostItem()])
@@ -376,6 +388,7 @@ export function ProductionRunFormDialog({
                   quantity: String(c.quantity),
                   unitPrice: String(c.unitPrice),
                   note: c.note ?? '',
+                  vatIncluded: c.vatIncluded ?? true,
                 }))
               )
             } else {
@@ -493,6 +506,10 @@ export function ProductionRunFormDialog({
     setTotalCostItems((prev) => prev.map((r) => (r._key === key ? { ...r, [field]: val } : r)))
   }
 
+  function toggleTotalCostVat(key: string, val: boolean) {
+    setTotalCostItems((prev) => prev.map((r) => (r._key === key ? { ...r, vatIncluded: val } : r)))
+  }
+
   // ── 원가 행 조작
   function addCostRow() {
     setCostRows((prev) => [...prev, newCostRow()])
@@ -502,8 +519,16 @@ export function ProductionRunFormDialog({
     setCostRows((prev) => prev.filter((r) => r._key !== key))
   }
 
-  function updateCostRow(key: string, field: keyof Omit<CostRow, '_key'>, val: string) {
+  function updateCostRow(
+    key: string,
+    field: 'itemName' | 'description' | 'spec' | 'quantity' | 'unitPrice' | 'note',
+    val: string
+  ) {
     setCostRows((prev) => prev.map((r) => (r._key === key ? { ...r, [field]: val } : r)))
+  }
+
+  function toggleCostRowVat(key: string, val: boolean) {
+    setCostRows((prev) => prev.map((r) => (r._key === key ? { ...r, vatIncluded: val } : r)))
   }
 
   // ── 합계
@@ -604,6 +629,7 @@ export function ProductionRunFormDialog({
         quantity: 1,
         unitPrice: parseFloat(r.amount),
         sortOrder: i,
+        vatIncluded: r.vatIncluded,
       }))
     } else {
       // BREAKDOWN: totalCost는 서버가 계산 — 미전송
@@ -615,6 +641,7 @@ export function ProductionRunFormDialog({
         unitPrice: parseFloat(r.unitPrice),
         note: r.note.trim() || undefined,
         sortOrder: i,
+        vatIncluded: r.vatIncluded,
       }))
     }
 
@@ -960,6 +987,11 @@ export function ProductionRunFormDialog({
                               <th className="w-40 pr-2 pb-1.5 text-right font-medium">
                                 금액 (₩) *
                               </th>
+                              <th className="w-16 pr-2 pb-1.5 text-center font-medium">
+                                <span title="체크 시 입력 금액에 VAT가 포함된 것으로 보고, 가격 시뮬 매입세액 공제에 반영합니다(Phase 2 예정).">
+                                  VAT
+                                </span>
+                              </th>
                               <th className="w-7 pb-1.5" />
                             </tr>
                           </thead>
@@ -986,6 +1018,15 @@ export function ProductionRunFormDialog({
                                     }
                                     placeholder="0"
                                     className="h-7 text-right text-sm"
+                                  />
+                                </td>
+                                <td className="py-1.5 pr-2 text-center">
+                                  <Checkbox
+                                    checked={row.vatIncluded}
+                                    onCheckedChange={(v) =>
+                                      toggleTotalCostVat(row._key, v === true)
+                                    }
+                                    aria-label="VAT 포함"
                                   />
                                 </td>
                                 <td className="py-1.5">
@@ -1040,6 +1081,11 @@ export function ProductionRunFormDialog({
                               <th className="w-24 pr-2 pb-1.5 text-right font-medium">단가 *</th>
                               <th className="w-24 pr-2 pb-1.5 text-right font-medium">금액</th>
                               <th className="w-20 pr-2 pb-1.5 text-left font-medium">비고</th>
+                              <th className="w-14 pr-2 pb-1.5 text-center font-medium">
+                                <span title="체크 시 입력 금액에 VAT가 포함된 것으로 보고, 가격 시뮬 매입세액 공제에 반영합니다(Phase 2 예정).">
+                                  VAT
+                                </span>
+                              </th>
                               <th className="w-7 pb-1.5" />
                             </tr>
                           </thead>
@@ -1115,6 +1161,15 @@ export function ProductionRunFormDialog({
                                       }
                                       placeholder="비고"
                                       className="h-7 text-sm"
+                                    />
+                                  </td>
+                                  <td className="py-1.5 pr-2 text-center">
+                                    <Checkbox
+                                      checked={row.vatIncluded}
+                                      onCheckedChange={(v) =>
+                                        toggleCostRowVat(row._key, v === true)
+                                      }
+                                      aria-label="VAT 포함"
                                     />
                                   </td>
                                   <td className="py-1.5">

@@ -81,6 +81,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         note: c.note,
         sortOrder: c.sortOrder,
         category: c.category,
+        vatIncluded: c.vatIncluded,
       })),
       createdAt: run.createdAt.toISOString(),
       updatedAt: run.updatedAt.toISOString(),
@@ -186,6 +187,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         note?: string
         sortOrder: number
         category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'OTHER'
+        vatIncluded: boolean
       }>
     | undefined = undefined
   let computedTotalCost: number | undefined | null = undefined // undefined = 변경 없음
@@ -202,6 +204,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       note: c.note,
       sortOrder: c.sortOrder ?? i,
       category: c.category ?? 'OTHER',
+      vatIncluded: c.vatIncluded ?? true,
     }))
     if (effectiveCostMode === 'BREAKDOWN') {
       computedTotalCost = costsData.reduce((s, c) => s + c.amount, 0)

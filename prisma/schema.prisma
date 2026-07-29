@@ -1747,6 +1747,7 @@ model ProductionRunCost {
   amount      Decimal                @db.Decimal(18, 2) // (spec ?? 1) × quantity × unitPrice
   note        String?
   sortOrder   Int                    @default(0)
+  vatIncluded Boolean                @default(true) // 입력 금액에 VAT 포함(공제가능 과세매입) 여부. Phase 2 매입세액 공제용
 
   run ProductionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 

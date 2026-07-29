@@ -372,6 +372,8 @@ export const productionRunCostSchema = z.object({
   sortOrder: z.number().int().min(0).optional(),
   // 비용 분류 — 기본값 OTHER
   category: z.enum(['MATERIAL', 'LABOR', 'PACKAGING', 'LOGISTICS', 'OTHER']).default('OTHER'),
+  // VAT 포함(공제가능 과세매입) 여부 — 기본 true
+  vatIncluded: z.coerce.boolean().default(true),
 })
 export type ProductionRunCostInput = z.infer<typeof productionRunCostSchema>
 
@@ -447,6 +449,7 @@ export const productionRunPatchSchema = productionRunSchema.partial().extend({
           .transform((v) => (v?.length ? v : undefined)),
         sortOrder: z.number().int().min(0).optional(),
         category: z.enum(['MATERIAL', 'LABOR', 'PACKAGING', 'LOGISTICS', 'OTHER']).optional(),
+        vatIncluded: z.coerce.boolean().optional(),
       })
     )
     .max(50)
