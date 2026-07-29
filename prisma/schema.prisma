@@ -1090,6 +1090,7 @@ model InvProductOption {
 
   // 셀러 허브 확장 필드 (모두 nullable)
   costPrice       Decimal? @db.Decimal(18, 2)
+  costVatIncluded Boolean  @default(false) // 공급원가 입력값에 VAT 포함 여부(ex-VAT 파생용)
   retailPrice     Decimal? @db.Decimal(18, 2)
   sizeLabel       String?
   setSizeLabel    String?

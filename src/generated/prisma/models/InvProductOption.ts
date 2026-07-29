@@ -44,6 +44,7 @@ export type InvProductOptionMinAggregateOutputType = {
   name: string | null
   sku: string | null
   costPrice: runtime.Decimal | null
+  costVatIncluded: boolean | null
   retailPrice: runtime.Decimal | null
   sizeLabel: string | null
   setSizeLabel: string | null
@@ -59,6 +60,7 @@ export type InvProductOptionMaxAggregateOutputType = {
   name: string | null
   sku: string | null
   costPrice: runtime.Decimal | null
+  costVatIncluded: boolean | null
   retailPrice: runtime.Decimal | null
   sizeLabel: string | null
   setSizeLabel: string | null
@@ -74,6 +76,7 @@ export type InvProductOptionCountAggregateOutputType = {
   name: number
   sku: number
   costPrice: number
+  costVatIncluded: number
   retailPrice: number
   sizeLabel: number
   setSizeLabel: number
@@ -104,6 +107,7 @@ export type InvProductOptionMinAggregateInputType = {
   name?: true
   sku?: true
   costPrice?: true
+  costVatIncluded?: true
   retailPrice?: true
   sizeLabel?: true
   setSizeLabel?: true
@@ -119,6 +123,7 @@ export type InvProductOptionMaxAggregateInputType = {
   name?: true
   sku?: true
   costPrice?: true
+  costVatIncluded?: true
   retailPrice?: true
   sizeLabel?: true
   setSizeLabel?: true
@@ -134,6 +139,7 @@ export type InvProductOptionCountAggregateInputType = {
   name?: true
   sku?: true
   costPrice?: true
+  costVatIncluded?: true
   retailPrice?: true
   sizeLabel?: true
   setSizeLabel?: true
@@ -237,6 +243,7 @@ export type InvProductOptionGroupByOutputType = {
   name: string
   sku: string | null
   costPrice: runtime.Decimal | null
+  costVatIncluded: boolean
   retailPrice: runtime.Decimal | null
   sizeLabel: string | null
   setSizeLabel: string | null
@@ -276,6 +283,7 @@ export type InvProductOptionWhereInput = {
   name?: Prisma.StringFilter<"InvProductOption"> | string
   sku?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   costPrice?: Prisma.DecimalNullableFilter<"InvProductOption"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFilter<"InvProductOption"> | boolean
   retailPrice?: Prisma.DecimalNullableFilter<"InvProductOption"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   setSizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
@@ -306,6 +314,7 @@ export type InvProductOptionOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   sku?: Prisma.SortOrderInput | Prisma.SortOrder
   costPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  costVatIncluded?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   sizeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   setSizeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -339,6 +348,7 @@ export type InvProductOptionWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"InvProductOption"> | string
   sku?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   costPrice?: Prisma.DecimalNullableFilter<"InvProductOption"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFilter<"InvProductOption"> | boolean
   retailPrice?: Prisma.DecimalNullableFilter<"InvProductOption"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   setSizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
@@ -369,6 +379,7 @@ export type InvProductOptionOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   sku?: Prisma.SortOrderInput | Prisma.SortOrder
   costPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  costVatIncluded?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrderInput | Prisma.SortOrder
   sizeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   setSizeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -393,6 +404,7 @@ export type InvProductOptionScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"InvProductOption"> | string
   sku?: Prisma.StringNullableWithAggregatesFilter<"InvProductOption"> | string | null
   costPrice?: Prisma.DecimalNullableWithAggregatesFilter<"InvProductOption"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolWithAggregatesFilter<"InvProductOption"> | boolean
   retailPrice?: Prisma.DecimalNullableWithAggregatesFilter<"InvProductOption"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.StringNullableWithAggregatesFilter<"InvProductOption"> | string | null
   setSizeLabel?: Prisma.StringNullableWithAggregatesFilter<"InvProductOption"> | string | null
@@ -408,6 +420,7 @@ export type InvProductOptionCreateInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -438,6 +451,7 @@ export type InvProductOptionUncheckedCreateInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -466,6 +480,7 @@ export type InvProductOptionUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -496,6 +511,7 @@ export type InvProductOptionUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -525,6 +541,7 @@ export type InvProductOptionCreateManyInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -540,6 +557,7 @@ export type InvProductOptionUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -556,6 +574,7 @@ export type InvProductOptionUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -582,6 +601,7 @@ export type InvProductOptionCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
+  costVatIncluded?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrder
   sizeLabel?: Prisma.SortOrder
   setSizeLabel?: Prisma.SortOrder
@@ -604,6 +624,7 @@ export type InvProductOptionMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
+  costVatIncluded?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrder
   sizeLabel?: Prisma.SortOrder
   setSizeLabel?: Prisma.SortOrder
@@ -619,6 +640,7 @@ export type InvProductOptionMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   sku?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
+  costVatIncluded?: Prisma.SortOrder
   retailPrice?: Prisma.SortOrder
   sizeLabel?: Prisma.SortOrder
   setSizeLabel?: Prisma.SortOrder
@@ -879,6 +901,7 @@ export type InvProductOptionCreateWithoutProductInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -907,6 +930,7 @@ export type InvProductOptionUncheckedCreateWithoutProductInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -965,6 +989,7 @@ export type InvProductOptionScalarWhereInput = {
   name?: Prisma.StringFilter<"InvProductOption"> | string
   sku?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   costPrice?: Prisma.DecimalNullableFilter<"InvProductOption"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFilter<"InvProductOption"> | boolean
   retailPrice?: Prisma.DecimalNullableFilter<"InvProductOption"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
   setSizeLabel?: Prisma.StringNullableFilter<"InvProductOption"> | string | null
@@ -980,6 +1005,7 @@ export type InvProductOptionCreateWithoutMovementsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1009,6 +1035,7 @@ export type InvProductOptionUncheckedCreateWithoutMovementsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1052,6 +1079,7 @@ export type InvProductOptionUpdateWithoutMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1081,6 +1109,7 @@ export type InvProductOptionUncheckedUpdateWithoutMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1108,6 +1137,7 @@ export type InvProductOptionCreateWithoutStockLevelsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1137,6 +1167,7 @@ export type InvProductOptionUncheckedCreateWithoutStockLevelsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1180,6 +1211,7 @@ export type InvProductOptionUpdateWithoutStockLevelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1209,6 +1241,7 @@ export type InvProductOptionUncheckedUpdateWithoutStockLevelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1236,6 +1269,7 @@ export type InvProductOptionCreateWithoutLocationMappingItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1265,6 +1299,7 @@ export type InvProductOptionUncheckedCreateWithoutLocationMappingItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1308,6 +1343,7 @@ export type InvProductOptionUpdateWithoutLocationMappingItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1337,6 +1373,7 @@ export type InvProductOptionUncheckedUpdateWithoutLocationMappingItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1364,6 +1401,7 @@ export type InvProductOptionCreateWithoutShippingLabelsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1393,6 +1431,7 @@ export type InvProductOptionUncheckedCreateWithoutShippingLabelsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1436,6 +1475,7 @@ export type InvProductOptionUpdateWithoutShippingLabelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1465,6 +1505,7 @@ export type InvProductOptionUncheckedUpdateWithoutShippingLabelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1492,6 +1533,7 @@ export type InvProductOptionCreateWithoutDelOrderItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1521,6 +1563,7 @@ export type InvProductOptionUncheckedCreateWithoutDelOrderItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1564,6 +1607,7 @@ export type InvProductOptionUpdateWithoutDelOrderItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1593,6 +1637,7 @@ export type InvProductOptionUncheckedUpdateWithoutDelOrderItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1620,6 +1665,7 @@ export type InvProductOptionCreateWithoutChannelAliasesInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1649,6 +1695,7 @@ export type InvProductOptionUncheckedCreateWithoutChannelAliasesInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1692,6 +1739,7 @@ export type InvProductOptionUpdateWithoutChannelAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1721,6 +1769,7 @@ export type InvProductOptionUncheckedUpdateWithoutChannelAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1748,6 +1797,7 @@ export type InvProductOptionCreateWithoutAliasFulfillmentsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1777,6 +1827,7 @@ export type InvProductOptionUncheckedCreateWithoutAliasFulfillmentsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1820,6 +1871,7 @@ export type InvProductOptionUpdateWithoutAliasFulfillmentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1849,6 +1901,7 @@ export type InvProductOptionUncheckedUpdateWithoutAliasFulfillmentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1876,6 +1929,7 @@ export type InvProductOptionCreateWithoutProductionRunItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1905,6 +1959,7 @@ export type InvProductOptionUncheckedCreateWithoutProductionRunItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -1948,6 +2003,7 @@ export type InvProductOptionUpdateWithoutProductionRunItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1977,6 +2033,7 @@ export type InvProductOptionUncheckedUpdateWithoutProductionRunItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2004,6 +2061,7 @@ export type InvProductOptionCreateWithoutPricingScenarioItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2033,6 +2091,7 @@ export type InvProductOptionUncheckedCreateWithoutPricingScenarioItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2076,6 +2135,7 @@ export type InvProductOptionUpdateWithoutPricingScenarioItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2105,6 +2165,7 @@ export type InvProductOptionUncheckedUpdateWithoutPricingScenarioItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2132,6 +2193,7 @@ export type InvProductOptionCreateWithoutListingItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2161,6 +2223,7 @@ export type InvProductOptionUncheckedCreateWithoutListingItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2204,6 +2267,7 @@ export type InvProductOptionUpdateWithoutListingItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2233,6 +2297,7 @@ export type InvProductOptionUncheckedUpdateWithoutListingItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2260,6 +2325,7 @@ export type InvProductOptionCreateWithoutFulfillmentsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2289,6 +2355,7 @@ export type InvProductOptionUncheckedCreateWithoutFulfillmentsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2332,6 +2399,7 @@ export type InvProductOptionUpdateWithoutFulfillmentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2361,6 +2429,7 @@ export type InvProductOptionUncheckedUpdateWithoutFulfillmentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2388,6 +2457,7 @@ export type InvProductOptionCreateWithoutReorderPlanItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2417,6 +2487,7 @@ export type InvProductOptionUncheckedCreateWithoutReorderPlanItemsInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2460,6 +2531,7 @@ export type InvProductOptionUpdateWithoutReorderPlanItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2489,6 +2561,7 @@ export type InvProductOptionUncheckedUpdateWithoutReorderPlanItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2516,6 +2589,7 @@ export type InvProductOptionCreateWithoutReorderAccuraciesInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2545,6 +2619,7 @@ export type InvProductOptionUncheckedCreateWithoutReorderAccuraciesInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2588,6 +2663,7 @@ export type InvProductOptionUpdateWithoutReorderAccuraciesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2617,6 +2693,7 @@ export type InvProductOptionUncheckedUpdateWithoutReorderAccuraciesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2644,6 +2721,7 @@ export type InvProductOptionCreateManyProductInput = {
   name: string
   sku?: string | null
   costPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: boolean
   retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: string | null
   setSizeLabel?: string | null
@@ -2659,6 +2737,7 @@ export type InvProductOptionUpdateWithoutProductInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2687,6 +2766,7 @@ export type InvProductOptionUncheckedUpdateWithoutProductInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2715,6 +2795,7 @@ export type InvProductOptionUncheckedUpdateManyWithoutProductInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   costPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  costVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   sizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   setSizeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2870,6 +2951,7 @@ export type InvProductOptionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   name?: boolean
   sku?: boolean
   costPrice?: boolean
+  costVatIncluded?: boolean
   retailPrice?: boolean
   sizeLabel?: boolean
   setSizeLabel?: boolean
@@ -2901,6 +2983,7 @@ export type InvProductOptionSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   name?: boolean
   sku?: boolean
   costPrice?: boolean
+  costVatIncluded?: boolean
   retailPrice?: boolean
   sizeLabel?: boolean
   setSizeLabel?: boolean
@@ -2918,6 +3001,7 @@ export type InvProductOptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   name?: boolean
   sku?: boolean
   costPrice?: boolean
+  costVatIncluded?: boolean
   retailPrice?: boolean
   sizeLabel?: boolean
   setSizeLabel?: boolean
@@ -2935,6 +3019,7 @@ export type InvProductOptionSelectScalar = {
   name?: boolean
   sku?: boolean
   costPrice?: boolean
+  costVatIncluded?: boolean
   retailPrice?: boolean
   sizeLabel?: boolean
   setSizeLabel?: boolean
@@ -2945,7 +3030,7 @@ export type InvProductOptionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type InvProductOptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "name" | "sku" | "costPrice" | "retailPrice" | "sizeLabel" | "setSizeLabel" | "attributeValues" | "safetyStockQty" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductOption"]>
+export type InvProductOptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "name" | "sku" | "costPrice" | "costVatIncluded" | "retailPrice" | "sizeLabel" | "setSizeLabel" | "attributeValues" | "safetyStockQty" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductOption"]>
 export type InvProductOptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   product?: boolean | Prisma.InvProductDefaultArgs<ExtArgs>
   movements?: boolean | Prisma.InvProductOption$movementsArgs<ExtArgs>
@@ -2994,6 +3079,7 @@ export type $InvProductOptionPayload<ExtArgs extends runtime.Types.Extensions.In
     name: string
     sku: string | null
     costPrice: runtime.Decimal | null
+    costVatIncluded: boolean
     retailPrice: runtime.Decimal | null
     sizeLabel: string | null
     setSizeLabel: string | null
@@ -3444,6 +3530,7 @@ export interface InvProductOptionFieldRefs {
   readonly name: Prisma.FieldRef<"InvProductOption", 'String'>
   readonly sku: Prisma.FieldRef<"InvProductOption", 'String'>
   readonly costPrice: Prisma.FieldRef<"InvProductOption", 'Decimal'>
+  readonly costVatIncluded: Prisma.FieldRef<"InvProductOption", 'Boolean'>
   readonly retailPrice: Prisma.FieldRef<"InvProductOption", 'Decimal'>
   readonly sizeLabel: Prisma.FieldRef<"InvProductOption", 'String'>
   readonly setSizeLabel: Prisma.FieldRef<"InvProductOption", 'String'>
