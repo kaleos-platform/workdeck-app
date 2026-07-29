@@ -66,7 +66,7 @@ export function BlockEditOverlay({
           <DialogTitle>{heading}</DialogTitle>
           {/* 텍스트·직무 블록은 입력이 즉시 반영되므로, 명시적으로 편집을 끝내는 '완료' 버튼을
               제공한다(우측 X 닫기 아이콘과 겹치지 않도록 여백). 디자인 블록은 '카드저장',
-              이미지·버튼(팝업)은 자체 저장 버튼이 있어 제외. */}
+              이미지·버튼(팝업)은 자동저장이며 하단 푸터에 별도 완료 버튼을 둔다. */}
           {!isPopup && !isDesign && (
             <Button size="sm" className="mr-8" onClick={onClose}>
               <Check /> 완료
@@ -126,6 +126,15 @@ export function BlockEditOverlay({
             </div>
           )}
         </div>
+        {/* 버튼·이미지 팝업은 자동저장이라 명시적 저장은 없지만, X 외에 편집을 끝내는
+            '완료'(닫기) 버튼을 하단 푸터에 제공한다. 디자인은 '카드저장'이 있어 제외. */}
+        {isPopup && (
+          <div className="flex justify-end border-t px-6 py-4">
+            <Button size="sm" onClick={onClose}>
+              <Check /> 완료
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )
