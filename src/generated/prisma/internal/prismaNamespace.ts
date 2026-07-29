@@ -11324,6 +11324,7 @@ export const InvProductOptionScalarFieldEnum = {
   name: 'name',
   sku: 'sku',
   costPrice: 'costPrice',
+  costVatIncluded: 'costVatIncluded',
   retailPrice: 'retailPrice',
   sizeLabel: 'sizeLabel',
   setSizeLabel: 'setSizeLabel',

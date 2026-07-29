@@ -37,12 +37,14 @@ import {
   normalizeOptionAttributes,
   type AttrCodeSpec,
 } from '@/lib/sh/option-code'
+import { costExVat } from '@/lib/sh/cost'
 
 type OptionRow = {
   id: string
   name: string
   sku: string | null
   costPrice: number | string | null
+  costVatIncluded?: boolean
   retailPrice: number | string | null
   attributeValues: Record<string, string> | null
   totalStock: number
@@ -78,6 +80,7 @@ type Props = {
 type OptionDraft = {
   sku: string
   costPrice: string
+  costVatIncluded: boolean
   retailPrice: string
 }
 
@@ -102,6 +105,7 @@ export function ProductOptionsTable({
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkSaving, setBulkSaving] = useState(false)
   const [bulkCost, setBulkCost] = useState('')
+  const [bulkCostVat, setBulkCostVat] = useState(false)
   const [bulkRetail, setBulkRetail] = useState('')
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
@@ -133,6 +137,7 @@ export function ProductOptionsTable({
         d[o.id] = {
           sku: o.sku ?? '',
           costPrice: rowToString(o.costPrice),
+          costVatIncluded: o.costVatIncluded ?? false,
           retailPrice: rowToString(o.retailPrice),
         }
       })
@@ -173,7 +178,13 @@ export function ProductOptionsTable({
       const origSku = o.sku ?? ''
       const origCost = rowToString(o.costPrice)
       const origRetail = rowToString(o.retailPrice)
-      if (d.sku !== origSku || d.costPrice !== origCost || d.retailPrice !== origRetail) {
+      const origCostVat = o.costVatIncluded ?? false
+      if (
+        d.sku !== origSku ||
+        d.costPrice !== origCost ||
+        d.retailPrice !== origRetail ||
+        d.costVatIncluded !== origCostVat
+      ) {
         set.add(o.id)
       }
     }
@@ -192,8 +203,13 @@ export function ProductOptionsTable({
     onSavingChange?.(autoSaving)
   }, [autoSaving, onSavingChange])
 
-  function updateDraft(id: string, field: keyof OptionDraft, value: string) {
+  function updateDraft(id: string, field: 'sku' | 'costPrice' | 'retailPrice', value: string) {
     setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }))
+    scheduleAutoSave(400)
+  }
+
+  function toggleDraftVat(id: string, value: boolean) {
+    setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], costVatIncluded: value } }))
     scheduleAutoSave(400)
   }
 
@@ -216,6 +232,7 @@ export function ProductOptionsTable({
               body: JSON.stringify({
                 sku: d.sku.trim() || null,
                 costPrice: d.costPrice ? parseFloat(d.costPrice) : null,
+                costVatIncluded: d.costVatIncluded,
                 retailPrice: d.retailPrice ? parseFloat(d.retailPrice) : null,
               }),
             })
@@ -248,6 +265,7 @@ export function ProductOptionsTable({
             next[u.id] = {
               sku: u.updated.sku ?? '',
               costPrice: rowToString(u.updated.costPrice),
+              costVatIncluded: u.updated.costVatIncluded ?? false,
               retailPrice: rowToString(u.updated.retailPrice),
             }
           }
@@ -365,8 +383,11 @@ export function ProductOptionsTable({
     try {
       await Promise.all(
         Array.from(selected).map(async (id) => {
-          const body: Record<string, number> = {}
-          if (costVal !== null) body.costPrice = costVal
+          const body: Record<string, number | boolean> = {}
+          if (costVal !== null) {
+            body.costPrice = costVal
+            body.costVatIncluded = bulkCostVat
+          }
           if (retailVal !== null) body.retailPrice = retailVal
           const res = await fetch(`/api/sh/products/${productId}/options/${id}`, {
             method: 'PATCH',
@@ -382,6 +403,7 @@ export function ProductOptionsTable({
       toast.success(`${selected.size}개 옵션이 업데이트되었습니다`)
       setBulkOpen(false)
       setBulkCost('')
+      setBulkCostVat(false)
       setBulkRetail('')
       await load()
       onChanged?.()
@@ -600,7 +622,10 @@ export function ProductOptionsTable({
                           <Info className="h-3.5 w-3.5" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent>상품 생산에 발생된 금액 합계</TooltipContent>
+                      <TooltipContent>
+                        상품 생산에 발생된 금액 합계. VAT 제외(ex-VAT) 금액으로 관리됩니다 —
+                        &lsquo;VAT 포함&rsquo; 체크 시 입력값÷1.1이 적용됩니다.
+                      </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </span>
@@ -623,13 +648,19 @@ export function ProductOptionsTable({
                 const draft = drafts[opt.id] ?? {
                   sku: opt.sku ?? '',
                   costPrice: rowToString(opt.costPrice),
+                  costVatIncluded: opt.costVatIncluded ?? false,
                   retailPrice: rowToString(opt.retailPrice),
                 }
                 const isDirty = dirtyIds.has(opt.id)
                 const skuKey = draft.sku.trim()
                 const isDuplicate = skuKey && (skuCount.get(skuKey) ?? 0) > 1
-                // 잠금 시 파생 단가, 아니면 수동 draft — 표시·마진율 공통 소스
+                // 잠금 시 파생 단가(이미 ex-VAT), 아니면 수동 draft — 표시·마진율 공통 소스
                 const displayCost = costLocked ? (derivedCostStr ?? '') : draft.costPrice
+                // VAT 포함 입력 시 ex-VAT 힌트 (잠금 상태는 파생값이 이미 ex-VAT)
+                const exVatHint =
+                  !costLocked && draft.costVatIncluded && draft.costPrice
+                    ? Math.round(costExVat(parseFloat(draft.costPrice), true))
+                    : null
                 return (
                   <TableRow
                     key={opt.id}
@@ -676,20 +707,38 @@ export function ProductOptionsTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={displayCost}
-                        onChange={(e) => updateDraft(opt.id, 'costPrice', e.target.value)}
-                        disabled={costLocked}
-                        title={
-                          costLocked
-                            ? '생산차수 원가 연동 중 — 완료 차수 가중평균 단가가 적용됩니다'
-                            : undefined
-                        }
-                        placeholder="0"
-                        className="h-8"
-                      />
+                      <div className="space-y-1">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={displayCost}
+                          onChange={(e) => updateDraft(opt.id, 'costPrice', e.target.value)}
+                          disabled={costLocked}
+                          title={
+                            costLocked
+                              ? '생산차수 원가 연동 중 — 완료 차수 가중평균 단가(VAT 제외)가 적용됩니다'
+                              : undefined
+                          }
+                          placeholder="0"
+                          className="h-8"
+                        />
+                        {!costLocked && (
+                          <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                            <Checkbox
+                              checked={draft.costVatIncluded}
+                              onCheckedChange={(v) => toggleDraftVat(opt.id, v === true)}
+                              aria-label="공급원가 VAT 포함"
+                              className="h-3.5 w-3.5"
+                            />
+                            VAT 포함
+                            {exVatHint != null && (
+                              <span className="tabular-nums">
+                                (제외 ₩{exVatHint.toLocaleString('ko-KR')})
+                              </span>
+                            )}
+                          </label>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Input
@@ -799,6 +848,17 @@ export function ProductOptionsTable({
                   costLocked ? '생산차수 원가 연동 중 — 편집 불가' : '변경 없으면 비워두세요'
                 }
               />
+              {!costLocked && (
+                <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Checkbox
+                    checked={bulkCostVat}
+                    onCheckedChange={(v) => setBulkCostVat(v === true)}
+                    aria-label="공급원가 VAT 포함"
+                    className="h-3.5 w-3.5"
+                  />
+                  VAT 포함 (체크 시 입력값÷1.1로 VAT 제외 관리)
+                </label>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="bulk-retail">소비자가</Label>

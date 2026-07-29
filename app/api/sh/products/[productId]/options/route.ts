@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productOptionSchema } from '@/lib/sh/schemas'
+import { costExVat } from '@/lib/sh/cost'
 
 export async function GET(
   _req: NextRequest,
@@ -32,8 +33,9 @@ export async function GET(
   })
   const stockMap = new Map(stockGroups.map((g) => [g.optionId, g._sum.quantity ?? 0]))
 
-  // 완료(입고완료) 생산 차수 가중평균 단가 — Σ 총원가 ÷ Σ run 전체 발주수량
+  // 완료(입고완료) 생산 차수 가중평균 단가 — Σ ex-VAT 원가 ÷ Σ run 전체 발주수량
   // (원가는 run 단위라 옵션별 분리 불가 — production-runs API의 averageUnitCost와 동일 규약)
+  // 공급원가는 ex-VAT 관리: 항목별 vatIncluded=true면 ÷1.1 적용해 매입세액 제외.
   const completedRuns = await prisma.productionRun.findMany({
     where: {
       spaceId: resolved.space.id,
@@ -42,11 +44,22 @@ export async function GET(
       totalCost: { gt: 0 },
       items: { some: { option: { productId } } },
     },
-    select: { totalCost: true, items: { select: { quantity: true } } },
+    select: {
+      totalCost: true,
+      items: { select: { quantity: true } },
+      costs: { select: { amount: true, vatIncluded: true } },
+    },
   })
   let productionCost: { unitCost: number; runCount: number } | null = null
   if (completedRuns.length > 0) {
-    const totalCost = completedRuns.reduce((sum, r) => sum + Number(r.totalCost ?? 0), 0)
+    // run별 ex-VAT 원가 합. costs 항목이 있으면 항목별 vatIncluded로 ÷1.1, 없으면(구 데이터) totalCost as-is.
+    const totalCost = completedRuns.reduce((sum, r) => {
+      const exVat =
+        r.costs.length > 0
+          ? r.costs.reduce((s, c) => s + costExVat(Number(c.amount), c.vatIncluded), 0)
+          : Number(r.totalCost ?? 0)
+      return sum + exVat
+    }, 0)
     const totalQty = completedRuns.reduce(
       (sum, r) => sum + r.items.reduce((s, it) => s + it.quantity, 0),
       0
@@ -63,8 +76,10 @@ export async function GET(
     options: options.map((o) => ({
       ...o,
       totalStock: stockMap.get(o.id) ?? 0,
-      // 생산차수 연동 시 파생 원가, 아니면 수동 costPrice
-      effectiveCostPrice: derivedUnitCost ?? o.costPrice,
+      // 생산차수 연동 시 파생 ex-VAT 원가, 아니면 수동 costPrice의 ex-VAT 환산 (미입력=null 유지)
+      effectiveCostPrice:
+        derivedUnitCost ??
+        (o.costPrice != null ? costExVat(Number(o.costPrice), o.costVatIncluded) : null),
     })),
     productionCost,
     useProductionCost: product.useProductionCost,
@@ -99,8 +114,16 @@ export async function POST(
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  const { name, sku, costPrice, retailPrice, sizeLabel, setSizeLabel, attributeValues } =
-    parsed.data
+  const {
+    name,
+    sku,
+    costPrice,
+    costVatIncluded,
+    retailPrice,
+    sizeLabel,
+    setSizeLabel,
+    attributeValues,
+  } = parsed.data
 
   const option = await prisma.invProductOption.create({
     data: {
@@ -108,6 +131,7 @@ export async function POST(
       name,
       sku: sku ?? null,
       costPrice: costPrice ?? null,
+      ...(costVatIncluded !== undefined && { costVatIncluded }),
       retailPrice: retailPrice ?? null,
       sizeLabel: sizeLabel ?? null,
       setSizeLabel: setSizeLabel ?? null,
