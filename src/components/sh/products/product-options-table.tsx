@@ -37,7 +37,7 @@ import {
   normalizeOptionAttributes,
   type AttrCodeSpec,
 } from '@/lib/sh/option-code'
-import { costExVat } from '@/lib/sh/cost'
+import { costExVat, SUPPLY_VAT_RATE } from '@/lib/sh/cost'
 
 type OptionRow = {
   id: string
@@ -661,6 +661,15 @@ export function ProductOptionsTable({
                   !costLocked && draft.costVatIncluded && draft.costPrice
                     ? Math.round(costExVat(parseFloat(draft.costPrice), true))
                     : null
+                // 공급원가 hover 툴팁: VAT 포함가.
+                // 체크(입력=VAT포함가)→입력값 그대로, 미체크(입력=ex-VAT)→입력×(1+율).
+                const rawCost = parseFloat(draft.costPrice)
+                const vatInclTip =
+                  !costLocked && draft.costPrice && isFinite(rawCost)
+                    ? draft.costVatIncluded
+                      ? `(VAT포함 원가 ${Math.round(rawCost).toLocaleString('ko-KR')}원)`
+                      : `(VAT포함가 ${Math.round(rawCost * (1 + SUPPLY_VAT_RATE)).toLocaleString('ko-KR')}원)`
+                    : null
                 return (
                   <TableRow
                     key={opt.id}
@@ -717,7 +726,7 @@ export function ProductOptionsTable({
                           title={
                             costLocked
                               ? '생산차수 원가 연동 중 — 완료 차수 가중평균 단가(VAT 제외)가 적용됩니다'
-                              : undefined
+                              : (vatInclTip ?? undefined)
                           }
                           placeholder="0"
                           className="h-8 min-w-0 flex-1"
