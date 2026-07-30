@@ -310,15 +310,6 @@ export function PricingChannelBoardCard({
             <div className="flex items-center justify-between gap-1">
               <span className="text-sm font-medium">판매가 조정</span>
               <div className="flex items-center gap-1.5">
-                {isManual && (
-                  <button
-                    type="button"
-                    className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-                    onClick={() => onManualPriceChange(null)}
-                  >
-                    권장가
-                  </button>
-                )}
                 <div className="relative flex items-center">
                   <Input
                     type="number"
@@ -347,7 +338,6 @@ export function PricingChannelBoardCard({
             />
             <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground tabular-nums">
               <span>₩{fmt(sliderMin)}</span>
-              {recommended != null && <span>권장 ₩{fmt(recommended)}</span>}
               <span>₩{fmt(sliderMax)}</span>
             </div>
           </div>
