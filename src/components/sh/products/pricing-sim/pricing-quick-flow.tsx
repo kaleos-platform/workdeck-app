@@ -452,6 +452,16 @@ export function PricingQuickFlow({
     return { totalCost, totalRetail }
   }, [confirmedRows])
 
+  // 소비자가 override (시나리오 한정, 저장 대상). null=상품 기본 소비자가(totalRetail) 사용.
+  // 판매가 상한을 이 값으로 조정 — 올리면 채널 판매가를 더 높게 조정 가능.
+  const [retailOverride, setRetailOverride] = useState<number | null>(null)
+
+  // 상품 기본 소비자가 (Σ 컴포넌트 retailPrice×수량). 0/미입력이면 null.
+  const baseRetail =
+    bundleCostSummary && bundleCostSummary.totalRetail > 0 ? bundleCostSummary.totalRetail : null
+  // 유효 소비자가 = override 우선, 없으면 상품 기본값. 판매가 상한·할인율·원가율 표시의 단일 소스.
+  const effectiveRetail = retailOverride ?? baseRetail
+
   // MatrixBundle 구성 (salePrice는 채널 카드에서 역산)
   const matrixBundle = useMemo<MatrixBundle | null>(() => {
     if (confirmedRows.length === 0) return null
@@ -674,6 +684,7 @@ export function PricingQuickFlow({
     setSelectedChannelIds([])
     setChOverrides({})
     setManualPrices({})
+    setRetailOverride(null)
     setExpandedChannels(new Set())
     setChPromotions({})
     setLive(liveFromSettings(settings))
@@ -704,9 +715,8 @@ export function PricingQuickFlow({
   // KPI — 권장가 범위 + 소비자가 대비 할인율. 카드와 동일 역산(good) + 소비자가 상한 클램프.
   const boardSummary = useMemo(() => {
     if (!matrixBundle || boardChannels.length === 0) return null
-    // 소비자가 상한(0/미입력이면 null → 클램프 없음). board card와 동일 공식 유지.
-    const retailCap =
-      bundleCostSummary && bundleCostSummary.totalRetail > 0 ? bundleCostSummary.totalRetail : null
+    // 소비자가 상한 = 유효 소비자가(override 반영). 0/미입력이면 null → 클램프 없음.
+    const retailCap = effectiveRetail
     const prices: number[] = []
     for (const bc of boardChannels) {
       const m = calculateMatrix({
@@ -738,7 +748,7 @@ export function PricingQuickFlow({
       discountMin,
       discountMax,
     }
-  }, [matrixBundle, boardChannels, live, tierThresholds, snap, bundleCostSummary])
+  }, [matrixBundle, boardChannels, live, tierThresholds, snap, effectiveRetail])
 
   // ── 스냅샷 직렬화 / 복원 ───────────────────────────────────────────────────
   // 선택 상품(대표 = 첫 확정행). 번들이면 productIds에 전부 담아 구성 상품 모두 조회 대상.
@@ -780,6 +790,7 @@ export function PricingQuickFlow({
       selectedChannelIds,
       chOverrides,
       manualPrices: snapManualPrices,
+      retailOverride,
       chPromotions: snapPromotions,
       // 레거시 계약 충족(구 뷰어 안전). 실 복원 소스는 chPromotions.
       promotion: { type: 'NONE', value: 0 },
@@ -797,6 +808,7 @@ export function PricingQuickFlow({
     bundleCostSummary,
     bundleNameInput,
     manualPrices,
+    retailOverride,
     chPromotions,
     snap,
   ])
@@ -827,6 +839,7 @@ export function PricingQuickFlow({
     }
     setChOverrides(restoredOverrides)
     setManualPrices(s.manualPrices ?? {})
+    setRetailOverride(s.retailOverride ?? null)
     setExpandedChannels(new Set())
     // 프로모션 복원: 채널별(chPromotions) 우선, 없으면 레거시 전역 프로모션을 전 채널에 동일 적용
     if (s.chPromotions) {
@@ -1138,11 +1151,9 @@ export function PricingQuickFlow({
           label="원가 · 매입"
           value={bundleCostSummary ? `₩${fmt(bundleCostSummary.totalCost)}` : '—'}
           valueRight={
-            bundleCostSummary && bundleCostSummary.totalRetail > 0
+            bundleCostSummary && effectiveRetail != null && effectiveRetail > 0
               ? (() => {
-                  const rate = Math.round(
-                    (bundleCostSummary.totalCost / bundleCostSummary.totalRetail) * 100
-                  )
+                  const rate = Math.round((bundleCostSummary.totalCost / effectiveRetail) * 100)
                   const high = rate > Math.round(settings.maxCostRatio * 100) // 상한 초과 = 원가율 높음(주의)
                   return (
                     <span
@@ -1183,14 +1194,12 @@ export function PricingQuickFlow({
             ) : undefined
           }
         />
-        <KpiCell
-          label="소비자가"
-          value={
-            bundleCostSummary && bundleCostSummary.totalRetail > 0
-              ? `₩${fmt(bundleCostSummary.totalRetail)}`
-              : '—'
-          }
-          accent="emerald"
+        <RetailKpiCell
+          base={baseRetail}
+          effective={effectiveRetail}
+          override={retailOverride}
+          editable={mode === 'existing' && baseRetail != null}
+          onChange={setRetailOverride}
         />
         <KpiCell
           label="판매 권장가"
@@ -1611,6 +1620,7 @@ export function PricingQuickFlow({
                   onAdChange={(patch) => setOverride(bc.api, patch)}
                   manualPrice={manualPrices[bc.api.id] ?? null}
                   onManualPriceChange={(v) => setChannelManualPrice(bc.api.id, v)}
+                  retailCap={effectiveRetail}
                 />
               ))}
               {mode === 'new' ? (
@@ -1790,6 +1800,96 @@ function KpiCell({
         {valueRight}
       </div>
       {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
+    </div>
+  )
+}
+
+/**
+ * 소비자가 KPI — 편집 가능(기존 상품 모드). override 시 상품 기본 소비자가를 비교 표시.
+ * 판매가 상한이 이 값으로 조정됨(올리면 채널 판매가를 더 높게 조정 가능).
+ */
+function RetailKpiCell({
+  base,
+  effective,
+  override,
+  editable,
+  onChange,
+}: {
+  /** 상품 기본 소비자가 (Σ 컴포넌트). null=미입력 */
+  base: number | null
+  /** 유효 소비자가 (override ?? base) */
+  effective: number | null
+  /** override 값 (null=기본값 사용) */
+  override: number | null
+  /** 편집 가능 여부 (기존 모드 + 기본값 존재) */
+  editable: boolean
+  onChange: (v: number | null) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+
+  const startEdit = () => {
+    if (!editable) return
+    setDraft(effective != null ? String(Math.round(effective)) : '')
+    setEditing(true)
+  }
+  const commit = () => {
+    const v = Number(draft)
+    // 기본값과 같거나 비우면 override 해제(기본값 복귀). 0/음수도 해제.
+    onChange(v > 0 && v !== base ? v : null)
+    setEditing(false)
+  }
+
+  return (
+    <div className="rounded-xl border border-[var(--ps-border)] bg-[var(--ps-card)] px-4 py-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[11px] text-muted-foreground">소비자가</p>
+        {override != null && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            onClick={() => onChange(null)}
+          >
+            <RotateCcw className="h-3 w-3" />
+            기본값
+          </button>
+        )}
+      </div>
+      {editing ? (
+        <div className="relative mt-0.5 flex items-center">
+          <Input
+            type="number"
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commit()
+              if (e.key === 'Escape') setEditing(false)
+            }}
+            step={100}
+            min={0}
+            className="h-8 w-full [appearance:textfield] pr-6 text-right text-lg font-bold tabular-nums [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span className="pointer-events-none absolute right-2 text-xs text-muted-foreground">
+            ₩
+          </span>
+        </div>
+      ) : (
+        <p
+          className={cn(
+            'mt-0.5 text-xl font-bold text-emerald-700 tabular-nums',
+            editable && 'w-fit cursor-pointer underline decoration-dotted underline-offset-2'
+          )}
+          onClick={startEdit}
+          title={editable ? '클릭해 소비자가 변경' : undefined}
+        >
+          {effective != null ? `₩${fmt(effective)}` : '—'}
+        </p>
+      )}
+      {override != null && base != null && (
+        <p className="text-[10px] text-muted-foreground tabular-nums">기본 ₩{fmt(base)}</p>
+      )}
     </div>
   )
 }

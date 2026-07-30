@@ -76,6 +76,8 @@ type Props = {
   manualPrice: number | null
   /** 판매가 수동조정 변경 콜백 (null=권장가로 리셋) */
   onManualPriceChange: (v: number | null) => void
+  /** 유효 소비자가(상한). 부모가 override 반영해 전달. 미전달 시 bundle 컴포넌트에서 Σ계산 */
+  retailCap?: number | null
 }
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
@@ -101,6 +103,7 @@ export function PricingChannelBoardCard({
   onAdChange,
   manualPrice,
   onManualPriceChange,
+  retailCap: retailCapProp,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
 
@@ -132,16 +135,21 @@ export function PricingChannelBoardCard({
   const recommended =
     rawRecommended != null && snap ? snapPrice(rawRecommended, 'end900') : rawRecommended
 
-  // 소비자가 상한 — 자동 권장가는 소비자가를 초과할 수 없음.
-  // 소비자가 = Σ(컴포넌트 소비자가 × 수량). 0/미입력이면 상한 없음(null).
+  // 소비자가 상한 — 판매가는 소비자가를 초과할 수 없음.
+  // 부모가 override 반영한 유효 소비자가(retailCapProp)를 우선 사용.
+  // 미전달 시 bundle 컴포넌트에서 Σ(소비자가 × 수량) 계산. 0/미입력이면 상한 없음(null).
   const retailCap = useMemo(() => {
+    if (retailCapProp !== undefined) return retailCapProp
     const sum = bundle.components.reduce((s, c) => s + (c.retailPrice ?? 0) * c.quantity, 0)
     return sum > 0 ? sum : null
-  }, [bundle])
+  }, [retailCapProp, bundle])
   const exceedsRetail = recommended != null && retailCap != null && recommended > retailCap
-  // 자동 권장가(상한 클램프). 수동가는 클램프 없이 사용자 값 그대로.
+  // 자동 권장가(상한 클램프).
   const autoPrice = exceedsRetail ? retailCap : recommended
-  const effectivePrice = manualPrice ?? autoPrice
+  // 수동가도 소비자가 상한으로 클램프 — 판매가는 소비자가를 넘을 수 없음.
+  const clampedManual =
+    manualPrice != null && retailCap != null ? Math.min(manualPrice, retailCap) : manualPrice
+  const effectivePrice = clampedManual ?? autoPrice
   const isManual = manualPrice != null
 
   // 헤드라인 매트릭스 — 실채널(광고 적용) × effectivePrice. 마진은 광고 반영(에로전).
@@ -187,12 +195,11 @@ export function PricingChannelBoardCard({
   const remainingDiscount = maxDiscount != null ? Math.max(0, maxDiscount - currentDiscount) : 0
   const headroomAmount = cell != null ? Math.max(0, cell.finalPrice * remainingDiscount) : 0
 
-  // 판매가 조정 슬라이더 범위 — 권장가 주변(없으면 소비자가 기준).
-  // 상한은 소비자가에 막히지 않도록 권장가·소비자가 중 큰값의 1.5배까지 허용(할증 조정 가능).
+  // 판매가 조정 슬라이더 범위 — 권장가 주변, 상한은 소비자가(retailCap)로 클램프.
+  // 소비자가 없으면 권장가×1.5. 판매가는 소비자가를 넘을 수 없음.
   const sliderBase = recommended ?? retailCap ?? 10000
   const sliderMin = Math.max(0, Math.round((sliderBase * 0.5) / 100) * 100)
-  const sliderCeil = Math.max(recommended ?? 0, retailCap ?? 0) || sliderBase
-  const sliderMax = Math.round((sliderCeil * 1.5) / 100) * 100
+  const sliderMax = Math.round((retailCap ?? sliderBase * 1.5) / 100) * 100
 
   // 광고 ROAS 컨트롤 핸들러 (보드에서 조정)
   const roasPct = adPct > 0 ? Math.round(100 / adPct) : 0
@@ -250,23 +257,14 @@ export function PricingChannelBoardCard({
           {/* 항목1: 판매가 우측 소비자가 대비 할인율 — 배경 없는 텍스트(마진 배지와 스타일 구분) */}
           <div className="flex items-center justify-end gap-2">
             <p className="text-2xl font-bold tabular-nums">₩{fmt(cell.finalPrice)}</p>
-            {retailCap != null &&
-              cell.finalPrice > 0 &&
-              (cell.finalPrice > retailCap ? (
-                <span
-                  className="text-xs font-semibold text-amber-600 tabular-nums"
-                  title="소비자가 대비 할증률"
-                >
-                  +{Math.round(((cell.finalPrice - retailCap) / retailCap) * 100)}%
-                </span>
-              ) : (
-                <span
-                  className="text-xs font-semibold text-emerald-600 tabular-nums"
-                  title="소비자가 대비 할인율"
-                >
-                  −{Math.round(((retailCap - cell.finalPrice) / retailCap) * 100)}%
-                </span>
-              ))}
+            {retailCap != null && cell.finalPrice > 0 && (
+              <span
+                className="text-xs font-semibold text-emerald-600 tabular-nums"
+                title="소비자가 대비 할인율"
+              >
+                −{Math.round(Math.max(0, (retailCap - cell.finalPrice) / retailCap) * 100)}%
+              </span>
+            )}
           </div>
           <div className="mt-0.5 flex items-center justify-end gap-1.5">
             {!exceedsRetail &&
