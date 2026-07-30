@@ -64,6 +64,8 @@ export type PricingSimSnapshot = {
   chOverrides: Record<string, SnapChOverride>
   /** 채널별 판매가 수동조정값 (채널 id → 원). 없거나 null=권장가 자동. 구 스냅샷엔 없어 optional */
   manualPrices?: Record<string, number | null>
+  /** 소비자가 override (원). 없거나 null=상품 기본 소비자가 사용. 구 스냅샷엔 없어 optional */
+  retailOverride?: number | null
   /** 채널별 프로모션 (채널 id → PromotionValue). 미설정=프로모션 없음(NONE). 구 스냅샷엔 없어 optional */
   chPromotions?: Record<string, PromotionValue>
   /** @deprecated 구 전역 프로모션. chPromotions로 대체됨. 레거시 스냅샷 복원(전 채널 동일 적용)용으로만 유지 */
@@ -102,6 +104,7 @@ export function parseSnapshot(raw: unknown): PricingSimSnapshot | null {
       typeof o.manualPrices === 'object' && o.manualPrices !== null
         ? (o.manualPrices as Record<string, number | null>)
         : undefined,
+    retailOverride: typeof o.retailOverride === 'number' ? o.retailOverride : undefined,
     chPromotions:
       typeof o.chPromotions === 'object' && o.chPromotions !== null
         ? (o.chPromotions as Record<string, PromotionValue>)
