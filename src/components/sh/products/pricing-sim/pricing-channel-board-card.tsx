@@ -188,9 +188,11 @@ export function PricingChannelBoardCard({
   const headroomAmount = cell != null ? Math.max(0, cell.finalPrice * remainingDiscount) : 0
 
   // 판매가 조정 슬라이더 범위 — 권장가 주변(없으면 소비자가 기준).
+  // 상한은 소비자가에 막히지 않도록 권장가·소비자가 중 큰값의 1.5배까지 허용(할증 조정 가능).
   const sliderBase = recommended ?? retailCap ?? 10000
   const sliderMin = Math.max(0, Math.round((sliderBase * 0.5) / 100) * 100)
-  const sliderMax = Math.round((retailCap ?? sliderBase * 1.5) / 100) * 100
+  const sliderCeil = Math.max(recommended ?? 0, retailCap ?? 0) || sliderBase
+  const sliderMax = Math.round((sliderCeil * 1.5) / 100) * 100
 
   // 광고 ROAS 컨트롤 핸들러 (보드에서 조정)
   const roasPct = adPct > 0 ? Math.round(100 / adPct) : 0
@@ -248,14 +250,23 @@ export function PricingChannelBoardCard({
           {/* 항목1: 판매가 우측 소비자가 대비 할인율 — 배경 없는 텍스트(마진 배지와 스타일 구분) */}
           <div className="flex items-center justify-end gap-2">
             <p className="text-2xl font-bold tabular-nums">₩{fmt(cell.finalPrice)}</p>
-            {retailCap != null && cell.finalPrice > 0 && (
-              <span
-                className="text-xs font-semibold text-emerald-600 tabular-nums"
-                title="소비자가 대비 할인율"
-              >
-                −{Math.round(Math.max(0, (retailCap - cell.finalPrice) / retailCap) * 100)}%
-              </span>
-            )}
+            {retailCap != null &&
+              cell.finalPrice > 0 &&
+              (cell.finalPrice > retailCap ? (
+                <span
+                  className="text-xs font-semibold text-amber-600 tabular-nums"
+                  title="소비자가 대비 할증률"
+                >
+                  +{Math.round(((cell.finalPrice - retailCap) / retailCap) * 100)}%
+                </span>
+              ) : (
+                <span
+                  className="text-xs font-semibold text-emerald-600 tabular-nums"
+                  title="소비자가 대비 할인율"
+                >
+                  −{Math.round(((retailCap - cell.finalPrice) / retailCap) * 100)}%
+                </span>
+              ))}
           </div>
           <div className="mt-0.5 flex items-center justify-end gap-1.5">
             {!exceedsRetail &&
