@@ -47,11 +47,19 @@ export type PricingSimSummary = {
   productNames: string[]
   channelCount: number
   targetMarginPct: number // 0~100 정수
-  priceMin: number | null // 권장가 범위
+  priceMin: number | null // 권장가 범위 (하위호환 유지)
   priceMax: number | null
   totalCost: number // 번들 총 원가
   /** 생성 방식 (목록 배지용). 구 스냅샷엔 없어 optional (parseSnapshot이 'existing' 폴백) */
   mode?: PricingSimMode
+  /** 소비자가(effectiveRetail). 구 스냅샷엔 없어 optional */
+  retail?: number | null
+  /** 채널별 설정 판매가 범위. 구 스냅샷엔 없어 optional */
+  salePriceMin?: number | null
+  salePriceMax?: number | null
+  /** 소비자가 대비 할인율(판매가 기준, 0~1). 구 스냅샷엔 없어 optional */
+  discountMin?: number | null
+  discountMax?: number | null
 }
 
 /** 시뮬 화면 전체 상태 스냅샷 (버전 태그 포함) */

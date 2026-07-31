@@ -37,7 +37,12 @@ import {
   getSellerHubPricingScenarioPath,
 } from '@/lib/deck-routes'
 import { mapPricingSettings } from '@/lib/sh/pricing-settings'
-import { type ScenarioRow, priceRangeText } from './pricing-scenario-format'
+import {
+  type ScenarioRow,
+  retailText,
+  salePriceRangeText,
+  discountRangeText,
+} from './pricing-scenario-format'
 import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
 
 type ProductOption = { id: string; label: string }
@@ -244,9 +249,11 @@ export function PricingScenarioList() {
             <TableRow>
               <TableHead>이름</TableHead>
               <TableHead>상품</TableHead>
-              <TableHead className="text-right">목표 마진</TableHead>
               <TableHead className="text-right">채널</TableHead>
-              <TableHead className="text-right">권장가</TableHead>
+              <TableHead className="text-right">목표 마진</TableHead>
+              <TableHead className="text-right">소비자가</TableHead>
+              <TableHead className="text-right">판매가</TableHead>
+              <TableHead className="text-right">소비자가 대비 할인율</TableHead>
               <TableHead>수정일</TableHead>
               <TableHead className="w-16 text-right">작업</TableHead>
             </TableRow>
@@ -254,13 +261,13 @@ export function PricingScenarioList() {
           <TableBody>
             {loading && rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="py-8 text-center text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="py-8 text-center text-muted-foreground">
                   저장된 가격 시나리오가 없습니다
                 </TableCell>
               </TableRow>
@@ -297,14 +304,20 @@ export function PricingScenarioList() {
                         <span className="truncate">{productLabel}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {row.summary ? `${row.summary.targetMarginPct}%` : '—'}
-                    </TableCell>
                     <TableCell className="text-right text-muted-foreground tabular-nums">
                       {row.summary ? `${row.summary.channelCount}개` : '—'}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {priceRangeText(row.summary)}
+                      {row.summary ? `${row.summary.targetMarginPct}%` : '—'}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {retailText(row.summary)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {salePriceRangeText(row.summary)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {discountRangeText(row.summary)}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(row.updatedAt).toLocaleDateString('ko-KR')}
