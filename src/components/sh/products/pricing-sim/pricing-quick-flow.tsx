@@ -839,6 +839,36 @@ export function PricingQuickFlow({
     }
   }, [matrixBundle, boardChannels, live, tierThresholds, snap, effectiveRetail])
 
+  // 채널별 "현재 설정된 판매가" 범위 — 보드 카드의 effectivePrice와 동일 로직
+  // (adless 역산 권장가 → 소비자가 상한 클램프, 수동가 있으면 그 값(상한 클램프)). min~max.
+  const setPriceRange = useMemo(() => {
+    if (!matrixBundle || boardChannels.length === 0) return null
+    const retailCap = effectiveRetail
+    const prices: number[] = []
+    for (const bc of boardChannels) {
+      const adless = { ...bc.channel, applyAdCost: false }
+      const m = calculateMatrix({
+        bundle: { ...matrixBundle, salePrice: 0 },
+        channel: adless,
+        promotion: { type: 'NONE', value: 0 },
+        globals: buildGlobals(live, bc.adPct),
+        thresholds: tierThresholds,
+      })
+      const raw = m.recommendedRetail.good
+      const recommended = raw != null && snap ? snapPrice(raw, 'end900') : raw
+      const autoPrice =
+        recommended != null && retailCap != null ? Math.min(recommended, retailCap) : recommended
+      const manual = manualPrices[bc.api.id]
+      const clampedManual =
+        manual != null && retailCap != null ? Math.min(manual, retailCap) : manual
+      const effective = clampedManual ?? autoPrice
+      if (effective != null) prices.push(Math.round(effective))
+    }
+    const min = prices.length ? Math.min(...prices) : null
+    const max = prices.length ? Math.max(...prices) : null
+    return { min, max }
+  }, [matrixBundle, boardChannels, live, tierThresholds, snap, effectiveRetail, manualPrices])
+
   // ── 스냅샷 직렬화 / 복원 ───────────────────────────────────────────────────
   // 선택 상품(대표 = 첫 확정행). 번들이면 productIds에 전부 담아 구성 상품 모두 조회 대상.
   // 신규 모드 행은 productId='' → filter(Boolean)로 제거해 빈 배열 유지
@@ -1236,7 +1266,7 @@ export function PricingQuickFlow({
         </div>
       </div>
 
-      {/* ── KPI 스트립 (순서: 원가매입 → 소비자가 → 판매 권장가 → 할인율) ── */}
+      {/* ── KPI 스트립 (순서: 원가매입 → 소비자가 → 판매가 → 할인율) ── */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiCell
           label="원가 · 매입"
@@ -1293,14 +1323,15 @@ export function PricingQuickFlow({
           onChange={setRetailOverride}
         />
         <KpiCell
-          label="판매 권장가"
+          label="판매가"
           value={
-            boardSummary && boardSummary.min != null && boardSummary.max != null
-              ? boardSummary.min === boardSummary.max
-                ? `₩${fmt(boardSummary.min)}`
-                : `${fmt(boardSummary.min)}~${fmt(boardSummary.max)}`
+            setPriceRange && setPriceRange.min != null && setPriceRange.max != null
+              ? setPriceRange.min === setPriceRange.max
+                ? `₩${fmt(setPriceRange.min)}`
+                : `${fmt(setPriceRange.min)}~${fmt(setPriceRange.max)}`
               : '—'
           }
+          tooltip="채널별로 현재 설정된 판매가(수동 조정 시 그 값, 아니면 권장가) 범위입니다."
         />
         <KpiCell
           label="소비자가 대비 할인율"
