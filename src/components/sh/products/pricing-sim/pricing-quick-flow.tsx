@@ -866,7 +866,12 @@ export function PricingQuickFlow({
     }
     const min = prices.length ? Math.min(...prices) : null
     const max = prices.length ? Math.max(...prices) : null
-    return { min, max }
+    // 소비자가 대비 할인율(판매가 기준). 낮은 판매가=높은 할인.
+    const discountMax =
+      retailCap != null && min != null ? Math.max(0, (retailCap - min) / retailCap) : null
+    const discountMin =
+      retailCap != null && max != null ? Math.max(0, (retailCap - max) / retailCap) : null
+    return { min, max, discountMin, discountMax }
   }, [matrixBundle, boardChannels, live, tierThresholds, snap, effectiveRetail, manualPrices])
 
   // ── 스냅샷 직렬화 / 복원 ───────────────────────────────────────────────────
@@ -1336,12 +1341,13 @@ export function PricingQuickFlow({
         <KpiCell
           label="소비자가 대비 할인율"
           value={
-            boardSummary && boardSummary.discountMin != null && boardSummary.discountMax != null
-              ? boardSummary.discountMin === boardSummary.discountMax
-                ? `${Math.round(boardSummary.discountMax * 100)}%`
-                : `${Math.round(boardSummary.discountMin * 100)}~${Math.round(boardSummary.discountMax * 100)}%`
+            setPriceRange && setPriceRange.discountMin != null && setPriceRange.discountMax != null
+              ? setPriceRange.discountMin === setPriceRange.discountMax
+                ? `${Math.round(setPriceRange.discountMax * 100)}%`
+                : `${Math.round(setPriceRange.discountMin * 100)}~${Math.round(setPriceRange.discountMax * 100)}%`
               : '—'
           }
+          tooltip="현재 설정된 판매가 기준 소비자가 대비 할인율입니다."
         />
       </div>
 
