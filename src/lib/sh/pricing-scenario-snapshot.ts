@@ -19,6 +19,8 @@ export type SnapLiveSim = {
 
 /** 채널별 비용 override */
 export type SnapChOverride = {
+  /** 선택된 수수료 카테고리명. 구 스냅샷엔 없어 optional(복원 시 '기본' 폴백) */
+  feeCategory?: string
   feePct: number // 0~100 (UI %)
   shippingFeeType: 'FIXED' | 'PERCENT'
   shippingFee: number // 원
