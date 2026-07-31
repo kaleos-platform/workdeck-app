@@ -125,7 +125,8 @@ type LiveSim = {
  * 시뮬레이션에만 적용되며 채널 설정에는 저장되지 않는다.
  */
 type ChOverride = {
-  feePct: number // 기본 카테고리 수수료율 (0~100, UI %)
+  feeCategory: string // 선택된 수수료 카테고리명 (기본 '기본')
+  feePct: number // 선택 카테고리 수수료율 (0~100, UI %)
   shippingFeeType: 'FIXED' | 'PERCENT' // 배송비 산정 방식
   shippingFee: number // 원 (FIXED) — 주문당 판매자 부담 배송비
   shippingFeePct: number // 0~1 (PERCENT, 판매가 대비)
@@ -153,14 +154,19 @@ const DEFAULT_AD_ROAS_RATE = 1 / 3
  * 앱 내장 기본값 순으로 폴백한다 (미설정=0 이 아니라 합리적 기본값 → 원가 과소평가 방지).
  * 이후 채널별로 즉시 변경 가능.
  */
-function seedOverride(c: ApiCh, settings: PricingFullSettings): ChOverride {
-  const feeBasic = c.feeRates.find((f) => f.categoryName === '기본') ?? c.feeRates[0]
+function seedOverride(c: ApiCh, settings: PricingFullSettings, categoryName = '기본'): ChOverride {
+  // 선택 카테고리 → (없으면) 기본 → (없으면) 첫 행. ratePercent는 0~100 UI % 직접 사용.
+  const feeRow =
+    c.feeRates.find((f) => f.categoryName === categoryName) ??
+    c.feeRates.find((f) => f.categoryName === '기본') ??
+    c.feeRates[0]
   const shippingFee =
     c.shippingFee != null
       ? Number(c.shippingFee)
       : settings.defaultShippingCost || FALLBACK_SHIPPING_COST
   return {
-    feePct: feeBasic ? Number(feeBasic.ratePercent) : settings.defaultChannelFeePct,
+    feeCategory: feeRow?.categoryName ?? '기본',
+    feePct: feeRow ? Number(feeRow.ratePercent) : settings.defaultChannelFeePct,
     shippingFeeType: c.shippingFeeType ?? 'FIXED',
     shippingFee,
     shippingFeePct: c.shippingFeePct != null ? Number(c.shippingFeePct) : 0,
@@ -525,17 +531,36 @@ export function PricingQuickFlow({
     })
   }
 
-  const addChannel = (id: string) => {
+  const addChannel = (id: string, categoryName = '기본') => {
     if (!id || selectedChannelIds.includes(id)) return
     setSelectedChannelIds((prev) => [...prev, id])
     // 채널 추가 시 항상 현재 채널 관리 설정값으로 재시드한다(수수료·배송·PG·광고 최신 반영).
     // 저장 시나리오의 초기 채널은 applySnapshot이 동결 복원하지만, 사용자가 명시적으로
     // 추가하는 채널은 현재 채널 설정을 반영해야 한다. 이후 채널별 인라인 편집은 세션 유지.
     const c = allChannels.find((ch) => ch.id === id)
-    if (c) setChOverrides((prev) => ({ ...prev, [id]: seedOverride(c, settings) }))
+    if (c) setChOverrides((prev) => ({ ...prev, [id]: seedOverride(c, settings, categoryName) }))
     // 채널별 설정 편집 영역을 기본으로 펼쳐 바로 확인·조정 가능하게 한다
     setExpandedChannels((prev) => new Set(prev).add(id))
     setChannelPickerId('')
+  }
+
+  // 다중 수수료 카테고리 채널 추가 시 카테고리 선택 Dialog 대상 (null=닫힘)
+  const [pendingChannel, setPendingChannel] = useState<ApiCh | null>(null)
+  const [pendingCategory, setPendingCategory] = useState<string>('기본')
+
+  // "채널 추가..." 선택 핸들러 — 다중 카테고리면 선택 Dialog, 아니면 즉시 추가
+  const onPickChannel = (id: string) => {
+    if (!id || selectedChannelIds.includes(id)) return
+    const c = allChannels.find((ch) => ch.id === id)
+    if (c && c.feeRates.length > 1) {
+      setPendingChannel(c)
+      setPendingCategory(
+        c.feeRates.find((f) => f.categoryName === '기본')?.categoryName ??
+          c.feeRates[0].categoryName
+      )
+    } else {
+      addChannel(id)
+    }
   }
 
   const removeChannel = (id: string) => {
@@ -830,6 +855,8 @@ export function PricingQuickFlow({
     for (const [id, o] of Object.entries(s.chOverrides)) {
       restoredOverrides[id] = {
         ...o,
+        // 구 스냅샷 호환 — 카테고리 미기록이면 '기본'. feePct·feeCategory 동결 복원(재시딩 금지)
+        feeCategory: o.feeCategory ?? '기본',
         freeShipping: o.freeShipping ?? false,
         freeShippingThreshold: o.freeShippingThreshold ?? null,
         // 구 스냅샷 호환 — VAT 포함 여부 미기록이면 false(기본값=미포함)
@@ -1410,8 +1437,9 @@ export function PricingQuickFlow({
                       <div className="min-w-0 flex-1">
                         <span className="text-sm font-medium">{bc.api.name}</span>
                         <span className="ml-1.5 text-[10px] text-muted-foreground">
-                          수수료 {ov.feePct.toFixed(1)}% (
-                          {ov.vatIncludedInFee ? 'VAT 포함' : 'VAT 별도'}) · 배송{' '}
+                          {ov.feeCategory !== '기본' ? `[${ov.feeCategory}] ` : ''}수수료{' '}
+                          {ov.feePct.toFixed(1)}% ({ov.vatIncludedInFee ? 'VAT 포함' : 'VAT 별도'})
+                          · 배송{' '}
                           {ov.shippingFeeType === 'PERCENT'
                             ? `${(ov.shippingFeePct * 100).toFixed(1)}%`
                             : `₩${fmt(ov.shippingFee)}`}
@@ -1443,6 +1471,34 @@ export function PricingQuickFlow({
                     </div>
                     {open && (
                       <div className="grid grid-cols-2 gap-x-3 gap-y-2 border-t border-[var(--ps-border)] px-3 py-2.5">
+                        {bc.api.feeRates.length > 1 && (
+                          <label className="col-span-2 space-y-1">
+                            <span className="text-[10px] text-muted-foreground">
+                              수수료 카테고리
+                            </span>
+                            <Select
+                              value={ov.feeCategory}
+                              onValueChange={(name) => {
+                                const row = bc.api.feeRates.find((f) => f.categoryName === name)
+                                setOverride(bc.api, {
+                                  feeCategory: name,
+                                  feePct: row ? Number(row.ratePercent) || 0 : ov.feePct,
+                                })
+                              }}
+                            >
+                              <SelectTrigger className="h-8 text-sm">
+                                <SelectValue placeholder="카테고리 선택..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {bc.api.feeRates.map((f) => (
+                                  <SelectItem key={f.categoryName} value={f.categoryName}>
+                                    {f.categoryName} · {Number(f.ratePercent).toFixed(1)}%
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </label>
+                        )}
                         <label className="space-y-1">
                           <span className="text-[10px] text-muted-foreground">
                             카테고리 수수료율
@@ -1561,7 +1617,7 @@ export function PricingQuickFlow({
               })}
             </div>
             {availableChannels.length > 0 && (
-              <Select value={channelPickerId} onValueChange={addChannel}>
+              <Select value={channelPickerId} onValueChange={onPickChannel}>
                 <SelectTrigger className="mt-2 h-8 text-sm">
                   <SelectValue placeholder="채널 추가..." />
                 </SelectTrigger>
@@ -1579,6 +1635,46 @@ export function PricingQuickFlow({
               있습니다.
             </p>
           </StepCard>
+          {/* 다중 수수료 카테고리 채널 추가 — 카테고리 선택 Dialog */}
+          <Dialog open={pendingChannel != null} onOpenChange={(o) => !o && setPendingChannel(null)}>
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader>
+                <DialogTitle>수수료 카테고리 선택</DialogTitle>
+                <DialogDescription>
+                  {pendingChannel?.name} 채널에 수수료 항목이 여러 개입니다. 이 시뮬레이션에 적용할
+                  카테고리를 선택하세요. (추가 후에도 변경 가능)
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-1">
+                <Select value={pendingCategory} onValueChange={setPendingCategory}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="카테고리 선택..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pendingChannel?.feeRates.map((f) => (
+                      <SelectItem key={f.categoryName} value={f.categoryName}>
+                        {f.categoryName} · {Number(f.ratePercent).toFixed(1)}%
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" size="sm" onClick={() => setPendingChannel(null)}>
+                  취소
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (pendingChannel) addChannel(pendingChannel.id, pendingCategory)
+                    setPendingChannel(null)
+                  }}
+                >
+                  추가
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           {/* 프로모션은 우측 채널별 마진 보드 카드에서 채널별로 설정 */}
         </div>
 
