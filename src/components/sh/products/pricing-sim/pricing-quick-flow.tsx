@@ -904,6 +904,12 @@ export function PricingQuickFlow({
       priceMax: boardSummary?.max ?? null,
       totalCost: bundleCostSummary?.totalCost ?? 0,
       mode,
+      // 목록 표시용 — 소비자가·채널별 설정 판매가 범위·판매가 기준 할인율
+      retail: effectiveRetail,
+      salePriceMin: setPriceRange?.min ?? null,
+      salePriceMax: setPriceRange?.max ?? null,
+      discountMin: setPriceRange?.discountMin ?? null,
+      discountMax: setPriceRange?.discountMax ?? null,
     }
     return {
       v: 1,
@@ -929,6 +935,8 @@ export function PricingQuickFlow({
     overrideOf,
     live,
     boardSummary,
+    setPriceRange,
+    effectiveRetail,
     bundleCostSummary,
     bundleNameInput,
     manualPrices,
