@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   ChevronDown,
+  GripVertical,
   History,
   Info,
   Plus,
@@ -16,6 +17,24 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DraggableAttributes,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -266,6 +285,34 @@ const DEFAULT_SETTINGS: PricingFullSettings = {
 /** 숫자 포맷 */
 function fmt(n: number): string {
   return Math.round(n).toLocaleString('ko-KR')
+}
+
+/**
+ * 채널 순서 드래그용 Sortable 래퍼 — useSortable(훅)는 map 내부 직접 호출 불가라
+ * 렌더-프롭으로 refs만 제공하고, 기존 인라인 행 JSX·클로저는 그대로 유지한다.
+ */
+function SortableChannelItem({
+  id,
+  children,
+}: {
+  id: string
+  children: (p: {
+    setNodeRef: (el: HTMLElement | null) => void
+    style: React.CSSProperties
+    attributes: DraggableAttributes
+    listeners: ReturnType<typeof useSortable>['listeners']
+  }) => React.ReactNode
+}) {
+  const { setNodeRef, transform, transition, attributes, listeners, isDragging } = useSortable({
+    id,
+  })
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.8 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  }
+  return <>{children({ setNodeRef, style, attributes, listeners })}</>
 }
 
 /** 고유 행 ID 생성 */
@@ -528,6 +575,23 @@ export function PricingQuickFlow({
       if (next.has(id)) next.delete(id)
       else next.add(id)
       return next
+    })
+  }
+
+  // 채널 순서 드래그(dnd-kit) — 핸들 전용, 6px 이동 후 활성(클릭 오작동 방지)
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+  const handleChannelDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
+    // selectedChannelIds만 재정렬하면 좌측 목록·우측 마진 보드·스냅샷이 모두 자동 연동된다.
+    setSelectedChannelIds((prev) => {
+      const from = prev.indexOf(String(active.id))
+      const to = prev.indexOf(String(over.id))
+      if (from < 0 || to < 0) return prev
+      return arrayMove(prev, from, to)
     })
   }
 
@@ -1421,201 +1485,246 @@ export function PricingQuickFlow({
 
           {/* ③ 판매채널 */}
           <StepCard step={3} title="판매채널" badge={`${selectedChannelIds.length}개 선택`}>
-            <div className="space-y-2">
-              {boardChannels.map((bc) => {
-                const ov = overrideOf(bc.api)
-                const open = expandedChannels.has(bc.api.id)
-                return (
-                  <div
-                    key={bc.api.id}
-                    className="rounded-md border border-[var(--ps-border)] bg-[var(--ps-card)]"
-                  >
-                    <div className="flex items-center gap-2 px-3 py-2">
-                      <span className="text-emerald-600" aria-hidden>
-                        ✓
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <span className="text-sm font-medium">{bc.api.name}</span>
-                        <span className="ml-1.5 text-[10px] text-muted-foreground">
-                          {ov.feeCategory !== '기본' ? `[${ov.feeCategory}] ` : ''}수수료{' '}
-                          {ov.feePct.toFixed(1)}% ({ov.vatIncludedInFee ? 'VAT 포함' : 'VAT 별도'})
-                          · 배송{' '}
-                          {ov.shippingFeeType === 'PERCENT'
-                            ? `${(ov.shippingFeePct * 100).toFixed(1)}%`
-                            : `₩${fmt(ov.shippingFee)}`}
-                          {ov.applyAdCost && ov.adPct > 0
-                            ? ` · ROAS ${Math.round(100 / ov.adPct)}%`
-                            : ''}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => toggleExpanded(bc.api.id)}
-                        className="text-muted-foreground hover:text-foreground"
-                        aria-label={`${bc.api.name} 채널별 비용 설정`}
-                        aria-expanded={open}
-                      >
-                        <ChevronDown
-                          className={cn('h-4 w-4 transition-transform', open && 'rotate-180')}
-                        />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeChannel(bc.api.id)}
-                        className="text-muted-foreground hover:text-destructive"
-                        aria-label={`${bc.api.name} 제거`}
-                        title="채널 제거"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                    {open && (
-                      <div className="grid grid-cols-2 gap-x-3 gap-y-2 border-t border-[var(--ps-border)] px-3 py-2.5">
-                        {bc.api.feeRates.length > 1 && (
-                          <label className="col-span-2 space-y-1">
-                            <span className="text-[10px] text-muted-foreground">
-                              수수료 카테고리
-                            </span>
-                            <Select
-                              value={ov.feeCategory}
-                              onValueChange={(name) => {
-                                const row = bc.api.feeRates.find((f) => f.categoryName === name)
-                                setOverride(bc.api, {
-                                  feeCategory: name,
-                                  feePct: row ? Number(row.ratePercent) || 0 : ov.feePct,
-                                })
-                              }}
-                            >
-                              <SelectTrigger className="h-8 text-sm">
-                                <SelectValue placeholder="카테고리 선택..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {bc.api.feeRates.map((f) => (
-                                  <SelectItem key={f.categoryName} value={f.categoryName}>
-                                    {f.categoryName} · {Number(f.ratePercent).toFixed(1)}%
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </label>
-                        )}
-                        <label className="space-y-1">
-                          <span className="text-[10px] text-muted-foreground">
-                            카테고리 수수료율
-                          </span>
-                          <SuffixInput
-                            value={String(ov.feePct)}
-                            onChange={(v) => setOverride(bc.api, { feePct: Number(v) || 0 })}
-                            suffix="%"
-                            step={0.1}
-                            className="w-full"
-                          />
-                        </label>
-                        <label className="space-y-1">
-                          <span className="flex items-center justify-between text-[10px] text-muted-foreground">
-                            <span>배송비</span>
-                            <button
-                              type="button"
-                              className="rounded border border-[var(--ps-border)] px-1 text-[9px] hover:bg-[var(--ps-muted)]"
-                              onClick={() =>
-                                setOverride(bc.api, {
-                                  shippingFeeType:
-                                    ov.shippingFeeType === 'PERCENT' ? 'FIXED' : 'PERCENT',
-                                })
-                              }
-                            >
-                              {ov.shippingFeeType === 'PERCENT' ? '비율 %' : '정액 ₩'}
-                            </button>
-                          </span>
-                          {ov.shippingFeeType === 'PERCENT' ? (
-                            <SuffixInput
-                              value={String(Math.round(ov.shippingFeePct * 1000) / 10)}
-                              onChange={(v) =>
-                                setOverride(bc.api, { shippingFeePct: (Number(v) || 0) / 100 })
-                              }
-                              suffix="%"
-                              step={0.1}
-                              className="w-full"
-                            />
-                          ) : (
-                            <SuffixInput
-                              value={String(ov.shippingFee)}
-                              onChange={(v) => setOverride(bc.api, { shippingFee: Number(v) || 0 })}
-                              suffix="₩"
-                              step={100}
-                              className="w-full"
-                            />
-                          )}
-                        </label>
-                        {/* 무료배송 (FIXED 전용) — 기준 이상 주문은 판매자 배송비 부담 */}
-                        {ov.shippingFeeType === 'FIXED' && (
-                          <div className="col-span-2 flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] text-muted-foreground">
-                                무료배송 기준{ov.freeShipping ? ' (항상무료)' : ''}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleChannelDragEnd}
+            >
+              <SortableContext items={selectedChannelIds} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2">
+                  {boardChannels.map((bc) => {
+                    const ov = overrideOf(bc.api)
+                    const open = expandedChannels.has(bc.api.id)
+                    return (
+                      <SortableChannelItem key={bc.api.id} id={bc.api.id}>
+                        {({ setNodeRef, style, attributes, listeners }) => (
+                          <div
+                            ref={setNodeRef}
+                            style={style}
+                            {...attributes}
+                            className="rounded-md border border-[var(--ps-border)] bg-[var(--ps-card)]"
+                          >
+                            <div className="flex items-center gap-2 px-3 py-2">
+                              <button
+                                type="button"
+                                {...listeners}
+                                className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+                                aria-label={`${bc.api.name} 순서 변경`}
+                              >
+                                <GripVertical className="h-4 w-4" />
+                              </button>
+                              <span className="text-emerald-600" aria-hidden>
+                                ✓
                               </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {!ov.freeShipping && (
-                                <SuffixInput
-                                  value={
-                                    ov.freeShippingThreshold ? String(ov.freeShippingThreshold) : ''
-                                  }
-                                  onChange={(v) =>
-                                    setOverride(bc.api, {
-                                      freeShippingThreshold: Number(v) > 0 ? Number(v) : null,
-                                    })
-                                  }
-                                  suffix="₩"
-                                  step={1000}
-                                  placeholder="미설정"
-                                  className="w-24"
-                                />
-                              )}
-                              <div className="flex items-center gap-1">
-                                <span className="text-[10px] text-muted-foreground">항상무료</span>
-                                <Switch
-                                  checked={ov.freeShipping}
-                                  onCheckedChange={(v) => setOverride(bc.api, { freeShipping: v })}
-                                />
+                              <div className="min-w-0 flex-1">
+                                <span className="text-sm font-medium">{bc.api.name}</span>
+                                <span className="ml-1.5 text-[10px] text-muted-foreground">
+                                  {ov.feeCategory !== '기본' ? `[${ov.feeCategory}] ` : ''}수수료{' '}
+                                  {ov.feePct.toFixed(1)}% (
+                                  {ov.vatIncludedInFee ? 'VAT 포함' : 'VAT 별도'}) · 배송{' '}
+                                  {ov.shippingFeeType === 'PERCENT'
+                                    ? `${(ov.shippingFeePct * 100).toFixed(1)}%`
+                                    : `₩${fmt(ov.shippingFee)}`}
+                                  {ov.applyAdCost && ov.adPct > 0
+                                    ? ` · ROAS ${Math.round(100 / ov.adPct)}%`
+                                    : ''}
+                                </span>
                               </div>
+                              <button
+                                type="button"
+                                onClick={() => toggleExpanded(bc.api.id)}
+                                className="text-muted-foreground hover:text-foreground"
+                                aria-label={`${bc.api.name} 채널별 비용 설정`}
+                                aria-expanded={open}
+                              >
+                                <ChevronDown
+                                  className={cn(
+                                    'h-4 w-4 transition-transform',
+                                    open && 'rotate-180'
+                                  )}
+                                />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeChannel(bc.api.id)}
+                                className="text-muted-foreground hover:text-destructive"
+                                aria-label={`${bc.api.name} 제거`}
+                                title="채널 제거"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
                             </div>
+                            {open && (
+                              <div className="grid grid-cols-2 gap-x-3 gap-y-2 border-t border-[var(--ps-border)] px-3 py-2.5">
+                                {bc.api.feeRates.length > 1 && (
+                                  <label className="col-span-2 space-y-1">
+                                    <span className="text-[10px] text-muted-foreground">
+                                      수수료 카테고리
+                                    </span>
+                                    <Select
+                                      value={ov.feeCategory}
+                                      onValueChange={(name) => {
+                                        const row = bc.api.feeRates.find(
+                                          (f) => f.categoryName === name
+                                        )
+                                        setOverride(bc.api, {
+                                          feeCategory: name,
+                                          feePct: row ? Number(row.ratePercent) || 0 : ov.feePct,
+                                        })
+                                      }}
+                                    >
+                                      <SelectTrigger className="h-8 text-sm">
+                                        <SelectValue placeholder="카테고리 선택..." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {bc.api.feeRates.map((f) => (
+                                          <SelectItem key={f.categoryName} value={f.categoryName}>
+                                            {f.categoryName} · {Number(f.ratePercent).toFixed(1)}%
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </label>
+                                )}
+                                <label className="space-y-1">
+                                  <span className="text-[10px] text-muted-foreground">
+                                    카테고리 수수료율
+                                  </span>
+                                  <SuffixInput
+                                    value={String(ov.feePct)}
+                                    onChange={(v) =>
+                                      setOverride(bc.api, { feePct: Number(v) || 0 })
+                                    }
+                                    suffix="%"
+                                    step={0.1}
+                                    className="w-full"
+                                  />
+                                </label>
+                                <label className="space-y-1">
+                                  <span className="flex items-center justify-between text-[10px] text-muted-foreground">
+                                    <span>배송비</span>
+                                    <button
+                                      type="button"
+                                      className="rounded border border-[var(--ps-border)] px-1 text-[9px] hover:bg-[var(--ps-muted)]"
+                                      onClick={() =>
+                                        setOverride(bc.api, {
+                                          shippingFeeType:
+                                            ov.shippingFeeType === 'PERCENT' ? 'FIXED' : 'PERCENT',
+                                        })
+                                      }
+                                    >
+                                      {ov.shippingFeeType === 'PERCENT' ? '비율 %' : '정액 ₩'}
+                                    </button>
+                                  </span>
+                                  {ov.shippingFeeType === 'PERCENT' ? (
+                                    <SuffixInput
+                                      value={String(Math.round(ov.shippingFeePct * 1000) / 10)}
+                                      onChange={(v) =>
+                                        setOverride(bc.api, {
+                                          shippingFeePct: (Number(v) || 0) / 100,
+                                        })
+                                      }
+                                      suffix="%"
+                                      step={0.1}
+                                      className="w-full"
+                                    />
+                                  ) : (
+                                    <SuffixInput
+                                      value={String(ov.shippingFee)}
+                                      onChange={(v) =>
+                                        setOverride(bc.api, { shippingFee: Number(v) || 0 })
+                                      }
+                                      suffix="₩"
+                                      step={100}
+                                      className="w-full"
+                                    />
+                                  )}
+                                </label>
+                                {/* 무료배송 (FIXED 전용) — 기준 이상 주문은 판매자 배송비 부담 */}
+                                {ov.shippingFeeType === 'FIXED' && (
+                                  <div className="col-span-2 flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] text-muted-foreground">
+                                        무료배송 기준{ov.freeShipping ? ' (항상무료)' : ''}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {!ov.freeShipping && (
+                                        <SuffixInput
+                                          value={
+                                            ov.freeShippingThreshold
+                                              ? String(ov.freeShippingThreshold)
+                                              : ''
+                                          }
+                                          onChange={(v) =>
+                                            setOverride(bc.api, {
+                                              freeShippingThreshold:
+                                                Number(v) > 0 ? Number(v) : null,
+                                            })
+                                          }
+                                          suffix="₩"
+                                          step={1000}
+                                          placeholder="미설정"
+                                          className="w-24"
+                                        />
+                                      )}
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-[10px] text-muted-foreground">
+                                          항상무료
+                                        </span>
+                                        <Switch
+                                          checked={ov.freeShipping}
+                                          onCheckedChange={(v) =>
+                                            setOverride(bc.api, { freeShipping: v })
+                                          }
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="col-span-2 flex items-center justify-between gap-2">
+                                  <span className="text-[10px] text-muted-foreground">
+                                    PG 결제수수료
+                                    {ov.paymentFeeIncluded ? ' (채널수수료에 포함)' : ''}
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    {!ov.paymentFeeIncluded && (
+                                      <SuffixInput
+                                        value={String(Math.round(ov.paymentFeePct * 1000) / 10)}
+                                        onChange={(v) =>
+                                          setOverride(bc.api, {
+                                            paymentFeePct: (Number(v) || 0) / 100,
+                                          })
+                                        }
+                                        suffix="%"
+                                        step={0.1}
+                                        className="w-20"
+                                      />
+                                    )}
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-[10px] text-muted-foreground">
+                                        별도 부과
+                                      </span>
+                                      <Switch
+                                        checked={!ov.paymentFeeIncluded}
+                                        onCheckedChange={(v) =>
+                                          setOverride(bc.api, { paymentFeeIncluded: !v })
+                                        }
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* 광고 ROAS는 채널별 마진 보드에서 조정(판매가 순환 인플레 방지) */}
+                              </div>
+                            )}
                           </div>
                         )}
-                        <div className="col-span-2 flex items-center justify-between gap-2">
-                          <span className="text-[10px] text-muted-foreground">
-                            PG 결제수수료{ov.paymentFeeIncluded ? ' (채널수수료에 포함)' : ''}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            {!ov.paymentFeeIncluded && (
-                              <SuffixInput
-                                value={String(Math.round(ov.paymentFeePct * 1000) / 10)}
-                                onChange={(v) =>
-                                  setOverride(bc.api, { paymentFeePct: (Number(v) || 0) / 100 })
-                                }
-                                suffix="%"
-                                step={0.1}
-                                className="w-20"
-                              />
-                            )}
-                            <div className="flex items-center gap-1">
-                              <span className="text-[10px] text-muted-foreground">별도 부과</span>
-                              <Switch
-                                checked={!ov.paymentFeeIncluded}
-                                onCheckedChange={(v) =>
-                                  setOverride(bc.api, { paymentFeeIncluded: !v })
-                                }
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        {/* 광고 ROAS는 채널별 마진 보드에서 조정(판매가 순환 인플레 방지) */}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+                      </SortableChannelItem>
+                    )
+                  })}
+                </div>
+              </SortableContext>
+            </DndContext>
             {availableChannels.length > 0 && (
               <Select value={channelPickerId} onValueChange={onPickChannel}>
                 <SelectTrigger className="mt-2 h-8 text-sm">
