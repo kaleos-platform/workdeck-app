@@ -216,6 +216,12 @@ async function performLogin(page: Page, credentials: CollectorCredentials): Prom
     .then(() => true)
     .catch(() => false)
   if (!formShown) {
+    // wing SSO 쿠키가 살아있으면 "로그인하기" 클릭만으로 폼 없이 자동 인증되어
+    // 광고센터로 진입한다 — 이 경우는 실패가 아니라 로그인 완료. (2026-08-01 회고)
+    if (!page.url().includes('login') && !page.url().includes('sso')) {
+      console.log('  → 로그인 폼 미표시 — SSO 자동 인증으로 이미 로그인됨')
+      return
+    }
     await saveScreenshot(page, 'login-noform')
     const reason = await classifyLoginFailure(page)
     throw new LoginError(reason, `로그인 실패 — ${reasonLabel(reason)} (로그인 폼 미표시)`)
@@ -597,6 +603,10 @@ async function waitForNewReport(page: Page, dateFrom: string, dateTo: string): P
 
   await saveScreenshot(page, 'history-tab')
 
+  // 쿠팡이 생성 요청을 무음으로 무시하면 목록에 요청 행이 아예 등록되지 않는다 —
+  // 30초가 지나도 not_found면 "보고서 만들기"를 1회 재클릭한다. (2026-08-01 실패 회고)
+  let recreateAttempted = false
+
   for (let i = 0; i < 60; i++) {
     await page.waitForTimeout(3000)
 
@@ -656,6 +666,22 @@ async function waitForNewReport(page: Page, dateFrom: string, dateTo: string): P
     if (found === 'ready') {
       console.log(`  → 보고서 다운로드 가능! (${(i + 1) * 3}초)`)
       return
+    }
+
+    if (!recreateAttempted && i >= 10 && found === 'not_found') {
+      recreateAttempted = true
+      console.log(`  → 요청 행 미등록 (${(i + 1) * 3}초) — "보고서 만들기" 재클릭 시도`)
+      const createBtn = page.locator('button:has-text("보고서 만들기")').first()
+      const clickable =
+        (await createBtn.isVisible().catch(() => false)) &&
+        !(await createBtn.isDisabled().catch(() => true))
+      if (clickable) {
+        await createBtn.click()
+        await page.waitForTimeout(2000)
+        await saveScreenshot(page, 'report-recreate')
+      } else {
+        console.log('  → 재클릭 불가 (버튼 미표시/비활성)')
+      }
     }
 
     if (i % 5 === 0) {
