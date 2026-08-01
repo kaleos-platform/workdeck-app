@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
     }
   })()
 
-  const [rows, total, unclassified, review, dup, classified, cats] = await Promise.all([
+  const [rows, total, unclassified, review, dup, dupTotal, classified, cats] = await Promise.all([
     prisma.finStagedRow.findMany({
       where: { ...base, ...tabWhere },
       orderBy: { txnDate: 'asc' },
@@ -82,6 +82,8 @@ export async function GET(req: NextRequest) {
     prisma.finStagedRow.count({ where: { ...base, ...activeQueue } }),
     prisma.finStagedRow.count({ where: { ...base, classStatus: 'UNCLASSIFIED', ...activeQueue } }),
     prisma.finStagedRow.count({ where: { ...base, classStatus: 'REVIEW', ...activeQueue } }),
+    // 중복 배지 = 미결정(DUP_CHANGED)만 — 제외(DUP_SAME)/유지(DUP_OVERWRITE) 결정 시 감소
+    prisma.finStagedRow.count({ where: { ...base, resolution: 'DUP_CHANGED' } }),
     prisma.finStagedRow.count({ where: { ...base, resolution: { in: [...DUP] } } }),
     prisma.finStagedRow.count({ where: { ...base, classStatus: 'CLASSIFIED', ...activeQueue } }),
     prisma.finCategory.findMany({
@@ -108,6 +110,6 @@ export async function GET(req: NextRequest) {
             )
           : null,
     })),
-    counts: { total, unclassified, review, dup, classified },
+    counts: { total, unclassified, review, dup, dupTotal, classified },
   })
 }
