@@ -4,6 +4,7 @@
  *   - categoryId → CLASSIFIED + categoryId (일괄은 자동 학습 안 함 — 이질적 선택의 규칙 폭증 방지)
  *   - resolution → 중복 처리(NEW=유지, DUP_SAME=제외, DUP_CHANGED=자동반영, DUP_OVERWRITE=유지·덮어쓰기)
  *   - memo → 일괄 메모 설정(동일 적요 자동 적용 시 분류와 함께 전파)
+ *   - action: 'delete' → 스테이징 행 물리 삭제(DRAFT 임포트 한정)
  * 보안: 서버에서 spaceId 스코프로만 갱신(클라이언트 id 신뢰 안 함).
  */
 import { NextRequest, NextResponse } from 'next/server'
@@ -24,6 +25,14 @@ export async function POST(req: NextRequest) {
     ? body.ids.filter((x: unknown): x is string => typeof x === 'string')
     : []
   if (ids.length === 0) return errorResponse('대상 행이 없습니다', 400)
+
+  // ── 삭제 ── 저장 전 대기열에서만 제거(DRAFT 임포트 한정). 커밋 전이므로 스냅샷 무관.
+  if (body?.action === 'delete') {
+    const res = await prisma.finStagedRow.deleteMany({
+      where: { id: { in: ids }, spaceId, import: { status: 'DRAFT' } },
+    })
+    return NextResponse.json({ deleted: res.count })
+  }
 
   const data: {
     categoryId?: string
