@@ -3277,7 +3277,7 @@ model HiringPostingManager {
 // 공고 상세 리치 블록 (Excalidraw 캔버스 — data JSON + export 이미지 storage 키)
 model HiringContent {
   id          String                  @id @default(cuid())
-  spaceId     String
+  spaceId     String? // null = 글로벌 샘플 템플릿 소속 블록
   sourceType  HiringContentSourceType
   postingId   String? // sourceType=POSTING_DETAIL 일 때
   templateId  String? // sourceType=DETAIL_TEMPLATE 일 때
@@ -3287,7 +3287,7 @@ model HiringContent {
   imagePath   String? // hiring-assets 버킷 내 export PNG 경로
   sortOrder   Int                     @default(0)
 
-  space    Space                 @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space    Space?                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   posting  HiringPosting?        @relation(fields: [postingId], references: [id], onDelete: Cascade)
   template HiringDetailTemplate? @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
@@ -3302,12 +3302,14 @@ model HiringContent {
 // 재사용 상세 템플릿
 model HiringDetailTemplate {
   id        String  @id @default(cuid())
-  spaceId   String
+  spaceId   String? // null = 글로벌 샘플 (전 워크스페이스 읽기전용 공유)
   name      String
   data      Json? // 섹션 블록 JSON
   imagePath String? // 대표 이미지 storage 경로
+  isSample  Boolean @default(false) // 글로벌 샘플 — 편집/삭제 불가, 적용만 가능
+  sourceRef String? @unique // 이관 출처 키 (opening detail_template id) — 재실행 멱등성용
 
-  space    Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space    Space?          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   contents HiringContent[]
 
   createdAt DateTime @default(now())

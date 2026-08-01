@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Pencil, Trash2, Check, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -19,6 +20,7 @@ export type TemplateRow = {
   name: string
   blockCount: number
   updatedAt: string
+  isSample: boolean
 }
 
 export function TemplatesManager({ initialTemplates }: { initialTemplates: TemplateRow[] }) {
@@ -38,11 +40,18 @@ export function TemplatesManager({ initialTemplates }: { initialTemplates: Templ
     const { templates: rows } = await res.json()
     setTemplates(
       rows.map(
-        (t: { id: string; name: string; updatedAt: string; _count: { contents: number } }) => ({
+        (t: {
+          id: string
+          name: string
+          updatedAt: string
+          isSample: boolean
+          _count: { contents: number }
+        }) => ({
           id: t.id,
           name: t.name,
           blockCount: t._count.contents,
           updatedAt: t.updatedAt,
+          isSample: t.isSample,
         })
       )
     )
@@ -119,17 +128,30 @@ export function TemplatesManager({ initialTemplates }: { initialTemplates: Templ
                       </Button>
                     </div>
                   ) : (
-                    t.name
+                    <span className="inline-flex items-center gap-2">
+                      {t.name}
+                      {t.isSample && (
+                        <Badge variant="secondary" className="font-normal">
+                          샘플
+                        </Badge>
+                      )}
+                    </span>
                   )}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">{t.blockCount}</TableCell>
                 <TableCell className="text-right">
-                  <Button size="icon-sm" variant="ghost" onClick={() => openEdit(t)}>
-                    <Pencil />
-                  </Button>
-                  <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(t.id)}>
-                    <Trash2 />
-                  </Button>
+                  {t.isSample ? (
+                    <span className="text-xs text-muted-foreground">읽기전용</span>
+                  ) : (
+                    <>
+                      <Button size="icon-sm" variant="ghost" onClick={() => openEdit(t)}>
+                        <Pencil />
+                      </Button>
+                      <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(t.id)}>
+                        <Trash2 />
+                      </Button>
+                    </>
+                  )}
                 </TableCell>
               </TableRow>
             ))

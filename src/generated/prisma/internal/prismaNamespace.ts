@@ -12622,6 +12622,8 @@ export const HiringDetailTemplateScalarFieldEnum = {
   name: 'name',
   data: 'data',
   imagePath: 'imagePath',
+  isSample: 'isSample',
+  sourceRef: 'sourceRef',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

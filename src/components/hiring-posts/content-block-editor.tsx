@@ -46,6 +46,7 @@ type TemplateItem = {
   id: string
   name: string
   updatedAt: string
+  isSample: boolean
   _count: { contents: number }
 }
 
@@ -701,7 +702,12 @@ export function ContentBlockEditor({
                     onChange={() => setSelectedTemplateId(t.id)}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{t.name}</div>
+                    <div className="truncate text-sm font-medium">
+                      {t.name}
+                      {t.isSample && (
+                        <span className="ml-2 text-xs text-muted-foreground">샘플</span>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       블록 {t._count.contents}개 · {formatTemplateAt(t.updatedAt)}
                     </div>
