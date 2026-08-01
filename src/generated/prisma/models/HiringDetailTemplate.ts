@@ -29,6 +29,8 @@ export type HiringDetailTemplateMinAggregateOutputType = {
   spaceId: string | null
   name: string | null
   imagePath: string | null
+  isSample: boolean | null
+  sourceRef: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +40,8 @@ export type HiringDetailTemplateMaxAggregateOutputType = {
   spaceId: string | null
   name: string | null
   imagePath: string | null
+  isSample: boolean | null
+  sourceRef: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,6 +52,8 @@ export type HiringDetailTemplateCountAggregateOutputType = {
   name: number
   data: number
   imagePath: number
+  isSample: number
+  sourceRef: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -59,6 +65,8 @@ export type HiringDetailTemplateMinAggregateInputType = {
   spaceId?: true
   name?: true
   imagePath?: true
+  isSample?: true
+  sourceRef?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -68,6 +76,8 @@ export type HiringDetailTemplateMaxAggregateInputType = {
   spaceId?: true
   name?: true
   imagePath?: true
+  isSample?: true
+  sourceRef?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -78,6 +88,8 @@ export type HiringDetailTemplateCountAggregateInputType = {
   name?: true
   data?: true
   imagePath?: true
+  isSample?: true
+  sourceRef?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -157,10 +169,12 @@ export type HiringDetailTemplateGroupByArgs<ExtArgs extends runtime.Types.Extens
 
 export type HiringDetailTemplateGroupByOutputType = {
   id: string
-  spaceId: string
+  spaceId: string | null
   name: string
   data: runtime.JsonValue | null
   imagePath: string | null
+  isSample: boolean
+  sourceRef: string | null
   createdAt: Date
   updatedAt: Date
   _count: HiringDetailTemplateCountAggregateOutputType | null
@@ -188,22 +202,26 @@ export type HiringDetailTemplateWhereInput = {
   OR?: Prisma.HiringDetailTemplateWhereInput[]
   NOT?: Prisma.HiringDetailTemplateWhereInput | Prisma.HiringDetailTemplateWhereInput[]
   id?: Prisma.StringFilter<"HiringDetailTemplate"> | string
-  spaceId?: Prisma.StringFilter<"HiringDetailTemplate"> | string
+  spaceId?: Prisma.StringNullableFilter<"HiringDetailTemplate"> | string | null
   name?: Prisma.StringFilter<"HiringDetailTemplate"> | string
   data?: Prisma.JsonNullableFilter<"HiringDetailTemplate">
   imagePath?: Prisma.StringNullableFilter<"HiringDetailTemplate"> | string | null
+  isSample?: Prisma.BoolFilter<"HiringDetailTemplate"> | boolean
+  sourceRef?: Prisma.StringNullableFilter<"HiringDetailTemplate"> | string | null
   createdAt?: Prisma.DateTimeFilter<"HiringDetailTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HiringDetailTemplate"> | Date | string
-  space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  space?: Prisma.XOR<Prisma.SpaceNullableScalarRelationFilter, Prisma.SpaceWhereInput> | null
   contents?: Prisma.HiringContentListRelationFilter
 }
 
 export type HiringDetailTemplateOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  spaceId?: Prisma.SortOrder
+  spaceId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   data?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePath?: Prisma.SortOrderInput | Prisma.SortOrder
+  isSample?: Prisma.SortOrder
+  sourceRef?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -212,25 +230,29 @@ export type HiringDetailTemplateOrderByWithRelationInput = {
 
 export type HiringDetailTemplateWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  sourceRef?: string
   AND?: Prisma.HiringDetailTemplateWhereInput | Prisma.HiringDetailTemplateWhereInput[]
   OR?: Prisma.HiringDetailTemplateWhereInput[]
   NOT?: Prisma.HiringDetailTemplateWhereInput | Prisma.HiringDetailTemplateWhereInput[]
-  spaceId?: Prisma.StringFilter<"HiringDetailTemplate"> | string
+  spaceId?: Prisma.StringNullableFilter<"HiringDetailTemplate"> | string | null
   name?: Prisma.StringFilter<"HiringDetailTemplate"> | string
   data?: Prisma.JsonNullableFilter<"HiringDetailTemplate">
   imagePath?: Prisma.StringNullableFilter<"HiringDetailTemplate"> | string | null
+  isSample?: Prisma.BoolFilter<"HiringDetailTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"HiringDetailTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HiringDetailTemplate"> | Date | string
-  space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  space?: Prisma.XOR<Prisma.SpaceNullableScalarRelationFilter, Prisma.SpaceWhereInput> | null
   contents?: Prisma.HiringContentListRelationFilter
-}, "id">
+}, "id" | "sourceRef">
 
 export type HiringDetailTemplateOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  spaceId?: Prisma.SortOrder
+  spaceId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   data?: Prisma.SortOrderInput | Prisma.SortOrder
   imagePath?: Prisma.SortOrderInput | Prisma.SortOrder
+  isSample?: Prisma.SortOrder
+  sourceRef?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.HiringDetailTemplateCountOrderByAggregateInput
@@ -243,10 +265,12 @@ export type HiringDetailTemplateScalarWhereWithAggregatesInput = {
   OR?: Prisma.HiringDetailTemplateScalarWhereWithAggregatesInput[]
   NOT?: Prisma.HiringDetailTemplateScalarWhereWithAggregatesInput | Prisma.HiringDetailTemplateScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"HiringDetailTemplate"> | string
-  spaceId?: Prisma.StringWithAggregatesFilter<"HiringDetailTemplate"> | string
+  spaceId?: Prisma.StringNullableWithAggregatesFilter<"HiringDetailTemplate"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"HiringDetailTemplate"> | string
   data?: Prisma.JsonNullableWithAggregatesFilter<"HiringDetailTemplate">
   imagePath?: Prisma.StringNullableWithAggregatesFilter<"HiringDetailTemplate"> | string | null
+  isSample?: Prisma.BoolWithAggregatesFilter<"HiringDetailTemplate"> | boolean
+  sourceRef?: Prisma.StringNullableWithAggregatesFilter<"HiringDetailTemplate"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"HiringDetailTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"HiringDetailTemplate"> | Date | string
 }
@@ -256,18 +280,22 @@ export type HiringDetailTemplateCreateInput = {
   name: string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
+  isSample?: boolean
+  sourceRef?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutHiringDetailTemplatesInput
+  space?: Prisma.SpaceCreateNestedOneWithoutHiringDetailTemplatesInput
   contents?: Prisma.HiringContentCreateNestedManyWithoutTemplateInput
 }
 
 export type HiringDetailTemplateUncheckedCreateInput = {
   id?: string
-  spaceId: string
+  spaceId?: string | null
   name: string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
+  isSample?: boolean
+  sourceRef?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutTemplateInput
@@ -278,18 +306,22 @@ export type HiringDetailTemplateUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSample?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutHiringDetailTemplatesNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutHiringDetailTemplatesNestedInput
   contents?: Prisma.HiringContentUpdateManyWithoutTemplateNestedInput
 }
 
 export type HiringDetailTemplateUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSample?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contents?: Prisma.HiringContentUncheckedUpdateManyWithoutTemplateNestedInput
@@ -297,10 +329,12 @@ export type HiringDetailTemplateUncheckedUpdateInput = {
 
 export type HiringDetailTemplateCreateManyInput = {
   id?: string
-  spaceId: string
+  spaceId?: string | null
   name: string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
+  isSample?: boolean
+  sourceRef?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -310,16 +344,20 @@ export type HiringDetailTemplateUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSample?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type HiringDetailTemplateUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSample?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -345,6 +383,8 @@ export type HiringDetailTemplateCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   data?: Prisma.SortOrder
   imagePath?: Prisma.SortOrder
+  isSample?: Prisma.SortOrder
+  sourceRef?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -354,6 +394,8 @@ export type HiringDetailTemplateMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   imagePath?: Prisma.SortOrder
+  isSample?: Prisma.SortOrder
+  sourceRef?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -363,6 +405,8 @@ export type HiringDetailTemplateMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   imagePath?: Prisma.SortOrder
+  isSample?: Prisma.SortOrder
+  sourceRef?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -430,6 +474,8 @@ export type HiringDetailTemplateCreateWithoutSpaceInput = {
   name: string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
+  isSample?: boolean
+  sourceRef?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contents?: Prisma.HiringContentCreateNestedManyWithoutTemplateInput
@@ -440,6 +486,8 @@ export type HiringDetailTemplateUncheckedCreateWithoutSpaceInput = {
   name: string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
+  isSample?: boolean
+  sourceRef?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutTemplateInput
@@ -476,10 +524,12 @@ export type HiringDetailTemplateScalarWhereInput = {
   OR?: Prisma.HiringDetailTemplateScalarWhereInput[]
   NOT?: Prisma.HiringDetailTemplateScalarWhereInput | Prisma.HiringDetailTemplateScalarWhereInput[]
   id?: Prisma.StringFilter<"HiringDetailTemplate"> | string
-  spaceId?: Prisma.StringFilter<"HiringDetailTemplate"> | string
+  spaceId?: Prisma.StringNullableFilter<"HiringDetailTemplate"> | string | null
   name?: Prisma.StringFilter<"HiringDetailTemplate"> | string
   data?: Prisma.JsonNullableFilter<"HiringDetailTemplate">
   imagePath?: Prisma.StringNullableFilter<"HiringDetailTemplate"> | string | null
+  isSample?: Prisma.BoolFilter<"HiringDetailTemplate"> | boolean
+  sourceRef?: Prisma.StringNullableFilter<"HiringDetailTemplate"> | string | null
   createdAt?: Prisma.DateTimeFilter<"HiringDetailTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HiringDetailTemplate"> | Date | string
 }
@@ -489,17 +539,21 @@ export type HiringDetailTemplateCreateWithoutContentsInput = {
   name: string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
+  isSample?: boolean
+  sourceRef?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutHiringDetailTemplatesInput
+  space?: Prisma.SpaceCreateNestedOneWithoutHiringDetailTemplatesInput
 }
 
 export type HiringDetailTemplateUncheckedCreateWithoutContentsInput = {
   id?: string
-  spaceId: string
+  spaceId?: string | null
   name: string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
+  isSample?: boolean
+  sourceRef?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -525,17 +579,21 @@ export type HiringDetailTemplateUpdateWithoutContentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSample?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutHiringDetailTemplatesNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutHiringDetailTemplatesNestedInput
 }
 
 export type HiringDetailTemplateUncheckedUpdateWithoutContentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSample?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -545,6 +603,8 @@ export type HiringDetailTemplateCreateManySpaceInput = {
   name: string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: string | null
+  isSample?: boolean
+  sourceRef?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -554,6 +614,8 @@ export type HiringDetailTemplateUpdateWithoutSpaceInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSample?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contents?: Prisma.HiringContentUpdateManyWithoutTemplateNestedInput
@@ -564,6 +626,8 @@ export type HiringDetailTemplateUncheckedUpdateWithoutSpaceInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSample?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contents?: Prisma.HiringContentUncheckedUpdateManyWithoutTemplateNestedInput
@@ -574,6 +638,8 @@ export type HiringDetailTemplateUncheckedUpdateManyWithoutSpaceInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   data?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSample?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sourceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -615,9 +681,11 @@ export type HiringDetailTemplateSelect<ExtArgs extends runtime.Types.Extensions.
   name?: boolean
   data?: boolean
   imagePath?: boolean
+  isSample?: boolean
+  sourceRef?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringDetailTemplate$spaceArgs<ExtArgs>
   contents?: boolean | Prisma.HiringDetailTemplate$contentsArgs<ExtArgs>
   _count?: boolean | Prisma.HiringDetailTemplateCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["hiringDetailTemplate"]>
@@ -628,9 +696,11 @@ export type HiringDetailTemplateSelectCreateManyAndReturn<ExtArgs extends runtim
   name?: boolean
   data?: boolean
   imagePath?: boolean
+  isSample?: boolean
+  sourceRef?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringDetailTemplate$spaceArgs<ExtArgs>
 }, ExtArgs["result"]["hiringDetailTemplate"]>
 
 export type HiringDetailTemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -639,9 +709,11 @@ export type HiringDetailTemplateSelectUpdateManyAndReturn<ExtArgs extends runtim
   name?: boolean
   data?: boolean
   imagePath?: boolean
+  isSample?: boolean
+  sourceRef?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringDetailTemplate$spaceArgs<ExtArgs>
 }, ExtArgs["result"]["hiringDetailTemplate"]>
 
 export type HiringDetailTemplateSelectScalar = {
@@ -650,35 +722,39 @@ export type HiringDetailTemplateSelectScalar = {
   name?: boolean
   data?: boolean
   imagePath?: boolean
+  isSample?: boolean
+  sourceRef?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type HiringDetailTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "data" | "imagePath" | "createdAt" | "updatedAt", ExtArgs["result"]["hiringDetailTemplate"]>
+export type HiringDetailTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "data" | "imagePath" | "isSample" | "sourceRef" | "createdAt" | "updatedAt", ExtArgs["result"]["hiringDetailTemplate"]>
 export type HiringDetailTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringDetailTemplate$spaceArgs<ExtArgs>
   contents?: boolean | Prisma.HiringDetailTemplate$contentsArgs<ExtArgs>
   _count?: boolean | Prisma.HiringDetailTemplateCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type HiringDetailTemplateIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringDetailTemplate$spaceArgs<ExtArgs>
 }
 export type HiringDetailTemplateIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringDetailTemplate$spaceArgs<ExtArgs>
 }
 
 export type $HiringDetailTemplatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "HiringDetailTemplate"
   objects: {
-    space: Prisma.$SpacePayload<ExtArgs>
+    space: Prisma.$SpacePayload<ExtArgs> | null
     contents: Prisma.$HiringContentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    spaceId: string
+    spaceId: string | null
     name: string
     data: runtime.JsonValue | null
     imagePath: string | null
+    isSample: boolean
+    sourceRef: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["hiringDetailTemplate"]>
@@ -1075,7 +1151,7 @@ readonly fields: HiringDetailTemplateFieldRefs;
  */
 export interface Prisma__HiringDetailTemplateClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  space<T extends Prisma.HiringDetailTemplate$spaceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HiringDetailTemplate$spaceArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   contents<T extends Prisma.HiringDetailTemplate$contentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HiringDetailTemplate$contentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringContentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1111,6 +1187,8 @@ export interface HiringDetailTemplateFieldRefs {
   readonly name: Prisma.FieldRef<"HiringDetailTemplate", 'String'>
   readonly data: Prisma.FieldRef<"HiringDetailTemplate", 'Json'>
   readonly imagePath: Prisma.FieldRef<"HiringDetailTemplate", 'String'>
+  readonly isSample: Prisma.FieldRef<"HiringDetailTemplate", 'Boolean'>
+  readonly sourceRef: Prisma.FieldRef<"HiringDetailTemplate", 'String'>
   readonly createdAt: Prisma.FieldRef<"HiringDetailTemplate", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"HiringDetailTemplate", 'DateTime'>
 }
@@ -1506,6 +1584,25 @@ export type HiringDetailTemplateDeleteManyArgs<ExtArgs extends runtime.Types.Ext
    * Limit how many HiringDetailTemplates to delete.
    */
   limit?: number
+}
+
+/**
+ * HiringDetailTemplate.space
+ */
+export type HiringDetailTemplate$spaceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Space
+   */
+  select?: Prisma.SpaceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Space
+   */
+  omit?: Prisma.SpaceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SpaceInclude<ExtArgs> | null
+  where?: Prisma.SpaceWhereInput
 }
 
 /**

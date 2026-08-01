@@ -1819,10 +1819,12 @@ export type SpaceCreateNestedOneWithoutHiringContentsInput = {
   connect?: Prisma.SpaceWhereUniqueInput
 }
 
-export type SpaceUpdateOneRequiredWithoutHiringContentsNestedInput = {
+export type SpaceUpdateOneWithoutHiringContentsNestedInput = {
   create?: Prisma.XOR<Prisma.SpaceCreateWithoutHiringContentsInput, Prisma.SpaceUncheckedCreateWithoutHiringContentsInput>
   connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutHiringContentsInput
   upsert?: Prisma.SpaceUpsertWithoutHiringContentsInput
+  disconnect?: Prisma.SpaceWhereInput | boolean
+  delete?: Prisma.SpaceWhereInput | boolean
   connect?: Prisma.SpaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutHiringContentsInput, Prisma.SpaceUpdateWithoutHiringContentsInput>, Prisma.SpaceUncheckedUpdateWithoutHiringContentsInput>
 }
@@ -1833,10 +1835,12 @@ export type SpaceCreateNestedOneWithoutHiringDetailTemplatesInput = {
   connect?: Prisma.SpaceWhereUniqueInput
 }
 
-export type SpaceUpdateOneRequiredWithoutHiringDetailTemplatesNestedInput = {
+export type SpaceUpdateOneWithoutHiringDetailTemplatesNestedInput = {
   create?: Prisma.XOR<Prisma.SpaceCreateWithoutHiringDetailTemplatesInput, Prisma.SpaceUncheckedCreateWithoutHiringDetailTemplatesInput>
   connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutHiringDetailTemplatesInput
   upsert?: Prisma.SpaceUpsertWithoutHiringDetailTemplatesInput
+  disconnect?: Prisma.SpaceWhereInput | boolean
+  delete?: Prisma.SpaceWhereInput | boolean
   connect?: Prisma.SpaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutHiringDetailTemplatesInput, Prisma.SpaceUpdateWithoutHiringDetailTemplatesInput>, Prisma.SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput>
 }

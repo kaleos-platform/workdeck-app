@@ -9,8 +9,8 @@ export default async function TemplatesPage() {
   if ('error' in resolved) redirect('/my-deck')
 
   const rows = await prisma.hiringDetailTemplate.findMany({
-    where: { spaceId: resolved.space.id },
-    orderBy: { updatedAt: 'desc' },
+    where: { OR: [{ spaceId: resolved.space.id }, { isSample: true }] },
+    orderBy: [{ isSample: 'asc' }, { updatedAt: 'desc' }],
     include: { _count: { select: { contents: true } } },
   })
   const templates: TemplateRow[] = rows.map((t) => ({
@@ -18,6 +18,7 @@ export default async function TemplatesPage() {
     name: t.name,
     blockCount: t._count.contents,
     updatedAt: t.updatedAt.toISOString(),
+    isSample: t.isSample,
   }))
 
   return (

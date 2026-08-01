@@ -30,7 +30,10 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (!posting) return errorResponse('공고를 찾을 수 없습니다', 404)
 
   const template = await prisma.hiringDetailTemplate.findFirst({
-    where: { id: parsed.data.templateId, spaceId: resolved.space.id },
+    where: {
+      id: parsed.data.templateId,
+      OR: [{ spaceId: resolved.space.id }, { isSample: true }],
+    },
     select: {
       id: true,
       name: true,

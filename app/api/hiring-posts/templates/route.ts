@@ -10,8 +10,8 @@ export async function GET() {
   if ('error' in resolved) return resolved.error
 
   const templates = await prisma.hiringDetailTemplate.findMany({
-    where: { spaceId: resolved.space.id },
-    orderBy: { updatedAt: 'desc' },
+    where: { OR: [{ spaceId: resolved.space.id }, { isSample: true }] },
+    orderBy: [{ isSample: 'asc' }, { updatedAt: 'desc' }],
     include: { _count: { select: { contents: true } } },
   })
   return NextResponse.json({ templates })

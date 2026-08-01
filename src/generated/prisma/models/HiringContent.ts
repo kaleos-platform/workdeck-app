@@ -219,7 +219,7 @@ export type HiringContentGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 
 export type HiringContentGroupByOutputType = {
   id: string
-  spaceId: string
+  spaceId: string | null
   sourceType: $Enums.HiringContentSourceType
   postingId: string | null
   templateId: string | null
@@ -257,7 +257,7 @@ export type HiringContentWhereInput = {
   OR?: Prisma.HiringContentWhereInput[]
   NOT?: Prisma.HiringContentWhereInput | Prisma.HiringContentWhereInput[]
   id?: Prisma.StringFilter<"HiringContent"> | string
-  spaceId?: Prisma.StringFilter<"HiringContent"> | string
+  spaceId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeFilter<"HiringContent"> | $Enums.HiringContentSourceType
   postingId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   templateId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
@@ -268,14 +268,14 @@ export type HiringContentWhereInput = {
   sortOrder?: Prisma.IntFilter<"HiringContent"> | number
   createdAt?: Prisma.DateTimeFilter<"HiringContent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HiringContent"> | Date | string
-  space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  space?: Prisma.XOR<Prisma.SpaceNullableScalarRelationFilter, Prisma.SpaceWhereInput> | null
   posting?: Prisma.XOR<Prisma.HiringPostingNullableScalarRelationFilter, Prisma.HiringPostingWhereInput> | null
   template?: Prisma.XOR<Prisma.HiringDetailTemplateNullableScalarRelationFilter, Prisma.HiringDetailTemplateWhereInput> | null
 }
 
 export type HiringContentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  spaceId?: Prisma.SortOrder
+  spaceId?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   postingId?: Prisma.SortOrderInput | Prisma.SortOrder
   templateId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -296,7 +296,7 @@ export type HiringContentWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.HiringContentWhereInput | Prisma.HiringContentWhereInput[]
   OR?: Prisma.HiringContentWhereInput[]
   NOT?: Prisma.HiringContentWhereInput | Prisma.HiringContentWhereInput[]
-  spaceId?: Prisma.StringFilter<"HiringContent"> | string
+  spaceId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeFilter<"HiringContent"> | $Enums.HiringContentSourceType
   postingId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   templateId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
@@ -307,14 +307,14 @@ export type HiringContentWhereUniqueInput = Prisma.AtLeast<{
   sortOrder?: Prisma.IntFilter<"HiringContent"> | number
   createdAt?: Prisma.DateTimeFilter<"HiringContent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"HiringContent"> | Date | string
-  space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  space?: Prisma.XOR<Prisma.SpaceNullableScalarRelationFilter, Prisma.SpaceWhereInput> | null
   posting?: Prisma.XOR<Prisma.HiringPostingNullableScalarRelationFilter, Prisma.HiringPostingWhereInput> | null
   template?: Prisma.XOR<Prisma.HiringDetailTemplateNullableScalarRelationFilter, Prisma.HiringDetailTemplateWhereInput> | null
 }, "id">
 
 export type HiringContentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  spaceId?: Prisma.SortOrder
+  spaceId?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   postingId?: Prisma.SortOrderInput | Prisma.SortOrder
   templateId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -337,7 +337,7 @@ export type HiringContentScalarWhereWithAggregatesInput = {
   OR?: Prisma.HiringContentScalarWhereWithAggregatesInput[]
   NOT?: Prisma.HiringContentScalarWhereWithAggregatesInput | Prisma.HiringContentScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"HiringContent"> | string
-  spaceId?: Prisma.StringWithAggregatesFilter<"HiringContent"> | string
+  spaceId?: Prisma.StringNullableWithAggregatesFilter<"HiringContent"> | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeWithAggregatesFilter<"HiringContent"> | $Enums.HiringContentSourceType
   postingId?: Prisma.StringNullableWithAggregatesFilter<"HiringContent"> | string | null
   templateId?: Prisma.StringNullableWithAggregatesFilter<"HiringContent"> | string | null
@@ -360,14 +360,14 @@ export type HiringContentCreateInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutHiringContentsInput
+  space?: Prisma.SpaceCreateNestedOneWithoutHiringContentsInput
   posting?: Prisma.HiringPostingCreateNestedOneWithoutContentsInput
   template?: Prisma.HiringDetailTemplateCreateNestedOneWithoutContentsInput
 }
 
 export type HiringContentUncheckedCreateInput = {
   id?: string
-  spaceId: string
+  spaceId?: string | null
   sourceType: $Enums.HiringContentSourceType
   postingId?: string | null
   templateId?: string | null
@@ -390,14 +390,14 @@ export type HiringContentUpdateInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutHiringContentsNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutHiringContentsNestedInput
   posting?: Prisma.HiringPostingUpdateOneWithoutContentsNestedInput
   template?: Prisma.HiringDetailTemplateUpdateOneWithoutContentsNestedInput
 }
 
 export type HiringContentUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -412,7 +412,7 @@ export type HiringContentUncheckedUpdateInput = {
 
 export type HiringContentCreateManyInput = {
   id?: string
-  spaceId: string
+  spaceId?: string | null
   sourceType: $Enums.HiringContentSourceType
   postingId?: string | null
   templateId?: string | null
@@ -439,7 +439,7 @@ export type HiringContentUpdateManyMutationInput = {
 
 export type HiringContentUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -702,7 +702,7 @@ export type HiringContentScalarWhereInput = {
   OR?: Prisma.HiringContentScalarWhereInput[]
   NOT?: Prisma.HiringContentScalarWhereInput | Prisma.HiringContentScalarWhereInput[]
   id?: Prisma.StringFilter<"HiringContent"> | string
-  spaceId?: Prisma.StringFilter<"HiringContent"> | string
+  spaceId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeFilter<"HiringContent"> | $Enums.HiringContentSourceType
   postingId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
   templateId?: Prisma.StringNullableFilter<"HiringContent"> | string | null
@@ -725,13 +725,13 @@ export type HiringContentCreateWithoutPostingInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutHiringContentsInput
+  space?: Prisma.SpaceCreateNestedOneWithoutHiringContentsInput
   template?: Prisma.HiringDetailTemplateCreateNestedOneWithoutContentsInput
 }
 
 export type HiringContentUncheckedCreateWithoutPostingInput = {
   id?: string
-  spaceId: string
+  spaceId?: string | null
   sourceType: $Enums.HiringContentSourceType
   templateId?: string | null
   contentType?: string
@@ -779,13 +779,13 @@ export type HiringContentCreateWithoutTemplateInput = {
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutHiringContentsInput
+  space?: Prisma.SpaceCreateNestedOneWithoutHiringContentsInput
   posting?: Prisma.HiringPostingCreateNestedOneWithoutContentsInput
 }
 
 export type HiringContentUncheckedCreateWithoutTemplateInput = {
   id?: string
-  spaceId: string
+  spaceId?: string | null
   sourceType: $Enums.HiringContentSourceType
   postingId?: string | null
   contentType?: string
@@ -881,7 +881,7 @@ export type HiringContentUncheckedUpdateManyWithoutSpaceInput = {
 
 export type HiringContentCreateManyPostingInput = {
   id?: string
-  spaceId: string
+  spaceId?: string | null
   sourceType: $Enums.HiringContentSourceType
   templateId?: string | null
   contentType?: string
@@ -903,13 +903,13 @@ export type HiringContentUpdateWithoutPostingInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutHiringContentsNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutHiringContentsNestedInput
   template?: Prisma.HiringDetailTemplateUpdateOneWithoutContentsNestedInput
 }
 
 export type HiringContentUncheckedUpdateWithoutPostingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -923,7 +923,7 @@ export type HiringContentUncheckedUpdateWithoutPostingInput = {
 
 export type HiringContentUncheckedUpdateManyWithoutPostingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -937,7 +937,7 @@ export type HiringContentUncheckedUpdateManyWithoutPostingInput = {
 
 export type HiringContentCreateManyTemplateInput = {
   id?: string
-  spaceId: string
+  spaceId?: string | null
   sourceType: $Enums.HiringContentSourceType
   postingId?: string | null
   contentType?: string
@@ -959,13 +959,13 @@ export type HiringContentUpdateWithoutTemplateInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutHiringContentsNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutHiringContentsNestedInput
   posting?: Prisma.HiringPostingUpdateOneWithoutContentsNestedInput
 }
 
 export type HiringContentUncheckedUpdateWithoutTemplateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -979,7 +979,7 @@ export type HiringContentUncheckedUpdateWithoutTemplateInput = {
 
 export type HiringContentUncheckedUpdateManyWithoutTemplateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumHiringContentSourceTypeFieldUpdateOperationsInput | $Enums.HiringContentSourceType
   postingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1006,7 +1006,7 @@ export type HiringContentSelect<ExtArgs extends runtime.Types.Extensions.Interna
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringContent$spaceArgs<ExtArgs>
   posting?: boolean | Prisma.HiringContent$postingArgs<ExtArgs>
   template?: boolean | Prisma.HiringContent$templateArgs<ExtArgs>
 }, ExtArgs["result"]["hiringContent"]>
@@ -1024,7 +1024,7 @@ export type HiringContentSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringContent$spaceArgs<ExtArgs>
   posting?: boolean | Prisma.HiringContent$postingArgs<ExtArgs>
   template?: boolean | Prisma.HiringContent$templateArgs<ExtArgs>
 }, ExtArgs["result"]["hiringContent"]>
@@ -1042,7 +1042,7 @@ export type HiringContentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringContent$spaceArgs<ExtArgs>
   posting?: boolean | Prisma.HiringContent$postingArgs<ExtArgs>
   template?: boolean | Prisma.HiringContent$templateArgs<ExtArgs>
 }, ExtArgs["result"]["hiringContent"]>
@@ -1064,17 +1064,17 @@ export type HiringContentSelectScalar = {
 
 export type HiringContentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "sourceType" | "postingId" | "templateId" | "contentType" | "title" | "data" | "imagePath" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["hiringContent"]>
 export type HiringContentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringContent$spaceArgs<ExtArgs>
   posting?: boolean | Prisma.HiringContent$postingArgs<ExtArgs>
   template?: boolean | Prisma.HiringContent$templateArgs<ExtArgs>
 }
 export type HiringContentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringContent$spaceArgs<ExtArgs>
   posting?: boolean | Prisma.HiringContent$postingArgs<ExtArgs>
   template?: boolean | Prisma.HiringContent$templateArgs<ExtArgs>
 }
 export type HiringContentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.HiringContent$spaceArgs<ExtArgs>
   posting?: boolean | Prisma.HiringContent$postingArgs<ExtArgs>
   template?: boolean | Prisma.HiringContent$templateArgs<ExtArgs>
 }
@@ -1082,13 +1082,13 @@ export type HiringContentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Type
 export type $HiringContentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "HiringContent"
   objects: {
-    space: Prisma.$SpacePayload<ExtArgs>
+    space: Prisma.$SpacePayload<ExtArgs> | null
     posting: Prisma.$HiringPostingPayload<ExtArgs> | null
     template: Prisma.$HiringDetailTemplatePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    spaceId: string
+    spaceId: string | null
     sourceType: $Enums.HiringContentSourceType
     postingId: string | null
     templateId: string | null
@@ -1493,7 +1493,7 @@ readonly fields: HiringContentFieldRefs;
  */
 export interface Prisma__HiringContentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  space<T extends Prisma.HiringContent$spaceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HiringContent$spaceArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   posting<T extends Prisma.HiringContent$postingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HiringContent$postingArgs<ExtArgs>>): Prisma.Prisma__HiringPostingClient<runtime.Types.Result.GetResult<Prisma.$HiringPostingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   template<T extends Prisma.HiringContent$templateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HiringContent$templateArgs<ExtArgs>>): Prisma.Prisma__HiringDetailTemplateClient<runtime.Types.Result.GetResult<Prisma.$HiringDetailTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
@@ -1930,6 +1930,25 @@ export type HiringContentDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many HiringContents to delete.
    */
   limit?: number
+}
+
+/**
+ * HiringContent.space
+ */
+export type HiringContent$spaceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Space
+   */
+  select?: Prisma.SpaceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Space
+   */
+  omit?: Prisma.SpaceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SpaceInclude<ExtArgs> | null
+  where?: Prisma.SpaceWhereInput
 }
 
 /**
