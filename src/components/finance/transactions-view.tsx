@@ -43,6 +43,8 @@ import {
 import { classStatusBadge, accountKindLabel, formatWon } from '@/components/finance/format'
 import { MEMO_MAX } from '@/lib/finance/memo'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
+import { useShiftSelect } from '@/components/finance/use-shift-select'
+import { ImportDeleteDialog } from '@/components/finance/import-delete-dialog'
 import { CategoryMultiCombobox } from '@/components/finance/category-multi-combobox'
 import { AddCategoryDialog } from '@/components/finance/add-category-dialog'
 import {
@@ -97,7 +99,10 @@ type StagedCounts = {
   total: number
   unclassified: number
   review: number
+  /** 중복 미결정(DUP_CHANGED)만 — 제외/유지 결정 시 감소 */
   dup: number
+  /** 중복 전체(제외·유지 결정 포함) — 중복 탭 캡션용 */
+  dupTotal?: number
   classified: number
 }
 
@@ -203,7 +208,11 @@ export function TransactionsView() {
   const [filterCategoryIds, setFilterCategoryIds] = useState<string[]>(() => {
     const ids = new Set<string>()
     const multi = searchParams.get('categoryIds')
-    if (multi) multi.split(',').filter(Boolean).forEach((id) => ids.add(id))
+    if (multi)
+      multi
+        .split(',')
+        .filter(Boolean)
+        .forEach((id) => ids.add(id))
     const single = searchParams.get('categoryId')
     if (single) ids.add(single)
     if (searchParams.get('uncategorized') === '1') ids.add(UNCATEGORIZED_OPTION_ID)
@@ -532,6 +541,29 @@ export function TransactionsView() {
     }
   }
 
+  // 스테이징 행 삭제(개별·일괄) — 저장 전 대기열에서 물리 제거
+  const handleStagingDelete = async (ids: string[]) => {
+    try {
+      const res = await fetch('/api/finance/staging/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, action: 'delete' }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
+      toast.success(`${data.deleted ?? 0}건을 삭제했습니다`)
+      void loadStaging(stagingTab)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '삭제 실패')
+    }
+  }
+
+  // 업로드 파일 단위 삭제 후 갱신 — 저장된 거래까지 지웠으면 전체 거래도 재조회
+  const handleImportDeleted = (deletedTransactions: number) => {
+    void loadStaging(stagingTab)
+    if (deletedTransactions > 0) void loadTransactions()
+  }
+
   // 중복 처리: 유지 → DUP_OVERWRITE(확정 시 계정과목 덮어쓰기), 제외 → DUP_SAME
   const handleDupResolution = async (rowId: string, resolution: FinStagedResolution) => {
     try {
@@ -756,6 +788,8 @@ export function TransactionsView() {
           onMemoSave={handleStagingMemo}
           onBulkClassify={handleBulkClassify}
           onBulkResolution={handleBulkResolution}
+          onDelete={handleStagingDelete}
+          onImportDeleted={handleImportDeleted}
           onCommitRequest={() => setCommitDialogOpen(true)}
         />
       </TabsContent>
@@ -897,6 +931,8 @@ function StagingPanel({
   onMemoSave,
   onBulkClassify,
   onBulkResolution,
+  onDelete,
+  onImportDeleted,
   onCommitRequest,
 }: {
   rows: StagedRow[]
@@ -914,30 +950,24 @@ function StagingPanel({
   onMemoSave: (rowId: string, memo: string | null) => Promise<void>
   onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
   onBulkResolution: (ids: string[], resolution: FinStagedResolution) => Promise<void>
+  onDelete: (ids: string[]) => Promise<void>
+  onImportDeleted: (deletedTransactions: number) => void
   onCommitRequest: () => void
 }) {
   const hasDraft = counts.total > 0
 
-  // 다중 선택 상태. selectedInView가 현재 탭의 행으로 스코프하므로 탭 전환 시 자연히 정리된다.
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  // 다중 선택 상태(shift 연속 선택). selectedInView가 현재 탭의 행으로 스코프하므로 탭 전환 시 자연히 정리된다.
   const rowIds = rows.map((r) => r.id)
-  const selectedInView = rowIds.filter((id) => selectedIds.has(id))
-  const allSelected = rowIds.length > 0 && selectedInView.length === rowIds.length
-  const toggleOne = (id: string) =>
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  const toggleAll = () =>
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (allSelected) rowIds.forEach((id) => next.delete(id))
-      else rowIds.forEach((id) => next.add(id))
-      return next
-    })
-  const clearSelection = () => setSelectedIds(new Set())
+  const {
+    selectedIds,
+    selectedInView,
+    allSelected,
+    toggleAt,
+    toggleAll,
+    clearSelection,
+    removeFromSelection,
+    checkboxShiftProps,
+  } = useShiftSelect(rowIds)
   const runBulkClassify = async (categoryId: string) => {
     await onBulkClassify(selectedInView, categoryId)
     clearSelection()
@@ -946,6 +976,26 @@ function StagingPanel({
     await onBulkResolution(selectedInView, resolution)
     clearSelection()
   }
+
+  // 삭제 확인 — 대상 id 배열(개별=[id], 일괄=선택분). null이면 닫힘.
+  const [deleteTarget, setDeleteTarget] = useState<string[] | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const runDelete = async () => {
+    if (!deleteTarget || deleting) return
+    setDeleting(true)
+    try {
+      await onDelete(deleteTarget)
+      removeFromSelection(deleteTarget)
+      setDeleteTarget(null)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  // 업로드 파일 관리(파일 단위 일괄삭제) 다이얼로그
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+
+  const dupDecided = counts.dupTotal != null ? counts.dupTotal - counts.dup : null
 
   return (
     <div className="space-y-3">
@@ -980,7 +1030,23 @@ function StagingPanel({
             )}
           </button>
         ))}
+        <Button
+          size="sm"
+          variant="outline"
+          className="ml-auto h-7 text-xs"
+          onClick={() => setImportDialogOpen(true)}
+        >
+          업로드 파일 관리
+        </Button>
       </div>
+
+      {/* 중복 탭 캡션 — 배지(미결정)와 탭 목록(전체)의 차이를 설명 */}
+      {tab === 'dup' && dupDecided != null && (counts.dup > 0 || dupDecided > 0) && (
+        <p className="text-xs text-muted-foreground">
+          미결정 <span className="font-medium text-foreground">{counts.dup}</span>건 ·
+          처리됨(제외·유지) <span className="font-medium text-foreground">{dupDecided}</span>건
+        </p>
+      )}
 
       {/* 테이블 */}
       {loading ? (
@@ -1012,21 +1078,24 @@ function StagingPanel({
                 <TableHead className="w-24">상태</TableHead>
                 <TableHead className="w-28">중복 처리</TableHead>
                 <TableHead className="w-40">메모</TableHead>
+                <TableHead className="w-9" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((row) => (
+              {rows.map((row, index) => (
                 <StagingRow
                   key={row.id}
                   row={row}
                   selected={selectedIds.has(row.id)}
-                  onToggleSelect={() => toggleOne(row.id)}
+                  onToggleSelect={(checked) => toggleAt(index, checked)}
+                  checkboxShiftProps={checkboxShiftProps}
                   leafTargets={leafTargets}
                   categoryTree={categoryTree}
                   reloadCategories={reloadCategories}
                   onClassify={onClassify}
                   onDupResolution={onDupResolution}
                   onMemoSave={onMemoSave}
+                  onDeleteRequest={() => setDeleteTarget([row.id])}
                 />
               ))}
             </TableBody>
@@ -1053,7 +1122,36 @@ function StagingPanel({
         blockType={uniformBlockType(rows, selectedIds)}
         onClassify={runBulkClassify}
         onResolution={runBulkResolution}
+        onDeleteRequest={() => setDeleteTarget(selectedInView)}
         onClear={clearSelection}
+      />
+
+      {/* 스테이징 삭제 확인 */}
+      <Dialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>처리 대기 내역 삭제</DialogTitle>
+            <DialogDescription>
+              선택한 <strong>{deleteTarget?.length ?? 0}건</strong>을 삭제합니다. 저장 전
+              대기열에서만 제거되며, 같은 파일을 다시 업로드하면 복구됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={() => void runDelete()} disabled={deleting}>
+              {deleting ? '삭제 중...' : `${deleteTarget?.length ?? 0}건 삭제`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 업로드 파일 관리(파일 단위 일괄삭제) */}
+      <ImportDeleteDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onDeleted={onImportDeleted}
       />
     </div>
   )
@@ -1085,6 +1183,7 @@ function StagingBulkBar({
   blockType,
   onClassify,
   onResolution,
+  onDeleteRequest,
   onClear,
 }: {
   selectedCount: number
@@ -1092,6 +1191,7 @@ function StagingBulkBar({
   blockType: FinCategoryType | null
   onClassify: (categoryId: string) => Promise<void>
   onResolution: (resolution: FinStagedResolution) => Promise<void>
+  onDeleteRequest: () => void
   onClear: () => void
 }) {
   const [busy, setBusy] = useState(false)
@@ -1144,6 +1244,17 @@ function StagingBulkBar({
           >
             유지
           </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="h-8 gap-1 px-2.5 text-xs text-red-300 hover:bg-red-500/20 hover:text-red-200"
+            onClick={onDeleteRequest}
+            disabled={busy}
+          >
+            <Trash2 className="size-3.5" />
+            삭제
+          </Button>
         </>
       }
     >
@@ -1158,22 +1269,26 @@ function StagingRow({
   row,
   selected,
   onToggleSelect,
+  checkboxShiftProps,
   leafTargets,
   categoryTree,
   reloadCategories,
   onClassify,
   onDupResolution,
   onMemoSave,
+  onDeleteRequest,
 }: {
   row: StagedRow
   selected: boolean
-  onToggleSelect: () => void
+  onToggleSelect: (checked: boolean) => void
+  checkboxShiftProps: ReturnType<typeof useShiftSelect>['checkboxShiftProps']
   leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
   onMemoSave: (rowId: string, memo: string | null) => Promise<void>
+  onDeleteRequest: () => void
 }) {
   const isDup =
     row.resolution === 'DUP_SAME' ||
@@ -1186,9 +1301,14 @@ function StagingRow({
       data-state={selected ? 'selected' : undefined}
       className={isDup && row.resolution === 'DUP_SAME' ? 'opacity-50' : ''}
     >
-      {/* 선택 */}
-      <TableCell>
-        <Checkbox checked={selected} onCheckedChange={onToggleSelect} aria-label="행 선택" />
+      {/* 선택 — shift+클릭 연속 선택 */}
+      <TableCell className="select-none">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={(v) => onToggleSelect(v === true)}
+          {...checkboxShiftProps}
+          aria-label="행 선택"
+        />
       </TableCell>
 
       {/* 날짜 */}
@@ -1308,6 +1428,19 @@ function StagingRow({
       {/* 메모 */}
       <TableCell>
         <MemoCell memo={row.memo} onSave={(m) => onMemoSave(row.id, m)} />
+      </TableCell>
+
+      {/* 삭제 */}
+      <TableCell>
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={onDeleteRequest}
+          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+          aria-label="행 삭제"
+        >
+          <Trash2 className="size-3.5" />
+        </Button>
       </TableCell>
     </TableRow>
   )
@@ -1439,39 +1572,32 @@ function TransactionsPanel({
   onBulkDelete: (ids: string[]) => Promise<void>
   onBulkLinkLiability: (ids: string[], liabilityId: string | null) => Promise<void>
 }) {
-  // 다중 선택 — selectedInView가 현재 행으로 스코프하므로 필터/조회 후 자연히 정리된다.
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  // 다중 선택(shift 연속 선택) — selectedInView가 현재 행으로 스코프하므로 필터/조회 후 자연히 정리된다.
   const rowIds = rows.map((r) => r.id)
-  const selectedInView = rowIds.filter((id) => selectedIds.has(id))
-  const allSelected = rowIds.length > 0 && selectedInView.length === rowIds.length
-  const toggleOne = (id: string) =>
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  const toggleAll = () =>
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (allSelected) rowIds.forEach((id) => next.delete(id))
-      else rowIds.forEach((id) => next.add(id))
-      return next
-    })
-  const clearSelection = () => setSelectedIds(new Set())
+  const {
+    selectedIds,
+    selectedInView,
+    allSelected,
+    toggleAt,
+    toggleAll,
+    clearSelection,
+    removeFromSelection,
+    checkboxShiftProps,
+  } = useShiftSelect(rowIds)
+  // 삭제 대상 — 개별=[id], 일괄=선택분. null이면 다이얼로그 닫힘.
+  const [deleteTarget, setDeleteTarget] = useState<string[] | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const runBulkClassify = async (categoryId: string) => {
     await onBulkClassify(selectedInView, categoryId)
     clearSelection()
   }
   const runBulkDelete = async () => {
-    if (deleting) return
+    if (!deleteTarget || deleting) return
     setDeleting(true)
     try {
-      await onBulkDelete(selectedInView)
-      setDeleteOpen(false)
-      clearSelection()
+      await onBulkDelete(deleteTarget)
+      removeFromSelection(deleteTarget)
+      setDeleteTarget(null)
     } finally {
       setDeleting(false)
     }
@@ -1714,21 +1840,24 @@ function TransactionsPanel({
                   className="w-24"
                 />
                 <TableHead className="w-40">메모</TableHead>
+                <TableHead className="w-9" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((txn) => (
+              {rows.map((txn, index) => (
                 <TransactionRow
                   key={txn.id}
                   txn={txn}
                   selected={selectedIds.has(txn.id)}
-                  onToggleSelect={() => toggleOne(txn.id)}
+                  onToggleSelect={(checked) => toggleAt(index, checked)}
+                  checkboxShiftProps={checkboxShiftProps}
                   leafTargets={leafTargets}
                   categoryTree={categoryTree}
                   reloadCategories={reloadCategories}
                   onClassify={onClassify}
                   onMemoSave={onMemoSave}
                   onUnlinkLiability={handleUnlinkLiability}
+                  onDeleteRequest={() => setDeleteTarget([txn.id])}
                 />
               ))}
             </TableBody>
@@ -1764,26 +1893,26 @@ function TransactionsPanel({
         onClassify={runBulkClassify}
         onLinkLiability={runBulkLinkLiability}
         onLoadLiabilities={loadLiabilities}
-        onDeleteRequest={() => setDeleteOpen(true)}
+        onDeleteRequest={() => setDeleteTarget(selectedInView)}
         onClear={clearSelection}
       />
 
       {/* 삭제 확인 — 되돌릴 수 없음 */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+      <Dialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>거래 삭제</DialogTitle>
             <DialogDescription>
-              선택한 <strong>{selectedInView.length}건</strong>의 확정 거래를 삭제합니다. 되돌릴 수
-              없으며, 영향 계좌의 월말 잔고가 다시 계산됩니다.
+              선택한 <strong>{deleteTarget?.length ?? 0}건</strong>의 확정 거래를 삭제합니다. 되돌릴
+              수 없으며, 영향 계좌의 월말 잔고가 다시 계산됩니다.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)} disabled={deleting}>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
               취소
             </Button>
             <Button variant="destructive" onClick={() => void runBulkDelete()} disabled={deleting}>
-              {deleting ? '삭제 중...' : `${selectedInView.length}건 삭제`}
+              {deleting ? '삭제 중...' : `${deleteTarget?.length ?? 0}건 삭제`}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1912,30 +2041,39 @@ function TransactionRow({
   txn,
   selected,
   onToggleSelect,
+  checkboxShiftProps,
   leafTargets,
   categoryTree,
   reloadCategories,
   onClassify,
   onMemoSave,
   onUnlinkLiability,
+  onDeleteRequest,
 }: {
   txn: Transaction
   selected: boolean
-  onToggleSelect: () => void
+  onToggleSelect: (checked: boolean) => void
+  checkboxShiftProps: ReturnType<typeof useShiftSelect>['checkboxShiftProps']
   leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
   onClassify: (txnId: string, categoryId: string) => void
   onMemoSave: (txnId: string, memo: string | null) => Promise<void>
   onUnlinkLiability: (txnId: string) => Promise<void>
+  onDeleteRequest: () => void
 }) {
   const statusBadge = classStatusBadge(txn.classStatus)
 
   return (
     <TableRow data-state={selected ? 'selected' : undefined}>
-      {/* 선택 */}
-      <TableCell>
-        <Checkbox checked={selected} onCheckedChange={onToggleSelect} aria-label="행 선택" />
+      {/* 선택 — shift+클릭 연속 선택 */}
+      <TableCell className="select-none">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={(v) => onToggleSelect(v === true)}
+          {...checkboxShiftProps}
+          aria-label="행 선택"
+        />
       </TableCell>
 
       {/* 날짜 */}
@@ -2015,6 +2153,19 @@ function TransactionRow({
       {/* 메모 */}
       <TableCell>
         <MemoCell memo={txn.memo} onSave={(m) => onMemoSave(txn.id, m)} />
+      </TableCell>
+
+      {/* 삭제 */}
+      <TableCell>
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={onDeleteRequest}
+          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+          aria-label="거래 삭제"
+        >
+          <Trash2 className="size-3.5" />
+        </Button>
       </TableCell>
     </TableRow>
   )
@@ -2318,4 +2469,3 @@ function SuggestCell({
     </button>
   )
 }
-
