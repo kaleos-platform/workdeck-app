@@ -52,6 +52,15 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
 import { FilterBar } from '@/components/dashboard/filter-bar'
+import { MetricFilterBuilder } from '@/components/dashboard/metric-filter-builder'
+import {
+  PRESETS,
+  conditionsEqual,
+  evalConditions,
+  parseConditions,
+  serializeConditions,
+  type MetricCondition,
+} from '@/lib/coupang-ads/metric-filter'
 import { CampaignChart } from '@/components/dashboard/campaign-chart'
 import { DailyMemo } from '@/components/dashboard/daily-memo'
 import { CampaignTargetSection } from '@/components/dashboard/campaign-target-section'
@@ -321,8 +330,8 @@ export default function CampaignDetailPage({
   // 키워드 탭 정렬
   const [kwSortBy, setKwSortBy] = useState<KeywordSortKey>('adCost')
   const [kwSortOrder, setKwSortOrder] = useState<'asc' | 'desc'>('desc')
-  // 키워드 탭 필터 ('all' | 'zero': 광고비·주문 수 모두 0 | 'orders': 주문 발생)
-  const [kwFilter, setKwFilter] = useState<'all' | 'zero' | 'orders'>('all')
+  // 키워드 탭 커스텀 필터 조건 (AND, 빈 배열 = 전체). 서버 SQL로 전달.
+  const [kwConditions, setKwConditions] = useState<MetricCondition[]>([])
   // 제거된 키워드 숨기기 토글
   const [kwExcludeRemoved, setKwExcludeRemoved] = useState(false)
   // 키워드 탭 검색
@@ -335,8 +344,38 @@ export default function CampaignDetailPage({
   // 상품 탭 정렬
   const [productSortBy, setProductSortBy] = useState<ProductSortKey>('adCost')
   const [productSortOrder, setProductSortOrder] = useState<'asc' | 'desc'>('desc')
-  // 상품 탭 필터 모드
-  const [productFilterMode, setProductFilterMode] = useState<'all' | 'zero' | 'orders'>('all')
+  // 상품 탭 커스텀 필터 조건 (AND, 빈 배열 = 전체). 클라이언트 필터.
+  const [productConditions, setProductConditions] = useState<MetricCondition[]>([])
+
+  // 마지막 조건 기억 (localStorage, 캠페인·탭별). 복원값이 프리셋보다 우선.
+  const kwFilterKey = `coupang-ads:kwFilter:${campaignId}`
+  const productFilterKey = `coupang-ads:productFilter:${campaignId}`
+  const kwFilterLoadedRef = useRef(false)
+  const productFilterLoadedRef = useRef(false)
+
+  useEffect(() => {
+    kwFilterLoadedRef.current = false
+    productFilterLoadedRef.current = false
+    setKwConditions(parseConditions(localStorage.getItem(kwFilterKey)))
+    setProductConditions(parseConditions(localStorage.getItem(productFilterKey)))
+  }, [kwFilterKey, productFilterKey])
+
+  // 첫 렌더(복원 전)의 빈 배열이 저장값을 덮어쓰지 않도록 최초 1회 skip.
+  useEffect(() => {
+    if (!kwFilterLoadedRef.current) {
+      kwFilterLoadedRef.current = true
+      return
+    }
+    localStorage.setItem(kwFilterKey, serializeConditions(kwConditions))
+  }, [kwConditions, kwFilterKey])
+
+  useEffect(() => {
+    if (!productFilterLoadedRef.current) {
+      productFilterLoadedRef.current = true
+      return
+    }
+    localStorage.setItem(productFilterKey, serializeConditions(productConditions))
+  }, [productConditions, productFilterKey])
 
   // 메모
   const [memos, setMemos] = useState<DailyMemoType[]>([])
@@ -474,7 +513,7 @@ export default function CampaignDetailPage({
     q.set('pageSize', String(kwPageSize))
     q.set('sortBy', kwSortBy)
     q.set('sortOrder', kwSortOrder)
-    q.set('filter', kwFilter)
+    if (kwConditions.length > 0) q.set('conditions', serializeConditions(kwConditions))
     q.set('excludeRemoved', String(kwExcludeRemoved))
     if (deferredKwSearch.trim()) q.set('search', deferredKwSearch.trim())
 
@@ -498,7 +537,7 @@ export default function CampaignDetailPage({
     isDateRangeReady,
     deferredKwSearch,
     kwExcludeRemoved,
-    kwFilter,
+    kwConditions,
     kwPage,
     kwSortBy,
     kwSortOrder,
@@ -578,9 +617,8 @@ export default function CampaignDetailPage({
       result = result.filter((p) =>
         p.parsedProductName.toLowerCase().includes(productFilter.trim().toLowerCase())
       )
-    if (productFilterMode === 'zero')
-      result = result.filter((p) => p.adCost > 0 && p.orders1d === 0)
-    if (productFilterMode === 'orders') result = result.filter((p) => p.orders1d > 0)
+    if (productConditions.length > 0)
+      result = result.filter((p) => evalConditions(p, productConditions))
     return [...result].sort((a, b) => {
       const av = (a[productSortBy] as number | null) ?? -Infinity
       const bv = (b[productSortBy] as number | null) ?? -Infinity
@@ -590,7 +628,7 @@ export default function CampaignDetailPage({
     productItems,
     productExcludeRemoved,
     productFilter,
-    productFilterMode,
+    productConditions,
     productSortBy,
     productSortOrder,
   ])
@@ -1356,15 +1394,15 @@ export default function CampaignDetailPage({
                 className="h-8 w-40 text-sm"
               />
               <Button
-                variant={kwFilter === 'zero' ? 'default' : 'outline'}
+                variant={conditionsEqual(kwConditions, PRESETS.zero) ? 'default' : 'outline'}
                 size="sm"
                 className="h-7 text-xs"
                 onClick={() => {
-                  const next = kwFilter === 'zero' ? 'all' : 'zero'
-                  setKwFilter(next)
+                  const on = conditionsEqual(kwConditions, PRESETS.zero)
+                  setKwConditions(on ? [] : PRESETS.zero)
                   setKwPage(1)
                   setSelectedKeywords([])
-                  if (next === 'zero') {
+                  if (!on) {
                     setKwSortBy('adCost')
                     setKwSortOrder('desc')
                   }
@@ -1373,15 +1411,15 @@ export default function CampaignDetailPage({
                 📉저효율 키워드
               </Button>
               <Button
-                variant={kwFilter === 'orders' ? 'default' : 'outline'}
+                variant={conditionsEqual(kwConditions, PRESETS.orders) ? 'default' : 'outline'}
                 size="sm"
                 className="h-7 text-xs"
                 onClick={() => {
-                  const next = kwFilter === 'orders' ? 'all' : 'orders'
-                  setKwFilter(next)
+                  const on = conditionsEqual(kwConditions, PRESETS.orders)
+                  setKwConditions(on ? [] : PRESETS.orders)
                   setKwPage(1)
                   setSelectedKeywords([])
-                  if (next === 'orders') {
+                  if (!on) {
                     setKwSortBy('orders1d')
                     setKwSortOrder('desc')
                   }
@@ -1389,6 +1427,15 @@ export default function CampaignDetailPage({
               >
                 📈주문 발생 키워드
               </Button>
+              <MetricFilterBuilder
+                value={kwConditions}
+                onApply={(next) => {
+                  setKwConditions(next)
+                  setKwPage(1)
+                  setSelectedKeywords([])
+                }}
+                className="h-7 text-xs"
+              />
               <div className="flex items-center gap-1.5">
                 <Checkbox
                   id="kw-exclude-removed"
@@ -1514,7 +1561,7 @@ export default function CampaignDetailPage({
                         colSpan={9}
                         className="py-12 text-center text-sm text-muted-foreground"
                       >
-                        {kwFilter === 'all'
+                        {kwConditions.length === 0
                           ? '키워드 데이터가 없습니다'
                           : '필터 조건에 맞는 키워드가 없습니다'}
                       </TableCell>
@@ -1635,13 +1682,13 @@ export default function CampaignDetailPage({
                 className="h-8 w-40 text-sm"
               />
               <Button
-                variant={productFilterMode === 'zero' ? 'default' : 'outline'}
+                variant={conditionsEqual(productConditions, PRESETS.zero) ? 'default' : 'outline'}
                 size="sm"
                 className="h-7 text-xs"
                 onClick={() => {
-                  const next = productFilterMode === 'zero' ? 'all' : 'zero'
-                  setProductFilterMode(next)
-                  if (next === 'zero') {
+                  const on = conditionsEqual(productConditions, PRESETS.zero)
+                  setProductConditions(on ? [] : PRESETS.zero)
+                  if (!on) {
                     setProductSortBy('adCost')
                     setProductSortOrder('desc')
                   }
@@ -1651,13 +1698,13 @@ export default function CampaignDetailPage({
                 📉저효율 상품
               </Button>
               <Button
-                variant={productFilterMode === 'orders' ? 'default' : 'outline'}
+                variant={conditionsEqual(productConditions, PRESETS.orders) ? 'default' : 'outline'}
                 size="sm"
                 className="h-7 text-xs"
                 onClick={() => {
-                  const next = productFilterMode === 'orders' ? 'all' : 'orders'
-                  setProductFilterMode(next)
-                  if (next === 'orders') {
+                  const on = conditionsEqual(productConditions, PRESETS.orders)
+                  setProductConditions(on ? [] : PRESETS.orders)
+                  if (!on) {
                     setProductSortBy('revenue1d')
                     setProductSortOrder('desc')
                   }
@@ -1666,6 +1713,14 @@ export default function CampaignDetailPage({
               >
                 📈주문 발생 상품
               </Button>
+              <MetricFilterBuilder
+                value={productConditions}
+                onApply={(next) => {
+                  setProductConditions(next)
+                  setSelectedProducts([])
+                }}
+                className="h-7 text-xs"
+              />
               <div className="flex items-center gap-1.5">
                 <Checkbox
                   id="product-exclude-removed"

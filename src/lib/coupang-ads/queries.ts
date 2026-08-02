@@ -14,6 +14,7 @@ import { formatDateToYmdKst } from '@/lib/date-range'
 import { cacheCoupangAdsData } from '@/lib/coupang-ads/cache'
 import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
 import type { KeywordQuery, KeywordSortKey } from '@/lib/coupang-ads/keyword-query'
+import { buildKeywordHavingSql } from '@/lib/coupang-ads/metric-filter'
 
 // ─── ads_get_kpi ─────────────────────────────────────────────────────────────
 
@@ -333,29 +334,45 @@ export async function queryInefficientKeywords(
   if (from) dateFilter.gte = new Date(from + 'T00:00:00+09:00')
   if (to) dateFilter.lte = new Date(to + 'T23:59:59+09:00')
 
-  const conditions = ['a."workspaceId" = $1', 'a."campaignId" = $2', 'a.keyword IS NOT NULL']
   const values: unknown[] = [workspaceId, campaignId]
 
+  // base 조건: 키워드 집계와 총광고비(비중 분모)가 공유 (workspace/campaign/날짜/adType)
+  const baseConditions = ['a."workspaceId" = $1', 'a."campaignId" = $2']
   if (dateFilter.gte) {
     values.push(dateFilter.gte)
-    conditions.push(`a.date >= $${values.length}`)
+    baseConditions.push(`a.date >= $${values.length}`)
   }
   if (dateFilter.lte) {
     values.push(dateFilter.lte)
-    conditions.push(`a.date <= $${values.length}`)
+    baseConditions.push(`a.date <= $${values.length}`)
   }
   if (adType && adType !== 'all') {
     values.push(adType)
-    conditions.push(`a."adType" = $${values.length}`)
+    baseConditions.push(`a."adType" = $${values.length}`)
   }
+
+  // total_cost 분모 = 캠페인 총 광고비 (키워드/검색 무관) — 표시 비중과 동일 근거.
+  const totalConditions = [...baseConditions]
+
+  // 키워드 집계 = base + 키워드 존재 + 검색.
+  const conditions = [...baseConditions, 'a.keyword IS NOT NULL']
   if (query.search) {
     values.push(`%${query.search}%`)
     conditions.push(`a.keyword ILIKE $${values.length}`)
   }
 
+  // 집계 후 필터: 커스텀 조건 우선, 없으면 레거시 filter(zero/orders) fallback.
   const resultConditions: string[] = []
-  if (query.filter === 'zero') resultConditions.push('"orders1d" = 0 AND "adCost" > 0')
-  if (query.filter === 'orders') resultConditions.push('"orders1d" >= 1')
+  if (query.conditions.length > 0) {
+    const having = buildKeywordHavingSql(query.conditions, values.length + 1)
+    if (having.clause) {
+      resultConditions.push(having.clause)
+      values.push(...having.values)
+    }
+  } else {
+    if (query.filter === 'zero') resultConditions.push('"orders1d" = 0 AND "adCost" > 0')
+    if (query.filter === 'orders') resultConditions.push('"orders1d" >= 1')
+  }
   if (query.excludeRemoved) resultConditions.push('"removedAt" IS NULL')
 
   values.push(query.pageSize)
@@ -377,8 +394,13 @@ export async function queryInefficientKeywords(
         WHERE ${conditions.join(' AND ')}
         GROUP BY a.keyword
       ),
+      total_cost AS (
+        SELECT COALESCE(SUM(a."adCost"), 0) AS t
+        FROM "AdRecord" a
+        WHERE ${totalConditions.join(' AND ')}
+      ),
       enriched AS (
-        SELECT aggregated.*, status."removedAt"
+        SELECT aggregated.*, (SELECT t FROM total_cost) AS total_ad_cost, status."removedAt"
         FROM aggregated
         LEFT JOIN "KeywordStatus" status
           ON status."workspaceId" = $1
