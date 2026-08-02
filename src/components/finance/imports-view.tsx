@@ -38,6 +38,7 @@ type ImportRow = {
   institution: string
   kind: string
   status: 'DRAFT' | 'COMMITTED'
+  committed: boolean // 파생: 잔여 스테이징 행 0 = 저장됨
   periodFrom: string | null
   periodTo: string | null
   totalRows: number
@@ -65,6 +66,7 @@ export function ImportsView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [accounts, setAccounts] = useState<AccountOption[]>([])
+  const [includeCommitted, setIncludeCommitted] = useState(false)
 
   // 계좌 필터 옵션 로드(1회)
   useEffect(() => {
@@ -88,6 +90,7 @@ export function ImportsView() {
       try {
         const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(nextOffset) })
         if (accountId) params.set('accountId', accountId)
+        if (includeCommitted) params.set('includeCommitted', '1')
         const res = await fetch(`/api/finance/imports?${params}`)
         if (!res.ok) {
           const body = await res.json().catch(() => ({}))
@@ -103,7 +106,7 @@ export function ImportsView() {
         setLoading(false)
       }
     },
-    [accountId]
+    [accountId, includeCommitted]
   )
 
   useEffect(() => {
@@ -144,19 +147,29 @@ export function ImportsView() {
               업로드 파일
               <span className="ml-2 text-xs font-normal text-muted-foreground">총 {total}건</span>
             </CardTitle>
-            <Select value={accountId || ALL_ACCOUNTS} onValueChange={handleAccountFilter}>
-              <SelectTrigger className="h-8 w-56 text-sm">
-                <SelectValue placeholder="전체 계좌/카드" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL_ACCOUNTS}>전체 계좌/카드</SelectItem>
-                {accounts.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {[a.institution, a.name].filter(Boolean).join(' ')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={includeCommitted ? 'secondary' : 'outline'}
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => setIncludeCommitted((v) => !v)}
+              >
+                {includeCommitted ? '저장 완료 포함 ✓' : '저장 완료 포함'}
+              </Button>
+              <Select value={accountId || ALL_ACCOUNTS} onValueChange={handleAccountFilter}>
+                <SelectTrigger className="h-8 w-56 text-sm">
+                  <SelectValue placeholder="전체 계좌/카드" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_ACCOUNTS}>전체 계좌/카드</SelectItem>
+                  {accounts.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {[a.institution, a.name].filter(Boolean).join(' ')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           {selectedAccount && (
             <p className="text-xs text-muted-foreground">
@@ -226,7 +239,7 @@ export function ImportsView() {
                       {row.committedRows}/{row.totalRows}
                     </TableCell>
                     <TableCell>
-                      {row.status === 'COMMITTED' ? (
+                      {row.committed ? (
                         <Badge
                           variant="outline"
                           className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
