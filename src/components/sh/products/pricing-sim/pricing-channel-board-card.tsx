@@ -33,12 +33,17 @@ function tierBadgeClass(tier: 'good' | 'fair' | 'bad'): string {
 }
 
 /** 프로모션 요약 라벨 (설정된 프로모션 종류 + 값). NONE이면 null */
+// FLAT/PERCENT 최소 판매가 조건 텍스트 (조건 있을 때만)
+function thr(p: PromotionValue): string {
+  return p.minThreshold && p.minThreshold > 0 ? ` · 최소 ₩${fmt(p.minThreshold)}↑` : ''
+}
+
 function promoLabel(p: PromotionValue): string | null {
   switch (p.type) {
     case 'PERCENT':
-      return `정률 ${p.value}%`
+      return `정률 ${p.value}%${thr(p)}`
     case 'FLAT':
-      return `정액 ₩${fmt(p.value)}`
+      return `정액 ₩${fmt(p.value)}${thr(p)}`
     case 'COUPON':
       return `쿠폰 ₩${fmt(p.value)}`
     case 'MIN_PRICE':
@@ -174,6 +179,15 @@ export function PricingChannelBoardCard({
   // 프로모션 적용 매트릭스 (실제 promotion) — 게이지 fill·하한 경고 소스.
   const hasPromo = promotion.type !== 'NONE'
   const promoLabelText = promoLabel(promotionValue)
+  // 조건부 프로모션(FLAT/PERCENT + minThreshold) 중 현재 판매가가 조건 미만 → 미적용
+  // (엔진도 p >= minThreshold일 때만 FLAT/PERCENT 적용)
+  const promoConditionUnmet =
+    hasPromo &&
+    (promotionValue.type === 'FLAT' || promotionValue.type === 'PERCENT') &&
+    promotionValue.minThreshold != null &&
+    promotionValue.minThreshold > 0 &&
+    effectivePrice != null &&
+    effectivePrice < promotionValue.minThreshold
   const promoMatrix = useMemo(() => {
     if (effectivePrice == null || !hasPromo) return null
     return calculateMatrix({
@@ -408,6 +422,15 @@ export function PricingChannelBoardCard({
                 className="border-violet-300 bg-violet-50 px-1.5 py-0 text-[11px] font-medium text-violet-700"
               >
                 {promoLabelText}
+              </Badge>
+            )}
+            {promoConditionUnmet && (
+              <Badge
+                variant="outline"
+                title="현재 판매가가 최소 조건 미만이라 프로모션 미적용"
+                className="border-amber-300 bg-amber-50 px-1.5 py-0 text-[11px] font-medium text-amber-700"
+              >
+                미적용
               </Badge>
             )}
           </div>
