@@ -228,7 +228,9 @@ export function resolveInitialSelection(data: PreviewResponse): {
     kind: resolvedKind,
     accountId: defaultAccount ?? '',
     mapping,
-    presetName: data.institution ?? data.matchedPreset?.name ?? '',
+    // 이름은 표시용 라벨 — 식별은 파일 형식(서버 findBestPreset). 같은 형식이면 기존
+    // 프리셋 이름을 우선 노출하고, 없을 때만 파일명 추정 기관명을 라벨 힌트로 채운다.
+    presetName: data.matchedPreset?.name ?? data.institution ?? '',
     matchedAccount: matched,
   }
 }
