@@ -15,7 +15,12 @@ import {
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import type { PricingSimSnapshot } from '@/lib/sh/pricing-scenario-snapshot'
-import { type ScenarioRow, priceRangeText } from './pricing-scenario-format'
+import {
+  type ScenarioRow,
+  retailText,
+  salePriceRangeText,
+  discountRangeText,
+} from './pricing-scenario-format'
 
 type Props = {
   /** 이 상품(InvProduct.id)이 포함된 시나리오만 조회 */
@@ -120,11 +125,13 @@ export function PricingScenarioHistoryPanel({
         <TableHeader>
           <TableRow>
             <TableHead>이름</TableHead>
-            <TableHead className="text-right">목표 마진</TableHead>
             <TableHead className="text-right">채널</TableHead>
-            <TableHead className="text-right">권장가</TableHead>
+            <TableHead className="text-right">목표 마진</TableHead>
+            <TableHead className="text-right">소비자가</TableHead>
+            <TableHead className="text-right">판매가</TableHead>
+            <TableHead className="text-right">소비자가 대비 할인율</TableHead>
             <TableHead>수정일</TableHead>
-            <TableHead className="w-24" />
+            <TableHead className="w-16 text-right">작업</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -151,13 +158,19 @@ export function PricingScenarioHistoryPanel({
                 <div className="text-sm font-medium">{r.name}</div>
                 {r.memo && <div className="text-xs text-muted-foreground">{r.memo}</div>}
               </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {r.summary ? `${r.summary.targetMarginPct}%` : '—'}
-              </TableCell>
               <TableCell className="text-right text-muted-foreground tabular-nums">
                 {r.summary ? `${r.summary.channelCount}개` : '—'}
               </TableCell>
-              <TableCell className="text-right tabular-nums">{priceRangeText(r.summary)}</TableCell>
+              <TableCell className="text-right tabular-nums">
+                {r.summary ? `${r.summary.targetMarginPct}%` : '—'}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">{retailText(r.summary)}</TableCell>
+              <TableCell className="text-right tabular-nums">
+                {salePriceRangeText(r.summary)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {discountRangeText(r.summary)}
+              </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {new Date(r.updatedAt).toLocaleDateString('ko-KR')}
               </TableCell>
