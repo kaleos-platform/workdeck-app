@@ -1,3 +1,5 @@
+import { parseConditions, type MetricCondition } from '@/lib/coupang-ads/metric-filter'
+
 export type KeywordSortKey =
   | 'keyword'
   | 'adCost'
@@ -14,6 +16,7 @@ export type KeywordQuery = {
   pageSize: number
   search: string
   filter: KeywordFilter
+  conditions: MetricCondition[]
   excludeRemoved: boolean
   sortBy: KeywordSortKey
   sortOrder: 'asc' | 'desc'
@@ -41,6 +44,7 @@ export function parseKeywordQuery(searchParams: URLSearchParams): KeywordQuery {
       Number.isInteger(parsedPageSize) && parsedPageSize > 0 ? Math.min(parsedPageSize, 100) : 50,
     search: (searchParams.get('search') ?? '').trim().slice(0, 100),
     filter: filterParam === 'zero' || filterParam === 'orders' ? filterParam : 'all',
+    conditions: parseConditions(searchParams.get('conditions')),
     excludeRemoved: searchParams.get('excludeRemoved') === 'true',
     sortBy: sortByParam && SORT_KEYS.has(sortByParam) ? sortByParam : 'adCost',
     sortOrder: searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc',
