@@ -18,5 +18,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   await prisma.finClassRule.delete({ where: { id } })
 
-  return NextResponse.json({ ok: true })
+  // 삭제된 규칙으로 자동분류된 스테이징(DRAFT) 행을 미분류로 되돌린다.
+  // (스테이징 GET이 남은 규칙으로 라이브 재제안하므로 별도 재분류 불필요.)
+  // memo는 사용자 편집분과 구분 불가하므로 보존.
+  const reset = await prisma.finStagedRow.updateMany({
+    where: { spaceId, matchedRuleId: id, import: { status: 'DRAFT' } },
+    data: { classStatus: 'UNCLASSIFIED', categoryId: null, matchedRuleId: null },
+  })
+
+  return NextResponse.json({ ok: true, resetRows: reset.count })
 }

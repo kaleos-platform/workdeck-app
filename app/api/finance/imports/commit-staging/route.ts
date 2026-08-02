@@ -18,7 +18,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { previewFinanceFile, parseFinanceWithMapping, type FinKind } from '@/lib/finance/parser'
-import { resolveMapping, type MappingPair } from '@/lib/finance/automap'
+import {
+  resolveMapping,
+  findBestPreset,
+  type MappingPair,
+  type PresetLike,
+} from '@/lib/finance/automap'
 import { loadSpaceRules, classifyRow } from '@/lib/finance/classify'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
 
@@ -234,23 +239,40 @@ export async function POST(req: NextRequest) {
       return imp
     })
 
-    // 매핑 프리셋 저장(선택)
+    // 매핑 프리셋 저장(선택) — 파일 형식(헤더) 기준 식별. 파일명/이름과 무관하게
+    // 같은 형식이면 기존 프리셋을 갱신(중복/clobber 방지). 매칭은 적용(preview) 경로와
+    // 동일한 findBestPreset(파일 헤더)를 사용해 "이 형식으로 저장→이 형식에 적용"을 보장한다.
     if (form.get('savePreset') === 'true') {
       const presetName = String(form.get('presetName') ?? '').trim()
       const institution = String(form.get('institution') ?? '').trim() || '미지정'
       if (presetName) {
-        await prisma.finMappingPreset.upsert({
-          where: { spaceId_name: { spaceId, name: presetName } },
-          update: { institution, kind, mapping: pairs, defaultAccountId: accountId },
-          create: {
-            spaceId,
-            name: presetName,
-            institution,
-            kind,
-            mapping: pairs,
-            defaultAccountId: accountId,
+        const existing = await prisma.finMappingPreset.findMany({
+          where: { spaceId, kind },
+          select: {
+            id: true,
+            name: true,
+            institution: true,
+            kind: true,
+            mapping: true,
+            defaultAccountId: true,
           },
         })
+        const match = findBestPreset(existing as PresetLike[], headers)
+        if (match) {
+          // 같은 형식의 기존 프리셋 갱신(이름은 유지 — 식별은 형식 서명).
+          await prisma.finMappingPreset.update({
+            where: { id: match.id },
+            data: { institution, kind, mapping: pairs, defaultAccountId: accountId },
+          })
+        } else {
+          // 신규 — 이름 충돌(@@unique([spaceId, name]))은 접미사로 회피.
+          const taken = new Set(existing.map((p) => p.name))
+          let name = presetName
+          for (let i = 2; taken.has(name); i++) name = `${presetName} (${i})`
+          await prisma.finMappingPreset.create({
+            data: { spaceId, name, institution, kind, mapping: pairs, defaultAccountId: accountId },
+          })
+        }
       }
     }
 
