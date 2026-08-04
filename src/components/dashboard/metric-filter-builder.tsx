@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { SlidersHorizontal, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -35,11 +35,28 @@ type Props = {
   value: MetricCondition[]
   onApply: (next: MetricCondition[]) => void
   className?: string
+  /** 커스텀 트리거(예: 프리셋 편집 연필). 미지정 시 기본 "커스텀 필터" 버튼+badge. */
+  trigger?: ReactNode
+  /** 팝오버 제목. 기본 "필터 조건 (모두 만족 · AND)". */
+  title?: string
+  /** 노출·선택 가능 메트릭. 기본 전체(METRIC_KEYS). 광고데이터=RECORD_METRIC_KEYS. */
+  allowedMetrics?: MetricKey[]
+  /** "초기화"가 되돌릴 조건. 기본 [](비활성). 프리셋 편집=seed 기본값. */
+  resetTo?: MetricCondition[]
 }
 
-export function MetricFilterBuilder({ value, onApply, className }: Props) {
+export function MetricFilterBuilder({
+  value,
+  onApply,
+  className,
+  trigger,
+  title = '필터 조건 (모두 만족 · AND)',
+  allowedMetrics = METRIC_KEYS,
+  resetTo = [],
+}: Props) {
   const [open, setOpen] = useState(false)
   const [rows, setRows] = useState<DraftRow[]>(toDraft(value))
+  const defaultMetric = allowedMetrics[0] ?? 'roas'
 
   // 팝오버 열 때 현재 적용값으로 draft 리셋 (effect 아닌 이벤트에서 처리)
   function handleOpenChange(next: boolean) {
@@ -52,7 +69,7 @@ export function MetricFilterBuilder({ value, onApply, className }: Props) {
   }
 
   function addRow() {
-    setRows((prev) => [...prev, { metric: 'roas', op: 'lt', valueStr: '' }])
+    setRows((prev) => [...prev, { metric: defaultMetric, op: 'lt', valueStr: '' }])
   }
 
   function removeRow(idx: number) {
@@ -68,8 +85,8 @@ export function MetricFilterBuilder({ value, onApply, className }: Props) {
   }
 
   function reset() {
-    setRows([])
-    onApply([])
+    setRows(toDraft(resetTo))
+    onApply(resetTo)
     setOpen(false)
   }
 
@@ -78,19 +95,21 @@ export function MetricFilterBuilder({ value, onApply, className }: Props) {
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className={className}>
-          <SlidersHorizontal className="mr-1 h-4 w-4" />
-          커스텀 필터
-          {activeCount > 0 && (
-            <Badge variant="secondary" className="ml-1.5 px-1.5">
-              {activeCount}
-            </Badge>
-          )}
-        </Button>
+        {trigger ?? (
+          <Button variant="outline" size="sm" className={className}>
+            <SlidersHorizontal className="mr-1 h-4 w-4" />
+            커스텀 필터
+            {activeCount > 0 && (
+              <Badge variant="secondary" className="ml-1.5 px-1.5">
+                {activeCount}
+              </Badge>
+            )}
+          </Button>
+        )}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[380px] p-3">
         <div className="space-y-2">
-          <p className="text-sm font-medium">필터 조건 (모두 만족 · AND)</p>
+          <p className="text-sm font-medium">{title}</p>
 
           {rows.length === 0 ? (
             <p className="py-2 text-xs text-muted-foreground">
@@ -108,7 +127,7 @@ export function MetricFilterBuilder({ value, onApply, className }: Props) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {METRIC_KEYS.map((m) => (
+                      {allowedMetrics.map((m) => (
                         <SelectItem key={m} value={m}>
                           {METRIC_LABELS[m]}
                         </SelectItem>
