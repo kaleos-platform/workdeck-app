@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
         committedRows: true,
         createdAt: true,
         account: { select: { id: true, name: true, kind: true, institution: true } },
-        _count: { select: { stagedRows: true } },
+        _count: { select: { stagedRows: true, transactions: true } },
       },
     }),
     prisma.finImport.count({ where }),
@@ -65,9 +65,10 @@ export async function GET(req: NextRequest) {
       const committed = pending === 0
       return {
         ...r,
-        // 파생: 저장됨 = 잔여 스테이징 행 0. 확정 행수도 잔여로 역산(부분 커밋 중간값 반영).
+        // 파생: 저장됨 = 잔여 스테이징 행 0. 확정 행수 = 실제 삽입된 FinTransaction 수
+        // (DUP_SAME·정리된 행은 거래로 삽입되지 않으므로 totalRows-pending 역산은 과다계상).
         committed,
-        committedRows: committed ? r.totalRows : Math.max(0, r.totalRows - pending),
+        committedRows: _count.transactions,
         // txnDate 규약(KST 자릿수의 UTC 저장) — 날짜 표기는 클라이언트에서 UTC getter로
         periodFrom: r.periodFrom?.toISOString() ?? null,
         periodTo: r.periodTo?.toISOString() ?? null,
