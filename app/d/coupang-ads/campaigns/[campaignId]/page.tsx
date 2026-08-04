@@ -53,11 +53,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { toast } from 'sonner'
 import { FilterBar } from '@/components/dashboard/filter-bar'
 import { MetricFilterBuilder } from '@/components/dashboard/metric-filter-builder'
+import { MetricFilterGroup } from '@/components/dashboard/metric-filter-group'
 import {
-  PRESETS,
-  conditionsEqual,
+  RECORD_METRIC_KEYS,
+  describeConditions,
   evalConditions,
-  parseConditions,
   serializeConditions,
   type MetricCondition,
 } from '@/lib/coupang-ads/metric-filter'
@@ -330,7 +330,7 @@ export default function CampaignDetailPage({
   // 키워드 탭 정렬
   const [kwSortBy, setKwSortBy] = useState<KeywordSortKey>('adCost')
   const [kwSortOrder, setKwSortOrder] = useState<'asc' | 'desc'>('desc')
-  // 키워드 탭 커스텀 필터 조건 (AND, 빈 배열 = 전체). 서버 SQL로 전달.
+  // 키워드 탭 적용 조건 (AND, 빈 배열 = 전체). MetricFilterGroup이 구동. 서버 SQL로 전달.
   const [kwConditions, setKwConditions] = useState<MetricCondition[]>([])
   // 제거된 키워드 숨기기 토글
   const [kwExcludeRemoved, setKwExcludeRemoved] = useState(false)
@@ -344,38 +344,10 @@ export default function CampaignDetailPage({
   // 상품 탭 정렬
   const [productSortBy, setProductSortBy] = useState<ProductSortKey>('adCost')
   const [productSortOrder, setProductSortOrder] = useState<'asc' | 'desc'>('desc')
-  // 상품 탭 커스텀 필터 조건 (AND, 빈 배열 = 전체). 클라이언트 필터.
+  // 상품 탭 적용 조건 (AND, 빈 배열 = 전체). MetricFilterGroup이 구동. 클라 필터.
   const [productConditions, setProductConditions] = useState<MetricCondition[]>([])
-
-  // 마지막 조건 기억 (localStorage, 캠페인·탭별). 복원값이 프리셋보다 우선.
-  const kwFilterKey = `coupang-ads:kwFilter:${campaignId}`
-  const productFilterKey = `coupang-ads:productFilter:${campaignId}`
-  const kwFilterLoadedRef = useRef(false)
-  const productFilterLoadedRef = useRef(false)
-
-  useEffect(() => {
-    kwFilterLoadedRef.current = false
-    productFilterLoadedRef.current = false
-    setKwConditions(parseConditions(localStorage.getItem(kwFilterKey)))
-    setProductConditions(parseConditions(localStorage.getItem(productFilterKey)))
-  }, [kwFilterKey, productFilterKey])
-
-  // 첫 렌더(복원 전)의 빈 배열이 저장값을 덮어쓰지 않도록 최초 1회 skip.
-  useEffect(() => {
-    if (!kwFilterLoadedRef.current) {
-      kwFilterLoadedRef.current = true
-      return
-    }
-    localStorage.setItem(kwFilterKey, serializeConditions(kwConditions))
-  }, [kwConditions, kwFilterKey])
-
-  useEffect(() => {
-    if (!productFilterLoadedRef.current) {
-      productFilterLoadedRef.current = true
-      return
-    }
-    localStorage.setItem(productFilterKey, serializeConditions(productConditions))
-  }, [productConditions, productFilterKey])
+  // 광고 데이터 탭 커스텀 필터 조건 (비영속). 서버 records 필터로 전달.
+  const [addataConditions, setAddataConditions] = useState<MetricCondition[]>([])
 
   // 메모
   const [memos, setMemos] = useState<DailyMemoType[]>([])
@@ -448,6 +420,7 @@ export default function CampaignDetailPage({
     if (to) q.set('to', to)
     if (adTypeFilter && adTypeFilter !== 'all') q.set('adType', adTypeFilter)
     if (placementFilter && placementFilter !== 'all') q.set('placement', placementFilter)
+    if (addataConditions.length > 0) q.set('conditions', serializeConditions(addataConditions))
 
     fetch(`/api/campaigns/${campaignId}/records?${q}`)
       .then((r) => {
@@ -483,6 +456,7 @@ export default function CampaignDetailPage({
     to,
     adTypeFilter,
     placementFilter,
+    addataConditions,
     isDateRangeReady,
   ])
 
@@ -1393,48 +1367,24 @@ export default function CampaignDetailPage({
                 }}
                 className="h-8 w-40 text-sm"
               />
-              <Button
-                variant={conditionsEqual(kwConditions, PRESETS.zero) ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => {
-                  const on = conditionsEqual(kwConditions, PRESETS.zero)
-                  setKwConditions(on ? [] : PRESETS.zero)
-                  setKwPage(1)
-                  setSelectedKeywords([])
-                  if (!on) {
-                    setKwSortBy('adCost')
-                    setKwSortOrder('desc')
-                  }
-                }}
-              >
-                📉저효율 키워드
-              </Button>
-              <Button
-                variant={conditionsEqual(kwConditions, PRESETS.orders) ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => {
-                  const on = conditionsEqual(kwConditions, PRESETS.orders)
-                  setKwConditions(on ? [] : PRESETS.orders)
-                  setKwPage(1)
-                  setSelectedKeywords([])
-                  if (!on) {
-                    setKwSortBy('orders1d')
-                    setKwSortOrder('desc')
-                  }
-                }}
-              >
-                📈주문 발생 키워드
-              </Button>
-              <MetricFilterBuilder
-                value={kwConditions}
-                onApply={(next) => {
+              <MetricFilterGroup
+                scope="keyword"
+                lowEffLabel="📉저효율 키워드"
+                ordersLabel="📈주문 발생 키워드"
+                onConditionsChange={(next) => {
                   setKwConditions(next)
                   setKwPage(1)
                   setSelectedKeywords([])
                 }}
-                className="h-7 text-xs"
+                onActivate={(id) => {
+                  if (id === 'lowEff') {
+                    setKwSortBy('adCost')
+                    setKwSortOrder('desc')
+                  } else if (id === 'orders') {
+                    setKwSortBy('orders1d')
+                    setKwSortOrder('desc')
+                  }
+                }}
               />
               <div className="flex items-center gap-1.5">
                 <Checkbox
@@ -1681,45 +1631,23 @@ export default function CampaignDetailPage({
                 onChange={(e) => setProductFilter(e.target.value)}
                 className="h-8 w-40 text-sm"
               />
-              <Button
-                variant={conditionsEqual(productConditions, PRESETS.zero) ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => {
-                  const on = conditionsEqual(productConditions, PRESETS.zero)
-                  setProductConditions(on ? [] : PRESETS.zero)
-                  if (!on) {
-                    setProductSortBy('adCost')
-                    setProductSortOrder('desc')
-                  }
-                  setSelectedProducts([])
-                }}
-              >
-                📉저효율 상품
-              </Button>
-              <Button
-                variant={conditionsEqual(productConditions, PRESETS.orders) ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => {
-                  const on = conditionsEqual(productConditions, PRESETS.orders)
-                  setProductConditions(on ? [] : PRESETS.orders)
-                  if (!on) {
-                    setProductSortBy('revenue1d')
-                    setProductSortOrder('desc')
-                  }
-                  setSelectedProducts([])
-                }}
-              >
-                📈주문 발생 상품
-              </Button>
-              <MetricFilterBuilder
-                value={productConditions}
-                onApply={(next) => {
+              <MetricFilterGroup
+                scope="product"
+                lowEffLabel="📉저효율 상품"
+                ordersLabel="📈주문 발생 상품"
+                onConditionsChange={(next) => {
                   setProductConditions(next)
                   setSelectedProducts([])
                 }}
-                className="h-7 text-xs"
+                onActivate={(id) => {
+                  if (id === 'lowEff') {
+                    setProductSortBy('adCost')
+                    setProductSortOrder('desc')
+                  } else if (id === 'orders') {
+                    setProductSortBy('revenue1d')
+                    setProductSortOrder('desc')
+                  }
+                }}
               />
               <div className="flex items-center gap-1.5">
                 <Checkbox
@@ -2008,6 +1936,20 @@ export default function CampaignDetailPage({
               총 <span className="font-medium text-foreground">{total}</span>개 행
             </p>
             <div className="flex flex-wrap items-center gap-2">
+              <MetricFilterBuilder
+                value={addataConditions}
+                onApply={(next) => {
+                  setAddataConditions(next)
+                  setPage(1)
+                }}
+                allowedMetrics={RECORD_METRIC_KEYS}
+                className="h-8 text-xs"
+              />
+              {addataConditions.length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {describeConditions(addataConditions)}
+                </span>
+              )}
               <Select
                 value={placementFilter}
                 onValueChange={(value) => {

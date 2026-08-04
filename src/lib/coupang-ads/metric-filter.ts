@@ -73,6 +73,20 @@ export const OP_LABELS: Record<FilterOp, string> = {
   gt: '초과',
 }
 
+const OP_SYMBOL: Record<FilterOp, string> = {
+  lt: '<',
+  lte: '≤',
+  gte: '≥',
+  gt: '>',
+}
+
+/** 활성 조건 요약 텍스트 — 예: "ROAS<100 · 광고비≥5000". 빈 배열 → ''. */
+export function describeConditions(conds: MetricCondition[]): string {
+  return conds
+    .map((c) => `${METRIC_LABELS[c.metric]}${OP_SYMBOL[c.op]}${c.value}${METRIC_UNIT[c.metric]}`)
+    .join(' · ')
+}
+
 // ─── 프리셋(커스텀 기본값) ────────────────────────────────────────────────────
 
 /**
@@ -169,7 +183,7 @@ const OP_SQL: Record<FilterOp, string> = {
 }
 
 /**
- * 집계 CTE 별칭 기준 컬럼식. 표시값과 동일 스케일/의미.
+ * 키워드 집계 CTE 별칭 기준 컬럼식. 표시값과 동일 스케일/의미.
  *  - adCostShare 분모(total_ad_cost)는 캠페인 총 광고비 컬럼(호출부 CTE가 제공).
  */
 const METRIC_SQL: Record<MetricKey, string> = {
@@ -185,15 +199,34 @@ const METRIC_SQL: Record<MetricKey, string> = {
 }
 
 /**
- * 커스텀 조건 → HAVING/WHERE 절(집계 후) SQL + 파라미터.
- * 컬럼식·연산자는 검증된 enum lookup에서만 가져오고(요청 문자열 보간 금지),
- * 값만 $N 파라미터로 바인딩한다.
+ * 광고 데이터(records) 행별 컬럼식 — AdRecord 원본 컬럼 기준(집계 아님).
+ * 행별 광고비 비중(adCostShare)은 계산 불가라 제외한다.
+ */
+const RECORD_METRIC_SQL: Partial<Record<MetricKey, string>> = {
+  adCost: '"adCost"',
+  orders1d: '"orders1d"',
+  revenue1d: '"revenue1d"',
+  impressions: '"impressions"',
+  clicks: '"clicks"',
+  roas: 'CASE WHEN "adCost" > 0 THEN "revenue1d" / "adCost" * 100 ELSE NULL END',
+  ctr: 'CASE WHEN "impressions" > 0 THEN "clicks"::numeric / "impressions" * 100 ELSE NULL END',
+  cvr: 'CASE WHEN "clicks" > 0 THEN "orders1d"::numeric / "clicks" * 100 ELSE NULL END',
+}
+
+/** 광고 데이터 탭에서 필터 가능한 메트릭(비중 제외). 빌더 allowedMetrics용. */
+export const RECORD_METRIC_KEYS: MetricKey[] = METRIC_KEYS.filter((k) => k !== 'adCostShare')
+
+/**
+ * 커스텀 조건 → SQL 절(WHERE 또는 집계 후 HAVING) + 파라미터. 컬럼식은 exprMap
+ * lookup(요청 문자열 보간 금지), 연산자는 enum lookup, 값만 $N 바인딩.
+ * exprMap에 없는 메트릭(예: records의 adCostShare)은 조건에서 스킵한다.
  *
  * @param startParamIndex 첫 $N 인덱스(호출부의 다음 파라미터 번호).
- * @returns clause: `expr op $N AND ...` (빈 조건 시 ''), values: 바인딩 순서대로.
+ * @returns clause: `(expr) op $N AND ...` (빈 조건 시 ''), values: 바인딩 순서대로.
  */
-export function buildKeywordHavingSql(
+export function buildMetricSql(
   conds: MetricCondition[],
+  exprMap: Partial<Record<MetricKey, string>>,
   startParamIndex: number
 ): { clause: string; values: number[] } {
   const parts: string[] = []
@@ -201,11 +234,28 @@ export function buildKeywordHavingSql(
   let idx = startParamIndex
 
   for (const c of conds) {
-    if (!METRIC_SET.has(c.metric) || !OP_SET.has(c.op) || !Number.isFinite(c.value)) continue
-    parts.push(`(${METRIC_SQL[c.metric]}) ${OP_SQL[c.op]} $${idx}`)
+    const expr = exprMap[c.metric]
+    if (!expr || !OP_SET.has(c.op) || !Number.isFinite(c.value)) continue
+    parts.push(`(${expr}) ${OP_SQL[c.op]} $${idx}`)
     values.push(c.value)
     idx += 1
   }
 
   return { clause: parts.join(' AND '), values }
+}
+
+/** 키워드 집계 HAVING 빌더 — buildMetricSql 래퍼(기존 시그니처 유지). */
+export function buildKeywordHavingSql(
+  conds: MetricCondition[],
+  startParamIndex: number
+): { clause: string; values: number[] } {
+  return buildMetricSql(conds, METRIC_SQL, startParamIndex)
+}
+
+/** 광고 데이터(records) 행별 WHERE 빌더 — buildMetricSql 래퍼. */
+export function buildRecordWhereSql(
+  conds: MetricCondition[],
+  startParamIndex: number
+): { clause: string; values: number[] } {
+  return buildMetricSql(conds, RECORD_METRIC_SQL, startParamIndex)
 }
