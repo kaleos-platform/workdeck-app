@@ -697,57 +697,57 @@ function PnlSummaryCards({
         </p>
       )}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-      {cards.map((c) => (
-        <Card key={c.label} className={cn('gap-1 p-3', c.accent && 'border-primary/30')}>
-          <p className="text-xs text-muted-foreground">{c.label}</p>
-          <p className={cn('font-mono text-lg font-semibold tabular-nums', netValueClass(c.num))}>
-            {c.value}
-          </p>
-          {/* 이익률 강조 — 이름(작게) + 비율(굵게·컬러) */}
-          <div className="flex items-baseline gap-1">
-            <span className="text-[11px] text-muted-foreground">{c.ratioName}</span>
-            <span className={cn('text-sm font-semibold tabular-nums', ratioClass(c.ratio))}>
-              {c.ratio == null ? '—' : formatPercent(c.ratio)}
+        {cards.map((c) => (
+          <Card key={c.label} className={cn('gap-1 p-3', c.accent && 'border-primary/30')}>
+            <p className="text-xs text-muted-foreground">{c.label}</p>
+            <p className={cn('font-mono text-lg font-semibold tabular-nums', netValueClass(c.num))}>
+              {c.value}
+            </p>
+            {/* 이익률 강조 — 이름(작게) + 비율(굵게·컬러) */}
+            <div className="flex items-baseline gap-1">
+              <span className="text-[11px] text-muted-foreground">{c.ratioName}</span>
+              <span className={cn('text-sm font-semibold tabular-nums', ratioClass(c.ratio))}>
+                {c.ratio == null ? '—' : formatPercent(c.ratio)}
+              </span>
+            </div>
+          </Card>
+        ))}
+        {/* 안전한계율 (+ 손익분기점 매출액) */}
+        <Card className="gap-1 p-3">
+          <div className="flex items-center gap-1">
+            <p className="text-xs text-muted-foreground">안전한계율</p>
+            <InfoHint content={<SafetyGuide />} />
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            {s.safetyMargin == null ? (
+              <p className="font-mono text-lg font-semibold text-muted-foreground">산출 불가</p>
+            ) : (
+              <p
+                className={cn(
+                  'font-mono text-lg font-semibold tabular-nums',
+                  netValueClass(s.safetyMargin)
+                )}
+              >
+                {formatPercent(s.safetyMargin)}
+              </p>
+            )}
+            <span
+              className={cn(
+                'shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-medium',
+                SAFETY_BADGE[s.safetyStatus]
+              )}
+            >
+              {s.safetyStatus}
+            </span>
+          </div>
+          {/* 손익분기점 매출액 — 동일 강조 */}
+          <div className="flex items-baseline gap-1 border-t pt-1">
+            <span className="text-[11px] text-muted-foreground">손익분기점 매출액</span>
+            <span className="font-mono text-sm font-semibold tabular-nums">
+              {s.breakEvenSales == null ? '—' : formatWon(s.breakEvenSales)}
             </span>
           </div>
         </Card>
-      ))}
-      {/* 안전한계율 (+ 손익분기점 매출액) */}
-      <Card className="gap-1 p-3">
-        <div className="flex items-center gap-1">
-          <p className="text-xs text-muted-foreground">안전한계율</p>
-          <InfoHint content={<SafetyGuide />} />
-        </div>
-        <div className="flex items-baseline gap-1.5">
-          {s.safetyMargin == null ? (
-            <p className="font-mono text-lg font-semibold text-muted-foreground">산출 불가</p>
-          ) : (
-            <p
-              className={cn(
-                'font-mono text-lg font-semibold tabular-nums',
-                netValueClass(s.safetyMargin)
-              )}
-            >
-              {formatPercent(s.safetyMargin)}
-            </p>
-          )}
-          <span
-            className={cn(
-              'shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-medium',
-              SAFETY_BADGE[s.safetyStatus]
-            )}
-          >
-            {s.safetyStatus}
-          </span>
-        </div>
-        {/* 손익분기점 매출액 — 동일 강조 */}
-        <div className="flex items-baseline gap-1 border-t pt-1">
-          <span className="text-[11px] text-muted-foreground">손익분기점 매출액</span>
-          <span className="font-mono text-sm font-semibold tabular-nums">
-            {s.breakEvenSales == null ? '—' : formatWon(s.breakEvenSales)}
-          </span>
-        </div>
-      </Card>
       </div>
     </div>
   )
@@ -1289,6 +1289,11 @@ function fmtDate(iso: string): string {
   return `${d.getFullYear()}-${mm}-${dd}`
 }
 
+/** ISO → "YYYY년 M월". 월 구분선 라벨(KST 자릿수의 UTC 저장 규약 → ISO 슬라이스로 정확). */
+function monthLabel(iso: string): string {
+  return `${iso.slice(0, 4)}년 ${Number(iso.slice(5, 7))}월`
+}
+
 /** cashflow from/to(YYYY-MM) → transactions API 일자 경계(YYYY-MM-DD, to는 월말). */
 function monthRangeToDays(from: string, to: string): { fromDay: string; toDay: string } {
   const [ty, tm] = to.split('-').map(Number)
@@ -1581,17 +1586,30 @@ function CashflowTxnPanel({
           <p className="py-8 text-center text-sm text-muted-foreground">검색 결과가 없습니다</p>
         ) : (
           <ul className="divide-y">
-            {visibleRows.map((txn) => (
-              <PanelTxnRow
-                key={txn.id}
-                txn={txn}
-                isIncome={isIncome}
-                options={options}
-                categoryTree={categoryTree}
-                onCategoryAdded={onCategoryAdded}
-                onSaved={handleSaved}
-              />
-            ))}
+            {visibleRows.map((txn, i) => {
+              // 월 구분선: 일자 정렬일 때만(금액 정렬은 월 비연속). 직전 행과 월(YYYY-MM)이
+              // 바뀌는 첫 행 앞에 sticky 헤더를 형제로 삽입.
+              const showMonth =
+                sortField === 'date' &&
+                (i === 0 || txn.txnDate.slice(0, 7) !== visibleRows[i - 1].txnDate.slice(0, 7))
+              return (
+                <Fragment key={txn.id}>
+                  {showMonth && (
+                    <li className="sticky top-0 z-10 border-b bg-muted/60 px-4 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur-sm">
+                      {monthLabel(txn.txnDate)}
+                    </li>
+                  )}
+                  <PanelTxnRow
+                    txn={txn}
+                    isIncome={isIncome}
+                    options={options}
+                    categoryTree={categoryTree}
+                    onCategoryAdded={onCategoryAdded}
+                    onSaved={handleSaved}
+                  />
+                </Fragment>
+              )
+            })}
           </ul>
         )}
       </div>
@@ -1662,7 +1680,10 @@ function PanelTxnRow({
               )}
             </span>
             {txn.memo && (
-              <span className="mt-1 block truncate text-[10px] text-muted-foreground" title={txn.memo}>
+              <span
+                className="mt-1 block truncate text-[10px] text-muted-foreground"
+                title={txn.memo}
+              >
                 📝 {txn.memo}
               </span>
             )}
