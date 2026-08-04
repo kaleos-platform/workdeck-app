@@ -111,6 +111,27 @@ export const contentTypeEnum = z.enum(['image', 'text', 'button', 'positions', '
 // base64 인코딩 오버헤드(~33%)를 감안해 13.5MB 문자 길이 상한 적용
 export const MAX_CONTENT_DATA_CHARS = Math.ceil(10 * 1024 * 1024 * 1.35)
 
+// 사용자 입력 URL 검증 — 빈값 차단 + http/https 스킴만 허용(javascript: 등 차단).
+// linkType === 'url' 인 버튼·블록 링크에서 공유한다(<a href>로 렌더되므로 스킴 제한 필수).
+function refineHttpUrl(url: string | undefined, ctx: z.RefinementCtx): void {
+  if (!url || url.trim() === '') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'URL을 입력하세요', path: ['url'] })
+    return
+  }
+  try {
+    const parsed = new URL(url)
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'http 또는 https URL을 입력하세요',
+        path: ['url'],
+      })
+    }
+  } catch {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: '유효한 URL을 입력하세요', path: ['url'] })
+  }
+}
+
 // 버튼 블록 data 스키마
 export const buttonDataSchema = z
   .object({
@@ -123,30 +144,20 @@ export const buttonDataSchema = z
       .optional(),
   })
   .superRefine((val, ctx) => {
-    if (val.linkType === 'url') {
-      if (!val.url || val.url.trim() === '') {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'URL을 입력하세요', path: ['url'] })
-      } else {
-        try {
-          const parsed = new URL(val.url)
-          if (!['http:', 'https:'].includes(parsed.protocol)) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: 'http 또는 https URL을 입력하세요',
-              path: ['url'],
-            })
-          }
-        } catch {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: '유효한 URL을 입력하세요',
-            path: ['url'],
-          })
-        }
-      }
-    }
+    if (val.linkType === 'url') refineHttpUrl(val.url, ctx)
   })
 export type ButtonData = z.infer<typeof buttonDataSchema>
+
+// image·design 블록 링크 스키마 — 'none'(링크 없음) 기본. buttonDataSchema 와 url 검증 공유.
+export const blockLinkSchema = z
+  .object({
+    linkType: z.enum(['none', 'form', 'url']),
+    url: z.string().optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.linkType === 'url') refineHttpUrl(val.url, ctx)
+  })
+export type BlockLink = z.infer<typeof blockLinkSchema>
 
 export const createContentSchema = z.object({
   contentType: contentTypeEnum,
@@ -221,5 +232,7 @@ export type CreateTemplateInput = z.infer<typeof createTemplateSchema>
 // "템플릿 불러오기" — 템플릿 블록으로 공고 상세 블록 전체 교체
 export const applyTemplateSchema = z.object({
   templateId: idLike,
+  // append(기본): 기존 블록 하단에 추가 / replace: 기존 POSTING_DETAIL 전체 교체
+  mode: z.enum(['append', 'replace']).default('append'),
 })
 export type ApplyTemplateInput = z.infer<typeof applyTemplateSchema>

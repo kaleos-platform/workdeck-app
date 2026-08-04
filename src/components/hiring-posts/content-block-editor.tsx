@@ -18,6 +18,7 @@ import {
   Shapes,
   Pencil,
   SquarePen,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,7 +37,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { WizardContentData, WizardPositionData, WizardPosition } from './build-types'
-import type { ButtonData } from '@/lib/validations/hiring-posts'
+import type { ButtonData, BlockLink } from '@/lib/validations/hiring-posts'
 import type { ExcalidrawScene } from './excalidraw-canvas'
 import { CONTENT_TYPE_META, type ContentType } from './block-editors'
 import { BlockEditOverlay } from './block-edit-overlay'
@@ -134,6 +135,14 @@ export function ContentBlockEditor({
   const [templates, setTemplates] = useState<TemplateItem[] | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [applyingTemplate, setApplyingTemplate] = useState(false)
+  // 불러오기 모드: append(기본, 하단 추가) / replace(전체 교체)
+  const [applyMode, setApplyMode] = useState<'append' | 'replace'>('append')
+  // 선택 템플릿 미리보기(블록 목록) — GET /templates/[id]. 반복 선택 대비 캐시 + 최신요청만 반영.
+  const [previewContents, setPreviewContents] = useState<WizardContentData[] | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [previewError, setPreviewError] = useState<string | null>(null)
+  const previewCache = useRef<Map<string, WizardContentData[]>>(new Map())
+  const previewReqRef = useRef(0)
   // 마지막 저장/적용 템플릿 정보 (서버 스냅샷 + 클라이언트 즉시 갱신)
   const [templateInfo, setTemplateInfo] = useState<AppliedTemplate | null>(appliedTemplate)
   // 저장 모드: 현재 템플릿 덮어쓰기 vs 새 템플릿
@@ -278,19 +287,47 @@ export function ContentBlockEditor({
     return patchContent(contentId, { data })
   }
 
+  // 이미지 블록 링크 저장 — data 는 링크만(이미지 자체는 imagePath). imageBase64 를 안 보내므로
+  // 서버는 imagePath 를 건드리지 않는다(필드 독립).
+  function handleImageLinkSave(contentId: string, link: BlockLink) {
+    const data = { link }
+    onChange(contentsRef.current.map((c) => (c.id === contentId ? { ...c, data } : c)))
+    return patchContent(contentId, { data })
+  }
+
+  // 디자인 블록 링크 저장 — scene JSON 최상위에 link 를 병합해 캔버스 내용을 보존한다.
+  function handleDesignLinkSave(contentId: string, link: BlockLink) {
+    const current = contentsRef.current.find((c) => c.id === contentId)
+    const scene =
+      current?.data && typeof current.data === 'object'
+        ? (current.data as Record<string, unknown>)
+        : {}
+    const data = { ...scene, link }
+    onChange(contentsRef.current.map((c) => (c.id === contentId ? { ...c, data } : c)))
+    return patchContent(contentId, { data })
+  }
+
   async function handleDesignSave(contentId: string, scene: ExcalidrawScene, imageBase64: string) {
     // Vercel serverless 함수의 요청 바디 한도(~4.5MB) 아래에서 사전 차단해 친절한 안내를 제공한다.
     // scene(붙여넣은 이미지 dataURL 포함) + PNG 를 합산, JSON 오버헤드 여유로 4MB 로 보수적 설정.
-    const payloadChars = JSON.stringify(scene).length + imageBase64.length
+    // 캔버스 저장은 새 scene 을 만들어(link 미포함) 넘기므로, 기존에 설정된 링크를 병합 보존한다.
+    const existingLink = (
+      contentsRef.current.find((c) => c.id === contentId)?.data as
+        | { link?: BlockLink }
+        | null
+        | undefined
+    )?.link
+    const nextScene: ExcalidrawScene = existingLink ? { ...scene, link: existingLink } : scene
+    const payloadChars = JSON.stringify(nextScene).length + imageBase64.length
     if (payloadChars > 4 * 1024 * 1024) {
       toast.error('디자인이 너무 큽니다. 캔버스에 넣은 이미지 수·크기를 줄여주세요')
       return
     }
     try {
-      const updated = await patchContent(contentId, { data: scene, imageBase64 })
+      const updated = await patchContent(contentId, { data: nextScene, imageBase64 })
       onChange(
         contentsRef.current.map((c) =>
-          c.id === contentId ? { ...c, data: scene, imagePath: updated.imagePath } : c
+          c.id === contentId ? { ...c, data: nextScene, imagePath: updated.imagePath } : c
         )
       )
       toast.success('디자인을 저장했습니다')
@@ -368,6 +405,10 @@ export function ContentBlockEditor({
     setLoadDialogOpen(true)
     setSelectedTemplateId(null)
     setTemplates(null)
+    setApplyMode('append')
+    setPreviewContents(null)
+    setPreviewError(null)
+    setPreviewLoading(false)
     try {
       const res = await fetch('/api/hiring-posts/templates')
       if (!res.ok) throw new Error('템플릿 목록을 불러오지 못했습니다')
@@ -379,6 +420,34 @@ export function ContentBlockEditor({
     }
   }
 
+  // 템플릿 선택 → 미리보기 블록 로드(캐시 우선). 빠른 전환 시 마지막 요청만 반영.
+  async function selectTemplate(id: string) {
+    setSelectedTemplateId(id)
+    setPreviewError(null)
+    const cached = previewCache.current.get(id)
+    if (cached) {
+      setPreviewContents(cached)
+      setPreviewLoading(false)
+      return
+    }
+    const reqId = ++previewReqRef.current
+    setPreviewContents(null)
+    setPreviewLoading(true)
+    try {
+      const res = await fetch(`/api/hiring-posts/templates/${id}`)
+      if (!res.ok) throw new Error('미리보기를 불러오지 못했습니다')
+      const { contents } = await res.json()
+      previewCache.current.set(id, contents)
+      if (previewReqRef.current === reqId) setPreviewContents(contents)
+    } catch (err) {
+      if (previewReqRef.current === reqId) {
+        setPreviewError(err instanceof Error ? err.message : '미리보기를 불러오지 못했습니다')
+      }
+    } finally {
+      if (previewReqRef.current === reqId) setPreviewLoading(false)
+    }
+  }
+
   // 템플릿 적용 — 기존 블록 전체 교체
   async function handleApplyTemplate() {
     if (!selectedTemplateId) return
@@ -387,7 +456,7 @@ export function ContentBlockEditor({
       const res = await fetch(`/api/hiring-posts/postings/${postingId}/apply-template`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId: selectedTemplateId }),
+        body: JSON.stringify({ templateId: selectedTemplateId, mode: applyMode }),
       })
       if (!res.ok) throw new Error('템플릿 적용에 실패했습니다')
       const { contents: next } = await res.json()
@@ -397,7 +466,7 @@ export function ContentBlockEditor({
         applied ? { id: applied.id, name: applied.name, at: new Date().toISOString() } : null
       )
       setLoadDialogOpen(false)
-      toast.success('템플릿을 적용했습니다')
+      toast.success(applyMode === 'append' ? '템플릿 블록을 추가했습니다' : '템플릿을 적용했습니다')
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '템플릿 적용에 실패했습니다')
@@ -587,7 +656,9 @@ export function ContentBlockEditor({
         onTextChange={handleTextChange}
         onButtonSave={handleButtonSave}
         onImageSelect={handleImageSelect}
+        onImageLinkSave={handleImageLinkSave}
         onDesignSave={handleDesignSave}
+        onDesignLinkSave={handleDesignLinkSave}
       />
 
       {/* 템플릿으로 저장 다이얼로그 */}
@@ -678,49 +749,101 @@ export function ContentBlockEditor({
           if (!open) setLoadDialogOpen(false)
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>템플릿 불러오기</DialogTitle>
           </DialogHeader>
-          {templates === null ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">불러오는 중…</p>
-          ) : templates.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              저장된 템플릿이 없습니다. 템플릿으로 저장 버튼으로 먼저 만들어 보세요.
-            </p>
-          ) : (
-            <div className="max-h-72 space-y-1 overflow-y-auto">
-              {templates.map((t) => (
-                <label
-                  key={t.id}
-                  className="flex cursor-pointer items-center gap-3 rounded-md border px-4 py-2.5 hover:bg-accent/50 has-checked:border-primary"
-                >
-                  <input
-                    type="radio"
-                    name="load-template"
-                    checked={selectedTemplateId === t.id}
-                    onChange={() => setSelectedTemplateId(t.id)}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">
-                      {t.name}
-                      {t.isSample && (
-                        <span className="ml-2 text-xs text-muted-foreground">샘플</span>
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      블록 {t._count.contents}개 · {formatTemplateAt(t.updatedAt)}
-                    </div>
-                  </div>
-                </label>
-              ))}
+          {/* 좌: 템플릿 목록 / 우: 선택 템플릿 미리보기. 모바일(sm 미만)은 세로 스택. */}
+          <div className="flex min-h-0 flex-1 flex-col gap-4 sm:flex-row">
+            <div className="flex min-h-0 flex-col sm:w-2/5">
+              {templates === null ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">불러오는 중…</p>
+              ) : templates.length === 0 ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  저장된 템플릿이 없습니다. 템플릿으로 저장 버튼으로 먼저 만들어 보세요.
+                </p>
+              ) : (
+                <div className="max-h-56 min-h-0 flex-1 space-y-1 overflow-y-auto sm:max-h-[60vh]">
+                  {templates.map((t) => (
+                    <label
+                      key={t.id}
+                      className="flex cursor-pointer items-center gap-3 rounded-md border px-4 py-2.5 hover:bg-accent/50 has-checked:border-primary"
+                    >
+                      <input
+                        type="radio"
+                        name="load-template"
+                        checked={selectedTemplateId === t.id}
+                        onChange={() => selectTemplate(t.id)}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium">
+                          {t.name}
+                          {t.isSample && (
+                            <span className="ml-2 text-xs text-muted-foreground">샘플</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          블록 {t._count.contents}개 · {formatTemplateAt(t.updatedAt)}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-          {selectedTemplateId && contents.length > 0 && (
-            <p className="text-xs text-destructive">
-              적용하면 기존 블록 {contents.length}개가 모두 교체됩니다.
-            </p>
-          )}
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border bg-muted/20 sm:w-3/5">
+              {!selectedTemplateId ? (
+                <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-muted-foreground">
+                  템플릿을 선택하면 미리보기가 표시됩니다
+                </div>
+              ) : previewLoading ? (
+                <div className="flex flex-1 items-center justify-center p-6 text-sm text-muted-foreground">
+                  <Loader2 className="mr-2 size-4 animate-spin" /> 미리보기 불러오는 중…
+                </div>
+              ) : previewError ? (
+                <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-destructive">
+                  {previewError}
+                </div>
+              ) : previewContents && previewContents.length > 0 ? (
+                <div className="max-h-64 min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:max-h-[60vh]">
+                  {previewContents.map((c) => (
+                    <ContentBlockPreview key={c.id} content={c} positions={[]} />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-muted-foreground">
+                  이 템플릿에는 표시할 블록이 없습니다
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="radio"
+                  name="apply-mode"
+                  checked={applyMode === 'append'}
+                  onChange={() => setApplyMode('append')}
+                />
+                현재 블록 하단에 추가
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="radio"
+                  name="apply-mode"
+                  checked={applyMode === 'replace'}
+                  onChange={() => setApplyMode('replace')}
+                />
+                기존 블록 교체
+              </label>
+            </div>
+            {applyMode === 'replace' && contents.length > 0 && (
+              <p className="text-xs text-destructive">
+                적용하면 기존 블록 {contents.length}개가 모두 교체됩니다.
+              </p>
+            )}
+          </div>
           <DialogFooter>
             <Button
               variant="outline"

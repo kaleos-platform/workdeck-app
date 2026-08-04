@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
 import {
+  blockLinkSchema,
   buttonDataSchema,
   updateContentSchema,
   MAX_CONTENT_DATA_CHARS,
@@ -37,12 +39,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
+  // image 블록 data 는 링크 설정만 허용 — { link?: BlockLink }
+  const imageDataSchema = z.object({ link: blockLinkSchema.optional() })
+
   // contentType 별 필드 검증
   if (existing.contentType === 'text' && parsed.data.imageBase64 !== undefined) {
     return errorResponse('text 블록에는 imageBase64를 전달할 수 없습니다', 400)
   }
+  // image 블록: 이미지(imageBase64)와 링크(data.link) 저장 허용. data 는 링크 외 필드 불허.
   if (existing.contentType === 'image' && parsed.data.data !== undefined) {
-    return errorResponse('image 블록에는 data(Tiptap JSON)를 전달할 수 없습니다', 400)
+    const img = imageDataSchema.safeParse(parsed.data.data)
+    if (!img.success) {
+      return errorResponse('invalid input', 400, { errors: img.error.flatten() })
+    }
   }
   // button 블록: imageBase64 불허 + data는 buttonDataSchema로 서버 검증
   // (url에 javascript: 등 비 http(s) 스킴이 저장되면 공개 페이지 <a href>로 렌더되므로 차단)
@@ -57,10 +66,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       }
     }
   }
-  // design 블록: scene JSON(data) 크기 상한 — image와 동일 상한 재사용
+  // design 블록: scene JSON(data) 크기 상한 — image와 동일 상한 재사용 + 선택적 link 검증.
+  // link 는 scene JSON 최상위에 병존하는 키(excalidraw 로더는 elements/appState/files 만 읽음).
   if (existing.contentType === 'design' && parsed.data.data !== undefined) {
     if (JSON.stringify(parsed.data.data).length > MAX_CONTENT_DATA_CHARS) {
       return errorResponse('디자인 데이터가 너무 큽니다. 캔버스의 이미지를 줄여주세요', 400)
+    }
+    const link = (parsed.data.data as { link?: unknown } | null)?.link
+    if (link !== undefined) {
+      const parsedLink = blockLinkSchema.safeParse(link)
+      if (!parsedLink.success) {
+        return errorResponse('invalid input', 400, { errors: parsedLink.error.flatten() })
+      }
     }
   }
 

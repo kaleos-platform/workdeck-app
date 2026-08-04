@@ -1,0 +1,66 @@
+/*
+ * 디자인(excalidraw) 블록 한국어 폰트 오버라이드.
+ *
+ * opening→workdeck 이관 scene 은 fontFamily id 1~5 를 쓰는데, opening 포크에서는 각 id 가
+ * 한국어 폰트(웨이트별)였지만 vanilla 0.18 에서는 Virgil(1)/Helvetica(2)/Cascadia(3)/
+ * Excalifont(5) 등 라틴 폰트라 한글 글리프가 없다(→ Xiaolai CJK 폴백 or 시스템 폴백).
+ *
+ * 해결: excalidraw 가 각 id 에 쓰는 CSS font-family 이름과 동일한 이름으로 @font-face 를
+ * 선언하되 unicode-range 를 한글로 제한해, 캔버스 2d 렌더가 한글 코드포인트에서만 우리
+ * Pretendard 를 쓰게 한다(라틴/숫자는 stock 유지 — 라틴 글리프는 이 face 에 없음).
+ *
+ * 웨이트 차등: excalidraw 는 모든 텍스트를 font-weight:normal 로 렌더하므로, 각 face 를
+ * font-weight:400 으로 등록해 매칭시키되 src 파일만 원하는 Pretendard 웨이트를 가리킨다.
+ * (id 별 웨이트는 원본 export PNG 대조로 근접 배정 — id1 본문 Regular, id2 헤딩 Bold 등)
+ *
+ * ⚠️ 이 파일은 excalidraw-canvas.tsx(next/dynamic ssr:false)에서만 import → 편집기 번들에만
+ * 로드되고 공개 페이지/전역 CSS 는 오염되지 않는다. Xiaolai(폴백)도 덮어 vanilla 가 id 4
+ * 처럼 미정의 id 를 CJK 폴백으로 흘려도 한글이 Pretendard 로 나오게 한다.
+ */
+
+/* 한글 자모·호환자모·확장·음절 영역만 (라틴/숫자/문장부호 제외) */
+
+@font-face {
+  font-family: 'Virgil'; /* fontFamily id 1 — 본문(이관 scene 최다) */
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/hiring/Pretendard-Regular.woff2') format('woff2');
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
+}
+
+@font-face {
+  font-family: 'Helvetica'; /* fontFamily id 2 — 헤딩(굵게) */
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/hiring/Pretendard-Bold.woff2') format('woff2');
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
+}
+
+@font-face {
+  font-family: 'Cascadia'; /* fontFamily id 3 — 중간 강조 */
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/hiring/Pretendard-Medium.woff2') format('woff2');
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
+}
+
+@font-face {
+  font-family: 'Excalifont'; /* fontFamily id 5 */
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/hiring/Pretendard-Regular.woff2') format('woff2');
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
+}
+
+@font-face {
+  font-family: 'Xiaolai'; /* CJK 폴백 — id 4(vanilla 미정의) 등 폴스루 캐치올 */
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/hiring/Pretendard-Regular.woff2') format('woff2');
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
+}

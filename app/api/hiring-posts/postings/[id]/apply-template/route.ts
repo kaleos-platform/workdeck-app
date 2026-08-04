@@ -47,9 +47,19 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (!template) return errorResponse('템플릿을 찾을 수 없습니다', 404)
 
   await prisma.$transaction(async (tx) => {
-    await tx.hiringContent.deleteMany({
-      where: { postingId: id, sourceType: 'POSTING_DETAIL' },
-    })
+    // replace: 기존 블록 전체 삭제 후 0부터. append: 삭제 없이 기존 max sortOrder 다음부터 이어붙임.
+    let base = 0
+    if (parsed.data.mode === 'replace') {
+      await tx.hiringContent.deleteMany({
+        where: { postingId: id, sourceType: 'POSTING_DETAIL' },
+      })
+    } else {
+      const agg = await tx.hiringContent.aggregate({
+        where: { postingId: id, sourceType: 'POSTING_DETAIL' },
+        _max: { sortOrder: true },
+      })
+      base = (agg._max.sortOrder ?? -1) + 1
+    }
     if (template.contents.length > 0) {
       await tx.hiringContent.createMany({
         data: template.contents.map((c, i) => ({
@@ -60,7 +70,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           title: c.title,
           data: (c.data ?? undefined) as Prisma.InputJsonValue | undefined,
           imagePath: c.imagePath,
-          sortOrder: i,
+          sortOrder: base + i,
         })),
       })
     }
