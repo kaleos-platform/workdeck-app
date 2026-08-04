@@ -9,6 +9,29 @@ import {
 } from '@/lib/metrics-calculator'
 import { formatDateToYmdKst } from '@/lib/date-range'
 import { parseOptionName, parsePureProductName } from '@/lib/product-name-parser'
+import { parseConditions, buildRecordWhereSql } from '@/lib/coupang-ads/metric-filter'
+
+// findMany select와 raw SELECT가 반환하는 공통 행 형태 (normalize 입력)
+type RawAdRow = {
+  id: string
+  date: Date
+  adType: string
+  campaignId: string
+  campaignName: string
+  adGroup: string | null
+  placement: string | null
+  productName: string | null
+  optionId: string | null
+  keyword: string | null
+  impressions: number | bigint
+  clicks: number | bigint
+  adCost: unknown
+  orders1d: number | bigint
+  revenue1d: unknown
+  roas1d: unknown
+  material: string | null
+  engagements: number | null
+}
 
 // GET /api/campaigns/[campaignId]/records — 광고 데이터 목록 (페이지네이션)
 export async function GET(
@@ -34,6 +57,9 @@ export async function GET(
   if (from) dateFilter.gte = new Date(from + 'T00:00:00+09:00')
   if (to) dateFilter.lte = new Date(to + 'T23:59:59+09:00')
 
+  // 커스텀 지표 필터 (광고 데이터 탭) — 있으면 행별 raw SQL 경로, 없으면 findMany
+  const conditions = parseConditions(searchParams.get('conditions'))
+
   const where = {
     workspaceId: workspace.id,
     campaignId,
@@ -57,44 +83,105 @@ export async function GET(
     placementConditions.push(`"adType" = $${placementValues.length}`)
   }
 
-  const [total, items, placementRows] = await Promise.all([
-    prisma.adRecord.count({ where }),
-    prisma.adRecord.findMany({
-      where,
-      orderBy: { date: 'desc' },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      select: {
-        id: true,
-        date: true,
-        adType: true,
-        campaignId: true,
-        campaignName: true,
-        adGroup: true,
-        placement: true,
-        productName: true,
-        optionId: true,
-        keyword: true,
-        impressions: true,
-        clicks: true,
-        adCost: true,
-        orders1d: true,
-        revenue1d: true,
-        roas1d: true,
-        material: true,
-        engagements: true,
-      },
-    }),
-    prisma.$queryRawUnsafe<Array<{ placement: string | null }>>(
+  // placement 드롭다운 목록은 지표 조건과 무관 (항상 동일 쿼리)
+  const placementPromise = prisma.$queryRawUnsafe<Array<{ placement: string | null }>>(
+    `
+      SELECT DISTINCT placement
+      FROM "AdRecord"
+      WHERE ${placementConditions.join(' AND ')}
+      ORDER BY placement ASC
+    `,
+    ...placementValues
+  )
+
+  const ROW_COLUMNS = `id, date, "adType", "campaignId", "campaignName", "adGroup", placement,
+    "productName", "optionId", keyword, impressions, clicks, "adCost", "orders1d",
+    "revenue1d", "roas1d", material, engagements`
+
+  let total: number
+  let items: RawAdRow[]
+
+  if (conditions.length > 0) {
+    // 행별 조건 → 원본 컬럼 WHERE. date DESC, id ASC 로 OFFSET 페이지네이션 안정화.
+    const values: unknown[] = [workspace.id, campaignId]
+    const rowConds = ['"workspaceId" = $1', '"campaignId" = $2']
+    if (dateFilter.gte) {
+      values.push(dateFilter.gte)
+      rowConds.push(`date >= $${values.length}`)
+    }
+    if (dateFilter.lte) {
+      values.push(dateFilter.lte)
+      rowConds.push(`date <= $${values.length}`)
+    }
+    if (adType && adType !== 'all') {
+      values.push(adType)
+      rowConds.push(`"adType" = $${values.length}`)
+    }
+    if (placement && placement !== 'all') {
+      values.push(placement)
+      rowConds.push(`placement = $${values.length}`)
+    }
+    const metric = buildRecordWhereSql(conditions, values.length + 1)
+    if (metric.clause) {
+      rowConds.push(metric.clause)
+      values.push(...metric.values)
+    }
+    const whereSql = rowConds.join(' AND ')
+
+    const countRows = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
+      `SELECT COUNT(*)::bigint AS count FROM "AdRecord" WHERE ${whereSql}`,
+      ...values
+    )
+    total = Number(countRows[0]?.count ?? 0)
+
+    values.push(pageSize)
+    const limitParam = `$${values.length}`
+    values.push((page - 1) * pageSize)
+    const offsetParam = `$${values.length}`
+
+    items = await prisma.$queryRawUnsafe<RawAdRow[]>(
       `
-        SELECT DISTINCT placement
+        SELECT ${ROW_COLUMNS}
         FROM "AdRecord"
-        WHERE ${placementConditions.join(' AND ')}
-        ORDER BY placement ASC
+        WHERE ${whereSql}
+        ORDER BY date DESC, id ASC
+        LIMIT ${limitParam} OFFSET ${offsetParam}
       `,
-      ...placementValues
-    ),
-  ])
+      ...values
+    )
+  } else {
+    ;[total, items] = await Promise.all([
+      prisma.adRecord.count({ where }),
+      prisma.adRecord.findMany({
+        where,
+        orderBy: { date: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: {
+          id: true,
+          date: true,
+          adType: true,
+          campaignId: true,
+          campaignName: true,
+          adGroup: true,
+          placement: true,
+          productName: true,
+          optionId: true,
+          keyword: true,
+          impressions: true,
+          clicks: true,
+          adCost: true,
+          orders1d: true,
+          revenue1d: true,
+          roas1d: true,
+          material: true,
+          engagements: true,
+        },
+      }) as unknown as Promise<RawAdRow[]>,
+    ])
+  }
+
+  const placementRows = await placementPromise
 
   // Decimal → Number 변환, 날짜 포맷, CTR/CVR/ROAS 계산 (F008 기준 통일)
   const normalized = items.map((r) => {
