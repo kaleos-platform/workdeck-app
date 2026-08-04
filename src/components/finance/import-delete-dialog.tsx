@@ -24,6 +24,7 @@ type ImportItem = {
   fileName: string
   institution: string | null
   status: 'DRAFT' | 'COMMITTED'
+  committed: boolean // 파생: 잔여 스테이징 행 0 = 저장됨
   totalRows: number
   committedRows: number
   createdAt: string
@@ -55,7 +56,8 @@ export function ImportDeleteDialog({
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/finance/imports?limit=50')
+      // 삭제 관리 다이얼로그는 저장됨 파일도 선택·삭제해야 하므로 전체 조회.
+      const res = await fetch('/api/finance/imports?limit=50&includeCommitted=1')
       if (!res.ok) throw new Error('업로드 이력 조회 실패')
       const data = await res.json()
       setItems(data.imports ?? [])
@@ -180,7 +182,7 @@ export function ImportDeleteDialog({
                       </p>
                     </div>
                     <Badge variant="outline" className="shrink-0 text-[10px]">
-                      {imp.status === 'DRAFT' ? '처리 중' : '저장됨'}
+                      {imp.committed ? '저장됨' : '처리 중'}
                     </Badge>
                   </label>
                 ))}
