@@ -131,16 +131,8 @@ export default async function PublicPostingPage({ params, searchParams }: Params
       {posting.contents.length > 0 && (
         <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
           {posting.contents.map((c) =>
-            c.imagePath ? (
-              <Image
-                key={c.id}
-                src={hiringAssetPublicUrl(c.imagePath)}
-                alt="공고 상세"
-                width={1200}
-                height={1600}
-                unoptimized
-                className="h-auto w-full"
-              />
+            (c.contentType === 'image' || c.contentType === 'design') && c.imagePath ? (
+              <ImageContentBlock key={c.id} content={c} uuid={uuid} isClosed={isClosed} />
             ) : c.contentType === 'text' && c.data ? (
               <div
                 key={c.id}
@@ -232,6 +224,44 @@ export default async function PublicPostingPage({ params, searchParams }: Params
       )}
     </article>
   )
+}
+
+// image·design 블록 이미지 — data.link 가 form/url 이면 링크로 래핑. 마감 시 링크 비활성(button 과 동일).
+function ImageContentBlock({
+  content,
+  uuid,
+  isClosed,
+}: {
+  content: { imagePath: string | null; data: unknown }
+  uuid: string
+  isClosed: boolean
+}) {
+  const img = (
+    <Image
+      src={hiringAssetPublicUrl(content.imagePath as string)}
+      alt="공고 상세"
+      width={1200}
+      height={1600}
+      unoptimized
+      className="h-auto w-full"
+    />
+  )
+  const link = (content.data as { link?: { linkType?: string; url?: string } } | null)?.link
+  if (!isClosed && link?.linkType === 'form') {
+    return (
+      <Link href={getHiringPublicApplyPath(uuid)} className="block">
+        {img}
+      </Link>
+    )
+  }
+  if (!isClosed && link?.linkType === 'url' && link.url) {
+    return (
+      <a href={link.url} target="_blank" rel="noopener noreferrer" className="block">
+        {img}
+      </a>
+    )
+  }
+  return img
 }
 
 function ConditionRow({ label, value }: { label: string; value: string }) {

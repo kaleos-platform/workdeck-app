@@ -79,6 +79,8 @@ type PlanItem =
       section: DetailSection
       contentRow?: ContentRow
       title: string | null
+      // content_link 이관분 — 블록 data 에 지원폼 링크(link.linkType='form')를 병합.
+      linkForm?: boolean
     }
   | { kind: 'needs-confirm'; section: DetailSection; note: string } // custom → text (매핑 불확실)
   | { kind: 'skip'; section: DetailSection; reason: string } // 동적 섹션·비활성 등
@@ -246,7 +248,8 @@ function planTemplate(
         break
       }
       case 'content_link': {
-        // 링크 카드 → image 블록: content 행의 image_key(PNG)만 이관, URL(공고별 지원 링크)·scene 은 드롭.
+        // 링크 카드 → design 블록: scene(file_key) 복원 + 지원폼 링크(link.linkType='form') + PNG(image_key).
+        // scene 없으면(file_key null) image 블록으로 폴백하되 지원폼 링크는 유지.
         const row = section.resource_id ? contentById.get(Number(section.resource_id)) : undefined
         if (!row) {
           items.push({
@@ -260,8 +263,24 @@ function planTemplate(
             section,
             reason: `content_link content id=${row.id} image_key null`,
           })
+        } else if (row.file_key) {
+          items.push({
+            kind: 'migrate',
+            blockType: 'design',
+            section,
+            contentRow: row,
+            title,
+            linkForm: true,
+          })
         } else {
-          items.push({ kind: 'migrate', blockType: 'image', section, contentRow: row, title })
+          items.push({
+            kind: 'migrate',
+            blockType: 'image',
+            section,
+            contentRow: row,
+            title,
+            linkForm: true,
+          })
         }
         break
       }
@@ -370,12 +389,14 @@ async function runMigration(plans: TemplatePlan[], env: Record<string, string>) 
         if (item.blockType === 'design') {
           const row = item.contentRow!
           const scene = JSON.parse(s3Download(privateBucket, row.file_key!).toString('utf8'))
+          // content_link 이관분은 scene 최상위에 지원폼 링크를 병합(F1 design 링크 스키마와 동일).
+          const data = item.linkForm ? { ...scene, link: { linkType: 'form' } } : scene
           const imagePath = await uploadPng(
             sb,
             `${base}/${row.id}.png`,
             s3Download(publicBucket, row.image_key!)
           )
-          blocks.push({ contentType: 'design', title: item.title, data: scene, imagePath })
+          blocks.push({ contentType: 'design', title: item.title, data, imagePath })
         } else if (item.blockType === 'image') {
           // content_link 은 content 행의 image_key 사용, image 섹션은 섹션 자체 image_key.
           const imageKey = item.contentRow?.image_key ?? item.section.image_key!
@@ -387,7 +408,9 @@ async function runMigration(plans: TemplatePlan[], env: Record<string, string>) 
             `${base}/${name}.png`,
             s3Download(publicBucket, imageKey)
           )
-          blocks.push({ contentType: 'image', title: item.title, data: null, imagePath })
+          // content_link 폴백(scene 없음)은 image data 에 지원폼 링크만 저장.
+          const data = item.linkForm ? { link: { linkType: 'form' } } : null
+          blocks.push({ contentType: 'image', title: item.title, data, imagePath })
         } else if (item.blockType === 'positions') {
           blocks.push({ contentType: 'positions', title: item.title, data: null, imagePath: null })
         } else if (item.blockType === 'text') {

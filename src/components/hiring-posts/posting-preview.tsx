@@ -85,10 +85,21 @@ export function ContentBlockPreview({
   positions: WizardPositionData[]
 }) {
   if (c.contentType === 'image' || c.contentType === 'design') {
-    return c.imagePath ? (
-      // eslint-disable-next-line @next/next/no-img-element
+    if (!c.imagePath) return null
+    // eslint-disable-next-line @next/next/no-img-element
+    const img = (
       <img src={getPostingAssetPublicUrl(c.imagePath)} alt="" className="w-full rounded-md" />
-    ) : null
+    )
+    const link = (c.data as { link?: { linkType?: string; url?: string } } | null)?.link
+    // 미리보기에서 form 은 실제 경로 대신 '#'(button 미리보기와 동일 관례)
+    const href =
+      link?.linkType === 'url' && link.url ? link.url : link?.linkType === 'form' ? '#' : null
+    if (!href) return img
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className="block">
+        {img}
+      </a>
+    )
   }
   if (c.contentType === 'button') {
     const btn = c.data as {

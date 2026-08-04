@@ -56,9 +56,23 @@ export function renderPostingEmbedHtml(params: {
     if (content.contentType === 'image' || content.contentType === 'design') {
       if (!content.imagePath) continue
       const src = escapeHtml(hiringAssetPublicUrl(content.imagePath))
-      parts.push(
-        `<img src="${src}" alt="" style="width:100%;height:auto;display:block;margin:16px 0">`
-      )
+      const link = (content.data as { link?: { linkType?: string; url?: string } } | null)?.link
+      const href =
+        link?.linkType === 'form'
+          ? `${origin}/p/${posting.uuid}/apply`
+          : link?.linkType === 'url' && link.url
+            ? link.url
+            : null
+      const img = `<img src="${src}" alt="" style="width:100%;height:auto;display:block">`
+      if (href) {
+        parts.push(
+          `<a href="${escapeHtml(href)}" target="_blank" rel="noopener" style="display:block;margin:16px 0">${img}</a>`
+        )
+      } else {
+        parts.push(
+          `<img src="${src}" alt="" style="width:100%;height:auto;display:block;margin:16px 0">`
+        )
+      }
       continue
     }
 

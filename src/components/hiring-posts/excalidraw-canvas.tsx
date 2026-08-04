@@ -14,12 +14,16 @@ import type {
   BinaryFileData,
 } from '@excalidraw/excalidraw/types'
 import '@excalidraw/excalidraw/index.css'
+// 이관 scene(fontFamily 1~5)의 한글을 Pretendard 로 렌더 — excalidraw 폰트 이름에
+// unicode-range(한글) @font-face 를 덮어씀. ssr:false 동적 import 라 편집기 번들에만 로드.
+import './excalidraw-korean-fonts.css'
 import { toast } from 'sonner'
 import { Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT } from './build-types'
+import type { BlockLink } from '@/lib/validations/hiring-posts'
 
 // 아트보드 규격 — 폭은 640 고정, 높이만 조절 (상수는 build-types 에서 공유)
 export { CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT }
@@ -33,11 +37,27 @@ export type ExcalidrawScene = {
   appState: { viewBackgroundColor?: string }
   files: unknown
   canvasHeight?: number
+  // 블록 링크 — scene JSON 최상위에 병존(로더는 무시). 카드저장 시 유실 방지 위해 병합 보존.
+  link?: BlockLink
 }
 
 function clampHeight(v: number): number {
   if (!Number.isFinite(v)) return DEFAULT_CANVAS_HEIGHT
   return Math.min(MAX_CANVAS_HEIGHT, Math.max(MIN_CANVAS_HEIGHT, Math.round(v)))
+}
+
+// excalidraw-korean-fonts.css 가 오버라이드한 폰트 이름들 — export 전 한글 face 를 명시 로드.
+const KOREAN_OVERRIDE_FAMILIES = ['Virgil', 'Helvetica', 'Cascadia', 'Excalifont', 'Xiaolai']
+
+// document.fonts.load 는 unicode-range face 를 텍스트 없이는 로드하지 않으므로 한글 샘플을 넘긴다.
+// exportToBlob(canvas 렌더) 전에 호출해 PNG 가 폴백 폰트로 나가는 것을 방지한다.
+async function ensureKoreanFontsLoaded(): Promise<void> {
+  if (typeof document === 'undefined' || !document.fonts) return
+  await Promise.all(
+    KOREAN_OVERRIDE_FAMILIES.map((f) =>
+      document.fonts.load(`16px "${f}"`, '한글가나다').catch(() => {})
+    )
+  ).catch(() => {})
 }
 
 function blobToBase64(blob: Blob): Promise<string> {
@@ -299,6 +319,9 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
       return
     }
     const frame = elements.find(isFrame)
+    // 한글 오버라이드 face 가 로드되기 전에 export 하면 PNG 가 폴백 폰트로 나간다.
+    // 각 excalidraw 폰트 이름 + 한글 텍스트로 명시 로드해 export 전 보장(load 실패는 무시).
+    await ensureKoreanFontsLoaded()
     try {
       const blob = await exportToBlob({
         elements,

@@ -11,8 +11,134 @@ import { cn } from '@/lib/utils'
 import { BUTTON_DEFAULT_COLOR, BUTTON_PRESET_COLORS } from '@/lib/hiring/button-color'
 import { AutoSaveIndicator } from './autosave-indicator'
 import { getPostingAssetPublicUrl, DEFAULT_CANVAS_HEIGHT } from './build-types'
-import { buttonDataSchema, type ButtonData } from '@/lib/validations/hiring-posts'
+import {
+  blockLinkSchema,
+  buttonDataSchema,
+  type ButtonData,
+  type BlockLink,
+} from '@/lib/validations/hiring-posts'
 import type { ExcalidrawScene } from './excalidraw-canvas'
+
+const LINK_TYPE_LABELS: Record<BlockLink['linkType'], string> = {
+  none: '링크 없음',
+  form: '지원서 폼 연결',
+  url: 'URL 직접 입력',
+}
+
+// image·design 블록 공용 링크 편집기 — ButtonBlock 과 동일한 자동저장 패턴(seed-once state,
+// debounce/blur + 언마운트 flush). 'none'/'form' 은 즉시, 'url' 은 입력값 검증 후 저장.
+export function BlockLinkEditor({
+  value,
+  onSave,
+}: {
+  value: BlockLink | null | undefined
+  onSave: (link: BlockLink) => Promise<unknown>
+}) {
+  const [linkType, setLinkType] = useState<BlockLink['linkType']>(value?.linkType ?? 'none')
+  const [url, setUrl] = useState(value?.url ?? '')
+  const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const uid = useId()
+
+  type LinkDraft = { linkType: BlockLink['linkType']; url: string }
+  // pending debounce 의 최신 초안 — 오버레이가 debounce 창 안에 닫혀도 unmount flush 로 보존.
+  const draftRef = useRef<LinkDraft>({ linkType, url })
+  draftRef.current = { linkType, url }
+  const pendingRef = useRef(false)
+  const mountedRef = useRef(true)
+
+  function attemptSave(next: LinkDraft) {
+    pendingRef.current = false
+    const result = blockLinkSchema.safeParse({
+      linkType: next.linkType,
+      url: next.url || undefined,
+    })
+    if (!result.success) {
+      const first = result.error.issues[0]
+      if (mountedRef.current) setError(first?.message ?? '입력 값을 확인하세요')
+      return
+    }
+    if (mountedRef.current) {
+      setError(null)
+      setStatus('saving')
+    }
+    onSave(result.data)
+      .then(() => {
+        if (mountedRef.current) setStatus('saved')
+      })
+      .catch(() => {
+        toast.error('링크 저장에 실패했습니다')
+        if (mountedRef.current) setStatus('idle')
+      })
+  }
+
+  function debouncedSave(next: LinkDraft) {
+    clearTimeout(timer.current)
+    pendingRef.current = true
+    timer.current = setTimeout(() => attemptSave(next), 600)
+  }
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+      clearTimeout(timer.current)
+      if (pendingRef.current) attemptSave(draftRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function handleLinkTypeChange(next: BlockLink['linkType']) {
+    setLinkType(next)
+    clearTimeout(timer.current)
+    // url 전환 직후 빈 URL로 즉시 검증하면 에러가 뜨므로 입력을 기다린다
+    if (next === 'url' && !url.trim()) {
+      setError(null)
+      return
+    }
+    attemptSave({ linkType: next, url })
+  }
+  function handleUrlChange(value: string) {
+    setUrl(value)
+    debouncedSave({ linkType, url: value })
+  }
+  function handleUrlBlur() {
+    clearTimeout(timer.current)
+    attemptSave({ linkType, url })
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <Label>링크 연결</Label>
+        <AutoSaveIndicator status={status} />
+      </div>
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
+        {(Object.keys(LINK_TYPE_LABELS) as BlockLink['linkType'][]).map((t) => (
+          <label key={t} className="flex cursor-pointer items-center gap-1.5">
+            <input
+              type="radio"
+              name={`${uid}-blocklink`}
+              value={t}
+              checked={linkType === t}
+              onChange={() => handleLinkTypeChange(t)}
+            />
+            {LINK_TYPE_LABELS[t]}
+          </label>
+        ))}
+      </div>
+      {linkType === 'url' && (
+        <Input
+          value={url}
+          onChange={(e) => handleUrlChange(e.target.value)}
+          onBlur={handleUrlBlur}
+          placeholder="https://example.com"
+        />
+      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
+  )
+}
 
 export type ContentType = 'text' | 'image' | 'button' | 'positions' | 'design'
 
@@ -259,11 +385,14 @@ export function PositionsBlock({ positions }: { positions: { id: string; name: s
 export function DesignBlock({
   scene,
   onSave,
+  onLinkSave,
 }: {
   scene: unknown
   onSave: (scene: ExcalidrawScene, imageBase64: string) => Promise<void>
+  onLinkSave: (link: BlockLink) => Promise<unknown>
 }) {
   const [saving, setSaving] = useState(false)
+  const link = (scene as { link?: BlockLink } | null)?.link ?? null
   // scene 이 바뀔 때만 재계산 — setSaving 등 무관한 리렌더에서 새 객체를 만들면
   // ExcalidrawCanvas 의 initialData 기반 useMemo 가 매번 무효화된다.
   const { initialData, canvasHeight } = useMemo(() => {
@@ -282,28 +411,37 @@ export function DesignBlock({
     return { initialData: data, canvasHeight: height }
   }, [scene])
   return (
-    <ExcalidrawCanvas
-      initialData={initialData}
-      canvasHeight={canvasHeight}
-      saving={saving}
-      onSave={async (s, img) => {
-        setSaving(true)
-        try {
-          await onSave(s, img)
-        } finally {
-          setSaving(false)
-        }
-      }}
-    />
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <BlockLinkEditor value={link} onSave={onLinkSave} />
+      <div className="min-h-0 flex-1">
+        <ExcalidrawCanvas
+          initialData={initialData}
+          canvasHeight={canvasHeight}
+          saving={saving}
+          onSave={async (s, img) => {
+            setSaving(true)
+            try {
+              await onSave(s, img)
+            } finally {
+              setSaving(false)
+            }
+          }}
+        />
+      </div>
+    </div>
   )
 }
 
 export function ImageBlock({
   imagePath,
+  link,
   onSelect,
+  onLinkSave,
 }: {
   imagePath: string | null
+  link: BlockLink | null | undefined
   onSelect: (file: File) => void
+  onLinkSave: (link: BlockLink) => Promise<unknown>
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   return (
@@ -340,6 +478,7 @@ export function ImageBlock({
           자유입니다.
         </p>
       </div>
+      <BlockLinkEditor value={link} onSave={onLinkSave} />
     </div>
   )
 }

@@ -4,7 +4,7 @@ import { Check } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Editor } from '@/components/sc/editor/editor'
-import type { ButtonData } from '@/lib/validations/hiring-posts'
+import type { ButtonData, BlockLink } from '@/lib/validations/hiring-posts'
 import { ButtonBlock, DesignBlock, ImageBlock, CONTENT_TYPE_META } from './block-editors'
 import { StepPositions } from './step-positions'
 import type { ExcalidrawScene } from './excalidraw-canvas'
@@ -21,7 +21,9 @@ type Props = {
   onTextChange: (contentId: string, doc: unknown) => void
   onButtonSave: (contentId: string, data: ButtonData) => Promise<unknown>
   onImageSelect: (contentId: string, file: File) => void
+  onImageLinkSave: (contentId: string, link: BlockLink) => Promise<unknown>
   onDesignSave: (contentId: string, scene: ExcalidrawScene, imageBase64: string) => Promise<void>
+  onDesignLinkSave: (contentId: string, link: BlockLink) => Promise<unknown>
 }
 
 // 블록 본문 편집 풀스크린 오버레이 — 라우트가 아니라 클라이언트 모달이므로 wizard state 가
@@ -37,7 +39,9 @@ export function BlockEditOverlay({
   onTextChange,
   onButtonSave,
   onImageSelect,
+  onImageLinkSave,
   onDesignSave,
+  onDesignLinkSave,
 }: Props) {
   const meta = content
     ? CONTENT_TYPE_META[content.contentType as keyof typeof CONTENT_TYPE_META]
@@ -104,7 +108,9 @@ export function BlockEditOverlay({
               ) : content.contentType === 'image' ? (
                 <ImageBlock
                   imagePath={content.imagePath}
+                  link={(content.data as { link?: BlockLink } | null)?.link}
                   onSelect={(file) => onImageSelect(content.id, file)}
+                  onLinkSave={(link) => onImageLinkSave(content.id, link)}
                 />
               ) : content.contentType === 'positions' ? (
                 // 기본 정보 화면과 동일한 직무 관리 UI(직무 추가 팝업 + 목록/편집/삭제) 재사용.
@@ -119,6 +125,7 @@ export function BlockEditOverlay({
                   key={content.id}
                   scene={content.data}
                   onSave={(scene, imageBase64) => onDesignSave(content.id, scene, imageBase64)}
+                  onLinkSave={(link) => onDesignLinkSave(content.id, link)}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">지원하지 않는 블록입니다.</p>
