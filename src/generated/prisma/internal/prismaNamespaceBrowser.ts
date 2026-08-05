@@ -88,6 +88,7 @@ export const ModelName = {
   InventoryAnalysis: 'InventoryAnalysis',
   InvProductGroup: 'InvProductGroup',
   InvProduct: 'InvProduct',
+  AdCampaignProductMap: 'AdCampaignProductMap',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
   InvMovement: 'InvMovement',
@@ -805,6 +806,19 @@ export const InvProductScalarFieldEnum = {
 } as const
 
 export type InvProductScalarFieldEnum = (typeof InvProductScalarFieldEnum)[keyof typeof InvProductScalarFieldEnum]
+
+
+export const AdCampaignProductMapScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  campaignId: 'campaignId',
+  productId: 'productId',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AdCampaignProductMapScalarFieldEnum = (typeof AdCampaignProductMapScalarFieldEnum)[keyof typeof AdCampaignProductMapScalarFieldEnum]
 
 
 export const InvProductOptionScalarFieldEnum = {

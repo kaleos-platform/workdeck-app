@@ -422,6 +422,7 @@ model Space {
   channelProducts        ChannelProduct[]
   productionRuns         ProductionRun[]
   pricingScenarios       PricingScenario[]
+  adCampaignProductMaps  AdCampaignProductMap[]
 
   // 발주 계획
   reorderPlans ReorderPlan[]
@@ -1071,6 +1072,7 @@ model InvProduct {
   reorderConfig    InvReorderConfig?
   reorderPlanItems ReorderPlanItem[]
   reorderPlans     ReorderPlan[]
+  adCampaignMaps   AdCampaignProductMap[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1079,6 +1081,34 @@ model InvProduct {
   @@index([spaceId])
   @@index([groupId])
   @@index([brandId])
+}
+
+// 쿠팡 광고 캠페인 ↔ 내부 상품 귀속 매핑.
+//
+// AdRecord 는 Workspace 스코프이고 optionId 가 쿠팡 외부 옵션ID(예: 92143176219)라
+// 내부 InvProductOption 과 직접 FK 가 없다. 외부 optionId 브리지
+// (external-option-bridge.ts)로 옵션 단위 귀속이 되는 광고비는 그쪽이 먼저 처리하고,
+// 남은 캠페인 광고비를 이 표로 상품 단위 귀속한다. 상품 내 옵션 배분은 기간 매출 비례.
+//
+// 한 캠페인이 여러 상품을 담을 수 있어 (campaignId, productId) 다대다를 행으로 표현한다.
+// 어느 쪽으로도 귀속되지 않은 광고비는 unallocatedAdCost 로 반환한다(추정 배분 금지).
+model AdCampaignProductMap {
+  id         String  @id @default(cuid())
+  spaceId    String
+  campaignId String // 쿠팡 캠페인 ID (AdRecord.campaignId)
+  productId  String
+  memo       String?
+
+  space   Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  product InvProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, campaignId, productId])
+  @@index([spaceId])
+  @@index([spaceId, campaignId])
+  @@index([productId])
 }
 
 // 상품 옵션
