@@ -61,6 +61,13 @@ export const blogOpsLanding: DeckLandingContent = {
       description: '여러 블로그 채널의 배포 일정과 상태를 통합 관리합니다.',
     },
   ],
+  screenshots: [
+    {
+      src: '/marketing/blog-ops/dashboard.png',
+      alt: '블로그 운영 파이프라인 현황 화면',
+      caption: '제품·소재·포스트 단계별 진행 현황',
+    },
+  ],
   workflow: [
     {
       step: 1,
