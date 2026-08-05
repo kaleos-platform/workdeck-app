@@ -146,18 +146,12 @@ export async function notifyInventoryAnalysis(params: {
     )
   }
 
-  // 위너 미달성
-  if (results.winnerStatus.length > 0) {
+  // 위너 미달성 — 갯수만 표시 (상세 리스트는 페이지에서 확인)
+  if (params.winnerIssueCount > 0) {
     blocks.push(divider())
-    blocks.push(section(`:trophy: *위너 미달성* (${params.winnerIssueCount}건)`))
     blocks.push(
       section(
-        formatItems(
-          results.winnerStatus.map((item) => ({
-            label: `${item.productName}${item.optionName ? ` (${item.optionName})` : ''} — 재고: ${item.availableStock.toLocaleString('ko-KR')}개`,
-          })),
-          MAX_ITEMS
-        )
+        `:trophy: *위너 미달성* — 재고 보유 중 위너 미달성 상품 *${params.winnerIssueCount}건*`
       )
     )
   }
