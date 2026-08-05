@@ -287,6 +287,19 @@ export function parseReconciliationFile(buffer: ArrayBuffer, fileName: string): 
     return { format: 'generic', rows, snapshotDate }
   }
 
+  // 재고 현황 '목록' export(SKU번호 + 가용재고/분석 컬럼)는 재고 조정 입력 형식이 아님 —
+  // 매칭 키(위치·코드)가 없고 가용재고는 실사 물리재고가 아니므로 명확히 안내한다.
+  if (
+    headerStr0.includes('SKU번호') &&
+    (headerStr0.includes('가용재고') ||
+      headerStr0.includes('재고회전률') ||
+      headerStr0.includes('월평균출고량'))
+  ) {
+    throw new Error(
+      '재고 현황 목록 파일은 재고 조정에 사용할 수 없습니다. 재고 조정은 실사 재고 양식이 필요합니다 — [템플릿] 버튼으로 양식(위치명·실재고)을 내려받아 작성 후 업로드해 주세요.'
+    )
+  }
+
   throw new Error(
     '지원하지 않는 파일 형식입니다. 쿠팡 재고 health, 3PL 현재고조회, 재고 현황 내보내기, 또는 (제품코드, 수량) 컬럼이 포함된 엑셀을 업로드해 주세요.'
   )
