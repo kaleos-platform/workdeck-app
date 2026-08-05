@@ -46,7 +46,11 @@ export async function POST(
       },
     })
 
-    // 분석 스케줄의 lastAnalyzedAt 갱신
+    // 분석 스케줄의 lastAnalyzedAt 갱신 + slackNotify 게이트 조회
+    const schedule = await prisma.analysisSchedule.findUnique({
+      where: { workspaceId: report.workspaceId },
+      select: { slackNotify: true },
+    })
     await prisma.analysisSchedule.updateMany({
       where: { workspaceId: report.workspaceId },
       data: { lastAnalyzedAt: new Date() },
@@ -61,7 +65,11 @@ export async function POST(
       })
     }
 
-    return NextResponse.json({ status: 'COMPLETED' })
+    // Slack 발송 여부 게이트: 수동 분석은 항상 발송, 스케줄 분석은 slackNotify 플래그를 따름
+    // (스케줄 미설정 시 기본 true) — 실제 발송은 Worker가 이 값으로 게이트
+    const slackNotify = report.triggeredBy === 'manual' ? true : (schedule?.slackNotify ?? true)
+
+    return NextResponse.json({ status: 'COMPLETED', slackNotify })
   } else {
     await prisma.analysisReport.update({
       where: { id: reportId },

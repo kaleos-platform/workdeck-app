@@ -1,7 +1,15 @@
 // 분석 데이터 빌더 — Prisma에서 데이터를 조회하여 AI 분석 입력 형태로 가공
 
 import { prisma } from '@/lib/prisma'
-import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
+import {
+  calculateCTR,
+  calculateCVR,
+  calculateROAS,
+  hasSignificantSample,
+  MIN_SIGNIFICANT_CLICKS,
+  MIN_SIGNIFICANT_IMPRESSIONS,
+  MIN_SIGNIFICANT_ADCOST,
+} from '@/lib/metrics-calculator'
 import type { AnalysisInput, CampaignSummary, InefficientKeyword } from '@/lib/ai/suggestion-types'
 import type { AnalysisType } from '@/generated/prisma/client'
 
@@ -129,18 +137,31 @@ export async function buildAnalysisContext(
     campaignAdCostMap.set(c.campaignId, c.totalAdCost)
   }
 
+  // 표본 미달로 판정 보류된 키워드 수 (관찰용)
+  let heldBelowThreshold = 0
+
   const inefficientKeywords: InefficientKeyword[] = keywordGroups
     .filter((g) => {
       const adCost = Number(g._sum.adCost ?? 0)
       const orders = Number(g._sum.orders1d ?? 0)
-      return adCost > 0 && orders === 0
+      if (!(adCost > 0 && orders === 0)) return false
+      // 통계 유의성 가드: 표본(클릭/노출)이 충분한 경우에만 비효율로 판정.
+      // 클릭 1~2회 노이즈를 "전환 0 = 비효율"로 오판정하지 않도록 하한 적용.
+      const clicks = Number(g._sum.clicks ?? 0)
+      const impressions = Number(g._sum.impressions ?? 0)
+      if (!hasSignificantSample(clicks, impressions, adCost)) {
+        heldBelowThreshold++
+        return false
+      }
+      return true
     })
     .map((g) => {
       const adCost = Number(g._sum.adCost ?? 0)
       const campaignTotal = campaignAdCostMap.get(g.campaignId) ?? 0
-      const costRatio = campaignTotal > 0
-        ? Math.round((adCost / campaignTotal) * 10000) / 100  // 소수점 2자리 %
-        : 0
+      const costRatio =
+        campaignTotal > 0
+          ? Math.round((adCost / campaignTotal) * 10000) / 100 // 소수점 2자리 %
+          : 0
       return {
         campaignId: g.campaignId,
         campaignName: g.campaignName,
@@ -152,6 +173,13 @@ export async function buildAnalysisContext(
         costRatio,
       }
     })
+
+  if (heldBelowThreshold > 0) {
+    console.log(
+      `[data-builder] 비효율 키워드 ${inefficientKeywords.length}건 (표본 미달 판정 보류 ${heldBelowThreshold}건 제외, ` +
+        `클릭<${MIN_SIGNIFICANT_CLICKS} & 노출<${MIN_SIGNIFICANT_IMPRESSIONS} & 광고비<${MIN_SIGNIFICANT_ADCOST}원)`
+    )
+  }
 
   // 제거된 키워드 히스토리
   const removedKeywordsRaw = await prisma.keywordStatus.findMany({

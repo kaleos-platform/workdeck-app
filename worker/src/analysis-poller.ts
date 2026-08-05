@@ -292,6 +292,31 @@ function buildUserPrompt(ctx: Record<string, unknown>): string {
   return lines.join('\n')
 }
 
+/**
+ * 분석 완료 Slack 알림 발송 — 분석 파이프라인에서 분리된 부수효과.
+ * @param enabled complete 응답의 slackNotify 게이트. false면 발송 스킵.
+ * 발송 실패는 로그만 남기고 삼켜 분석 결과에 영향을 주지 않는다.
+ */
+async function maybeNotifyAnalysisDone(
+  enabled: boolean,
+  params: {
+    summary: string
+    suggestionCount: number
+    campaignCount: number
+    workspaceId?: string
+  }
+): Promise<void> {
+  if (!enabled) {
+    console.log('[analysis-poller] slackNotify=false — 분석 완료 알림 스킵')
+    return
+  }
+  try {
+    await notifyAnalysisDone(params)
+  } catch (err) {
+    console.error('[analysis-poller] 분석 완료 알림 발송 실패(무시):', err)
+  }
+}
+
 export function startAnalysisPoller(): void {
   setInterval(async () => {
     if (isProcessing) return
@@ -357,8 +382,12 @@ export function startAnalysisPoller(): void {
         if (completeRes.ok) {
           console.log(`[analysis-poller] 분석 완료 저장: ${reportId}`)
 
-          // 5. Slack 알림 발송
-          await notifyAnalysisDone({
+          // 5. Slack 알림 발송 — 분석/저장과 분리된 부수효과.
+          //    발송 여부는 complete 응답의 slackNotify 게이트를 따르며, 발송 실패가 분석 결과에 영향 없도록 격리.
+          const completeBody = (await completeRes.json().catch(() => ({}))) as {
+            slackNotify?: boolean
+          }
+          await maybeNotifyAnalysisDone(completeBody.slackNotify !== false, {
             summary,
             suggestionCount: result.suggestions.length,
             campaignCount: campaigns.length,
