@@ -77,6 +77,9 @@ docs/source_ref/
 # 참조/QA 스크린샷 (로컬 보관, 커밋 안 함)
 docs/finance-ops/
 docs/seller-ops/
+docs/recruiting/
+# docs 루트에 떨어지는 QA 스크린샷 (deck 문서는 docs/decks/<deck-id>/ 에 둔다)
+/docs/*.png
 
 # Prisma 로컬 SQLite (개발 중 임시 파일)
 prisma/dev.db
@@ -95,6 +98,7 @@ qa-*.png
 # agent / gstack 런타임 산출물
 .agents/
 .gstack/
+.orca/
 
 # Deck 문서 — QA 스크린샷은 전이성이라 추적 안 함 (assets/ 는 추적)
 docs/decks/**/screenshot/
