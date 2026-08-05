@@ -705,14 +705,14 @@ export function ReconciliationPreview({
                     />
                   )}
                 </TableHead>
-                <TableHead className="w-24">상태</TableHead>
-                <TableHead>상품명</TableHead>
-                <TableHead className="w-36">파일 옵션명</TableHead>
-                <TableHead className="min-w-[14rem]">매칭 상품 옵션</TableHead>
-                <TableHead className="w-16 text-right">현재 재고</TableHead>
-                <TableHead className="w-16 text-right">파일</TableHead>
-                <TableHead className="w-16 text-right">차이</TableHead>
-                <TableHead className="w-32 whitespace-nowrap">동작</TableHead>
+                <TableHead className="w-20">상태</TableHead>
+                <TableHead className="min-w-[8rem]">상품명</TableHead>
+                <TableHead className="w-28">파일 옵션명</TableHead>
+                <TableHead className="min-w-[9rem]">매칭 상품 옵션</TableHead>
+                <TableHead className="w-14 text-right">현재 재고</TableHead>
+                <TableHead className="w-12 text-right">파일</TableHead>
+                <TableHead className="w-12 text-right">차이</TableHead>
+                <TableHead className="w-20 whitespace-nowrap">동작</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
