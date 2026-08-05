@@ -66,6 +66,13 @@ export const salesContentLanding: DeckLandingContent = {
       description: '배포한 콘텐츠의 채널별 성과를 모아 분석하고 다음 콘텐츠 기획에 반영합니다.',
     },
   ],
+  screenshots: [
+    {
+      src: '/marketing/sales-content/dashboard.png',
+      alt: '세일즈 콘텐츠 관리 칸반 보드 화면',
+      caption: '작성→리뷰→배포까지 콘텐츠 흐름 관리',
+    },
+  ],
   workflow: [
     {
       step: 1,

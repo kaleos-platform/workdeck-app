@@ -71,6 +71,13 @@ export const financeLanding: DeckLandingContent = {
         '업로드 일자와 파일 단위로 등록 이력을 관리하고, 필요 시 파일 단위로 삭제할 수 있습니다.',
     },
   ],
+  screenshots: [
+    {
+      src: '/marketing/finance/dashboard.png',
+      alt: '재무 관리 요약 대시보드 화면',
+      caption: '현금 잔고·수입·지출·순현금흐름을 월 단위로 확인',
+    },
+  ],
   workflow: [
     {
       step: 1,
