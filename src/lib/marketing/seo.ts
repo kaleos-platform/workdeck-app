@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { buildMarketingUrl } from '@/lib/domain'
 import type { DeckLandingContent, DeckLandingFaqItem } from './types'
+import type { BlogPost } from './blog'
 
 const SITE_NAME = 'Workdeck'
 
@@ -81,6 +82,47 @@ export function softwareAppJsonLd(content: DeckLandingContent) {
       price: '0',
       priceCurrency: 'KRW',
     },
+  }
+}
+
+/** BlogPosting JSON-LD — 블로그 상세 페이지에 사용 */
+export function blogPostingJsonLd(post: BlogPost) {
+  const url = buildMarketingUrl(`/blog/${post.slug}`)
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    dateModified: post.date,
+    url,
+    author: {
+      '@type': 'Organization',
+      name: 'Workdeck',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Workdeck',
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': url,
+    },
+  }
+}
+
+/** BreadcrumbList JSON-LD */
+export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: buildMarketingUrl(item.path),
+    })),
   }
 }
 

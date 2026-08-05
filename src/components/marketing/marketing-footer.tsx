@@ -6,6 +6,7 @@ import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
 
 const companyLinks = [
   { label: '소개', href: '/about' },
+  { label: '블로그', href: '/blog' },
   { label: '문의', href: '/contact' },
   { label: '이용약관', href: '/terms' },
   { label: '개인정보처리방침', href: '/privacy' },

@@ -3,6 +3,7 @@ import { DECK_META } from '@/lib/deck-meta'
 import { DECK_LANDINGS } from '@/lib/marketing/decks'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
 import { DECK_PRICING_ROWS } from '@/lib/marketing/pricing-data'
+import { getAllPosts } from '@/lib/marketing/blog'
 
 export const dynamic = 'force-static'
 
@@ -52,9 +53,20 @@ function buildLlmsTxt(): string {
   lines.push(`- Pricing 페이지: ${buildMarketingUrl('/pricing')}`)
   lines.push('')
 
+  const posts = getAllPosts()
+  if (posts.length > 0) {
+    lines.push('## Blog')
+    lines.push('')
+    for (const post of posts) {
+      lines.push(`- ${post.title} (${post.date}): ${buildMarketingUrl(`/blog/${post.slug}`)}`)
+    }
+    lines.push('')
+  }
+
   lines.push('## Links')
   lines.push('')
   lines.push(`- 홈: ${buildMarketingUrl('/')}`)
+  lines.push(`- 블로그: ${buildMarketingUrl('/blog')}`)
   lines.push(`- 회사 소개: ${buildMarketingUrl('/about')}`)
   lines.push(`- 문의: ${buildMarketingUrl('/contact')}`)
   lines.push(`- 이용약관: ${buildMarketingUrl('/terms')}`)

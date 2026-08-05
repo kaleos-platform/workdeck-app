@@ -61,6 +61,12 @@ export function MarketingHeader() {
           >
             요금제
           </Link>
+          <Link
+            href="/blog"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            블로그
+          </Link>
         </nav>
 
         {/* CTA 버튼 */}
@@ -107,6 +113,15 @@ export function MarketingHeader() {
                 onClick={() => setMobileOpen(false)}
               >
                 요금제
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/blog"
+                className="block rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
+                onClick={() => setMobileOpen(false)}
+              >
+                블로그
               </Link>
             </li>
           </ul>
