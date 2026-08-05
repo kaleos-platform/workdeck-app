@@ -27,7 +27,6 @@ import type {
   StockShortageItem,
   ReturnRateItem,
   StorageFeeItem,
-  WinnerStatusItem,
 } from '@/lib/inventory-analyzer'
 
 type AnalysisData = {
@@ -193,6 +192,7 @@ export function InventoryAnalysisPanel() {
               onToggle={() => toggleSection('returnRate')}
             >
               <ReturnRateTable items={data.results.returnRate} />
+              <TopNCaption total={data.returnRateCount} shown={data.results.returnRate.length} />
             </AnalysisSection>
           )}
 
@@ -207,21 +207,24 @@ export function InventoryAnalysisPanel() {
               onToggle={() => toggleSection('storageFee')}
             >
               <StorageFeeTable items={data.results.storageFee} />
+              <TopNCaption total={data.storageFeeCount} shown={data.results.storageFee.length} />
             </AnalysisSection>
           )}
 
+          {/* 위너 미달성 — 갯수만 표시 (상세 리스트 없이 비확장 요약 행) */}
           {data.winnerIssueCount > 0 && (
-            <AnalysisSection
-              title="위너 미달성"
-              count={data.winnerIssueCount}
-              icon={<Trophy className="h-4 w-4" />}
-              color="text-blue-600"
-              bgColor="bg-blue-50"
-              expanded={expandedSections.has('winner')}
-              onToggle={() => toggleSection('winner')}
-            >
-              <WinnerStatusTable items={data.results.winnerStatus} />
-            </AnalysisSection>
+            <div className="flex items-center justify-between rounded-lg border bg-blue-50 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-600">
+                  <Trophy className="h-4 w-4" />
+                </span>
+                <span className="text-sm font-medium text-blue-600">위너 미달성</span>
+                <Badge variant="outline" className="text-xs text-blue-600">
+                  {data.winnerIssueCount}건
+                </Badge>
+              </div>
+              <span className="text-xs text-muted-foreground">재고 보유 중 위너 미달성 상품</span>
+            </div>
           )}
         </CardContent>
       )}
@@ -407,33 +410,12 @@ function StorageFeeTable({ items }: { items: StorageFeeItem[] }) {
   )
 }
 
-function WinnerStatusTable({ items }: { items: WinnerStatusItem[] }) {
+// 상위 N만 표시 중임을 알리는 캡션 (총건수 > 표시건수일 때만 노출)
+function TopNCaption({ total, shown }: { total: number; shown: number }) {
+  if (total <= shown) return null
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs text-muted-foreground">
-            <th className="pr-4 pb-2">상품명</th>
-            <th className="pr-4 pb-2">옵션명</th>
-            <th className="pb-2 text-right font-semibold text-blue-600">재고</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.optionId} className="border-t border-blue-100">
-              <td className="truncate py-2 pr-4" style={{ maxWidth: 200 }}>
-                {item.productName}
-              </td>
-              <td className="truncate py-2 pr-4 text-muted-foreground" style={{ maxWidth: 150 }}>
-                {item.optionName ?? '-'}
-              </td>
-              <td className="py-2 text-right font-semibold text-blue-600">
-                {item.availableStock.toLocaleString()}개
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <p className="pt-2 text-xs text-muted-foreground">
+      상위 {shown}건 표시 (총 {total.toLocaleString()}건)
+    </p>
   )
 }
