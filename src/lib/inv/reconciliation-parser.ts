@@ -17,6 +17,7 @@ export type ReconciliationFileFormat =
   | 'threepl_current'
   | 'stock_status_export'
   | 'generic'
+  | 'inventory_list'
 
 export type ParseResult = {
   format: ReconciliationFileFormat
@@ -215,6 +216,36 @@ function parseGeneric(rawData: unknown[][]): ParsedRow[] {
 
 // ─── 메인 파서 ─────────────────────────────────────────────
 
+// 외부 WMS/채널 재고현황 '목록' export (SKU번호 기반)
+// SKU번호 → externalCode 매칭. 실재고 = 가용재고 + 유보재고 + 하자재고 (안전재고=임계값 제외).
+function parseInventoryList(rawData: unknown[][]): ParsedRow[] {
+  const headers = ((rawData[0] as unknown[]) ?? []).map((v) => String(v ?? '').trim())
+  const dataRows = rawData.slice(1)
+
+  const rows: ParsedRow[] = []
+  for (const raw of dataRows) {
+    const rec = rowToRecord(headers, raw as unknown[])
+    const externalCode = parseStr(rec['SKU번호'])
+    if (!externalCode) continue
+    // 물리 총재고 = 가용 + 유보 + 하자 (미기입=0)
+    const qty =
+      (parseInt_(rec['가용재고']) ?? 0) +
+      (parseInt_(rec['유보재고']) ?? 0) +
+      (parseInt_(rec['하자재고']) ?? 0)
+    // 옵션 조합(옵션1 [+옵션2]) — externalCode 미매칭 시 상품명+옵션명 폴백 매칭용
+    const opt1 = parseStr(rec['옵션1'])
+    const opt2 = parseStr(rec['옵션2'])
+    const optionName = [opt1, opt2].filter(Boolean).join(' ') || undefined
+    rows.push({
+      externalCode,
+      externalName: parseStr(rec['상품명']),
+      externalOptionName: optionName,
+      quantity: qty,
+    })
+  }
+  return rows
+}
+
 export function parseReconciliationFile(buffer: ArrayBuffer, fileName: string): ParseResult {
   const wb = XLSX.read(buffer, { type: 'array' })
   const sheetName = wb.SheetNames[0]
@@ -287,17 +318,14 @@ export function parseReconciliationFile(buffer: ArrayBuffer, fileName: string): 
     return { format: 'generic', rows, snapshotDate }
   }
 
-  // 재고 현황 '목록' export(SKU번호 + 가용재고/분석 컬럼)는 재고 조정 입력 형식이 아님 —
-  // 매칭 키(위치·코드)가 없고 가용재고는 실사 물리재고가 아니므로 명확히 안내한다.
-  if (
-    headerStr0.includes('SKU번호') &&
-    (headerStr0.includes('가용재고') ||
-      headerStr0.includes('재고회전률') ||
-      headerStr0.includes('월평균출고량'))
-  ) {
-    throw new Error(
-      '재고 현황 목록 파일은 재고 조정에 사용할 수 없습니다. 재고 조정은 실사 재고 양식이 필요합니다 — [템플릿] 버튼으로 양식(위치명·실재고)을 내려받아 작성 후 업로드해 주세요.'
-    )
+  // 5) 재고 현황 '목록' export(외부 WMS/채널): SKU번호 + 가용재고
+  //    SKU번호 → externalCode 매칭, 실재고 = 가용+유보+하자
+  if (headerStr0.includes('SKU번호') && headerStr0.includes('가용재고')) {
+    const rows = parseInventoryList(rawData as unknown[][])
+    if (rows.length === 0) {
+      throw new Error('재고 현황 목록 파일에서 유효한 행(SKU번호)을 찾지 못했습니다')
+    }
+    return { format: 'inventory_list', rows, snapshotDate }
   }
 
   throw new Error(

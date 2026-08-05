@@ -244,8 +244,8 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
                 )}
               </label>
               <p className="text-xs text-muted-foreground">
-                쿠팡 재고 health / 3PL 현재고 / 재고 조정 템플릿 / 재고 현황 내보내기 /
-                (제품코드+수량) 엑셀 지원
+                쿠팡 재고 health / 3PL 현재고 / 재고 조정 템플릿 / 재고 현황 내보내기 / 재고 현황
+                목록(SKU번호) / (제품코드+수량) 엑셀 지원
               </p>
             </div>
           </div>
