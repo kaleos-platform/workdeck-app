@@ -56,6 +56,16 @@ export function orgJsonLd() {
   }
 }
 
+/** WebSite JSON-LD — 브랜드 홈에서 orgJsonLd와 함께 사용 */
+export function websiteJsonLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: buildMarketingUrl('/'),
+  }
+}
+
 /** SoftwareApplication JSON-LD — deck 랜딩 페이지에 사용 (현재 베타 무료) */
 export function softwareAppJsonLd(content: DeckLandingContent) {
   return {
