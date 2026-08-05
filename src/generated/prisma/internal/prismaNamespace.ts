@@ -421,6 +421,7 @@ export const ModelName = {
   InventoryAnalysis: 'InventoryAnalysis',
   InvProductGroup: 'InvProductGroup',
   InvProduct: 'InvProduct',
+  AdCampaignProductMap: 'AdCampaignProductMap',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
   InvMovement: 'InvMovement',
@@ -536,7 +537,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "boProduct" | "boIdeation" | "boMaterial" | "boPost" | "boPostVersion" | "boChannel" | "boPostVariant" | "boDeployment" | "boJob" | "boChannelCredential" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3275,6 +3276,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.InvProductCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.InvProductCountAggregateOutputType> | number
+        }
+      }
+    }
+    AdCampaignProductMap: {
+      payload: Prisma.$AdCampaignProductMapPayload<ExtArgs>
+      fields: Prisma.AdCampaignProductMapFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdCampaignProductMapFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdCampaignProductMapFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload>
+        }
+        findFirst: {
+          args: Prisma.AdCampaignProductMapFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdCampaignProductMapFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload>
+        }
+        findMany: {
+          args: Prisma.AdCampaignProductMapFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload>[]
+        }
+        create: {
+          args: Prisma.AdCampaignProductMapCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload>
+        }
+        createMany: {
+          args: Prisma.AdCampaignProductMapCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AdCampaignProductMapCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload>[]
+        }
+        delete: {
+          args: Prisma.AdCampaignProductMapDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload>
+        }
+        update: {
+          args: Prisma.AdCampaignProductMapUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload>
+        }
+        deleteMany: {
+          args: Prisma.AdCampaignProductMapDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdCampaignProductMapUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AdCampaignProductMapUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload>[]
+        }
+        upsert: {
+          args: Prisma.AdCampaignProductMapUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdCampaignProductMapPayload>
+        }
+        aggregate: {
+          args: Prisma.AdCampaignProductMapAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdCampaignProductMap>
+        }
+        groupBy: {
+          args: Prisma.AdCampaignProductMapGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdCampaignProductMapGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdCampaignProductMapCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdCampaignProductMapCountAggregateOutputType> | number
         }
       }
     }
@@ -11318,6 +11393,19 @@ export const InvProductScalarFieldEnum = {
 export type InvProductScalarFieldEnum = (typeof InvProductScalarFieldEnum)[keyof typeof InvProductScalarFieldEnum]
 
 
+export const AdCampaignProductMapScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  campaignId: 'campaignId',
+  productId: 'productId',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AdCampaignProductMapScalarFieldEnum = (typeof AdCampaignProductMapScalarFieldEnum)[keyof typeof AdCampaignProductMapScalarFieldEnum]
+
+
 export const InvProductOptionScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
@@ -14359,6 +14447,7 @@ export type GlobalOmitConfig = {
   inventoryAnalysis?: Prisma.InventoryAnalysisOmit
   invProductGroup?: Prisma.InvProductGroupOmit
   invProduct?: Prisma.InvProductOmit
+  adCampaignProductMap?: Prisma.AdCampaignProductMapOmit
   invProductOption?: Prisma.InvProductOptionOmit
   invStorageLocation?: Prisma.InvStorageLocationOmit
   invMovement?: Prisma.InvMovementOmit
