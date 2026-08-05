@@ -6,7 +6,7 @@ import { buildAppUrl } from '@/lib/domain'
 import { DECK_META } from '@/lib/deck-meta'
 import { DECK_LANDINGS } from '@/lib/marketing/decks'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
-import { buildMarketingMetadata, orgJsonLd } from '@/lib/marketing/seo'
+import { buildMarketingMetadata, orgJsonLd, websiteJsonLd } from '@/lib/marketing/seo'
 import { JsonLd } from '@/components/marketing/json-ld'
 
 export function generateMetadata(): Metadata {
@@ -29,6 +29,7 @@ export default function HomePage() {
   return (
     <div className="w-full">
       <JsonLd data={orgJsonLd()} />
+      <JsonLd data={websiteJsonLd()} />
 
       {/* Hero */}
       <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
