@@ -82,7 +82,14 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
 
   // 서버 응답 분기 헬퍼
   function handleSuccess(data: { id: string; totalItems: number; matchedItems: number }) {
-    toast.success(`매칭 완료: 총 ${data.totalItems}건 / 자동매칭 ${data.matchedItems}건`)
+    // 파싱은 됐으나 자동매칭 0건이면 "반영 안됨"으로 오해하기 쉬워 경고로 구분한다.
+    if (data.matchedItems === 0) {
+      toast.warning(
+        `매칭된 항목이 없습니다 (총 ${data.totalItems}건). 위치·상품 코드가 카탈로그와 일치하는지, 올바른 양식인지 확인해 주세요.`
+      )
+    } else {
+      toast.success(`매칭 완료: 총 ${data.totalItems}건 / 자동매칭 ${data.matchedItems}건`)
+    }
     setOpen(false)
     resetAll()
     onUploaded(data.id)
