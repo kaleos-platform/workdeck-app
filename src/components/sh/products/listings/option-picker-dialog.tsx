@@ -76,6 +76,8 @@ type Props = {
   contextValue?: string
   // multi-with-qty 수정 시 기존 선택 복원
   initialItems?: PickedOptionWithQty[]
+  // 검색 시 공식 상품명(name)도 매칭 대상에 포함(재고조정 상품명 추천용). 기본 false.
+  searchOfficialName?: boolean
 }
 
 export function OptionPickerDialog({
@@ -90,6 +92,7 @@ export function OptionPickerDialog({
   contextLabel,
   contextValue,
   initialItems,
+  searchOfficialName = false,
 }: Props) {
   const [search, setSearch] = useState(initialQuery)
   const [debounced, setDebounced] = useState(initialQuery)
@@ -127,6 +130,7 @@ export function OptionPickerDialog({
         const qs = new URLSearchParams()
         qs.set('pageSize', '20')
         if (debounced.trim()) qs.set('search', debounced.trim())
+        if (searchOfficialName) qs.set('includeName', '1')
         const res = await fetch(`/api/sh/products?${qs.toString()}`)
         if (!res.ok) throw new Error('검색 실패')
         const data: { data?: ProductRow[]; products?: ProductRow[] } = await res.json()
@@ -164,7 +168,7 @@ export function OptionPickerDialog({
     return () => {
       cancelled = true
     }
-  }, [open, debounced])
+  }, [open, debounced, searchOfficialName])
 
   const excluded = useMemo(() => new Set(excludeOptionIds), [excludeOptionIds])
 
