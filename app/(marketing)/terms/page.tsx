@@ -77,7 +77,7 @@ export default function TermsPage() {
       <div className="mx-auto max-w-3xl space-y-10">
         <div className="space-y-3">
           <h1 className="text-3xl font-bold tracking-tight break-keep sm:text-4xl">이용약관</h1>
-          <p className="text-sm break-keep text-muted-foreground">시행일: [YYYY년 MM월 DD일]</p>
+          <p className="text-sm break-keep text-muted-foreground">시행일: 2026년 8월 5일</p>
         </div>
 
         <div className="space-y-8">
