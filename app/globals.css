@@ -146,3 +146,84 @@
   --ps-border: var(--border);
   --ps-fg: var(--foreground);
 }
+
+/*
+ * 블로그 상세 MDX 본문 타이포그래피.
+ * @tailwindcss/typography 미설치 상태라 직접 스타일링(마케팅 톤 유지).
+ */
+.blog-prose {
+  line-height: 1.75;
+  color: var(--foreground);
+}
+.blog-prose > * + * {
+  margin-top: 1.25rem;
+}
+.blog-prose h2 {
+  margin-top: 2.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.blog-prose h3 {
+  margin-top: 2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.blog-prose p {
+  color: var(--muted-foreground);
+}
+.blog-prose strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+.blog-prose ul,
+.blog-prose ol {
+  padding-left: 1.5rem;
+  color: var(--muted-foreground);
+}
+.blog-prose ul {
+  list-style: disc;
+}
+.blog-prose ol {
+  list-style: decimal;
+}
+.blog-prose li + li {
+  margin-top: 0.5rem;
+}
+.blog-prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.blog-prose code {
+  background: var(--muted);
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.875em;
+}
+.blog-prose pre {
+  background: var(--muted);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+}
+.blog-prose pre code {
+  background: transparent;
+  padding: 0;
+}
+.blog-prose blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 1rem;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+.blog-prose table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.blog-prose th,
+.blog-prose td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}

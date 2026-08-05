@@ -1,14 +1,13 @@
 /**
- * 회사 실정보 플레이스홀더 — 실값 확정 후 교체 필요.
- * terms/privacy/contact 페이지가 이 상수를 참조한다.
+ * 회사 정보 — terms/privacy/contact 페이지가 이 상수를 참조한다.
  */
-export const CONTACT_EMAIL = 'contact@workdeck.work' // TODO: 실 운영 이메일로 교체
+export const CONTACT_EMAIL = 'hello@workdeck.work'
 
 export const COMPANY = {
-  name: '[상호명]',
-  ceo: '[대표자명]',
-  registrationNumber: '[사업자등록번호]',
-  address: '[사업장 주소]',
-  privacyOfficer: '[개인정보보호책임자명]',
+  name: '주식회사 의식주의',
+  ceo: '윤태이',
+  registrationNumber: '634-81-02756',
+  address: '서울특별시 강남구 남부순환로 지하 2814, 지하 2층 203호',
+  privacyOfficer: '윤태이',
   privacyOfficerEmail: CONTACT_EMAIL,
 }
