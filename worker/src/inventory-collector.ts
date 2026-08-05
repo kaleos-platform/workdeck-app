@@ -193,6 +193,7 @@ async function dismissModals(page: Page): Promise<boolean> {
   const dismissCandidates = [
     'button:has-text("닫기")',
     'button:has-text("오늘 하루 보지 않기")',
+    'button:has-text("다시 보지 않기")',
     'button:has-text("나중에")',
     'button:has-text("다음에")',
     'button[aria-label="닫기"]',
@@ -212,10 +213,19 @@ async function dismissModals(page: Page): Promise<boolean> {
     }
   }
 
-  // 쿠팡 Wing 재고현황 신규 가이드 모달: X 아이콘이 button이 아닌 div/span으로 렌더링된다.
-  const guideTitle = page.locator('text=더 고도화된 재고현황').first()
-  if (await guideTitle.isVisible({ timeout: 800 }).catch(() => false)) {
-    const modalBox = await guideTitle
+  // 텍스트 버튼이 없는 쿠팡 Wing 공지/프로모션 모달: X 아이콘이 button이 아닌
+  // div/span으로 렌더링돼 위 후보로는 안 닫힌다. 제목 텍스트로 모달 박스를 찾아
+  // 우상단 X 좌표를 직접 클릭하고, 그래도 남으면 Escape로 폴백한다.
+  //   - "더 고도화된 재고현황": 재고현황 신규 가이드 모달
+  //   - "품절 상품을 신속히 재입고": 물류센터 이슈 안내 모달(2026-08-04 등장 —
+  //     "다시 보지 않기"/"확인" 버튼. 백드롭이 엑셀 다운로드 드롭다운 클릭을 삼켜
+  //     재고현황 수집이 매일 실패하던 원인)
+  const modalTitles = ['더 고도화된 재고현황', '품절 상품을 신속히 재입고']
+  for (const title of modalTitles) {
+    const modalTitle = page.locator(`text=${title}`).first()
+    if (!(await modalTitle.isVisible({ timeout: 800 }).catch(() => false))) continue
+
+    const modalBox = await modalTitle
       .evaluate((node) => {
         let el: HTMLElement | null = node instanceof HTMLElement ? node : node.parentElement
         while (el) {
@@ -234,7 +244,7 @@ async function dismissModals(page: Page): Promise<boolean> {
       await page.waitForTimeout(500)
     }
 
-    if (await guideTitle.isVisible({ timeout: 500 }).catch(() => false)) {
+    if (await modalTitle.isVisible({ timeout: 500 }).catch(() => false)) {
       await page.keyboard.press('Escape').catch(() => {})
       await page.waitForTimeout(500)
     }
@@ -346,6 +356,17 @@ async function downloadInventoryHealth(
         'div[role="menuitem"]:has-text("엑셀 다운로드 요청"), li:has-text("엑셀 다운로드 요청")'
       )
       .first()
+  }
+
+  // 드롭다운이 끝내 안 열렸으면(늦게 뜬 공지 모달 백드롭이 클릭을 삼킨 경우 등)
+  // 모달을 한 번 더 정리하고 다운로드 버튼을 재클릭한 뒤 재확인한다(1회 가드).
+  if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+    console.log('[inventory]   → 드롭다운 미열림 — 모달 재정리 후 재클릭 재시도')
+    await dismissModals(page)
+    await page.waitForTimeout(500)
+    await downloadBtn.click({ force: true }).catch(() => {})
+    await page.waitForTimeout(1000)
+    requestBtn = page.locator('text=엑셀 다운로드 요청').first()
   }
 
   if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
