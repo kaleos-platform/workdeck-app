@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { LayoutGrid } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { DECK_META } from '@/lib/deck-meta'
+import { COMPANY, CONTACT_EMAIL } from '@/lib/marketing/company'
 import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
 
 const companyLinks = [
@@ -69,7 +70,19 @@ export function MarketingFooter() {
 
         <Separator className="my-8" />
 
-        <p className="text-sm text-muted-foreground">
+        <div className="space-y-1 text-xs break-keep text-muted-foreground">
+          <p>
+            {COMPANY.name} | 대표: {COMPANY.ceo} | 사업자등록번호: {COMPANY.registrationNumber}
+          </p>
+          <p>
+            주소: {COMPANY.address} | 문의:{' '}
+            <a href={`mailto:${CONTACT_EMAIL}`} className="transition-colors hover:text-foreground">
+              {CONTACT_EMAIL}
+            </a>
+          </p>
+        </div>
+
+        <p className="mt-4 text-sm text-muted-foreground">
           &copy; {currentYear} Workdeck. All rights reserved.
         </p>
       </div>
