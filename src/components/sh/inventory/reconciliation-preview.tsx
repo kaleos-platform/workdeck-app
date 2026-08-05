@@ -195,6 +195,7 @@ export function ReconciliationPreview({
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerExternalCode, setPickerExternalCode] = useState<string | null>(null)
   const [pickerContext, setPickerContext] = useState('')
+  const [pickerQuery, setPickerQuery] = useState('')
 
   // matched-* 행 매칭 수정용 picker 상태
   const [editMatcherOpen, setEditMatcherOpen] = useState(false)
@@ -426,6 +427,7 @@ export function ReconciliationPreview({
     const name = entry.row?.externalName ?? entry.externalCode
     const optionName = entry.row?.externalOptionName
     setPickerContext(optionName ? `${name} / ${optionName}` : name)
+    setPickerQuery(name)
     setPickerOpen(true)
   }
 
@@ -875,6 +877,8 @@ export function ReconciliationPreview({
         }}
         mode="multi-with-qty"
         onPickMulti={handlePickedMulti}
+        initialQuery={pickerQuery}
+        searchOfficialName
         excludeOptionIds={excludeOptionIds}
         contextLabel="매칭 대상 (파일)"
         contextValue={pickerContext}
