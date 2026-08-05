@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Search } from 'lucide-react'
+import { ArrowLeft, Info, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { productDisplayName } from '@/lib/sh/product-display'
 
 type ProductRow = {
@@ -388,7 +389,27 @@ export function OptionPickerDialog({
                         </label>
                         {checked && (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-muted-foreground">수량</span>
+                            <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                              세트 수량
+                              <TooltipProvider delayDuration={200}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="text-muted-foreground/70 hover:text-foreground"
+                                      aria-label="세트 수량 안내"
+                                    >
+                                      <Info className="h-3 w-3" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                                    세트 구성으로 재고과 관리되는 상품일 경우 개별 상품 수량을
+                                    입력해주세요.
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </span>
                             <Input
                               type="number"
                               min={1}
