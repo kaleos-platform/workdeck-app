@@ -69,6 +69,13 @@ export const coupangAdsLanding: DeckLandingContent = {
       description: '캠페인별 대시보드·광고 데이터·키워드 분석 탭으로 상세 성과를 바로 확인합니다.',
     },
   ],
+  screenshots: [
+    {
+      src: '/marketing/coupang-ads/dashboard.png',
+      alt: '쿠팡 광고 관리자 캠페인 대시보드 화면',
+      caption: '캠페인별 광고비·ROAS·매출 추이를 한눈에 확인',
+    },
+  ],
   workflow: [
     {
       step: 1,

@@ -68,6 +68,13 @@ export const sellerHubLanding: DeckLandingContent = {
       description: '채널 수수료·배송비·광고비를 반영해 판매가 조정 시 마진율을 즉시 계산합니다.',
     },
   ],
+  screenshots: [
+    {
+      src: '/marketing/seller-hub/dashboard.png',
+      alt: '브랜드 운영 상품 목록 화면',
+      caption: '상품·옵션·재고를 한 화면에서 관리',
+    },
+  ],
   workflow: [
     {
       step: 1,

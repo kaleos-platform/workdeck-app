@@ -69,6 +69,13 @@ export const recruitingLanding: DeckLandingContent = {
       description: '매장과 직무 정보를 미리 등록해 공고 제작 시 반복 입력을 줄입니다.',
     },
   ],
+  screenshots: [
+    {
+      src: '/marketing/recruiting/dashboard.png',
+      alt: '모집 관리 공고 목록 화면',
+      caption: '채용 공고 상태와 지원자 현황을 한눈에',
+    },
+  ],
   workflow: [
     {
       step: 1,
