@@ -9,6 +9,7 @@ import {
   normalizeHost,
 } from '@/lib/domain'
 import { COUPANG_ADS_BASE_PATH } from '@/lib/deck-routes'
+import { MARKETING_ONLY_PATHS } from '@/lib/marketing/routes'
 
 function isPathOrChild(pathname: string, base: string) {
   return pathname === base || pathname.startsWith(`${base}/`)
@@ -76,10 +77,14 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isAppDomain) {
-    if (pathname === '/') {
+    // dev/preview는 앱·마케팅 오리진이 동일(단일 호스트)해 도메인 분리 리다이렉트가 자기 자신을 가리킴 — 프로덕션 분리 도메인에서만 적용
+    const isSplitDomain = buildMarketingUrl('/') !== buildAppUrl('/')
+    if (pathname === '/' && isSplitDomain) {
       return NextResponse.redirect(buildAppUrl('/my-deck'))
     }
-    if (isPathOrChild(pathname, '/coupang-ads')) {
+    const shouldMoveToMarketing =
+      isSplitDomain && MARKETING_ONLY_PATHS.some((path) => isPathOrChild(pathname, path))
+    if (shouldMoveToMarketing) {
       return NextResponse.redirect(buildMarketingUrl(getRequestPathWithQuery(request)))
     }
   }

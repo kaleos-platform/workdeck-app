@@ -1,149 +1,136 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
+import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { buildAppUrl } from '@/lib/domain'
-import { UploadCloud, TrendingUp, Search, ArrowRight } from 'lucide-react'
+import { DECK_META } from '@/lib/deck-meta'
+import { DECK_LANDINGS } from '@/lib/marketing/decks'
+import { MARKETING_DECK_SLUGS } from '@/lib/marketing/routes'
+import { buildMarketingMetadata, orgJsonLd, websiteJsonLd } from '@/lib/marketing/seo'
+import { JsonLd } from '@/components/marketing/json-ld'
 
-const features = [
-  {
-    icon: UploadCloud,
-    title: 'Excel 리포트 업로드',
+export function generateMetadata(): Metadata {
+  return buildMarketingMetadata({
+    title: 'Workdeck — 여러 비즈니스 업무를 하나의 워크스페이스로',
     description:
-      '쿠팡 광고 리포트 Excel 파일을 업로드하면 자동으로 파싱하여 분석 데이터로 변환합니다.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'ROAS 시계열 분석',
-    description:
-      '캠페인별 ROAS, 광고비, 클릭수, 노출수를 날짜별로 추이를 확인하고 성과를 파악합니다.',
-  },
-  {
-    icon: Search,
-    title: '비효율 키워드 발견',
-    description: '광고비가 지출됐지만 주문이 없는 키워드를 자동으로 필터링해 한 번에 복사합니다.',
-  },
+      '쿠팡 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영까지 — 필요한 업무를 deck으로 골라 쓰는 올인원 비즈니스 워크스페이스, Workdeck.',
+    path: '/',
+    keywords: ['Workdeck', '비즈니스 워크스페이스', '이커머스 운영 툴', '쿠팡 광고 분석'],
+  })
+}
+
+const trustPoints = [
+  '현재 전 deck 베타 기간 동안 무료로 이용 가능',
+  '필요한 deck만 골라서 사용 — 강제 번들 없음',
+  '실제 셀러·운영팀 워크플로우를 기반으로 설계',
 ]
 
 export default function HomePage() {
   return (
     <div className="w-full">
-      {/* Hero Section */}
-      <section className="px-4 py-20 sm:px-6 md:py-32 lg:px-8">
-        <div className="mx-auto max-w-4xl space-y-8 text-center">
-          <div className="space-y-4">
-            <h1 className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              쿠팡 광고비 낭비를
-              <span className="block bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-                멈추세요
-              </span>
-            </h1>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600 sm:text-xl dark:text-gray-400">
-              쿠팡 광고 리포트 Excel을 업로드하면 비효율 키워드를 자동으로 발견하고 ROAS 개선을 위한
-              인사이트를 제공합니다.
-            </p>
-          </div>
+      <JsonLd data={orgJsonLd()} />
+      <JsonLd data={websiteJsonLd()} />
 
+      {/* Hero */}
+      <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+        <div className="mx-auto max-w-4xl space-y-8 text-center">
+          <h1 className="text-4xl font-bold tracking-tight break-keep sm:text-5xl lg:text-6xl">
+            여러 비즈니스 업무를
+            <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+              하나의 워크스페이스에서
+            </span>
+          </h1>
+          <p className="mx-auto max-w-2xl text-lg break-keep text-muted-foreground sm:text-xl">
+            Workdeck은 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영 같은
+            비즈니스 업무를 &lsquo;deck&rsquo; 단위로 골라 사용하며 목표를 달성하는
+            워크스페이스입니다.
+          </p>
           <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
             <Link href={buildAppUrl('/signup')}>
-              <Button size="lg" className="gap-2">
+              <Button size="lg" className="w-full gap-2 sm:w-auto">
                 무료로 시작하기
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" aria-hidden />
               </Button>
             </Link>
-            <Link href="/coupang-ads">
-              <Button size="lg" variant="outline">
-                쿠팡 광고 관리자 소개
+            <Link href={buildAppUrl('/login')}>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                로그인
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="bg-gray-50 px-4 py-20 sm:px-6 lg:px-8 dark:bg-gray-900/50">
-        <div className="mx-auto max-w-6xl space-y-12">
-          <div className="space-y-4 text-center">
-            <h2 className="text-3xl font-bold sm:text-4xl">주요 기능</h2>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-              광고 운영자가 꼭 필요한 핵심 분석 기능만 담았습니다
+      {/* Deck 그리드 */}
+      <section className="border-t bg-muted/30 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-10 space-y-3 text-center">
+            <h2 className="text-2xl font-bold break-keep sm:text-3xl">필요한 deck만 골라 쓰세요</h2>
+            <p className="mx-auto max-w-2xl break-keep text-muted-foreground">
+              6개 deck 중 지금 필요한 업무부터 시작하고, 필요해지면 언제든 다른 deck을 추가하세요.
             </p>
           </div>
-
-          <div className="grid gap-8 md:grid-cols-3">
-            {features.map((feature) => {
-              const Icon = feature.icon
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {MARKETING_DECK_SLUGS.map((slug) => {
+              const meta = DECK_META[slug]
+              const content = DECK_LANDINGS[slug]
+              const Icon = meta.icon
               return (
-                <Card key={feature.title}>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                        <Icon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                      </div>
-                      <div>
-                        <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
-                        <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Link
+                  key={slug}
+                  href={`/${slug}`}
+                  className="group flex flex-col gap-4 rounded-xl border bg-card p-6 transition-colors hover:border-foreground/20"
+                >
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ${meta.gradient}`}
+                  >
+                    <Icon className="h-5 w-5 text-white" aria-hidden />
+                  </div>
+                  <div className="space-y-1.5">
+                    <h3 className="font-semibold break-keep">{meta.name}</h3>
+                    <p className="text-sm break-keep text-muted-foreground">
+                      {content.hero.subcopy}
+                    </p>
+                  </div>
+                  <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-foreground/80 group-hover:gap-1.5">
+                    자세히 보기
+                    <ArrowRight
+                      className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                      aria-hidden
+                    />
+                  </span>
+                </Link>
               )
             })}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl space-y-12">
-          <div className="space-y-4 text-center">
-            <h2 className="text-3xl font-bold sm:text-4xl">3단계로 시작하세요</h2>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                step: '1',
-                title: '회원가입',
-                description: '이메일로 계정을 만들고 쿠팡 사업자명으로 워크스페이스를 생성합니다',
-              },
-              {
-                step: '2',
-                title: 'Excel 업로드',
-                description: '쿠팡 셀러센터에서 다운로드한 광고 리포트 Excel 파일을 업로드합니다',
-              },
-              {
-                step: '3',
-                title: '분석 시작',
-                description: '캠페인별 ROAS 추이와 비효율 키워드를 바로 확인합니다',
-              },
-            ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-4 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-600 text-lg font-bold text-white">
-                  {item.step}
-                </div>
-                <div>
-                  <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
-                </div>
-              </div>
+      {/* 신뢰 섹션 */}
+      <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <ul className="space-y-4">
+            {trustPoints.map((point) => (
+              <li key={point} className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
+                <span className="text-base break-keep">{point}</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-gradient-to-br from-orange-500 to-red-600 px-4 py-20 text-white sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl space-y-8 text-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold sm:text-4xl">지금 바로 광고비 낭비를 찾아내세요</h2>
-            <p className="text-lg text-orange-100">무료로 시작할 수 있습니다.</p>
-          </div>
+      {/* 최종 CTA */}
+      <section className="bg-gradient-to-br from-blue-600 to-cyan-500 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8">
+        <div className="mx-auto max-w-3xl space-y-6 text-center">
+          <h2 className="text-2xl font-bold break-keep sm:text-3xl">
+            지금 바로 워크스페이스를 만들어보세요
+          </h2>
+          <p className="text-lg break-keep text-white/90">베타 기간 동안 모든 deck이 무료입니다.</p>
           <Link href={buildAppUrl('/signup')}>
             <Button size="lg" variant="secondary" className="gap-2">
               무료로 시작하기
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>
           </Link>
         </div>
