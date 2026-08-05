@@ -187,6 +187,8 @@ export function ReconciliationPreview({
   const [selected, setSelected] = useState<Set<string>>(new Set())
   // externalCode → PickedOptionWithQty[] (다중 옵션+수량)
   const [manualMap, setManualMap] = useState<Record<string, PickedOptionWithQty[]>>({})
+  // 수동 매칭한 옵션의 이 위치 현재 재고 (optionId → quantity). 매칭 즉시 조회해 현재재고·차이 표시.
+  const [manualStock, setManualStock] = useState<Record<string, number>>({})
 
   const lastClickedIndexRef = useRef<number | null>(null)
 
@@ -309,6 +311,19 @@ export function ReconciliationPreview({
       const items = manualMap[code]
       const isMapped = !!(items && items.length > 0)
 
+      // 수동 매칭 시 현재 재고·차이 파생: 현재재고=Σ 옵션별 위치재고, 목표=Σ 파일수량×세트수량, 차이=목표−현재
+      let sysQty: number | null = null
+      let delta: number | null = null
+      if (isMapped) {
+        const hasStock = items!.every((i) => manualStock[i.optionId] !== undefined)
+        if (hasStock) {
+          const current = items!.reduce((s, i) => s + (manualStock[i.optionId] ?? 0), 0)
+          const target = items!.reduce((s, i) => s + e.row.quantity * i.quantity, 0)
+          sysQty = current
+          delta = target - current
+        }
+      }
+
       result.push({
         key: `file-${code}`,
         status: 'file-only',
@@ -318,9 +333,9 @@ export function ReconciliationPreview({
         optionName: isMapped ? manualItemsToOptionLabel(items!) : '-',
         externalOptionName: e.row.externalOptionName ?? '-',
         isManualMatched: isMapped,
-        systemQty: null,
+        systemQty: sysQty,
         fileQty: e.row.quantity,
-        delta: null,
+        delta,
         externalCode: code,
         suggestions: e.suggestions,
         row: e.row,
@@ -342,7 +357,7 @@ export function ReconciliationPreview({
     }
 
     return result
-  }, [diffEntries, equalEntries, fileOnlyEntries, systemOnlyEntries, manualMap])
+  }, [diffEntries, equalEntries, fileOnlyEntries, systemOnlyEntries, manualMap, manualStock])
 
   const filteredEntries = useMemo(
     () =>
@@ -426,6 +441,27 @@ export function ReconciliationPreview({
     setPickerOpen(false)
     const label = manualItemsToLabel(items)
     toast.success(`${label} 매칭됨`)
+    // 매칭 즉시 현재 재고 조회 → 현재재고·차이 표시(적용 전 검토용)
+    void fetchManualStock(items.map((i) => i.optionId))
+  }
+
+  async function fetchManualStock(optionIds: string[]) {
+    if (!recon || optionIds.length === 0) return
+    try {
+      const res = await fetch(
+        `/api/sh/inventory/locations/${recon.location.id}/stock?optionIds=${optionIds.join(',')}`
+      )
+      if (!res.ok) return
+      const data: { stocks?: { optionId: string; quantity: number }[] } = await res.json()
+      setManualStock((prev) => {
+        const next = { ...prev }
+        for (const id of optionIds) next[id] = 0 // 재고 행 없는 옵션=0
+        for (const s of data.stocks ?? []) next[s.optionId] = s.quantity
+        return next
+      })
+    } catch {
+      // 조회 실패는 무시(표시만 미보강)
+    }
   }
 
   function openEditMatcher(entry: UnifiedEntry) {
