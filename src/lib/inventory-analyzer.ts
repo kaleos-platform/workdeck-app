@@ -59,6 +59,10 @@ type AnalysisOutput = {
 // 반품율·보관료 등 상세 리스트 표시 상한 (정렬 내림차순 상위 N만 저장/표시)
 const TOP_N = 10
 
+// 반품율 판정 최소 판매 표본 — 판매 1~2건에 반품 몇 건이면 반품율 100~500%가 나와
+// Top10을 오염시키므로, 통계적으로 유의미한 판매량이 있는 옵션만 반품율 이슈로 판정한다.
+const MIN_RETURN_RATE_SALES = 10
+
 export async function analyzeInventory(params: {
   workspaceId: string
   snapshotDate?: Date
@@ -132,8 +136,8 @@ export async function analyzeInventory(params: {
       })
     }
 
-    // 반품율: 10% 초과
-    if (sales > 0 && returns > 0) {
+    // 반품율: 10% 초과 (단, 최소 판매 표본 이상인 옵션만 — 미표본 100~500% 노이즈 제외)
+    if (sales >= MIN_RETURN_RATE_SALES && returns > 0) {
       const pct = (returns / sales) * 100
       if (pct > 10) {
         returnRate.push({
