@@ -105,19 +105,26 @@ export function computeLayeredRoundedSplit(p: {
   totalPlannedStock: number
   rocketPlannedStock: number
   roundUnit: number
-}): { linkedLocationQty: number; remainingQty: number; finalQty: number; rawFinalQty: number } {
+}): {
+  linkedLocationNeedQty: number
+  linkedLocationQty: number
+  remainingQty: number
+  finalQty: number
+  rawFinalQty: number
+} {
   const rawFinalQty = Math.max(
     0,
     Math.ceil(p.rocketGross + p.directGross + p.safetyStockQty - p.totalPlannedStock)
   )
   const finalQty = roundUpQty(rawFinalQty, p.roundUnit)
   const linkedSafetyStockQty = p.linkedLocationSafetyStockQty ?? p.safetyStockQty
-  const linkedNeed = Math.max(
+  const linkedLocationNeedQty = Math.max(
     0,
     Math.ceil(p.rocketGross + linkedSafetyStockQty - p.rocketPlannedStock)
   )
-  const linkedLocationQty = Math.min(finalQty, linkedNeed)
+  const linkedLocationQty = Math.min(finalQty, linkedLocationNeedQty)
   return {
+    linkedLocationNeedQty,
     linkedLocationQty,
     remainingQty: Math.max(0, finalQty - linkedLocationQty),
     finalQty,

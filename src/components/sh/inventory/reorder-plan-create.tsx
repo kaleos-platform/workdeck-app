@@ -45,6 +45,7 @@ type PreviewOption = {
   directGrossQty: number | null // 나머지 입고 수량. 비연동 = null.
   linkedLocationExpectedSalesQty: number | null // 로켓그로스 예상 판매 필요량(예측 일평균 × 리드타임 × 보정).
   linkedLocationSafetyStockQty: number | null // 로켓그로스 판매 비중으로 배분한 안전재고 반영분.
+  linkedLocationNeedQty: number | null // 최종 발주 수량 cap 적용 전 로켓그로스 위치 부족분.
   linkedLocationCurrentStockQty: number | null // 로켓그로스 현재 재고.
   linkedLocationIncomingQty: number | null // 로켓그로스 입고 예정 수량.
   finalQty: number // 기본 최종수량 = 연동 위치 입고분 + 나머지 입고분
@@ -421,7 +422,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
                                 <HelpCircle className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-96 leading-relaxed whitespace-pre-line">
-                                {`로켓그로스에 추가로 입고해야 하는 수량입니다.\n\n= 예측 소진량 + 배분 안전재고 - 현재고 - 입고예정\n\n계산 결과가 0이면 현재고/입고예정이 로켓그로스 수요와 배분 안전재고를 충족한다는 뜻입니다.`}
+                                {`로켓그로스 위치 기준 부족분입니다.\n\n= 예측 소진량 + 배분 안전재고 - 현재고 - 입고예정\n\n이 값은 위치별 필요 수량입니다. 아래 최종 발주의 '연동 위치 입고'는 전체 최종 발주 수량을 초과할 수 없어서 이 값보다 작을 수 있습니다.`}
                               </TooltipContent>
                             </Tooltip>
                           </span>
@@ -445,7 +446,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
                             {QTY.format(o.linkedLocationIncomingQty ?? 0)}
                           </TableCell>
                           <TableCell className="text-right font-medium tabular-nums">
-                            {QTY.format(o.rocketBaselineQty ?? 0)}
+                            {QTY.format(o.linkedLocationNeedQty ?? 0)}
                           </TableCell>
                         </TableRow>
                       ))}

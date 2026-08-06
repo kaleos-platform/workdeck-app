@@ -535,6 +535,7 @@ export async function POST(req: NextRequest) {
   // 레이어드 전용 — 레이어별 raw GROSS(컬럼 저장 + 응답 분해 표시용).
   let directGrossByOption: Map<string, number> | null = null
   let rocketGrossByOption: Map<string, number> | null = null
+  let rocketNeedByOption: Map<string, number> | null = null
   let rocketExpectedSalesByOption: Map<string, number> | null = null
   let rocketSafetyStockByOption: Map<string, number> | null = null
 
@@ -593,6 +594,7 @@ export async function POST(req: NextRequest) {
     optionFinalQtyOverride = new Map<string, number>()
     directGrossByOption = new Map<string, number>()
     rocketGrossByOption = new Map<string, number>()
+    rocketNeedByOption = new Map<string, number>()
     rocketExpectedSalesByOption = new Map<string, number>()
     rocketSafetyStockByOption = new Map<string, number>()
     for (const it of itemInputs) {
@@ -617,6 +619,7 @@ export async function POST(req: NextRequest) {
       optionFinalQtyOverride.set(it.optionId, split.finalQty)
       rocketExpectedSalesByOption.set(it.optionId, rGross)
       rocketSafetyStockByOption.set(it.optionId, linkedLocationSafetyStockQty)
+      rocketNeedByOption.set(it.optionId, split.linkedLocationNeedQty)
       // 기존 컬럼명을 유지하되 의미는 입고 분배 baseline/remaining 이다.
       // stockin-split·상세 UI가 이 값을 사용해 로켓그로스 입고분과 나머지를 구분한다.
       rocketGrossByOption.set(it.optionId, split.linkedLocationQty)
@@ -700,6 +703,9 @@ export async function POST(req: NextRequest) {
             : null,
           linkedLocationSafetyStockQty: rocketSafetyStockByOption
             ? Math.ceil(rocketSafetyStockByOption.get(it.optionId) ?? 0)
+            : null,
+          linkedLocationNeedQty: rocketNeedByOption
+            ? Math.ceil(rocketNeedByOption.get(it.optionId) ?? 0)
             : null,
           linkedLocationCurrentStockQty: rocketGrossByOption
             ? (rocketStockByOption.get(it.optionId) ?? 0)

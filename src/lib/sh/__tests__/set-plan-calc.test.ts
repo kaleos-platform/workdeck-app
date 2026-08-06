@@ -121,6 +121,7 @@ describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)'
     // 로켓 필요 = ceil(23.2 + 5 - 4) = 25 → 최종 30 중 25를 로켓, 5를 나머지로 분배
     expect(split.rawFinalQty).toBe(27)
     expect(split.finalQty).toBe(30)
+    expect(split.linkedLocationNeedQty).toBe(25)
     expect(split.linkedLocationQty).toBe(25)
     expect(split.remainingQty).toBe(5)
   })
@@ -139,6 +140,7 @@ describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)'
     // 전체 최종 = ceil(10 + 30 + 20) = 60.
     // 로켓 필요 = ceil(10 + 5 - 0) = 15. 안전재고 전체 20을 로켓에 몰아넣으면 30이라 과대배정된다.
     expect(split.finalQty).toBe(60)
+    expect(split.linkedLocationNeedQty).toBe(15)
     expect(split.linkedLocationQty).toBe(15)
     expect(split.remainingQty).toBe(45)
   })
@@ -155,6 +157,7 @@ describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)'
 
     // 전체로는 7개만 필요해 10개 발주. 로켓 raw 필요가 50이어도 발주 총량 10을 초과 배정하지 않는다.
     expect(split.finalQty).toBe(10)
+    expect(split.linkedLocationNeedQty).toBe(50)
     expect(split.linkedLocationQty).toBe(10)
     expect(split.remainingQty).toBe(0)
   })
