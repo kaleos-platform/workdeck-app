@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -162,7 +163,7 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
               있습니다.
             </p>
             <Button asChild size="sm">
-              <a href="/api/slack/oauth/install">Slack 연결</a>
+              <Link href="/api/slack/oauth/install">Slack 연결</Link>
             </Button>
           </div>
         ) : (
