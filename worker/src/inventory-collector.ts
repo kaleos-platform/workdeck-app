@@ -220,7 +220,8 @@ async function dismissModals(page: Page): Promise<boolean> {
   //   - "품절 상품을 신속히 재입고": 물류센터 이슈 안내 모달(2026-08-04 등장 —
   //     "다시 보지 않기"/"확인" 버튼. 백드롭이 엑셀 다운로드 드롭다운 클릭을 삼켜
   //     재고현황 수집이 매일 실패하던 원인)
-  const modalTitles = ['더 고도화된 재고현황', '품절 상품을 신속히 재입고']
+  //   - "비즈니스 인사이트": 구독 프로모션 모달(X가 div 라 위 후보로 안 닫힘 — 2026-08-06 잔존 확인)
+  const modalTitles = ['더 고도화된 재고현황', '품절 상품을 신속히 재입고', '비즈니스 인사이트']
   for (const title of modalTitles) {
     const modalTitle = page.locator(`text=${title}`).first()
     if (!(await modalTitle.isVisible({ timeout: 800 }).catch(() => false))) continue
@@ -253,6 +254,73 @@ async function dismissModals(page: Page): Promise<boolean> {
   }
 
   return dismissed
+}
+
+/**
+ * 재고현황 그리드에 선택된 행이 있으면 해제한다.
+ *
+ * Wing 의 "엑셀 다운로드 요청"은 **선택된 행이 있으면 선택분만 export** 한다.
+ * 프로필(userDataDir)이 영속이라 이전 런의 선택 상태가 남을 수 있고, 그 상태로
+ * 요청하면 469행 그리드에서 2행짜리 파일이 나온다(2026-08-06 실패 원인).
+ *
+ * 원인(잔여 선택 상태 vs 오클릭)을 특정하지 않고, 요청 직전에 **해제 후 0건을 검증**한다.
+ * 해제가 안 되면 잘못된 파일을 만들지 말고 스크린샷과 함께 실패시킨다.
+ */
+async function readSelectedCount(page: Page): Promise<number | null> {
+  const label = await page
+    .locator('text=/\\d+개\\s*선택됨/')
+    .first()
+    .textContent({ timeout: 2000 })
+    .catch(() => null)
+  const matched = label?.match(/(\d+)\s*개\s*선택됨/)
+  return matched ? Number(matched[1]) : null
+}
+
+async function clearGridSelection(page: Page): Promise<void> {
+  const selectedCount = () => readSelectedCount(page)
+
+  const before = await selectedCount()
+  if (before === null) {
+    console.log('[inventory]   → 선택 건수 라벨 미발견 — 선택 해제 스킵')
+    return
+  }
+  if (before === 0) return
+
+  console.log(`[inventory]   → 그리드 선택 ${before}건 감지 — 해제 시도`)
+
+  // 1차: 체크된 체크박스를 직접 해제 (헤더 전체선택 포함)
+  await page
+    .evaluate(() => {
+      const boxes = Array.from(
+        document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+      ).filter((el) => el.checked)
+      for (const el of boxes) el.click()
+      return boxes.length
+    })
+    .catch(() => 0)
+  await page.waitForTimeout(800)
+
+  // 2차: 헤더 전체선택 토글(전체 선택 → 전체 해제)로 잔여분 정리
+  if ((await selectedCount()) !== 0) {
+    const headerBox = page.locator('thead input[type="checkbox"], [role="row"] input[type="checkbox"]').first()
+    if (await headerBox.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await headerBox.click({ force: true }).catch(() => {})
+      await page.waitForTimeout(600)
+      await headerBox.click({ force: true }).catch(() => {})
+      await page.waitForTimeout(600)
+    }
+  }
+
+  const after = await selectedCount()
+  if (after !== 0) {
+    await saveScreenshot(page, 'inventory-health-selection-stuck')
+    throw new Error(
+      `[inventory] 재고현황 그리드 선택 해제 실패 (${before}건 → ${after ?? '알 수 없음'}건). ` +
+        '선택 상태로 엑셀을 요청하면 선택분만 export 되어 부분 데이터가 적재됩니다.'
+    )
+  }
+
+  console.log('[inventory]   → 그리드 선택 해제 완료 (0개 선택됨)')
 }
 
 /** 사이드바 기준으로 로켓그로스 > 재고현황 진입 */
@@ -320,6 +388,9 @@ async function downloadInventoryHealth(
     // 그리드 대기 실패는 무시 — 업로드 가드가 부분 export 를 잡는다
   }
 
+  // 선택된 행이 있으면 선택분만 export 되므로 요청 전에 반드시 해제한다
+  await clearGridSelection(page)
+
   let downloadBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
   if (!(await downloadBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
     downloadBtn = page.locator('button:has-text("엑셀 다운로드")').first()
@@ -372,6 +443,16 @@ async function downloadInventoryHealth(
   if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
     await saveScreenshot(page, 'inventory-health-no-request-btn')
     throw new Error('[inventory] 재고현황의 "엑셀 다운로드 요청" 메뉴를 찾을 수 없습니다')
+  }
+
+  // 드롭다운을 여는 과정(모달 정리·재클릭)에서 행이 선택될 수도 있으므로 요청 직전 재확인.
+  // 이 시점엔 드롭다운이 열려 있어 해제 클릭이 메뉴를 닫으므로, 검증만 하고 실패시킨다.
+  const selectedAtRequest = await readSelectedCount(page)
+  if (selectedAtRequest !== null && selectedAtRequest > 0) {
+    await saveScreenshot(page, 'inventory-health-selection-at-request')
+    throw new Error(
+      `[inventory] 엑셀 요청 직전 그리드 선택 ${selectedAtRequest}건 — 선택분만 export 되므로 중단합니다.`
+    )
   }
 
   const menuText = (await requestBtn.textContent().catch(() => ''))?.trim()
