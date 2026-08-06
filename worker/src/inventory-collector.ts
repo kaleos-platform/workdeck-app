@@ -257,14 +257,22 @@ async function dismissModals(page: Page): Promise<boolean> {
 }
 
 /**
- * 재고현황 그리드에 선택된 행이 있으면 해제한다.
+ * 재고현황 "선택 상품"(장바구니)에 담긴 항목을 모두 비운다.
  *
- * Wing 의 "엑셀 다운로드 요청"은 **선택된 행이 있으면 선택분만 export** 한다.
- * 프로필(userDataDir)이 영속이라 이전 런의 선택 상태가 남을 수 있고, 그 상태로
- * 요청하면 469행 그리드에서 2행짜리 파일이 나온다(2026-08-06 실패 원인).
+ * Wing 의 "엑셀 다운로드 요청"은 **장바구니에 담긴 상품이 있으면 그 상품만 export** 한다.
+ * 프로필(userDataDir)이 영속이라 장바구니가 런을 넘어 누적되고, 그 상태로 요청하면
+ * 469행 그리드에서 2행짜리 파일이 나온다(2026-08-06 실패 원인).
  *
- * 원인(잔여 선택 상태 vs 오클릭)을 특정하지 않고, 요청 직전에 **해제 후 0건을 검증**한다.
- * 해제가 안 되면 잘못된 파일을 만들지 말고 스크린샷과 함께 실패시킨다.
+ * 헤더의 "N개 선택됨"은 그리드 체크박스가 아니라 **장바구니 건수**다. 실제로 라벨이
+ * 12건일 때도 그리드 체크박스는 0개였고(버튼 텍스트 "선택된 0개 상품의 재고상태 보기"),
+ * 체크박스를 해제하는 방식으로는 건수가 줄지 않는다(2026-08-07 실측).
+ *
+ * 해제 경로는 장바구니 패널의 "전체 비우기" → "전체삭제 하시겠습니까?" 확인뿐이다.
+ * "전체 비우기" 링크는 뷰포트(1400x900) 아래에 위치해 Playwright 클릭이 actionability
+ * 검사에서 막히므로 DOM 의 native click() 으로 누른다.
+ *
+ * 요청 직전에 비우고 0건을 검증한다. 실패하면 잘못된 파일을 만들지 말고 스크린샷과
+ * 함께 실패시킨다.
  */
 async function readSelectedCount(page: Page): Promise<number | null> {
   const label = await page
@@ -276,51 +284,74 @@ async function readSelectedCount(page: Page): Promise<number | null> {
   return matched ? Number(matched[1]) : null
 }
 
-async function clearGridSelection(page: Page): Promise<void> {
+/** 장바구니 패널의 "전체 비우기" 를 native click 으로 누른다 (뷰포트 밖이라 Playwright 클릭 불가) */
+const CLICK_CART_CLEAR_ALL = `(() => {
+  const target = Array.from(document.querySelectorAll('a, button, span, div')).find(
+    (el) => (el.textContent || '').replace(/\\s+/g, ' ').trim() === '전체 비우기'
+  )
+  if (!target) return 'not-found'
+  target.click()
+  return 'clicked'
+})()`
+
+/**
+ * "전체삭제 하시겠습니까?" 확인 모달의 확인 버튼만 누른다.
+ * 페이지에 다른 "확인" 버튼이 여럿 있어 모달 컨테이너 안으로 범위를 좁힌다.
+ */
+const CONFIRM_CART_CLEAR = `(() => {
+  const heading = Array.from(document.querySelectorAll('*')).find(
+    (el) => /전체삭제 하시겠습니까/.test(el.textContent || '') && el.children.length === 0
+  )
+  if (!heading) return 'no-modal'
+  let scope = heading.parentElement
+  for (let i = 0; i < 6 && scope; i++) {
+    const btn = Array.from(scope.querySelectorAll('button')).find(
+      (el) => (el.textContent || '').replace(/\\s+/g, ' ').trim() === '확인'
+    )
+    if (btn) {
+      btn.click()
+      return 'confirmed'
+    }
+    scope = scope.parentElement
+  }
+  return 'no-confirm-button'
+})()`
+
+async function clearCartSelection(page: Page): Promise<void> {
   const selectedCount = () => readSelectedCount(page)
 
   const before = await selectedCount()
   if (before === null) {
-    console.log('[inventory]   → 선택 건수 라벨 미발견 — 선택 해제 스킵')
+    console.log('[inventory]   → 선택 건수 라벨 미발견 — 장바구니 비우기 스킵')
     return
   }
   if (before === 0) return
 
-  console.log(`[inventory]   → 그리드 선택 ${before}건 감지 — 해제 시도`)
+  console.log(`[inventory]   → 선택 상품(장바구니) ${before}건 감지 — 전체 비우기 시도`)
 
-  // 1차: 체크된 체크박스를 직접 해제 (헤더 전체선택 포함)
-  await page
-    .evaluate(() => {
-      const boxes = Array.from(
-        document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
-      ).filter((el) => el.checked)
-      for (const el of boxes) el.click()
-      return boxes.length
-    })
-    .catch(() => 0)
-  await page.waitForTimeout(800)
+  // 1) 장바구니 패널 펼치기 (접혀 있으면 "전체 비우기" 가 DOM 에 없다)
+  await page.locator('div.cart').first().click({ timeout: 5000 }).catch(() => {})
+  await page.waitForTimeout(1500)
 
-  // 2차: 헤더 전체선택 토글(전체 선택 → 전체 해제)로 잔여분 정리
-  if ((await selectedCount()) !== 0) {
-    const headerBox = page.locator('thead input[type="checkbox"], [role="row"] input[type="checkbox"]').first()
-    if (await headerBox.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await headerBox.click({ force: true }).catch(() => {})
-      await page.waitForTimeout(600)
-      await headerBox.click({ force: true }).catch(() => {})
-      await page.waitForTimeout(600)
-    }
-  }
+  // 2) "전체 비우기" → 3) "전체삭제 하시겠습니까?" 확인
+  const cleared = await page.evaluate(CLICK_CART_CLEAR_ALL).catch(() => 'error')
+  console.log(`[inventory]   → 전체 비우기: ${cleared}`)
+  await page.waitForTimeout(1500)
+
+  const confirmed = await page.evaluate(CONFIRM_CART_CLEAR).catch(() => 'error')
+  console.log(`[inventory]   → 확인 모달: ${confirmed}`)
+  await page.waitForTimeout(3000)
 
   const after = await selectedCount()
   if (after !== 0) {
     await saveScreenshot(page, 'inventory-health-selection-stuck')
     throw new Error(
-      `[inventory] 재고현황 그리드 선택 해제 실패 (${before}건 → ${after ?? '알 수 없음'}건). ` +
-        '선택 상태로 엑셀을 요청하면 선택분만 export 되어 부분 데이터가 적재됩니다.'
+      `[inventory] 재고현황 선택 상품(장바구니) 비우기 실패 (${before}건 → ${after ?? '알 수 없음'}건). ` +
+        '장바구니에 상품이 담긴 채로 엑셀을 요청하면 담긴 상품만 export 되어 부분 데이터가 적재됩니다.'
     )
   }
 
-  console.log('[inventory]   → 그리드 선택 해제 완료 (0개 선택됨)')
+  console.log('[inventory]   → 선택 상품 비우기 완료 (0개 선택됨)')
 }
 
 /** 사이드바 기준으로 로켓그로스 > 재고현황 진입 */
@@ -388,8 +419,8 @@ async function downloadInventoryHealth(
     // 그리드 대기 실패는 무시 — 업로드 가드가 부분 export 를 잡는다
   }
 
-  // 선택된 행이 있으면 선택분만 export 되므로 요청 전에 반드시 해제한다
-  await clearGridSelection(page)
+  // 장바구니에 상품이 담겨 있으면 그 상품만 export 되므로 요청 전에 반드시 비운다
+  await clearCartSelection(page)
 
   let downloadBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
   if (!(await downloadBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
