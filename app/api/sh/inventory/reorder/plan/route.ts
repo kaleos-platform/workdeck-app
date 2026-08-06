@@ -93,6 +93,8 @@ export async function POST(req: NextRequest) {
     excludeRocketLayer?: boolean
     optionFinalOverrides?: Record<string, number>
     linkedLocationIds?: string[]
+    leadTimeDaysOverride?: number
+    demandAdjustFactorOverride?: number
   } = {}
   try {
     body = await req.json()
@@ -105,6 +107,26 @@ export async function POST(req: NextRequest) {
   }
   if (body.productId && body.locationId) {
     return errorResponse('상품과 연동 위치는 동시에 선택할 수 없습니다.', 422)
+  }
+
+  const leadTimeDaysOverride =
+    typeof body.leadTimeDaysOverride === 'number' && Number.isFinite(body.leadTimeDaysOverride)
+      ? Math.floor(body.leadTimeDaysOverride)
+      : null
+  if (leadTimeDaysOverride !== null && (leadTimeDaysOverride < 1 || leadTimeDaysOverride > 365)) {
+    return errorResponse('리드타임은 1~365일 사이로 입력하세요.', 422)
+  }
+
+  const demandAdjustFactorOverride =
+    typeof body.demandAdjustFactorOverride === 'number' &&
+    Number.isFinite(body.demandAdjustFactorOverride)
+      ? body.demandAdjustFactorOverride
+      : null
+  if (
+    demandAdjustFactorOverride !== null &&
+    (demandAdjustFactorOverride <= 0 || demandAdjustFactorOverride > 10)
+  ) {
+    return errorResponse('보정계수는 0보다 크고 10 이하로 입력하세요.', 422)
   }
 
   type PlanProduct = {
@@ -478,7 +500,8 @@ export async function POST(req: NextRequest) {
   }> = []
 
   for (const p of products) {
-    const leadTimeDays = p.reorderConfig?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
+    const leadTimeDays =
+      leadTimeDaysOverride ?? p.reorderConfig?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
     const roundUnit = p.reorderRoundUnit ?? 10
 
     for (const o of p.options) {
@@ -488,7 +511,8 @@ export async function POST(req: NextRequest) {
       const forecastResult = forecastOption({ history, leadTimeDays })
 
       const prevBias = biasByOption.get(o.id) ?? null
-      const biasAdjustFactor = computeBiasAdjust(prevBias)
+      const baseBiasAdjustFactor = computeBiasAdjust(prevBias)
+      const biasAdjustFactor = baseBiasAdjustFactor * (demandAdjustFactorOverride ?? 1)
 
       const onHandStock = stockByOption.get(o.id) ?? 0
       const incomingQty = incomingByOption.get(o.id) ?? 0
@@ -800,6 +824,7 @@ export async function POST(req: NextRequest) {
             profile: item.forecastResult.debug.profile ?? null,
             forecastDebug: item.forecastResult.debug,
             biasAdjustFactor: item.biasAdjustFactor,
+            userDemandAdjustFactor: demandAdjustFactorOverride ?? 1,
             windowDays: windowDaysByOption.get(item.optionId) ?? DEFAULT_WINDOW_DAYS,
             leadTimeDays: item.leadTimeDays,
             safetyStockQty: item.safetyStockQty,

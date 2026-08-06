@@ -103,13 +103,32 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
   const [locationsLoading, setLocationsLoading] = useState(false)
   // 옵션별 편집 최종수량(문자열 — 입력 중 빈값 허용). 미리보기 로드 시 finalQty 로 초기화.
   const [finalByOption, setFinalByOption] = useState<Record<string, string>>({})
+  const [leadTimeInput, setLeadTimeInput] = useState('')
+  const [demandAdjustInput, setDemandAdjustInput] = useState('1')
   const [creating, setCreating] = useState(false)
+
+  const getPreviewOverrides = () => {
+    const leadTimeDays = Number(leadTimeInput)
+    const demandAdjustFactor = Number(demandAdjustInput)
+    return {
+      leadTimeDaysOverride:
+        Number.isFinite(leadTimeDays) && leadTimeDays >= 1 ? Math.floor(leadTimeDays) : undefined,
+      demandAdjustFactorOverride:
+        Number.isFinite(demandAdjustFactor) && demandAdjustFactor > 0
+          ? demandAdjustFactor
+          : undefined,
+    }
+  }
 
   // ── dryRun 미리보기 로드 ────────────────────────────────────────────────────
   const fetchPreview = async (
     productId: string,
     excludeRocket: boolean,
-    linkedLocationIds: string[] = []
+    linkedLocationIds: string[] = [],
+    overrides: {
+      leadTimeDaysOverride?: number
+      demandAdjustFactorOverride?: number
+    } = getPreviewOverrides()
   ) => {
     setPreviewLoading(true)
     try {
@@ -121,6 +140,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
           dryRun: true,
           excludeRocketLayer: excludeRocket,
           linkedLocationIds,
+          ...overrides,
         }),
       })
       if (!res.ok) {
@@ -129,6 +149,9 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
       }
       const data = (await res.json()) as Preview
       setPreview(data)
+      if (leadTimeInput.trim() === '' && data.options[0]) {
+        setLeadTimeInput(String(data.options[0].leadTimeDays))
+      }
       const init: Record<string, string> = {}
       for (const o of data.options) init[o.optionId] = String(o.finalQty)
       setFinalByOption(init)
@@ -172,8 +195,10 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     setStep('rocket')
     setIncludeRocket(true)
     setSelectedLinkedLocationIds([])
+    setLeadTimeInput('')
+    setDemandAdjustInput('1')
     void loadLinkedLocations()
-    void fetchPreview(productId, false)
+    void fetchPreview(productId, false, [], {})
   }
 
   const resetToPicker = () => {
@@ -181,6 +206,8 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     setPreview(null)
     setFinalByOption({})
     setSelectedLinkedLocationIds([])
+    setLeadTimeInput('')
+    setDemandAdjustInput('1')
     setStep('rocket')
     setPickerOpen(true)
   }
@@ -209,6 +236,20 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     void fetchPreview(picked.productId, true, [])
   }
 
+  const handleApplyForecastSettings = () => {
+    if (!picked) return
+    const overrides = getPreviewOverrides()
+    if (overrides.leadTimeDaysOverride == null) {
+      toast.error('리드타임은 1일 이상으로 입력하세요')
+      return
+    }
+    if (overrides.demandAdjustFactorOverride == null) {
+      toast.error('보정계수는 0보다 크게 입력하세요')
+      return
+    }
+    void fetchPreview(picked.productId, !includeRocket, selectedLinkedLocationIds, overrides)
+  }
+
   // 빈값/음수 정리(≥0). baseline 미만도 허용 — 재고가 수요를 덮으면 final < baseline 이 정상.
   const clampFinal = (raw: string): string => {
     const n = Number(raw)
@@ -232,6 +273,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
         const v = Number(raw)
         optionFinalOverrides[o.optionId] = Number.isFinite(v) && v >= 0 ? Math.floor(v) : o.finalQty
       }
+      const forecastOverrides = getPreviewOverrides()
       const res = await fetch('/api/sh/inventory/reorder/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -240,6 +282,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
           excludeRocketLayer: !includeRocket,
           linkedLocationIds: includeRocket ? selectedLinkedLocationIds : [],
           optionFinalOverrides,
+          ...forecastOverrides,
         }),
       })
       if (!res.ok) {
@@ -363,6 +406,50 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
                 </div>
               </div>
 
+              <div className="grid gap-3 rounded-md border bg-background px-3 py-3 sm:grid-cols-[160px_160px_auto] sm:items-end">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">리드타임</label>
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={365}
+                      inputMode="numeric"
+                      className="h-8 text-right tabular-nums"
+                      value={leadTimeInput}
+                      onChange={(e) => setLeadTimeInput(e.target.value)}
+                    />
+                    <span className="text-xs text-muted-foreground">일</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">보정계수</label>
+                  <Input
+                    type="number"
+                    min={0.1}
+                    max={10}
+                    step={0.1}
+                    inputMode="decimal"
+                    className="h-8 text-right tabular-nums"
+                    value={demandAdjustInput}
+                    onChange={(e) => setDemandAdjustInput(e.target.value)}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleApplyForecastSettings}
+                  disabled={previewLoading}
+                >
+                  계산 다시 적용
+                </Button>
+                <p className="text-xs text-muted-foreground sm:col-span-3">
+                  예측 소진량 = 90일 판매 이력 기반 예측 일평균 × 리드타임 × 보정계수입니다.
+                  보정계수 1.0은 기본 예측을 그대로 사용합니다.
+                </p>
+              </div>
+
               <label className="flex w-fit items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm">
                 <Checkbox
                   checked={includeRocket}
@@ -465,6 +552,50 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
               <p className="text-xs text-muted-foreground">
                 아래 연동 위치를 직접 선택하면 해당 위치의 매핑/재고에서 이 상품 옵션을 다시
                 찾습니다. 없으면 이 단계를 스킵하고 일반 발주로 진행할 수 있습니다.
+              </p>
+            </div>
+
+            <div className="grid gap-3 rounded-md border bg-background px-3 py-3 sm:grid-cols-[160px_160px_auto] sm:items-end">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">리드타임</label>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={365}
+                    inputMode="numeric"
+                    className="h-8 text-right tabular-nums"
+                    value={leadTimeInput}
+                    onChange={(e) => setLeadTimeInput(e.target.value)}
+                  />
+                  <span className="text-xs text-muted-foreground">일</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">보정계수</label>
+                <Input
+                  type="number"
+                  min={0.1}
+                  max={10}
+                  step={0.1}
+                  inputMode="decimal"
+                  className="h-8 text-right tabular-nums"
+                  value={demandAdjustInput}
+                  onChange={(e) => setDemandAdjustInput(e.target.value)}
+                />
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleApplyForecastSettings}
+                disabled={previewLoading}
+              >
+                계산 다시 적용
+              </Button>
+              <p className="text-xs text-muted-foreground sm:col-span-3">
+                예측 소진량 = 90일 판매 이력 기반 예측 일평균 × 리드타임 × 보정계수입니다. 보정계수
+                1.0은 기본 예측을 그대로 사용합니다.
               </p>
             </div>
 

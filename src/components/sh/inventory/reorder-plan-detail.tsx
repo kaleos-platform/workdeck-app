@@ -906,100 +906,6 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           </div>
         ))}
 
-      {/* ── 세트 테이블 — 위치 세트 계획(locationId) 또는 레이어드(연동 세트 레이어) ── */}
-      {isSetMode && (
-        <p className="text-sm font-medium">
-          연동 세트 환산{' '}
-          <span className="text-xs font-normal text-muted-foreground">
-            · 참고용 — 아래 옵션 발주수량으로 구성 가능한 완성 세트 수(수정은 옵션 최종수량에서)
-          </span>
-        </p>
-      )}
-      {isSetMode && (
-        <div className="overflow-x-auto rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-8"></TableHead>
-                <TableHead>세트명</TableHead>
-                <TableHead className="text-right">현재 세트재고</TableHead>
-                {/* 세트는 옵션 발주수량의 역산(읽기전용) — 제안=최종이라 단일 컬럼으로 표시. */}
-                <TableHead className="text-right">발주 세트수량(역산)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sets.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="py-10 text-center text-sm text-muted-foreground"
-                  >
-                    세트 항목이 없습니다
-                  </TableCell>
-                </TableRow>
-              ) : (
-                sets.map((set) => {
-                  const isExpanded = expandedSets.has(set.id)
-                  return (
-                    <Fragment key={set.id}>
-                      {/* 세트 행 */}
-                      <TableRow>
-                        <TableCell className="w-8 px-2">
-                          <button
-                            type="button"
-                            onClick={() => toggleSetExpand(set.id)}
-                            className="inline-flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground"
-                            aria-label={isExpanded ? '접기' : '구성옵션 펼치기'}
-                          >
-                            {isExpanded ? (
-                              <ChevronDownIcon className="h-4 w-4" />
-                            ) : (
-                              <ChevronRightIcon className="h-4 w-4" />
-                            )}
-                          </button>
-                        </TableCell>
-                        <TableCell className="text-sm font-medium">{set.listingName}</TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {QTY.format(set.currentSetStock)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {/* 위치·레이어드 두 세트 모드 모두 세트는 옵션 발주수량의 역산(읽기전용). */}
-                          <span
-                            className="text-muted-foreground tabular-nums"
-                            title="옵션 발주수량의 역산(참고) — 수정은 옵션 최종수량에서"
-                          >
-                            {backDerivedSetQty(set.items)}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                      {/* 펼침: 구성옵션 분해 */}
-                      {isExpanded &&
-                        set.items.map((si) => {
-                          const finalQty = itemFinalQtyMap.get(si.optionId) ?? 0
-                          return (
-                            <TableRow key={`${set.id}-${si.optionId}`} className="bg-muted/20">
-                              <TableCell className="w-8"></TableCell>
-                              <TableCell className="pl-6 text-xs text-muted-foreground">
-                                {si.optionName}
-                                <span className="ml-1.5 text-[10px]">· 세트당 {si.perSet}개</span>
-                              </TableCell>
-                              <TableCell></TableCell>
-                              <TableCell className="text-right text-xs tabular-nums">
-                                <span className="font-medium">{QTY.format(finalQty)}</span>
-                                <span className="ml-1 text-[10px] text-muted-foreground">개</span>
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })}
-                    </Fragment>
-                  )
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-
       {/* ── 최종 옵션 테이블 — 전 모드 공통. 옵션 수요가 진실이므로 위치 세트 계획도 옵션 단위로 발주한다. ── */}
       {isSetMode && (
         <p className="text-sm font-medium">
@@ -1176,6 +1082,100 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
           </Table>
         </div>
       }
+
+      {/* ── 연동 세트 환산 — 최종 발주 하단 참고 섹션 ── */}
+      {isSetMode && (
+        <p className="text-sm font-medium">
+          연동 세트 환산{' '}
+          <span className="text-xs font-normal text-muted-foreground">
+            · 참고용 — 위 최종 발주수량으로 구성 가능한 완성 세트 수(수정은 최종 발주에서)
+          </span>
+        </p>
+      )}
+      {isSetMode && (
+        <div className="overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-8"></TableHead>
+                <TableHead>세트명</TableHead>
+                <TableHead className="text-right">현재 세트재고</TableHead>
+                {/* 세트는 옵션 발주수량의 역산(읽기전용) — 제안=최종이라 단일 컬럼으로 표시. */}
+                <TableHead className="text-right">발주 세트수량(역산)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sets.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    className="py-10 text-center text-sm text-muted-foreground"
+                  >
+                    세트 항목이 없습니다
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sets.map((set) => {
+                  const isExpanded = expandedSets.has(set.id)
+                  return (
+                    <Fragment key={set.id}>
+                      {/* 세트 행 */}
+                      <TableRow>
+                        <TableCell className="w-8 px-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleSetExpand(set.id)}
+                            className="inline-flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground"
+                            aria-label={isExpanded ? '접기' : '구성옵션 펼치기'}
+                          >
+                            {isExpanded ? (
+                              <ChevronDownIcon className="h-4 w-4" />
+                            ) : (
+                              <ChevronRightIcon className="h-4 w-4" />
+                            )}
+                          </button>
+                        </TableCell>
+                        <TableCell className="text-sm font-medium">{set.listingName}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {QTY.format(set.currentSetStock)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {/* 위치·레이어드 두 세트 모드 모두 세트는 옵션 발주수량의 역산(읽기전용). */}
+                          <span
+                            className="text-muted-foreground tabular-nums"
+                            title="최종 발주수량의 역산(참고) — 수정은 최종 발주에서"
+                          >
+                            {backDerivedSetQty(set.items)}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                      {/* 펼침: 구성옵션 분해 */}
+                      {isExpanded &&
+                        set.items.map((si) => {
+                          const finalQty = itemFinalQtyMap.get(si.optionId) ?? 0
+                          return (
+                            <TableRow key={`${set.id}-${si.optionId}`} className="bg-muted/20">
+                              <TableCell className="w-8"></TableCell>
+                              <TableCell className="pl-6 text-xs text-muted-foreground">
+                                {si.optionName}
+                                <span className="ml-1.5 text-[10px]">· 세트당 {si.perSet}개</span>
+                              </TableCell>
+                              <TableCell></TableCell>
+                              <TableCell className="text-right text-xs tabular-nums">
+                                <span className="font-medium">{QTY.format(finalQty)}</span>
+                                <span className="ml-1 text-[10px] text-muted-foreground">개</span>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                    </Fragment>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {/* 확정 확인 다이얼로그 */}
       <Dialog open={finalizeOpen} onOpenChange={setFinalizeOpen}>
