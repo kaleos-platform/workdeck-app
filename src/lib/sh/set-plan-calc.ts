@@ -93,12 +93,15 @@ function roundUpQty(qty: number, roundUnit: number): number {
  * 3) 반올림된 최종 수량을 로켓그로스 입고 필요분과 나머지로 분배한다.
  *
  * linkedLocationQty는 로켓그로스 위치의 현재고·입고예정을 먼저 차감한 필요량이다.
- * 안전재고는 전체 필요량에는 1회만 반영하고, 로켓 위치 baseline에는 우선 배정한다.
+ * 안전재고는 전체 최종수량에는 1회만 반영하고, 연동 위치 입고 필요량에는 호출부가
+ * 로켓그로스 판매 비중으로 배분한 안전재고만 반영할 수 있다.
  */
 export function computeLayeredRoundedSplit(p: {
   rocketGross: number
   directGross: number
   safetyStockQty: number
+  /** 연동 위치에 배분할 안전재고. 없으면 기존 호환을 위해 전체 안전재고를 사용한다. */
+  linkedLocationSafetyStockQty?: number
   totalPlannedStock: number
   rocketPlannedStock: number
   roundUnit: number
@@ -108,7 +111,11 @@ export function computeLayeredRoundedSplit(p: {
     Math.ceil(p.rocketGross + p.directGross + p.safetyStockQty - p.totalPlannedStock)
   )
   const finalQty = roundUpQty(rawFinalQty, p.roundUnit)
-  const linkedNeed = Math.max(0, Math.ceil(p.rocketGross + p.safetyStockQty - p.rocketPlannedStock))
+  const linkedSafetyStockQty = p.linkedLocationSafetyStockQty ?? p.safetyStockQty
+  const linkedNeed = Math.max(
+    0,
+    Math.ceil(p.rocketGross + linkedSafetyStockQty - p.rocketPlannedStock)
+  )
   const linkedLocationQty = Math.min(finalQty, linkedNeed)
   return {
     linkedLocationQty,

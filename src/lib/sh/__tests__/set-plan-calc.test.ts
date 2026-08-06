@@ -125,6 +125,24 @@ describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)'
     expect(split.remainingQty).toBe(5)
   })
 
+  test('로켓그로스 판매 비중으로 배분한 안전재고만 연동 위치 필요분에 반영한다', () => {
+    const split = computeLayeredRoundedSplit({
+      rocketGross: 10,
+      directGross: 30,
+      safetyStockQty: 20,
+      linkedLocationSafetyStockQty: 5,
+      totalPlannedStock: 0,
+      rocketPlannedStock: 0,
+      roundUnit: 10,
+    })
+
+    // 전체 최종 = ceil(10 + 30 + 20) = 60.
+    // 로켓 필요 = ceil(10 + 5 - 0) = 15. 안전재고 전체 20을 로켓에 몰아넣으면 30이라 과대배정된다.
+    expect(split.finalQty).toBe(60)
+    expect(split.linkedLocationQty).toBe(15)
+    expect(split.remainingQty).toBe(45)
+  })
+
   test('로켓 필요분이 반올림된 최종수량보다 크면 최종수량까지만 배정한다', () => {
     const split = computeLayeredRoundedSplit({
       rocketGross: 50,

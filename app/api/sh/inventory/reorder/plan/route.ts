@@ -534,6 +534,7 @@ export async function POST(req: NextRequest) {
   let directGrossByOption: Map<string, number> | null = null
   let rocketGrossByOption: Map<string, number> | null = null
   let rocketExpectedSalesByOption: Map<string, number> | null = null
+  let rocketSafetyStockByOption: Map<string, number> | null = null
 
   // 세트 라인 = 옵션 발주수량의 역산(참고 표시, 읽기전용). 완성 세트 = min floor(finalQty/perSet).
   // 위치·레이어드 두 세트 모드 공통 — 세트를 되먹여 사이징하지 않으므로 공유 옵션 ×N 과다집계 없음.
@@ -591,9 +592,13 @@ export async function POST(req: NextRequest) {
     directGrossByOption = new Map<string, number>()
     rocketGrossByOption = new Map<string, number>()
     rocketExpectedSalesByOption = new Map<string, number>()
+    rocketSafetyStockByOption = new Map<string, number>()
     for (const it of itemInputs) {
       const rGross = rocketGrossNeed.get(it.optionId) ?? 0
       const dGross = directGross.get(it.optionId) ?? 0
+      const totalGross = rGross + dGross
+      const linkedLocationSafetyStockQty =
+        totalGross > 0 ? it.safetyStockQty * (rGross / totalGross) : 0
       const rocketPlannedStock = plannedStockQty({
         onHandQty: rocketStockByOption.get(it.optionId) ?? 0,
         incomingQty: rocketIncomingByOption.get(it.optionId) ?? 0,
@@ -602,12 +607,14 @@ export async function POST(req: NextRequest) {
         rocketGross: rGross,
         directGross: dGross,
         safetyStockQty: it.safetyStockQty,
+        linkedLocationSafetyStockQty,
         totalPlannedStock: it.currentStock,
         rocketPlannedStock,
         roundUnit: it.roundUnit,
       })
       optionFinalQtyOverride.set(it.optionId, split.finalQty)
       rocketExpectedSalesByOption.set(it.optionId, rGross)
+      rocketSafetyStockByOption.set(it.optionId, linkedLocationSafetyStockQty)
       // 기존 컬럼명을 유지하되 의미는 입고 분배 baseline/remaining 이다.
       // stockin-split·상세 UI가 이 값을 사용해 로켓그로스 입고분과 나머지를 구분한다.
       rocketGrossByOption.set(it.optionId, split.linkedLocationQty)
@@ -687,6 +694,9 @@ export async function POST(req: NextRequest) {
           directGrossQty: directGrossByOption ? (directGrossByOption.get(it.optionId) ?? 0) : null,
           linkedLocationExpectedSalesQty: rocketExpectedSalesByOption
             ? Math.ceil(rocketExpectedSalesByOption.get(it.optionId) ?? 0)
+            : null,
+          linkedLocationSafetyStockQty: rocketSafetyStockByOption
+            ? Math.ceil(rocketSafetyStockByOption.get(it.optionId) ?? 0)
             : null,
           linkedLocationCurrentStockQty: rocketGrossByOption
             ? (rocketStockByOption.get(it.optionId) ?? 0)

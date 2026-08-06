@@ -43,6 +43,7 @@ type PreviewOption = {
   rocketBaselineQty: number | null // 연동 위치 입고 필요 수량. 비연동 = null.
   directGrossQty: number | null // 나머지 입고 수량. 비연동 = null.
   linkedLocationExpectedSalesQty: number | null // 로켓그로스 예상 판매 필요량(예측 일평균 × 리드타임 × 보정).
+  linkedLocationSafetyStockQty: number | null // 로켓그로스 판매 비중으로 배분한 안전재고 반영분.
   linkedLocationCurrentStockQty: number | null // 로켓그로스 현재 재고.
   linkedLocationIncomingQty: number | null // 로켓그로스 입고 예정 수량.
   finalQty: number // 기본 최종수량 = 연동 위치 입고분 + 나머지 입고분
@@ -395,7 +396,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
                                 <HelpCircle className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-96 leading-relaxed whitespace-pre-line">
-                                {`연동 위치 입고 수량 = 로켓그로스 예상 판매 필요량 + 안전재고 반영분 - 로켓그로스 현재 재고 - 로켓그로스 입고 예정 수량\n\n예상 판매 필요량은 로켓그로스 판매 이력을 분석 기간 기준으로 예측한 일평균 × 리드타임 × 보정계수입니다. 안전재고 반영분은 옵션에 설정된 안전재고를 연동 위치 입고 필요량 계산에 우선 반영한 값입니다.`}
+                                {`연동 위치 입고 수량 = 로켓그로스 예상 판매 필요량 + 안전재고 반영분 - 로켓그로스 현재 재고 - 로켓그로스 입고 예정 수량\n\n예상 판매 필요량은 로켓그로스 판매 이력을 분석 기간 기준으로 예측한 일평균 × 리드타임 × 보정계수입니다. 안전재고 반영분은 옵션 안전재고 전체를 로켓그로스에 몰아넣지 않고, 로켓그로스 예상 판매 필요량 / 전체 예상 판매 필요량 비율로 배분한 값입니다.`}
                               </TooltipContent>
                             </Tooltip>
                           </span>
@@ -410,7 +411,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
                             {QTY.format(o.linkedLocationExpectedSalesQty ?? 0)}
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
-                            {QTY.format(o.safetyStockQty)}
+                            {QTY.format(o.linkedLocationSafetyStockQty ?? 0)}
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             {QTY.format(o.linkedLocationCurrentStockQty ?? 0)}
