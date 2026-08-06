@@ -8,6 +8,7 @@ import {
   ArrowRight,
   CheckIcon,
   Loader2,
+  HelpCircle,
   MapPinIcon,
   PackageIcon,
   PlusIcon,
@@ -24,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { OptionPickerDialog } from '@/components/sh/products/listings/option-picker-dialog'
 
 // dryRun 미리보기(POST /reorder/plan { dryRun:true }) 응답 — 생성과 동일 코드 경로라 drift 없음.
@@ -38,8 +40,11 @@ type PreviewOption = {
   dailyAvgForecast: number
   leadTimeDays: number
   roundedSuggestedQty: number
-  rocketBaselineQty: number | null // 레이어드 옵션별 로켓 baseline(floor). 비레이어드 = null.
-  directGrossQty: number | null // 레이어드 옵션별 나머지 입고 수량. 비레이어드 = null.
+  rocketBaselineQty: number | null // 연동 위치 입고 필요 수량. 비연동 = null.
+  directGrossQty: number | null // 나머지 입고 수량. 비연동 = null.
+  linkedLocationExpectedSalesQty: number | null // 로켓그로스 예상 판매 필요량(예측 일평균 × 리드타임 × 보정).
+  linkedLocationCurrentStockQty: number | null // 로켓그로스 현재 재고.
+  linkedLocationIncomingQty: number | null // 로켓그로스 입고 예정 수량.
   finalQty: number // 기본 최종수량 = 연동 위치 입고분 + 나머지 입고분
 }
 type PreviewSet = {
@@ -177,7 +182,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     setPickerOpen(true)
   }
 
-  // 연동 위치 포함 토글 → 미리보기 재계산(레이어드 on/off 로 최종수량 달라짐)
+  // 연동 위치 포함 토글 → 미리보기 재계산(연동 위치 수요 분리 on/off 로 최종수량 달라짐)
   const handleToggleRocket = (checked: boolean) => {
     if (!picked) return
     setIncludeRocket(checked)
@@ -339,54 +344,91 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
         {previewLoading || !preview ? (
           loadingBlock
         ) : preview.qualifies ? (
-          <div className="space-y-3 rounded-md border border-indigo-200 bg-indigo-50/40 px-4 py-4">
-            <div className="flex items-start gap-2">
-              <MapPinIcon className="mt-0.5 h-4 w-4 text-indigo-600" />
-              <div className="space-y-0.5">
-                <p className="text-sm font-medium">
-                  연동 위치 <span className="text-indigo-700">[{preview.locationName}]</span> 에서
-                  {preview.sets.length > 0
-                    ? ` 세트 ${preview.sets.length}개로 판매됩니다`
-                    : ' 판매 중인 상품으로 매칭되었습니다'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  연동 위치 필요 수량을 먼저 계산하고, 다음 단계에서 나머지 수량과 합산해 최종
-                  발주를 계획합니다.
-                </p>
+          <TooltipProvider>
+            <div className="space-y-3 rounded-md border border-indigo-200 bg-indigo-50/40 px-4 py-4">
+              <div className="flex items-start gap-2">
+                <MapPinIcon className="mt-0.5 h-4 w-4 text-indigo-600" />
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">
+                    연동 위치 <span className="text-indigo-700">[{preview.locationName}]</span> 에서
+                    판매/재고 데이터가 감지되었습니다
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    로켓그로스 입고 필요 수량을 먼저 계산하고, 다음 단계에서 나머지 수량과 합산해
+                    최종 발주 수량을 계획합니다.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <label className="flex w-fit items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm">
-              <Checkbox
-                checked={includeRocket}
-                onCheckedChange={(v) => handleToggleRocket(v === true)}
-              />
-              연동 위치 발주 포함 (레이어드)
-            </label>
+              <label className="flex w-fit items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm">
+                <Checkbox
+                  checked={includeRocket}
+                  onCheckedChange={(v) => handleToggleRocket(v === true)}
+                />
+                <span>연동 위치 발주 포함</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-80 leading-relaxed">
+                    로켓그로스 같은 연동 위치로 입고해야 하는 수량을 따로 계산해 최종 발주에
+                    포함합니다. 끄면 연동 위치 수요를 분리하지 않고 일반 발주 수량만 계산합니다.
+                  </TooltipContent>
+                </Tooltip>
+              </label>
 
-            {includeRocket && (
-              <div className="overflow-x-auto rounded-md border bg-background">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>옵션</TableHead>
-                      <TableHead className="text-right">연동 위치 입고 수량</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {preview.options.map((o) => (
-                      <TableRow key={o.optionId}>
-                        <TableCell className="text-sm">{o.optionName}</TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {QTY.format(o.rocketBaselineQty ?? 0)}
-                        </TableCell>
+              {includeRocket && (
+                <div className="overflow-x-auto rounded-md border bg-background">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>옵션</TableHead>
+                        <TableHead className="text-right">예상 판매 필요량</TableHead>
+                        <TableHead className="text-right">안전재고 반영분</TableHead>
+                        <TableHead className="text-right">연동 위치 현재고</TableHead>
+                        <TableHead className="text-right">연동 위치 입고예정</TableHead>
+                        <TableHead className="text-right">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            연동 위치 입고 수량
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-96 leading-relaxed whitespace-pre-line">
+                                {`연동 위치 입고 수량 = 로켓그로스 예상 판매 필요량 + 안전재고 반영분 - 로켓그로스 현재 재고 - 로켓그로스 입고 예정 수량\n\n예상 판매 필요량은 로켓그로스 판매 이력을 분석 기간 기준으로 예측한 일평균 × 리드타임 × 보정계수입니다. 안전재고 반영분은 옵션에 설정된 안전재고를 연동 위치 입고 필요량 계산에 우선 반영한 값입니다.`}
+                              </TooltipContent>
+                            </Tooltip>
+                          </span>
+                        </TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </div>
+                    </TableHeader>
+                    <TableBody>
+                      {preview.options.map((o) => (
+                        <TableRow key={o.optionId}>
+                          <TableCell className="text-sm">{o.optionName}</TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {QTY.format(o.linkedLocationExpectedSalesQty ?? 0)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {QTY.format(o.safetyStockQty)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {QTY.format(o.linkedLocationCurrentStockQty ?? 0)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {QTY.format(o.linkedLocationIncomingQty ?? 0)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium tabular-nums">
+                            {QTY.format(o.rocketBaselineQty ?? 0)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          </TooltipProvider>
         ) : (
           <div className="space-y-3 rounded-md border bg-muted/20 px-4 py-4 text-sm">
             <div className="space-y-1">
