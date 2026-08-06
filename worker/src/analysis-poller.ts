@@ -227,9 +227,28 @@ function buildUserPrompt(ctx: Record<string, unknown>): string {
     )
   }
 
+  // 코드가 결정론적으로 산출한 판정 후보 — 임계·근거가 확정되어 있으므로 재계산 금지.
+  const signals = (ctx.deterministicSignals as Array<Record<string, unknown>>) ?? []
+  if (signals.length > 0) {
+    lines.push(
+      '',
+      '## 코드가 식별한 판정 후보 (근거·임계 확정 — 재계산 말고 검토·설명·우선순위화)',
+      '아래 후보는 코드가 사용자 목표·통계 기준으로 이미 판정한 것입니다. 각 후보를 suggestions로',
+      '변환하되 임계값을 임의로 바꾸지 말고, appliedRule과 근거 수치를 그대로 반영하세요.'
+    )
+    for (const s of signals) {
+      const cur = s.currentValue != null ? String(s.currentValue) : '-'
+      const thr = s.thresholdValue != null ? String(s.thresholdValue) : '-'
+      lines.push(
+        `- [${s.type}·${s.priority}] ${s.campaignName} / 대상 "${s.target}" — ` +
+          `${s.metric}=${cur} (임계 ${thr}, 규칙: ${s.appliedRule}). ${s.reason}`
+      )
+    }
+  }
+
   const inefficientKeywords = (ctx.inefficientKeywords as Array<Record<string, unknown>>) ?? []
   if (inefficientKeywords.length > 0) {
-    lines.push('', '## 비효율 키워드 (광고비 > 0, 주문 = 0)')
+    lines.push('', '## 비효율 키워드 원자료 (위 후보의 근거 상세)')
     for (const k of inefficientKeywords) {
       const costRatioStr = k.costRatio != null ? `, 캠페인 광고비 대비 ${k.costRatio}%` : ''
       lines.push(
