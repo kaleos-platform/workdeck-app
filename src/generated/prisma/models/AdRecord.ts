@@ -34,6 +34,9 @@ export type AdRecordAvgAggregateOutputType = {
   orders1d: number | null
   revenue1d: runtime.Decimal | null
   roas1d: runtime.Decimal | null
+  orders14d: number | null
+  revenue14d: runtime.Decimal | null
+  roas14d: runtime.Decimal | null
   videoViews3s: number | null
   avgPlayTime: runtime.Decimal | null
   videoViews25p: number | null
@@ -53,6 +56,9 @@ export type AdRecordSumAggregateOutputType = {
   orders1d: number | null
   revenue1d: runtime.Decimal | null
   roas1d: runtime.Decimal | null
+  orders14d: number | null
+  revenue14d: runtime.Decimal | null
+  roas14d: runtime.Decimal | null
   videoViews3s: number | null
   avgPlayTime: runtime.Decimal | null
   videoViews25p: number | null
@@ -82,6 +88,9 @@ export type AdRecordMinAggregateOutputType = {
   orders1d: number | null
   revenue1d: runtime.Decimal | null
   roas1d: runtime.Decimal | null
+  orders14d: number | null
+  revenue14d: runtime.Decimal | null
+  roas14d: runtime.Decimal | null
   material: string | null
   videoViews3s: number | null
   avgPlayTime: runtime.Decimal | null
@@ -114,6 +123,9 @@ export type AdRecordMaxAggregateOutputType = {
   orders1d: number | null
   revenue1d: runtime.Decimal | null
   roas1d: runtime.Decimal | null
+  orders14d: number | null
+  revenue14d: runtime.Decimal | null
+  roas14d: runtime.Decimal | null
   material: string | null
   videoViews3s: number | null
   avgPlayTime: runtime.Decimal | null
@@ -146,6 +158,9 @@ export type AdRecordCountAggregateOutputType = {
   orders1d: number
   revenue1d: number
   roas1d: number
+  orders14d: number
+  revenue14d: number
+  roas14d: number
   material: number
   videoViews3s: number
   avgPlayTime: number
@@ -170,6 +185,9 @@ export type AdRecordAvgAggregateInputType = {
   orders1d?: true
   revenue1d?: true
   roas1d?: true
+  orders14d?: true
+  revenue14d?: true
+  roas14d?: true
   videoViews3s?: true
   avgPlayTime?: true
   videoViews25p?: true
@@ -189,6 +207,9 @@ export type AdRecordSumAggregateInputType = {
   orders1d?: true
   revenue1d?: true
   roas1d?: true
+  orders14d?: true
+  revenue14d?: true
+  roas14d?: true
   videoViews3s?: true
   avgPlayTime?: true
   videoViews25p?: true
@@ -218,6 +239,9 @@ export type AdRecordMinAggregateInputType = {
   orders1d?: true
   revenue1d?: true
   roas1d?: true
+  orders14d?: true
+  revenue14d?: true
+  roas14d?: true
   material?: true
   videoViews3s?: true
   avgPlayTime?: true
@@ -250,6 +274,9 @@ export type AdRecordMaxAggregateInputType = {
   orders1d?: true
   revenue1d?: true
   roas1d?: true
+  orders14d?: true
+  revenue14d?: true
+  roas14d?: true
   material?: true
   videoViews3s?: true
   avgPlayTime?: true
@@ -282,6 +309,9 @@ export type AdRecordCountAggregateInputType = {
   orders1d?: true
   revenue1d?: true
   roas1d?: true
+  orders14d?: true
+  revenue14d?: true
+  roas14d?: true
   material?: true
   videoViews3s?: true
   avgPlayTime?: true
@@ -401,6 +431,9 @@ export type AdRecordGroupByOutputType = {
   orders1d: number
   revenue1d: runtime.Decimal
   roas1d: runtime.Decimal
+  orders14d: number | null
+  revenue14d: runtime.Decimal | null
+  roas14d: runtime.Decimal | null
   material: string | null
   videoViews3s: number | null
   avgPlayTime: runtime.Decimal | null
@@ -456,6 +489,9 @@ export type AdRecordWhereInput = {
   orders1d?: Prisma.IntFilter<"AdRecord"> | number
   revenue1d?: Prisma.DecimalFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.IntNullableFilter<"AdRecord"> | number | null
+  revenue14d?: Prisma.DecimalNullableFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.DecimalNullableFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.StringNullableFilter<"AdRecord"> | string | null
   videoViews3s?: Prisma.IntNullableFilter<"AdRecord"> | number | null
   avgPlayTime?: Prisma.DecimalNullableFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -490,6 +526,9 @@ export type AdRecordOrderByWithRelationInput = {
   orders1d?: Prisma.SortOrder
   revenue1d?: Prisma.SortOrder
   roas1d?: Prisma.SortOrder
+  orders14d?: Prisma.SortOrderInput | Prisma.SortOrder
+  revenue14d?: Prisma.SortOrderInput | Prisma.SortOrder
+  roas14d?: Prisma.SortOrderInput | Prisma.SortOrder
   material?: Prisma.SortOrderInput | Prisma.SortOrder
   videoViews3s?: Prisma.SortOrderInput | Prisma.SortOrder
   avgPlayTime?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -528,6 +567,9 @@ export type AdRecordWhereUniqueInput = Prisma.AtLeast<{
   orders1d?: Prisma.IntFilter<"AdRecord"> | number
   revenue1d?: Prisma.DecimalFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.IntNullableFilter<"AdRecord"> | number | null
+  revenue14d?: Prisma.DecimalNullableFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.DecimalNullableFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.StringNullableFilter<"AdRecord"> | string | null
   videoViews3s?: Prisma.IntNullableFilter<"AdRecord"> | number | null
   avgPlayTime?: Prisma.DecimalNullableFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -562,6 +604,9 @@ export type AdRecordOrderByWithAggregationInput = {
   orders1d?: Prisma.SortOrder
   revenue1d?: Prisma.SortOrder
   roas1d?: Prisma.SortOrder
+  orders14d?: Prisma.SortOrderInput | Prisma.SortOrder
+  revenue14d?: Prisma.SortOrderInput | Prisma.SortOrder
+  roas14d?: Prisma.SortOrderInput | Prisma.SortOrder
   material?: Prisma.SortOrderInput | Prisma.SortOrder
   videoViews3s?: Prisma.SortOrderInput | Prisma.SortOrder
   avgPlayTime?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -602,6 +647,9 @@ export type AdRecordScalarWhereWithAggregatesInput = {
   orders1d?: Prisma.IntWithAggregatesFilter<"AdRecord"> | number
   revenue1d?: Prisma.DecimalWithAggregatesFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalWithAggregatesFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.IntNullableWithAggregatesFilter<"AdRecord"> | number | null
+  revenue14d?: Prisma.DecimalNullableWithAggregatesFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.DecimalNullableWithAggregatesFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.StringNullableWithAggregatesFilter<"AdRecord"> | string | null
   videoViews3s?: Prisma.IntNullableWithAggregatesFilter<"AdRecord"> | number | null
   avgPlayTime?: Prisma.DecimalNullableWithAggregatesFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -634,6 +682,9 @@ export type AdRecordCreateInput = {
   orders1d: number
   revenue1d: runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: number | null
+  revenue14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: string | null
   videoViews3s?: number | null
   avgPlayTime?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -666,6 +717,9 @@ export type AdRecordUncheckedCreateInput = {
   orders1d: number
   revenue1d: runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: number | null
+  revenue14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: string | null
   videoViews3s?: number | null
   avgPlayTime?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -698,6 +752,9 @@ export type AdRecordUpdateInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -730,6 +787,9 @@ export type AdRecordUncheckedUpdateInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -762,6 +822,9 @@ export type AdRecordCreateManyInput = {
   orders1d: number
   revenue1d: runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: number | null
+  revenue14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: string | null
   videoViews3s?: number | null
   avgPlayTime?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -794,6 +857,9 @@ export type AdRecordUpdateManyMutationInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -824,6 +890,9 @@ export type AdRecordUncheckedUpdateManyInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -876,6 +945,9 @@ export type AdRecordCountOrderByAggregateInput = {
   orders1d?: Prisma.SortOrder
   revenue1d?: Prisma.SortOrder
   roas1d?: Prisma.SortOrder
+  orders14d?: Prisma.SortOrder
+  revenue14d?: Prisma.SortOrder
+  roas14d?: Prisma.SortOrder
   material?: Prisma.SortOrder
   videoViews3s?: Prisma.SortOrder
   avgPlayTime?: Prisma.SortOrder
@@ -898,6 +970,9 @@ export type AdRecordAvgOrderByAggregateInput = {
   orders1d?: Prisma.SortOrder
   revenue1d?: Prisma.SortOrder
   roas1d?: Prisma.SortOrder
+  orders14d?: Prisma.SortOrder
+  revenue14d?: Prisma.SortOrder
+  roas14d?: Prisma.SortOrder
   videoViews3s?: Prisma.SortOrder
   avgPlayTime?: Prisma.SortOrder
   videoViews25p?: Prisma.SortOrder
@@ -927,6 +1002,9 @@ export type AdRecordMaxOrderByAggregateInput = {
   orders1d?: Prisma.SortOrder
   revenue1d?: Prisma.SortOrder
   roas1d?: Prisma.SortOrder
+  orders14d?: Prisma.SortOrder
+  revenue14d?: Prisma.SortOrder
+  roas14d?: Prisma.SortOrder
   material?: Prisma.SortOrder
   videoViews3s?: Prisma.SortOrder
   avgPlayTime?: Prisma.SortOrder
@@ -959,6 +1037,9 @@ export type AdRecordMinOrderByAggregateInput = {
   orders1d?: Prisma.SortOrder
   revenue1d?: Prisma.SortOrder
   roas1d?: Prisma.SortOrder
+  orders14d?: Prisma.SortOrder
+  revenue14d?: Prisma.SortOrder
+  roas14d?: Prisma.SortOrder
   material?: Prisma.SortOrder
   videoViews3s?: Prisma.SortOrder
   avgPlayTime?: Prisma.SortOrder
@@ -981,6 +1062,9 @@ export type AdRecordSumOrderByAggregateInput = {
   orders1d?: Prisma.SortOrder
   revenue1d?: Prisma.SortOrder
   roas1d?: Prisma.SortOrder
+  orders14d?: Prisma.SortOrder
+  revenue14d?: Prisma.SortOrder
+  roas14d?: Prisma.SortOrder
   videoViews3s?: Prisma.SortOrder
   avgPlayTime?: Prisma.SortOrder
   videoViews25p?: Prisma.SortOrder
@@ -1118,6 +1202,9 @@ export type AdRecordCreateWithoutWorkspaceInput = {
   orders1d: number
   revenue1d: runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: number | null
+  revenue14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: string | null
   videoViews3s?: number | null
   avgPlayTime?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1149,6 +1236,9 @@ export type AdRecordUncheckedCreateWithoutWorkspaceInput = {
   orders1d: number
   revenue1d: runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: number | null
+  revenue14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: string | null
   videoViews3s?: number | null
   avgPlayTime?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1209,6 +1299,9 @@ export type AdRecordScalarWhereInput = {
   orders1d?: Prisma.IntFilter<"AdRecord"> | number
   revenue1d?: Prisma.DecimalFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.IntNullableFilter<"AdRecord"> | number | null
+  revenue14d?: Prisma.DecimalNullableFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.DecimalNullableFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.StringNullableFilter<"AdRecord"> | string | null
   videoViews3s?: Prisma.IntNullableFilter<"AdRecord"> | number | null
   avgPlayTime?: Prisma.DecimalNullableFilter<"AdRecord"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1241,6 +1334,9 @@ export type AdRecordCreateWithoutReportInput = {
   orders1d: number
   revenue1d: runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: number | null
+  revenue14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: string | null
   videoViews3s?: number | null
   avgPlayTime?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1272,6 +1368,9 @@ export type AdRecordUncheckedCreateWithoutReportInput = {
   orders1d: number
   revenue1d: runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: number | null
+  revenue14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: string | null
   videoViews3s?: number | null
   avgPlayTime?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1329,6 +1428,9 @@ export type AdRecordCreateManyWorkspaceInput = {
   orders1d: number
   revenue1d: runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: number | null
+  revenue14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: string | null
   videoViews3s?: number | null
   avgPlayTime?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1360,6 +1462,9 @@ export type AdRecordUpdateWithoutWorkspaceInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1391,6 +1496,9 @@ export type AdRecordUncheckedUpdateWithoutWorkspaceInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1422,6 +1530,9 @@ export type AdRecordUncheckedUpdateManyWithoutWorkspaceInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1453,6 +1564,9 @@ export type AdRecordCreateManyReportInput = {
   orders1d: number
   revenue1d: runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d: runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: number | null
+  revenue14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: string | null
   videoViews3s?: number | null
   avgPlayTime?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1484,6 +1598,9 @@ export type AdRecordUpdateWithoutReportInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1515,6 +1632,9 @@ export type AdRecordUncheckedUpdateWithoutReportInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1546,6 +1666,9 @@ export type AdRecordUncheckedUpdateManyWithoutReportInput = {
   orders1d?: Prisma.IntFieldUpdateOperationsInput | number
   revenue1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   roas1d?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  orders14d?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  revenue14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  roas14d?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   videoViews3s?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   avgPlayTime?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1579,6 +1702,9 @@ export type AdRecordSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   orders1d?: boolean
   revenue1d?: boolean
   roas1d?: boolean
+  orders14d?: boolean
+  revenue14d?: boolean
+  roas14d?: boolean
   material?: boolean
   videoViews3s?: boolean
   avgPlayTime?: boolean
@@ -1613,6 +1739,9 @@ export type AdRecordSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   orders1d?: boolean
   revenue1d?: boolean
   roas1d?: boolean
+  orders14d?: boolean
+  revenue14d?: boolean
+  roas14d?: boolean
   material?: boolean
   videoViews3s?: boolean
   avgPlayTime?: boolean
@@ -1647,6 +1776,9 @@ export type AdRecordSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   orders1d?: boolean
   revenue1d?: boolean
   roas1d?: boolean
+  orders14d?: boolean
+  revenue14d?: boolean
+  roas14d?: boolean
   material?: boolean
   videoViews3s?: boolean
   avgPlayTime?: boolean
@@ -1681,6 +1813,9 @@ export type AdRecordSelectScalar = {
   orders1d?: boolean
   revenue1d?: boolean
   roas1d?: boolean
+  orders14d?: boolean
+  revenue14d?: boolean
+  roas14d?: boolean
   material?: boolean
   videoViews3s?: boolean
   avgPlayTime?: boolean
@@ -1695,7 +1830,7 @@ export type AdRecordSelectScalar = {
   reportId?: boolean
 }
 
-export type AdRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "date" | "adType" | "campaignId" | "campaignName" | "adGroup" | "placement" | "productName" | "optionId" | "keyword" | "impressions" | "clicks" | "adCost" | "ctr" | "orders1d" | "revenue1d" | "roas1d" | "material" | "videoViews3s" | "avgPlayTime" | "videoViews25p" | "videoViews50p" | "videoViews75p" | "videoViews100p" | "costPerView3s" | "engagements" | "engagementRate" | "workspaceId" | "reportId", ExtArgs["result"]["adRecord"]>
+export type AdRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "date" | "adType" | "campaignId" | "campaignName" | "adGroup" | "placement" | "productName" | "optionId" | "keyword" | "impressions" | "clicks" | "adCost" | "ctr" | "orders1d" | "revenue1d" | "roas1d" | "orders14d" | "revenue14d" | "roas14d" | "material" | "videoViews3s" | "avgPlayTime" | "videoViews25p" | "videoViews50p" | "videoViews75p" | "videoViews100p" | "costPerView3s" | "engagements" | "engagementRate" | "workspaceId" | "reportId", ExtArgs["result"]["adRecord"]>
 export type AdRecordInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   report?: boolean | Prisma.ReportUploadDefaultArgs<ExtArgs>
@@ -1733,6 +1868,9 @@ export type $AdRecordPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     orders1d: number
     revenue1d: runtime.Decimal
     roas1d: runtime.Decimal
+    orders14d: number | null
+    revenue14d: runtime.Decimal | null
+    roas14d: runtime.Decimal | null
     material: string | null
     videoViews3s: number | null
     avgPlayTime: runtime.Decimal | null
@@ -2187,6 +2325,9 @@ export interface AdRecordFieldRefs {
   readonly orders1d: Prisma.FieldRef<"AdRecord", 'Int'>
   readonly revenue1d: Prisma.FieldRef<"AdRecord", 'Decimal'>
   readonly roas1d: Prisma.FieldRef<"AdRecord", 'Decimal'>
+  readonly orders14d: Prisma.FieldRef<"AdRecord", 'Int'>
+  readonly revenue14d: Prisma.FieldRef<"AdRecord", 'Decimal'>
+  readonly roas14d: Prisma.FieldRef<"AdRecord", 'Decimal'>
   readonly material: Prisma.FieldRef<"AdRecord", 'String'>
   readonly videoViews3s: Prisma.FieldRef<"AdRecord", 'Int'>
   readonly avgPlayTime: Prisma.FieldRef<"AdRecord", 'Decimal'>
