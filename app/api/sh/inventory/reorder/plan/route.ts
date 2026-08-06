@@ -533,6 +533,7 @@ export async function POST(req: NextRequest) {
   // 레이어드 전용 — 레이어별 raw GROSS(컬럼 저장 + 응답 분해 표시용).
   let directGrossByOption: Map<string, number> | null = null
   let rocketGrossByOption: Map<string, number> | null = null
+  let rocketExpectedSalesByOption: Map<string, number> | null = null
 
   // 세트 라인 = 옵션 발주수량의 역산(참고 표시, 읽기전용). 완성 세트 = min floor(finalQty/perSet).
   // 위치·레이어드 두 세트 모드 공통 — 세트를 되먹여 사이징하지 않으므로 공유 옵션 ×N 과다집계 없음.
@@ -589,6 +590,7 @@ export async function POST(req: NextRequest) {
     optionFinalQtyOverride = new Map<string, number>()
     directGrossByOption = new Map<string, number>()
     rocketGrossByOption = new Map<string, number>()
+    rocketExpectedSalesByOption = new Map<string, number>()
     for (const it of itemInputs) {
       const rGross = rocketGrossNeed.get(it.optionId) ?? 0
       const dGross = directGross.get(it.optionId) ?? 0
@@ -605,6 +607,7 @@ export async function POST(req: NextRequest) {
         roundUnit: it.roundUnit,
       })
       optionFinalQtyOverride.set(it.optionId, split.finalQty)
+      rocketExpectedSalesByOption.set(it.optionId, rGross)
       // 기존 컬럼명을 유지하되 의미는 입고 분배 baseline/remaining 이다.
       // stockin-split·상세 UI가 이 값을 사용해 로켓그로스 입고분과 나머지를 구분한다.
       rocketGrossByOption.set(it.optionId, split.linkedLocationQty)
@@ -677,11 +680,20 @@ export async function POST(req: NextRequest) {
           leadTimeDays: it.leadTimeDays,
           suggestedQty: it.suggestedQty,
           roundedSuggestedQty: it.roundedSuggestedQty,
-          // 레이어드: 옵션별 로켓 baseline(정수 올림) + 직접 GROSS. 비레이어드 = null.
+          // 연동 위치: 옵션별 입고 필요 수량 + 계산 구성값. 비연동 = null.
           rocketBaselineQty: rocketGrossByOption
             ? Math.ceil(rocketGrossByOption.get(it.optionId) ?? 0)
             : null,
           directGrossQty: directGrossByOption ? (directGrossByOption.get(it.optionId) ?? 0) : null,
+          linkedLocationExpectedSalesQty: rocketExpectedSalesByOption
+            ? Math.ceil(rocketExpectedSalesByOption.get(it.optionId) ?? 0)
+            : null,
+          linkedLocationCurrentStockQty: rocketGrossByOption
+            ? (rocketStockByOption.get(it.optionId) ?? 0)
+            : null,
+          linkedLocationIncomingQty: rocketGrossByOption
+            ? (rocketIncomingByOption.get(it.optionId) ?? 0)
+            : null,
           finalQty: optionFinalQtyOverride
             ? (optionFinalQtyOverride.get(it.optionId) ?? 0)
             : it.roundedSuggestedQty,
