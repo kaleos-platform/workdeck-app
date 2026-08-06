@@ -39,6 +39,7 @@ type PreviewOption = {
   safetyStockQty: number
   dailyAvgForecast: number
   leadTimeDays: number
+  analysisWindowDays: number
   roundedSuggestedQty: number
   rocketBaselineQty: number | null // 연동 위치 입고 필요 수량. 비연동 = null.
   directGrossQty: number | null // 나머지 입고 수량. 비연동 = null.
@@ -384,19 +385,43 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
                     <TableHeader>
                       <TableRow>
                         <TableHead>옵션</TableHead>
-                        <TableHead className="text-right">예상 판매 필요량</TableHead>
-                        <TableHead className="text-right">안전재고 반영분</TableHead>
-                        <TableHead className="text-right">연동 위치 현재고</TableHead>
-                        <TableHead className="text-right">연동 위치 입고예정</TableHead>
                         <TableHead className="text-right">
                           <span className="inline-flex items-center justify-end gap-1">
-                            연동 위치 입고 수량
+                            예측 소진량
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <HelpCircle className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
                               </TooltipTrigger>
                               <TooltipContent className="max-w-96 leading-relaxed whitespace-pre-line">
-                                {`연동 위치 입고 수량 = 로켓그로스 예상 판매 필요량 + 안전재고 반영분 - 로켓그로스 현재 재고 - 로켓그로스 입고 예정 수량\n\n예상 판매 필요량은 로켓그로스 판매 이력을 분석 기간 기준으로 예측한 일평균 × 리드타임 × 보정계수입니다. 안전재고 반영분은 옵션 안전재고 전체를 로켓그로스에 몰아넣지 않고, 로켓그로스 예상 판매 필요량 / 전체 예상 판매 필요량 비율로 배분한 값입니다.`}
+                                {`로켓그로스 판매 이력으로 예측한 입고 전 소진량입니다.\n\n= 분석 기간 판매 이력 기반 예측 일평균 × 리드타임 × 보정계수\n\n현재 기본 분석 기간은 90일이고, 상품별 발주 설정의 분석 기간을 따릅니다. 이 값은 90일 판매량 합계가 아니라 리드타임 동안 소진될 것으로 보는 수량입니다.`}
+                              </TooltipContent>
+                            </Tooltip>
+                          </span>
+                        </TableHead>
+                        <TableHead className="text-right">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            배분 안전재고
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-96 leading-relaxed whitespace-pre-line">
+                                {`옵션 안전재고 중 로켓그로스 판매 비중만큼 배분한 수량입니다.\n\n= 옵션 안전재고 × 로켓그로스 예측 소진량 / 전체 예측 소진량\n\n옵션 안전재고 전체를 로켓그로스에 몰아넣지 않기 위한 값입니다.`}
+                              </TooltipContent>
+                            </Tooltip>
+                          </span>
+                        </TableHead>
+                        <TableHead className="text-right">현재고</TableHead>
+                        <TableHead className="text-right">입고예정</TableHead>
+                        <TableHead className="text-right">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            입고 필요 수량
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-3.5 w-3.5 cursor-help text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-96 leading-relaxed whitespace-pre-line">
+                                {`로켓그로스에 추가로 입고해야 하는 수량입니다.\n\n= 예측 소진량 + 배분 안전재고 - 현재고 - 입고예정\n\n계산 결과가 0이면 현재고/입고예정이 로켓그로스 수요와 배분 안전재고를 충족한다는 뜻입니다.`}
                               </TooltipContent>
                             </Tooltip>
                           </span>
@@ -507,7 +532,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
           최종 발주{' '}
           <span className="text-xs font-normal text-muted-foreground">
             {showBaseline
-              ? '· 연동 위치 입고 수량 + 나머지 수량을 합산 후 반올림한 최종 발주 (옵션별 편집)'
+              ? '· 입고 필요 수량 + 나머지 수량을 합산 후 반올림한 최종 발주 (옵션별 편집)'
               : '· 전체 판매량 기반 옵션별 발주 수량 (옵션별 편집)'}
           </span>
         </p>

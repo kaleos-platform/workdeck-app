@@ -465,6 +465,7 @@ export async function POST(req: NextRequest) {
     productId: string
     optionId: string
     leadTimeDays: number
+    analysisWindowDays: number
     safetyStockQty: number
     currentStock: number
     onHandStock: number
@@ -504,6 +505,7 @@ export async function POST(req: NextRequest) {
         productId: p.id,
         optionId: o.id,
         leadTimeDays,
+        analysisWindowDays: wd,
         safetyStockQty,
         currentStock,
         onHandStock,
@@ -685,6 +687,7 @@ export async function POST(req: NextRequest) {
           dailyAvgForecast: it.forecastResult.dailyAvg,
           forecastModel: it.forecastResult.model,
           leadTimeDays: it.leadTimeDays,
+          analysisWindowDays: it.analysisWindowDays,
           suggestedQty: it.suggestedQty,
           roundedSuggestedQty: it.roundedSuggestedQty,
           // 연동 위치: 옵션별 입고 필요 수량 + 계산 구성값. 비연동 = null.
