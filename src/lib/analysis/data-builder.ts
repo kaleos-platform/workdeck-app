@@ -76,29 +76,40 @@ export async function buildAnalysisContext(
   endDate: Date,
   reportType: AnalysisType = 'DAILY_REVIEW'
 ): Promise<AnalysisContext> {
-  // 캠페인별 집계
-  const campaignGroups = await prisma.adRecord.groupBy({
-    by: ['campaignId', 'campaignName'],
-    where: {
-      workspaceId,
-      date: { gte: startDate, lte: endDate },
-    },
-    _sum: {
-      adCost: true,
-      impressions: true,
-      clicks: true,
-      orders1d: true,
-      revenue1d: true,
-    },
-    orderBy: { _sum: { adCost: 'desc' } },
-  })
+  // 캠페인별 집계 — 전환(주문/매출)은 14일 우선(COALESCE), 없으면 1일.
+  // 지연 전환을 반영해 ROAS 과소평가를 완화한다. Prisma groupBy는 per-row COALESCE 집계가
+  // 불가하여 파라미터화된 raw SQL 사용(기존 데이터/NCA는 orders14d null → 1일로 폴백).
+  const campaignGroups = await prisma.$queryRaw<
+    Array<{
+      campaignId: string
+      campaignName: string
+      adCost: number | string
+      impressions: number | bigint
+      clicks: number | bigint
+      orders: number | bigint
+      revenue: number | string
+    }>
+  >`
+    SELECT "campaignId", "campaignName",
+      SUM("adCost") AS "adCost",
+      SUM("impressions") AS "impressions",
+      SUM("clicks") AS "clicks",
+      SUM(COALESCE("orders14d", "orders1d")) AS "orders",
+      SUM(COALESCE("revenue14d", "revenue1d")) AS "revenue"
+    FROM "AdRecord"
+    WHERE "workspaceId" = ${workspaceId}
+      AND "date" >= ${startDate}
+      AND "date" <= ${endDate}
+    GROUP BY "campaignId", "campaignName"
+    ORDER BY SUM("adCost") DESC
+  `
 
   const campaigns: CampaignSummary[] = campaignGroups.map((g) => {
-    const totalAdCost = Number(g._sum.adCost ?? 0)
-    const totalImpressions = Number(g._sum.impressions ?? 0)
-    const totalClicks = Number(g._sum.clicks ?? 0)
-    const totalOrders = Number(g._sum.orders1d ?? 0)
-    const totalRevenue = Number(g._sum.revenue1d ?? 0)
+    const totalAdCost = Number(g.adCost ?? 0)
+    const totalImpressions = Number(g.impressions ?? 0)
+    const totalClicks = Number(g.clicks ?? 0)
+    const totalOrders = Number(g.orders ?? 0)
+    const totalRevenue = Number(g.revenue ?? 0)
 
     return {
       campaignId: g.campaignId,
@@ -114,22 +125,32 @@ export async function buildAnalysisContext(
     }
   })
 
-  // 비효율 키워드 식별 (광고비 > 0, 주문 = 0)
-  const keywordGroups = await prisma.adRecord.groupBy({
-    by: ['campaignId', 'campaignName', 'keyword'],
-    where: {
-      workspaceId,
-      date: { gte: startDate, lte: endDate },
-      keyword: { not: null },
-    },
-    _sum: {
-      adCost: true,
-      impressions: true,
-      clicks: true,
-      orders1d: true,
-    },
-    orderBy: { _sum: { adCost: 'desc' } },
-  })
+  // 비효율 키워드 식별 (광고비 > 0, 전환 = 0) — 전환은 14일 우선(COALESCE).
+  // 14일 내 전환된 키워드는 지연 전환으로 보고 비효율에서 제외(1일 기준 오판정 완화).
+  const keywordGroups = await prisma.$queryRaw<
+    Array<{
+      campaignId: string
+      campaignName: string
+      keyword: string
+      adCost: number | string
+      impressions: number | bigint
+      clicks: number | bigint
+      orders: number | bigint
+    }>
+  >`
+    SELECT "campaignId", "campaignName", "keyword",
+      SUM("adCost") AS "adCost",
+      SUM("impressions") AS "impressions",
+      SUM("clicks") AS "clicks",
+      SUM(COALESCE("orders14d", "orders1d")) AS "orders"
+    FROM "AdRecord"
+    WHERE "workspaceId" = ${workspaceId}
+      AND "date" >= ${startDate}
+      AND "date" <= ${endDate}
+      AND "keyword" IS NOT NULL
+    GROUP BY "campaignId", "campaignName", "keyword"
+    ORDER BY SUM("adCost") DESC
+  `
 
   // 캠페인별 총 광고비 맵 (costRatio 계산용)
   const campaignAdCostMap = new Map<string, number>()
@@ -142,13 +163,13 @@ export async function buildAnalysisContext(
 
   const inefficientKeywords: InefficientKeyword[] = keywordGroups
     .filter((g) => {
-      const adCost = Number(g._sum.adCost ?? 0)
-      const orders = Number(g._sum.orders1d ?? 0)
+      const adCost = Number(g.adCost ?? 0)
+      const orders = Number(g.orders ?? 0) // 14일 우선 전환수
       if (!(adCost > 0 && orders === 0)) return false
-      // 통계 유의성 가드: 표본(클릭/노출)이 충분한 경우에만 비효율로 판정.
+      // 통계 유의성 가드: 표본(클릭/노출) 또는 지출이 충분한 경우에만 비효율로 판정.
       // 클릭 1~2회 노이즈를 "전환 0 = 비효율"로 오판정하지 않도록 하한 적용.
-      const clicks = Number(g._sum.clicks ?? 0)
-      const impressions = Number(g._sum.impressions ?? 0)
+      const clicks = Number(g.clicks ?? 0)
+      const impressions = Number(g.impressions ?? 0)
       if (!hasSignificantSample(clicks, impressions, adCost)) {
         heldBelowThreshold++
         return false
@@ -156,7 +177,7 @@ export async function buildAnalysisContext(
       return true
     })
     .map((g) => {
-      const adCost = Number(g._sum.adCost ?? 0)
+      const adCost = Number(g.adCost ?? 0)
       const campaignTotal = campaignAdCostMap.get(g.campaignId) ?? 0
       const costRatio =
         campaignTotal > 0
@@ -165,10 +186,10 @@ export async function buildAnalysisContext(
       return {
         campaignId: g.campaignId,
         campaignName: g.campaignName,
-        keyword: g.keyword!,
+        keyword: g.keyword,
         adCost,
-        clicks: Number(g._sum.clicks ?? 0),
-        impressions: Number(g._sum.impressions ?? 0),
+        clicks: Number(g.clicks ?? 0),
+        impressions: Number(g.impressions ?? 0),
         orders: 0,
         costRatio,
       }
