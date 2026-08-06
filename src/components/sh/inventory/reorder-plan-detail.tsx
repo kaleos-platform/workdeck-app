@@ -965,7 +965,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                         <TableCell className="text-right">
                           {/* 위치·레이어드 두 세트 모드 모두 세트는 옵션 발주수량의 역산(읽기전용). */}
                           <span
-                            className="tabular-nums text-muted-foreground"
+                            className="text-muted-foreground tabular-nums"
                             title="옵션 발주수량의 역산(참고) — 수정은 옵션 최종수량에서"
                           >
                             {backDerivedSetQty(set.items)}
@@ -1079,7 +1079,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                         )}
                         {isLayered && (item.rocketGross != null || item.directGross != null) && (
                           <div className="mt-0.5 text-[10px] text-muted-foreground">
-                            로켓분 {QTY.format(Math.round(item.rocketGross ?? 0))} · 직접분{' '}
+                            로켓그로스 입고 {QTY.format(Math.round(item.rocketGross ?? 0))} · 나머지{' '}
                             {QTY.format(Math.round(item.directGross ?? 0))}
                           </div>
                         )}

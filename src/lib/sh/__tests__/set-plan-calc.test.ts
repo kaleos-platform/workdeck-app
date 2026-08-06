@@ -3,6 +3,7 @@ import {
   suggestSetQty,
   computeSetAvailable,
   computeLayeredFinalQty,
+  computeLayeredRoundedSplit,
   type SetItem,
 } from '@/lib/sh/set-plan-calc'
 
@@ -102,6 +103,42 @@ describe('computeSetAvailable', () => {
   test('재고 누락 옵션은 0으로 간주 → 가용 0', () => {
     const stock = new Map([['black', 10]])
     expect(computeSetAvailable(BW, stock)).toBe(0)
+  })
+})
+
+describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)', () => {
+  test('합산 net 수량을 먼저 반올림한 뒤 로켓 필요분과 나머지로 분배한다', () => {
+    const split = computeLayeredRoundedSplit({
+      rocketGross: 23.2,
+      directGross: 8.1,
+      safetyStockQty: 5,
+      totalPlannedStock: 10,
+      rocketPlannedStock: 4,
+      roundUnit: 10,
+    })
+
+    // raw = ceil(23.2 + 8.1 + 5 - 10) = 27 → 10단위 반올림 = 30
+    // 로켓 필요 = ceil(23.2 + 5 - 4) = 25 → 최종 30 중 25를 로켓, 5를 나머지로 분배
+    expect(split.rawFinalQty).toBe(27)
+    expect(split.finalQty).toBe(30)
+    expect(split.linkedLocationQty).toBe(25)
+    expect(split.remainingQty).toBe(5)
+  })
+
+  test('로켓 필요분이 반올림된 최종수량보다 크면 최종수량까지만 배정한다', () => {
+    const split = computeLayeredRoundedSplit({
+      rocketGross: 50,
+      directGross: 0,
+      safetyStockQty: 0,
+      totalPlannedStock: 43,
+      rocketPlannedStock: 0,
+      roundUnit: 10,
+    })
+
+    // 전체로는 7개만 필요해 10개 발주. 로켓 raw 필요가 50이어도 발주 총량 10을 초과 배정하지 않는다.
+    expect(split.finalQty).toBe(10)
+    expect(split.linkedLocationQty).toBe(10)
+    expect(split.remainingQty).toBe(0)
   })
 })
 
@@ -259,7 +296,11 @@ describe('위치 세트 모드 과다집계 회귀 (옵션=자체 수요, 세트
 
   test('구 방식(세트별 병목 사이징 → 분해합산)은 공유 옵션을 ×N 과다집계 (버그 재현)', () => {
     const decomposed = decomposeSetsToOptions(
-      CAP_M.map((s) => ({ listingId: s.listingId, setQty: suggestSetQty(s.items, net), items: s.items }))
+      CAP_M.map((s) => ({
+        listingId: s.listingId,
+        setQty: suggestSetQty(s.items, net),
+        items: s.items,
+      }))
     )
     // 4개 리스팅이 각각 whiteM/blackM 78 을 독립 커버 → 분해합산이 78 을 ×5 이상 초과
     expect(decomposed.get('whiteM')!).toBeGreaterThanOrEqual(78 * 5)
@@ -269,7 +310,11 @@ describe('위치 세트 모드 과다집계 회귀 (옵션=자체 수요, 세트
   test('신 방식 — 옵션 자체 수요 합은 구 방식 분해합산보다 크게 작다 (인플레이션 제거)', () => {
     // 구 방식: 4개 리스팅 각각 78 커버 → 분해합산
     const old = decomposeSetsToOptions(
-      CAP_M.map((s) => ({ listingId: s.listingId, setQty: suggestSetQty(s.items, net), items: s.items }))
+      CAP_M.map((s) => ({
+        listingId: s.listingId,
+        setQty: suggestSetQty(s.items, net),
+        items: s.items,
+      }))
     )
     const oldTotal = (old.get('whiteM') ?? 0) + (old.get('blackM') ?? 0)
     // 신 방식: 옵션 finalQty = 옵션 자체 net 수요(세트 재-사이징 합산 없음)

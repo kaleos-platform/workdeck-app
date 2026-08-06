@@ -39,7 +39,8 @@ type PreviewOption = {
   leadTimeDays: number
   roundedSuggestedQty: number
   rocketBaselineQty: number | null // 레이어드 옵션별 로켓 baseline(floor). 비레이어드 = null.
-  finalQty: number // 기본 최종수량 = baseline + 추가
+  directGrossQty: number | null // 레이어드 옵션별 나머지 입고 수량. 비레이어드 = null.
+  finalQty: number // 기본 최종수량 = 연동 위치 입고분 + 나머지 입고분
 }
 type PreviewSet = {
   listingId: string
@@ -57,6 +58,7 @@ type Preview = {
 }
 
 type PickedProduct = { productId: string; productName: string; brandName: string | null }
+type LinkedLocation = { id: string; name: string; externalSource: string | null; isActive: boolean }
 // 상품 선택 후 순차 단계. 'rocket' = 연동 위치 발주 확인, 'options' = 옵션별 최종 발주.
 type Step = 'rocket' | 'options'
 
@@ -88,18 +90,30 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
   const [preview, setPreview] = useState<Preview | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [includeRocket, setIncludeRocket] = useState(true)
+  const [linkedLocations, setLinkedLocations] = useState<LinkedLocation[]>([])
+  const [selectedLinkedLocationIds, setSelectedLinkedLocationIds] = useState<string[]>([])
+  const [locationsLoading, setLocationsLoading] = useState(false)
   // 옵션별 편집 최종수량(문자열 — 입력 중 빈값 허용). 미리보기 로드 시 finalQty 로 초기화.
   const [finalByOption, setFinalByOption] = useState<Record<string, string>>({})
   const [creating, setCreating] = useState(false)
 
   // ── dryRun 미리보기 로드 ────────────────────────────────────────────────────
-  const fetchPreview = async (productId: string, excludeRocket: boolean) => {
+  const fetchPreview = async (
+    productId: string,
+    excludeRocket: boolean,
+    linkedLocationIds: string[] = []
+  ) => {
     setPreviewLoading(true)
     try {
       const res = await fetch('/api/sh/inventory/reorder/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, dryRun: true, excludeRocketLayer: excludeRocket }),
+        body: JSON.stringify({
+          productId,
+          dryRun: true,
+          excludeRocketLayer: excludeRocket,
+          linkedLocationIds,
+        }),
       })
       if (!res.ok) {
         const b = (await res.json().catch(() => ({}))) as { message?: string }
@@ -119,6 +133,22 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     }
   }
 
+  const loadLinkedLocations = async () => {
+    setLocationsLoading(true)
+    try {
+      const res = await fetch('/api/sh/inventory/locations?isActive=true')
+      const data = (await res.json().catch(() => ({}))) as { locations?: LinkedLocation[] }
+      if (!res.ok) throw new Error('연동 위치 조회 실패')
+      setLinkedLocations((data.locations ?? []).filter((l) => l.externalSource != null))
+    } catch (err) {
+      console.error(err)
+      toast.error('연동 위치 목록을 불러오지 못했습니다')
+      setLinkedLocations([])
+    } finally {
+      setLocationsLoading(false)
+    }
+  }
+
   // ── 상품 선택 완료 → 미리보기 로드 → Step ② ─────────────────────────────────
   const handlePickProduct = (
     productId: string,
@@ -133,6 +163,8 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     setPickerOpen(false)
     setStep('rocket')
     setIncludeRocket(true)
+    setSelectedLinkedLocationIds([])
+    void loadLinkedLocations()
     void fetchPreview(productId, false)
   }
 
@@ -140,6 +172,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     setPicked(null)
     setPreview(null)
     setFinalByOption({})
+    setSelectedLinkedLocationIds([])
     setStep('rocket')
     setPickerOpen(true)
   }
@@ -148,7 +181,24 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
   const handleToggleRocket = (checked: boolean) => {
     if (!picked) return
     setIncludeRocket(checked)
-    void fetchPreview(picked.productId, !checked)
+    void fetchPreview(picked.productId, !checked, selectedLinkedLocationIds)
+  }
+
+  const handleToggleLinkedLocation = (locationId: string, checked: boolean) => {
+    if (!picked) return
+    const next = checked
+      ? Array.from(new Set([...selectedLinkedLocationIds, locationId]))
+      : selectedLinkedLocationIds.filter((id) => id !== locationId)
+    setSelectedLinkedLocationIds(next)
+    setIncludeRocket(true)
+    void fetchPreview(picked.productId, false, next)
+  }
+
+  const handleSkipLinkedLocation = () => {
+    if (!picked) return
+    setIncludeRocket(false)
+    setSelectedLinkedLocationIds([])
+    void fetchPreview(picked.productId, true, [])
   }
 
   // 빈값/음수 정리(≥0). baseline 미만도 허용 — 재고가 수요를 덮으면 final < baseline 이 정상.
@@ -180,6 +230,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
         body: JSON.stringify({
           productId: picked.productId,
           excludeRocketLayer: !includeRocket,
+          linkedLocationIds: includeRocket ? selectedLinkedLocationIds : [],
           optionFinalOverrides,
         }),
       })
@@ -261,7 +312,9 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
     <div className="flex items-center justify-between rounded-md border bg-muted/30 px-4 py-3">
       <div className="min-w-0">
         <div className="truncate text-base font-semibold">{picked.productName}</div>
-        {picked.brandName && <div className="text-xs text-muted-foreground">{picked.brandName}</div>}
+        {picked.brandName && (
+          <div className="text-xs text-muted-foreground">{picked.brandName}</div>
+        )}
       </div>
       <Button variant="outline" size="sm" className="gap-1.5" onClick={resetToPicker}>
         <ArrowLeft className="h-3.5 w-3.5" />
@@ -292,11 +345,13 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
               <div className="space-y-0.5">
                 <p className="text-sm font-medium">
                   연동 위치 <span className="text-indigo-700">[{preview.locationName}]</span> 에서
-                  세트 {preview.sets.length}개로 판매됩니다
+                  {preview.sets.length > 0
+                    ? ` 세트 ${preview.sets.length}개로 판매됩니다`
+                    : ' 판매 중인 상품으로 매칭되었습니다'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  연동 위치 세트 수요를 옵션별 1차 발주 수량(baseline)으로 잡습니다. 다음 단계에서
-                  전체 판매량 근거로 추가 발주를 계획합니다.
+                  연동 위치 필요 수량을 먼저 계산하고, 다음 단계에서 나머지 수량과 합산해 최종
+                  발주를 계획합니다.
                 </p>
               </div>
             </div>
@@ -315,7 +370,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
                   <TableHeader>
                     <TableRow>
                       <TableHead>옵션</TableHead>
-                      <TableHead className="text-right">1차 발주 수량 (baseline)</TableHead>
+                      <TableHead className="text-right">연동 위치 입고 수량</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -333,8 +388,46 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
             )}
           </div>
         ) : (
-          <div className="rounded-md border bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
-            연동 위치 세트 판매가 감지되지 않았습니다 → 일반 발주로 진행합니다.
+          <div className="space-y-3 rounded-md border bg-muted/20 px-4 py-4 text-sm">
+            <div className="space-y-1">
+              <p className="font-medium text-foreground">
+                연동 위치에서 이 상품이 자동 감지되지 않았습니다.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                아래 연동 위치를 직접 선택하면 해당 위치의 매핑/재고에서 이 상품 옵션을 다시
+                찾습니다. 없으면 이 단계를 스킵하고 일반 발주로 진행할 수 있습니다.
+              </p>
+            </div>
+
+            <div className="space-y-2 rounded-md border bg-background px-3 py-3">
+              <p className="text-xs font-medium text-muted-foreground">
+                연동 위치 직접 선택 {locationsLoading && '· 불러오는 중...'}
+              </p>
+              {linkedLocations.length === 0 ? (
+                <p className="text-xs text-muted-foreground">선택 가능한 연동 위치가 없습니다.</p>
+              ) : (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {linkedLocations.map((loc) => (
+                    <label
+                      key={loc.id}
+                      className="flex items-center gap-2 rounded-md border px-3 py-2"
+                    >
+                      <Checkbox
+                        checked={selectedLinkedLocationIds.includes(loc.id)}
+                        onCheckedChange={(v) => handleToggleLinkedLocation(loc.id, v === true)}
+                      />
+                      <span className="text-sm">{loc.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={handleSkipLinkedLocation}>
+                연동 위치 단계 스킵
+              </Button>
+            </div>
           </div>
         )}
 
@@ -371,7 +464,7 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
           최종 발주{' '}
           <span className="text-xs font-normal text-muted-foreground">
             {showBaseline
-              ? '· 연동 위치 baseline(참고) + 전체 판매량 근거 최종 발주 (옵션별 편집)'
+              ? '· 연동 위치 입고 수량 + 나머지 수량을 합산 후 반올림한 최종 발주 (옵션별 편집)'
               : '· 전체 판매량 기반 옵션별 발주 수량 (옵션별 편집)'}
           </span>
         </p>
@@ -388,7 +481,8 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
             <TableHeader>
               <TableRow>
                 <TableHead>옵션</TableHead>
-                {showBaseline && <TableHead className="text-right">연동 위치 baseline</TableHead>}
+                {showBaseline && <TableHead className="text-right">연동 위치 입고</TableHead>}
+                {showBaseline && <TableHead className="text-right">나머지 수량</TableHead>}
                 <TableHead className="text-right">전체 판매 일평균</TableHead>
                 <TableHead className="text-right">재고</TableHead>
                 <TableHead className="text-right">안전재고</TableHead>
@@ -407,17 +501,22 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
                     <span>{o.optionName}</span>
                   </TableCell>
                   {showBaseline && (
-                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                    <TableCell className="text-right text-muted-foreground tabular-nums">
                       {QTY.format(o.rocketBaselineQty ?? 0)}
                     </TableCell>
                   )}
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                  {showBaseline && (
+                    <TableCell className="text-right text-muted-foreground tabular-nums">
+                      {QTY.format(o.directGrossQty ?? 0)}
+                    </TableCell>
+                  )}
+                  <TableCell className="text-right text-muted-foreground tabular-nums">
                     {o.dailyAvgForecast.toFixed(2)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                  <TableCell className="text-right text-muted-foreground tabular-nums">
                     {QTY.format(o.currentStock)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                  <TableCell className="text-right text-muted-foreground tabular-nums">
                     {QTY.format(o.safetyStockQty)}
                   </TableCell>
                   <TableCell className="text-right">
@@ -447,9 +546,8 @@ export function ReorderPlanCreate({ autoOpen = true }: Props) {
 
       {showBaseline && (
         <p className="text-[11px] text-muted-foreground">
-          · 입고 시 baseline 분(min(최종, baseline))은 세트(묶음 상품)로 연동 위치에, 추가분(최종 −
-          baseline)은 위치 지정 입고로 처리됩니다. (재고가 수요를 덮으면 최종이 baseline보다 작을 수
-          있습니다.)
+          · 입고 시 연동 위치 입고분은 로켓그로스로, 나머지 수량은 일반 위치 입고로 분리됩니다.
+          최종수량은 두 수량을 합산한 뒤 발주 단위로 반올림한 값입니다.
         </p>
       )}
 
