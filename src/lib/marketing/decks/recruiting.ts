@@ -5,7 +5,7 @@ export const recruitingLanding: DeckLandingContent = {
   seo: {
     title: '모집 관리 — 채용 공고 꾸미기부터 지원자 관리까지',
     description:
-      '디자인 블록으로 채용 공고를 꾸미고, 지원자 접수·관리·블랙리스트까지 한 곳에서 처리합니다. Workdeck 모집 관리 Deck으로 매장·매니저 채용 프로세스를 체계화하세요.',
+      '디자인 블록으로 채용 공고를 꾸미고, 지원자 접수·관리·블랙리스트까지 한 곳에서 처리합니다. Workdeck 모집 관리로 매장·매니저 채용 프로세스를 체계화하세요.',
     keywords: [
       '채용 관리',
       '채용 공고 제작',

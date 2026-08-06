@@ -14,15 +14,15 @@ function buildLlmsTxt(): string {
   lines.push('')
   lines.push(
     '> Workdeck은 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영 같은 ' +
-      "비즈니스 업무를 'deck' 단위로 골라 사용하며 목표를 달성하는 워크스페이스입니다."
+      '비즈니스 업무를 필요한 것만 골라 쓰며 목표를 달성하는 워크스페이스입니다.'
   )
   lines.push('')
   lines.push(
-    '현재 전 deck 베타 기간 동안 무료로 이용할 수 있으며, 필요한 deck만 골라 쓰고 언제든 추가할 수 있습니다.'
+    '현재 전 덱 베타 기간 동안 무료로 이용할 수 있으며, 필요한 덱만 골라 쓰고 언제든 추가할 수 있습니다.'
   )
   lines.push('')
 
-  lines.push('## Decks')
+  lines.push('## 덱')
   lines.push('')
   for (const slug of MARKETING_DECK_SLUGS) {
     const meta = DECK_META[slug]
@@ -42,7 +42,7 @@ function buildLlmsTxt(): string {
 
   lines.push('## Pricing')
   lines.push('')
-  lines.push('현재 전 deck 베타 무료. 아래는 정식 전환 시 예정가(월, VAT 포함)입니다.')
+  lines.push('현재 전 덱 베타 무료. 아래는 정식 전환 시 예정가(월, VAT 포함)입니다.')
   lines.push('')
   for (const row of DECK_PRICING_ROWS) {
     lines.push(

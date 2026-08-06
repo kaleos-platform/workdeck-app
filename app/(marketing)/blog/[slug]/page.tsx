@@ -100,7 +100,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
           {deckMeta ? (
             <div className="mt-16 rounded-lg border bg-muted/30 p-8 text-center">
-              <h2 className="text-xl font-bold break-keep">{deckMeta.name} deck이 궁금하신가요?</h2>
+              <h2 className="text-xl font-bold break-keep">{deckMeta.name} 덱이 궁금하신가요?</h2>
               <p className="mt-2 break-keep text-muted-foreground">
                 베타 기간 동안 모든 기능을 무료로 사용해 보세요.
               </p>
