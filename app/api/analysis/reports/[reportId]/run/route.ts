@@ -55,6 +55,7 @@ export async function POST(
         recentMemos: context.recentMemos,
         campaignMetas: context.campaignMetas,
         activeRules: context.activeRules,
+        deterministicSignals: context.deterministicSignals,
         periodStart: context.periodStart,
         periodEnd: context.periodEnd,
         reportType: context.reportType,

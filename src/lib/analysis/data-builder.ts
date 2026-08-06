@@ -10,7 +10,12 @@ import {
   MIN_SIGNIFICANT_IMPRESSIONS,
   MIN_SIGNIFICANT_ADCOST,
 } from '@/lib/metrics-calculator'
-import type { AnalysisInput, CampaignSummary, InefficientKeyword } from '@/lib/ai/suggestion-types'
+import type {
+  AnalysisInput,
+  CampaignSummary,
+  InefficientKeyword,
+  DeterministicSignal,
+} from '@/lib/ai/suggestion-types'
 import type { AnalysisType } from '@/generated/prisma/client'
 
 // 제거된 키워드 히스토리
@@ -65,6 +70,101 @@ export interface AnalysisContext extends AnalysisInput {
   recentMemos: DailyMemoInfo[]
   campaignMetas: CampaignMetaInfo[]
   activeRules: ActiveRule[]
+  deterministicSignals: DeterministicSignal[]
+}
+
+// 목표 ROAS 대비 초과 달성으로 예산 증액을 제안하는 배수 (목표의 N배 이상)
+const ROAS_OVERSHOOT_MULT = 1.2
+// 목표 ROAS 대비 심각 미달(즉시 중지 검토)로 보는 비율 (목표의 N배 미만)
+const ROAS_SEVERE_UNDER_MULT = 0.5
+
+/**
+ * 코드가 결정론적으로 판정 후보를 산출한다. 임계는 사용자 데이터(CampaignTarget)에서
+ * 오며, 목표가 없는 캠페인은 ROAS 판정을 내리지 않는다(침묵 — 프롬프트/AI 경로에 위임).
+ * AI는 이 후보를 재계산하지 않고 검토·설명·우선순위화한다.
+ */
+function evaluateSignals(
+  campaigns: CampaignSummary[],
+  campaignTargets: Array<{ campaignId: string; targetRoas: unknown; dailyBudget: unknown }>,
+  inefficientKeywords: InefficientKeyword[]
+): DeterministicSignal[] {
+  const signals: DeterministicSignal[] = []
+
+  // 캠페인별 최신 목표 맵 (effectiveDate desc 정렬 → 첫 값이 최신, first-wins)
+  const targetMap = new Map<string, { targetRoas: number | null }>()
+  for (const t of campaignTargets) {
+    if (targetMap.has(t.campaignId)) continue
+    const roas = t.targetRoas == null ? null : Number(t.targetRoas)
+    targetMap.set(t.campaignId, { targetRoas: Number.isFinite(roas as number) ? roas : null })
+  }
+
+  // 1) 비효율 키워드 → 제거 후보 (이미 통계 유의성 가드 통과한 목록)
+  for (const k of inefficientKeywords) {
+    signals.push({
+      type: 'REMOVE_KEYWORD',
+      priority: 'HIGH',
+      campaignId: k.campaignId,
+      campaignName: k.campaignName,
+      target: k.keyword,
+      metric: 'inefficient_keyword',
+      currentValue: k.adCost,
+      thresholdValue: null,
+      appliedRule: '비효율 키워드(광고비>0·14일 전환=0)',
+      reason: `광고비 ${Math.round(k.adCost).toLocaleString()}원 지출에도 14일 내 전환 0건 (클릭 ${k.clicks}·노출 ${k.impressions}).`,
+    })
+  }
+
+  // 2) 캠페인 목표 ROAS 대비 실적 (목표가 설정된 캠페인만 — 없으면 판정 보류)
+  for (const c of campaigns) {
+    const target = targetMap.get(c.campaignId)
+    // 목표 미설정 또는 ROAS 산출 불가(광고비 0 등) → 결정론 판정 없음
+    if (!target || target.targetRoas == null || c.roas == null) continue
+    const targetRoas = target.targetRoas
+    const roas = c.roas
+
+    if (roas < targetRoas * ROAS_SEVERE_UNDER_MULT) {
+      signals.push({
+        type: 'PAUSE_CAMPAIGN',
+        priority: 'HIGH',
+        campaignId: c.campaignId,
+        campaignName: c.campaignName,
+        target: c.campaignName,
+        metric: 'roas',
+        currentValue: roas,
+        thresholdValue: targetRoas,
+        appliedRule: '목표 ROAS',
+        reason: `ROAS ${roas}% 로 목표 ${targetRoas}% 의 절반 미만 — 일시 중지 검토.`,
+      })
+    } else if (roas < targetRoas) {
+      signals.push({
+        type: 'ADJUST_BUDGET',
+        priority: 'MEDIUM',
+        campaignId: c.campaignId,
+        campaignName: c.campaignName,
+        target: c.campaignName,
+        metric: 'roas',
+        currentValue: roas,
+        thresholdValue: targetRoas,
+        appliedRule: '목표 ROAS',
+        reason: `ROAS ${roas}% 로 목표 ${targetRoas}% 미달 — 예산 감액 검토.`,
+      })
+    } else if (roas > targetRoas * ROAS_OVERSHOOT_MULT) {
+      signals.push({
+        type: 'ADJUST_BUDGET',
+        priority: 'LOW',
+        campaignId: c.campaignId,
+        campaignName: c.campaignName,
+        target: c.campaignName,
+        metric: 'roas',
+        currentValue: roas,
+        thresholdValue: targetRoas,
+        appliedRule: '목표 ROAS',
+        reason: `ROAS ${roas}% 로 목표 ${targetRoas}% 초과 달성 — 예산 증액 검토.`,
+      })
+    }
+  }
+
+  return signals
 }
 
 /**
@@ -270,5 +370,6 @@ export async function buildAnalysisContext(
     recentMemos,
     campaignMetas,
     activeRules: activeRulesRaw,
+    deterministicSignals: evaluateSignals(campaigns, campaignTargets, inefficientKeywords),
   }
 }
