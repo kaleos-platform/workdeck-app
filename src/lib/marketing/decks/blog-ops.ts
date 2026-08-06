@@ -5,7 +5,7 @@ export const blogOpsLanding: DeckLandingContent = {
   seo: {
     title: '블로그 운영 — 소재 기획부터 포스팅·채널 배포까지',
     description:
-      '상품 정보를 기반으로 블로그 소재를 기획하고, 포스팅을 제작해 여러 채널에 배포합니다. Workdeck 블로그 운영 Deck으로 반복되는 블로그 마케팅 업무를 체계화하세요.',
+      '상품 정보를 기반으로 블로그 소재를 기획하고, 포스팅을 제작해 여러 채널에 배포합니다. Workdeck 블로그 운영으로 반복되는 블로그 마케팅 업무를 체계화하세요.',
     keywords: [
       '블로그 운영',
       '블로그 마케팅',

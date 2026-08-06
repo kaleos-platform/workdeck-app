@@ -29,13 +29,13 @@ export function MarketingFooter() {
               <span className="font-bold">Workdeck</span>
             </div>
             <p className="text-sm break-keep text-muted-foreground">
-              여러 비즈니스 업무를 deck으로 골라 사용하는 올인원 워크스페이스
+              여러 비즈니스 업무를 필요한 것만 골라 쓰는 올인원 워크스페이스
             </p>
           </div>
 
-          {/* Deck 링크 */}
+          {/* 덱 링크 */}
           <div>
-            <h3 className="mb-3 text-sm font-semibold">Deck</h3>
+            <h3 className="mb-3 text-sm font-semibold">덱</h3>
             <ul className="space-y-2">
               {MARKETING_DECK_SLUGS.map((slug) => (
                 <li key={slug}>

@@ -13,15 +13,15 @@ export function generateMetadata(): Metadata {
   return buildMarketingMetadata({
     title: 'Workdeck — 여러 비즈니스 업무를 하나의 워크스페이스로',
     description:
-      '쿠팡 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영까지 — 필요한 업무를 deck으로 골라 쓰는 올인원 비즈니스 워크스페이스, Workdeck.',
+      '쿠팡 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영까지 — 필요한 업무만 골라 쓰는 올인원 비즈니스 워크스페이스, Workdeck.',
     path: '/',
     keywords: ['Workdeck', '비즈니스 워크스페이스', '이커머스 운영 툴', '쿠팡 광고 분석'],
   })
 }
 
 const trustPoints = [
-  '현재 전 deck 베타 기간 동안 무료로 이용 가능',
-  '필요한 deck만 골라서 사용 — 강제 번들 없음',
+  '베타 기간 동안 모든 업무를 무료로 이용 가능',
+  '필요한 업무만 골라서 사용 — 강제 번들 없음',
   '실제 셀러·운영팀 워크플로우를 기반으로 설계',
 ]
 
@@ -42,8 +42,7 @@ export default function HomePage() {
           </h1>
           <p className="mx-auto max-w-2xl text-lg break-keep text-muted-foreground sm:text-xl">
             Workdeck은 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영 같은
-            비즈니스 업무를 &lsquo;deck&rsquo; 단위로 골라 사용하며 목표를 달성하는
-            워크스페이스입니다.
+            비즈니스 업무를 필요한 것만 골라 쓰며 목표를 달성하는 워크스페이스입니다.
           </p>
           <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
             <Link href={buildAppUrl('/signup')}>
@@ -61,13 +60,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Deck 그리드 */}
+      {/* 덱 그리드 */}
       <section className="border-t bg-muted/30 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 space-y-3 text-center">
-            <h2 className="text-2xl font-bold break-keep sm:text-3xl">필요한 deck만 골라 쓰세요</h2>
+            <h2 className="text-2xl font-bold break-keep sm:text-3xl">필요한 업무만 골라 쓰세요</h2>
             <p className="mx-auto max-w-2xl break-keep text-muted-foreground">
-              6개 deck 중 지금 필요한 업무부터 시작하고, 필요해지면 언제든 다른 deck을 추가하세요.
+              6개 업무 중 지금 필요한 것부터 시작하고, 필요해지면 언제든 추가하세요.
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -126,7 +125,9 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold break-keep sm:text-3xl">
             지금 바로 워크스페이스를 만들어보세요
           </h2>
-          <p className="text-lg break-keep text-white/90">베타 기간 동안 모든 deck이 무료입니다.</p>
+          <p className="text-lg break-keep text-white/90">
+            베타 기간 동안 모든 업무를 무료로 이용할 수 있습니다.
+          </p>
           <Link href={buildAppUrl('/signup')}>
             <Button size="lg" variant="secondary" className="gap-2">
               무료로 시작하기

@@ -5,7 +5,7 @@ export const salesContentLanding: DeckLandingContent = {
   seo: {
     title: '세일즈 콘텐츠 — 브랜드 맞춤 콘텐츠 기획부터 배포까지',
     description:
-      '상품·타겟 페르소나·브랜드 프로필을 등록하면 콘텐츠 기획부터 제작, 채널 배포, 성과 분석까지 이어집니다. Workdeck 세일즈 콘텐츠 Deck으로 마케팅 콘텐츠 운영을 체계화하세요.',
+      '상품·타겟 페르소나·브랜드 프로필을 등록하면 콘텐츠 기획부터 제작, 채널 배포, 성과 분석까지 이어집니다. Workdeck 세일즈 콘텐츠로 마케팅 콘텐츠 운영을 체계화하세요.',
     keywords: [
       '세일즈 콘텐츠',
       '콘텐츠 마케팅',
