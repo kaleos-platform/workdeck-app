@@ -88,13 +88,12 @@ function roundUpQty(qty: number, roundUnit: number): number {
 
 /**
  * 레이어드 발주 최종 분배.
- * 1) 로켓/직접 gross를 합산하고 전체 재고·입고예정을 1회 차감한다.
- * 2) 합산 net 수량을 발주 단위로 반올림한다.
- * 3) 반올림된 최종 수량을 로켓그로스 입고 필요분과 나머지로 분배한다.
+ * 1) 연동 위치와 나머지 위치의 부족분을 각각 계산한다.
+ * 2) 두 위치 부족분을 합산한 뒤 발주 단위로 반올림한다.
+ * 3) 연동 위치 부족분은 최종 발주에 먼저 반영하고, 반올림으로 늘어난 잔여분은 나머지 수량에 더한다.
  *
- * linkedLocationQty는 로켓그로스 위치의 현재고·입고예정을 먼저 차감한 필요량이다.
- * 안전재고는 전체 최종수량에는 1회만 반영하고, 연동 위치 입고 필요량에는 호출부가
- * 로켓그로스 판매 비중으로 배분한 안전재고만 반영할 수 있다.
+ * 전체 재고를 한 번에 차감하면 일반 위치 재고가 로켓그로스 부족분을 상쇄해
+ * 연동 위치 입고 필요 수량이 최종 발주에 반영되지 않는다. 위치별 부족분 분리가 핵심이다.
  */
 export function computeLayeredRoundedSplit(p: {
   rocketGross: number
@@ -112,17 +111,21 @@ export function computeLayeredRoundedSplit(p: {
   finalQty: number
   rawFinalQty: number
 } {
-  const rawFinalQty = Math.max(
-    0,
-    Math.ceil(p.rocketGross + p.directGross + p.safetyStockQty - p.totalPlannedStock)
-  )
-  const finalQty = roundUpQty(rawFinalQty, p.roundUnit)
   const linkedSafetyStockQty = p.linkedLocationSafetyStockQty ?? p.safetyStockQty
+  const remainingSafetyStockQty = Math.max(0, p.safetyStockQty - linkedSafetyStockQty)
+  const remainingPlannedStock = Math.max(0, p.totalPlannedStock - p.rocketPlannedStock)
+
   const linkedLocationNeedQty = Math.max(
     0,
     Math.ceil(p.rocketGross + linkedSafetyStockQty - p.rocketPlannedStock)
   )
-  const linkedLocationQty = Math.min(finalQty, linkedLocationNeedQty)
+  const remainingNeedQty = Math.max(
+    0,
+    Math.ceil(p.directGross + remainingSafetyStockQty - remainingPlannedStock)
+  )
+  const rawFinalQty = linkedLocationNeedQty + remainingNeedQty
+  const finalQty = roundUpQty(rawFinalQty, p.roundUnit)
+  const linkedLocationQty = linkedLocationNeedQty
   return {
     linkedLocationNeedQty,
     linkedLocationQty,

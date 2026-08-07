@@ -117,9 +117,9 @@ describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)'
       roundUnit: 10,
     })
 
-    // raw = ceil(23.2 + 8.1 + 5 - 10) = 27 → 10단위 반올림 = 30
-    // 로켓 필요 = ceil(23.2 + 5 - 4) = 25 → 최종 30 중 25를 로켓, 5를 나머지로 분배
-    expect(split.rawFinalQty).toBe(27)
+    // raw = 로켓 부족 ceil(23.2 + 5 - 4)=25 + 나머지 부족 ceil(8.1 - 6)=3 → 28 → 10단위 반올림 = 30
+    // 일반 위치 재고 6은 나머지 수요에만 반영되고, 로켓그로스 부족분 25를 상쇄하지 않는다.
+    expect(split.rawFinalQty).toBe(28)
     expect(split.finalQty).toBe(30)
     expect(split.linkedLocationNeedQty).toBe(25)
     expect(split.linkedLocationQty).toBe(25)
@@ -145,7 +145,7 @@ describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)'
     expect(split.remainingQty).toBe(45)
   })
 
-  test('로켓 필요분이 반올림된 최종수량보다 크면 최종수량까지만 배정한다', () => {
+  test('일반 위치 재고가 많아도 로켓그로스 입고 필요 수량은 최종 발주에 반영한다', () => {
     const split = computeLayeredRoundedSplit({
       rocketGross: 50,
       directGross: 0,
@@ -155,10 +155,11 @@ describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)'
       roundUnit: 10,
     })
 
-    // 전체로는 7개만 필요해 10개 발주. 로켓 raw 필요가 50이어도 발주 총량 10을 초과 배정하지 않는다.
-    expect(split.finalQty).toBe(10)
+    // 기존 합산 차감식이면 전체로는 7개만 필요하다고 보고 10개만 발주했다.
+    // 수정 후에는 일반 위치 재고 43이 로켓그로스 부족분 50을 상쇄하지 못하므로 50개가 반영된다.
+    expect(split.finalQty).toBe(50)
     expect(split.linkedLocationNeedQty).toBe(50)
-    expect(split.linkedLocationQty).toBe(10)
+    expect(split.linkedLocationQty).toBe(50)
     expect(split.remainingQty).toBe(0)
   })
 })

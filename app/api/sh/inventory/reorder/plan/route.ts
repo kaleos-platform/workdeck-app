@@ -655,9 +655,8 @@ export async function POST(req: NextRequest) {
 
   // ── 5.6) 위저드 편집분(optionFinalOverrides) 반영 — 세트 역산·totalFinalQty·persist 정합 ──
   // 옵션별 최종수량 수동 지정(≥0). override 없는 옵션은 기존 계산값 유지.
-  // 강제 floor(최종≥baseline) 없음 — 레이어드 최종은 재고 차감 후 net이라 재고가 수요를 덮으면
-  // final < baseline 이 정상(과발주 방지). Phase 2 입고 분배는 min/max 로 분할한다:
-  //   로켓 세트분 = min(final, baseline), 추가분(위치 입고) = max(0, final − baseline).
+  // 강제 floor(최종≥baseline) 없음 — 레이어드 최종은 연동 위치 부족분과 나머지 위치 부족분을
+  // 분리 계산해 합산한다. 일반 위치 재고가 로켓그로스 부족분을 상쇄하면 안 된다.
   if (body.optionFinalOverrides) {
     if (!optionFinalQtyOverride) optionFinalQtyOverride = new Map<string, number>()
     for (const it of itemInputs) {
