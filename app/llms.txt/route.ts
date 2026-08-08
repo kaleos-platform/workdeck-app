@@ -18,11 +18,11 @@ function buildLlmsTxt(): string {
   )
   lines.push('')
   lines.push(
-    '현재 전 덱 베타 기간 동안 무료로 이용할 수 있으며, 필요한 덱만 골라 쓰고 언제든 추가할 수 있습니다.'
+    '현재 모든 업무가 베타 기간 동안 무료이며, 필요한 업무만 골라 쓰고 언제든 추가할 수 있습니다.'
   )
   lines.push('')
 
-  lines.push('## 덱')
+  lines.push('## 업무')
   lines.push('')
   for (const slug of MARKETING_DECK_SLUGS) {
     const meta = DECK_META[slug]
@@ -42,7 +42,7 @@ function buildLlmsTxt(): string {
 
   lines.push('## Pricing')
   lines.push('')
-  lines.push('현재 전 덱 베타 무료. 아래는 정식 전환 시 예정가(월, VAT 포함)입니다.')
+  lines.push('현재 모든 업무 베타 무료. 아래는 정식 전환 시 예정가(월, VAT 포함)입니다.')
   lines.push('')
   for (const row of DECK_PRICING_ROWS) {
     lines.push(

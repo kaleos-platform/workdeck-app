@@ -495,7 +495,7 @@ export function Sidebar({
               <RailLink
                 href="/my-deck"
                 icon={Home}
-                label="My Deck 홈"
+                label="내 워크덱 홈"
                 isActive={pathname === '/my-deck'}
                 collapsed={collapsed}
               />
@@ -527,7 +527,7 @@ export function Sidebar({
                     <p className="text-xs font-semibold tracking-wide text-zinc-200 uppercase">
                       {workspaceName}
                     </p>
-                    <p className="mt-1 text-[11px] text-zinc-500">사용 중인 Deck 빠른 진입</p>
+                    <p className="mt-1 text-[11px] text-zinc-500">사용 중인 업무 빠른 진입</p>
                   </div>
                   {isMyDeckMode && activeDecks.length > 0 ? (
                     <div className="space-y-1">
@@ -552,7 +552,7 @@ export function Sidebar({
                     </div>
                   ) : (
                     <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
-                      사용 중인 Deck이 없습니다
+                      사용 중인 업무가 없습니다
                     </p>
                   )}
                 </section>

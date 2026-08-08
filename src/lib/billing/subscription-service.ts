@@ -64,11 +64,11 @@ async function loadProducts(deckIds: string[]) {
     where: { id: { in: deckIds }, isActive: true },
   })
   if (products.length !== deckIds.length) {
-    throw new BillingError('과금 대상이 아닌 deck이 포함되어 있습니다', 400)
+    throw new BillingError('과금 대상이 아닌 업무가 포함되어 있습니다', 400)
   }
   const paid = products.filter((p) => p.pricingMode === 'SUBSCRIPTION')
   if (paid.length !== products.length) {
-    throw new BillingError('무료 베타 deck은 구독 대상이 아닙니다', 400)
+    throw new BillingError('무료 베타 업무는 구독 대상이 아닙니다', 400)
   }
   return products
 }
@@ -133,7 +133,7 @@ export async function registerBillingMethod(spaceId: string, authKey: string) {
 
 // 구독 시작(또는 만료 상태에서 재시작): deck 선택 → 첫 결제 즉시 승인 → ACTIVE
 export async function startSubscription(spaceId: string, deckIds: string[]) {
-  if (deckIds.length === 0) throw new BillingError('구독할 deck을 선택하세요', 400)
+  if (deckIds.length === 0) throw new BillingError('구독할 업무를 선택하세요', 400)
   const products = await loadProducts(deckIds)
   const method = await loadDefaultMethod(spaceId)
   const provider = getBillingProvider()
@@ -144,7 +144,7 @@ export async function startSubscription(spaceId: string, deckIds: string[]) {
   })
   if (!subscription) throw new BillingError('결제수단 등록이 선행되어야 합니다', 400)
   if (subscription.status === 'ACTIVE' || subscription.status === 'PAST_DUE') {
-    throw new BillingError('이미 활성 구독이 있습니다 — deck 추가를 사용하세요', 409)
+    throw new BillingError('이미 활성 구독이 있습니다 — 업무 추가를 사용하세요', 409)
   }
 
   const now = new Date()
@@ -245,7 +245,7 @@ export async function addDeck(spaceId: string, deckAppId: string) {
   const existing = subscription.items.find(
     (i) => i.type === 'DECK' && i.deckAppId === deckAppId && i.status !== 'ENDED'
   )
-  if (existing?.status === 'ACTIVE') throw new BillingError('이미 구독 중인 deck입니다', 409)
+  if (existing?.status === 'ACTIVE') throw new BillingError('이미 구독 중인 업무입니다', 409)
   if (existing?.status === 'CANCEL_AT_PERIOD_END') {
     // 해제 예약 취소 = 재활성 (기간말까지 이미 결제된 상태라 추가 결제 없음)
     await prisma.subscriptionItem.update({
@@ -346,7 +346,7 @@ export async function cancelDeck(spaceId: string, deckAppId: string) {
   const item = subscription.items.find(
     (i) => i.type === 'DECK' && i.deckAppId === deckAppId && i.status === 'ACTIVE'
   )
-  if (!item) throw new BillingError('구독 중인 deck이 아닙니다', 404)
+  if (!item) throw new BillingError('구독 중인 업무가 아닙니다', 404)
 
   await prisma.subscriptionItem.update({
     where: { id: item.id },

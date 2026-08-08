@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     if (e instanceof BillingError) return errorResponse(e.message, e.status)
     console.error('[billing] addDeck 실패', e)
-    return errorResponse('deck 추가에 실패했습니다', 500)
+    return errorResponse('업무 추가에 실패했습니다', 500)
   }
 }
 
@@ -49,6 +49,6 @@ export async function DELETE(request: NextRequest) {
   } catch (e) {
     if (e instanceof BillingError) return errorResponse(e.message, e.status)
     console.error('[billing] cancelDeck 실패', e)
-    return errorResponse('deck 해제에 실패했습니다', 500)
+    return errorResponse('업무 해제에 실패했습니다', 500)
   }
 }

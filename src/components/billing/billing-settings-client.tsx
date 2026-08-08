@@ -300,19 +300,19 @@ export function BillingSettingsClient({
         })
         const json = await res.json()
         if (!res.ok) {
-          setBanner({ type: 'error', message: json?.error ?? 'deck 추가에 실패했습니다' })
+          setBanner({ type: 'error', message: json?.error ?? '업무 추가에 실패했습니다' })
           return
         }
         const { prorated, amount } = json as { prorated: boolean; amount: number }
         setBanner({
           type: 'success',
           message: prorated
-            ? `deck이 추가되었습니다 (일할 결제 ${formatWon(amount)})`
-            : 'deck 구독이 재개되었습니다',
+            ? `추가되었습니다 (일할 결제 ${formatWon(amount)})`
+            : '구독이 재개되었습니다',
         })
         await load()
       } catch {
-        setBanner({ type: 'error', message: 'deck 추가에 실패했습니다' })
+        setBanner({ type: 'error', message: '업무 추가에 실패했습니다' })
       } finally {
         setDeckBusyId(null)
       }
@@ -332,7 +332,7 @@ export function BillingSettingsClient({
         })
         const json = await res.json()
         if (!res.ok) {
-          setBanner({ type: 'error', message: json?.error ?? 'deck 해제에 실패했습니다' })
+          setBanner({ type: 'error', message: json?.error ?? '해제에 실패했습니다' })
           return
         }
         const { effectiveAt } = json as { effectiveAt: string | null }
@@ -342,7 +342,7 @@ export function BillingSettingsClient({
         })
         await load()
       } catch {
-        setBanner({ type: 'error', message: 'deck 해제에 실패했습니다' })
+        setBanner({ type: 'error', message: '해제에 실패했습니다' })
       } finally {
         setDeckBusyId(null)
       }
@@ -425,7 +425,7 @@ export function BillingSettingsClient({
           <CardHeader className="flex flex-row items-start justify-between gap-4">
             <div>
               <CardTitle>구독 상태</CardTitle>
-              <CardDescription>워크덱 deck 이용 현황을 확인하세요.</CardDescription>
+              <CardDescription>워크덱 업무 이용 현황을 확인하세요.</CardDescription>
             </div>
             {data.subscription?.exemptFlag && <Badge variant="secondary">무료 이용 중</Badge>}
           </CardHeader>
@@ -507,12 +507,12 @@ export function BillingSettingsClient({
           )}
         </Card>
 
-        {/* deck 목록 카드 그리드 */}
+        {/* 업무 목록 카드 그리드 */}
         <Card>
           <CardHeader>
-            <CardTitle>Deck별 구독</CardTitle>
+            <CardTitle>업무별 구독</CardTitle>
             <CardDescription>
-              사용 중인 deck과 요금을 확인하고 관리하세요. 표시 금액은 공급가이며 VAT는 별도입니다.
+              사용 중인 업무와 요금을 확인하고 관리하세요. 표시 금액은 공급가이며 VAT는 별도입니다.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -658,7 +658,7 @@ export function BillingSettingsClient({
           <Card>
             <CardHeader>
               <CardTitle>구독 시작</CardTitle>
-              <CardDescription>이용할 deck을 선택하고 구독을 시작하세요.</CardDescription>
+              <CardDescription>이용할 업무를 선택하고 구독을 시작하세요.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {selectedDecks.length > 0 && (

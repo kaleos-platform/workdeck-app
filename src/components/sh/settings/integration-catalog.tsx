@@ -33,7 +33,7 @@ export function IntegrationCatalog() {
       <CardHeader>
         <CardTitle className="text-base">연동 가능 소스</CardTitle>
         <p className="text-sm text-muted-foreground">
-          다른 Deck·외부 데이터를 워크덱 기능과 연결합니다.
+          다른 업무·외부 데이터를 워크덱 기능과 연결합니다.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
