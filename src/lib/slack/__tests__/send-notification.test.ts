@@ -40,7 +40,7 @@ describe('sendDeckNotification', () => {
     process.env = { ...OLD_ENV }
   })
 
-  it('토글 off면 신규·레거시 아무것도 발송하지 않고 false', async () => {
+  it('토글 off면 아무것도 발송하지 않고 false', async () => {
     // 레거시 env가 설정돼 있어도 발송 안 됨 — 토글이 authoritative.
     process.env.SLACK_BOT_TOKEN = 'xoxb-legacy'
     process.env.SLACK_CHANNEL_ID = 'C-legacy'
@@ -58,7 +58,7 @@ describe('sendDeckNotification', () => {
     expect(postMessage).not.toHaveBeenCalled()
   })
 
-  it('채널 미등록 + 레거시 설정 시 레거시로만 발송', async () => {
+  it('채널 미등록이면 레거시 env가 설정돼 있어도 발송하지 않음', async () => {
     process.env.SLACK_BOT_TOKEN = 'xoxb-legacy'
     process.env.SLACK_CHANNEL_ID = 'C-legacy'
     resolveDeckNotifyEnabled.mockResolvedValue(true)
@@ -71,20 +71,16 @@ describe('sendDeckNotification', () => {
       text: 't',
     })
 
-    expect(result).toBe(true)
-    expect(postMessage).toHaveBeenCalledTimes(1)
-    expect(postMessage).toHaveBeenCalledWith(
-      'xoxb-legacy',
-      expect.objectContaining({ channel: 'C-legacy' })
-    )
+    expect(result).toBe(false)
+    expect(postMessage).not.toHaveBeenCalled()
   })
 
-  it('신규 경로와 레거시 채널이 같으면 레거시 발송 생략(dedup)', async () => {
+  it('레거시 env가 설정돼 있어도 workdeck 봇으로 1건만 발송(에밀리 이중 발송 회귀)', async () => {
     process.env.SLACK_BOT_TOKEN = 'xoxb-legacy'
-    process.env.SLACK_CHANNEL_ID = 'C-same'
+    process.env.SLACK_CHANNEL_ID = 'C-legacy'
     resolveDeckNotifyEnabled.mockResolvedValue(true)
     resolveSlackNotificationTarget.mockResolvedValue({
-      channelId: 'C-same',
+      channelId: 'C-new',
       botToken: 'enc',
       botTokenIv: 'iv',
     })
@@ -100,28 +96,8 @@ describe('sendDeckNotification', () => {
     expect(postMessage).toHaveBeenCalledTimes(1)
     expect(postMessage).toHaveBeenCalledWith(
       'xoxb-decrypted',
-      expect.objectContaining({ channel: 'C-same' })
+      expect.objectContaining({ channel: 'C-new' })
     )
-  })
-
-  it('신규·레거시 채널이 다르면 둘 다 발송', async () => {
-    process.env.SLACK_BOT_TOKEN = 'xoxb-legacy'
-    process.env.SLACK_CHANNEL_ID = 'C-legacy'
-    resolveDeckNotifyEnabled.mockResolvedValue(true)
-    resolveSlackNotificationTarget.mockResolvedValue({
-      channelId: 'C-new',
-      botToken: 'enc',
-      botTokenIv: 'iv',
-    })
-
-    await sendDeckNotification({
-      workspaceId: 'ws1',
-      deckKey: 'coupang-ads',
-      blocks: [],
-      text: 't',
-    })
-
-    expect(postMessage).toHaveBeenCalledTimes(2)
   })
 
   it('예외는 흡수하고 false 반환(알림 실패가 전파되지 않음)', async () => {
@@ -162,9 +138,9 @@ describe('sendSystemNotification', () => {
     expect(postMessage).toHaveBeenCalledTimes(2)
   })
 
-  it('레거시 채널이 이미 발송 대상이면 레거시 중복 생략', async () => {
+  it('레거시 env가 설정돼 있어도 등록 채널로만 발송(에밀리 이중 발송 회귀)', async () => {
     process.env.SLACK_BOT_TOKEN = 'xoxb-legacy'
-    process.env.SLACK_CHANNEL_ID = 'C1'
+    process.env.SLACK_CHANNEL_ID = 'C-legacy'
     findManyChannel.mockResolvedValue([
       { channelId: 'C1', installation: { botToken: 'e1', botTokenIv: 'i1' } },
     ])
@@ -172,19 +148,20 @@ describe('sendSystemNotification', () => {
     await sendSystemNotification({ blocks: [], text: 't' })
 
     expect(postMessage).toHaveBeenCalledTimes(1)
+    expect(postMessage).toHaveBeenCalledWith(
+      'xoxb-decrypted',
+      expect.objectContaining({ channel: 'C1' })
+    )
   })
 
-  it('채널 없음 + 레거시 설정 시 레거시로만 발송', async () => {
+  it('등록 채널이 없으면 레거시 env가 있어도 발송하지 않음', async () => {
     process.env.SLACK_BOT_TOKEN = 'xoxb-legacy'
     process.env.SLACK_CHANNEL_ID = 'C-legacy'
     findManyChannel.mockResolvedValue([])
 
     const result = await sendSystemNotification({ blocks: [], text: 't' })
 
-    expect(result).toBe(true)
-    expect(postMessage).toHaveBeenCalledWith(
-      'xoxb-legacy',
-      expect.objectContaining({ channel: 'C-legacy' })
-    )
+    expect(result).toBe(false)
+    expect(postMessage).not.toHaveBeenCalled()
   })
 })
