@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 
 import { ImportsView } from '@/components/finance/imports-view'
+import { MappingPresetsManager } from '@/components/finance/mapping-presets-manager'
 
 export default function FinanceImportsPage() {
   return (
@@ -14,6 +15,7 @@ export default function FinanceImportsPage() {
       <Suspense>
         <ImportsView />
       </Suspense>
+      <MappingPresetsManager />
     </div>
   )
 }

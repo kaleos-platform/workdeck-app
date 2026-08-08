@@ -32,13 +32,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-routes'
+import { FINANCE_IMPORTS_PATH, FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-routes'
 
 import { MappingEditor, SampleTable } from './mapping-editor'
 import { AccountRegisterDialog } from './account-register-dialog'
 import {
   NONE_ACCOUNT,
   findMatchedAccount,
+  isMappingDirty,
   isMappingValid,
   type Account,
   type FinKind,
@@ -81,6 +82,11 @@ export function FileItemCard({
     : null
   const validation = preview ? isMappingValid(item.mapping, item.kind) : { ok: false as const }
   const preamble = preview?.preview.preamble
+  const matchedPreset = preview?.matchedPreset ?? null
+  // 기억된 규칙과 매핑이 달라졌는지 — 저장하지 않으면 다음 업로드에 옛 매핑이 되살아난다
+  const mappingDirty = preview
+    ? isMappingDirty(item.mapping, preview.preview.headers, matchedPreset)
+    : false
 
   const canEdit = !batchLocked && (item.status === 'matched' || item.status === 'needs_review')
 
@@ -416,14 +422,22 @@ export function FileItemCard({
 
           {/* 매칭된 프리셋 배지 */}
           {preview.matchedPreset && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
                 className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-400"
               >
                 기억된 규칙: {preview.matchedPreset.name}
               </Badge>
-              <span className="text-xs text-muted-foreground">컬럼 매핑이 자동 적용되었습니다</span>
+              <span className="text-xs text-muted-foreground">
+                파일 형식이 같아 컬럼 매핑이 자동 적용되었습니다
+              </span>
+              <Link
+                href={FINANCE_IMPORTS_PATH}
+                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              >
+                규칙 관리
+              </Link>
             </div>
           )}
 
@@ -465,21 +479,29 @@ export function FileItemCard({
             </p>
           )}
 
-          {/* 이 규칙 기억 */}
+          {/* 이 규칙 기억 / 갱신 */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Switch
                 id={`save-preset-${item.id}`}
                 checked={item.savePreset}
                 onCheckedChange={(v) => onChange(item.id, { savePreset: v })}
               />
               <Label htmlFor={`save-preset-${item.id}`} className="cursor-pointer text-sm">
-                이 규칙 기억
+                {matchedPreset ? '이 형식의 규칙 갱신' : '이 규칙 기억'}
               </Label>
               <span className="text-xs text-muted-foreground">
-                — 다음에 같은 파일 형식을 업로드할 때 자동 적용됩니다
+                {matchedPreset
+                  ? `— 수정한 매핑을 "${matchedPreset.name}" 규칙에 저장합니다`
+                  : '— 다음에 같은 파일 형식을 업로드할 때 자동 적용됩니다'}
               </span>
             </div>
+            {!item.savePreset && mappingDirty && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                수정한 컬럼 매핑이 저장되지 않습니다 — 다음 업로드에는 기존 규칙이 그대로
+                적용됩니다
+              </p>
+            )}
             {item.savePreset && (
               <div className="flex items-center gap-2">
                 <Label className="text-xs whitespace-nowrap text-muted-foreground">규칙 이름</Label>

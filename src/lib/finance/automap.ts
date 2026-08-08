@@ -156,6 +156,8 @@ export type PresetLike = {
   kind: FinKind
   mapping: unknown
   defaultAccountId?: string | null
+  /** 동점 tie-break용(최근 갱신 우선). 없으면 0으로 취급. */
+  updatedAt?: Date | string | null
 }
 
 function pairsFromMapping(mapping: unknown): MappingPair[] {
@@ -169,21 +171,47 @@ function pairsFromMapping(mapping: unknown): MappingPair[] {
   )
 }
 
+function updatedAtMs(v: PresetLike['updatedAt']): number {
+  if (!v) return 0
+  const t = v instanceof Date ? v.getTime() : Date.parse(v)
+  return Number.isFinite(t) ? t : 0
+}
+
 /**
  * 저장된 프리셋 중 현재 파일 헤더와 가장 잘 맞는 것을 고른다.
- * 점수 = 프리셋 headerName 중 현재 헤더에 존재하는 비율. 0.6 미만이면 매칭 없음.
+ * 점수 = 프리셋의 고유 headerName 중 현재 헤더에 존재하는 비율. 0.6 미만이면 매칭 없음.
+ *
+ * headerName은 정규화 기준으로 중복 제거한다 — 적요/내용처럼 한 필드에 다중 컬럼을
+ * 매핑한 프리셋이 분모 팽창으로 불리해지지 않게 한다.
+ *
+ * 동점 처리(입력 순서에 의존하지 않는 결정적 우선순위):
+ *   1) 점수 높은 것  2) 매칭된 헤더 수 많은 것  3) 최근 갱신  4) id 사전순
+ * DB 조회는 ORDER BY 없이는 행 순서를 보장하지 않으므로 tie-break가 필수다
+ * (같은 파일을 올려도 요청마다 다른 프리셋이 적용되던 원인).
  */
 export function findBestPreset(presets: PresetLike[], headers: string[]): PresetLike | null {
   const have = new Set(headers.map(norm))
   let best: PresetLike | null = null
   let bestScore = 0
+  let bestMatched = 0
   for (const p of presets) {
-    const pairs = pairsFromMapping(p.mapping)
-    if (pairs.length === 0) continue
-    const matched = pairs.filter((pr) => have.has(norm(pr.headerName))).length
-    const score = matched / pairs.length
-    if (score > bestScore) {
+    const names = new Set(pairsFromMapping(p.mapping).map((pr) => norm(pr.headerName)))
+    if (names.size === 0) continue
+    let matched = 0
+    for (const n of names) if (have.has(n)) matched++
+    const score = matched / names.size
+    if (score === 0) continue
+    const better =
+      best === null ||
+      score > bestScore ||
+      (score === bestScore &&
+        (matched > bestMatched ||
+          (matched === bestMatched &&
+            (updatedAtMs(p.updatedAt) > updatedAtMs(best.updatedAt) ||
+              (updatedAtMs(p.updatedAt) === updatedAtMs(best.updatedAt) && p.id < best.id)))))
+    if (better) {
       bestScore = score
+      bestMatched = matched
       best = p
     }
   }
