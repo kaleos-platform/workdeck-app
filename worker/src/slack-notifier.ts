@@ -212,12 +212,36 @@ export async function notifyCollectionDone(params: {
   )
 }
 
+// 제안 유형 한국어 라벨
+const SUGGESTION_TYPE_LABEL: Record<string, string> = {
+  REMOVE_KEYWORD: '키워드 제거',
+  ADJUST_BID: '입찰가 조정',
+  PAUSE_CAMPAIGN: '캠페인 중지',
+  ADJUST_BUDGET: '예산 조정',
+}
+// 우선순위 이모지 + 정렬 순위
+const PRIORITY_EMOJI: Record<string, string> = {
+  HIGH: ':red_circle:',
+  MEDIUM: ':large_yellow_circle:',
+  LOW: ':white_circle:',
+}
+const PRIORITY_RANK: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 }
+
+// Slack에 실을 상위 제안 최대 개수 (Block Kit 3000자/50블록 한계 대비 보수적)
+const MAX_SLACK_SUGGESTIONS = 6
+
 /** 분석 완료 알림 */
 export async function notifyAnalysisDone(params: {
   summary: string
   suggestionCount: number
   campaignCount: number
   workspaceId?: string
+  topSuggestions?: Array<{
+    type: string
+    priority: string
+    target: string
+    reason: string
+  }>
 }): Promise<void> {
   const analysisUrl = process.env.WORKDECK_APP_URL
     ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/analysis`
@@ -229,8 +253,29 @@ export async function notifyAnalysisDone(params: {
     section(`*상태*\n완료`, `*캠페인*\n${params.campaignCount}개`),
     section(`*제안*\n${params.suggestionCount}개`),
     section(params.summary),
-    section(`<${analysisUrl}|:mag: 광고 분석 보기>`),
   ]
+
+  // 상위 제안 본문 (우선순위 순, 상위 N건 + 나머지 개수)
+  const sug = (params.topSuggestions ?? [])
+    .slice()
+    .sort((a, b) => (PRIORITY_RANK[a.priority] ?? 3) - (PRIORITY_RANK[b.priority] ?? 3))
+  if (sug.length > 0) {
+    const shown = sug.slice(0, MAX_SLACK_SUGGESTIONS)
+    const lines = shown.map((s) => {
+      const emoji = PRIORITY_EMOJI[s.priority] ?? ':white_circle:'
+      const label = SUGGESTION_TYPE_LABEL[s.type] ?? s.type
+      const reason = s.reason.length > 140 ? s.reason.slice(0, 137) + '…' : s.reason
+      return `${emoji} *${label}* — ${s.target}\n${reason}`
+    })
+    if (sug.length > MAX_SLACK_SUGGESTIONS) {
+      lines.push(`_외 ${sug.length - MAX_SLACK_SUGGESTIONS}건은 아래에서 확인_`)
+    }
+    blocks.push(divider())
+    blocks.push(section('*주요 제안*'))
+    blocks.push(section(lines.join('\n\n')))
+  }
+
+  blocks.push(section(`<${analysisUrl}|:mag: 광고 분석 보기>`))
 
   await postMessage(
     blocks,
