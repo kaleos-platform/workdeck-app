@@ -12,7 +12,7 @@ export function generateMetadata(): Metadata {
   return buildMarketingMetadata({
     title: '소개 — Workdeck',
     description:
-      'Workdeck은 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영을 필요한 것만 골라 쓰는 올인원 비즈니스 워크스페이스입니다.',
+      'Workdeck은 쿠팡 광고 관리, 브랜드 운영, 재무 관리, 모집 관리, 세일즈 콘텐츠를 필요한 것만 골라 쓰는 올인원 비즈니스 워크스페이스입니다.',
     path: '/about',
     keywords: ['Workdeck 소개', 'Workdeck 회사'],
   })
@@ -49,7 +49,7 @@ export default function AboutPage() {
           <div className="space-y-3">
             <h2 className="text-2xl font-bold break-keep">앞으로의 방향</h2>
             <p className="leading-relaxed break-keep text-muted-foreground">
-              지금은 광고 자동화·브랜드 운영·재무 관리·채용·세일즈 콘텐츠·블로그 운영 6개 업무를
+              지금은 쿠팡 광고 관리·브랜드 운영·재무 관리·모집 관리·세일즈 콘텐츠 5개 업무를
               베타로 운영하고 있으며, 사용자 워크플로우에 맞춰 새로운 업무를 계속 추가해 나갈
               계획입니다.
             </p>

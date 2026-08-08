@@ -13,7 +13,7 @@ export function generateMetadata(): Metadata {
   return buildMarketingMetadata({
     title: 'Workdeck — 여러 비즈니스 업무를 하나의 워크스페이스로',
     description:
-      '쿠팡 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영까지 — 필요한 업무만 골라 쓰는 올인원 비즈니스 워크스페이스, Workdeck.',
+      '쿠팡 광고 관리, 브랜드 운영, 재무 관리, 모집 관리, 세일즈 콘텐츠까지 — 필요한 업무만 골라 쓰는 올인원 비즈니스 워크스페이스, Workdeck.',
     path: '/',
     keywords: ['Workdeck', '비즈니스 워크스페이스', '이커머스 운영 툴', '쿠팡 광고 분석'],
   })
@@ -41,7 +41,7 @@ export default function HomePage() {
             </span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg break-keep text-muted-foreground sm:text-xl">
-            Workdeck은 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영 같은
+            Workdeck은 쿠팡 광고 관리, 브랜드 운영, 재무 관리, 모집 관리, 세일즈 콘텐츠 같은
             비즈니스 업무를 필요한 것만 골라 쓰며 목표를 달성하는 워크스페이스입니다.
           </p>
           <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">

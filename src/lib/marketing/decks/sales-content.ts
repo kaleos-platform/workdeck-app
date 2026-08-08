@@ -112,5 +112,5 @@ export const salesContentLanding: DeckLandingContent = {
     headline: '콘텐츠 기획부터 성과 분석까지, 한 곳에서',
     subcopy: '가입 후 상품과 페르소나를 등록하고 첫 콘텐츠를 기획해 보세요.',
   },
-  relatedDecks: ['blog-ops'],
+  relatedDecks: ['seller-hub'],
 }

@@ -532,7 +532,7 @@ export function BillingSettingsClient({
                         <div
                           className={cn(
                             'flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-gradient-to-br text-white',
-                            meta.gradient
+                            meta?.gradient ?? 'from-slate-400 to-slate-600'
                           )}
                         >
                           <Icon className="h-4 w-4" />

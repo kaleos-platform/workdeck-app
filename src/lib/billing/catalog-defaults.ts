@@ -17,5 +17,4 @@ export const DECK_CATALOG_DEFAULTS: DeckCatalogDefault[] = [
   { id: 'finance', name: '재무 관리', monthlyPrice: 19000 },
   { id: 'sales-content', name: '세일즈 콘텐츠', monthlyPrice: 14900 },
   { id: 'recruiting', name: '모집 관리', monthlyPrice: 14900 },
-  { id: 'blog-ops', name: '블로그 운영', monthlyPrice: 9900 },
 ]
