@@ -9,7 +9,11 @@ export default async function TemplatesPage() {
   if ('error' in resolved) redirect('/my-deck')
 
   const rows = await prisma.hiringDetailTemplate.findMany({
-    where: { OR: [{ spaceId: resolved.space.id }, { isSample: true }] },
+    // 샘플은 블록이 1개 이상인 것만 노출 — 어드민에서 만들다 만 빈 샘플이 고객 목록에 뜨는 것 방지.
+    // space 소유 템플릿은 무관(사용자가 만든 빈 템플릿도 지금처럼 노출).
+    where: {
+      OR: [{ spaceId: resolved.space.id }, { isSample: true, contents: { some: {} } }],
+    },
     orderBy: [{ isSample: 'asc' }, { updatedAt: 'desc' }],
     include: { _count: { select: { contents: true } } },
   })
