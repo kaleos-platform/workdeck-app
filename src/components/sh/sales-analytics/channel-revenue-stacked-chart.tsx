@@ -90,9 +90,10 @@ function ChannelTooltip({
         : formatOrders(v.orderCount)
 
   return (
-    <div className="max-h-[200px] min-w-[180px] space-y-1 overflow-y-auto rounded-md border bg-popover px-3 py-2 text-xs shadow-md">
+    <div className="min-w-[180px] space-y-1 rounded-md border bg-popover px-3 py-2 text-xs shadow-md">
       <p className="font-medium text-muted-foreground">{label}</p>
-      <div className="space-y-0.5 tabular-nums">
+      {/* 채널 행만 스크롤 — 합계는 항상 보이도록 스크롤 영역 밖에 둔다 */}
+      <div className="max-h-[168px] space-y-0.5 overflow-y-auto tabular-nums">
         {visibleRows.map((r) => (
           <p key={r.dc.id} className="flex justify-between gap-3">
             <span className="flex items-center gap-1.5">
@@ -105,11 +106,11 @@ function ChannelTooltip({
             <span>{valueText(r)}</span>
           </p>
         ))}
-        <p className="flex justify-between gap-3 border-t pt-0.5">
-          <span className="text-muted-foreground">합계</span>
-          <span className="font-semibold">{valueText(total)}</span>
-        </p>
       </div>
+      <p className="flex justify-between gap-3 border-t pt-1 tabular-nums">
+        <span className="text-muted-foreground">합계</span>
+        <span className="font-semibold">{valueText(total)}</span>
+      </p>
     </div>
   )
 }
