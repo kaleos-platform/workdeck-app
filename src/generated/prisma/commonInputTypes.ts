@@ -772,6 +772,40 @@ export type EnumProductListingStatusWithAggregatesFilter<$PrismaModel = never> =
   _max?: Prisma.NestedEnumProductListingStatusFilter<$PrismaModel>
 }
 
+export type EnumScResourceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceKind | Prisma.EnumScResourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel> | $Enums.ScResourceKind
+}
+
+export type EnumScResourceStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceStatus | Prisma.EnumScResourceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel> | $Enums.ScResourceStatus
+}
+
+export type EnumScResourceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceKind | Prisma.EnumScResourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceKindWithAggregatesFilter<$PrismaModel> | $Enums.ScResourceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel>
+}
+
+export type EnumScResourceStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceStatus | Prisma.EnumScResourceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceStatusWithAggregatesFilter<$PrismaModel> | $Enums.ScResourceStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel>
+}
+
 export type EnumAiGenerationStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.AiGenerationStatus | Prisma.EnumAiGenerationStatusFieldRefInput<$PrismaModel>
   in?: $Enums.AiGenerationStatus[] | Prisma.ListEnumAiGenerationStatusFieldRefInput<$PrismaModel>
@@ -2411,6 +2445,40 @@ export type NestedEnumProductListingStatusWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumProductListingStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumProductListingStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumScResourceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceKind | Prisma.EnumScResourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel> | $Enums.ScResourceKind
+}
+
+export type NestedEnumScResourceStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceStatus | Prisma.EnumScResourceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel> | $Enums.ScResourceStatus
+}
+
+export type NestedEnumScResourceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceKind | Prisma.EnumScResourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceKindWithAggregatesFilter<$PrismaModel> | $Enums.ScResourceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel>
+}
+
+export type NestedEnumScResourceStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceStatus | Prisma.EnumScResourceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceStatusWithAggregatesFilter<$PrismaModel> | $Enums.ScResourceStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumAiGenerationStatusFilter<$PrismaModel = never> = {

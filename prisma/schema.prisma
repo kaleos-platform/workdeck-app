@@ -460,6 +460,8 @@ model Space {
   salesContentJobs     SalesContentJob[]
   deploymentMetrics    DeploymentMetric[]
   improvementRules     ImprovementRule[]
+  salesContentOnboarding SalesContentOnboarding?
+  scOnboardingResources  ScOnboardingResource[]
 
   // ─── 재무 관리 Deck (Finance) ───
   finAccounts         FinAccount[]
@@ -2104,11 +2106,62 @@ model BrandProfile {
   shortDescription String?
   toneOfVoice      Json? // string[] (최대 3개)
   customFields     Json    @default("[]") // [{ key: string, value: string }]
+  logoUrl          String?
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─── Sales Content Deck 온보딩 ────────────────────────────────────────────────
+
+// 온보딩 상태 + AI 초안. spaceId당 1개.
+// dismiss는 Space.onboardingDismissedAt(seller-hub 점유)와 격리해 deck-scope로 저장.
+model SalesContentOnboarding {
+  id          String    @id @default(cuid())
+  spaceId     String    @unique
+  draft       Json? // { brandProfile, products[], personas[] } — AI 생성 초안
+  draftStatus String? // GENERATING | READY | FAILED
+  completedAt DateTime? // 위저드 완료(또는 전체 스킵) 시각
+  dismissedAt DateTime? // 홈 체크리스트 닫기
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ScResourceKind {
+  URL
+  FILE
+}
+
+enum ScResourceStatus {
+  PENDING
+  DONE
+  FAILED
+}
+
+// 온보딩에서 받은 사용자 리소스(워크스페이스 레벨).
+// ContentAsset은 contentId 필수라 워크스페이스 자료 보관에 못 씀.
+model ScOnboardingResource {
+  id            String           @id @default(cuid())
+  spaceId       String
+  kind          ScResourceKind
+  sourceUrl     String? // kind=URL 원본 주소
+  storagePath   String? // kind=FILE — private 버킷(sales-content-files) 경로
+  fileName      String?
+  mimeType      String?
+  extractedText String?          @db.Text
+  status        ScResourceStatus @default(PENDING)
+  errorMessage  String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId])
 }
 
 // ─── Sales Content Deck (AI 어댑터) ───────────────────────────────────────────

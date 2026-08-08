@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { OnboardingProgressCard } from '@/components/sc/home/onboarding-progress-card'
 import {
   Lightbulb,
   FileEdit,
@@ -83,6 +84,8 @@ export default function SalesContentHomePage() {
           B2B·B2G 세일즈 리드 창출을 위한 콘텐츠 제작·배포·성과 관리를 한 곳에서.
         </p>
       </header>
+
+      <OnboardingProgressCard />
 
       <Card className="bg-gradient-to-br from-fuchsia-50 via-background to-indigo-50 dark:from-fuchsia-950/20 dark:via-background dark:to-indigo-950/20">
         <CardHeader>

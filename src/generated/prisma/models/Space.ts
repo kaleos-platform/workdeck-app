@@ -239,6 +239,8 @@ export type SpaceWhereInput = {
   salesContentJobs?: Prisma.SalesContentJobListRelationFilter
   deploymentMetrics?: Prisma.DeploymentMetricListRelationFilter
   improvementRules?: Prisma.ImprovementRuleListRelationFilter
+  salesContentOnboarding?: Prisma.XOR<Prisma.SalesContentOnboardingNullableScalarRelationFilter, Prisma.SalesContentOnboardingWhereInput> | null
+  scOnboardingResources?: Prisma.ScOnboardingResourceListRelationFilter
   finAccounts?: Prisma.FinAccountListRelationFilter
   finLiabilities?: Prisma.FinLiabilityListRelationFilter
   finCategories?: Prisma.FinCategoryListRelationFilter
@@ -331,6 +333,8 @@ export type SpaceOrderByWithRelationInput = {
   salesContentJobs?: Prisma.SalesContentJobOrderByRelationAggregateInput
   deploymentMetrics?: Prisma.DeploymentMetricOrderByRelationAggregateInput
   improvementRules?: Prisma.ImprovementRuleOrderByRelationAggregateInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingOrderByWithRelationInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceOrderByRelationAggregateInput
   finAccounts?: Prisma.FinAccountOrderByRelationAggregateInput
   finLiabilities?: Prisma.FinLiabilityOrderByRelationAggregateInput
   finCategories?: Prisma.FinCategoryOrderByRelationAggregateInput
@@ -426,6 +430,8 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   salesContentJobs?: Prisma.SalesContentJobListRelationFilter
   deploymentMetrics?: Prisma.DeploymentMetricListRelationFilter
   improvementRules?: Prisma.ImprovementRuleListRelationFilter
+  salesContentOnboarding?: Prisma.XOR<Prisma.SalesContentOnboardingNullableScalarRelationFilter, Prisma.SalesContentOnboardingWhereInput> | null
+  scOnboardingResources?: Prisma.ScOnboardingResourceListRelationFilter
   finAccounts?: Prisma.FinAccountListRelationFilter
   finLiabilities?: Prisma.FinLiabilityListRelationFilter
   finCategories?: Prisma.FinCategoryListRelationFilter
@@ -542,6 +548,8 @@ export type SpaceCreateInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -634,6 +642,8 @@ export type SpaceUncheckedCreateInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -726,6 +736,8 @@ export type SpaceUpdateInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -818,6 +830,8 @@ export type SpaceUncheckedUpdateInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1424,6 +1438,34 @@ export type SpaceUpdateOneRequiredWithoutBrandProfileNestedInput = {
   upsert?: Prisma.SpaceUpsertWithoutBrandProfileInput
   connect?: Prisma.SpaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBrandProfileInput, Prisma.SpaceUpdateWithoutBrandProfileInput>, Prisma.SpaceUncheckedUpdateWithoutBrandProfileInput>
+}
+
+export type SpaceCreateNestedOneWithoutSalesContentOnboardingInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutSalesContentOnboardingInput, Prisma.SpaceUncheckedCreateWithoutSalesContentOnboardingInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutSalesContentOnboardingInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutSalesContentOnboardingNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutSalesContentOnboardingInput, Prisma.SpaceUncheckedCreateWithoutSalesContentOnboardingInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutSalesContentOnboardingInput
+  upsert?: Prisma.SpaceUpsertWithoutSalesContentOnboardingInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutSalesContentOnboardingInput, Prisma.SpaceUpdateWithoutSalesContentOnboardingInput>, Prisma.SpaceUncheckedUpdateWithoutSalesContentOnboardingInput>
+}
+
+export type SpaceCreateNestedOneWithoutScOnboardingResourcesInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutScOnboardingResourcesInput, Prisma.SpaceUncheckedCreateWithoutScOnboardingResourcesInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutScOnboardingResourcesInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutScOnboardingResourcesNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutScOnboardingResourcesInput, Prisma.SpaceUncheckedCreateWithoutScOnboardingResourcesInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutScOnboardingResourcesInput
+  upsert?: Prisma.SpaceUpsertWithoutScOnboardingResourcesInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutScOnboardingResourcesInput, Prisma.SpaceUpdateWithoutScOnboardingResourcesInput>, Prisma.SpaceUncheckedUpdateWithoutScOnboardingResourcesInput>
 }
 
 export type SpaceCreateNestedOneWithoutWorkspaceAiCreditsInput = {
@@ -2145,6 +2187,8 @@ export type SpaceCreateWithoutMembersInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -2236,6 +2280,8 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -2343,6 +2389,8 @@ export type SpaceUpdateWithoutMembersInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -2434,6 +2482,8 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2526,6 +2576,8 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -2617,6 +2669,8 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -2724,6 +2778,8 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -2815,6 +2871,8 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2906,6 +2964,8 @@ export type SpaceCreateWithoutAgentToggleInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -2997,6 +3057,8 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -3104,6 +3166,8 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -3195,6 +3259,8 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3286,6 +3352,8 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -3377,6 +3445,8 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -3484,6 +3554,8 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -3575,6 +3647,8 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3665,6 +3739,8 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -3756,6 +3832,8 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -3863,6 +3941,8 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -3954,6 +4034,8 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4045,6 +4127,8 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -4136,6 +4220,8 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -4243,6 +4329,8 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -4334,6 +4422,8 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4425,6 +4515,8 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -4516,6 +4608,8 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -4623,6 +4717,8 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -4714,6 +4810,8 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4805,6 +4903,8 @@ export type SpaceCreateWithoutInvProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -4896,6 +4996,8 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -5003,6 +5105,8 @@ export type SpaceUpdateWithoutInvProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -5094,6 +5198,8 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5185,6 +5291,8 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -5276,6 +5384,8 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -5383,6 +5493,8 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -5474,6 +5586,8 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5565,6 +5679,8 @@ export type SpaceCreateWithoutInvLocationsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -5656,6 +5772,8 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -5763,6 +5881,8 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -5854,6 +5974,8 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5945,6 +6067,8 @@ export type SpaceCreateWithoutInvMovementsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -6036,6 +6160,8 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -6143,6 +6269,8 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -6234,6 +6362,8 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6325,6 +6455,8 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -6416,6 +6548,8 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -6523,6 +6657,8 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -6614,6 +6750,8 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6705,6 +6843,8 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -6796,6 +6936,8 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -6903,6 +7045,8 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -6994,6 +7138,8 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7085,6 +7231,8 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -7176,6 +7324,8 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -7283,6 +7433,8 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -7374,6 +7526,8 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7465,6 +7619,8 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -7556,6 +7712,8 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -7663,6 +7821,8 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -7754,6 +7914,8 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7845,6 +8007,8 @@ export type SpaceCreateWithoutInvSettingsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -7936,6 +8100,8 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -8043,6 +8209,8 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -8134,6 +8302,8 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8225,6 +8395,8 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -8316,6 +8488,8 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -8423,6 +8597,8 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -8514,6 +8690,8 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8605,6 +8783,8 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -8696,6 +8876,8 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -8803,6 +8985,8 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -8894,6 +9078,8 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8985,6 +9171,8 @@ export type SpaceCreateWithoutDelBatchesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -9076,6 +9264,8 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -9183,6 +9373,8 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -9274,6 +9466,8 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9365,6 +9559,8 @@ export type SpaceCreateWithoutDelOrdersInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -9456,6 +9652,8 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -9563,6 +9761,8 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -9654,6 +9854,8 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9745,6 +9947,8 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -9836,6 +10040,8 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -9943,6 +10149,8 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -10034,6 +10242,8 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10125,6 +10335,8 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -10216,6 +10428,8 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -10323,6 +10537,8 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -10414,6 +10630,8 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10505,6 +10723,8 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -10596,6 +10816,8 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -10703,6 +10925,8 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -10794,6 +11018,8 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10885,6 +11111,8 @@ export type SpaceCreateWithoutBrandsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -10976,6 +11204,8 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -11083,6 +11313,8 @@ export type SpaceUpdateWithoutBrandsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -11174,6 +11406,8 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11265,6 +11499,8 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -11356,6 +11592,8 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -11463,6 +11701,8 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -11554,6 +11794,8 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11645,6 +11887,8 @@ export type SpaceCreateWithoutChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -11736,6 +11980,8 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -11843,6 +12089,8 @@ export type SpaceUpdateWithoutChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -11934,6 +12182,8 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12025,6 +12275,8 @@ export type SpaceCreateWithoutProductionRunsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -12116,6 +12368,8 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -12223,6 +12477,8 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -12314,6 +12570,8 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12405,6 +12663,8 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -12496,6 +12756,8 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -12603,6 +12865,8 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -12694,6 +12958,8 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12785,6 +13051,8 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -12876,6 +13144,8 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -12983,6 +13253,8 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -13074,6 +13346,8 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13165,6 +13439,8 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -13256,6 +13532,8 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -13363,6 +13641,8 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -13454,6 +13734,8 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13545,6 +13827,8 @@ export type SpaceCreateWithoutProductListingsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -13636,6 +13920,8 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -13743,6 +14029,8 @@ export type SpaceUpdateWithoutProductListingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -13834,6 +14122,8 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13925,6 +14215,8 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -14016,6 +14308,8 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -14123,6 +14417,8 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -14214,6 +14510,8 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14305,6 +14603,8 @@ export type SpaceCreateWithoutChannelProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -14396,6 +14696,8 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -14503,6 +14805,8 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -14594,6 +14898,8 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14685,6 +14991,8 @@ export type SpaceCreateWithoutProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -14776,6 +15084,8 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -14883,6 +15193,8 @@ export type SpaceUpdateWithoutProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -14974,6 +15286,8 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15065,6 +15379,8 @@ export type SpaceCreateWithoutPersonasInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -15156,6 +15472,8 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -15263,6 +15581,8 @@ export type SpaceUpdateWithoutPersonasInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -15354,6 +15674,8 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15445,6 +15767,8 @@ export type SpaceCreateWithoutBrandProfileInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -15536,6 +15860,8 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -15643,6 +15969,8 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -15734,6 +16062,784 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
+  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutSalesContentOnboardingInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
+  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
+  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
+  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
+  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
+  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
+  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
+  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutSalesContentOnboardingInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutSalesContentOnboardingInput, Prisma.SpaceUncheckedCreateWithoutSalesContentOnboardingInput>
+}
+
+export type SpaceUpsertWithoutSalesContentOnboardingInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutSalesContentOnboardingInput, Prisma.SpaceUncheckedUpdateWithoutSalesContentOnboardingInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutSalesContentOnboardingInput, Prisma.SpaceUncheckedCreateWithoutSalesContentOnboardingInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutSalesContentOnboardingInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutSalesContentOnboardingInput, Prisma.SpaceUncheckedUpdateWithoutSalesContentOnboardingInput>
+}
+
+export type SpaceUpdateWithoutSalesContentOnboardingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
+  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
+  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
+  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
+  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
+  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutScOnboardingResourcesInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
+  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
+  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
+  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
+  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
+  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
+  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
+  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutScOnboardingResourcesInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutScOnboardingResourcesInput, Prisma.SpaceUncheckedCreateWithoutScOnboardingResourcesInput>
+}
+
+export type SpaceUpsertWithoutScOnboardingResourcesInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutScOnboardingResourcesInput, Prisma.SpaceUncheckedUpdateWithoutScOnboardingResourcesInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutScOnboardingResourcesInput, Prisma.SpaceUncheckedCreateWithoutScOnboardingResourcesInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutScOnboardingResourcesInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutScOnboardingResourcesInput, Prisma.SpaceUncheckedUpdateWithoutScOnboardingResourcesInput>
+}
+
+export type SpaceUpdateWithoutScOnboardingResourcesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
+  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
+  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
+  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
+  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15825,6 +16931,8 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -15916,6 +17024,8 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -16023,6 +17133,8 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -16114,6 +17226,8 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16205,6 +17319,8 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -16296,6 +17412,8 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -16403,6 +17521,8 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -16494,6 +17614,8 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16585,6 +17707,8 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -16676,6 +17800,8 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -16783,6 +17909,8 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -16874,6 +18002,8 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16965,6 +18095,8 @@ export type SpaceCreateWithoutTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -17056,6 +18188,8 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -17163,6 +18297,8 @@ export type SpaceUpdateWithoutTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -17254,6 +18390,8 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17345,6 +18483,8 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -17436,6 +18576,8 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -17543,6 +18685,8 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -17634,6 +18778,8 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17725,6 +18871,8 @@ export type SpaceCreateWithoutContentsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -17816,6 +18964,8 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -17923,6 +19073,8 @@ export type SpaceUpdateWithoutContentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -18014,6 +19166,8 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18105,6 +19259,8 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -18196,6 +19352,8 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -18303,6 +19461,8 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -18394,6 +19554,8 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18485,6 +19647,8 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -18576,6 +19740,8 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -18683,6 +19849,8 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -18774,6 +19942,8 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18865,6 +20035,8 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -18956,6 +20128,8 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -19063,6 +20237,8 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -19154,6 +20330,8 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19245,6 +20423,8 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -19336,6 +20516,8 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -19443,6 +20625,8 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -19534,6 +20718,8 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19625,6 +20811,8 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -19716,6 +20904,8 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -19823,6 +21013,8 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -19914,6 +21106,8 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20005,6 +21199,8 @@ export type SpaceCreateWithoutContentVersionsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -20096,6 +21292,8 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -20203,6 +21401,8 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -20294,6 +21494,8 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20385,6 +21587,8 @@ export type SpaceCreateWithoutContentAssetsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -20476,6 +21680,8 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -20583,6 +21789,8 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -20674,6 +21882,8 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20765,6 +21975,8 @@ export type SpaceCreateWithoutIdeationsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -20856,6 +22068,8 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -20963,6 +22177,8 @@ export type SpaceUpdateWithoutIdeationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -21054,6 +22270,8 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21145,6 +22363,8 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -21236,6 +22456,8 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -21343,6 +22565,8 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -21434,6 +22658,8 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21525,6 +22751,8 @@ export type SpaceCreateWithoutReorderPlansInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -21616,6 +22844,8 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -21723,6 +22953,8 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -21814,6 +23046,8 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21906,6 +23140,8 @@ export type SpaceCreateWithoutFinAccountsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
@@ -21997,6 +23233,8 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -22104,6 +23342,8 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
@@ -22195,6 +23435,8 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22286,6 +23528,8 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
@@ -22377,6 +23621,8 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -22484,6 +23730,8 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
@@ -22575,6 +23823,8 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22666,6 +23916,8 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
@@ -22757,6 +24009,8 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -22864,6 +24118,8 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
@@ -22955,6 +24211,8 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23046,6 +24304,8 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -23137,6 +24397,8 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -23244,6 +24506,8 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -23335,6 +24599,8 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23426,6 +24692,8 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -23517,6 +24785,8 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -23624,6 +24894,8 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -23715,6 +24987,8 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23806,6 +25080,8 @@ export type SpaceCreateWithoutFinImportsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -23897,6 +25173,8 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -24004,6 +25282,8 @@ export type SpaceUpdateWithoutFinImportsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -24095,6 +25375,8 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24186,6 +25468,8 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -24277,6 +25561,8 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -24384,6 +25670,8 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -24475,6 +25763,8 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24566,6 +25856,8 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -24657,6 +25949,8 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -24764,6 +26058,8 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -24855,6 +26151,8 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24946,6 +26244,8 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -25037,6 +26337,8 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -25144,6 +26446,8 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -25235,6 +26539,8 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25326,6 +26632,8 @@ export type SpaceCreateWithoutHiringStoresInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -25417,6 +26725,8 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -25524,6 +26834,8 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -25615,6 +26927,8 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25706,6 +27020,8 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -25797,6 +27113,8 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -25904,6 +27222,8 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -25995,6 +27315,8 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26086,6 +27408,8 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -26177,6 +27501,8 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -26284,6 +27610,8 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -26375,6 +27703,8 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26466,6 +27796,8 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -26557,6 +27889,8 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -26664,6 +27998,8 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -26755,6 +28091,8 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26846,6 +28184,8 @@ export type SpaceCreateWithoutHiringContentsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -26937,6 +28277,8 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -27044,6 +28386,8 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -27135,6 +28479,8 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27226,6 +28572,8 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -27317,6 +28665,8 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -27424,6 +28774,8 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -27515,6 +28867,8 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27606,6 +28960,8 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -27697,6 +29053,8 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -27804,6 +29162,8 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -27895,6 +29255,8 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27986,6 +29348,8 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -28077,6 +29441,8 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -28184,6 +29550,8 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -28275,6 +29643,8 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28366,6 +29736,8 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -28457,6 +29829,8 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -28564,6 +29938,8 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -28655,6 +30031,8 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28746,6 +30124,8 @@ export type SpaceCreateWithoutBoProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -28837,6 +30217,8 @@ export type SpaceUncheckedCreateWithoutBoProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -28944,6 +30326,8 @@ export type SpaceUpdateWithoutBoProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -29035,6 +30419,8 @@ export type SpaceUncheckedUpdateWithoutBoProductsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29126,6 +30512,8 @@ export type SpaceCreateWithoutBoIdeationsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -29217,6 +30605,8 @@ export type SpaceUncheckedCreateWithoutBoIdeationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -29324,6 +30714,8 @@ export type SpaceUpdateWithoutBoIdeationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -29415,6 +30807,8 @@ export type SpaceUncheckedUpdateWithoutBoIdeationsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29506,6 +30900,8 @@ export type SpaceCreateWithoutBoMaterialsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -29597,6 +30993,8 @@ export type SpaceUncheckedCreateWithoutBoMaterialsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -29704,6 +31102,8 @@ export type SpaceUpdateWithoutBoMaterialsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -29795,6 +31195,8 @@ export type SpaceUncheckedUpdateWithoutBoMaterialsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29886,6 +31288,8 @@ export type SpaceCreateWithoutBoPostsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -29977,6 +31381,8 @@ export type SpaceUncheckedCreateWithoutBoPostsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -30084,6 +31490,8 @@ export type SpaceUpdateWithoutBoPostsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -30175,6 +31583,8 @@ export type SpaceUncheckedUpdateWithoutBoPostsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30266,6 +31676,8 @@ export type SpaceCreateWithoutBoPostVersionsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -30357,6 +31769,8 @@ export type SpaceUncheckedCreateWithoutBoPostVersionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -30464,6 +31878,8 @@ export type SpaceUpdateWithoutBoPostVersionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -30555,6 +31971,8 @@ export type SpaceUncheckedUpdateWithoutBoPostVersionsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30646,6 +32064,8 @@ export type SpaceCreateWithoutBoChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -30737,6 +32157,8 @@ export type SpaceUncheckedCreateWithoutBoChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -30844,6 +32266,8 @@ export type SpaceUpdateWithoutBoChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -30935,6 +32359,8 @@ export type SpaceUncheckedUpdateWithoutBoChannelsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31026,6 +32452,8 @@ export type SpaceCreateWithoutBoPostVariantsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -31117,6 +32545,8 @@ export type SpaceUncheckedCreateWithoutBoPostVariantsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -31224,6 +32654,8 @@ export type SpaceUpdateWithoutBoPostVariantsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -31315,6 +32747,8 @@ export type SpaceUncheckedUpdateWithoutBoPostVariantsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31406,6 +32840,8 @@ export type SpaceCreateWithoutBoDeploymentsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -31497,6 +32933,8 @@ export type SpaceUncheckedCreateWithoutBoDeploymentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -31604,6 +33042,8 @@ export type SpaceUpdateWithoutBoDeploymentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -31695,6 +33135,8 @@ export type SpaceUncheckedUpdateWithoutBoDeploymentsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31786,6 +33228,8 @@ export type SpaceCreateWithoutBoJobsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -31877,6 +33321,8 @@ export type SpaceUncheckedCreateWithoutBoJobsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -31984,6 +33430,8 @@ export type SpaceUpdateWithoutBoJobsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -32075,6 +33523,8 @@ export type SpaceUncheckedUpdateWithoutBoJobsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32166,6 +33616,8 @@ export type SpaceCreateWithoutBoChannelCredentialsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -32257,6 +33709,8 @@ export type SpaceUncheckedCreateWithoutBoChannelCredentialsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -32364,6 +33818,8 @@ export type SpaceUpdateWithoutBoChannelCredentialsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -32455,6 +33911,8 @@ export type SpaceUncheckedUpdateWithoutBoChannelCredentialsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32546,6 +34004,8 @@ export type SpaceCreateWithoutSubscriptionInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -32637,6 +34097,8 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -32744,6 +34206,8 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -32835,6 +34299,8 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32926,6 +34392,8 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -33017,6 +34485,8 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -33124,6 +34594,8 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -33215,6 +34687,8 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33306,6 +34780,8 @@ export type SpaceCreateWithoutBillingChargesInput = {
   salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -33397,6 +34873,8 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -33504,6 +34982,8 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -33595,6 +35075,8 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33681,6 +35163,7 @@ export type SpaceCountOutputType = {
   salesContentJobs: number
   deploymentMetrics: number
   improvementRules: number
+  scOnboardingResources: number
   finAccounts: number
   finLiabilities: number
   finCategories: number
@@ -33761,6 +35244,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   salesContentJobs?: boolean | SpaceCountOutputTypeCountSalesContentJobsArgs
   deploymentMetrics?: boolean | SpaceCountOutputTypeCountDeploymentMetricsArgs
   improvementRules?: boolean | SpaceCountOutputTypeCountImprovementRulesArgs
+  scOnboardingResources?: boolean | SpaceCountOutputTypeCountScOnboardingResourcesArgs
   finAccounts?: boolean | SpaceCountOutputTypeCountFinAccountsArgs
   finLiabilities?: boolean | SpaceCountOutputTypeCountFinLiabilitiesArgs
   finCategories?: boolean | SpaceCountOutputTypeCountFinCategoriesArgs
@@ -34123,6 +35607,13 @@ export type SpaceCountOutputTypeCountImprovementRulesArgs<ExtArgs extends runtim
 /**
  * SpaceCountOutputType without action
  */
+export type SpaceCountOutputTypeCountScOnboardingResourcesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ScOnboardingResourceWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
 export type SpaceCountOutputTypeCountFinAccountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.FinAccountWhereInput
 }
@@ -34401,6 +35892,8 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   salesContentJobs?: boolean | Prisma.Space$salesContentJobsArgs<ExtArgs>
   deploymentMetrics?: boolean | Prisma.Space$deploymentMetricsArgs<ExtArgs>
   improvementRules?: boolean | Prisma.Space$improvementRulesArgs<ExtArgs>
+  salesContentOnboarding?: boolean | Prisma.Space$salesContentOnboardingArgs<ExtArgs>
+  scOnboardingResources?: boolean | Prisma.Space$scOnboardingResourcesArgs<ExtArgs>
   finAccounts?: boolean | Prisma.Space$finAccountsArgs<ExtArgs>
   finLiabilities?: boolean | Prisma.Space$finLiabilitiesArgs<ExtArgs>
   finCategories?: boolean | Prisma.Space$finCategoriesArgs<ExtArgs>
@@ -34516,6 +36009,8 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   salesContentJobs?: boolean | Prisma.Space$salesContentJobsArgs<ExtArgs>
   deploymentMetrics?: boolean | Prisma.Space$deploymentMetricsArgs<ExtArgs>
   improvementRules?: boolean | Prisma.Space$improvementRulesArgs<ExtArgs>
+  salesContentOnboarding?: boolean | Prisma.Space$salesContentOnboardingArgs<ExtArgs>
+  scOnboardingResources?: boolean | Prisma.Space$scOnboardingResourcesArgs<ExtArgs>
   finAccounts?: boolean | Prisma.Space$finAccountsArgs<ExtArgs>
   finLiabilities?: boolean | Prisma.Space$finLiabilitiesArgs<ExtArgs>
   finCategories?: boolean | Prisma.Space$finCategoriesArgs<ExtArgs>
@@ -34607,6 +36102,8 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     salesContentJobs: Prisma.$SalesContentJobPayload<ExtArgs>[]
     deploymentMetrics: Prisma.$DeploymentMetricPayload<ExtArgs>[]
     improvementRules: Prisma.$ImprovementRulePayload<ExtArgs>[]
+    salesContentOnboarding: Prisma.$SalesContentOnboardingPayload<ExtArgs> | null
+    scOnboardingResources: Prisma.$ScOnboardingResourcePayload<ExtArgs>[]
     finAccounts: Prisma.$FinAccountPayload<ExtArgs>[]
     finLiabilities: Prisma.$FinLiabilityPayload<ExtArgs>[]
     finCategories: Prisma.$FinCategoryPayload<ExtArgs>[]
@@ -35092,6 +36589,8 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   salesContentJobs<T extends Prisma.Space$salesContentJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$salesContentJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SalesContentJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deploymentMetrics<T extends Prisma.Space$deploymentMetricsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$deploymentMetricsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentMetricPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   improvementRules<T extends Prisma.Space$improvementRulesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$improvementRulesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImprovementRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  salesContentOnboarding<T extends Prisma.Space$salesContentOnboardingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$salesContentOnboardingArgs<ExtArgs>>): Prisma.Prisma__SalesContentOnboardingClient<runtime.Types.Result.GetResult<Prisma.$SalesContentOnboardingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  scOnboardingResources<T extends Prisma.Space$scOnboardingResourcesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$scOnboardingResourcesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScOnboardingResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   finAccounts<T extends Prisma.Space$finAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   finLiabilities<T extends Prisma.Space$finLiabilitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finLiabilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinLiabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   finCategories<T extends Prisma.Space$finCategoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -36702,6 +38201,49 @@ export type Space$improvementRulesArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.ImprovementRuleScalarFieldEnum | Prisma.ImprovementRuleScalarFieldEnum[]
+}
+
+/**
+ * Space.salesContentOnboarding
+ */
+export type Space$salesContentOnboardingArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SalesContentOnboarding
+   */
+  select?: Prisma.SalesContentOnboardingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SalesContentOnboarding
+   */
+  omit?: Prisma.SalesContentOnboardingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SalesContentOnboardingInclude<ExtArgs> | null
+  where?: Prisma.SalesContentOnboardingWhereInput
+}
+
+/**
+ * Space.scOnboardingResources
+ */
+export type Space$scOnboardingResourcesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ScOnboardingResource
+   */
+  select?: Prisma.ScOnboardingResourceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ScOnboardingResource
+   */
+  omit?: Prisma.ScOnboardingResourceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScOnboardingResourceInclude<ExtArgs> | null
+  where?: Prisma.ScOnboardingResourceWhereInput
+  orderBy?: Prisma.ScOnboardingResourceOrderByWithRelationInput | Prisma.ScOnboardingResourceOrderByWithRelationInput[]
+  cursor?: Prisma.ScOnboardingResourceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ScOnboardingResourceScalarFieldEnum | Prisma.ScOnboardingResourceScalarFieldEnum[]
 }
 
 /**
