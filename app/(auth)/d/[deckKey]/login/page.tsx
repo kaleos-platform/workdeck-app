@@ -8,15 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const DECK_COPY: Record<string, { title: string; description: string }> = {
   'coupang-ads': {
     title: 'Workdeck 로그인',
-    description: '로그인 후 쿠팡 광고 관리자 Deck로 바로 이동합니다',
+    description: '로그인 후 쿠팡 광고 관리자로 바로 이동합니다',
   },
   'seller-hub': {
     title: 'Workdeck 로그인',
-    description: '로그인 후 셀러 허브 Deck로 바로 이동합니다',
+    description: '로그인 후 셀러 허브로 바로 이동합니다',
   },
   'sales-content': {
     title: 'Workdeck 로그인',
-    description: '로그인 후 세일즈 콘텐츠 Deck로 바로 이동합니다',
+    description: '로그인 후 세일즈 콘텐츠로 바로 이동합니다',
   },
 }
 
@@ -38,7 +38,7 @@ export default async function DeckLoginPage({
       if (!deck || !deck.isActive) return null
       return {
         title: 'Workdeck 로그인',
-        description: `로그인 후 ${deck.name} Deck로 바로 이동합니다`,
+        description: `로그인 후 ${deck.name} 화면으로 바로 이동합니다`,
       }
     })())
   if (!copy) notFound()

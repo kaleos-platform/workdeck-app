@@ -12,7 +12,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
           <h1 className="text-2xl font-bold">Workdeck</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Workdeck에 가입하고 필요한 Deck을 추가해 업무를 시작하세요
+            Workdeck에 가입하고 필요한 업무를 골라 시작하세요
           </p>
         </div>
 

@@ -117,7 +117,7 @@ export function SettingsPanel() {
       <Card>
         <CardHeader>
           <CardTitle>기본 설정</CardTitle>
-          <CardDescription>재고 덱의 기본 동작을 설정합니다</CardDescription>
+          <CardDescription>재고 관리의 기본 동작을 설정합니다</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
