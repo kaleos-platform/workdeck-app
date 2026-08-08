@@ -11,7 +11,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import type { BrowserContext, Locator, Page } from 'playwright'
+import type { BrowserContext, Download, Locator, Page } from 'playwright'
 import { launchStealthPersistentContext, renewProfileLock } from './browser.js'
 import { LoginError, classifyLoginFailure, reasonLabel } from './login-guard.js'
 
@@ -175,11 +175,32 @@ async function clickAndDownload(
   const downloadPromise = page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT })
   downloadPromise.catch(() => {})
 
+  // 판매분석 "상품별 판매 리포트"는 비동기 다운로드 매니저를 거친다
+  // (POST /fcc/download-manager/request-auto-download → check-downloadable). 준비가 끝나면
+  // **새 팝업 페이지**가 열려 거기서 다운로드가 발생하고 팝업은 즉시 닫힌다 — 메인 페이지의
+  // download 이벤트만 기다리면 파일이 준비돼도 영영 못 받고 120초 타임아웃이 난다
+  // (2026-08-05~07 판매분석 수집 실패 원인, 2026-08-07 실측).
+  // 팝업 생성 즉시 리스너를 붙여야 하므로 클릭 전에 컨텍스트 핸들러를 등록한다.
+  const context = page.context()
+  let resolvePopupDownload: (download: Download) => void = () => {}
+  const popupDownloadPromise = new Promise<Download>((resolve) => {
+    resolvePopupDownload = resolve
+  })
+  const onPopup = (popup: Page) => {
+    popup.on('download', (download) => resolvePopupDownload(download))
+  }
+  context.on('page', onPopup)
+
   // force 클릭은 hit-target 검사를 생략해 요소가 뷰포트 밖이면 엉뚱한 좌표(사이드 내비 등)를
   // 때린다 — 일반 클릭 실패 시 요소에 직접 dispatch 하는 JS 클릭으로 폴백한다.
   await clickWithJsFallback(btnLocator, '다운로드 트리거')
 
-  const download = await downloadPromise
+  let download: Download
+  try {
+    download = await Promise.race([downloadPromise, popupDownloadPromise])
+  } finally {
+    context.off('page', onPopup)
+  }
   const suggestedName = download.suggestedFilename()
   const baseName = suggestedName && suggestedName.trim().length > 0 ? suggestedName : fallbackName
   const target = uniqueDownloadTarget(downloadDir, baseName)
