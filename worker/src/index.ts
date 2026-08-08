@@ -12,6 +12,7 @@ import { startManualPoller } from './manual-poller.js'
 import { startAnalysisPoller } from './analysis-poller.js'
 import { startWorkerHeartbeat } from './heartbeat.js'
 import { startBackfillPoller } from './backfill-poller.js'
+import { pruneScreenshots } from './screenshot-retention.js'
 
 console.log('=== Workdeck Worker 시작 ===')
 console.log(`API URL: ${process.env.WORKDECK_API_URL}`)
@@ -58,5 +59,9 @@ startWorkerHeartbeat()
 
 // 콜드스타트 백필 잡 폴링 시작
 startBackfillPoller()
+
+// 진단용 스크린샷 보존 정리 — 기동 시 1회 + 매일 04:00 KST(수집 09:00 과 겹치지 않게)
+pruneScreenshots()
+cron.schedule('0 4 * * *', pruneScreenshots, { timezone: 'Asia/Seoul' })
 
 console.log('크론 스케줄러 + 수동 수집 폴링 대기 중...\n')
