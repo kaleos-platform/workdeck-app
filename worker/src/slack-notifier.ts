@@ -11,9 +11,9 @@ const LEGACY_SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN ?? ''
 const LEGACY_SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID ?? ''
 const SLACK_API_URL = 'https://slack.com/api/chat.postMessage'
 
-// Deck 라벨 — Slack 메시지 헤더에 어떤 Deck 작업인지 표기 (정적).
-// 광고·재고 수집 = 쿠팡 광고 관리자 Deck, 판매(VENDOR) = 브랜드 운영(seller-ops) Deck.
-const DECK_COUPANG_ADS = '쿠팡 광고 관리자'
+// 업무 라벨 — Slack 메시지 헤더에 어떤 업무의 작업인지 표기 (정적).
+// 광고·재고 수집 = 쿠팡 광고 관리, 판매(VENDOR) = 브랜드 운영(seller-ops).
+const DECK_COUPANG_ADS = '쿠팡 광고 관리'
 const DECK_SELLER_OPS = '브랜드 운영'
 
 // Deck 토글 게이트용 DeckApp.id (라벨/URL의 seller-ops와 다름 — 판매 수집 Deck의 실 id는 seller-hub).

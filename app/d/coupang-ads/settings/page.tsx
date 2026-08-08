@@ -56,7 +56,7 @@ export default function CoupangAdsSettingsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">설정</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          쿠팡 광고 관리자의 연동, 수집, 에이전트 설정을 관리합니다.
+          쿠팡 광고 관리의 연동, 수집, 에이전트 설정을 관리합니다.
         </p>
       </div>
 

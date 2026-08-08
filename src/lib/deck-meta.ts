@@ -40,7 +40,7 @@ export type DeckMeta = {
  */
 export const DECK_META: Record<DeckVariant, DeckMeta> = {
   'coupang-ads': {
-    name: '쿠팡 광고 관리자',
+    name: '쿠팡 광고 관리',
     href: COUPANG_ADS_BASE_PATH,
     icon: BarChart2,
     gradient: 'from-orange-500 to-red-600',

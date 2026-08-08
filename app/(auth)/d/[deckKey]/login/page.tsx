@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 const DECK_COPY: Record<string, { title: string; description: string }> = {
   'coupang-ads': {
     title: 'Workdeck 로그인',
-    description: '로그인 후 쿠팡 광고 관리자로 바로 이동합니다',
+    description: '로그인 후 쿠팡 광고 관리로 바로 이동합니다',
   },
   'seller-hub': {
     title: 'Workdeck 로그인',

@@ -12,7 +12,7 @@ export interface DeckCatalogDefault {
 }
 
 export const DECK_CATALOG_DEFAULTS: DeckCatalogDefault[] = [
-  { id: 'coupang-ads', name: '쿠팡 광고 자동화', monthlyPrice: 29000 },
+  { id: 'coupang-ads', name: '쿠팡 광고 관리', monthlyPrice: 29000 },
   { id: 'seller-hub', name: '브랜드 운영', monthlyPrice: 29000 },
   { id: 'finance', name: '재무 관리', monthlyPrice: 19000 },
   { id: 'sales-content', name: '세일즈 콘텐츠', monthlyPrice: 14900 },

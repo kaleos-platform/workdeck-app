@@ -6,7 +6,7 @@
 import type { InventoryAnalysisResults } from '@/lib/inventory-analyzer'
 import { sendDeckNotification, sendSystemNotification } from '@/lib/slack/send-notification'
 
-// 재고 분석·수집 알림은 모두 쿠팡 광고 관리자 Deck 소속.
+// 재고 분석·수집 알림은 모두 쿠팡 광고 관리 Deck 소속.
 const DECK_KEY = 'coupang-ads'
 
 type Block = {
