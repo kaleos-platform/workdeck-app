@@ -247,12 +247,28 @@ type AnalysisContent = {
 }
 
 /**
+ * 키 순서에 의존하지 않는 직렬화.
+ * results 컬럼은 Postgres jsonb라 저장 시 키가 재정렬된다(길이 → 사전순). 따라서 DB에서 읽은
+ * 직전 분석과 방금 만든 결과를 그냥 JSON.stringify로 비교하면 내용이 같아도 항상 다르게 나온다.
+ */
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0))
+      .map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`)
+    return `{${entries.join(',')}}`
+  }
+  return JSON.stringify(value) ?? 'null'
+}
+
+/**
  * 두 분석 결과가 내용상 동일한지 비교한다 — 같은 snapshotDate를 하루에 여러 번 분석해도
  * 내용이 그대로면 Slack 알림을 다시 보내지 않기 위한 판정.
  *
  * snapshotDate 단위로 무조건 1회만 보내면 안 된다: 같은 날 수집이 이어지면서 결과가
  * 실제로 바뀌는 경우가 있고(prod 08-06 재고부족 62건 → 65건), 그때는 알려야 한다.
- * results는 같은 코드 경로가 같은 순서로 만들므로 직렬화 비교로 충분하다.
  */
 export function isSameAnalysisContent(a: AnalysisContent, b: AnalysisContent): boolean {
   return (
@@ -260,7 +276,7 @@ export function isSameAnalysisContent(a: AnalysisContent, b: AnalysisContent): b
     a.returnRateCount === b.returnRateCount &&
     a.storageFeeCount === b.storageFeeCount &&
     a.winnerIssueCount === b.winnerIssueCount &&
-    JSON.stringify(a.results) === JSON.stringify(b.results)
+    canonicalJson(a.results) === canonicalJson(b.results)
   )
 }
 
