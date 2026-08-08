@@ -22,12 +22,10 @@ type ProductData = {
   name: string
   internalName: string | null
   nameEn: string | null
-  code: string | null
   description: string | null
   manufacturer: string | null
   manufactureCountry: string | null
   manufactureDate: string | null
-  msrp: number | string | null
   features: string[] | null
   certifications: string[] | null
   brandId: string | null
@@ -68,12 +66,10 @@ export function ProductBasicForm({
   const [name, setName] = useState('') // 공식 상품명
   const [internalName, setInternalName] = useState('') // 관리 상품명
   const [nameEn, setNameEn] = useState('')
-  const [code, setCode] = useState('')
   const [description, setDescription] = useState('')
   const [manufacturer, setManufacturer] = useState('')
   const [manufactureCountry, setManufactureCountry] = useState('')
   const [manufactureDate, setManufactureDate] = useState('')
-  const [msrp, setMsrp] = useState('')
   const [brandId, setBrandId] = useState('')
   const [groupId, setGroupId] = useState('')
   const [features, setFeatures] = useState<string[]>([])
@@ -95,13 +91,10 @@ export function ProductBasicForm({
       setName(prod.name)
       setInternalName(prod.internalName ?? '')
       setNameEn(prod.nameEn ?? '')
-      setCode(prod.code ?? '')
       setDescription(prod.description ?? '')
       setManufacturer(prod.manufacturer ?? '')
       setManufactureCountry(prod.manufactureCountry ?? '')
       setManufactureDate(prod.manufactureDate ? prod.manufactureDate.slice(0, 7) : '')
-      // msrp는 Prisma Decimal이라 string/number 둘 다 올 수 있음
-      setMsrp(prod.msrp != null ? String(prod.msrp) : '')
       setBrandId(prod.brandId ?? '')
       setFeatures(Array.isArray(prod.features) ? prod.features : [])
       setCertifications(Array.isArray(prod.certifications) ? prod.certifications : [])
@@ -134,12 +127,10 @@ export function ProductBasicForm({
       name !== data.name ||
       internalName !== (data.internalName ?? '') ||
       nameEn !== (data.nameEn ?? '') ||
-      code !== (data.code ?? '') ||
       description !== (data.description ?? '') ||
       manufacturer !== (data.manufacturer ?? '') ||
       manufactureCountry !== (data.manufactureCountry ?? '') ||
       manufactureDate !== ymdToYm(data.manufactureDate) ||
-      msrp !== (data.msrp != null ? String(data.msrp) : '') ||
       brandId !== (data.brandId ?? '') ||
       groupId !== (data.groupId ?? '') ||
       JSON.stringify(features) !== JSON.stringify(data.features ?? []) ||
@@ -172,12 +163,10 @@ export function ProductBasicForm({
             name: name.trim(),
             internalName: internalName.trim() || null,
             nameEn: nameEn.trim() || null,
-            code: code.trim() || null,
             description: description.trim() || null,
             manufacturer: manufacturer.trim() || null,
             manufactureCountry: manufactureCountry.trim() || null,
             manufactureDate: manufactureDate ? `${manufactureDate}-01` : null,
-            msrp: msrp ? parseFloat(msrp) : null,
             brandId: brandId || null,
             groupId: groupId || null,
             features: features.filter((f) => f.trim()),
@@ -213,12 +202,10 @@ export function ProductBasicForm({
     name,
     internalName,
     nameEn,
-    code,
     description,
     manufacturer,
     manufactureCountry,
     manufactureDate,
-    msrp,
     brandId,
     groupId,
     features,
@@ -248,12 +235,10 @@ export function ProductBasicForm({
     name,
     internalName,
     nameEn,
-    code,
     description,
     manufacturer,
     manufactureCountry,
     manufactureDate,
-    msrp,
     brandId,
     groupId,
     features,
@@ -333,30 +318,6 @@ export function ProductBasicForm({
             value={nameEn}
             onChange={(e) => setNameEn(e.target.value)}
             placeholder="Product Name (선택)"
-          />
-        </div>
-      </div>
-
-      {/* 제품코드 / 소비자가 */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="bf-code">제품코드</Label>
-          <Input
-            id="bf-code"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="(없음)"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="bf-msrp">소비자가 (원)</Label>
-          <Input
-            id="bf-msrp"
-            type="number"
-            min="0"
-            value={msrp}
-            onChange={(e) => setMsrp(e.target.value)}
-            placeholder="0"
           />
         </div>
       </div>
