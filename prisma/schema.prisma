@@ -68,6 +68,11 @@ enum SpaceMemberRole {
   MEMBER
 }
 
+// 전역 운영자 role (워크덱 운영사 웹 어드민)
+enum PlatformRole {
+  OPERATOR
+}
+
 // 에이전트 승인 큐 액션 상태 (Phase 4)
 enum AgentActionStatus {
   PENDING
@@ -156,6 +161,9 @@ model User {
   email     String  @unique
   name      String?
   avatarUrl String?
+
+  // 전역 운영자 role — null이면 일반 사용자 (워크덱 운영사 웹 어드민)
+  platformRole PlatformRole?
 
   // 소유한 워크스페이스 (기존 — 점진 전환 기간 동안 유지)
   workspace Workspace?
@@ -3627,4 +3635,18 @@ model BillingCharge {
 
   @@index([spaceId, createdAt])
   @@index([status])
+}
+
+// 웹 어드민 변경성 작업 감사 로그. actorUserId는 FK 없이 보존(계정 삭제돼도 로그 유지).
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String // 운영자 User.id (FK 없음)
+  action      String // 예: "user.ban" | "billing.exempt" | "template.update"
+  targetType  String
+  targetId    String
+  meta        Json?
+  createdAt   DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@index([actorUserId, createdAt])
 }
