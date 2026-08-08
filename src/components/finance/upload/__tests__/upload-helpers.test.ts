@@ -2,7 +2,9 @@
  * 다중 파일 업로드 — 순수 헬퍼(자동 매칭·상태 판정·기간 겹침) 단위 테스트.
  */
 import {
+  defaultPresetName,
   findOverlappingFileIds,
+  isMappingDirty,
   isMappingValid,
   mappingEntriesToState,
   resolveInitialSelection,
@@ -204,5 +206,88 @@ describe('findOverlappingFileIds', () => {
       item('f2', 'a1'),
     ])
     expect(result.size).toBe(0)
+  })
+})
+
+// 규칙 이름은 파일명이 아니라 "선택된 계좌"에서 파생한다 — 파일명이 달라질 때마다
+// 다른 이름의 규칙이 생겨 매번 다른 규칙이 적용되던 문제 회귀 방어.
+describe('defaultPresetName / presetName 파생', () => {
+  it('신규 형식이면 계좌 기관명 + 종류로 이름 생성(파일명 무관)', () => {
+    const acct = makeAccount({ accountNumber: '123-456-789' })
+    const result = resolveInitialSelection(
+      makePreview({ accounts: [acct], accountNumber: '123-456-789' })
+    )
+    // '기업은행'은 이미 종류 라벨('은행')을 포함 → 접미사 없음
+    expect(result.presetName).toBe('기업은행')
+  })
+
+  it('기관명에 종류가 이미 있으면 중복 접미사 없음, 없으면 붙인다', () => {
+    expect(defaultPresetName(makeAccount({ institution: '하나은행' }), 'BANK')).toBe('하나은행')
+    expect(defaultPresetName(makeAccount({ institution: '삼성카드' }), 'CARD')).toBe('삼성카드')
+    expect(defaultPresetName(makeAccount({ institution: '토스' }), 'BANK')).toBe('토스 은행')
+  })
+
+  it('계좌가 없으면 파일명 추정 기관명으로 폴백', () => {
+    expect(defaultPresetName(null, 'BANK', '국민은행')).toBe('국민은행')
+    expect(defaultPresetName(null, 'BANK')).toBe('')
+  })
+
+  it('기억된 규칙이 있으면 그 이름을 그대로 사용', () => {
+    const acct = makeAccount({ accountNumber: '123-456-789' })
+    const result = resolveInitialSelection(
+      makePreview({
+        accounts: [acct],
+        accountNumber: '123-456-789',
+        matchedPreset: {
+          id: 'p1',
+          name: '내 기업은행 규칙',
+          institution: '기업은행',
+          kind: 'BANK',
+          mapping: [{ headerName: '거래일시', field: 'txnDate' }],
+          defaultAccountId: null,
+        },
+      })
+    )
+    expect(result.presetName).toBe('내 기업은행 규칙')
+  })
+})
+
+// 매핑을 고쳤는데 저장 스위치가 꺼져 있으면 다음 업로드에 옛 매핑(적요 등)이 되살아난다.
+describe('isMappingDirty', () => {
+  const preset = {
+    id: 'p1',
+    name: '규칙',
+    institution: '기업은행',
+    kind: 'BANK',
+    mapping: [
+      { headerName: '거래일시', field: 'txnDate' },
+      { headerName: '적요', field: 'description' },
+      { headerName: '입금액', field: 'deposit' },
+    ],
+    defaultAccountId: null,
+  }
+
+  it('프리셋과 동일하면 false(필드 순서 무관)', () => {
+    const state = mappingEntriesToState(preset.mapping, HEADERS)
+    expect(isMappingDirty(state, HEADERS, preset)).toBe(false)
+  })
+
+  it('컬럼을 제거하면 true', () => {
+    const state = mappingEntriesToState(preset.mapping, HEADERS)
+    delete state['description']
+    expect(isMappingDirty(state, HEADERS, preset)).toBe(true)
+  })
+
+  it('다중 컬럼 중 하나만 빼도 true', () => {
+    const multi = {
+      ...preset,
+      mapping: [...preset.mapping, { headerName: '거래후잔액', field: 'description' }],
+    }
+    const state = mappingEntriesToState(preset.mapping, HEADERS)
+    expect(isMappingDirty(state, HEADERS, multi)).toBe(true)
+  })
+
+  it('기억된 규칙이 없으면 항상 false', () => {
+    expect(isMappingDirty({ txnDate: [0] }, HEADERS, null)).toBe(false)
   })
 })
