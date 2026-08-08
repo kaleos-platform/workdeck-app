@@ -25,6 +25,7 @@ import {
   ListChecks,
   History,
   FolderTree,
+  SlidersHorizontal,
   Landmark,
   PanelLeftClose,
   PanelLeftOpen,
@@ -84,6 +85,7 @@ import {
   FINANCE_TRANSACTIONS_PATH,
   FINANCE_UPLOAD_PATH,
   FINANCE_IMPORTS_PATH,
+  FINANCE_MAPPING_RULES_PATH,
   FINANCE_ACCOUNTS_PATH,
   FINANCE_BALANCES_PATH,
   RECRUITING_HOME_PATH,
@@ -170,6 +172,7 @@ const FINANCE_FLAT_ROUTES = [
   { label: '거래 내역', icon: ListChecks, href: FINANCE_TRANSACTIONS_PATH },
   { label: '데이터 등록', icon: UploadCloud, href: FINANCE_UPLOAD_PATH },
   { label: '등록 이력', icon: History, href: FINANCE_IMPORTS_PATH },
+  { label: '매핑 규칙 관리', icon: SlidersHorizontal, href: FINANCE_MAPPING_RULES_PATH },
   { label: '계정과목 관리', icon: FolderTree, href: FINANCE_ACCOUNTS_PATH },
   { label: '자산·부채 관리', icon: Landmark, href: FINANCE_BALANCES_PATH },
 ]

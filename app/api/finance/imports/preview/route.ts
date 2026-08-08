@@ -50,8 +50,13 @@ export async function POST(req: NextRequest) {
   const institution = guessInstitution(file.name)
   const suggestedMapping = autoMapFinHeaders(preview.headers, kind)
 
+  // 후보 집합은 저장 경로(commit-staging)와 **동일하게 kind 필터 없이** 헤더로만 고른다.
+  // kind로 좁히면 두 경로의 kind 의미가 달라(여기=detectKind 휴리스틱, 저장=사용자 선택 계좌
+  // 종류) 저장한 프리셋이 다시는 매칭되지 않는 사각지대가 생긴다. 헤더 서명이 이미 은행/카드를
+  // 충분히 구분한다. orderBy는 findBestPreset의 동점 tie-break를 안정화한다.
   const presets = await prisma.finMappingPreset.findMany({
     where: { spaceId },
+    orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
     select: {
       id: true,
       name: true,
@@ -59,6 +64,7 @@ export async function POST(req: NextRequest) {
       kind: true,
       mapping: true,
       defaultAccountId: true,
+      updatedAt: true,
     },
   })
   const matchedPreset = findBestPreset(presets as PresetLike[], preview.headers)
