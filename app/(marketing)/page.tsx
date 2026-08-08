@@ -60,7 +60,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 덱 그리드 */}
+      {/* 업무 그리드 */}
       <section className="border-t bg-muted/30 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 space-y-3 text-center">

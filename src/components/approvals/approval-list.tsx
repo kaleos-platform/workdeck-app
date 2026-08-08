@@ -32,7 +32,7 @@ const PROCESSED_STATUSES: AgentActionStatusValue[] = [
 ]
 
 const DECK_FILTER_OPTIONS = [
-  { value: 'all', label: '전체 Deck' },
+  { value: 'all', label: '전체' },
   { value: 'finance', label: '재무 관리' },
   { value: 'seller-hub', label: '브랜드 운영' },
   { value: 'coupang-ads', label: '쿠팡 광고 관리자' },

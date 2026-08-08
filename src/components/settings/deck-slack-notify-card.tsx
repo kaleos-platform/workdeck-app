@@ -114,7 +114,7 @@ export function DeckSlackNotifyCard({ deckKey }: { deckKey: DeckKey }) {
           Slack 알림
         </CardTitle>
         <CardDescription>
-          이 Deck의 작업 완료·실패 알림을 연동된 Slack 알림 채널로 발송합니다. 끄면 이 Deck의 모든
+          이 업무의 작업 완료·실패 알림을 연동된 Slack 알림 채널로 발송합니다. 끄면 이 업무의 모든
           Slack 알림(분석·예약 메시지 포함)이 발송되지 않습니다.
         </CardDescription>
       </CardHeader>

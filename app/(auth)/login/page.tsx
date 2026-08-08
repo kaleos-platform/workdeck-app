@@ -26,7 +26,9 @@ export default async function LoginPage({
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Workdeck 로그인</CardTitle>
-        <CardDescription>이메일과 비밀번호를 입력하고 내 Deck으로 바로 이동하세요</CardDescription>
+        <CardDescription>
+          이메일과 비밀번호를 입력하고 내 워크덱으로 바로 이동하세요
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <LoginForm

@@ -33,7 +33,7 @@ export function MarketingHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-                덱
+                업무
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">

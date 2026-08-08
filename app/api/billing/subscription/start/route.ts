@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   const deckIds = Array.isArray(body?.deckIds)
     ? body.deckIds.filter((d): d is string => typeof d === 'string')
     : []
-  if (deckIds.length === 0) return errorResponse('구독할 deck을 선택하세요', 400)
+  if (deckIds.length === 0) return errorResponse('구독할 업무를 선택하세요', 400)
 
   try {
     const result = await startSubscription(resolved.space.id, deckIds)
