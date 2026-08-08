@@ -64,6 +64,25 @@ describe('isSameAnalysisContent', () => {
   it('카운트가 같아도 results 내용이 다르면 다름', () => {
     expect(isSameAnalysisContent(base, { ...base, results: { stockShortage: [{ optionId: 'B' }] } })).toBe(false)
   })
+
+  it('키 순서만 다르면 동일 — jsonb 저장 시 키가 재정렬된다', () => {
+    const fresh = {
+      ...base,
+      results: {
+        stockShortage: [{ productName: '상품', optionName: '옵션', optionId: 'A' }],
+        returnRate: [],
+      },
+    }
+    // Postgres jsonb가 길이 → 사전순으로 재정렬해 돌려준 형태.
+    const fromDb = {
+      ...base,
+      results: {
+        returnRate: [],
+        stockShortage: [{ optionId: 'A', optionName: '옵션', productName: '상품' }],
+      },
+    }
+    expect(isSameAnalysisContent(fromDb, fresh)).toBe(true)
+  })
 })
 
 describe('runAndSaveInventoryAnalysis — Slack 중복 발송 방지', () => {
