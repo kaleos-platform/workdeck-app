@@ -13,6 +13,7 @@ import {
   getSellerHubPricingScenarioPath,
 } from '@/lib/deck-routes'
 import { ProductBasicForm } from '@/components/sh/products/product-basic-form'
+import { ProductCodeField } from '@/components/sh/products/product-code-field'
 import { ProductAttributesEditor } from '@/components/sh/products/product-attributes-editor'
 import { ProductOptionsTable } from '@/components/sh/products/product-options-table'
 import { ProductListingsPanel } from '@/components/sh/products/listings/product-listings-panel'
@@ -37,7 +38,7 @@ const SECTIONS: { key: SectionKey; label: string; title: string; description: st
     key: 'options',
     label: '옵션 관리',
     title: '옵션 관리',
-    description: '속성 조합별 관리코드(SKU)와 원가/소비자가',
+    description: '제품코드·속성 조합별 관리코드(SKU)와 원가/소비자가',
   },
   {
     key: 'production',
@@ -69,22 +70,34 @@ export function ProductDetailTabs({ productId }: Props) {
   const [refreshKey, setRefreshKey] = useState(0)
   const [active, setActive] = useState<SectionKey>('basic')
   const [duplicating, setDuplicating] = useState(false)
-  // 자동 저장 상태 — BasicForm + OptionsTable 합산
+  // 자동 저장 상태 — BasicForm + CodeField + OptionsTable 합산.
+  // 세 컴포넌트가 각자 콜백으로 값을 통째로 덮어쓰므로 채널을 분리해야 한다.
   const [basicDirty, setBasicDirty] = useState(0)
   const [basicSaving, setBasicSaving] = useState(false)
+  const [codeDirty, setCodeDirty] = useState(0)
+  const [codeSaving, setCodeSaving] = useState(false)
   const [optionsDirty, setOptionsDirty] = useState(0)
   const [optionsSaving, setOptionsSaving] = useState(false)
   const [lastError, setLastError] = useState<string | null>(null)
   const basicRetryRef = useRef<(() => void) | null>(null)
+  const codeRetryRef = useRef<(() => void) | null>(null)
   const optionsRetryRef = useRef<(() => void) | null>(null)
 
-  const dirtyCount = basicDirty + optionsDirty
-  const saving = basicSaving || optionsSaving
+  const dirtyCount = basicDirty + codeDirty + optionsDirty
+  const saving = basicSaving || codeSaving || optionsSaving
   const handleRetry = useCallback(() => {
     setLastError(null)
     basicRetryRef.current?.()
+    codeRetryRef.current?.()
     optionsRetryRef.current?.()
   }, [])
+
+  // 제품코드가 바뀌면 SKU 자동 생성 결과가 달라지므로 옵션 관련 컴포넌트를 리마운트한다.
+  // 단, 옵션 테이블에 미저장 draft가 있으면 리마운트가 그 편집을 버리므로 보류.
+  const handleCodeSaved = useCallback(() => {
+    if (optionsDirty > 0) return
+    setRefreshKey((k) => k + 1)
+  }, [optionsDirty])
 
   const handleDuplicate = useCallback(async () => {
     if (!confirm('이 상품을 복제하시겠습니까? 새 상품으로 이동합니다.')) return
@@ -239,6 +252,17 @@ export function ProductDetailTabs({ productId }: Props) {
         className="scroll-mt-24 space-y-6 border-t pt-8"
       >
         <SectionHeader title={SECTIONS[1].title} description={SECTIONS[1].description} />
+        {/* refreshKey로 리마운트하지 않는다 — 다른 섹션 저장이 입력 중인 제품코드를 날리면 안 됨 */}
+        <ProductCodeField
+          productId={productId}
+          onSaved={handleCodeSaved}
+          onDirtyChange={setCodeDirty}
+          onSavingChange={setCodeSaving}
+          onError={setLastError}
+          onRetryRefAvailable={(fn) => {
+            codeRetryRef.current = fn
+          }}
+        />
         <ProductAttributesEditor
           key={`attrs-${refreshKey}`}
           productId={productId}
