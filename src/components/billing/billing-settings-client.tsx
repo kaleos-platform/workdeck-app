@@ -512,7 +512,7 @@ export function BillingSettingsClient({
           <CardHeader>
             <CardTitle>업무별 구독</CardTitle>
             <CardDescription>
-              사용 중인 업무와 요금을 확인하고 관리하세요. 표시 금액은 공급가이며 VAT는 별도입니다.
+              사용 중인 업무와 요금을 확인하고 관리하세요. 표시 금액은 VAT가 포함된 실제 결제 금액입니다.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -544,8 +544,10 @@ export function BillingSettingsClient({
                         </div>
                         {product.pricingMode === 'SUBSCRIPTION' && (
                           <div className="text-xs text-muted-foreground">
-                            월 {formatWon(product.monthlyPrice)}
-                            <span className="ml-1">(VAT 별도)</span>
+                            월 {formatWon(Math.round(product.monthlyPrice * 1.1))}
+                            <span className="ml-1">
+                              (VAT 포함 / 공급가 {formatWon(product.monthlyPrice)})
+                            </span>
                           </div>
                         )}
                       </div>
