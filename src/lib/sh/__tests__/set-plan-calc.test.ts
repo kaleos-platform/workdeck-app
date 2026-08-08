@@ -3,6 +3,7 @@ import {
   suggestSetQty,
   computeSetAvailable,
   computeLayeredFinalQty,
+  computeLayeredRoundedSplit,
   type SetItem,
 } from '@/lib/sh/set-plan-calc'
 
@@ -102,6 +103,64 @@ describe('computeSetAvailable', () => {
   test('재고 누락 옵션은 0으로 간주 → 가용 0', () => {
     const stock = new Map([['black', 10]])
     expect(computeSetAvailable(BW, stock)).toBe(0)
+  })
+})
+
+describe('computeLayeredRoundedSplit (레이어드 합산 반올림 후 분배)', () => {
+  test('합산 net 수량을 먼저 반올림한 뒤 로켓 필요분과 나머지로 분배한다', () => {
+    const split = computeLayeredRoundedSplit({
+      rocketGross: 23.2,
+      directGross: 8.1,
+      safetyStockQty: 5,
+      totalPlannedStock: 10,
+      rocketPlannedStock: 4,
+      roundUnit: 10,
+    })
+
+    // raw = 로켓 부족 ceil(23.2 + 5 - 4)=25 + 나머지 부족 ceil(8.1 - 6)=3 → 28 → 10단위 반올림 = 30
+    // 일반 위치 재고 6은 나머지 수요에만 반영되고, 로켓그로스 부족분 25를 상쇄하지 않는다.
+    expect(split.rawFinalQty).toBe(28)
+    expect(split.finalQty).toBe(30)
+    expect(split.linkedLocationNeedQty).toBe(25)
+    expect(split.linkedLocationQty).toBe(25)
+    expect(split.remainingQty).toBe(5)
+  })
+
+  test('로켓그로스 판매 비중으로 배분한 안전재고만 연동 위치 필요분에 반영한다', () => {
+    const split = computeLayeredRoundedSplit({
+      rocketGross: 10,
+      directGross: 30,
+      safetyStockQty: 20,
+      linkedLocationSafetyStockQty: 5,
+      totalPlannedStock: 0,
+      rocketPlannedStock: 0,
+      roundUnit: 10,
+    })
+
+    // 전체 최종 = ceil(10 + 30 + 20) = 60.
+    // 로켓 필요 = ceil(10 + 5 - 0) = 15. 안전재고 전체 20을 로켓에 몰아넣으면 30이라 과대배정된다.
+    expect(split.finalQty).toBe(60)
+    expect(split.linkedLocationNeedQty).toBe(15)
+    expect(split.linkedLocationQty).toBe(15)
+    expect(split.remainingQty).toBe(45)
+  })
+
+  test('일반 위치 재고가 많아도 로켓그로스 입고 필요 수량은 최종 발주에 반영한다', () => {
+    const split = computeLayeredRoundedSplit({
+      rocketGross: 50,
+      directGross: 0,
+      safetyStockQty: 0,
+      totalPlannedStock: 43,
+      rocketPlannedStock: 0,
+      roundUnit: 10,
+    })
+
+    // 기존 합산 차감식이면 전체로는 7개만 필요하다고 보고 10개만 발주했다.
+    // 수정 후에는 일반 위치 재고 43이 로켓그로스 부족분 50을 상쇄하지 못하므로 50개가 반영된다.
+    expect(split.finalQty).toBe(50)
+    expect(split.linkedLocationNeedQty).toBe(50)
+    expect(split.linkedLocationQty).toBe(50)
+    expect(split.remainingQty).toBe(0)
   })
 })
 
@@ -259,7 +318,11 @@ describe('위치 세트 모드 과다집계 회귀 (옵션=자체 수요, 세트
 
   test('구 방식(세트별 병목 사이징 → 분해합산)은 공유 옵션을 ×N 과다집계 (버그 재현)', () => {
     const decomposed = decomposeSetsToOptions(
-      CAP_M.map((s) => ({ listingId: s.listingId, setQty: suggestSetQty(s.items, net), items: s.items }))
+      CAP_M.map((s) => ({
+        listingId: s.listingId,
+        setQty: suggestSetQty(s.items, net),
+        items: s.items,
+      }))
     )
     // 4개 리스팅이 각각 whiteM/blackM 78 을 독립 커버 → 분해합산이 78 을 ×5 이상 초과
     expect(decomposed.get('whiteM')!).toBeGreaterThanOrEqual(78 * 5)
@@ -269,7 +332,11 @@ describe('위치 세트 모드 과다집계 회귀 (옵션=자체 수요, 세트
   test('신 방식 — 옵션 자체 수요 합은 구 방식 분해합산보다 크게 작다 (인플레이션 제거)', () => {
     // 구 방식: 4개 리스팅 각각 78 커버 → 분해합산
     const old = decomposeSetsToOptions(
-      CAP_M.map((s) => ({ listingId: s.listingId, setQty: suggestSetQty(s.items, net), items: s.items }))
+      CAP_M.map((s) => ({
+        listingId: s.listingId,
+        setQty: suggestSetQty(s.items, net),
+        items: s.items,
+      }))
     )
     const oldTotal = (old.get('whiteM') ?? 0) + (old.get('blackM') ?? 0)
     // 신 방식: 옵션 finalQty = 옵션 자체 net 수요(세트 재-사이징 합산 없음)

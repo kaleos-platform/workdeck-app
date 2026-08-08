@@ -18,6 +18,10 @@ export type ParsedRow = {
   orders1d: number
   revenue1d: number
   roas1d: number
+  // 14일 전환 (KEYWORD 포맷에만 존재, NCA는 null)
+  orders14d: number | null
+  revenue14d: number | null
+  roas14d: number | null
   // NCA 공통
   material: string | null
   // NCA 동영상 지표
@@ -163,6 +167,9 @@ function normalizeRow(row: Record<string, unknown>, format: AdFileFormat): Parse
       orders1d: 0,
       revenue1d: parseNum(row['첫구매를 통한 광고 전환 매출'], parseFloat),
       roas1d: parsePercent(row['첫구매를 통한 광고수익률']),
+      orders14d: null,
+      revenue14d: null,
+      roas14d: null,
       material: parseNullStr(row['소재']),
       videoViews3s: parseNullNum(row['동영상 3초 조회']),
       avgPlayTime: parseNullNum(row['평균 재생 시간']),
@@ -194,6 +201,9 @@ function normalizeRow(row: Record<string, unknown>, format: AdFileFormat): Parse
     orders1d: parseNum(row['총 주문수(1일)'], parseInt),
     revenue1d: parseNum(row['총 전환매출액(1일)'], parseFloat),
     roas1d: parsePercent(row['총광고수익률(1일)']),
+    orders14d: parseNum(row['총 주문수(14일)'], parseInt),
+    revenue14d: parseNum(row['총 전환매출액(14일)'], parseFloat),
+    roas14d: parsePercent(row['총광고수익률(14일)']),
     material: null,
     videoViews3s: null,
     avgPlayTime: null,
@@ -235,7 +245,10 @@ function aggregateDuplicates(rows: ParsedRow[]): ParsedRow[] {
       existing.adCost += row.adCost
       existing.orders1d += row.orders1d
       existing.revenue1d += row.revenue1d
-      // ctr/roas1d는 집계 후 재계산 불가 — 첫 값 유지
+      // 14일 전환도 합산 (nullable — 존재 시에만)
+      if (row.orders14d != null) existing.orders14d = (existing.orders14d ?? 0) + row.orders14d
+      if (row.revenue14d != null) existing.revenue14d = (existing.revenue14d ?? 0) + row.revenue14d
+      // ctr/roas1d/roas14d는 집계 후 재계산 불가 — 첫 값 유지
       // nullable 숫자 필드 합산
       if (row.videoViews3s != null)
         existing.videoViews3s = (existing.videoViews3s ?? 0) + row.videoViews3s

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Search } from 'lucide-react'
+import { ArrowLeft, Info, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { productDisplayName } from '@/lib/sh/product-display'
 
 type ProductRow = {
@@ -75,6 +76,8 @@ type Props = {
   contextValue?: string
   // multi-with-qty 수정 시 기존 선택 복원
   initialItems?: PickedOptionWithQty[]
+  // 검색 시 공식 상품명(name)도 매칭 대상에 포함(재고조정 상품명 추천용). 기본 false.
+  searchOfficialName?: boolean
 }
 
 export function OptionPickerDialog({
@@ -89,6 +92,7 @@ export function OptionPickerDialog({
   contextLabel,
   contextValue,
   initialItems,
+  searchOfficialName = false,
 }: Props) {
   const [search, setSearch] = useState(initialQuery)
   const [debounced, setDebounced] = useState(initialQuery)
@@ -126,6 +130,7 @@ export function OptionPickerDialog({
         const qs = new URLSearchParams()
         qs.set('pageSize', '20')
         if (debounced.trim()) qs.set('search', debounced.trim())
+        if (searchOfficialName) qs.set('includeName', '1')
         const res = await fetch(`/api/sh/products?${qs.toString()}`)
         if (!res.ok) throw new Error('검색 실패')
         const data: { data?: ProductRow[]; products?: ProductRow[] } = await res.json()
@@ -163,7 +168,7 @@ export function OptionPickerDialog({
     return () => {
       cancelled = true
     }
-  }, [open, debounced])
+  }, [open, debounced, searchOfficialName])
 
   const excluded = useMemo(() => new Set(excludeOptionIds), [excludeOptionIds])
 
@@ -388,7 +393,27 @@ export function OptionPickerDialog({
                         </label>
                         {checked && (
                           <div className="flex items-center gap-1">
-                            <span className="text-xs text-muted-foreground">수량</span>
+                            <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                              세트 수량
+                              <TooltipProvider delayDuration={200}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="text-muted-foreground/70 hover:text-foreground"
+                                      aria-label="세트 수량 안내"
+                                    >
+                                      <Info className="h-3 w-3" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                                    세트 구성으로 재고과 관리되는 상품일 경우 개별 상품 수량을
+                                    입력해주세요.
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </span>
                             <Input
                               type="number"
                               min={1}

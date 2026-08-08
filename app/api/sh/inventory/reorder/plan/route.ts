@@ -20,7 +20,7 @@ import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
-import { computeSetAvailable, computeLayeredFinalQty } from '@/lib/sh/set-plan-calc'
+import { computeSetAvailable, computeLayeredRoundedSplit } from '@/lib/sh/set-plan-calc'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 
 const DEFAULT_WINDOW_DAYS = 90
@@ -92,6 +92,9 @@ export async function POST(req: NextRequest) {
     dryRun?: boolean
     excludeRocketLayer?: boolean
     optionFinalOverrides?: Record<string, number>
+    linkedLocationIds?: string[]
+    leadTimeDaysOverride?: number
+    demandAdjustFactorOverride?: number
   } = {}
   try {
     body = await req.json()
@@ -104,6 +107,26 @@ export async function POST(req: NextRequest) {
   }
   if (body.productId && body.locationId) {
     return errorResponse('상품과 연동 위치는 동시에 선택할 수 없습니다.', 422)
+  }
+
+  const leadTimeDaysOverride =
+    typeof body.leadTimeDaysOverride === 'number' && Number.isFinite(body.leadTimeDaysOverride)
+      ? Math.floor(body.leadTimeDaysOverride)
+      : null
+  if (leadTimeDaysOverride !== null && (leadTimeDaysOverride < 1 || leadTimeDaysOverride > 365)) {
+    return errorResponse('리드타임은 1~365일 사이로 입력하세요.', 422)
+  }
+
+  const demandAdjustFactorOverride =
+    typeof body.demandAdjustFactorOverride === 'number' &&
+    Number.isFinite(body.demandAdjustFactorOverride)
+      ? body.demandAdjustFactorOverride
+      : null
+  if (
+    demandAdjustFactorOverride !== null &&
+    (demandAdjustFactorOverride <= 0 || demandAdjustFactorOverride > 10)
+  ) {
+    return errorResponse('보정계수는 0보다 크고 10 이하로 입력하세요.', 422)
   }
 
   type PlanProduct = {
@@ -124,8 +147,10 @@ export async function POST(req: NextRequest) {
   let products: PlanProduct[] = []
   let setSpecs: SetSpec[] | null = null
   const planLocationId = body.locationId ?? null
-  // 레이어드(상품 모드 + 로켓 세트) 전용 — 로켓 채널 id(수요 분할 키). null = 비레이어드.
+  // 레이어드(상품 모드 + 로켓 연동 위치) 전용 — 로켓 채널 id(수요 분할 키). null = 비레이어드.
   let rocketChannelId: string | null = null
+  let rocketLocationId: string | null = null
+  const linkedLocationIdsForCalc: string[] = []
 
   if (body.productId) {
     // ── (A) 상품 단위 ───────────────────────────────────────────────────────
@@ -153,41 +178,84 @@ export async function POST(req: NextRequest) {
       return errorResponse('선택된 옵션이 없습니다', 422)
     }
 
-    // ── 레이어드 탐지 — 이 상품이 연동 위치(로켓) 세트로도 팔리면 2레이어(세트+직접) 발주 ──
-    // 로켓 채널(externalSource) → 대표 채널 → 그 채널 세트(ProductListing, 구성 2개+) 중
-    // 구성옵션이 전부 이 상품 옵션인 "단일상품 세트"만 적격. 없으면 평이 상품 플랜으로 폴백(하위호환).
-    // isActive: true 로 demand 소스(loadOptionDemand는 활성 채널만 로켓 수요 태깅)와 채널 id 정합 보장.
-    // 비활성 로켓 채널이면 탐지 실패 → 평이 상품 플랜(로켓 수요도 어차피 없음).
-    // 위저드에서 "연동 위치 포함" 해제(excludeRocketLayer) 시 감지 skip → 평이 상품 플랜.
-    const rocketChannel = body.excludeRocketLayer
-      ? null
-      : await prisma.channel.findFirst({
-          where: { spaceId, externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH, isActive: true },
+    // ── 레이어드 탐지 — 자동 감지 + 사용자가 고른 다수 연동 위치 직접 탐색 ──
+    // 1순위: 사용자가 linkedLocationIds로 고른 연동 위치들.
+    // 2순위: 로켓그로스 기본 연동 위치.
+    // 매칭 기준은 InvLocationProductMap 또는 해당 위치의 InvStockLevel(이미 재고에 있는 내부 옵션)이다.
+    const productOptionIds = new Set(products.flatMap((p) => p.options.map((o) => o.id)))
+    const requestedLocationIds = Array.isArray(body.linkedLocationIds)
+      ? body.linkedLocationIds.filter((id): id is string => typeof id === 'string' && id.length > 0)
+      : []
+    const candidateLocations = body.excludeRocketLayer
+      ? []
+      : await prisma.invStorageLocation.findMany({
+          where:
+            requestedLocationIds.length > 0
+              ? {
+                  spaceId,
+                  id: { in: requestedLocationIds },
+                  isActive: true,
+                  externalSource: { not: null },
+                }
+              : {
+                  spaceId,
+                  externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
+                  isActive: true,
+                },
+          select: { id: true, externalSource: true },
+          orderBy: { createdAt: 'asc' },
+        })
+
+    for (const loc of candidateLocations) {
+      if (!loc.externalSource) continue
+      const [mapped, stocked] = await Promise.all([
+        prisma.invLocationProductMap.findFirst({
+          where: {
+            spaceId,
+            locationId: loc.id,
+            items: { some: { optionId: { in: Array.from(productOptionIds) } } },
+          },
+          select: { id: true },
+        }),
+        prisma.invStockLevel.findFirst({
+          where: { spaceId, locationId: loc.id, optionId: { in: Array.from(productOptionIds) } },
+          select: { id: true },
+        }),
+      ])
+      if (!mapped && !stocked) continue
+
+      linkedLocationIdsForCalc.push(loc.id)
+      if (!rocketLocationId) {
+        rocketLocationId = loc.id
+        const linkedChannel = await prisma.channel.findFirst({
+          where: { spaceId, externalSource: loc.externalSource, isActive: true },
           select: { id: true, representativeChannelId: true },
         })
-    if (rocketChannel?.representativeChannelId) {
-      const productOptionIds = new Set(products.flatMap((p) => p.options.map((o) => o.id)))
-      const listings = await prisma.productListing.findMany({
-        where: { spaceId, channelId: rocketChannel.representativeChannelId, status: 'ACTIVE' },
-        orderBy: { updatedAt: 'desc' },
-        select: {
-          id: true,
-          searchName: true,
-          managementName: true,
-          items: { select: { optionId: true, quantity: true }, orderBy: { sortOrder: 'asc' } },
-        },
-      })
-      const qualifying = listings.filter(
-        (l) => l.items.length > 1 && l.items.every((it) => productOptionIds.has(it.optionId))
-      )
-      if (qualifying.length > 0) {
-        setSpecs = qualifying.map((l, idx) => ({
-          listingId: l.id,
-          listingName: l.managementName?.trim() || l.searchName,
-          sortOrder: idx,
-          items: l.items.map((it) => ({ optionId: it.optionId, perSet: it.quantity })),
-        }))
-        rocketChannelId = rocketChannel.id
+        rocketChannelId = linkedChannel?.id ?? null
+
+        if (linkedChannel?.representativeChannelId) {
+          const listings = await prisma.productListing.findMany({
+            where: { spaceId, channelId: linkedChannel.representativeChannelId, status: 'ACTIVE' },
+            orderBy: { updatedAt: 'desc' },
+            select: {
+              id: true,
+              searchName: true,
+              managementName: true,
+              items: { select: { optionId: true, quantity: true }, orderBy: { sortOrder: 'asc' } },
+            },
+          })
+          const qualifying = listings.filter(
+            (l) => l.items.length > 0 && l.items.every((it) => productOptionIds.has(it.optionId))
+          )
+          if (qualifying.length > 0) {
+            setSpecs = qualifying.map((l, idx) => ({
+              listingId: l.id,
+              listingName: l.managementName?.trim() || l.searchName,
+              sortOrder: idx,
+              items: l.items.map((it) => ({ optionId: it.optionId, perSet: it.quantity })),
+            }))
+          }
+        }
       }
     }
   } else {
@@ -273,9 +341,9 @@ export async function POST(req: NextRequest) {
 
   const optionIds = products.flatMap((p) => p.options.map((o) => o.id))
 
-  // 레이어드 = 상품 모드(planLocationId 없음)인데 적격 로켓 세트가 탐지됨.
-  // 위치 모드(planLocationId 있음)의 세트와 구분 — 레이어드는 수요를 로켓/직접으로 분할한다.
-  const isLayered = setSpecs != null && planLocationId == null
+  // 레이어드 = 상품 모드(planLocationId 없음)인데 로켓그로스 연동 위치/채널이 감지됨.
+  // 세트 환산표(setSpecs)는 있으면 표시용으로만 저장하고, 없더라도 로켓/직접 수요 분리는 수행한다.
+  const isLayered = rocketChannelId != null && planLocationId == null
 
   // ── 2) 현재 재고 ──────────────────────────────────────────────────────────
   const stockGroups = await prisma.invStockLevel.groupBy({
@@ -288,6 +356,18 @@ export async function POST(req: NextRequest) {
     stockByOption.set(g.optionId, g._sum.quantity ?? 0)
   }
 
+  const rocketStockByOption = new Map<string, number>()
+  if (linkedLocationIdsForCalc.length > 0) {
+    const rocketStockGroups = await prisma.invStockLevel.groupBy({
+      by: ['optionId'],
+      where: { spaceId, locationId: { in: linkedLocationIdsForCalc }, optionId: { in: optionIds } },
+      _sum: { quantity: true },
+    })
+    for (const g of rocketStockGroups) {
+      rocketStockByOption.set(g.optionId, g._sum.quantity ?? 0)
+    }
+  }
+
   const pendingRuns = await prisma.productionRun.findMany({
     where: {
       spaceId,
@@ -296,6 +376,7 @@ export async function POST(req: NextRequest) {
     },
     select: {
       status: true,
+      stockInLocationId: true,
       items: {
         where: { optionId: { in: optionIds } },
         select: { optionId: true, quantity: true },
@@ -303,6 +384,14 @@ export async function POST(req: NextRequest) {
     },
   })
   const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
+  const rocketIncomingByOption = sumIncomingProductionQtyByOption(
+    linkedLocationIdsForCalc.length > 0
+      ? pendingRuns.filter(
+          (r) =>
+            r.stockInLocationId != null && linkedLocationIdsForCalc.includes(r.stockInLocationId)
+        )
+      : []
+  )
 
   // ── 3) 분석 기간별 주문수요 집계 ──────────────────────────────────────────
   // 수요 신호 = 옵션×일자 주문수요(수동채널 DelOrderItem + 로켓 VENDOR). 판매분석과
@@ -398,6 +487,7 @@ export async function POST(req: NextRequest) {
     productId: string
     optionId: string
     leadTimeDays: number
+    analysisWindowDays: number
     safetyStockQty: number
     currentStock: number
     onHandStock: number
@@ -410,7 +500,8 @@ export async function POST(req: NextRequest) {
   }> = []
 
   for (const p of products) {
-    const leadTimeDays = p.reorderConfig?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
+    const leadTimeDays =
+      leadTimeDaysOverride ?? p.reorderConfig?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS
     const roundUnit = p.reorderRoundUnit ?? 10
 
     for (const o of p.options) {
@@ -420,7 +511,8 @@ export async function POST(req: NextRequest) {
       const forecastResult = forecastOption({ history, leadTimeDays })
 
       const prevBias = biasByOption.get(o.id) ?? null
-      const biasAdjustFactor = computeBiasAdjust(prevBias)
+      const baseBiasAdjustFactor = computeBiasAdjust(prevBias)
+      const biasAdjustFactor = baseBiasAdjustFactor * (demandAdjustFactorOverride ?? 1)
 
       const onHandStock = stockByOption.get(o.id) ?? 0
       const incomingQty = incomingByOption.get(o.id) ?? 0
@@ -437,6 +529,7 @@ export async function POST(req: NextRequest) {
         productId: p.id,
         optionId: o.id,
         leadTimeDays,
+        analysisWindowDays: wd,
         safetyStockQty,
         currentStock,
         onHandStock,
@@ -466,6 +559,9 @@ export async function POST(req: NextRequest) {
   // 레이어드 전용 — 레이어별 raw GROSS(컬럼 저장 + 응답 분해 표시용).
   let directGrossByOption: Map<string, number> | null = null
   let rocketGrossByOption: Map<string, number> | null = null
+  let rocketNeedByOption: Map<string, number> | null = null
+  let rocketExpectedSalesByOption: Map<string, number> | null = null
+  let rocketSafetyStockByOption: Map<string, number> | null = null
 
   // 세트 라인 = 옵션 발주수량의 역산(참고 표시, 읽기전용). 완성 세트 = min floor(finalQty/perSet).
   // 위치·레이어드 두 세트 모드 공통 — 세트를 되먹여 사이징하지 않으므로 공유 옵션 ×N 과다집계 없음.
@@ -501,11 +597,10 @@ export async function POST(req: NextRequest) {
     }
 
     planSetsData = buildReadOnlySetLines(optionFinalQtyOverride, onHandByOption)
-  } else if (setSpecs && isLayered) {
-    // ── 레이어드 (상품 + 로켓 세트) — 옵션 수요가 진실. 세트는 발주 옵션의 역산 표시(파생). ──
-    // 로켓 옵션 수요(loadOptionDemand)는 이미 전 세트 판매를 옵션으로 분해·집계한 값이므로,
-    // 세트를 개별 리스팅마다 전량 커버하도록 재-사이징해 합산하면 공유 옵션이 ×N 부풀려진다(과다집계).
-    // → 로켓/직접 raw GROSS를 옵션 단위로 그대로 쓰고, safety−currentStock 은 옵션 합산에 1회만 차감한다.
+  } else if (isLayered) {
+    // ── 레이어드 (상품 + 로켓그로스 연동 위치) — 옵션 수요가 진실. ──
+    // 로켓/직접 raw GROSS를 옵션 단위로 분리한 뒤, 전체 수량은 합산 후 반올림한다.
+    // 이후 반올림된 최종수량을 로켓그로스 위치 입고 필요분과 나머지로 분배한다.
     const rocketGrossNeed = new Map<string, number>()
     const directGross = new Map<string, number>()
     const onHandByOption = new Map<string, number>()
@@ -515,38 +610,53 @@ export async function POST(req: NextRequest) {
       const dSeries = buildDailySeries(directDailyByOption.get(it.optionId) ?? {}, wd, now)
       const rFc = forecastOption({ history: rSeries, leadTimeDays: it.leadTimeDays })
       const dFc = forecastOption({ history: dSeries, leadTimeDays: it.leadTimeDays })
-      // GROSS = dailyAvg × bias × leadTime (차감 없음)
       rocketGrossNeed.set(it.optionId, rFc.dailyAvg * it.biasAdjustFactor * it.leadTimeDays)
       directGross.set(it.optionId, dFc.dailyAvg * it.biasAdjustFactor * it.leadTimeDays)
       onHandByOption.set(it.optionId, it.onHandStock)
     }
 
-    // 최종 옵션 = max(0, ceil(로켓 raw GROSS + 직접 raw GROSS + safety − currentStock)). 차감 1회.
     optionFinalQtyOverride = new Map<string, number>()
     directGrossByOption = new Map<string, number>()
     rocketGrossByOption = new Map<string, number>()
+    rocketNeedByOption = new Map<string, number>()
+    rocketExpectedSalesByOption = new Map<string, number>()
+    rocketSafetyStockByOption = new Map<string, number>()
     for (const it of itemInputs) {
       const rGross = rocketGrossNeed.get(it.optionId) ?? 0
       const dGross = directGross.get(it.optionId) ?? 0
-      const finalQty = computeLayeredFinalQty({
-        rocketContribution: rGross,
+      const totalGross = rGross + dGross
+      const linkedLocationSafetyStockQty =
+        totalGross > 0 ? it.safetyStockQty * (rGross / totalGross) : 0
+      const rocketPlannedStock = plannedStockQty({
+        onHandQty: rocketStockByOption.get(it.optionId) ?? 0,
+        incomingQty: rocketIncomingByOption.get(it.optionId) ?? 0,
+      })
+      const split = computeLayeredRoundedSplit({
+        rocketGross: rGross,
         directGross: dGross,
         safetyStockQty: it.safetyStockQty,
-        currentStock: it.currentStock,
+        linkedLocationSafetyStockQty,
+        totalPlannedStock: it.currentStock,
+        rocketPlannedStock,
+        roundUnit: it.roundUnit,
       })
-      optionFinalQtyOverride.set(it.optionId, finalQty)
-      directGrossByOption.set(it.optionId, dGross)
-      rocketGrossByOption.set(it.optionId, rGross)
+      optionFinalQtyOverride.set(it.optionId, split.finalQty)
+      rocketExpectedSalesByOption.set(it.optionId, rGross)
+      rocketSafetyStockByOption.set(it.optionId, linkedLocationSafetyStockQty)
+      rocketNeedByOption.set(it.optionId, split.linkedLocationNeedQty)
+      // 기존 컬럼명을 유지하되 의미는 입고 분배 baseline/remaining 이다.
+      // stockin-split·상세 UI가 이 값을 사용해 로켓그로스 입고분과 나머지를 구분한다.
+      rocketGrossByOption.set(it.optionId, split.linkedLocationQty)
+      directGrossByOption.set(it.optionId, split.remainingQty)
     }
 
-    planSetsData = buildReadOnlySetLines(optionFinalQtyOverride, onHandByOption)
+    planSetsData = setSpecs ? buildReadOnlySetLines(optionFinalQtyOverride, onHandByOption) : null
   }
 
   // ── 5.6) 위저드 편집분(optionFinalOverrides) 반영 — 세트 역산·totalFinalQty·persist 정합 ──
   // 옵션별 최종수량 수동 지정(≥0). override 없는 옵션은 기존 계산값 유지.
-  // 강제 floor(최종≥baseline) 없음 — 레이어드 최종은 재고 차감 후 net이라 재고가 수요를 덮으면
-  // final < baseline 이 정상(과발주 방지). Phase 2 입고 분배는 min/max 로 분할한다:
-  //   로켓 세트분 = min(final, baseline), 추가분(위치 입고) = max(0, final − baseline).
+  // 강제 floor(최종≥baseline) 없음 — 레이어드 최종은 연동 위치 부족분과 나머지 위치 부족분을
+  // 분리 계산해 합산한다. 일반 위치 재고가 로켓그로스 부족분을 상쇄하면 안 된다.
   if (body.optionFinalOverrides) {
     if (!optionFinalQtyOverride) optionFinalQtyOverride = new Map<string, number>()
     for (const it of itemInputs) {
@@ -576,7 +686,7 @@ export async function POST(req: NextRequest) {
     })
     const metaById = new Map(optMeta.map((o) => [o.id, o]))
     let locationName: string | null = null
-    if (setSpecs != null) {
+    if (isLayered || setSpecs != null) {
       const rocketLoc = await prisma.invStorageLocation.findFirst({
         where: { spaceId, externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH, isActive: true },
         select: { name: true },
@@ -586,7 +696,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       dryRun: true,
       isLayered,
-      qualifies: setSpecs != null,
+      qualifies: isLayered || setSpecs != null,
       locationName,
       options: itemInputs.map((it) => {
         const m = metaById.get(it.optionId)
@@ -603,11 +713,29 @@ export async function POST(req: NextRequest) {
           dailyAvgForecast: it.forecastResult.dailyAvg,
           forecastModel: it.forecastResult.model,
           leadTimeDays: it.leadTimeDays,
+          analysisWindowDays: it.analysisWindowDays,
           suggestedQty: it.suggestedQty,
           roundedSuggestedQty: it.roundedSuggestedQty,
-          // 레이어드: 옵션별 로켓 baseline(정수 올림) + 직접 GROSS. 비레이어드 = null.
-          rocketBaselineQty: rocketGrossByOption ? Math.ceil(rocketGrossByOption.get(it.optionId) ?? 0) : null,
+          // 연동 위치: 옵션별 입고 필요 수량 + 계산 구성값. 비연동 = null.
+          rocketBaselineQty: rocketGrossByOption
+            ? Math.ceil(rocketGrossByOption.get(it.optionId) ?? 0)
+            : null,
           directGrossQty: directGrossByOption ? (directGrossByOption.get(it.optionId) ?? 0) : null,
+          linkedLocationExpectedSalesQty: rocketExpectedSalesByOption
+            ? Math.ceil(rocketExpectedSalesByOption.get(it.optionId) ?? 0)
+            : null,
+          linkedLocationSafetyStockQty: rocketSafetyStockByOption
+            ? Math.ceil(rocketSafetyStockByOption.get(it.optionId) ?? 0)
+            : null,
+          linkedLocationNeedQty: rocketNeedByOption
+            ? Math.ceil(rocketNeedByOption.get(it.optionId) ?? 0)
+            : null,
+          linkedLocationCurrentStockQty: rocketGrossByOption
+            ? (rocketStockByOption.get(it.optionId) ?? 0)
+            : null,
+          linkedLocationIncomingQty: rocketGrossByOption
+            ? (rocketIncomingByOption.get(it.optionId) ?? 0)
+            : null,
           finalQty: optionFinalQtyOverride
             ? (optionFinalQtyOverride.get(it.optionId) ?? 0)
             : it.roundedSuggestedQty,
@@ -695,6 +823,7 @@ export async function POST(req: NextRequest) {
             profile: item.forecastResult.debug.profile ?? null,
             forecastDebug: item.forecastResult.debug,
             biasAdjustFactor: item.biasAdjustFactor,
+            userDemandAdjustFactor: demandAdjustFactorOverride ?? 1,
             windowDays: windowDaysByOption.get(item.optionId) ?? DEFAULT_WINDOW_DAYS,
             leadTimeDays: item.leadTimeDays,
             safetyStockQty: item.safetyStockQty,

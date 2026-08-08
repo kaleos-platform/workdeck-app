@@ -187,12 +187,15 @@ export function ReconciliationPreview({
   const [selected, setSelected] = useState<Set<string>>(new Set())
   // externalCode → PickedOptionWithQty[] (다중 옵션+수량)
   const [manualMap, setManualMap] = useState<Record<string, PickedOptionWithQty[]>>({})
+  // 수동 매칭한 옵션의 이 위치 현재 재고 (optionId → quantity). 매칭 즉시 조회해 현재재고·차이 표시.
+  const [manualStock, setManualStock] = useState<Record<string, number>>({})
 
   const lastClickedIndexRef = useRef<number | null>(null)
 
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerExternalCode, setPickerExternalCode] = useState<string | null>(null)
   const [pickerContext, setPickerContext] = useState('')
+  const [pickerQuery, setPickerQuery] = useState('')
 
   // matched-* 행 매칭 수정용 picker 상태
   const [editMatcherOpen, setEditMatcherOpen] = useState(false)
@@ -309,6 +312,19 @@ export function ReconciliationPreview({
       const items = manualMap[code]
       const isMapped = !!(items && items.length > 0)
 
+      // 수동 매칭 시 현재 재고·차이 파생: 현재재고=Σ 옵션별 위치재고, 목표=Σ 파일수량×세트수량, 차이=목표−현재
+      let sysQty: number | null = null
+      let delta: number | null = null
+      if (isMapped) {
+        const hasStock = items!.every((i) => manualStock[i.optionId] !== undefined)
+        if (hasStock) {
+          const current = items!.reduce((s, i) => s + (manualStock[i.optionId] ?? 0), 0)
+          const target = items!.reduce((s, i) => s + e.row.quantity * i.quantity, 0)
+          sysQty = current
+          delta = target - current
+        }
+      }
+
       result.push({
         key: `file-${code}`,
         status: 'file-only',
@@ -318,9 +334,9 @@ export function ReconciliationPreview({
         optionName: isMapped ? manualItemsToOptionLabel(items!) : '-',
         externalOptionName: e.row.externalOptionName ?? '-',
         isManualMatched: isMapped,
-        systemQty: null,
+        systemQty: sysQty,
         fileQty: e.row.quantity,
-        delta: null,
+        delta,
         externalCode: code,
         suggestions: e.suggestions,
         row: e.row,
@@ -342,7 +358,7 @@ export function ReconciliationPreview({
     }
 
     return result
-  }, [diffEntries, equalEntries, fileOnlyEntries, systemOnlyEntries, manualMap])
+  }, [diffEntries, equalEntries, fileOnlyEntries, systemOnlyEntries, manualMap, manualStock])
 
   const filteredEntries = useMemo(
     () =>
@@ -411,6 +427,7 @@ export function ReconciliationPreview({
     const name = entry.row?.externalName ?? entry.externalCode
     const optionName = entry.row?.externalOptionName
     setPickerContext(optionName ? `${name} / ${optionName}` : name)
+    setPickerQuery(name)
     setPickerOpen(true)
   }
 
@@ -426,6 +443,27 @@ export function ReconciliationPreview({
     setPickerOpen(false)
     const label = manualItemsToLabel(items)
     toast.success(`${label} 매칭됨`)
+    // 매칭 즉시 현재 재고 조회 → 현재재고·차이 표시(적용 전 검토용)
+    void fetchManualStock(items.map((i) => i.optionId))
+  }
+
+  async function fetchManualStock(optionIds: string[]) {
+    if (!recon || optionIds.length === 0) return
+    try {
+      const res = await fetch(
+        `/api/sh/inventory/locations/${recon.location.id}/stock?optionIds=${optionIds.join(',')}`
+      )
+      if (!res.ok) return
+      const data: { stocks?: { optionId: string; quantity: number }[] } = await res.json()
+      setManualStock((prev) => {
+        const next = { ...prev }
+        for (const id of optionIds) next[id] = 0 // 재고 행 없는 옵션=0
+        for (const s of data.stocks ?? []) next[s.optionId] = s.quantity
+        return next
+      })
+    } catch {
+      // 조회 실패는 무시(표시만 미보강)
+    }
   }
 
   function openEditMatcher(entry: UnifiedEntry) {
@@ -669,14 +707,14 @@ export function ReconciliationPreview({
                     />
                   )}
                 </TableHead>
-                <TableHead className="w-24">상태</TableHead>
-                <TableHead>상품명</TableHead>
-                <TableHead className="w-36">파일 옵션명</TableHead>
-                <TableHead className="min-w-[14rem]">매칭 상품 옵션</TableHead>
-                <TableHead className="w-16 text-right">현재 재고</TableHead>
-                <TableHead className="w-16 text-right">파일</TableHead>
-                <TableHead className="w-16 text-right">차이</TableHead>
-                <TableHead className="w-32 whitespace-nowrap">동작</TableHead>
+                <TableHead className="w-20">상태</TableHead>
+                <TableHead className="min-w-[8rem]">상품명</TableHead>
+                <TableHead className="w-28">파일 옵션명</TableHead>
+                <TableHead className="min-w-[9rem]">매칭 상품 옵션</TableHead>
+                <TableHead className="w-14 text-right">현재 재고</TableHead>
+                <TableHead className="w-12 text-right">파일</TableHead>
+                <TableHead className="w-12 text-right">차이</TableHead>
+                <TableHead className="w-20 whitespace-nowrap">동작</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -839,6 +877,8 @@ export function ReconciliationPreview({
         }}
         mode="multi-with-qty"
         onPickMulti={handlePickedMulti}
+        initialQuery={pickerQuery}
+        searchOfficialName
         excludeOptionIds={excludeOptionIds}
         contextLabel="매칭 대상 (파일)"
         contextValue={pickerContext}

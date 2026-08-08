@@ -11,7 +11,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import type { BrowserContext, Locator, Page } from 'playwright'
+import type { BrowserContext, Download, Locator, Page } from 'playwright'
 import { launchStealthPersistentContext, renewProfileLock } from './browser.js'
 import { LoginError, classifyLoginFailure, reasonLabel } from './login-guard.js'
 
@@ -175,11 +175,32 @@ async function clickAndDownload(
   const downloadPromise = page.waitForEvent('download', { timeout: DOWNLOAD_TIMEOUT })
   downloadPromise.catch(() => {})
 
+  // 판매분석 "상품별 판매 리포트"는 비동기 다운로드 매니저를 거친다
+  // (POST /fcc/download-manager/request-auto-download → check-downloadable). 준비가 끝나면
+  // **새 팝업 페이지**가 열려 거기서 다운로드가 발생하고 팝업은 즉시 닫힌다 — 메인 페이지의
+  // download 이벤트만 기다리면 파일이 준비돼도 영영 못 받고 120초 타임아웃이 난다
+  // (2026-08-05~07 판매분석 수집 실패 원인, 2026-08-07 실측).
+  // 팝업 생성 즉시 리스너를 붙여야 하므로 클릭 전에 컨텍스트 핸들러를 등록한다.
+  const context = page.context()
+  let resolvePopupDownload: (download: Download) => void = () => {}
+  const popupDownloadPromise = new Promise<Download>((resolve) => {
+    resolvePopupDownload = resolve
+  })
+  const onPopup = (popup: Page) => {
+    popup.on('download', (download) => resolvePopupDownload(download))
+  }
+  context.on('page', onPopup)
+
   // force 클릭은 hit-target 검사를 생략해 요소가 뷰포트 밖이면 엉뚱한 좌표(사이드 내비 등)를
   // 때린다 — 일반 클릭 실패 시 요소에 직접 dispatch 하는 JS 클릭으로 폴백한다.
   await clickWithJsFallback(btnLocator, '다운로드 트리거')
 
-  const download = await downloadPromise
+  let download: Download
+  try {
+    download = await Promise.race([downloadPromise, popupDownloadPromise])
+  } finally {
+    context.off('page', onPopup)
+  }
   const suggestedName = download.suggestedFilename()
   const baseName = suggestedName && suggestedName.trim().length > 0 ? suggestedName : fallbackName
   const target = uniqueDownloadTarget(downloadDir, baseName)
@@ -220,7 +241,8 @@ async function dismissModals(page: Page): Promise<boolean> {
   //   - "품절 상품을 신속히 재입고": 물류센터 이슈 안내 모달(2026-08-04 등장 —
   //     "다시 보지 않기"/"확인" 버튼. 백드롭이 엑셀 다운로드 드롭다운 클릭을 삼켜
   //     재고현황 수집이 매일 실패하던 원인)
-  const modalTitles = ['더 고도화된 재고현황', '품절 상품을 신속히 재입고']
+  //   - "비즈니스 인사이트": 구독 프로모션 모달(X가 div 라 위 후보로 안 닫힘 — 2026-08-06 잔존 확인)
+  const modalTitles = ['더 고도화된 재고현황', '품절 상품을 신속히 재입고', '비즈니스 인사이트']
   for (const title of modalTitles) {
     const modalTitle = page.locator(`text=${title}`).first()
     if (!(await modalTitle.isVisible({ timeout: 800 }).catch(() => false))) continue
@@ -253,6 +275,104 @@ async function dismissModals(page: Page): Promise<boolean> {
   }
 
   return dismissed
+}
+
+/**
+ * 재고현황 "선택 상품"(장바구니)에 담긴 항목을 모두 비운다.
+ *
+ * Wing 의 "엑셀 다운로드 요청"은 **장바구니에 담긴 상품이 있으면 그 상품만 export** 한다.
+ * 프로필(userDataDir)이 영속이라 장바구니가 런을 넘어 누적되고, 그 상태로 요청하면
+ * 469행 그리드에서 2행짜리 파일이 나온다(2026-08-06 실패 원인).
+ *
+ * 헤더의 "N개 선택됨"은 그리드 체크박스가 아니라 **장바구니 건수**다. 실제로 라벨이
+ * 12건일 때도 그리드 체크박스는 0개였고(버튼 텍스트 "선택된 0개 상품의 재고상태 보기"),
+ * 체크박스를 해제하는 방식으로는 건수가 줄지 않는다(2026-08-07 실측).
+ *
+ * 해제 경로는 장바구니 패널의 "전체 비우기" → "전체삭제 하시겠습니까?" 확인뿐이다.
+ * "전체 비우기" 링크는 뷰포트(1400x900) 아래에 위치해 Playwright 클릭이 actionability
+ * 검사에서 막히므로 DOM 의 native click() 으로 누른다.
+ *
+ * 요청 직전에 비우고 0건을 검증한다. 실패하면 잘못된 파일을 만들지 말고 스크린샷과
+ * 함께 실패시킨다.
+ */
+async function readSelectedCount(page: Page): Promise<number | null> {
+  const label = await page
+    .locator('text=/\\d+개\\s*선택됨/')
+    .first()
+    .textContent({ timeout: 2000 })
+    .catch(() => null)
+  const matched = label?.match(/(\d+)\s*개\s*선택됨/)
+  return matched ? Number(matched[1]) : null
+}
+
+/** 장바구니 패널의 "전체 비우기" 를 native click 으로 누른다 (뷰포트 밖이라 Playwright 클릭 불가) */
+const CLICK_CART_CLEAR_ALL = `(() => {
+  const target = Array.from(document.querySelectorAll('a, button, span, div')).find(
+    (el) => (el.textContent || '').replace(/\\s+/g, ' ').trim() === '전체 비우기'
+  )
+  if (!target) return 'not-found'
+  target.click()
+  return 'clicked'
+})()`
+
+/**
+ * "전체삭제 하시겠습니까?" 확인 모달의 확인 버튼만 누른다.
+ * 페이지에 다른 "확인" 버튼이 여럿 있어 모달 컨테이너 안으로 범위를 좁힌다.
+ */
+const CONFIRM_CART_CLEAR = `(() => {
+  const heading = Array.from(document.querySelectorAll('*')).find(
+    (el) => /전체삭제 하시겠습니까/.test(el.textContent || '') && el.children.length === 0
+  )
+  if (!heading) return 'no-modal'
+  let scope = heading.parentElement
+  for (let i = 0; i < 6 && scope; i++) {
+    const btn = Array.from(scope.querySelectorAll('button')).find(
+      (el) => (el.textContent || '').replace(/\\s+/g, ' ').trim() === '확인'
+    )
+    if (btn) {
+      btn.click()
+      return 'confirmed'
+    }
+    scope = scope.parentElement
+  }
+  return 'no-confirm-button'
+})()`
+
+async function clearCartSelection(page: Page): Promise<void> {
+  const selectedCount = () => readSelectedCount(page)
+
+  const before = await selectedCount()
+  if (before === null) {
+    console.log('[inventory]   → 선택 건수 라벨 미발견 — 장바구니 비우기 스킵')
+    return
+  }
+  if (before === 0) return
+
+  console.log(`[inventory]   → 선택 상품(장바구니) ${before}건 감지 — 전체 비우기 시도`)
+
+  // 1) 장바구니 패널 펼치기 (접혀 있으면 "전체 비우기" 가 DOM 에 없다)
+  await page.locator('div.cart').first().click({ timeout: 5000 }).catch(() => {})
+  await page.waitForTimeout(1500)
+
+  // 2) "전체 비우기" → 3) "전체삭제 하시겠습니까?" 확인
+  const cleared = await page.evaluate(CLICK_CART_CLEAR_ALL).catch(() => 'error')
+  console.log(`[inventory]   → 전체 비우기: ${cleared}`)
+  await page.waitForTimeout(1500)
+
+  const confirmed = await page.evaluate(CONFIRM_CART_CLEAR).catch(() => 'error')
+  console.log(`[inventory]   → 확인 모달: ${confirmed}`)
+  await page.waitForTimeout(3000)
+
+  const after = await selectedCount()
+  if (after !== 0) {
+    await saveScreenshot(page, 'inventory-health-selection-stuck')
+    throw new Error(
+      `[inventory] 재고현황 선택 상품(장바구니) 비우기 실패 (${before}건 → ${after ?? '알 수 없음'}건). ` +
+        '장바구니에 상품이 담긴 채로 엑셀을 요청하면 담긴 상품만 export 되어 부분 데이터가 적재됩니다.'
+    )
+  }
+
+  console.log('[inventory]   → 선택 상품 비우기 완료 (0개 선택됨)')
 }
 
 /** 사이드바 기준으로 로켓그로스 > 재고현황 진입 */
@@ -320,6 +440,9 @@ async function downloadInventoryHealth(
     // 그리드 대기 실패는 무시 — 업로드 가드가 부분 export 를 잡는다
   }
 
+  // 장바구니에 상품이 담겨 있으면 그 상품만 export 되므로 요청 전에 반드시 비운다
+  await clearCartSelection(page)
+
   let downloadBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
   if (!(await downloadBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
     downloadBtn = page.locator('button:has-text("엑셀 다운로드")').first()
@@ -372,6 +495,16 @@ async function downloadInventoryHealth(
   if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
     await saveScreenshot(page, 'inventory-health-no-request-btn')
     throw new Error('[inventory] 재고현황의 "엑셀 다운로드 요청" 메뉴를 찾을 수 없습니다')
+  }
+
+  // 드롭다운을 여는 과정(모달 정리·재클릭)에서 행이 선택될 수도 있으므로 요청 직전 재확인.
+  // 이 시점엔 드롭다운이 열려 있어 해제 클릭이 메뉴를 닫으므로, 검증만 하고 실패시킨다.
+  const selectedAtRequest = await readSelectedCount(page)
+  if (selectedAtRequest !== null && selectedAtRequest > 0) {
+    await saveScreenshot(page, 'inventory-health-selection-at-request')
+    throw new Error(
+      `[inventory] 엑셀 요청 직전 그리드 선택 ${selectedAtRequest}건 — 선택분만 export 되므로 중단합니다.`
+    )
   }
 
   const menuText = (await requestBtn.textContent().catch(() => ''))?.trim()

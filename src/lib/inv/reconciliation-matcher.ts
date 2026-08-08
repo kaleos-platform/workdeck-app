@@ -100,6 +100,25 @@ async function findOptionByName(
   return { optionId: o.id, productName: o.product.name, optionName: o.name }
 }
 
+// 단일 옵션 상품 매칭 — 상품명만으로(옵션명 무시). 외부 파일이 변형 없이 "Default" 옵션만
+// 담는 경우(단일 옵션 상품)를 위해. 상품명 정확 일치 상품이 딱 1개이고 그 상품의 옵션이
+// 딱 1개일 때만 매칭(모호하면 null → file-only). 다중 옵션/동명 상품은 매칭 안 함.
+async function findSingleOptionByProductName(
+  spaceId: string,
+  productName: string
+): Promise<{ optionId: string; productName: string; optionName: string } | null> {
+  const products = await prisma.invProduct.findMany({
+    where: { spaceId, name: { equals: productName, mode: 'insensitive' } },
+    include: { options: { select: { id: true, name: true } } },
+    take: 2,
+  })
+  if (products.length !== 1) return null
+  const p = products[0]
+  if (p.options.length !== 1) return null
+  const o = p.options[0]
+  return { optionId: o.id, productName: p.name, optionName: o.name }
+}
+
 export async function matchReconciliation(
   spaceId: string,
   locationId: string,
@@ -194,9 +213,14 @@ export async function matchReconciliation(
       continue
     }
 
-    // 2순위: 이름 fallback — 상품명+옵션명 단일 일치 시만
-    if (row.externalName && row.externalOptionName) {
-      const hit = await findOptionByName(spaceId, row.externalName, row.externalOptionName)
+    // 2순위: 이름 fallback
+    //  (a) 상품명+옵션명 단일 일치, 또는
+    //  (b) 단일 옵션 상품이면 상품명만으로(옵션명 "Default" 등 무시)
+    if (row.externalName) {
+      let hit = row.externalOptionName
+        ? await findOptionByName(spaceId, row.externalName, row.externalOptionName)
+        : null
+      if (!hit) hit = await findSingleOptionByProductName(spaceId, row.externalName)
       if (hit) {
         const sysRow = await prisma.invStockLevel.findUnique({
           where: { optionId_locationId: { optionId: hit.optionId, locationId } },

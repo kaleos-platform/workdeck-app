@@ -56,6 +56,13 @@ type AnalysisOutput = {
 
 // ─── 분석 엔진 ──────────────────────────────────────────────────────────────────
 
+// 반품율·보관료 등 상세 리스트 표시 상한 (정렬 내림차순 상위 N만 저장/표시)
+const TOP_N = 10
+
+// 반품율 판정 최소 판매 표본 — 판매 1~2건에 반품 몇 건이면 반품율 100~500%가 나와
+// Top10을 오염시키므로, 통계적으로 유의미한 판매량이 있는 옵션만 반품율 이슈로 판정한다.
+const MIN_RETURN_RATE_SALES = 10
+
 export async function analyzeInventory(params: {
   workspaceId: string
   snapshotDate?: Date
@@ -129,8 +136,8 @@ export async function analyzeInventory(params: {
       })
     }
 
-    // 반품율: 10% 초과
-    if (sales > 0 && returns > 0) {
+    // 반품율: 10% 초과 (단, 최소 판매 표본 이상인 옵션만 — 미표본 100~500% 노이즈 제외)
+    if (sales >= MIN_RETURN_RATE_SALES && returns > 0) {
       const pct = (returns / sales) * 100
       if (pct > 10) {
         returnRate.push({
@@ -185,17 +192,31 @@ export async function analyzeInventory(params: {
   stockShortage.sort((a, b) => b.requiredRestockQty - a.requiredRestockQty)
   returnRate.sort((a, b) => b.returnRatePct - a.returnRatePct)
   storageFee.sort((a, b) => b.storageFee - a.storageFee)
-  winnerStatus.sort((a, b) => b.availableStock - a.availableStock)
 
-  const results: InventoryAnalysisResults = { stockShortage, returnRate, storageFee, winnerStatus }
+  // count는 표시 축소(slice) 이전의 전체 건수로 계산 — 뱃지에는 총건수가 노출된다.
+  const shortageCount = stockShortage.length
+  const returnRateCount = returnRate.length
+  const storageFeeCount = storageFee.length
+  const winnerIssueCount = winnerStatus.length
+
+  // 표시 정책:
+  // - 반품율·보관료: 상위 TOP_N만 저장/표시 (정렬 내림차순 기준)
+  // - 위너 미달: 갯수만 노출 → 상세 리스트는 저장하지 않음 (winnerIssueCount로 표시)
+  // - 재고 부족: 실입고 판단용이라 전량 유지
+  const results: InventoryAnalysisResults = {
+    stockShortage,
+    returnRate: returnRate.slice(0, TOP_N),
+    storageFee: storageFee.slice(0, TOP_N),
+    winnerStatus: [],
+  }
 
   return {
     snapshotDate,
     results,
-    shortageCount: stockShortage.length,
-    returnRateCount: returnRate.length,
-    storageFeeCount: storageFee.length,
-    winnerIssueCount: winnerStatus.length,
+    shortageCount,
+    returnRateCount,
+    storageFeeCount,
+    winnerIssueCount,
   }
 }
 

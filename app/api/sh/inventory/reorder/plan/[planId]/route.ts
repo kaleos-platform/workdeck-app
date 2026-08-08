@@ -80,8 +80,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
     return errorResponse('발주 계획을 찾을 수 없습니다', 404)
   }
 
-  // 레이어드 = 상품 계획(locationId 없음)인데 세트 라인이 있음. 옵션 수요가 진실 — 로켓/직접 raw GROSS는 컬럼에서.
-  const isLayered = plan.locationId == null && plan.productId != null && plan.sets.length > 0
+  // 레이어드 = 상품 계획에서 로켓그로스 입고 분배 컬럼이 존재하는 계획.
+  // ProductListing 세트 환산표가 없는 단일 SKU/옵션 매핑도 레이어드로 취급해야 한다.
+  const isLayered =
+    plan.locationId == null &&
+    plan.productId != null &&
+    plan.items.some((item) => item.rocketGrossQty != null)
 
   // productInfo: 상품 단위로 그룹핑하여 옵션 배열 형태로 재구성
   const productInfoMap = new Map<

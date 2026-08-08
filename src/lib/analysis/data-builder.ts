@@ -1,8 +1,21 @@
 // 분석 데이터 빌더 — Prisma에서 데이터를 조회하여 AI 분석 입력 형태로 가공
 
 import { prisma } from '@/lib/prisma'
-import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
-import type { AnalysisInput, CampaignSummary, InefficientKeyword } from '@/lib/ai/suggestion-types'
+import {
+  calculateCTR,
+  calculateCVR,
+  calculateROAS,
+  hasSignificantSample,
+  MIN_SIGNIFICANT_CLICKS,
+  MIN_SIGNIFICANT_IMPRESSIONS,
+  MIN_SIGNIFICANT_ADCOST,
+} from '@/lib/metrics-calculator'
+import type {
+  AnalysisInput,
+  CampaignSummary,
+  InefficientKeyword,
+  DeterministicSignal,
+} from '@/lib/ai/suggestion-types'
 import type { AnalysisType } from '@/generated/prisma/client'
 
 // 제거된 키워드 히스토리
@@ -57,6 +70,101 @@ export interface AnalysisContext extends AnalysisInput {
   recentMemos: DailyMemoInfo[]
   campaignMetas: CampaignMetaInfo[]
   activeRules: ActiveRule[]
+  deterministicSignals: DeterministicSignal[]
+}
+
+// 목표 ROAS 대비 초과 달성으로 예산 증액을 제안하는 배수 (목표의 N배 이상)
+const ROAS_OVERSHOOT_MULT = 1.2
+// 목표 ROAS 대비 심각 미달(즉시 중지 검토)로 보는 비율 (목표의 N배 미만)
+const ROAS_SEVERE_UNDER_MULT = 0.5
+
+/**
+ * 코드가 결정론적으로 판정 후보를 산출한다. 임계는 사용자 데이터(CampaignTarget)에서
+ * 오며, 목표가 없는 캠페인은 ROAS 판정을 내리지 않는다(침묵 — 프롬프트/AI 경로에 위임).
+ * AI는 이 후보를 재계산하지 않고 검토·설명·우선순위화한다.
+ */
+function evaluateSignals(
+  campaigns: CampaignSummary[],
+  campaignTargets: Array<{ campaignId: string; targetRoas: unknown; dailyBudget: unknown }>,
+  inefficientKeywords: InefficientKeyword[]
+): DeterministicSignal[] {
+  const signals: DeterministicSignal[] = []
+
+  // 캠페인별 최신 목표 맵 (effectiveDate desc 정렬 → 첫 값이 최신, first-wins)
+  const targetMap = new Map<string, { targetRoas: number | null }>()
+  for (const t of campaignTargets) {
+    if (targetMap.has(t.campaignId)) continue
+    const roas = t.targetRoas == null ? null : Number(t.targetRoas)
+    targetMap.set(t.campaignId, { targetRoas: Number.isFinite(roas as number) ? roas : null })
+  }
+
+  // 1) 비효율 키워드 → 제거 후보 (이미 통계 유의성 가드 통과한 목록)
+  for (const k of inefficientKeywords) {
+    signals.push({
+      type: 'REMOVE_KEYWORD',
+      priority: 'HIGH',
+      campaignId: k.campaignId,
+      campaignName: k.campaignName,
+      target: k.keyword,
+      metric: 'inefficient_keyword',
+      currentValue: k.adCost,
+      thresholdValue: null,
+      appliedRule: '비효율 키워드(광고비>0·14일 전환=0)',
+      reason: `광고비 ${Math.round(k.adCost).toLocaleString()}원 지출에도 14일 내 전환 0건 (클릭 ${k.clicks}·노출 ${k.impressions}).`,
+    })
+  }
+
+  // 2) 캠페인 목표 ROAS 대비 실적 (목표가 설정된 캠페인만 — 없으면 판정 보류)
+  for (const c of campaigns) {
+    const target = targetMap.get(c.campaignId)
+    // 목표 미설정 또는 ROAS 산출 불가(광고비 0 등) → 결정론 판정 없음
+    if (!target || target.targetRoas == null || c.roas == null) continue
+    const targetRoas = target.targetRoas
+    const roas = c.roas
+
+    if (roas < targetRoas * ROAS_SEVERE_UNDER_MULT) {
+      signals.push({
+        type: 'PAUSE_CAMPAIGN',
+        priority: 'HIGH',
+        campaignId: c.campaignId,
+        campaignName: c.campaignName,
+        target: c.campaignName,
+        metric: 'roas',
+        currentValue: roas,
+        thresholdValue: targetRoas,
+        appliedRule: '목표 ROAS',
+        reason: `ROAS ${roas}% 로 목표 ${targetRoas}% 의 절반 미만 — 일시 중지 검토.`,
+      })
+    } else if (roas < targetRoas) {
+      signals.push({
+        type: 'ADJUST_BUDGET',
+        priority: 'MEDIUM',
+        campaignId: c.campaignId,
+        campaignName: c.campaignName,
+        target: c.campaignName,
+        metric: 'roas',
+        currentValue: roas,
+        thresholdValue: targetRoas,
+        appliedRule: '목표 ROAS',
+        reason: `ROAS ${roas}% 로 목표 ${targetRoas}% 미달 — 예산 감액 검토.`,
+      })
+    } else if (roas > targetRoas * ROAS_OVERSHOOT_MULT) {
+      signals.push({
+        type: 'ADJUST_BUDGET',
+        priority: 'LOW',
+        campaignId: c.campaignId,
+        campaignName: c.campaignName,
+        target: c.campaignName,
+        metric: 'roas',
+        currentValue: roas,
+        thresholdValue: targetRoas,
+        appliedRule: '목표 ROAS',
+        reason: `ROAS ${roas}% 로 목표 ${targetRoas}% 초과 달성 — 예산 증액 검토.`,
+      })
+    }
+  }
+
+  return signals
 }
 
 /**
@@ -68,29 +176,40 @@ export async function buildAnalysisContext(
   endDate: Date,
   reportType: AnalysisType = 'DAILY_REVIEW'
 ): Promise<AnalysisContext> {
-  // 캠페인별 집계
-  const campaignGroups = await prisma.adRecord.groupBy({
-    by: ['campaignId', 'campaignName'],
-    where: {
-      workspaceId,
-      date: { gte: startDate, lte: endDate },
-    },
-    _sum: {
-      adCost: true,
-      impressions: true,
-      clicks: true,
-      orders1d: true,
-      revenue1d: true,
-    },
-    orderBy: { _sum: { adCost: 'desc' } },
-  })
+  // 캠페인별 집계 — 전환(주문/매출)은 14일 우선(COALESCE), 없으면 1일.
+  // 지연 전환을 반영해 ROAS 과소평가를 완화한다. Prisma groupBy는 per-row COALESCE 집계가
+  // 불가하여 파라미터화된 raw SQL 사용(기존 데이터/NCA는 orders14d null → 1일로 폴백).
+  const campaignGroups = await prisma.$queryRaw<
+    Array<{
+      campaignId: string
+      campaignName: string
+      adCost: number | string
+      impressions: number | bigint
+      clicks: number | bigint
+      orders: number | bigint
+      revenue: number | string
+    }>
+  >`
+    SELECT "campaignId", "campaignName",
+      SUM("adCost") AS "adCost",
+      SUM("impressions") AS "impressions",
+      SUM("clicks") AS "clicks",
+      SUM(COALESCE("orders14d", "orders1d")) AS "orders",
+      SUM(COALESCE("revenue14d", "revenue1d")) AS "revenue"
+    FROM "AdRecord"
+    WHERE "workspaceId" = ${workspaceId}
+      AND "date" >= ${startDate}
+      AND "date" <= ${endDate}
+    GROUP BY "campaignId", "campaignName"
+    ORDER BY SUM("adCost") DESC
+  `
 
   const campaigns: CampaignSummary[] = campaignGroups.map((g) => {
-    const totalAdCost = Number(g._sum.adCost ?? 0)
-    const totalImpressions = Number(g._sum.impressions ?? 0)
-    const totalClicks = Number(g._sum.clicks ?? 0)
-    const totalOrders = Number(g._sum.orders1d ?? 0)
-    const totalRevenue = Number(g._sum.revenue1d ?? 0)
+    const totalAdCost = Number(g.adCost ?? 0)
+    const totalImpressions = Number(g.impressions ?? 0)
+    const totalClicks = Number(g.clicks ?? 0)
+    const totalOrders = Number(g.orders ?? 0)
+    const totalRevenue = Number(g.revenue ?? 0)
 
     return {
       campaignId: g.campaignId,
@@ -106,22 +225,32 @@ export async function buildAnalysisContext(
     }
   })
 
-  // 비효율 키워드 식별 (광고비 > 0, 주문 = 0)
-  const keywordGroups = await prisma.adRecord.groupBy({
-    by: ['campaignId', 'campaignName', 'keyword'],
-    where: {
-      workspaceId,
-      date: { gte: startDate, lte: endDate },
-      keyword: { not: null },
-    },
-    _sum: {
-      adCost: true,
-      impressions: true,
-      clicks: true,
-      orders1d: true,
-    },
-    orderBy: { _sum: { adCost: 'desc' } },
-  })
+  // 비효율 키워드 식별 (광고비 > 0, 전환 = 0) — 전환은 14일 우선(COALESCE).
+  // 14일 내 전환된 키워드는 지연 전환으로 보고 비효율에서 제외(1일 기준 오판정 완화).
+  const keywordGroups = await prisma.$queryRaw<
+    Array<{
+      campaignId: string
+      campaignName: string
+      keyword: string
+      adCost: number | string
+      impressions: number | bigint
+      clicks: number | bigint
+      orders: number | bigint
+    }>
+  >`
+    SELECT "campaignId", "campaignName", "keyword",
+      SUM("adCost") AS "adCost",
+      SUM("impressions") AS "impressions",
+      SUM("clicks") AS "clicks",
+      SUM(COALESCE("orders14d", "orders1d")) AS "orders"
+    FROM "AdRecord"
+    WHERE "workspaceId" = ${workspaceId}
+      AND "date" >= ${startDate}
+      AND "date" <= ${endDate}
+      AND "keyword" IS NOT NULL
+    GROUP BY "campaignId", "campaignName", "keyword"
+    ORDER BY SUM("adCost") DESC
+  `
 
   // 캠페인별 총 광고비 맵 (costRatio 계산용)
   const campaignAdCostMap = new Map<string, number>()
@@ -129,29 +258,49 @@ export async function buildAnalysisContext(
     campaignAdCostMap.set(c.campaignId, c.totalAdCost)
   }
 
+  // 표본 미달로 판정 보류된 키워드 수 (관찰용)
+  let heldBelowThreshold = 0
+
   const inefficientKeywords: InefficientKeyword[] = keywordGroups
     .filter((g) => {
-      const adCost = Number(g._sum.adCost ?? 0)
-      const orders = Number(g._sum.orders1d ?? 0)
-      return adCost > 0 && orders === 0
+      const adCost = Number(g.adCost ?? 0)
+      const orders = Number(g.orders ?? 0) // 14일 우선 전환수
+      if (!(adCost > 0 && orders === 0)) return false
+      // 통계 유의성 가드: 표본(클릭/노출) 또는 지출이 충분한 경우에만 비효율로 판정.
+      // 클릭 1~2회 노이즈를 "전환 0 = 비효율"로 오판정하지 않도록 하한 적용.
+      const clicks = Number(g.clicks ?? 0)
+      const impressions = Number(g.impressions ?? 0)
+      if (!hasSignificantSample(clicks, impressions, adCost)) {
+        heldBelowThreshold++
+        return false
+      }
+      return true
     })
     .map((g) => {
-      const adCost = Number(g._sum.adCost ?? 0)
+      const adCost = Number(g.adCost ?? 0)
       const campaignTotal = campaignAdCostMap.get(g.campaignId) ?? 0
-      const costRatio = campaignTotal > 0
-        ? Math.round((adCost / campaignTotal) * 10000) / 100  // 소수점 2자리 %
-        : 0
+      const costRatio =
+        campaignTotal > 0
+          ? Math.round((adCost / campaignTotal) * 10000) / 100 // 소수점 2자리 %
+          : 0
       return {
         campaignId: g.campaignId,
         campaignName: g.campaignName,
-        keyword: g.keyword!,
+        keyword: g.keyword,
         adCost,
-        clicks: Number(g._sum.clicks ?? 0),
-        impressions: Number(g._sum.impressions ?? 0),
+        clicks: Number(g.clicks ?? 0),
+        impressions: Number(g.impressions ?? 0),
         orders: 0,
         costRatio,
       }
     })
+
+  if (heldBelowThreshold > 0) {
+    console.log(
+      `[data-builder] 비효율 키워드 ${inefficientKeywords.length}건 (표본 미달 판정 보류 ${heldBelowThreshold}건 제외, ` +
+        `클릭<${MIN_SIGNIFICANT_CLICKS} & 노출<${MIN_SIGNIFICANT_IMPRESSIONS} & 광고비<${MIN_SIGNIFICANT_ADCOST}원)`
+    )
+  }
 
   // 제거된 키워드 히스토리
   const removedKeywordsRaw = await prisma.keywordStatus.findMany({
@@ -221,5 +370,6 @@ export async function buildAnalysisContext(
     recentMemos,
     campaignMetas,
     activeRules: activeRulesRaw,
+    deterministicSignals: evaluateSignals(campaigns, campaignTargets, inefficientKeywords),
   }
 }

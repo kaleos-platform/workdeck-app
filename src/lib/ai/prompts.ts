@@ -32,6 +32,17 @@ suggestions는 우선순위가 높은 것부터 최대 20개까지만 포함하�
 }
 `.trim()
 
+// 결정론 후보 처리 지시 — 코드가 사용자 목표·통계 기준으로 확정한 판정을 우선한다.
+const DETERMINISTIC_SIGNALS_INSTRUCTION = `
+## 코드 판정 후보 우선 처리 (최우선)
+사용자 프롬프트의 "코드가 식별한 판정 후보"는 코드가 사용자 설정 목표(목표 ROAS 등)와
+통계 유의성 기준으로 이미 확정한 판정입니다.
+- 각 후보를 반드시 suggestions에 포함하세요(제거 히스토리로 이미 처리된 것은 제외).
+- 후보의 임계값·근거 수치를 임의로 바꾸지 마세요. type/priority/campaignId/target을 그대로 사용하세요.
+- 각 suggestion의 appliedRule에 후보의 규칙(예: "목표 ROAS")을 명시하세요.
+- 후보에 없는 추가 인사이트(자연어 규칙·메모 기반)는 그 다음 우선순위로 덧붙일 수 있습니다.
+`.trim()
+
 // 제거 히스토리 참조 지시
 const REMOVAL_HISTORY_INSTRUCTION = `
 ## 제거 히스토리 참조 규칙
@@ -103,9 +114,7 @@ export function getSystemPrompt(type: AnalysisType, activeRules?: ActiveRule[]):
 
   // 동적 분석 규칙 주입
   if (activeRules && activeRules.length > 0) {
-    const rulesBlock = activeRules
-      .map((r, i) => `규칙 ${i + 1}. ${r.rule}`)
-      .join('\n')
+    const rulesBlock = activeRules.map((r, i) => `규칙 ${i + 1}. ${r.rule}`).join('\n')
     parts.push(`
 ## 사용자 설정 분석 규칙 (절대 무시 금지 — 최우선 적용)
 아래는 사용자가 직접 설정한 분석 규칙입니다. 반드시 아래 규칙의 수치 기준을 그대로 적용하세요.
@@ -116,6 +125,9 @@ export function getSystemPrompt(type: AnalysisType, activeRules?: ActiveRule[]):
 
 ${rulesBlock}`)
   }
+
+  // 결정론 후보 우선 처리 지시
+  parts.push(DETERMINISTIC_SIGNALS_INSTRUCTION)
 
   // 추가 지시사항
   parts.push(REMOVAL_HISTORY_INSTRUCTION)

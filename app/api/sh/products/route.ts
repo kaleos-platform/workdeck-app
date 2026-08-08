@@ -25,9 +25,12 @@ export async function GET(req: NextRequest) {
   if (groupId === 'none') where.groupId = null
   else if (groupId) where.groupId = groupId
 
+  // includeName=1이면 공식명(name)도 검색 대상에 포함(재고조정 추천 등 상품명 기반 매칭용).
+  const includeName = searchParams.get('includeName') === '1'
   if (search) {
-    // 검색은 관리 상품명(internalName) 기준 — 공식명(name)은 제외, 브랜드명 포함
+    // 기본 검색은 관리 상품명(internalName) 기준 — 공식명(name)은 opt-in 시에만, 브랜드명 포함
     where.OR = [
+      ...(includeName ? [{ name: { contains: search, mode: 'insensitive' as const } }] : []),
       { internalName: { contains: search, mode: 'insensitive' } },
       { nameEn: { contains: search, mode: 'insensitive' } },
       { code: { contains: search, mode: 'insensitive' } },
