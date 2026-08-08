@@ -257,16 +257,6 @@ export type SpaceWhereInput = {
   hiringApplications?: Prisma.HiringApplicationListRelationFilter
   hiringBlacklists?: Prisma.HiringBlacklistListRelationFilter
   hiringMessageTemplates?: Prisma.HiringMessageTemplateListRelationFilter
-  boProducts?: Prisma.BoProductListRelationFilter
-  boIdeations?: Prisma.BoIdeationListRelationFilter
-  boMaterials?: Prisma.BoMaterialListRelationFilter
-  boPosts?: Prisma.BoPostListRelationFilter
-  boPostVersions?: Prisma.BoPostVersionListRelationFilter
-  boChannels?: Prisma.BoChannelListRelationFilter
-  boPostVariants?: Prisma.BoPostVariantListRelationFilter
-  boDeployments?: Prisma.BoDeploymentListRelationFilter
-  boJobs?: Prisma.BoJobListRelationFilter
-  boChannelCredentials?: Prisma.BoChannelCredentialListRelationFilter
   agentPendingActions?: Prisma.AgentPendingActionListRelationFilter
   agentToggle?: Prisma.XOR<Prisma.SpaceAgentNullableScalarRelationFilter, Prisma.SpaceAgentWhereInput> | null
   agentLlmUsages?: Prisma.AgentLlmUsageListRelationFilter
@@ -349,16 +339,6 @@ export type SpaceOrderByWithRelationInput = {
   hiringApplications?: Prisma.HiringApplicationOrderByRelationAggregateInput
   hiringBlacklists?: Prisma.HiringBlacklistOrderByRelationAggregateInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateOrderByRelationAggregateInput
-  boProducts?: Prisma.BoProductOrderByRelationAggregateInput
-  boIdeations?: Prisma.BoIdeationOrderByRelationAggregateInput
-  boMaterials?: Prisma.BoMaterialOrderByRelationAggregateInput
-  boPosts?: Prisma.BoPostOrderByRelationAggregateInput
-  boPostVersions?: Prisma.BoPostVersionOrderByRelationAggregateInput
-  boChannels?: Prisma.BoChannelOrderByRelationAggregateInput
-  boPostVariants?: Prisma.BoPostVariantOrderByRelationAggregateInput
-  boDeployments?: Prisma.BoDeploymentOrderByRelationAggregateInput
-  boJobs?: Prisma.BoJobOrderByRelationAggregateInput
-  boChannelCredentials?: Prisma.BoChannelCredentialOrderByRelationAggregateInput
   agentPendingActions?: Prisma.AgentPendingActionOrderByRelationAggregateInput
   agentToggle?: Prisma.SpaceAgentOrderByWithRelationInput
   agentLlmUsages?: Prisma.AgentLlmUsageOrderByRelationAggregateInput
@@ -444,16 +424,6 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   hiringApplications?: Prisma.HiringApplicationListRelationFilter
   hiringBlacklists?: Prisma.HiringBlacklistListRelationFilter
   hiringMessageTemplates?: Prisma.HiringMessageTemplateListRelationFilter
-  boProducts?: Prisma.BoProductListRelationFilter
-  boIdeations?: Prisma.BoIdeationListRelationFilter
-  boMaterials?: Prisma.BoMaterialListRelationFilter
-  boPosts?: Prisma.BoPostListRelationFilter
-  boPostVersions?: Prisma.BoPostVersionListRelationFilter
-  boChannels?: Prisma.BoChannelListRelationFilter
-  boPostVariants?: Prisma.BoPostVariantListRelationFilter
-  boDeployments?: Prisma.BoDeploymentListRelationFilter
-  boJobs?: Prisma.BoJobListRelationFilter
-  boChannelCredentials?: Prisma.BoChannelCredentialListRelationFilter
   agentPendingActions?: Prisma.AgentPendingActionListRelationFilter
   agentToggle?: Prisma.XOR<Prisma.SpaceAgentNullableScalarRelationFilter, Prisma.SpaceAgentWhereInput> | null
   agentLlmUsages?: Prisma.AgentLlmUsageListRelationFilter
@@ -560,16 +530,6 @@ export type SpaceCreateInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -652,16 +612,6 @@ export type SpaceUncheckedCreateInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -744,16 +694,6 @@ export type SpaceUpdateInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -836,16 +776,6 @@ export type SpaceUncheckedUpdateInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1908,146 +1838,6 @@ export type SpaceUpdateOneRequiredWithoutHiringMessageTemplatesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutHiringMessageTemplatesInput, Prisma.SpaceUpdateWithoutHiringMessageTemplatesInput>, Prisma.SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput>
 }
 
-export type SpaceCreateNestedOneWithoutBoProductsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoProductsInput, Prisma.SpaceUncheckedCreateWithoutBoProductsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoProductsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoProductsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoProductsInput, Prisma.SpaceUncheckedCreateWithoutBoProductsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoProductsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoProductsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoProductsInput, Prisma.SpaceUpdateWithoutBoProductsInput>, Prisma.SpaceUncheckedUpdateWithoutBoProductsInput>
-}
-
-export type SpaceCreateNestedOneWithoutBoIdeationsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoIdeationsInput, Prisma.SpaceUncheckedCreateWithoutBoIdeationsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoIdeationsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoIdeationsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoIdeationsInput, Prisma.SpaceUncheckedCreateWithoutBoIdeationsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoIdeationsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoIdeationsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoIdeationsInput, Prisma.SpaceUpdateWithoutBoIdeationsInput>, Prisma.SpaceUncheckedUpdateWithoutBoIdeationsInput>
-}
-
-export type SpaceCreateNestedOneWithoutBoMaterialsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoMaterialsInput, Prisma.SpaceUncheckedCreateWithoutBoMaterialsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoMaterialsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoMaterialsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoMaterialsInput, Prisma.SpaceUncheckedCreateWithoutBoMaterialsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoMaterialsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoMaterialsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoMaterialsInput, Prisma.SpaceUpdateWithoutBoMaterialsInput>, Prisma.SpaceUncheckedUpdateWithoutBoMaterialsInput>
-}
-
-export type SpaceCreateNestedOneWithoutBoPostsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostsInput, Prisma.SpaceUncheckedCreateWithoutBoPostsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoPostsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostsInput, Prisma.SpaceUncheckedCreateWithoutBoPostsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoPostsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoPostsInput, Prisma.SpaceUpdateWithoutBoPostsInput>, Prisma.SpaceUncheckedUpdateWithoutBoPostsInput>
-}
-
-export type SpaceCreateNestedOneWithoutBoPostVersionsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVersionsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostVersionsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoPostVersionsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVersionsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostVersionsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoPostVersionsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoPostVersionsInput, Prisma.SpaceUpdateWithoutBoPostVersionsInput>, Prisma.SpaceUncheckedUpdateWithoutBoPostVersionsInput>
-}
-
-export type SpaceCreateNestedOneWithoutBoChannelsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoChannelsInput, Prisma.SpaceUncheckedCreateWithoutBoChannelsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoChannelsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoChannelsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoChannelsInput, Prisma.SpaceUncheckedCreateWithoutBoChannelsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoChannelsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoChannelsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoChannelsInput, Prisma.SpaceUpdateWithoutBoChannelsInput>, Prisma.SpaceUncheckedUpdateWithoutBoChannelsInput>
-}
-
-export type SpaceCreateNestedOneWithoutBoPostVariantsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVariantsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVariantsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostVariantsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoPostVariantsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVariantsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVariantsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoPostVariantsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoPostVariantsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoPostVariantsInput, Prisma.SpaceUpdateWithoutBoPostVariantsInput>, Prisma.SpaceUncheckedUpdateWithoutBoPostVariantsInput>
-}
-
-export type SpaceCreateNestedOneWithoutBoDeploymentsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoDeploymentsInput, Prisma.SpaceUncheckedCreateWithoutBoDeploymentsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoDeploymentsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoDeploymentsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoDeploymentsInput, Prisma.SpaceUncheckedCreateWithoutBoDeploymentsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoDeploymentsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoDeploymentsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoDeploymentsInput, Prisma.SpaceUpdateWithoutBoDeploymentsInput>, Prisma.SpaceUncheckedUpdateWithoutBoDeploymentsInput>
-}
-
-export type SpaceCreateNestedOneWithoutBoJobsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoJobsInput, Prisma.SpaceUncheckedCreateWithoutBoJobsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoJobsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoJobsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoJobsInput, Prisma.SpaceUncheckedCreateWithoutBoJobsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoJobsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoJobsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoJobsInput, Prisma.SpaceUpdateWithoutBoJobsInput>, Prisma.SpaceUncheckedUpdateWithoutBoJobsInput>
-}
-
-export type SpaceCreateNestedOneWithoutBoChannelCredentialsInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoChannelCredentialsInput, Prisma.SpaceUncheckedCreateWithoutBoChannelCredentialsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoChannelCredentialsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-}
-
-export type SpaceUpdateOneRequiredWithoutBoChannelCredentialsNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceCreateWithoutBoChannelCredentialsInput, Prisma.SpaceUncheckedCreateWithoutBoChannelCredentialsInput>
-  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutBoChannelCredentialsInput
-  upsert?: Prisma.SpaceUpsertWithoutBoChannelCredentialsInput
-  connect?: Prisma.SpaceWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBoChannelCredentialsInput, Prisma.SpaceUpdateWithoutBoChannelCredentialsInput>, Prisma.SpaceUncheckedUpdateWithoutBoChannelCredentialsInput>
-}
-
 export type SpaceCreateNestedOneWithoutSubscriptionInput = {
   create?: Prisma.XOR<Prisma.SpaceCreateWithoutSubscriptionInput, Prisma.SpaceUncheckedCreateWithoutSubscriptionInput>
   connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutSubscriptionInput
@@ -2163,16 +1953,6 @@ export type SpaceCreateWithoutMembersInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -2254,16 +2034,6 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -2361,16 +2131,6 @@ export type SpaceUpdateWithoutMembersInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -2452,16 +2212,6 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2544,16 +2294,6 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
@@ -2635,16 +2375,6 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
@@ -2742,16 +2472,6 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
@@ -2833,16 +2553,6 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
@@ -2924,16 +2634,6 @@ export type SpaceCreateWithoutAgentToggleInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
@@ -3015,16 +2715,6 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
@@ -3122,16 +2812,6 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
@@ -3213,16 +2893,6 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
@@ -3304,16 +2974,6 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
@@ -3395,16 +3055,6 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
@@ -3502,16 +3152,6 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
@@ -3593,16 +3233,6 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
@@ -3683,16 +3313,6 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -3774,16 +3394,6 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -3881,16 +3491,6 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -3972,16 +3572,6 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4063,16 +3653,6 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -4154,16 +3734,6 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -4261,16 +3831,6 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -4352,16 +3912,6 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4443,16 +3993,6 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -4534,16 +4074,6 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -4641,16 +4171,6 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -4732,16 +4252,6 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4823,16 +4333,6 @@ export type SpaceCreateWithoutInvProductsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -4914,16 +4414,6 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -5021,16 +4511,6 @@ export type SpaceUpdateWithoutInvProductsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -5112,16 +4592,6 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5203,16 +4673,6 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -5294,16 +4754,6 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -5401,16 +4851,6 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -5492,16 +4932,6 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5583,16 +5013,6 @@ export type SpaceCreateWithoutInvLocationsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -5674,16 +5094,6 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -5781,16 +5191,6 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -5872,16 +5272,6 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5963,16 +5353,6 @@ export type SpaceCreateWithoutInvMovementsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -6054,16 +5434,6 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -6161,16 +5531,6 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -6252,16 +5612,6 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6343,16 +5693,6 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -6434,16 +5774,6 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -6541,16 +5871,6 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -6632,16 +5952,6 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6723,16 +6033,6 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -6814,16 +6114,6 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -6921,16 +6211,6 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -7012,16 +6292,6 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7103,16 +6373,6 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -7194,16 +6454,6 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -7301,16 +6551,6 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -7392,16 +6632,6 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7483,16 +6713,6 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -7574,16 +6794,6 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -7681,16 +6891,6 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -7772,16 +6972,6 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7863,16 +7053,6 @@ export type SpaceCreateWithoutInvSettingsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -7954,16 +7134,6 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -8061,16 +7231,6 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -8152,16 +7312,6 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8243,16 +7393,6 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -8334,16 +7474,6 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -8441,16 +7571,6 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -8532,16 +7652,6 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8623,16 +7733,6 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -8714,16 +7814,6 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -8821,16 +7911,6 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -8912,16 +7992,6 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9003,16 +8073,6 @@ export type SpaceCreateWithoutDelBatchesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -9094,16 +8154,6 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -9201,16 +8251,6 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -9292,16 +8332,6 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9383,16 +8413,6 @@ export type SpaceCreateWithoutDelOrdersInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -9474,16 +8494,6 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -9581,16 +8591,6 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -9672,16 +8672,6 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9763,16 +8753,6 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -9854,16 +8834,6 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -9961,16 +8931,6 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -10052,16 +9012,6 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10143,16 +9093,6 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -10234,16 +9174,6 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -10341,16 +9271,6 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -10432,16 +9352,6 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10523,16 +9433,6 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -10614,16 +9514,6 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -10721,16 +9611,6 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -10812,16 +9692,6 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10903,16 +9773,6 @@ export type SpaceCreateWithoutBrandsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -10994,16 +9854,6 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -11101,16 +9951,6 @@ export type SpaceUpdateWithoutBrandsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -11192,16 +10032,6 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11283,16 +10113,6 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -11374,16 +10194,6 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -11481,16 +10291,6 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -11572,16 +10372,6 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11663,16 +10453,6 @@ export type SpaceCreateWithoutChannelsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -11754,16 +10534,6 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -11861,16 +10631,6 @@ export type SpaceUpdateWithoutChannelsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -11952,16 +10712,6 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12043,16 +10793,6 @@ export type SpaceCreateWithoutProductionRunsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -12134,16 +10874,6 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -12241,16 +10971,6 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -12332,16 +11052,6 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12423,16 +11133,6 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -12514,16 +11214,6 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -12621,16 +11311,6 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -12712,16 +11392,6 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12803,16 +11473,6 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -12894,16 +11554,6 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -13001,16 +11651,6 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -13092,16 +11732,6 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13183,16 +11813,6 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -13274,16 +11894,6 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -13381,16 +11991,6 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -13472,16 +12072,6 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13563,16 +12153,6 @@ export type SpaceCreateWithoutProductListingsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -13654,16 +12234,6 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -13761,16 +12331,6 @@ export type SpaceUpdateWithoutProductListingsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -13852,16 +12412,6 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13943,16 +12493,6 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -14034,16 +12574,6 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -14141,16 +12671,6 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -14232,16 +12752,6 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14323,16 +12833,6 @@ export type SpaceCreateWithoutChannelProductsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -14414,16 +12914,6 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -14521,16 +13011,6 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -14612,16 +13092,6 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14703,16 +13173,6 @@ export type SpaceCreateWithoutProductsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -14794,16 +13254,6 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -14901,16 +13351,6 @@ export type SpaceUpdateWithoutProductsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -14992,16 +13432,6 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15083,16 +13513,6 @@ export type SpaceCreateWithoutPersonasInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -15174,16 +13594,6 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -15281,16 +13691,6 @@ export type SpaceUpdateWithoutPersonasInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -15372,16 +13772,6 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15463,16 +13853,6 @@ export type SpaceCreateWithoutBrandProfileInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -15554,16 +13934,6 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -15661,16 +14031,6 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -15752,16 +14112,6 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15843,16 +14193,6 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -15934,16 +14274,6 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -16041,16 +14371,6 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -16132,16 +14452,6 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16223,16 +14533,6 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -16314,16 +14614,6 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -16421,16 +14711,6 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -16512,16 +14792,6 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16603,16 +14873,6 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -16694,16 +14954,6 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -16801,16 +15051,6 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -16892,16 +15132,6 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16983,16 +15213,6 @@ export type SpaceCreateWithoutTemplatesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -17074,16 +15294,6 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -17181,16 +15391,6 @@ export type SpaceUpdateWithoutTemplatesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -17272,16 +15472,6 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17363,16 +15553,6 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -17454,16 +15634,6 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -17561,16 +15731,6 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -17652,16 +15812,6 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17743,16 +15893,6 @@ export type SpaceCreateWithoutContentsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -17834,16 +15974,6 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -17941,16 +16071,6 @@ export type SpaceUpdateWithoutContentsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -18032,16 +16152,6 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18123,16 +16233,6 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -18214,16 +16314,6 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -18321,16 +16411,6 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -18412,16 +16492,6 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18503,16 +16573,6 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -18594,16 +16654,6 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -18701,16 +16751,6 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -18792,16 +16832,6 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18883,16 +16913,6 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -18974,16 +16994,6 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -19081,16 +17091,6 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -19172,16 +17172,6 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19263,16 +17253,6 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -19354,16 +17334,6 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -19461,16 +17431,6 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -19552,16 +17512,6 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19643,16 +17593,6 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -19734,16 +17674,6 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -19841,16 +17771,6 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -19932,16 +17852,6 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20023,16 +17933,6 @@ export type SpaceCreateWithoutContentVersionsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -20114,16 +18014,6 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -20221,16 +18111,6 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -20312,16 +18192,6 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20403,16 +18273,6 @@ export type SpaceCreateWithoutContentAssetsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -20494,16 +18354,6 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -20601,16 +18451,6 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -20692,16 +18532,6 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20783,16 +18613,6 @@ export type SpaceCreateWithoutIdeationsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -20874,16 +18694,6 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -20981,16 +18791,6 @@ export type SpaceUpdateWithoutIdeationsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -21072,16 +18872,6 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21163,16 +18953,6 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -21254,16 +19034,6 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -21361,16 +19131,6 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -21452,16 +19212,6 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21543,16 +19293,6 @@ export type SpaceCreateWithoutReorderPlansInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -21634,16 +19374,6 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -21741,16 +19471,6 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -21832,16 +19552,6 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21923,16 +19633,6 @@ export type SpaceCreateWithoutFinAccountsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -22014,16 +19714,6 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -22121,16 +19811,6 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -22212,16 +19892,6 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22303,16 +19973,6 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -22394,16 +20054,6 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -22501,16 +20151,6 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -22592,16 +20232,6 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22683,16 +20313,6 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -22774,16 +20394,6 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -22881,16 +20491,6 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -22972,16 +20572,6 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23063,16 +20653,6 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -23154,16 +20734,6 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -23261,16 +20831,6 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -23352,16 +20912,6 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23443,16 +20993,6 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -23534,16 +21074,6 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -23641,16 +21171,6 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -23732,16 +21252,6 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23823,16 +21333,6 @@ export type SpaceCreateWithoutFinImportsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -23914,16 +21414,6 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -24021,16 +21511,6 @@ export type SpaceUpdateWithoutFinImportsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -24112,16 +21592,6 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24203,16 +21673,6 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -24294,16 +21754,6 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -24401,16 +21851,6 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -24492,16 +21932,6 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24583,16 +22013,6 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -24674,16 +22094,6 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -24781,16 +22191,6 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -24872,16 +22272,6 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24963,16 +22353,6 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -25054,16 +22434,6 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -25161,16 +22531,6 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -25252,16 +22612,6 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25343,16 +22693,6 @@ export type SpaceCreateWithoutHiringStoresInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -25434,16 +22774,6 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -25541,16 +22871,6 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -25632,16 +22952,6 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25723,16 +23033,6 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -25814,16 +23114,6 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -25921,16 +23211,6 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -26012,16 +23292,6 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26103,16 +23373,6 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -26194,16 +23454,6 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -26301,16 +23551,6 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -26392,16 +23632,6 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26483,16 +23713,6 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -26574,16 +23794,6 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -26681,16 +23891,6 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -26772,16 +23972,6 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26863,16 +24053,6 @@ export type SpaceCreateWithoutHiringContentsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -26954,16 +24134,6 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -27061,16 +24231,6 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -27152,16 +24312,6 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27243,16 +24393,6 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -27334,16 +24474,6 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -27441,16 +24571,6 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -27532,16 +24652,6 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27623,16 +24733,6 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -27714,16 +24814,6 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -27821,16 +24911,6 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -27912,16 +24992,6 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28003,16 +25073,6 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -28094,16 +25154,6 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -28201,16 +25251,6 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -28292,16 +25332,6 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28383,16 +25413,6 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -28474,16 +25494,6 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -28581,16 +25591,6 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -28672,3816 +25672,6 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoProductsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoProductsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoProductsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoProductsInput, Prisma.SpaceUncheckedCreateWithoutBoProductsInput>
-}
-
-export type SpaceUpsertWithoutBoProductsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoProductsInput, Prisma.SpaceUncheckedUpdateWithoutBoProductsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoProductsInput, Prisma.SpaceUncheckedCreateWithoutBoProductsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoProductsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoProductsInput, Prisma.SpaceUncheckedUpdateWithoutBoProductsInput>
-}
-
-export type SpaceUpdateWithoutBoProductsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoProductsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoIdeationsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoIdeationsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoIdeationsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoIdeationsInput, Prisma.SpaceUncheckedCreateWithoutBoIdeationsInput>
-}
-
-export type SpaceUpsertWithoutBoIdeationsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoIdeationsInput, Prisma.SpaceUncheckedUpdateWithoutBoIdeationsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoIdeationsInput, Prisma.SpaceUncheckedCreateWithoutBoIdeationsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoIdeationsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoIdeationsInput, Prisma.SpaceUncheckedUpdateWithoutBoIdeationsInput>
-}
-
-export type SpaceUpdateWithoutBoIdeationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoIdeationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoMaterialsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoMaterialsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoMaterialsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoMaterialsInput, Prisma.SpaceUncheckedCreateWithoutBoMaterialsInput>
-}
-
-export type SpaceUpsertWithoutBoMaterialsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoMaterialsInput, Prisma.SpaceUncheckedUpdateWithoutBoMaterialsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoMaterialsInput, Prisma.SpaceUncheckedCreateWithoutBoMaterialsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoMaterialsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoMaterialsInput, Prisma.SpaceUncheckedUpdateWithoutBoMaterialsInput>
-}
-
-export type SpaceUpdateWithoutBoMaterialsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoMaterialsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoPostsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoPostsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoPostsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostsInput, Prisma.SpaceUncheckedCreateWithoutBoPostsInput>
-}
-
-export type SpaceUpsertWithoutBoPostsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostsInput, Prisma.SpaceUncheckedCreateWithoutBoPostsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoPostsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostsInput>
-}
-
-export type SpaceUpdateWithoutBoPostsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoPostsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoPostVersionsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoPostVersionsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoPostVersionsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVersionsInput>
-}
-
-export type SpaceUpsertWithoutBoPostVersionsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostVersionsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVersionsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoPostVersionsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostVersionsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostVersionsInput>
-}
-
-export type SpaceUpdateWithoutBoPostVersionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoPostVersionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoChannelsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoChannelsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoChannelsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoChannelsInput, Prisma.SpaceUncheckedCreateWithoutBoChannelsInput>
-}
-
-export type SpaceUpsertWithoutBoChannelsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoChannelsInput, Prisma.SpaceUncheckedUpdateWithoutBoChannelsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoChannelsInput, Prisma.SpaceUncheckedCreateWithoutBoChannelsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoChannelsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoChannelsInput, Prisma.SpaceUncheckedUpdateWithoutBoChannelsInput>
-}
-
-export type SpaceUpdateWithoutBoChannelsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoChannelsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoPostVariantsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoPostVariantsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoPostVariantsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVariantsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVariantsInput>
-}
-
-export type SpaceUpsertWithoutBoPostVariantsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostVariantsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostVariantsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoPostVariantsInput, Prisma.SpaceUncheckedCreateWithoutBoPostVariantsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoPostVariantsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoPostVariantsInput, Prisma.SpaceUncheckedUpdateWithoutBoPostVariantsInput>
-}
-
-export type SpaceUpdateWithoutBoPostVariantsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoPostVariantsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoDeploymentsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoDeploymentsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoDeploymentsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoDeploymentsInput, Prisma.SpaceUncheckedCreateWithoutBoDeploymentsInput>
-}
-
-export type SpaceUpsertWithoutBoDeploymentsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoDeploymentsInput, Prisma.SpaceUncheckedUpdateWithoutBoDeploymentsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoDeploymentsInput, Prisma.SpaceUncheckedCreateWithoutBoDeploymentsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoDeploymentsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoDeploymentsInput, Prisma.SpaceUncheckedUpdateWithoutBoDeploymentsInput>
-}
-
-export type SpaceUpdateWithoutBoDeploymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoDeploymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoJobsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoJobsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoJobsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoJobsInput, Prisma.SpaceUncheckedCreateWithoutBoJobsInput>
-}
-
-export type SpaceUpsertWithoutBoJobsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoJobsInput, Prisma.SpaceUncheckedUpdateWithoutBoJobsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoJobsInput, Prisma.SpaceUncheckedCreateWithoutBoJobsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoJobsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoJobsInput, Prisma.SpaceUncheckedUpdateWithoutBoJobsInput>
-}
-
-export type SpaceUpdateWithoutBoJobsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoJobsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceCreateWithoutBoChannelCredentialsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceUncheckedCreateWithoutBoChannelCredentialsInput = {
-  id?: string
-  name: string
-  type?: $Enums.SpaceType
-  onboardingDismissedAt?: Date | string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
-  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
-  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
-  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
-  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
-  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
-  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
-  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
-  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
-  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
-  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
-  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
-  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
-  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
-  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
-  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
-  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
-  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
-  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
-  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
-  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
-  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
-  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
-  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
-  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
-  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
-  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
-  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
-}
-
-export type SpaceCreateOrConnectWithoutBoChannelCredentialsInput = {
-  where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoChannelCredentialsInput, Prisma.SpaceUncheckedCreateWithoutBoChannelCredentialsInput>
-}
-
-export type SpaceUpsertWithoutBoChannelCredentialsInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBoChannelCredentialsInput, Prisma.SpaceUncheckedUpdateWithoutBoChannelCredentialsInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBoChannelCredentialsInput, Prisma.SpaceUncheckedCreateWithoutBoChannelCredentialsInput>
-  where?: Prisma.SpaceWhereInput
-}
-
-export type SpaceUpdateToOneWithWhereWithoutBoChannelCredentialsInput = {
-  where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBoChannelCredentialsInput, Prisma.SpaceUncheckedUpdateWithoutBoChannelCredentialsInput>
-}
-
-export type SpaceUpdateWithoutBoChannelCredentialsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
-  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
-  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
-  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
-  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
-  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
-}
-
-export type SpaceUncheckedUpdateWithoutBoChannelCredentialsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
-  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
-  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
-  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
-  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
-  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
-  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
-  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
-  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
-  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
-  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
-  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
-  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
-  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
-  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
-  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
-  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
-  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
-  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
-  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
-  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
-  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
-  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
-  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
-  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
-  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
-  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
-  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
-  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
-  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
-  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
-  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
-  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
-  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
-  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
-  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
-  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
-  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
-  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
-  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
-  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
-  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
-  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32564,16 +25754,6 @@ export type SpaceCreateWithoutSubscriptionInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -32655,16 +25835,6 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -32762,16 +25932,6 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -32853,16 +26013,6 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32944,16 +26094,6 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -33035,16 +26175,6 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -33142,16 +26272,6 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -33233,16 +26353,6 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33324,16 +26434,6 @@ export type SpaceCreateWithoutBillingChargesInput = {
   hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
@@ -33415,16 +26515,6 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
-  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
-  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
-  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
-  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
-  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
-  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
-  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
@@ -33522,16 +26612,6 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
@@ -33613,16 +26693,6 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
   hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
-  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
-  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
-  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
-  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
-  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
-  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
-  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
-  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33699,16 +26769,6 @@ export type SpaceCountOutputType = {
   hiringApplications: number
   hiringBlacklists: number
   hiringMessageTemplates: number
-  boProducts: number
-  boIdeations: number
-  boMaterials: number
-  boPosts: number
-  boPostVersions: number
-  boChannels: number
-  boPostVariants: number
-  boDeployments: number
-  boJobs: number
-  boChannelCredentials: number
   agentPendingActions: number
   agentLlmUsages: number
   billingMethods: number
@@ -33779,16 +26839,6 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   hiringApplications?: boolean | SpaceCountOutputTypeCountHiringApplicationsArgs
   hiringBlacklists?: boolean | SpaceCountOutputTypeCountHiringBlacklistsArgs
   hiringMessageTemplates?: boolean | SpaceCountOutputTypeCountHiringMessageTemplatesArgs
-  boProducts?: boolean | SpaceCountOutputTypeCountBoProductsArgs
-  boIdeations?: boolean | SpaceCountOutputTypeCountBoIdeationsArgs
-  boMaterials?: boolean | SpaceCountOutputTypeCountBoMaterialsArgs
-  boPosts?: boolean | SpaceCountOutputTypeCountBoPostsArgs
-  boPostVersions?: boolean | SpaceCountOutputTypeCountBoPostVersionsArgs
-  boChannels?: boolean | SpaceCountOutputTypeCountBoChannelsArgs
-  boPostVariants?: boolean | SpaceCountOutputTypeCountBoPostVariantsArgs
-  boDeployments?: boolean | SpaceCountOutputTypeCountBoDeploymentsArgs
-  boJobs?: boolean | SpaceCountOutputTypeCountBoJobsArgs
-  boChannelCredentials?: boolean | SpaceCountOutputTypeCountBoChannelCredentialsArgs
   agentPendingActions?: boolean | SpaceCountOutputTypeCountAgentPendingActionsArgs
   agentLlmUsages?: boolean | SpaceCountOutputTypeCountAgentLlmUsagesArgs
   billingMethods?: boolean | SpaceCountOutputTypeCountBillingMethodsArgs
@@ -34249,76 +27299,6 @@ export type SpaceCountOutputTypeCountHiringMessageTemplatesArgs<ExtArgs extends 
 /**
  * SpaceCountOutputType without action
  */
-export type SpaceCountOutputTypeCountBoProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoProductWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
-export type SpaceCountOutputTypeCountBoIdeationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoIdeationWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
-export type SpaceCountOutputTypeCountBoMaterialsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoMaterialWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
-export type SpaceCountOutputTypeCountBoPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoPostWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
-export type SpaceCountOutputTypeCountBoPostVersionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoPostVersionWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
-export type SpaceCountOutputTypeCountBoChannelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoChannelWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
-export type SpaceCountOutputTypeCountBoPostVariantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoPostVariantWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
-export type SpaceCountOutputTypeCountBoDeploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoDeploymentWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
-export type SpaceCountOutputTypeCountBoJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoJobWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
-export type SpaceCountOutputTypeCountBoChannelCredentialsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BoChannelCredentialWhereInput
-}
-
-/**
- * SpaceCountOutputType without action
- */
 export type SpaceCountOutputTypeCountAgentPendingActionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.AgentPendingActionWhereInput
 }
@@ -34419,16 +27399,6 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   hiringApplications?: boolean | Prisma.Space$hiringApplicationsArgs<ExtArgs>
   hiringBlacklists?: boolean | Prisma.Space$hiringBlacklistsArgs<ExtArgs>
   hiringMessageTemplates?: boolean | Prisma.Space$hiringMessageTemplatesArgs<ExtArgs>
-  boProducts?: boolean | Prisma.Space$boProductsArgs<ExtArgs>
-  boIdeations?: boolean | Prisma.Space$boIdeationsArgs<ExtArgs>
-  boMaterials?: boolean | Prisma.Space$boMaterialsArgs<ExtArgs>
-  boPosts?: boolean | Prisma.Space$boPostsArgs<ExtArgs>
-  boPostVersions?: boolean | Prisma.Space$boPostVersionsArgs<ExtArgs>
-  boChannels?: boolean | Prisma.Space$boChannelsArgs<ExtArgs>
-  boPostVariants?: boolean | Prisma.Space$boPostVariantsArgs<ExtArgs>
-  boDeployments?: boolean | Prisma.Space$boDeploymentsArgs<ExtArgs>
-  boJobs?: boolean | Prisma.Space$boJobsArgs<ExtArgs>
-  boChannelCredentials?: boolean | Prisma.Space$boChannelCredentialsArgs<ExtArgs>
   agentPendingActions?: boolean | Prisma.Space$agentPendingActionsArgs<ExtArgs>
   agentToggle?: boolean | Prisma.Space$agentToggleArgs<ExtArgs>
   agentLlmUsages?: boolean | Prisma.Space$agentLlmUsagesArgs<ExtArgs>
@@ -34534,16 +27504,6 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   hiringApplications?: boolean | Prisma.Space$hiringApplicationsArgs<ExtArgs>
   hiringBlacklists?: boolean | Prisma.Space$hiringBlacklistsArgs<ExtArgs>
   hiringMessageTemplates?: boolean | Prisma.Space$hiringMessageTemplatesArgs<ExtArgs>
-  boProducts?: boolean | Prisma.Space$boProductsArgs<ExtArgs>
-  boIdeations?: boolean | Prisma.Space$boIdeationsArgs<ExtArgs>
-  boMaterials?: boolean | Prisma.Space$boMaterialsArgs<ExtArgs>
-  boPosts?: boolean | Prisma.Space$boPostsArgs<ExtArgs>
-  boPostVersions?: boolean | Prisma.Space$boPostVersionsArgs<ExtArgs>
-  boChannels?: boolean | Prisma.Space$boChannelsArgs<ExtArgs>
-  boPostVariants?: boolean | Prisma.Space$boPostVariantsArgs<ExtArgs>
-  boDeployments?: boolean | Prisma.Space$boDeploymentsArgs<ExtArgs>
-  boJobs?: boolean | Prisma.Space$boJobsArgs<ExtArgs>
-  boChannelCredentials?: boolean | Prisma.Space$boChannelCredentialsArgs<ExtArgs>
   agentPendingActions?: boolean | Prisma.Space$agentPendingActionsArgs<ExtArgs>
   agentToggle?: boolean | Prisma.Space$agentToggleArgs<ExtArgs>
   agentLlmUsages?: boolean | Prisma.Space$agentLlmUsagesArgs<ExtArgs>
@@ -34625,16 +27585,6 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     hiringApplications: Prisma.$HiringApplicationPayload<ExtArgs>[]
     hiringBlacklists: Prisma.$HiringBlacklistPayload<ExtArgs>[]
     hiringMessageTemplates: Prisma.$HiringMessageTemplatePayload<ExtArgs>[]
-    boProducts: Prisma.$BoProductPayload<ExtArgs>[]
-    boIdeations: Prisma.$BoIdeationPayload<ExtArgs>[]
-    boMaterials: Prisma.$BoMaterialPayload<ExtArgs>[]
-    boPosts: Prisma.$BoPostPayload<ExtArgs>[]
-    boPostVersions: Prisma.$BoPostVersionPayload<ExtArgs>[]
-    boChannels: Prisma.$BoChannelPayload<ExtArgs>[]
-    boPostVariants: Prisma.$BoPostVariantPayload<ExtArgs>[]
-    boDeployments: Prisma.$BoDeploymentPayload<ExtArgs>[]
-    boJobs: Prisma.$BoJobPayload<ExtArgs>[]
-    boChannelCredentials: Prisma.$BoChannelCredentialPayload<ExtArgs>[]
     agentPendingActions: Prisma.$AgentPendingActionPayload<ExtArgs>[]
     agentToggle: Prisma.$SpaceAgentPayload<ExtArgs> | null
     agentLlmUsages: Prisma.$AgentLlmUsagePayload<ExtArgs>[]
@@ -35110,16 +28060,6 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   hiringApplications<T extends Prisma.Space$hiringApplicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringApplicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hiringBlacklists<T extends Prisma.Space$hiringBlacklistsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringBlacklistsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringBlacklistPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hiringMessageTemplates<T extends Prisma.Space$hiringMessageTemplatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$hiringMessageTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringMessageTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boProducts<T extends Prisma.Space$boProductsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boProductsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boIdeations<T extends Prisma.Space$boIdeationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boIdeationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoIdeationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boMaterials<T extends Prisma.Space$boMaterialsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boMaterialsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoMaterialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boPosts<T extends Prisma.Space$boPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boPostVersions<T extends Prisma.Space$boPostVersionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boPostVersionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoPostVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boChannels<T extends Prisma.Space$boChannelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boPostVariants<T extends Prisma.Space$boPostVariantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boPostVariantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoPostVariantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boDeployments<T extends Prisma.Space$boDeploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boDeploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoDeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boJobs<T extends Prisma.Space$boJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  boChannelCredentials<T extends Prisma.Space$boChannelCredentialsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$boChannelCredentialsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoChannelCredentialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   agentPendingActions<T extends Prisma.Space$agentPendingActionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$agentPendingActionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentPendingActionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   agentToggle<T extends Prisma.Space$agentToggleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$agentToggleArgs<ExtArgs>>): Prisma.Prisma__SpaceAgentClient<runtime.Types.Result.GetResult<Prisma.$SpaceAgentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   agentLlmUsages<T extends Prisma.Space$agentLlmUsagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$agentLlmUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentLlmUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -37134,246 +30074,6 @@ export type Space$hiringMessageTemplatesArgs<ExtArgs extends runtime.Types.Exten
   take?: number
   skip?: number
   distinct?: Prisma.HiringMessageTemplateScalarFieldEnum | Prisma.HiringMessageTemplateScalarFieldEnum[]
-}
-
-/**
- * Space.boProducts
- */
-export type Space$boProductsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoProduct
-   */
-  select?: Prisma.BoProductSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoProduct
-   */
-  omit?: Prisma.BoProductOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoProductInclude<ExtArgs> | null
-  where?: Prisma.BoProductWhereInput
-  orderBy?: Prisma.BoProductOrderByWithRelationInput | Prisma.BoProductOrderByWithRelationInput[]
-  cursor?: Prisma.BoProductWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoProductScalarFieldEnum | Prisma.BoProductScalarFieldEnum[]
-}
-
-/**
- * Space.boIdeations
- */
-export type Space$boIdeationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoIdeation
-   */
-  select?: Prisma.BoIdeationSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoIdeation
-   */
-  omit?: Prisma.BoIdeationOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoIdeationInclude<ExtArgs> | null
-  where?: Prisma.BoIdeationWhereInput
-  orderBy?: Prisma.BoIdeationOrderByWithRelationInput | Prisma.BoIdeationOrderByWithRelationInput[]
-  cursor?: Prisma.BoIdeationWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoIdeationScalarFieldEnum | Prisma.BoIdeationScalarFieldEnum[]
-}
-
-/**
- * Space.boMaterials
- */
-export type Space$boMaterialsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoMaterial
-   */
-  select?: Prisma.BoMaterialSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoMaterial
-   */
-  omit?: Prisma.BoMaterialOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoMaterialInclude<ExtArgs> | null
-  where?: Prisma.BoMaterialWhereInput
-  orderBy?: Prisma.BoMaterialOrderByWithRelationInput | Prisma.BoMaterialOrderByWithRelationInput[]
-  cursor?: Prisma.BoMaterialWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoMaterialScalarFieldEnum | Prisma.BoMaterialScalarFieldEnum[]
-}
-
-/**
- * Space.boPosts
- */
-export type Space$boPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoPost
-   */
-  select?: Prisma.BoPostSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoPost
-   */
-  omit?: Prisma.BoPostOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoPostInclude<ExtArgs> | null
-  where?: Prisma.BoPostWhereInput
-  orderBy?: Prisma.BoPostOrderByWithRelationInput | Prisma.BoPostOrderByWithRelationInput[]
-  cursor?: Prisma.BoPostWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoPostScalarFieldEnum | Prisma.BoPostScalarFieldEnum[]
-}
-
-/**
- * Space.boPostVersions
- */
-export type Space$boPostVersionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoPostVersion
-   */
-  select?: Prisma.BoPostVersionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoPostVersion
-   */
-  omit?: Prisma.BoPostVersionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoPostVersionInclude<ExtArgs> | null
-  where?: Prisma.BoPostVersionWhereInput
-  orderBy?: Prisma.BoPostVersionOrderByWithRelationInput | Prisma.BoPostVersionOrderByWithRelationInput[]
-  cursor?: Prisma.BoPostVersionWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoPostVersionScalarFieldEnum | Prisma.BoPostVersionScalarFieldEnum[]
-}
-
-/**
- * Space.boChannels
- */
-export type Space$boChannelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoChannel
-   */
-  select?: Prisma.BoChannelSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoChannel
-   */
-  omit?: Prisma.BoChannelOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoChannelInclude<ExtArgs> | null
-  where?: Prisma.BoChannelWhereInput
-  orderBy?: Prisma.BoChannelOrderByWithRelationInput | Prisma.BoChannelOrderByWithRelationInput[]
-  cursor?: Prisma.BoChannelWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoChannelScalarFieldEnum | Prisma.BoChannelScalarFieldEnum[]
-}
-
-/**
- * Space.boPostVariants
- */
-export type Space$boPostVariantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoPostVariant
-   */
-  select?: Prisma.BoPostVariantSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoPostVariant
-   */
-  omit?: Prisma.BoPostVariantOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoPostVariantInclude<ExtArgs> | null
-  where?: Prisma.BoPostVariantWhereInput
-  orderBy?: Prisma.BoPostVariantOrderByWithRelationInput | Prisma.BoPostVariantOrderByWithRelationInput[]
-  cursor?: Prisma.BoPostVariantWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoPostVariantScalarFieldEnum | Prisma.BoPostVariantScalarFieldEnum[]
-}
-
-/**
- * Space.boDeployments
- */
-export type Space$boDeploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoDeployment
-   */
-  select?: Prisma.BoDeploymentSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoDeployment
-   */
-  omit?: Prisma.BoDeploymentOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoDeploymentInclude<ExtArgs> | null
-  where?: Prisma.BoDeploymentWhereInput
-  orderBy?: Prisma.BoDeploymentOrderByWithRelationInput | Prisma.BoDeploymentOrderByWithRelationInput[]
-  cursor?: Prisma.BoDeploymentWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoDeploymentScalarFieldEnum | Prisma.BoDeploymentScalarFieldEnum[]
-}
-
-/**
- * Space.boJobs
- */
-export type Space$boJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoJob
-   */
-  select?: Prisma.BoJobSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoJob
-   */
-  omit?: Prisma.BoJobOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoJobInclude<ExtArgs> | null
-  where?: Prisma.BoJobWhereInput
-  orderBy?: Prisma.BoJobOrderByWithRelationInput | Prisma.BoJobOrderByWithRelationInput[]
-  cursor?: Prisma.BoJobWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoJobScalarFieldEnum | Prisma.BoJobScalarFieldEnum[]
-}
-
-/**
- * Space.boChannelCredentials
- */
-export type Space$boChannelCredentialsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BoChannelCredential
-   */
-  select?: Prisma.BoChannelCredentialSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BoChannelCredential
-   */
-  omit?: Prisma.BoChannelCredentialOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BoChannelCredentialInclude<ExtArgs> | null
-  where?: Prisma.BoChannelCredentialWhereInput
-  orderBy?: Prisma.BoChannelCredentialOrderByWithRelationInput | Prisma.BoChannelCredentialOrderByWithRelationInput[]
-  cursor?: Prisma.BoChannelCredentialWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BoChannelCredentialScalarFieldEnum | Prisma.BoChannelCredentialScalarFieldEnum[]
 }
 
 /**

@@ -69,7 +69,7 @@ describe('orderId 멱등키', () => {
 })
 
 // DeckApp.id(시드/BillingDeckProduct 키)와 deck-meta DeckVariant 키 정합성 가드.
-// 과금 카탈로그 6종이 전부 DECK_META에 존재해야 UI 매핑이 깨지지 않는다.
+// 과금 카탈로그 5종이 전부 DECK_META에 존재해야 UI 매핑이 깨지지 않는다.
 describe('BillingDeckProduct ↔ DeckVariant 키 정합', () => {
   const BILLING_DECK_IDS = [
     'coupang-ads',
@@ -77,7 +77,6 @@ describe('BillingDeckProduct ↔ DeckVariant 키 정합', () => {
     'finance',
     'sales-content',
     'recruiting',
-    'blog-ops',
   ]
 
   test('과금 deck id 전부 DECK_META에 존재', () => {

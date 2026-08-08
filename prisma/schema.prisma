@@ -268,7 +268,7 @@ model AdRecord {
   roas1d    Decimal @db.Decimal(10, 4) // 직접 광고수익률 (1일)
 
   // 14일 전환 지표 (KEYWORD 포맷 소스에만 존재, NCA·기존 데이터는 null)
-  orders14d  Int?     // 총 주문수 (14일)
+  orders14d  Int? // 총 주문수 (14일)
   revenue14d Decimal? @db.Decimal(18, 2) // 총 전환매출액 (14일)
   roas14d    Decimal? @db.Decimal(10, 4) // 총 광고수익률 (14일)
 
@@ -483,19 +483,6 @@ model Space {
   hiringBlacklists       HiringBlacklist[]
   hiringMessageTemplates HiringMessageTemplate[]
 
-
-  // ─── 블로그 운영 Deck (Blog Ops) ───
-  boProducts            BoProduct[]
-  boIdeations           BoIdeation[]
-  boMaterials           BoMaterial[]
-  boPosts               BoPost[]
-  boPostVersions        BoPostVersion[]
-  boChannels            BoChannel[]
-  boPostVariants        BoPostVariant[]
-  boDeployments         BoDeployment[]
-  boJobs                BoJob[]
-  boChannelCredentials  BoChannelCredential[]
-
   // ─── 에이전트 승인 큐 (Agent) ───
   agentPendingActions AgentPendingAction[]
 
@@ -538,13 +525,13 @@ model AgentPendingAction {
   source      AgentActionSource
   requestedBy String // 요청자 User.id (또는 워커/시스템 식별자)
 
-  status      AgentActionStatus @default(PENDING)
-  expiresAt   DateTime // createPendingAction에서 now+72h로 설정 (앱 계산)
-  decidedBy   String? // 승인/거부한 User.id
-  decidedAt   DateTime?
-  executedAt  DateTime?
-  result      Json? // execute 성공 결과
-  error       String? // execute 실패 메시지
+  status     AgentActionStatus @default(PENDING)
+  expiresAt  DateTime // createPendingAction에서 now+72h로 설정 (앱 계산)
+  decidedBy  String? // 승인/거부한 User.id
+  decidedAt  DateTime?
+  executedAt DateTime?
+  result     Json? // execute 성공 결과
+  error      String? // execute 실패 메시지
 
   idempotencyKey String? @unique // 재시도 멱등 — 동일 키 재요청 시 기존 액션 반환
   slackChannelId String? // Phase 6 Slack 연동 예약
@@ -650,10 +637,10 @@ model DeckApp {
 
 // Space에서 활성화된 카드 인스턴스
 model DeckInstance {
-  id        String  @id @default(cuid())
-  spaceId   String
-  deckAppId String
-  isActive  Boolean @default(true)
+  id                 String  @id @default(cuid())
+  spaceId            String
+  deckAppId          String
+  isActive           Boolean @default(true)
   // Deck 단위 Slack 알림 토글 — false면 이 Deck의 모든 알림(레거시 포함) 발송을 차단한다.
   slackNotifyEnabled Boolean @default(true)
   // 이벤트 단위 알림 토글 — 비활성 이벤트만 { "<eventKey>": false } 로 기록(미기재=on).
@@ -1070,9 +1057,9 @@ model InvProduct {
   // 공급원가를 완료(입고완료) 생산 차수 가중평균 단가로 파생 표시할지 여부 (값 복사 없음)
   useProductionCost Boolean @default(false)
 
-  space            Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  group            InvProductGroup    @relation(fields: [groupId], references: [id], onDelete: Restrict)
-  brand            Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  space            Space                  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  group            InvProductGroup        @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  brand            Brand?                 @relation(fields: [brandId], references: [id], onDelete: SetNull)
   options          InvProductOption[]
   reorderConfig    InvReorderConfig?
   reorderPlanItems ReorderPlanItem[]
@@ -1609,7 +1596,7 @@ enum ChannelShippingFeeType {
 }
 
 model Channel {
-  id                      String   @id @default(cuid())
+  id                      String                 @id @default(cuid())
   spaceId                 String
   channelTypeDefId        String? // 마이그레이션 후 NOT NULL로 강제하기 전까지 nullable
   name                    String
@@ -1621,26 +1608,26 @@ model Channel {
   // 채널 자체 배송(연동) 채널이 가리키는 대표 채널(통합재고). null이면 대표/일반 채널.
   // 연동 채널의 판매채널 상품 화면은 대표 채널 상품을 읽기전용으로 미러링한다.
   representativeChannelId String?
-  isActive                Boolean  @default(true)
-  useSimulation           Boolean  @default(true) // 가격 시뮬레이션 노출/필수입력 결정
+  isActive                Boolean                @default(true)
+  useSimulation           Boolean                @default(true) // 가격 시뮬레이션 노출/필수입력 결정
   adminUrl                String?
-  freeShipping            Boolean  @default(false)
-  freeShippingThreshold   Decimal? @db.Decimal(18, 2) // 무료배송 최소 주문금액
-  usesMarketingBudget     Boolean  @default(false)
-  applyAdCost             Boolean  @default(false) // 시뮬레이션 시 광고비 자동 적용
-  adCostPct               Decimal? @db.Decimal(6, 4) // 광고비율 (0~1, null=미설정 → 시뮬 앱 기본값 폴백)
+  freeShipping            Boolean                @default(false)
+  freeShippingThreshold   Decimal?               @db.Decimal(18, 2) // 무료배송 최소 주문금액
+  usesMarketingBudget     Boolean                @default(false)
+  applyAdCost             Boolean                @default(false) // 시뮬레이션 시 광고비 자동 적용
+  adCostPct               Decimal?               @db.Decimal(6, 4) // 광고비율 (0~1, null=미설정 → 시뮬 앱 기본값 폴백)
   // 배송비 산정 방식: FIXED=정액(shippingFee 원), PERCENT=판매가 대비 비율(shippingFeePct 0~1)
   shippingFeeType         ChannelShippingFeeType @default(FIXED)
-  shippingFee             Decimal? @db.Decimal(18, 2)
-  shippingFeePct          Decimal? @db.Decimal(6, 4) // 배송비율 (0~1, shippingFeeType=PERCENT일 때 사용)
-  vatIncludedInFee        Boolean  @default(false) // 판매(카테고리) 수수료율에 VAT 포함 여부
-  paymentFeeIncluded      Boolean  @default(true) // 결제 수수료 포함 여부
-  paymentFeePct           Decimal? @db.Decimal(6, 4) // 결제 수수료율 (0~1)
-  paymentFeeVatIncluded   Boolean  @default(false) // 결제 수수료율에 VAT 포함 여부 (판매 수수료와 독립)
-  requireOrderNumber      Boolean  @default(true)
-  requirePayment          Boolean  @default(true)
-  requireProducts         Boolean  @default(true)
-  sortOrder               Int      @default(0) // 사용자 정의 정렬 순서 (오름차순, 동률은 name asc)
+  shippingFee             Decimal?               @db.Decimal(18, 2)
+  shippingFeePct          Decimal?               @db.Decimal(6, 4) // 배송비율 (0~1, shippingFeeType=PERCENT일 때 사용)
+  vatIncludedInFee        Boolean                @default(false) // 판매(카테고리) 수수료율에 VAT 포함 여부
+  paymentFeeIncluded      Boolean                @default(true) // 결제 수수료 포함 여부
+  paymentFeePct           Decimal?               @db.Decimal(6, 4) // 결제 수수료율 (0~1)
+  paymentFeeVatIncluded   Boolean                @default(false) // 결제 수수료율에 VAT 포함 여부 (판매 수수료와 독립)
+  requireOrderNumber      Boolean                @default(true)
+  requirePayment          Boolean                @default(true)
+  requireProducts         Boolean                @default(true)
+  sortOrder               Int                    @default(0) // 사용자 정의 정렬 순서 (오름차순, 동률은 name asc)
 
   space                   Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channelTypeDef          ChannelTypeDef?          @relation(fields: [channelTypeDefId], references: [id], onDelete: Restrict)
@@ -2896,23 +2883,23 @@ model FinAccount {
 
 // 부채 (대출 등) — 수기 관리. 대시보드 인라인 Dialog로 잔액 등록/갱신.
 model FinLiability {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   spaceId        String
   name           String
   lender         String?
-  principal      Decimal  @db.Decimal(18, 2)
-  balance        Decimal  @db.Decimal(18, 2)
+  principal      Decimal   @db.Decimal(18, 2)
+  balance        Decimal   @db.Decimal(18, 2)
   rate           String? // "연 4.8%" 등 표시 문자열
   dueDate        String? // "2027-03" 등
-  monthlyPayment Decimal? @db.Decimal(18, 2)
+  monthlyPayment Decimal?  @db.Decimal(18, 2)
   memo           String?
   accountId      String? // 대출 계좌로 지정한 FinAccount (선택)
   // 이 시점까지의 연결 상환 거래는 balance 에 이미 반영됨(워터마크). 이후 상환은 "감지" 대상.
   balanceAsOf    DateTime?
 
-  space        Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  account      FinAccount?      @relation(fields: [accountId], references: [id], onDelete: SetNull)
-  repayments   FinTransaction[] // 이 부채에 귀속된 상환 거래
+  space      Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  account    FinAccount?      @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  repayments FinTransaction[] // 이 부채에 귀속된 상환 거래
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3511,336 +3498,6 @@ model HiringMessageTemplate {
   @@index([spaceId])
 }
 
-
-// ─── 블로그 운영 Deck (Blog Ops) ──────────────────────────────────────────────
-
-enum BoCrawlStatus {
-  NONE
-  PENDING
-  DONE
-  FAILED
-}
-
-enum BoMaterialStatus {
-  PROPOSED
-  APPROVED
-  REJECTED
-  ARCHIVED
-}
-
-// 블로그 소재 발굴 대상 제품. 홈페이지 크롤 결과·AI 소구점 분석의 기준점.
-model BoProduct {
-  id             String        @id @default(cuid())
-  spaceId        String
-  name           String
-  category       String? // B2B / B2C
-  oneLinerPitch  String?
-  homepageUrl    String?
-  crawledText    String?
-  crawledAt      DateTime?
-  crawlStatus    BoCrawlStatus @default(NONE)
-  targetCustomer String?
-  features       Json          @default("[]") // [{ name: string, description: string }]
-  ctaUrl         String?
-  customFields   Json          @default("[]") // [{ key: string, value: string }]
-  isActive       Boolean       @default(true)
-
-  space     Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  ideations BoIdeation[]
-  materials BoMaterial[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([spaceId])
-}
-
-// AI 소구점 발굴 실행 단위. 한 번의 생성 호출 결과를 appealPoints Json으로 보관.
-model BoIdeation {
-  id              String  @id @default(cuid())
-  spaceId         String
-  userId          String?
-  productId       String
-  userPromptInput String?
-  appealPoints    Json    @default("[]") // [{ point, evidence, targetPain, priority }]
-  providerName    String?
-  providerModel   String?
-  latencyMs       Int?
-  promptTraceHash String?
-
-  space     Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  product   BoProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  materials BoMaterial[]
-
-  createdAt DateTime @default(now())
-
-  @@index([spaceId, createdAt])
-  @@index([productId])
-}
-
-// 블로그 포스팅 소재. 소구점 하나를 특정 앵글로 풀어낸 글 골격.
-model BoMaterial {
-  id               String           @id @default(cuid())
-  spaceId          String
-  productId        String
-  ideationId       String?
-  title            String
-  appealPoint      String
-  angle            String
-  outline          Json             @default("[]") // [{ section: string, description: string }]
-  targetKeyword    String?
-  status           BoMaterialStatus @default(PROPOSED)
-  approvedByUserId String?
-  approvedAt       DateTime?
-
-  space    Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  product  BoProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  ideation BoIdeation? @relation(fields: [ideationId], references: [id], onDelete: SetNull)
-  posts    BoPost[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([spaceId, status])
-  @@index([productId])
-}
-
-enum BoPostStatus {
-  GENERATING
-  DRAFT
-  IN_REVIEW
-  PUBLISH_APPROVED
-  PUBLISHED
-  FAILED
-  ARCHIVED
-}
-
-enum BoPlatform {
-  NAVER_BLOG
-  TISTORY
-  OWN_HOMEPAGE
-}
-
-enum BoPublisherMode {
-  MANUAL
-  BROWSER
-}
-
-enum BoVariantStatus {
-  GENERATING
-  READY
-  EDITED
-  FAILED
-}
-
-enum BoDeploymentStatus {
-  PENDING
-  PUBLISHING
-  PUBLISHED
-  FAILED
-  CANCELED
-  EXPORTED
-  DELETING
-  DELETED
-}
-
-// 블로그 포스트. 소재(BoMaterial)를 기반으로 AI가 생성한 실제 글 본문.
-model BoPost {
-  id                      String        @id @default(cuid())
-  spaceId                 String
-  userId                  String?
-  materialId              String
-  title                   String
-  doc                     Json          // TipTap master doc
-  bodyMarkdown            String?
-  status                  BoPostStatus  @default(GENERATING)
-  targetKeyword           String?
-  relatedKeywords         Json          @default("[]")
-  ctaUrl                  String?
-  publishApprovedByUserId String?
-  publishApprovedAt       DateTime?
-  generationTraceHash     String?
-  errorMessage            String?
-
-  space       Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  material    BoMaterial      @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  versions    BoPostVersion[]
-  variants    BoPostVariant[]
-  deployments BoDeployment[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([spaceId, status])
-  @@index([materialId])
-}
-
-// 포스트 버전 이력. 수동 저장·AI 재생성 시마다 스냅샷 누적.
-model BoPostVersion {
-  id              String  @id @default(cuid())
-  postId          String
-  spaceId         String
-  versionNumber   Int
-  title           String
-  doc             Json
-  note            String?
-  createdByUserId String?
-
-  post  BoPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  space Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@unique([postId, versionNumber])
-  @@index([spaceId, createdAt])
-}
-
-// 블로그 배포 채널. 플랫폼(네이버·티스토리·자사 홈페이지)별 설정을 보관한다.
-model BoChannel {
-  id            String          @id @default(cuid())
-  spaceId       String
-  platform      BoPlatform
-  name          String
-  formatProfile Json            @default("{}")
-  publisherMode BoPublisherMode @default(MANUAL)
-  config        Json?
-  isActive      Boolean         @default(true)
-
-  space       Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  variants    BoPostVariant[]
-  deployments BoDeployment[]
-  credentials BoChannelCredential[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([spaceId, platform, name])
-  @@index([spaceId])
-}
-
-// 포스트 × 채널별 변형. 채널 포맷에 맞춰 변환된 제목·본문·내보내기 결과를 보관한다.
-model BoPostVariant {
-  id               String          @id @default(cuid())
-  spaceId          String
-  postId           String
-  channelId        String
-  title            String
-  doc              Json
-  exportedMarkdown String?
-  exportedHtml     String?
-  status           BoVariantStatus @default(GENERATING)
-  errorMessage     String?
-
-  space       Space          @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  post        BoPost         @relation(fields: [postId], references: [id], onDelete: Cascade)
-  channel     BoChannel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  deployments BoDeployment[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([postId, channelId])
-  @@index([spaceId])
-}
-
-// 포스트 배포 이력. 변형 1건을 채널에 게시한 실행 단위.
-model BoDeployment {
-  id           String             @id @default(cuid())
-  spaceId      String
-  postId       String
-  variantId    String
-  channelId    String
-  status       BoDeploymentStatus @default(PENDING)
-  platformUrl  String?
-  errorCode    String?
-  errorMessage String?
-  publishedAt  DateTime?
-  scheduledAt  DateTime? // 예약 발행 시각 (null = 즉시 발행)
-  deletedAt    DateTime? // 플랫폼에서 글 삭제 완료 시각
-
-  space   Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  post    BoPost        @relation(fields: [postId], references: [id], onDelete: Cascade)
-  variant BoPostVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  channel BoChannel     @relation(fields: [channelId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([spaceId, status])
-  @@index([postId])
-}
-
-// ─── Blog Ops Deck (자격증명 · 작업 큐) ──────────────────────────────────────
-
-enum BoJobKind {
-  CRAWL_HOMEPAGE
-  GENERATE_DRAFT
-  GENERATE_VARIANT
-  PUBLISH
-  DELETE_POST
-}
-
-enum BoJobStatus {
-  PENDING
-  CLAIMED
-  COMPLETED
-  FAILED
-}
-
-enum BoCredentialKind {
-  COOKIE
-  OAUTH
-  API_KEY
-}
-
-// DB-backed 작업 큐. 워커가 주기 polling 해서 claim → 처리 → complete.
-model BoJob {
-  id           String      @id @default(cuid())
-  spaceId      String
-  kind         BoJobKind
-  status       BoJobStatus @default(PENDING)
-  targetId     String? // variantId · deploymentId 등 대상 엔터티 id
-  payload      Json? // kind 별 페이로드
-  scheduledAt  DateTime    @default(now())
-  claimedAt    DateTime?
-  claimedBy    String? // 워커 instance id
-  completedAt  DateTime?
-  attempts     Int         @default(0)
-  errorMessage String?
-
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([status, scheduledAt])
-  @@index([spaceId, status])
-  @@index([kind, status])
-}
-
-// 채널별 자격증명. AES-256-CBC 암호화 페이로드 보관 (sc/credentials.ts 와 동일 구조).
-model BoChannelCredential {
-  id               String           @id @default(cuid())
-  spaceId          String
-  channelId        String
-  kind             BoCredentialKind
-  encryptedPayload String // hex 인코딩 AES-256-CBC
-  iv               String // hex iv
-  expiresAt        DateTime?
-  lastVerifiedAt   DateTime?
-  lastError        String?
-
-  space   Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  channel BoChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([channelId, kind])
-  @@index([channelId])
-  @@index([spaceId])
-}
-
 // ═══════════════════════════════════════════
 // 구독·결제 (Billing) — deck별 개별 구독 모델
 // ═══════════════════════════════════════════
@@ -3932,13 +3589,13 @@ model SubscriptionItem {
 
 // 결제수단 (빌링키). billingKey는 AES-256-CBC 암호화 보관.
 model BillingMethod {
-  id          String  @id @default(cuid())
-  spaceId     String
-  provider    String // "toss"
-  billingKey  String // 암호화 페이로드 (hex)
+  id           String  @id @default(cuid())
+  spaceId      String
+  provider     String // "toss"
+  billingKey   String // 암호화 페이로드 (hex)
   billingKeyIv String // hex iv
-  cardSummary String? // "신한 ****1234" 표시용
-  isDefault   Boolean @default(true)
+  cardSummary  String? // "신한 ****1234" 표시용
+  isDefault    Boolean @default(true)
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 

@@ -16,7 +16,6 @@
 | `sales-content` | 세일즈 콘텐츠    |
 | `finance`       | 재무 관리        |
 | `recruiting`    | 모집 관리        |
-| `blog-ops`      | 블로그 운영      |
 
 ## 하위 폴더 컨벤션
 
