@@ -13,7 +13,7 @@ function buildLlmsTxt(): string {
   lines.push('# Workdeck')
   lines.push('')
   lines.push(
-    '> Workdeck은 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영 같은 ' +
+    '> Workdeck은 쿠팡 광고 관리, 브랜드 운영, 재무 관리, 모집 관리, 세일즈 콘텐츠 같은 ' +
       '비즈니스 업무를 필요한 것만 골라 쓰며 목표를 달성하는 워크스페이스입니다.'
   )
   lines.push('')
