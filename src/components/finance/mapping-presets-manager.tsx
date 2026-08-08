@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
@@ -143,14 +143,7 @@ export function MappingPresetsManager() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-base">업로드 매핑 규칙</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          같은 <strong>파일 형식</strong>(헤더 구성)을 다시 올리면 자동 적용되는 컬럼 매핑입니다.
-          파일 이름과는 무관합니다.
-        </p>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         {loading ? (
           <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> 불러오는 중…

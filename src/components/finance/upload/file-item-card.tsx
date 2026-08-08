@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { FINANCE_IMPORTS_PATH, FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-routes'
+import { FINANCE_MAPPING_RULES_PATH, FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-routes'
 
 import { MappingEditor, SampleTable } from './mapping-editor'
 import { AccountRegisterDialog } from './account-register-dialog'
@@ -433,7 +433,7 @@ export function FileItemCard({
                 파일 형식이 같아 컬럼 매핑이 자동 적용되었습니다
               </span>
               <Link
-                href={FINANCE_IMPORTS_PATH}
+                href={FINANCE_MAPPING_RULES_PATH}
                 className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
               >
                 규칙 관리
