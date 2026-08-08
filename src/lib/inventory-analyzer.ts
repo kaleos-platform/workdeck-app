@@ -238,6 +238,32 @@ function daysBetween(a: Date, b: Date): number {
   return Math.floor((a.getTime() - b.getTime()) / 86_400_000)
 }
 
+type AnalysisContent = {
+  shortageCount: number
+  returnRateCount: number
+  storageFeeCount: number
+  winnerIssueCount: number
+  results: unknown
+}
+
+/**
+ * 두 분석 결과가 내용상 동일한지 비교한다 — 같은 snapshotDate를 하루에 여러 번 분석해도
+ * 내용이 그대로면 Slack 알림을 다시 보내지 않기 위한 판정.
+ *
+ * snapshotDate 단위로 무조건 1회만 보내면 안 된다: 같은 날 수집이 이어지면서 결과가
+ * 실제로 바뀌는 경우가 있고(prod 08-06 재고부족 62건 → 65건), 그때는 알려야 한다.
+ * results는 같은 코드 경로가 같은 순서로 만들므로 직렬화 비교로 충분하다.
+ */
+export function isSameAnalysisContent(a: AnalysisContent, b: AnalysisContent): boolean {
+  return (
+    a.shortageCount === b.shortageCount &&
+    a.returnRateCount === b.returnRateCount &&
+    a.storageFeeCount === b.storageFeeCount &&
+    a.winnerIssueCount === b.winnerIssueCount &&
+    JSON.stringify(a.results) === JSON.stringify(b.results)
+  )
+}
+
 export type RunAndSaveResult =
   | {
       status: 'ok'
@@ -296,19 +322,22 @@ export async function runAndSaveInventoryAnalysis(params: {
         slackDelivered = false
       }
 
-      // dedupe marker 생성 (결과 없이 0건)
-      await prisma.inventoryAnalysis.create({
-        data: {
-          workspaceId: params.workspaceId,
-          snapshotDate: output.snapshotDate,
-          triggeredBy: 'stale-skip',
-          results: {} as object,
-          shortageCount: 0,
-          returnRateCount: 0,
-          storageFeeCount: 0,
-          winnerIssueCount: 0,
-        },
-      })
+      // Slack 전송 성공 시에만 dedupe marker 기록 — 미발송(실패·토글 off)이면 마커를 남기지
+      // 않아 다음 실행에서 재평가된다(영구 침묵 방지). cron/inventory-stale-check와 동일 규칙.
+      if (slackDelivered) {
+        await prisma.inventoryAnalysis.create({
+          data: {
+            workspaceId: params.workspaceId,
+            snapshotDate: output.snapshotDate,
+            triggeredBy: 'stale-skip',
+            results: {} as object,
+            shortageCount: 0,
+            returnRateCount: 0,
+            storageFeeCount: 0,
+            winnerIssueCount: 0,
+          },
+        })
+      }
     }
 
     return {
@@ -319,6 +348,25 @@ export async function runAndSaveInventoryAnalysis(params: {
       slackDelivered,
     }
   }
+
+  // 같은 snapshotDate의 직전 분석과 내용이 같으면 재알림하지 않는다.
+  // (워커 수집이 하루 여러 번 돌거나 업로드·수동 재분석이 겹치면 동일 결과가 반복 발송됐다)
+  const previous = await prisma.inventoryAnalysis.findFirst({
+    where: {
+      workspaceId: params.workspaceId,
+      snapshotDate: output.snapshotDate,
+      triggeredBy: { not: 'stale-skip' },
+    },
+    orderBy: { analysedAt: 'desc' },
+    select: {
+      shortageCount: true,
+      returnRateCount: true,
+      storageFeeCount: true,
+      winnerIssueCount: true,
+      results: true,
+    },
+  })
+  const isRepeat = previous ? isSameAnalysisContent(previous, output) : false
 
   const analysis = await prisma.inventoryAnalysis.create({
     data: {
@@ -336,7 +384,11 @@ export async function runAndSaveInventoryAnalysis(params: {
   let slackAttempted = false
   let slackDelivered = false
 
-  if (params.sendSlack) {
+  if (params.sendSlack && isRepeat) {
+    console.log('[inventory-analyzer] 직전 분석과 결과 동일 — Slack 알림 생략')
+  }
+
+  if (params.sendSlack && !isRepeat) {
     slackAttempted = true
     try {
       const { notifyInventoryAnalysis } = await import('@/lib/slack-inventory-notifier')
