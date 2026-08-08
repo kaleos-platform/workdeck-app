@@ -679,3 +679,8 @@ export type BillingMethod = Prisma.BillingMethodModel
  * 
  */
 export type BillingCharge = Prisma.BillingChargeModel
+/**
+ * Model AdminAuditLog
+ * 
+ */
+export type AdminAuditLog = Prisma.AdminAuditLogModel
