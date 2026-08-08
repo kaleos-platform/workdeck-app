@@ -17,7 +17,7 @@ async function main() {
   console.log('🌱 DeckApp 시드 데이터 적용 중...')
 
   const deckApps = [
-    { id: 'coupang-ads', name: '쿠팡 광고 자동화', isActive: true },
+    { id: 'coupang-ads', name: '쿠팡 광고 관리', isActive: true },
     { id: 'seller-hub', name: '브랜드 운영', isActive: true },
     { id: 'sales-content', name: '세일즈 콘텐츠', isActive: true },
     { id: 'finance', name: '재무 관리', isActive: true },

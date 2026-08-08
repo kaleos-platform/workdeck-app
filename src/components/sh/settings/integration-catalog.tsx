@@ -21,7 +21,7 @@ const CATALOG: CatalogItem[] = [
     icon: Boxes,
     source: '쿠팡 로켓그로스 재고 (쿠팡 광고)',
     target: '재고 대조',
-    description: '쿠팡 광고 관리자에서 수집된 재고 스냅샷을 불러와 보관 장소 재고와 대조합니다.',
+    description: '쿠팡 광고 관리에서 수집된 재고 스냅샷을 불러와 보관 장소 재고와 대조합니다.',
     status: '활성',
     href: SELLER_HUB_RECONCILIATION_PATH,
   },
