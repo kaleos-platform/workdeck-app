@@ -40,6 +40,7 @@ import {
   Send,
   ShieldCheck,
   Plug,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -107,6 +108,7 @@ import {
   BLOG_OPS_DEPLOYMENTS_PATH,
   APPROVALS_PATH,
   SETTINGS_INTEGRATIONS_PATH,
+  SETTINGS_AI_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -515,6 +517,13 @@ export function Sidebar({
                   pathname === SETTINGS_INTEGRATIONS_PATH ||
                   pathname.startsWith(`${SETTINGS_INTEGRATIONS_PATH}/`)
                 }
+                collapsed={collapsed}
+              />
+              <RailLink
+                href={SETTINGS_AI_PATH}
+                icon={Sparkles}
+                label="AI 설정"
+                isActive={pathname === SETTINGS_AI_PATH || pathname.startsWith(`${SETTINGS_AI_PATH}/`)}
                 collapsed={collapsed}
               />
             </div>

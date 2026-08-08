@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { generateTextWithFallback } from '@/lib/ai/providers'
+import { generateTextForSpace } from '@/lib/ai/resolve'
 import { onboardingDraftSchema, type OnboardingDraft } from '@/lib/sc/onboarding/schemas'
 import { ONBOARDING_SYSTEM_PROMPT, buildOnboardingUserPrompt } from '@/lib/sc/onboarding/prompts'
 
@@ -56,7 +56,7 @@ export async function POST() {
 
     // JSON 파싱/검증 실패 시 1회 재시도
     for (let attempt = 0; attempt < 2 && !draft; attempt++) {
-      const { result, providerName: pn } = await generateTextWithFallback({
+      const { result, providerName: pn } = await generateTextForSpace(spaceId, {
         system: ONBOARDING_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userPrompt }],
         responseFormat: 'json',

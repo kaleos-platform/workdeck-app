@@ -241,6 +241,7 @@ export type SpaceWhereInput = {
   improvementRules?: Prisma.ImprovementRuleListRelationFilter
   salesContentOnboarding?: Prisma.XOR<Prisma.SalesContentOnboardingNullableScalarRelationFilter, Prisma.SalesContentOnboardingWhereInput> | null
   scOnboardingResources?: Prisma.ScOnboardingResourceListRelationFilter
+  aiSetting?: Prisma.XOR<Prisma.SpaceAiSettingNullableScalarRelationFilter, Prisma.SpaceAiSettingWhereInput> | null
   finAccounts?: Prisma.FinAccountListRelationFilter
   finLiabilities?: Prisma.FinLiabilityListRelationFilter
   finCategories?: Prisma.FinCategoryListRelationFilter
@@ -335,6 +336,7 @@ export type SpaceOrderByWithRelationInput = {
   improvementRules?: Prisma.ImprovementRuleOrderByRelationAggregateInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingOrderByWithRelationInput
   scOnboardingResources?: Prisma.ScOnboardingResourceOrderByRelationAggregateInput
+  aiSetting?: Prisma.SpaceAiSettingOrderByWithRelationInput
   finAccounts?: Prisma.FinAccountOrderByRelationAggregateInput
   finLiabilities?: Prisma.FinLiabilityOrderByRelationAggregateInput
   finCategories?: Prisma.FinCategoryOrderByRelationAggregateInput
@@ -432,6 +434,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   improvementRules?: Prisma.ImprovementRuleListRelationFilter
   salesContentOnboarding?: Prisma.XOR<Prisma.SalesContentOnboardingNullableScalarRelationFilter, Prisma.SalesContentOnboardingWhereInput> | null
   scOnboardingResources?: Prisma.ScOnboardingResourceListRelationFilter
+  aiSetting?: Prisma.XOR<Prisma.SpaceAiSettingNullableScalarRelationFilter, Prisma.SpaceAiSettingWhereInput> | null
   finAccounts?: Prisma.FinAccountListRelationFilter
   finLiabilities?: Prisma.FinLiabilityListRelationFilter
   finCategories?: Prisma.FinCategoryListRelationFilter
@@ -550,6 +553,7 @@ export type SpaceCreateInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -644,6 +648,7 @@ export type SpaceUncheckedCreateInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -738,6 +743,7 @@ export type SpaceUpdateInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -832,6 +838,7 @@ export type SpaceUncheckedUpdateInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1466,6 +1473,20 @@ export type SpaceUpdateOneRequiredWithoutScOnboardingResourcesNestedInput = {
   upsert?: Prisma.SpaceUpsertWithoutScOnboardingResourcesInput
   connect?: Prisma.SpaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutScOnboardingResourcesInput, Prisma.SpaceUpdateWithoutScOnboardingResourcesInput>, Prisma.SpaceUncheckedUpdateWithoutScOnboardingResourcesInput>
+}
+
+export type SpaceCreateNestedOneWithoutAiSettingInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutAiSettingInput, Prisma.SpaceUncheckedCreateWithoutAiSettingInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutAiSettingInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutAiSettingNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutAiSettingInput, Prisma.SpaceUncheckedCreateWithoutAiSettingInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutAiSettingInput
+  upsert?: Prisma.SpaceUpsertWithoutAiSettingInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutAiSettingInput, Prisma.SpaceUpdateWithoutAiSettingInput>, Prisma.SpaceUncheckedUpdateWithoutAiSettingInput>
 }
 
 export type SpaceCreateNestedOneWithoutWorkspaceAiCreditsInput = {
@@ -2189,6 +2210,7 @@ export type SpaceCreateWithoutMembersInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -2282,6 +2304,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -2391,6 +2414,7 @@ export type SpaceUpdateWithoutMembersInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -2484,6 +2508,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2578,6 +2603,7 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -2671,6 +2697,7 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -2780,6 +2807,7 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -2873,6 +2901,7 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2966,6 +2995,7 @@ export type SpaceCreateWithoutAgentToggleInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -3059,6 +3089,7 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -3168,6 +3199,7 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -3261,6 +3293,7 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3354,6 +3387,7 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -3447,6 +3481,7 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -3556,6 +3591,7 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -3649,6 +3685,7 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3741,6 +3778,7 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -3834,6 +3872,7 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -3943,6 +3982,7 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -4036,6 +4076,7 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4129,6 +4170,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -4222,6 +4264,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -4331,6 +4374,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -4424,6 +4468,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4517,6 +4562,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -4610,6 +4656,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -4719,6 +4766,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -4812,6 +4860,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4905,6 +4954,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -4998,6 +5048,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -5107,6 +5158,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -5200,6 +5252,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5293,6 +5346,7 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -5386,6 +5440,7 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -5495,6 +5550,7 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -5588,6 +5644,7 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5681,6 +5738,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -5774,6 +5832,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -5883,6 +5942,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -5976,6 +6036,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6069,6 +6130,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -6162,6 +6224,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -6271,6 +6334,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -6364,6 +6428,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6457,6 +6522,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -6550,6 +6616,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -6659,6 +6726,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -6752,6 +6820,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6845,6 +6914,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -6938,6 +7008,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -7047,6 +7118,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -7140,6 +7212,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7233,6 +7306,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -7326,6 +7400,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -7435,6 +7510,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -7528,6 +7604,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7621,6 +7698,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -7714,6 +7792,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -7823,6 +7902,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -7916,6 +7996,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8009,6 +8090,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -8102,6 +8184,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -8211,6 +8294,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -8304,6 +8388,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8397,6 +8482,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -8490,6 +8576,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -8599,6 +8686,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -8692,6 +8780,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8785,6 +8874,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -8878,6 +8968,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -8987,6 +9078,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -9080,6 +9172,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9173,6 +9266,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -9266,6 +9360,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -9375,6 +9470,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -9468,6 +9564,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9561,6 +9658,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -9654,6 +9752,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -9763,6 +9862,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -9856,6 +9956,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9949,6 +10050,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -10042,6 +10144,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -10151,6 +10254,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -10244,6 +10348,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10337,6 +10442,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -10430,6 +10536,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -10539,6 +10646,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -10632,6 +10740,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10725,6 +10834,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -10818,6 +10928,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -10927,6 +11038,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -11020,6 +11132,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11113,6 +11226,7 @@ export type SpaceCreateWithoutBrandsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -11206,6 +11320,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -11315,6 +11430,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -11408,6 +11524,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11501,6 +11618,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -11594,6 +11712,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -11703,6 +11822,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -11796,6 +11916,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11889,6 +12010,7 @@ export type SpaceCreateWithoutChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -11982,6 +12104,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -12091,6 +12214,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -12184,6 +12308,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12277,6 +12402,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -12370,6 +12496,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -12479,6 +12606,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -12572,6 +12700,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12665,6 +12794,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -12758,6 +12888,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -12867,6 +12998,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -12960,6 +13092,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13053,6 +13186,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -13146,6 +13280,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -13255,6 +13390,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -13348,6 +13484,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13441,6 +13578,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -13534,6 +13672,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -13643,6 +13782,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -13736,6 +13876,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13829,6 +13970,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -13922,6 +14064,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -14031,6 +14174,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -14124,6 +14268,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14217,6 +14362,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -14310,6 +14456,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -14419,6 +14566,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -14512,6 +14660,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14605,6 +14754,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -14698,6 +14848,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -14807,6 +14958,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -14900,6 +15052,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14993,6 +15146,7 @@ export type SpaceCreateWithoutProductsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -15086,6 +15240,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -15195,6 +15350,7 @@ export type SpaceUpdateWithoutProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -15288,6 +15444,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15381,6 +15538,7 @@ export type SpaceCreateWithoutPersonasInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -15474,6 +15632,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -15583,6 +15742,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -15676,6 +15836,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15769,6 +15930,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -15862,6 +16024,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -15971,6 +16134,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -16064,6 +16228,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16157,6 +16322,7 @@ export type SpaceCreateWithoutSalesContentOnboardingInput = {
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -16250,6 +16416,7 @@ export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -16359,6 +16526,7 @@ export type SpaceUpdateWithoutSalesContentOnboardingInput = {
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -16452,6 +16620,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16545,6 +16714,7 @@ export type SpaceCreateWithoutScOnboardingResourcesInput = {
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -16638,6 +16808,7 @@ export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -16747,6 +16918,7 @@ export type SpaceUpdateWithoutScOnboardingResourcesInput = {
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -16840,6 +17012,399 @@ export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUncheckedUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUncheckedUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  boChannels?: Prisma.BoChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  boPostVariants?: Prisma.BoPostVariantUncheckedUpdateManyWithoutSpaceNestedInput
+  boDeployments?: Prisma.BoDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  boJobs?: Prisma.BoJobUncheckedUpdateManyWithoutSpaceNestedInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutAiSettingInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionCreateNestedManyWithoutSpaceInput
+  boChannels?: Prisma.BoChannelCreateNestedManyWithoutSpaceInput
+  boPostVariants?: Prisma.BoPostVariantCreateNestedManyWithoutSpaceInput
+  boDeployments?: Prisma.BoDeploymentCreateNestedManyWithoutSpaceInput
+  boJobs?: Prisma.BoJobCreateNestedManyWithoutSpaceInput
+  boChannelCredentials?: Prisma.BoChannelCredentialCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutAiSettingInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  boProducts?: Prisma.BoProductUncheckedCreateNestedManyWithoutSpaceInput
+  boIdeations?: Prisma.BoIdeationUncheckedCreateNestedManyWithoutSpaceInput
+  boMaterials?: Prisma.BoMaterialUncheckedCreateNestedManyWithoutSpaceInput
+  boPosts?: Prisma.BoPostUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVersions?: Prisma.BoPostVersionUncheckedCreateNestedManyWithoutSpaceInput
+  boChannels?: Prisma.BoChannelUncheckedCreateNestedManyWithoutSpaceInput
+  boPostVariants?: Prisma.BoPostVariantUncheckedCreateNestedManyWithoutSpaceInput
+  boDeployments?: Prisma.BoDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  boJobs?: Prisma.BoJobUncheckedCreateNestedManyWithoutSpaceInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutAiSettingInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutAiSettingInput, Prisma.SpaceUncheckedCreateWithoutAiSettingInput>
+}
+
+export type SpaceUpsertWithoutAiSettingInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutAiSettingInput, Prisma.SpaceUncheckedUpdateWithoutAiSettingInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutAiSettingInput, Prisma.SpaceUncheckedCreateWithoutAiSettingInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutAiSettingInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutAiSettingInput, Prisma.SpaceUncheckedUpdateWithoutAiSettingInput>
+}
+
+export type SpaceUpdateWithoutAiSettingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  boProducts?: Prisma.BoProductUpdateManyWithoutSpaceNestedInput
+  boIdeations?: Prisma.BoIdeationUpdateManyWithoutSpaceNestedInput
+  boMaterials?: Prisma.BoMaterialUpdateManyWithoutSpaceNestedInput
+  boPosts?: Prisma.BoPostUpdateManyWithoutSpaceNestedInput
+  boPostVersions?: Prisma.BoPostVersionUpdateManyWithoutSpaceNestedInput
+  boChannels?: Prisma.BoChannelUpdateManyWithoutSpaceNestedInput
+  boPostVariants?: Prisma.BoPostVariantUpdateManyWithoutSpaceNestedInput
+  boDeployments?: Prisma.BoDeploymentUpdateManyWithoutSpaceNestedInput
+  boJobs?: Prisma.BoJobUpdateManyWithoutSpaceNestedInput
+  boChannelCredentials?: Prisma.BoChannelCredentialUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutAiSettingInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16933,6 +17498,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -17026,6 +17592,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -17135,6 +17702,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -17228,6 +17796,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17321,6 +17890,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -17414,6 +17984,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -17523,6 +18094,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -17616,6 +18188,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17709,6 +18282,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -17802,6 +18376,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -17911,6 +18486,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -18004,6 +18580,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18097,6 +18674,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -18190,6 +18768,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -18299,6 +18878,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -18392,6 +18972,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18485,6 +19066,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -18578,6 +19160,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -18687,6 +19270,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -18780,6 +19364,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18873,6 +19458,7 @@ export type SpaceCreateWithoutContentsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -18966,6 +19552,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -19075,6 +19662,7 @@ export type SpaceUpdateWithoutContentsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -19168,6 +19756,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19261,6 +19850,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -19354,6 +19944,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -19463,6 +20054,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -19556,6 +20148,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19649,6 +20242,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -19742,6 +20336,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -19851,6 +20446,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -19944,6 +20540,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20037,6 +20634,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -20130,6 +20728,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -20239,6 +20838,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -20332,6 +20932,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20425,6 +21026,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -20518,6 +21120,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -20627,6 +21230,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -20720,6 +21324,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20813,6 +21418,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -20906,6 +21512,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -21015,6 +21622,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -21108,6 +21716,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21201,6 +21810,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -21294,6 +21904,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -21403,6 +22014,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -21496,6 +22108,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21589,6 +22202,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -21682,6 +22296,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -21791,6 +22406,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -21884,6 +22500,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21977,6 +22594,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -22070,6 +22688,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -22179,6 +22798,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -22272,6 +22892,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22365,6 +22986,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -22458,6 +23080,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -22567,6 +23190,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -22660,6 +23284,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22753,6 +23378,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -22846,6 +23472,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -22955,6 +23582,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -23048,6 +23676,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23142,6 +23771,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
@@ -23235,6 +23865,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -23344,6 +23975,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
@@ -23437,6 +24069,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23530,6 +24163,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
@@ -23623,6 +24257,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -23732,6 +24367,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
@@ -23825,6 +24461,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23918,6 +24555,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
@@ -24011,6 +24649,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -24120,6 +24759,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
@@ -24213,6 +24853,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24306,6 +24947,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -24399,6 +25041,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -24508,6 +25151,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -24601,6 +25245,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24694,6 +25339,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -24787,6 +25433,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -24896,6 +25543,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -24989,6 +25637,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25082,6 +25731,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -25175,6 +25825,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -25284,6 +25935,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -25377,6 +26029,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25470,6 +26123,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -25563,6 +26217,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -25672,6 +26327,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -25765,6 +26421,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25858,6 +26515,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -25951,6 +26609,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -26060,6 +26719,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -26153,6 +26813,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26246,6 +26907,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -26339,6 +27001,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -26448,6 +27111,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -26541,6 +27205,7 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26634,6 +27299,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -26727,6 +27393,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -26836,6 +27503,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -26929,6 +27597,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27022,6 +27691,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -27115,6 +27785,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -27224,6 +27895,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -27317,6 +27989,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27410,6 +28083,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -27503,6 +28177,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -27612,6 +28287,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -27705,6 +28381,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27798,6 +28475,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -27891,6 +28569,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -28000,6 +28679,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -28093,6 +28773,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28186,6 +28867,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -28279,6 +28961,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -28388,6 +29071,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -28481,6 +29165,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28574,6 +29259,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -28667,6 +29353,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -28776,6 +29463,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -28869,6 +29557,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28962,6 +29651,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -29055,6 +29745,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -29164,6 +29855,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -29257,6 +29949,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29350,6 +30043,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -29443,6 +30137,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -29552,6 +30247,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -29645,6 +30341,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29738,6 +30435,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -29831,6 +30529,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -29940,6 +30639,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -30033,6 +30733,7 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30126,6 +30827,7 @@ export type SpaceCreateWithoutBoProductsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -30219,6 +30921,7 @@ export type SpaceUncheckedCreateWithoutBoProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -30328,6 +31031,7 @@ export type SpaceUpdateWithoutBoProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -30421,6 +31125,7 @@ export type SpaceUncheckedUpdateWithoutBoProductsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30514,6 +31219,7 @@ export type SpaceCreateWithoutBoIdeationsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -30607,6 +31313,7 @@ export type SpaceUncheckedCreateWithoutBoIdeationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -30716,6 +31423,7 @@ export type SpaceUpdateWithoutBoIdeationsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -30809,6 +31517,7 @@ export type SpaceUncheckedUpdateWithoutBoIdeationsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30902,6 +31611,7 @@ export type SpaceCreateWithoutBoMaterialsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -30995,6 +31705,7 @@ export type SpaceUncheckedCreateWithoutBoMaterialsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -31104,6 +31815,7 @@ export type SpaceUpdateWithoutBoMaterialsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -31197,6 +31909,7 @@ export type SpaceUncheckedUpdateWithoutBoMaterialsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31290,6 +32003,7 @@ export type SpaceCreateWithoutBoPostsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -31383,6 +32097,7 @@ export type SpaceUncheckedCreateWithoutBoPostsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -31492,6 +32207,7 @@ export type SpaceUpdateWithoutBoPostsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -31585,6 +32301,7 @@ export type SpaceUncheckedUpdateWithoutBoPostsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31678,6 +32395,7 @@ export type SpaceCreateWithoutBoPostVersionsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -31771,6 +32489,7 @@ export type SpaceUncheckedCreateWithoutBoPostVersionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -31880,6 +32599,7 @@ export type SpaceUpdateWithoutBoPostVersionsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -31973,6 +32693,7 @@ export type SpaceUncheckedUpdateWithoutBoPostVersionsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32066,6 +32787,7 @@ export type SpaceCreateWithoutBoChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -32159,6 +32881,7 @@ export type SpaceUncheckedCreateWithoutBoChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -32268,6 +32991,7 @@ export type SpaceUpdateWithoutBoChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -32361,6 +33085,7 @@ export type SpaceUncheckedUpdateWithoutBoChannelsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32454,6 +33179,7 @@ export type SpaceCreateWithoutBoPostVariantsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -32547,6 +33273,7 @@ export type SpaceUncheckedCreateWithoutBoPostVariantsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -32656,6 +33383,7 @@ export type SpaceUpdateWithoutBoPostVariantsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -32749,6 +33477,7 @@ export type SpaceUncheckedUpdateWithoutBoPostVariantsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32842,6 +33571,7 @@ export type SpaceCreateWithoutBoDeploymentsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -32935,6 +33665,7 @@ export type SpaceUncheckedCreateWithoutBoDeploymentsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -33044,6 +33775,7 @@ export type SpaceUpdateWithoutBoDeploymentsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -33137,6 +33869,7 @@ export type SpaceUncheckedUpdateWithoutBoDeploymentsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33230,6 +33963,7 @@ export type SpaceCreateWithoutBoJobsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -33323,6 +34057,7 @@ export type SpaceUncheckedCreateWithoutBoJobsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -33432,6 +34167,7 @@ export type SpaceUpdateWithoutBoJobsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -33525,6 +34261,7 @@ export type SpaceUncheckedUpdateWithoutBoJobsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33618,6 +34355,7 @@ export type SpaceCreateWithoutBoChannelCredentialsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -33711,6 +34449,7 @@ export type SpaceUncheckedCreateWithoutBoChannelCredentialsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -33820,6 +34559,7 @@ export type SpaceUpdateWithoutBoChannelCredentialsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -33913,6 +34653,7 @@ export type SpaceUncheckedUpdateWithoutBoChannelCredentialsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34006,6 +34747,7 @@ export type SpaceCreateWithoutSubscriptionInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -34099,6 +34841,7 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -34208,6 +34951,7 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -34301,6 +35045,7 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34394,6 +35139,7 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -34487,6 +35233,7 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -34596,6 +35343,7 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -34689,6 +35437,7 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34782,6 +35531,7 @@ export type SpaceCreateWithoutBillingChargesInput = {
   improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
@@ -34875,6 +35625,7 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
   finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
   finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
   finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
@@ -34984,6 +35735,7 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
@@ -35077,6 +35829,7 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
   salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
   scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
   finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
   finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
   finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35894,6 +36647,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   improvementRules?: boolean | Prisma.Space$improvementRulesArgs<ExtArgs>
   salesContentOnboarding?: boolean | Prisma.Space$salesContentOnboardingArgs<ExtArgs>
   scOnboardingResources?: boolean | Prisma.Space$scOnboardingResourcesArgs<ExtArgs>
+  aiSetting?: boolean | Prisma.Space$aiSettingArgs<ExtArgs>
   finAccounts?: boolean | Prisma.Space$finAccountsArgs<ExtArgs>
   finLiabilities?: boolean | Prisma.Space$finLiabilitiesArgs<ExtArgs>
   finCategories?: boolean | Prisma.Space$finCategoriesArgs<ExtArgs>
@@ -36011,6 +36765,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   improvementRules?: boolean | Prisma.Space$improvementRulesArgs<ExtArgs>
   salesContentOnboarding?: boolean | Prisma.Space$salesContentOnboardingArgs<ExtArgs>
   scOnboardingResources?: boolean | Prisma.Space$scOnboardingResourcesArgs<ExtArgs>
+  aiSetting?: boolean | Prisma.Space$aiSettingArgs<ExtArgs>
   finAccounts?: boolean | Prisma.Space$finAccountsArgs<ExtArgs>
   finLiabilities?: boolean | Prisma.Space$finLiabilitiesArgs<ExtArgs>
   finCategories?: boolean | Prisma.Space$finCategoriesArgs<ExtArgs>
@@ -36104,6 +36859,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     improvementRules: Prisma.$ImprovementRulePayload<ExtArgs>[]
     salesContentOnboarding: Prisma.$SalesContentOnboardingPayload<ExtArgs> | null
     scOnboardingResources: Prisma.$ScOnboardingResourcePayload<ExtArgs>[]
+    aiSetting: Prisma.$SpaceAiSettingPayload<ExtArgs> | null
     finAccounts: Prisma.$FinAccountPayload<ExtArgs>[]
     finLiabilities: Prisma.$FinLiabilityPayload<ExtArgs>[]
     finCategories: Prisma.$FinCategoryPayload<ExtArgs>[]
@@ -36591,6 +37347,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   improvementRules<T extends Prisma.Space$improvementRulesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$improvementRulesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImprovementRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   salesContentOnboarding<T extends Prisma.Space$salesContentOnboardingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$salesContentOnboardingArgs<ExtArgs>>): Prisma.Prisma__SalesContentOnboardingClient<runtime.Types.Result.GetResult<Prisma.$SalesContentOnboardingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   scOnboardingResources<T extends Prisma.Space$scOnboardingResourcesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$scOnboardingResourcesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ScOnboardingResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  aiSetting<T extends Prisma.Space$aiSettingArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$aiSettingArgs<ExtArgs>>): Prisma.Prisma__SpaceAiSettingClient<runtime.Types.Result.GetResult<Prisma.$SpaceAiSettingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   finAccounts<T extends Prisma.Space$finAccountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   finLiabilities<T extends Prisma.Space$finLiabilitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finLiabilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinLiabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   finCategories<T extends Prisma.Space$finCategoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$finCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FinCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -38244,6 +39001,25 @@ export type Space$scOnboardingResourcesArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.ScOnboardingResourceScalarFieldEnum | Prisma.ScOnboardingResourceScalarFieldEnum[]
+}
+
+/**
+ * Space.aiSetting
+ */
+export type Space$aiSettingArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SpaceAiSetting
+   */
+  select?: Prisma.SpaceAiSettingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SpaceAiSetting
+   */
+  omit?: Prisma.SpaceAiSettingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SpaceAiSettingInclude<ExtArgs> | null
+  where?: Prisma.SpaceAiSettingWhereInput
 }
 
 /**

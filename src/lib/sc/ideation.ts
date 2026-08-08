@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
-import { generateTextWithFallback } from '@/lib/ai/providers'
+import { generateTextForSpace } from '@/lib/ai/resolve'
 import {
   buildIdeationPrompt,
   type IdeationBrandCtx,
@@ -193,7 +193,7 @@ export async function runIdeation(input: RunIdeationInput): Promise<RunIdeationR
   while (attempt < 2) {
     attempt++
     try {
-      const { result, providerName } = await generateTextWithFallback({
+      const { result, providerName } = await generateTextForSpace(input.spaceId, {
         system: built.system,
         messages: built.messages,
         responseFormat: 'json',

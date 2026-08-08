@@ -1,11 +1,14 @@
 // AI 공급자 레이어. TextProvider / ImageProvider 인터페이스 + factory.
-// 외부 LLM SaaS 금지 — codex CLI(1순위) → gemini CLI(2순위) → Ollama 맥미니(최종).
-// 모두 로컬/self-host exec: child_process.execFile 인자 배열, 외부 API 키 HTTP 호출 없음.
+//
+// 로컬 체인(generateTextWithFallback): codex CLI(1순위) → gemini CLI(2순위) → Ollama 맥미니(최종).
+// 셋 다 로컬/self-host exec 이라 Vercel 서버리스에서는 동작하지 않는다.
+//
+// 배포 환경에서는 워크스페이스 AI 설정에 따라 SaaS 어댑터(OpenAI/Anthropic/Gemini)를 쓴다 —
+// 진입점은 src/lib/ai/resolve.ts 의 generateTextForSpace. 아래 로컬 체인은 개발 환경 경로로 남긴다.
 
 import { CodexCliProvider } from './text-codex'
 import { GeminiCliProvider } from './text-gemini'
 import { OllamaProvider } from './text-ollama'
-import { ClaudeCodeACPProvider } from './text-claude-code-acp'
 import { GeminiImageProvider } from './image-gemini'
 
 // ─── 텍스트 ────────────────────────────────────────────────────────────────────
@@ -143,8 +146,15 @@ export function selectImageProvider(): ImageProvider {
   return gemini
 }
 
+// ClaudeCodeACPProvider 는 Bridge ACP 라우트가 미구현이라 아직 어느 체인에도 연결돼 있지 않다
+// (docs/sales-content-operations.md §9). 구현되면 generateTextWithFallback 앞단에 붙인다.
 export { ClaudeCodeACPProvider } from './text-claude-code-acp'
 export { CodexCliProvider } from './text-codex'
 export { GeminiCliProvider } from './text-gemini'
 export { OllamaProvider } from './text-ollama'
 export { GeminiImageProvider } from './image-gemini'
+
+// SaaS 어댑터 — 워크스페이스 AI 설정(BYOK / 워크덱 제공)에서 src/lib/ai/resolve.ts 가 선택한다.
+export { OpenAiProvider } from './text-openai'
+export { AnthropicProvider } from './text-anthropic'
+export { GeminiApiProvider } from './text-gemini-api'

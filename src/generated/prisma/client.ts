@@ -445,6 +445,11 @@ export type SalesContentOnboarding = Prisma.SalesContentOnboardingModel
  */
 export type ScOnboardingResource = Prisma.ScOnboardingResourceModel
 /**
+ * Model SpaceAiSetting
+ * 
+ */
+export type SpaceAiSetting = Prisma.SpaceAiSettingModel
+/**
  * Model WorkspaceAiCredit
  * 
  */

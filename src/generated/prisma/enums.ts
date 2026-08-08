@@ -289,6 +289,23 @@ export const ScResourceStatus = {
 export type ScResourceStatus = (typeof ScResourceStatus)[keyof typeof ScResourceStatus]
 
 
+export const SpaceAiMode = {
+  WORKDECK: 'WORKDECK',
+  BYOK: 'BYOK'
+} as const
+
+export type SpaceAiMode = (typeof SpaceAiMode)[keyof typeof SpaceAiMode]
+
+
+export const SpaceAiProvider = {
+  OPENAI: 'OPENAI',
+  ANTHROPIC: 'ANTHROPIC',
+  GEMINI: 'GEMINI'
+} as const
+
+export type SpaceAiProvider = (typeof SpaceAiProvider)[keyof typeof SpaceAiProvider]
+
+
 export const AiGenerationStatus = {
   PENDING: 'PENDING',
   SUCCEEDED: 'SUCCEEDED',

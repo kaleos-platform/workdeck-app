@@ -463,6 +463,9 @@ model Space {
   salesContentOnboarding SalesContentOnboarding?
   scOnboardingResources  ScOnboardingResource[]
 
+  // ─── AI 공급자 선택 ───
+  aiSetting SpaceAiSetting?
+
   // ─── 재무 관리 Deck (Finance) ───
   finAccounts         FinAccount[]
   finLiabilities      FinLiability[]
@@ -2164,6 +2167,40 @@ model ScOnboardingResource {
   @@index([spaceId])
 }
 
+// ─── AI 공급자 선택 (BYOK / 워크덱 제공) ─────────────────────────────────────
+
+enum SpaceAiMode {
+  WORKDECK // 워크덱 명의 키 + 무료 쿼터
+  BYOK // 사용자 보유 API 키
+}
+
+enum SpaceAiProvider {
+  OPENAI
+  ANTHROPIC
+  GEMINI
+}
+
+// 워크스페이스 전역 AI 설정. 레코드가 없으면 WORKDECK 으로 취급한다
+// (SpaceAgent 의 "레코드 없으면 기본 활성" 관행과 동일).
+// apiKey 는 ChannelCredential 과 같은 AES-256-CBC(ENCRYPTION_KEY) 로 저장하며
+// 어떤 API 응답에도 원문·암호문·IV 를 내보내지 않는다.
+model SpaceAiSetting {
+  id              String           @id @default(cuid())
+  spaceId         String           @unique
+  mode            SpaceAiMode      @default(WORKDECK)
+  provider        SpaceAiProvider? // BYOK 일 때만
+  model           String? // 'gpt-4.1-mini' / 'claude-sonnet-4' / 'gemini-2.5-flash' 등
+  encryptedApiKey String?
+  apiKeyIv        String?
+  lastVerifiedAt  DateTime?
+  lastError       String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // ─── Sales Content Deck (AI 어댑터) ───────────────────────────────────────────
 
 enum AiGenerationStatus {
@@ -2181,6 +2218,11 @@ model WorkspaceAiCredit {
   yearMonth  String // "YYYY-MM"
   imageUsed  Int    @default(0)
   imageQuota Int    @default(50)
+
+  // 텍스트는 호출 전 토큰 수를 모르므로 사후 정산 — 잔량 확인 후 호출, 실제 usage 로 누적.
+  // WORKDECK 모드(워크덱 명의 키)에서만 차감하고 BYOK 는 차감하지 않는다.
+  textTokensUsed Int @default(0)
+  textTokenQuota Int @default(300000)
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 

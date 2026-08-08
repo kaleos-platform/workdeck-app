@@ -132,6 +132,7 @@ export const ModelName = {
   BrandProfile: 'BrandProfile',
   SalesContentOnboarding: 'SalesContentOnboarding',
   ScOnboardingResource: 'ScOnboardingResource',
+  SpaceAiSetting: 'SpaceAiSetting',
   WorkspaceAiCredit: 'WorkspaceAiCredit',
   ImageGenerationLog: 'ImageGenerationLog',
   TextGenerationLog: 'TextGenerationLog',
@@ -1486,12 +1487,31 @@ export const ScOnboardingResourceScalarFieldEnum = {
 export type ScOnboardingResourceScalarFieldEnum = (typeof ScOnboardingResourceScalarFieldEnum)[keyof typeof ScOnboardingResourceScalarFieldEnum]
 
 
+export const SpaceAiSettingScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  mode: 'mode',
+  provider: 'provider',
+  model: 'model',
+  encryptedApiKey: 'encryptedApiKey',
+  apiKeyIv: 'apiKeyIv',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceAiSettingScalarFieldEnum = (typeof SpaceAiSettingScalarFieldEnum)[keyof typeof SpaceAiSettingScalarFieldEnum]
+
+
 export const WorkspaceAiCreditScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   yearMonth: 'yearMonth',
   imageUsed: 'imageUsed',
   imageQuota: 'imageQuota',
+  textTokensUsed: 'textTokensUsed',
+  textTokenQuota: 'textTokenQuota',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

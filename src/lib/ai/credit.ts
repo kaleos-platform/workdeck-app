@@ -139,14 +139,84 @@ export async function refundImageCredit(
 export async function getMonthUsage(
   spaceId: string,
   yearMonth: string = currentYearMonth()
-): Promise<{ yearMonth: string; imageUsed: number; imageQuota: number }> {
+): Promise<{
+  yearMonth: string
+  imageUsed: number
+  imageQuota: number
+  textTokensUsed: number
+  textTokenQuota: number
+}> {
   const credit = await prisma.workspaceAiCredit.findUnique({
     where: { spaceId_yearMonth: { spaceId, yearMonth } },
-    select: { imageUsed: true, imageQuota: true },
+    select: {
+      imageUsed: true,
+      imageQuota: true,
+      textTokensUsed: true,
+      textTokenQuota: true,
+    },
   })
   return {
     yearMonth,
     imageUsed: credit?.imageUsed ?? 0,
     imageQuota: credit?.imageQuota ?? DEFAULT_IMAGE_MONTHLY_QUOTA,
+    textTokensUsed: credit?.textTokensUsed ?? 0,
+    textTokenQuota: credit?.textTokenQuota ?? DEFAULT_TEXT_MONTHLY_TOKEN_QUOTA,
   }
+}
+
+// ─── 텍스트 토큰 쿼터 (워크덱 제공 AI 전용) ──────────────────────────────────
+//
+// 이미지와 달리 호출 전에 소비량을 알 수 없다. 그래서 2-phase 예약이 아니라
+// "호출 전 잔량 확인 → 호출 후 실제 usage 로 사후 정산" 방식이다.
+// 마지막 호출이 쿼터를 넘겨 끝날 수 있으나(최대 1회분 초과), 사용자를 중간에
+// 끊지 않는 편이 UX 상 낫고 다음 호출에서 차단되므로 허용 오차로 둔다.
+// BYOK 모드는 사용자가 비용을 부담하므로 이 경로를 아예 타지 않는다.
+
+export const DEFAULT_TEXT_MONTHLY_TOKEN_QUOTA = Number(
+  process.env.WORKDECK_TEXT_MONTHLY_TOKEN_QUOTA ?? 300_000
+)
+
+export class TextQuotaExceededError extends Error {
+  readonly code = 'TEXT_QUOTA_EXCEEDED' as const
+  constructor(
+    public readonly yearMonth: string,
+    public readonly used: number,
+    public readonly quota: number
+  ) {
+    super(`월간 AI 텍스트 사용량(${yearMonth})을 모두 사용했습니다`)
+  }
+}
+
+/** 호출 전 잔량 확인. 소진 상태면 TextQuotaExceededError. */
+export async function checkTextQuota(
+  spaceId: string,
+  now?: Date
+): Promise<{ yearMonth: string; used: number; quota: number }> {
+  const yearMonth = currentYearMonth(now)
+  await ensureCreditRow(spaceId, yearMonth)
+  const credit = await prisma.workspaceAiCredit.findUnique({
+    where: { spaceId_yearMonth: { spaceId, yearMonth } },
+    select: { textTokensUsed: true, textTokenQuota: true },
+  })
+  const used = credit?.textTokensUsed ?? 0
+  const quota = credit?.textTokenQuota ?? DEFAULT_TEXT_MONTHLY_TOKEN_QUOTA
+  if (used >= quota) throw new TextQuotaExceededError(yearMonth, used, quota)
+  return { yearMonth, used, quota }
+}
+
+/** 호출 후 실제 토큰을 누적. usage 를 못 얻은 provider 는 0 이 들어와 no-op 이 된다. */
+export async function recordTextUsage(
+  spaceId: string,
+  tokens: { inputTokens?: number; outputTokens?: number },
+  now?: Date
+): Promise<void> {
+  const total = (tokens.inputTokens ?? 0) + (tokens.outputTokens ?? 0)
+  if (total <= 0) return
+  const yearMonth = currentYearMonth(now)
+  await ensureCreditRow(spaceId, yearMonth)
+  await prisma.$executeRaw`
+    UPDATE "WorkspaceAiCredit"
+    SET "textTokensUsed" = "textTokensUsed" + ${total}, "updatedAt" = NOW()
+    WHERE "spaceId" = ${spaceId} AND "yearMonth" = ${yearMonth}
+  `
 }
