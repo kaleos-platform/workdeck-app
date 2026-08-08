@@ -91,9 +91,9 @@ export default function PricingPage() {
                     <p className="text-sm text-muted-foreground">
                       정식 전환 예정가{' '}
                       <span className="font-semibold text-foreground">
-                        월 {row.supplyPrice.toLocaleString('ko-KR')}원
+                        월 {row.totalPrice.toLocaleString('ko-KR')}원
                       </span>{' '}
-                      (VAT 포함 {row.totalPrice.toLocaleString('ko-KR')}원)
+                      (VAT 포함 / 공급가 {row.supplyPrice.toLocaleString('ko-KR')}원)
                     </p>
                     <Link
                       href={`/${row.slug}`}
@@ -109,7 +109,7 @@ export default function PricingPage() {
           </div>
 
           <p className="mx-auto mt-10 max-w-2xl text-center text-sm break-keep text-muted-foreground">
-            표시된 금액은 공급가(VAT 별도) 기준 예정가이며, 괄호 안은 VAT 포함 결제 예정 금액입니다.
+            표시된 금액은 VAT가 포함된 실제 결제 예정 금액이며, 괄호 안은 세금계산서 기준 공급가입니다.
             필요한 업무만 선택해 구독할 수 있으며, 정식 전환 일정과 조건은 사전 공지됩니다.
           </p>
         </div>
