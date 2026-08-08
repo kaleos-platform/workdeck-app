@@ -43,7 +43,9 @@ export async function GET(req: NextRequest) {
   const [products, total] = await Promise.all([
     prisma.invProduct.findMany({
       where,
-      orderBy: { name: 'asc' },
+      // 화면 표시명(productDisplayName)은 관리명(internalName) 우선이므로 정렬도 동일 기준으로 맞춘다.
+      // id 타이브레이크는 페이지네이션 중복/누락 방지용.
+      orderBy: [{ internalName: { sort: 'asc', nulls: 'last' } }, { name: 'asc' }, { id: 'asc' }],
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {

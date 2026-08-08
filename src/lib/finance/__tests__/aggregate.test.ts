@@ -10,8 +10,15 @@ import {
   type AggRow,
 } from '../aggregate'
 
-// 로컬 시간대 기준 Date 생성(월 경계는 로컬로 계산됨)
-const d = (y: number, m: number, day: number) => new Date(y, m - 1, day)
+/**
+ * 저장 규약대로 txnDate를 만든다 — KST 벽시계 자릿수를 **UTC 인스턴트로** 저장.
+ * (commit-staging의 toDate가 TZ 없는 로컬 ISO를 new Date()로 처리 → Vercel=UTC에서 이 모양)
+ *
+ * `new Date(y, m-1, day)`(로컬)를 쓰면 안 된다: KST(UTC+9) 개발 머신에서 로컬 자정은
+ * 전날 UTC 15시라 ymOf(UTC getter)가 월을 하루 앞으로 밀어 읽는다. 그러면 TZ=UTC인 CI에서는
+ * 통과하고 로컬에서만 깨지는 환경 의존 테스트가 된다.
+ */
+const d = (y: number, m: number, day: number) => new Date(Date.UTC(y, m - 1, day))
 
 describe('월 유틸', () => {
   test('ymOf — 로컬 연-월', () => {

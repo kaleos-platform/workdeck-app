@@ -136,6 +136,36 @@ describe('findBestPreset — 형식(헤더) 기준 매칭', () => {
     expect(findBestPreset([newer, older], headers)?.id).toBe('b')
   })
 
+  // prod 실태(2026-08-08): 같은 은행 형식의 프리셋 2개가 부분집합 관계로 공존했다
+  // ("우리은행" 6헤더 ⊂ "우리은행 거래내역" 7헤더, 둘 다 커버리지 1.00).
+  // 이때는 파일을 더 많이 커버하는 쪽(매칭 헤더 수)이 이겨야 컬럼 유실이 없다.
+  // updatedAt을 matched보다 앞에 두면 최근 갱신된 '단순' 프리셋이 '상세' 파일을 가로채
+  // 컬럼이 조용히 사라진다 — 순서를 바꾸지 말 것.
+  test('부분집합 프리셋보다 파일을 더 많이 커버하는 쪽이 이긴다(둘 다 1.00)', () => {
+    const subset = preset(
+      'subset',
+      [
+        { headerName: '거래일시', field: 'txnDate' },
+        { headerName: '내용', field: 'description' },
+        { headerName: '입금액', field: 'deposit' },
+      ],
+      '2026-08-01T00:00:00.000Z' // 더 최근
+    )
+    const superset = preset(
+      'superset',
+      [
+        { headerName: '거래일시', field: 'txnDate' },
+        { headerName: '적요', field: 'description' },
+        { headerName: '내용', field: 'description' },
+        { headerName: '입금액', field: 'deposit' },
+        { headerName: '출금액', field: 'withdrawal' },
+      ],
+      '2026-06-26T00:00:00.000Z' // 더 오래됨
+    )
+    expect(findBestPreset([subset, superset], headers)?.id).toBe('superset')
+    expect(findBestPreset([superset, subset], headers)?.id).toBe('superset')
+  })
+
   test('동점 + updatedAt 동일 → id 사전순으로 결정적', () => {
     const pairs: MappingPair[] = [{ headerName: '거래일시', field: 'txnDate' }]
     const a = preset('a', pairs, '2026-08-01T00:00:00.000Z')
