@@ -262,8 +262,38 @@ async function dismissModals(page: Page): Promise<boolean> {
       .catch(() => null)
 
     if (modalBox) {
-      await page.mouse.click(modalBox.x + modalBox.width - 24, modalBox.y + 24).catch(() => {})
+      // 계측(2026-08-07~): 장바구니가 저절로 차는 원인이 이 좌표 블라인드 클릭인지 확인한다.
+      // 임계값(320x220)에 못 미치는 모달은 조상 요소가 잡혀 클릭이 그리드로 샐 수 있다
+      // ("비즈니스 인사이트" 모달 실측 약 480x191). 클릭 전후 장바구니 건수를 비교해
+      // 인과를 기록만 한다(동작 변경 없음 — 원인 확정 전 수정 금지).
+      const clickX = modalBox.x + modalBox.width - 24
+      const clickY = modalBox.y + 24
+      const cartBefore = await readSelectedCount(page)
+      const hitTarget = await page
+        .evaluate(
+          `(() => {
+            const el = document.elementFromPoint(${clickX}, ${clickY})
+            if (!el) return 'nothing'
+            return el.tagName + ' | ' + String(el.className || '').slice(0, 40) + ' | ' +
+              (el.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 40)
+          })()`
+        )
+        .catch(() => 'probe-failed')
+      console.log(
+        `[inventory][diag] 모달 "${title}" box=${Math.round(modalBox.width)}x${Math.round(modalBox.height)} ` +
+          `click=(${Math.round(clickX)},${Math.round(clickY)}) hit=${hitTarget}`
+      )
+
+      await page.mouse.click(clickX, clickY).catch(() => {})
       await page.waitForTimeout(500)
+
+      const cartAfter = await readSelectedCount(page)
+      if (cartBefore !== cartAfter) {
+        console.warn(
+          `[inventory][diag] ⚠️ 모달 "${title}" 좌표 클릭 후 선택 상품 변화: ${cartBefore} → ${cartAfter}`
+        )
+        await saveScreenshot(page, 'modal-click-cart-changed')
+      }
     }
 
     if (await modalTitle.isVisible({ timeout: 500 }).catch(() => false)) {
