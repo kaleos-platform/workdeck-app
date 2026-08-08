@@ -19,6 +19,8 @@ import { Label } from '@/components/ui/label'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { productDisplayName } from '@/lib/sh/product-display'
 
+const PAGE_SIZE = 50
+
 type ProductRow = {
   id: string
   name: string
@@ -97,6 +99,8 @@ export function OptionPickerDialog({
   const [search, setSearch] = useState(initialQuery)
   const [debounced, setDebounced] = useState(initialQuery)
   const [products, setProducts] = useState<ProductWithOptions[]>([])
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
 
@@ -116,8 +120,17 @@ export function OptionPickerDialog({
     }
   }, [open, initialQuery, initialItems])
 
+  // 페이지 리셋은 open 전환에만 반응 — 호출부가 initialItems를 인라인으로 넘겨
+  // 위 effect가 매 렌더 재실행돼도 '더 보기'로 쌓은 페이지가 초기화되지 않도록 분리.
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(search), 300)
+    setPage(1)
+  }, [open])
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebounced(search)
+      setPage(1)
+    }, 300)
     return () => clearTimeout(t)
   }, [search])
 
@@ -128,12 +141,14 @@ export function OptionPickerDialog({
       setLoading(true)
       try {
         const qs = new URLSearchParams()
-        qs.set('pageSize', '20')
+        qs.set('page', String(page))
+        qs.set('pageSize', String(PAGE_SIZE))
         if (debounced.trim()) qs.set('search', debounced.trim())
         if (searchOfficialName) qs.set('includeName', '1')
         const res = await fetch(`/api/sh/products?${qs.toString()}`)
         if (!res.ok) throw new Error('검색 실패')
-        const data: { data?: ProductRow[]; products?: ProductRow[] } = await res.json()
+        const data: { data?: ProductRow[]; products?: ProductRow[]; total?: number } =
+          await res.json()
         if (cancelled) return
         const rows = data.data ?? data.products ?? []
         const grouped: ProductWithOptions[] = rows.map((p) => {
@@ -157,7 +172,9 @@ export function OptionPickerDialog({
             })),
           }
         })
-        setProducts(grouped)
+        setTotal(typeof data.total === 'number' ? data.total : rows.length)
+        // page > 1은 append(더 보기), page 1은 교체(검색어 변경/최초 로드)
+        setProducts((prev) => (page > 1 ? [...prev, ...grouped] : grouped))
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '검색 실패')
       } finally {
@@ -168,7 +185,9 @@ export function OptionPickerDialog({
     return () => {
       cancelled = true
     }
-  }, [open, debounced, searchOfficialName])
+  }, [open, debounced, page, searchOfficialName])
+
+  const hasMore = products.length < total
 
   const excluded = useMemo(() => new Set(excludeOptionIds), [excludeOptionIds])
 
@@ -309,11 +328,18 @@ export function OptionPickerDialog({
                   선택된 옵션 {accumulatedItems.length}개
                 </p>
               )}
+              {total > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {showProductStep
+                    ? `전체 상품 ${total}개 중 ${productsVisible.length}개 표시`
+                    : `전체 상품 ${total}개 중 ${products.length}개 로드 · 옵션 ${flatVisible.length}개 표시`}
+                </p>
+              )}
             </div>
           )}
 
           <div className="max-h-[50vh] overflow-y-auto rounded-md border">
-            {loading ? (
+            {loading && page === 1 ? (
               <div className="p-8 text-center text-sm text-muted-foreground">검색 중...</div>
             ) : showProductStep ? (
               productsVisible.length === 0 ? (
@@ -485,6 +511,22 @@ export function OptionPickerDialog({
                   </li>
                 ))}
               </ul>
+            )}
+            {!showOptionStep && hasMore && (
+              <div className="border-t p-2 text-center">
+                {loading ? (
+                  <span className="text-sm text-muted-foreground">불러오는 중...</span>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    더 보기
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </div>
