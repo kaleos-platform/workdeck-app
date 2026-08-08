@@ -1,14 +1,12 @@
 /**
  * Worker → Slack 전송 모듈 (멀티테넌트)
  * 수집/분석 완료 시 workspaceId로 Space의 notifications 채널을 찾아 Block Kit 메시지를 보낸다.
- * 전환기 이중화: 레거시 env(SLACK_BOT_TOKEN/SLACK_CHANNEL_ID, 구 에밀리 봇)가 설정돼 있으면
- * 그 경로로도 계속 발송한다 — 단 신규 경로 발송 채널과 레거시 채널이 같으면 중복 발송을 생략한다.
+ * 발송 주체는 워크스페이스 SlackInstallation 봇(workdeck 봇) 하나뿐이다 — 전환기에 쓰던
+ * 레거시 env(SLACK_BOT_TOKEN/SLACK_CHANNEL_ID, 구 에밀리 봇) 이중 발송은 제거됐다.
  */
 import { getSlackNotificationTarget } from './api-client.js'
 import { decrypt } from './encryption.js'
 
-const LEGACY_SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN ?? ''
-const LEGACY_SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID ?? ''
 const SLACK_API_URL = 'https://slack.com/api/chat.postMessage'
 
 // 업무 라벨 — Slack 메시지 헤더에 어떤 업무의 작업인지 표기 (정적).
@@ -62,7 +60,7 @@ async function sendToChannel(
 /**
  * workspaceId 기반 신규 경로 발송 대상 + Deck 토글 상태를 조회해 복호화한다.
  * deckKey를 넘기면 notifyEnabled로 Deck 알림 토글을 함께 받는다.
- * 조회/복호화가 실패하면 null — 호출자는 게이트를 건너뛰고 레거시 경로로 폴백한다(fail-open).
+ * 조회/복호화가 실패하면 null — 호출자는 게이트를 건너뛰고 발송을 포기한다.
  */
 async function resolveNewPath(
   workspaceId: string,
@@ -81,17 +79,20 @@ async function resolveNewPath(
       channel: { token, channelId: lookup.target.channelId },
     }
   } catch (err) {
-    console.error('[slack] 알림 대상 조회/복호화 실패 — 레거시 경로만 사용:', err)
+    console.error('[slack] 알림 대상 조회/복호화 실패 — 발송 생략:', err)
     return null
   }
 }
 
 /**
- * Slack에 Block Kit 메시지 전송 — 신규(멀티테넌트) 경로 + 레거시 env 경로 이중 발송.
- * workspaceId가 없으면(수집 파이프라인 초기 실패 등 컨텍스트 미확보) 레거시 경로만 시도한다.
- * deckKey가 주어지고 Deck 토글이 off(notifyEnabled===false)면 레거시 포함 전부 발송하지 않는다.
+ * Slack에 Block Kit 메시지 전송 — 워크스페이스 notifications 채널(workdeck 봇) 단일 경로.
+ * deckKey가 주어지고 Deck 토글이 off(notifyEnabled===false)면 발송하지 않는다.
  * eventKey까지 주어지면 이벤트 단위 토글도 반영된다(해당 이벤트가 off면 발송하지 않는다).
- * 신규 경로가 성공하고 그 채널이 레거시 채널과 같으면 중복 방지를 위해 레거시 발송을 생략한다.
+ *
+ * workspaceId가 없으면(자격증명 조회 이전 실패 등 컨텍스트 미확보) 보낼 대상이 없어 건너뛴다.
+ * 예전엔 이 구간을 레거시 env 봇이 받아줬지만, 실제 미확보 범위는 orchestrator가 getCredentials()
+ * 직후 ctx.workspaceId를 채우기 전 — 즉 앱 API 자체 장애 구간뿐이고 그건 WorkerHeartbeat
+ * 다운 감지 알림이 커버한다. 별도 폴백 경로를 두지 않고 콘솔 로그로 수용한다.
  */
 async function postMessage(
   blocks: Block[],
@@ -100,49 +101,30 @@ async function postMessage(
   deckKey?: string,
   eventKey?: string
 ): Promise<boolean> {
-  let newPathSent = false
-  let newPathChannelId: string | null = null
-
-  if (workspaceId) {
-    const resolved = await resolveNewPath(workspaceId, deckKey, eventKey)
-    if (resolved) {
-      // Deck 토글 off면 레거시 포함 전부 skip(토글이 authoritative).
-      if (!resolved.notifyEnabled) {
-        console.log('[slack] deck 알림 비활성 — 발송 생략')
-        return false
-      }
-      if (resolved.channel) {
-        newPathChannelId = resolved.channel.channelId
-        newPathSent = await sendToChannel(
-          resolved.channel.token,
-          resolved.channel.channelId,
-          blocks,
-          text
-        )
-      }
-    }
+  if (!workspaceId) {
+    console.log('[slack] workspaceId 미확보 — 알림 건너뜀 (heartbeat 다운 감지로 커버)')
+    return false
   }
 
-  const legacyConfigured = Boolean(LEGACY_SLACK_BOT_TOKEN && LEGACY_SLACK_CHANNEL_ID)
-  if (!legacyConfigured) {
-    if (!newPathSent) {
-      console.log('[slack] 레거시 봇 토큰/채널 미설정, 신규 경로 미등록 — 알림 건너뜀')
-    }
-    return newPathSent
+  const resolved = await resolveNewPath(workspaceId, deckKey, eventKey)
+  if (!resolved) return false
+
+  // Deck 토글이 authoritative — off면 발송하지 않는다.
+  if (!resolved.notifyEnabled) {
+    console.log('[slack] deck 알림 비활성 — 발송 생략')
+    return false
+  }
+  if (!resolved.channel) {
+    console.log('[slack] notifications 채널 미등록 — 알림 건너뜀')
+    return false
   }
 
-  // 신규 경로가 이미 같은 채널로 보냈으면 중복 발송 생략.
-  if (newPathSent && newPathChannelId === LEGACY_SLACK_CHANNEL_ID) {
-    return true
-  }
-
-  const legacySent = await sendToChannel(
-    LEGACY_SLACK_BOT_TOKEN,
-    LEGACY_SLACK_CHANNEL_ID,
+  return await sendToChannel(
+    resolved.channel.token,
+    resolved.channel.channelId,
     blocks,
     text
   )
-  return newPathSent || legacySent
 }
 
 // ─── Block Kit 헬퍼 ─────────────────────────────────────────────────────────
@@ -353,7 +335,7 @@ export async function notifyLoginFailed(params: {
   reason: 'CREDENTIAL_INVALID' | 'BOT_BLOCKED' | 'UNKNOWN'
   source: string // 'scheduled' | 'manual' | 'inventory' 등 — 어느 경로에서 났는지
   detail?: string
-  workspaceId?: string // 자격증명 조회 전 실패라 대부분 미확보 → 레거시 경로만 발송됨
+  workspaceId?: string // 자격증명 조회 전 실패면 미확보 → 발송 생략(postMessage 주석 참고)
 }): Promise<void> {
   const settingsUrl = process.env.WORKDECK_APP_URL
     ? `${process.env.WORKDECK_APP_URL}/d/coupang-ads/settings`
