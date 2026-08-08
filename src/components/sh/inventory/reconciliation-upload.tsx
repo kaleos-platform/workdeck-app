@@ -402,13 +402,13 @@ export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
             </div>
           ) : !preflight.coupangActive ? (
             <PreflightWarning
-              title="쿠팡 광고 관리자 미사용 중"
-              body="이 연동을 사용하려면 쿠팡 광고 관리자를 먼저 연동해야 합니다. 공간 설정에서 추가한 뒤 재고를 수집하면 이곳에서 불러올 수 있습니다."
+              title="쿠팡 광고 관리 미사용 중"
+              body="이 연동을 사용하려면 쿠팡 광고 관리를 먼저 연동해야 합니다. 공간 설정에서 추가한 뒤 재고를 수집하면 이곳에서 불러올 수 있습니다."
             />
           ) : !preflight.workspaceExists ? (
             <PreflightWarning
               title="쿠팡 워크스페이스 미연결"
-              body="현재 사용자에 연결된 쿠팡 광고 워크스페이스가 없습니다. 쿠팡 광고 관리자에서 크레덴셜을 등록한 뒤 다시 시도해 주세요."
+              body="현재 사용자에 연결된 쿠팡 광고 워크스페이스가 없습니다. 쿠팡 광고 관리에서 크레덴셜을 등록한 뒤 다시 시도해 주세요."
             />
           ) : !preflight.mappedLocation ? (
             <PreflightWarning
@@ -418,7 +418,7 @@ export function ReconciliationIntegrationButton({ onUploaded }: CommonProps) {
           ) : !preflight.latestSnapshot ? (
             <PreflightWarning
               title="수집된 쿠팡 재고 스냅샷이 없습니다"
-              body="쿠팡 광고 관리자의 '재고 데이터 수집' 을 한 번 이상 실행해 주세요."
+              body="쿠팡 광고 관리의 '재고 데이터 수집' 을 한 번 이상 실행해 주세요."
             />
           ) : (
             <>
