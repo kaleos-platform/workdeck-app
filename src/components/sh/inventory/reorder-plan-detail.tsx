@@ -7,6 +7,7 @@ import {
   CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  CircleHelpIcon,
   PackageIcon,
   PencilIcon,
   RotateCcwIcon,
@@ -38,6 +39,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { ReorderPlanRationalePopover } from './reorder-plan-rationale-popover'
 import type {
   ForecastModel,
@@ -92,6 +94,30 @@ function ModelBadge({ model }: { model: ForecastModel }) {
     <Badge variant="outline" className={`text-[10px] ${MODEL_BADGE[model]}`}>
       {MODEL_LABEL[model]}
     </Badge>
+  )
+}
+
+function ForecastModelHeader() {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="inline-flex items-center gap-1">
+            <span>적용 모델</span>
+            <CircleHelpIcon
+              className="h-3.5 w-3.5 text-muted-foreground"
+              aria-label="적용 모델 설명"
+            />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top" align="start" className="max-w-80 space-y-1.5 text-left">
+          <p>옵션별 판매 패턴을 보고 예측에 사용한 통계 모델입니다.</p>
+          <p>Croston: 판매가 드문드문 발생하는 옵션에 적합합니다.</p>
+          <p>H-W/Holt-Winters: 추세나 계절성이 있는 옵션에 적합합니다.</p>
+          <p>이 값은 예측 일판매 산출에 사용되며 최종 발주 수량 계산의 입력값입니다.</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
@@ -735,7 +761,7 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
             )}
             {isLayered && (
               <Badge variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">
-                레이어드 발주
+                연동 위치 발주 포함
               </Badge>
             )}
           </div>
@@ -925,7 +951,9 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
                 <TableHead>옵션</TableHead>
                 <TableHead className="text-right">재고</TableHead>
                 <TableHead className="text-right">예측 일판매</TableHead>
-                <TableHead>모델</TableHead>
+                <TableHead>
+                  <ForecastModelHeader />
+                </TableHead>
                 <TableHead className="text-right">리드타임</TableHead>
                 <TableHead className="text-right">안전재고</TableHead>
                 <TableHead className="text-right">제안수량</TableHead>
