@@ -57,7 +57,12 @@ export async function proxy(request: NextRequest) {
     const adminAllowedPaths = ['/admin', '/api/admin', '/login', '/auth', '/oauth']
     const isAllowed = adminAllowedPaths.some((base) => isPathOrChild(pathname, base))
 
+    // 루트는 /admin 으로 rewrite. 단 비로그인이면 rewrite 대신 로그인으로 보낸다 —
+    // rewrite 먼저 하면 layout 의 requireOperator 가 notFound() 를 내 도메인 첫 진입이 404 로 보인다.
     if (pathname === '/') {
+      if (!user) {
+        return NextResponse.redirect(buildAdminUrl(`/login?redirectTo=${encodeURIComponent('/admin')}`))
+      }
       return NextResponse.rewrite(new URL('/admin', request.url))
     }
 
