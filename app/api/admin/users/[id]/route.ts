@@ -3,6 +3,7 @@ import { requireOperator, writeAuditLog } from '@/lib/admin/auth'
 import { errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { getSupabaseAdminClient } from '@/lib/supabase/admin'
+import { Prisma } from '@/generated/prisma/client'
 
 // GET /api/admin/users/[id] — 사용자 상세 (Space 멤버십·설치 deck·구독상태·Supabase Auth 상태)
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -172,18 +173,32 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     )
   }
 
-  // 5) 삭제 전 AuditLog 선기록
+  // 2)(3) 하나의 트랜잭션으로: solo Space 삭제 + User 삭제 (Workspace/잔여 SpaceMember cascade)
+  // HiringPostingPosition.spaceId는 onDelete: Restrict라 Space 자신이 지워질 때 먼저 정리해야
+  // space.deleteMany가 FK 위반으로 실패하지 않는다(이 데이터는 어차피 지워질 Space 소속이라 보존할 이유가 없음).
+  try {
+    await prisma.$transaction(async (tx) => {
+      if (soloSpaceIds.length > 0) {
+        await tx.hiringPostingPosition.deleteMany({ where: { spaceId: { in: soloSpaceIds } } })
+        await tx.space.deleteMany({ where: { id: { in: soloSpaceIds } } })
+      }
+      await tx.user.delete({ where: { id } })
+    })
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2003') {
+      return errorResponse(
+        '알려지지 않은 참조 제약(FK)에 걸려 삭제할 수 없습니다. 해당 데이터를 먼저 정리하세요.',
+        409,
+        { prismaCode: e.code, fkField: e.meta?.field_name ?? e.meta?.constraint ?? null }
+      )
+    }
+    throw e
+  }
+
+  // 5) AuditLog는 트랜잭션 성공 이후 기록 — actorUserId는 FK가 없어 대상 유저 삭제 후에도 기록 가능
   await writeAuditLog(auth.user.id, 'user.delete', 'user', id, {
     email: target.email,
     deletedSpaceIds: soloSpaceIds,
-  })
-
-  // 2)(3) 하나의 트랜잭션으로: solo Space 삭제 + User 삭제 (Workspace/잔여 SpaceMember cascade)
-  await prisma.$transaction(async (tx) => {
-    if (soloSpaceIds.length > 0) {
-      await tx.space.deleteMany({ where: { id: { in: soloSpaceIds } } })
-    }
-    await tx.user.delete({ where: { id } })
   })
 
   // 4) DB 성공 후 Supabase Auth 삭제 — 실패해도 DB 삭제는 되돌리지 않음
