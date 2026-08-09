@@ -33,6 +33,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
+  dedupeOptionSkus,
   generateOptionSku,
   normalizeOptionAttributes,
   type AttrCodeSpec,
@@ -418,22 +419,28 @@ export function ProductOptionsTable({
   async function regenerateSku() {
     if (selected.size === 0 || !product) return
     const productCode = product.code?.trim() || null
+    // Set 순회 순서가 아니라 테이블 표시 순서로 배정해야 접미사가 결정적이다
+    const targets = options.filter((o) => selected.has(o.id))
+    const desired = targets.map((o) => {
+      const attrValues = o.attributeValues ?? {}
+      const specs: AttrCodeSpec[] = attributes.map((attr, attrIdx) => {
+        const val = attrValues[attr.name] ?? ''
+        const match = attr.values.find((v) => v.value === val)
+        const code = match?.code?.trim() ?? ''
+        const maxLen = Math.max(0, ...attr.values.map((v) => v.code?.length ?? 0))
+        return { attrIdx, code, maxLen }
+      })
+      return generateOptionSku({ productCode, attributeCodes: specs })
+    })
+    // 재생성 대상이 아닌 옵션의 기존 SKU와도 겹치면 안 된다
+    const reserved = options.filter((o) => !selected.has(o.id)).map((o) => o.sku ?? '')
+    const finalSkus = dedupeOptionSkus(desired, reserved)
     setBulkSaving(true)
     try {
       await Promise.all(
-        Array.from(selected).map(async (id) => {
-          const o = options.find((x) => x.id === id)
-          if (!o) return
-          const attrValues = o.attributeValues ?? {}
-          const specs: AttrCodeSpec[] = attributes.map((attr, attrIdx) => {
-            const val = attrValues[attr.name] ?? ''
-            const match = attr.values.find((v) => v.value === val)
-            const code = match?.code?.trim() ?? ''
-            const maxLen = Math.max(0, ...attr.values.map((v) => v.code?.length ?? 0))
-            return { attrIdx, code, maxLen }
-          })
-          const newSku = generateOptionSku({ productCode, attributeCodes: specs })
-          const res = await fetch(`/api/sh/products/${productId}/options/${id}`, {
+        targets.map(async (o, idx) => {
+          const newSku = finalSkus[idx]
+          const res = await fetch(`/api/sh/products/${productId}/options/${o.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sku: newSku || null }),

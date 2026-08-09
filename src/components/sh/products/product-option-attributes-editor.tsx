@@ -29,6 +29,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   aliasMapKey,
+  dedupeOptionSkus,
   generateOptionSku,
   resolveValueCode,
   type AttrCodeSpec,
@@ -99,6 +100,25 @@ function computeSkuForCombination(params: {
     return { attrIdx, code, maxLen }
   })
   return generateOptionSku({ productCode: params.productCode, attributeCodes: specs })
+}
+
+/**
+ * 조합 목록의 자동 SKU 충돌 해소.
+ * 수동 수정된 행(skuManual)은 사용자 입력이므로 건드리지 않고, 대신 점유된 값으로 예약한다.
+ */
+function dedupeAutoSkus(rows: CombinationRow[]): CombinationRow[] {
+  const autoIdx = rows.map((r, i) => (r.skuManual ? -1 : i)).filter((i) => i >= 0)
+  if (autoIdx.length === 0) return rows
+  const reserved = rows.filter((r) => r.skuManual).map((r) => r.sku)
+  const resolved = dedupeOptionSkus(
+    autoIdx.map((i) => rows[i].sku),
+    reserved
+  )
+  const next = [...rows]
+  autoIdx.forEach((rowIdx, n) => {
+    if (next[rowIdx].sku !== resolved[n]) next[rowIdx] = { ...next[rowIdx], sku: resolved[n] }
+  })
+  return next
 }
 
 /**
@@ -206,7 +226,7 @@ export function ProductOptionAttributesEditor({
         retailPrice: '',
       }
     })
-    onCombinationsChange(newRows)
+    onCombinationsChange(dedupeAutoSkus(newRows))
     // attributesKey 변경만 트리거. combinations는 양방향 의존을 피하기 위해 제외.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attributesKey, productCode])
@@ -223,8 +243,9 @@ export function ProductOptionAttributesEditor({
       })
       return row.sku === autoSku ? row : { ...row, sku: autoSku }
     })
-    if (updated.some((r, i) => r !== combinations[i])) {
-      onCombinationsChange(updated)
+    const deduped = dedupeAutoSkus(updated)
+    if (deduped.some((r, i) => r !== combinations[i])) {
+      onCombinationsChange(deduped)
     }
     // productCode 변경만 트리거
     // eslint-disable-next-line react-hooks/exhaustive-deps
