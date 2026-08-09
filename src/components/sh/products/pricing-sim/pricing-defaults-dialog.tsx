@@ -400,8 +400,8 @@ export function PricingDefaultsDialog({ open, onOpenChange, initialSettings, onS
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              채널 수수료율·배송비·광고비는 채널 설정(채널 관리 → 채널 수정)에서 채널별로
-              관리합니다.
+              채널 수수료율·배송비·광고비는 채널별 설정입니다. 판매채널 목록의 채널 행에서 톱니
+              아이콘을 눌러 바로 수정할 수 있습니다.
             </p>
           </TabsContent>
 
