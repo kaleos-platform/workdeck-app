@@ -13,7 +13,8 @@ type OperatorContext = { id: string; email: string }
 
 type RequireOperatorResult =
   | { ok: true; user: OperatorContext }
-  | { ok: false; response: NextResponse }
+  | { ok: false; reason: 'NOT_OPERATOR'; response: NextResponse }
+  | { ok: false; reason: 'MFA_REQUIRED'; user: OperatorContext; response: NextResponse }
 
 function notFoundResponse(): NextResponse {
   // 403이 아닌 404로 존재 자체를 은닉
@@ -35,7 +36,7 @@ function mfaRequiredResponse(): NextResponse {
 export async function requireOperator(): Promise<RequireOperatorResult> {
   const user = await getUser()
   if (!user) {
-    return { ok: false, response: notFoundResponse() }
+    return { ok: false, reason: 'NOT_OPERATOR', response: notFoundResponse() }
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -43,18 +44,20 @@ export async function requireOperator(): Promise<RequireOperatorResult> {
     select: { platformRole: true, email: true },
   })
   if (dbUser?.platformRole !== 'OPERATOR') {
-    return { ok: false, response: notFoundResponse() }
+    return { ok: false, reason: 'NOT_OPERATOR', response: notFoundResponse() }
   }
+
+  const operator: OperatorContext = { id: user.id, email: dbUser.email }
 
   if (process.env.ADMIN_REQUIRE_MFA === 'true') {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
     if (error || data?.currentLevel !== 'aal2') {
-      return { ok: false, response: mfaRequiredResponse() }
+      return { ok: false, reason: 'MFA_REQUIRED', user: operator, response: mfaRequiredResponse() }
     }
   }
 
-  return { ok: true, user: { id: user.id, email: dbUser.email } }
+  return { ok: true, user: operator }
 }
 
 /**
