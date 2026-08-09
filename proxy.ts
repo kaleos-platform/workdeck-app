@@ -2,8 +2,10 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { resolveRedirectPath } from '@/lib/auth-redirect'
 import {
+  buildAdminUrl,
   buildAppUrl,
   buildMarketingUrl,
+  isAdminHost,
   isAppHost,
   isMarketingHost,
   normalizeHost,
@@ -40,10 +42,41 @@ export async function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
   const host = normalizeHost(request.headers.get('x-forwarded-host') ?? request.headers.get('host'))
 
+  // dev/preview는 marketing/app/admin 오리진이 동일(단일 호스트)해 도메인 분리 로직이 자기 자신을 가리킴 — 프로덕션 분리 도메인에서만 적용
+  const isSplitDomain = buildMarketingUrl('/') !== buildAppUrl('/')
+
   const isMarketingDomain = isMarketingHost(host)
   const isAppDomain = isAppHost(host)
+  const isAdminDomain = isAdminHost(host)
   const isDeckEntryRoute = Boolean(getDeckEntryPath(pathname))
   const isDeckLoginRoute = Boolean(getDeckLoginPath(pathname))
+  const isAdminPath = isPathOrChild(pathname, '/admin') || isPathOrChild(pathname, '/api/admin')
+
+  // admin.workdeck.work — 운영자 웹 어드민 전용 도메인 (다층 방어 1계층: 호스트 격리 + 로그인 세션)
+  if (isAdminDomain) {
+    const adminAllowedPaths = ['/admin', '/api/admin', '/login', '/auth', '/oauth']
+    const isAllowed = adminAllowedPaths.some((base) => isPathOrChild(pathname, base))
+
+    if (pathname === '/') {
+      return NextResponse.rewrite(new URL('/admin', request.url))
+    }
+
+    if (!isAllowed) {
+      return NextResponse.redirect(buildAdminUrl('/admin'))
+    }
+
+    if (isPathOrChild(pathname, '/admin') && !user) {
+      const redirectTo = getRequestPathWithQuery(request)
+      return NextResponse.redirect(buildAdminUrl(`/login?redirectTo=${encodeURIComponent(redirectTo)}`))
+    }
+
+    return supabaseResponse
+  }
+
+  // 비-admin 도메인의 프로덕션 분리 환경에서는 admin 표면 자체를 은닉 (404)
+  if (isSplitDomain && isAdminPath) {
+    return new NextResponse(null, { status: 404 })
+  }
 
   if (isPathOrChild(pathname, '/dashboard')) {
     const suffix = pathname.replace(/^\/dashboard/, '')
@@ -77,8 +110,6 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isAppDomain) {
-    // dev/preview는 앱·마케팅 오리진이 동일(단일 호스트)해 도메인 분리 리다이렉트가 자기 자신을 가리킴 — 프로덕션 분리 도메인에서만 적용
-    const isSplitDomain = buildMarketingUrl('/') !== buildAppUrl('/')
     if (pathname === '/' && isSplitDomain) {
       return NextResponse.redirect(buildAppUrl('/my-deck'))
     }

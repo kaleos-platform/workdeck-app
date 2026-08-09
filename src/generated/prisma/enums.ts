@@ -81,6 +81,13 @@ export const SpaceMemberRole = {
 export type SpaceMemberRole = (typeof SpaceMemberRole)[keyof typeof SpaceMemberRole]
 
 
+export const PlatformRole = {
+  OPERATOR: 'OPERATOR'
+} as const
+
+export type PlatformRole = (typeof PlatformRole)[keyof typeof PlatformRole]
+
+
 export const AgentActionStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',

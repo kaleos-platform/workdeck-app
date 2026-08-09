@@ -208,6 +208,40 @@ export function generateOptionSku(params: {
   return parts.join('-')
 }
 
+/**
+ * 자동 생성 SKU의 충돌 해소 — 같은 값이 둘 이상이면 두 번째부터 `-2`, `-3` … 접미사.
+ *
+ * generateOptionSku는 구조적으로 충돌을 만든다: 빈 코드를 버리고(`-` 없이 이어붙임),
+ * 속성 순서를 코드 길이로 재정렬하며, 값 코드를 3자로 절단한다. 그래서 서로 다른
+ * 조합이 같은 SKU로 수렴할 수 있다. SKU로 행을 조회하는 코드는 없지만, 배송 상품
+ * 매칭 팝업처럼 사람이 SKU로 옵션을 골라야 하는 화면에서 구별이 불가능해진다.
+ *
+ * @param skus 이번에 새로 배정할 SKU들 (입력 순서가 유지되며, 첫 등장이 접미사 없는 원본을 갖는다)
+ * @param reserved 이번 배정 대상이 아니지만 이미 점유된 SKU들 (재생성하지 않는 옵션의 기존 SKU 등)
+ * @returns skus와 같은 길이·순서의 배열. 빈 문자열은 중복 판정에서 제외하고 그대로 돌려준다.
+ */
+export function dedupeOptionSkus(skus: string[], reserved: Iterable<string> = []): string[] {
+  const used = new Set<string>()
+  for (const r of reserved) {
+    const trimmed = r?.trim()
+    if (trimmed) used.add(trimmed)
+  }
+  return skus.map((raw) => {
+    const base = raw.trim()
+    // 빈 SKU는 null로 저장되므로 중복 개념이 없다
+    if (!base) return raw
+    if (!used.has(base)) {
+      used.add(base)
+      return base
+    }
+    let n = 2
+    while (used.has(`${base}-${n}`)) n += 1
+    const next = `${base}-${n}`
+    used.add(next)
+    return next
+  })
+}
+
 // ─── 데이터 호환 헬퍼 ──────────────────────────────────────────────────────
 
 export type OptionAttributeValue = { value: string; code: string }

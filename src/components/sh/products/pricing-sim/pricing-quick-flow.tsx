@@ -10,6 +10,7 @@ import {
   GripVertical,
   History,
   Info,
+  Pencil,
   Plus,
   RotateCcw,
   Save,
@@ -1125,19 +1126,109 @@ export function PricingQuickFlow({
   const [saveName, setSaveName] = useState('')
   const [saveMemo, setSaveMemo] = useState('')
   const [saving, setSaving] = useState(false)
+  // 같은 이름 시나리오 발견 시 덮어쓰기 확인 단계 (다이얼로그 중첩 대신 같은 다이얼로그 2단계)
+  const [duplicateTarget, setDuplicateTarget] = useState<{ id: string; name: string } | null>(null)
+
+  // ── 상단 제목(시나리오 이름) 인라인 편집 ──────────────────────────────────
+  const [titleEditing, setTitleEditing] = useState(false)
+  const [titleDraft, setTitleDraft] = useState('')
+  const [titleSaving, setTitleSaving] = useState(false)
+
+  const startTitleEdit = () => {
+    setTitleDraft(loadedName)
+    setTitleEditing(true)
+  }
+
+  // 확정: 저장된 시나리오면 name만 PATCH(스냅샷 미포함), 미저장이면 로컬 보관 후 첫 저장 때 사용
+  const commitTitle = async () => {
+    const next = titleDraft.trim().slice(0, 100)
+    setTitleEditing(false)
+    if (!next || next === loadedName) return
+    const prev = loadedName
+    setLoadedName(next)
+    if (!editingScenarioId) return
+    setTitleSaving(true)
+    try {
+      const res = await fetch(`/api/sh/pricing-scenarios/${editingScenarioId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: next }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? data?.error ?? '이름 변경 실패')
+      toast.success('시나리오 이름을 변경했습니다')
+    } catch (err) {
+      setLoadedName(prev)
+      toast.error(err instanceof Error ? err.message : '이름 변경 실패')
+    } finally {
+      setTitleSaving(false)
+    }
+  }
 
   const openSaveDialog = () => {
     if (confirmedRows.length === 0) {
       toast.error('저장할 상품을 먼저 선택해 주세요')
       return
     }
-    setSaveName(editingScenarioId ? loadedName : bundleName)
+    setSaveName(loadedName || bundleName)
     setSaveMemo(editingScenarioId ? loadedMemo : '')
+    setDuplicateTarget(null)
     setSaveOpen(true)
   }
 
-  // asNew=true면 편집 중이어도 새 시나리오로 저장(POST)
-  const handleSaveScenario = async (asNew = false) => {
+  const savePayload = (name: string) => ({
+    name,
+    memo: saveMemo.trim() || undefined,
+    productIds: scenarioProductIds,
+    inputSnapshot: buildSnapshot(),
+  })
+
+  // 지정 시나리오 덮어쓰기 — 대상이 현재 편집 중인 시나리오가 아니면 그쪽으로 이동
+  const overwriteScenario = async (id: string, name: string) => {
+    const res = await fetch(`/api/sh/pricing-scenarios/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(savePayload(name)),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
+    toast.success('시나리오를 저장했습니다')
+    setLoadedName(name)
+    setLoadedMemo(saveMemo.trim())
+    setSaveOpen(false)
+    setDuplicateTarget(null)
+    if (id !== editingScenarioId) {
+      clearDraft()
+      setRestorable(null)
+      setEditingScenarioId(id)
+      router.replace(getSellerHubPricingScenarioPath(id))
+    }
+  }
+
+  const createScenario = async (name: string) => {
+    const res = await fetch('/api/sh/pricing-scenarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(savePayload(name)),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
+    toast.success('시나리오를 저장했습니다')
+    setLoadedName(name)
+    setLoadedMemo(saveMemo.trim())
+    clearDraft()
+    setRestorable(null)
+    setSaveOpen(false)
+    setDuplicateTarget(null)
+    // 저장된 시나리오 상세(편집 모드)로 이동
+    if (data.id) {
+      setEditingScenarioId(data.id)
+      router.replace(getSellerHubPricingScenarioPath(data.id))
+    }
+  }
+
+  // 이름 기준 저장 — 같은 이름이 있으면 확인 후 그 시나리오를 덮어쓴다.
+  const handleSaveScenario = async () => {
     const name = saveName.trim()
     if (!name) {
       toast.error('시나리오 이름을 입력해 주세요')
@@ -1145,45 +1236,37 @@ export function PricingQuickFlow({
     }
     setSaving(true)
     try {
-      const payload = {
-        name,
-        memo: saveMemo.trim() || undefined,
-        productIds: scenarioProductIds,
-        inputSnapshot: buildSnapshot(),
+      // 이미 중복 확인을 마친 상태 → 그 시나리오 덮어쓰기
+      if (duplicateTarget) {
+        await overwriteScenario(duplicateTarget.id, name)
+        return
       }
-      const headers = { 'Content-Type': 'application/json' }
-      if (editingScenarioId && !asNew) {
-        // 덮어쓰기
-        const res = await fetch(`/api/sh/pricing-scenarios/${editingScenarioId}`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify(payload),
-        })
-        const data = await res.json().catch(() => ({}))
-        if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
-        toast.success('시나리오를 저장했습니다')
-        setLoadedName(name)
-        setLoadedMemo(saveMemo.trim())
-        setSaveOpen(false)
-      } else {
-        // 신규 생성
-        const res = await fetch('/api/sh/pricing-scenarios', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-        })
-        const data = await res.json().catch(() => ({}))
-        if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
-        toast.success('시나리오를 저장했습니다')
-        clearDraft()
-        setRestorable(null)
-        setSaveOpen(false)
-        // 저장된 시나리오 상세(편집 모드)로 이동
-        if (data.id) {
-          setEditingScenarioId(data.id)
-          router.replace(getSellerHubPricingScenarioPath(data.id))
-        }
+      // 동일 이름 조회 (기존 검색 엔드포인트 재사용, 정확 일치만 채택)
+      let dup: { id: string; name: string } | null = null
+      let lookupFailed = false
+      try {
+        const res = await fetch(
+          `/api/sh/pricing-scenarios?search=${encodeURIComponent(name)}&pageSize=100`
+        )
+        if (!res.ok) throw new Error()
+        const list: { data?: { id: string; name: string }[] } = await res.json()
+        const key = name.toLowerCase()
+        dup =
+          (list.data ?? []).find(
+            (r) => r.name.trim().toLowerCase() === key && r.id !== editingScenarioId
+          ) ?? null
+      } catch {
+        lookupFailed = true
       }
+      if (dup) {
+        setDuplicateTarget(dup)
+        return
+      }
+      if (lookupFailed) {
+        toast.warning('같은 이름 확인에 실패했습니다 — 현재 시나리오 기준으로 저장합니다')
+      }
+      if (editingScenarioId) await overwriteScenario(editingScenarioId, name)
+      else await createScenario(name)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
     } finally {
@@ -1252,7 +1335,48 @@ export function PricingQuickFlow({
 
       {/* ── 헤더 ── */}
       <div className="mb-6 flex items-start justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">가격 시뮬레이션</h1>
+        {/* 제목 = 시나리오 이름 (인라인 편집) */}
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground">가격 시뮬레이션</p>
+          {titleEditing ? (
+            <Input
+              autoFocus
+              value={titleDraft}
+              maxLength={100}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={() => void commitTitle()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  void commitTitle()
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  setTitleEditing(false)
+                }
+              }}
+              placeholder={bundleName || '시나리오 이름'}
+              className="mt-0.5 h-9 max-w-md text-2xl font-bold tracking-tight md:text-2xl"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={startTitleEdit}
+              disabled={titleSaving}
+              title="클릭하여 시나리오 이름 수정"
+              className="group mt-0.5 flex max-w-full items-center gap-2 text-left"
+            >
+              <h1
+                className={cn(
+                  'truncate text-2xl font-bold tracking-tight',
+                  !loadedName && 'text-muted-foreground'
+                )}
+              >
+                {loadedName || bundleName || '제목 없음'}
+              </h1>
+              <Pencil className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+            </button>
+          )}
+        </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button
             type="button"
@@ -1935,14 +2059,10 @@ export function PricingQuickFlow({
       <Dialog open={saveOpen} onOpenChange={(v) => !saving && setSaveOpen(v)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>
-              {editingScenarioId ? '시나리오 저장 (덮어쓰기)' : '시나리오 저장'}
-            </DialogTitle>
+            <DialogTitle>시나리오 저장</DialogTitle>
             <DialogDescription>
-              현재 시뮬레이션 구성(상품·채널·마진·프로모션)을 저장합니다.
-              {editingScenarioId
-                ? ' 기존 시나리오를 덮어쓰거나 새 시나리오로 저장할 수 있습니다.'
-                : ' 저장된 시나리오는 목록과 상품 상세에서 다시 불러올 수 있습니다.'}
+              현재 시뮬레이션 구성(상품·채널·마진·프로모션)을 시나리오 이름 기준으로 저장합니다.
+              같은 이름 시나리오가 있으면 덮어쓸지 확인합니다.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -1953,12 +2073,21 @@ export function PricingQuickFlow({
               <Input
                 id="scenario-name"
                 value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
+                onChange={(e) => {
+                  setSaveName(e.target.value)
+                  setDuplicateTarget(null)
+                }}
                 placeholder={bundleName || '예: 여름 프로모션 기준'}
                 className="h-9"
                 autoFocus
               />
             </div>
+            {duplicateTarget && (
+              <p className="rounded-md bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+                「{duplicateTarget.name}」 시나리오가 이미 있습니다. 덮어쓰면 기존 시나리오가 현재
+                구성으로 바뀌고, 편집 화면도 그 시나리오로 이동합니다.
+              </p>
+            )}
             <div className="space-y-1">
               <Label htmlFor="scenario-memo" className="text-xs">
                 메모 (선택)
@@ -1973,26 +2102,27 @@ export function PricingQuickFlow({
             </div>
           </div>
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSaveOpen(false)}
-              disabled={saving}
-            >
-              취소
-            </Button>
-            {editingScenarioId && (
+            {duplicateTarget ? (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleSaveScenario(true)}
+                onClick={() => setDuplicateTarget(null)}
                 disabled={saving}
               >
-                새 시나리오로 저장
+                이름 변경
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSaveOpen(false)}
+                disabled={saving}
+              >
+                취소
               </Button>
             )}
-            <Button size="sm" onClick={() => handleSaveScenario()} disabled={saving}>
-              {saving ? '저장 중...' : editingScenarioId ? '덮어쓰기' : '저장'}
+            <Button size="sm" onClick={() => void handleSaveScenario()} disabled={saving}>
+              {saving ? '저장 중...' : duplicateTarget ? '덮어쓰기' : '저장'}
             </Button>
           </DialogFooter>
         </DialogContent>
