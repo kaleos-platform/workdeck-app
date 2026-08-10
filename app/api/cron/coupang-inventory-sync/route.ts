@@ -1,6 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth } from '@/lib/api-helpers'
+import { withCronRun } from '@/lib/cron/with-cron-run'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
@@ -47,11 +46,11 @@ const MIN_ABS_FOR_RATIO_GUARD = 10
  *
  * vercel.json crons 에 등록하지 않는다 — 워커가 수집에 성공했을 때만 도는 게 맞다.
  * (워커 다운 시 데이터는 멈추되 잘못된 데이터는 들어가지 않는다. sales-sync 와 동일 방침.)
+ *
+ * withCronRun 으로 감싸 CronRun 에 실행 이력을 남긴다. 등록 cron 이 아니라서
+ * "워커가 안 불렀다"와 "불렀는데 실패했다"를 구별할 다른 수단이 없다.
  */
-export async function GET(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
-  if ('error' in auth) return auth.error
-
+async function runInventorySync() {
   const locations = await prisma.invStorageLocation.findMany({
     where: {
       externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
@@ -267,5 +266,7 @@ export async function GET(request: NextRequest) {
     })
     .catch(() => {})
 
-  return NextResponse.json({ ranAt: new Date().toISOString(), spaces: summary })
+  return { spaces: summary }
 }
+
+export const GET = withCronRun('/api/cron/coupang-inventory-sync', runInventorySync, 'worker')

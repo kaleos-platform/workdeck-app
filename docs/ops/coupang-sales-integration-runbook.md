@@ -45,6 +45,9 @@ file-only 0건 검사로 걸러지지 않는다. 소진인지 미연동인지 �
    새 레코드로 다시 confirm 하면 `referenceId` 가 달라져 그 사이 INBOUND/OUTBOUND 가 덮어써진다)
    가드에 걸려 남긴 PENDING 도 같은 스냅샷이면 재생성하지 않는다(`skip:pending-review`) — 안 그러면 매일 쌓인다
 
+실행 여부는 `CronRun` 테이블(`path='/api/cron/coupang-inventory-sync'`)로 확인한다 — 등록 cron 이
+아니라서 "워커가 안 불렀다"와 "불렀는데 실패했다"를 구별할 다른 수단이 없다. `detail` 에 아래 summary 가 그대로 들어간다.
+
 summary status 읽는 법: `ok` / `skip:already-applied`(정상 재실행) / `skip:pending-review`(사람 확인 대기)
 / `skip:no-snapshot` / `skip:incomplete-snapshot` / `skip:large-delta` / `skip:deck-inactive` / `skip:no-workspace-link` / `error`
 
