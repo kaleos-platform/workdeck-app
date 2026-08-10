@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { confirmReconciliation } from '@/lib/inv/reconciliation-processor'
+import {
+  confirmReconciliation,
+  findMappedSystemOnlyKeys,
+} from '@/lib/inv/reconciliation-processor'
 import { MovementError } from '@/lib/inv/movement-processor'
 import type { MatchEntry, FileOnlyEntry } from '@/lib/inv/reconciliation-matcher'
 
@@ -34,7 +37,19 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   const resolved2 = await resolveFileOnlyEntries(rawEntries, recon.locationId)
 
   // matched-equal/matched-diff 항목에 mappingId + mapping.items 첨부
-  const matchResults = await attachMappingInfo(resolved2, recon.locationId)
+  const withMapping = await attachMappingInfo(resolved2, recon.locationId)
+
+  // system-only 항목에 매핑 보유 여부 첨부 — 매핑 없는 건은 자동 0 처리 대상이 아니며
+  // UI 가 "매핑 필요"로 표면화해 사용자가 쿠팡 SKU 를 연결하도록 안내한다.
+  const mappedSystemOnly = await findMappedSystemOnlyKeys(withMapping, recon.locationId)
+  const matchResults = withMapping.map((e) =>
+    e.status === 'system-only'
+      ? {
+          ...e,
+          hasMapping: mappedSystemOnly.has(`${e.locationId ?? recon.locationId}|${e.optionId}`),
+        }
+      : e
+  )
 
   return NextResponse.json({ reconciliation: { ...recon, matchResults, appliedOptionIds } })
 }

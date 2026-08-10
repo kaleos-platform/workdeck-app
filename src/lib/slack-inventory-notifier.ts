@@ -201,6 +201,84 @@ export async function notifyInventoryStaleData(params: {
   })
 }
 
+// ─── 자동 재고 대조 알림 ───────────────────────────────────────────────────
+
+export type AutoReconciliationIssue =
+  | { kind: 'skip:incomplete-snapshot'; rowCount: number; baseline: number }
+  | { kind: 'skip:large-delta'; changedRatio: number; systemOnlyRatio: number }
+  | { kind: 'file-only'; count: number }
+  | { kind: 'system-only-unmapped'; count: number }
+  | { kind: 'failed'; count: number; firstReason: string }
+
+/**
+ * 자동 재고 대조(cron)에서 사람 개입이 필요한 상황만 알린다.
+ * 정상 완료는 무음 — 매일 발송되면 알림 피로로 진짜 이상 신호를 놓친다.
+ *
+ * 운영자 대상이므로 Deck 토글에 걸리지 않는 시스템 알림으로 보낸다.
+ */
+export async function notifyAutoReconciliation(params: {
+  spaceId: string
+  snapshotDate: Date
+  issues: AutoReconciliationIssue[]
+}): Promise<boolean> {
+  if (params.issues.length === 0) return false
+
+  const reconUrl = process.env.WORKDECK_APP_URL
+    ? `${process.env.WORKDECK_APP_URL}/d/seller-ops/inventory/reconciliation`
+    : 'https://app.workdeck.work/d/seller-ops/inventory/reconciliation'
+
+  const skipped = params.issues.some((i) => i.kind.startsWith('skip:'))
+
+  const lines = params.issues.map((issue) => {
+    switch (issue.kind) {
+      case 'skip:incomplete-snapshot':
+        return (
+          `• *스냅샷 불완전 — 대조 건너뜀*\n` +
+          `  ${issue.rowCount}행 (최근 최대 ${issue.baseline}행 대비 50% 미만). ` +
+          `Wing 그리드 부분 export 의심 — 재고를 건드리지 않았습니다.`
+        )
+      case 'skip:large-delta':
+        return (
+          `• *변동폭 과다 — 대조 건너뜀*\n` +
+          `  변동 ${Math.round(issue.changedRatio * 100)}% / 스냅샷 미존재 ${Math.round(
+            issue.systemOnlyRatio * 100
+          )}%. 대조는 PENDING 으로 남겼습니다 — 확인 후 수동 확정하세요.`
+        )
+      case 'file-only':
+        return (
+          `• *미매핑 외부 SKU ${issue.count}건*\n` +
+          `  매핑이 없어 자동 반영하지 못했습니다. 매핑하면 다음 회차부터 자동 반영됩니다.\n` +
+          `  _미매핑이 남아 있는 동안 '스냅샷에 없는 재고 0 처리'는 비활성입니다._`
+        )
+      case 'system-only-unmapped':
+        return (
+          `• *쿠팡 SKU 연결 필요 ${issue.count}건*\n` +
+          `  쿠팡 스냅샷에 없는데 로켓그로스 위치에 재고가 남은 상품입니다. ` +
+          `연결된 SKU 가 없어 소진인지 미연동인지 알 수 없어 재고를 건드리지 않았습니다.\n` +
+          `  재고 조정 화면에서 *'파일 누락'* 필터의 '매핑 필요' 행에 쿠팡 SKU 를 연결해 주세요.`
+        )
+      case 'failed':
+        return `• *조정 실패 ${issue.count}건*\n  첫 사유: ${issue.firstReason}`
+    }
+  })
+
+  const blocks: Block[] = [
+    header(
+      skipped ? ':warning: 자동 재고 대조 건너뜀' : ':clipboard: 자동 재고 대조 — 확인 필요'
+    ),
+    divider(),
+    section(`*스냅샷 기준일*\n${formatDate(params.snapshotDate)}`),
+    section(lines.join('\n')),
+    divider(),
+    context(`<${reconUrl}|재고 조정 페이지>에서 확인하세요 · space \`${params.spaceId}\``),
+  ]
+
+  return sendSystemNotification({
+    blocks,
+    text: `자동 재고 대조 확인 필요 (${params.issues.map((i) => i.kind).join(', ')})`,
+  })
+}
+
 // ─── 워커 다운 알림 ────────────────────────────────────────────────────────
 
 /**
