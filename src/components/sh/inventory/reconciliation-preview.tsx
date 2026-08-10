@@ -1,20 +1,18 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+// 재고 대조 상세 — 파일/데이터 연동 기준 워킹셋.
+//
+// 테이블에는 파일에서 온 행만 싣는다(matched-*, file-only). 시스템에만 있는 옵션은
+// [재고 데이터 없는 상품] 다이얼로그가 담당한다 — 방향이 정반대라 같은 표에 섞으면
+// 어느 쪽이 원본인지 알 수 없다.
+//
+// 재고 반영은 [확정] 하나로 끝난다: 차이 전량을 반영하고 CONFIRMED 로 잠근다.
+// (부분 적용 + PARTIAL/APPLIED 상태 머신은 자동 대조 cron 전용)
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Link2, Loader2, Search } from 'lucide-react'
+import { Loader2, PackageSearch, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -23,13 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { FloatingActionBar, floatingActionButtonClass } from '@/components/ui/floating-action-bar'
 import {
   OptionPickerDialog,
   type PickedOptionWithQty,
 } from '@/components/sh/products/listings/option-picker-dialog'
-import { applyRangeSelection } from '@/lib/range-selection'
 import { reconStatusBadge, type ReconStatus } from './recon-status-display'
+import { ReconciliationUnmatchedOptionsDialog } from './reconciliation-unmatched-options-dialog'
 
 type ParsedRow = {
   externalCode: string
@@ -49,17 +46,6 @@ type MappingItem = {
   quantity: number
   productName: string
   optionName: string
-}
-
-/** GET /locations/[id]/mappings 응답 — SKU 중복 확인용(필요한 필드만) */
-type ExistingMapping = {
-  id: string
-  externalCode: string
-  items: {
-    optionId: string
-    quantity: number
-    option: { name: string; product: { name: string } }
-  }[]
 }
 
 type MatchEntry =
@@ -111,6 +97,7 @@ type Reconciliation = {
   totalItems: number
   matchedItems: number
   adjustedItems: number
+  confirmedAt?: string | null
   appliedOptionIds: string[]
   location: { id: string; name: string }
   matchResults: MatchEntry[]
@@ -120,38 +107,36 @@ type Props = {
   reconciliationId: string
   onClose: () => void
   onConfirmed: () => void
-  // 미리보기를 닫지 않고 상위(왼쪽 목록)만 갱신해야 할 때 호출 (예: 부분 적용)
+  // 미리보기를 닫지 않고 상위(왼쪽 목록)만 갱신해야 할 때 호출
   onChanged?: () => void
 }
 
 type UnifiedEntry = {
   key: string
-  status: string
-  productName: string
-  optionName: string
-  externalOptionName: string
-  isManualMatched?: boolean
+  status: 'matched-diff' | 'matched-equal' | 'file-only'
+  /** 파일 기준 값 */
+  fileCode: string
+  fileProductName: string
+  fileOptionName: string
+  fileRowQty: number
+  /** 시스템 기준 값 — 미매칭이면 null */
+  sysProductName: string | null
+  sysOptionName: string | null
   systemQty: number | null
-  fileQty: number | null
+  /** 목표 수량(파일 수량 × 세트 수량) */
+  targetQty: number | null
   delta: number | null
+  isManualMatched?: boolean
   optionId?: string
-  externalCode?: string
   suggestions?: SuggestionOption[]
   row?: ParsedRow
   mappingId?: string
   mappingItems?: MappingItem[]
   mapItemQuantity?: number
-  /** system-only 인데 외부 SKU 매핑이 없음 — 자동 대조가 건드리지 못하는 잔여 */
-  needsMapping?: boolean
 }
 
-const STATUS_FILTERS = [
-  { value: 'all', label: '전체' },
-  { value: 'matched-diff', label: '차이있음' },
-  { value: 'matched-equal', label: '일치' },
-  { value: 'file-only', label: '미매칭' },
-  { value: 'system-only', label: '파일 누락' },
-] as const
+type TabValue = 'all' | 'matched' | 'file-only'
+type MatchedSub = 'all' | 'matched-diff' | 'matched-equal'
 
 function entryStatusBadge(status: string) {
   switch (status) {
@@ -161,19 +146,9 @@ function entryStatusBadge(status: string) {
       return <Badge className="border-green-200 bg-green-100 text-green-700">일치</Badge>
     case 'file-only':
       return <Badge className="border-red-200 bg-red-100 text-red-700">미매칭</Badge>
-    case 'system-only':
-      return <Badge className="border-gray-200 bg-gray-100 text-gray-600">파일 누락</Badge>
     default:
       return null
   }
-}
-
-function isSelectable(entry: UnifiedEntry, manualMap: Record<string, PickedOptionWithQty[]>) {
-  if (entry.status === 'matched-diff') return true
-  if (entry.status === 'file-only' && entry.externalCode) {
-    return (manualMap[entry.externalCode]?.length ?? 0) > 0
-  }
-  return false
 }
 
 function manualItemsToLabel(items: PickedOptionWithQty[]): string {
@@ -205,16 +180,12 @@ export function ReconciliationPreview({
   const [recon, setRecon] = useState<Reconciliation | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [statusFilter, setStatusFilter] = useState<
-    'all' | 'matched-diff' | 'matched-equal' | 'file-only' | 'system-only'
-  >('all')
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [tab, setTab] = useState<TabValue>('all')
+  const [matchedSub, setMatchedSub] = useState<MatchedSub>('all')
   // externalCode → PickedOptionWithQty[] (다중 옵션+수량)
   const [manualMap, setManualMap] = useState<Record<string, PickedOptionWithQty[]>>({})
   // 수동 매칭한 옵션의 이 위치 현재 재고 (optionId → quantity). 매칭 즉시 조회해 현재재고·차이 표시.
   const [manualStock, setManualStock] = useState<Record<string, number>>({})
-
-  const lastClickedIndexRef = useRef<number | null>(null)
 
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerExternalCode, setPickerExternalCode] = useState<string | null>(null)
@@ -225,12 +196,8 @@ export function ReconciliationPreview({
   const [editMatcherOpen, setEditMatcherOpen] = useState(false)
   const [editMatcherEntry, setEditMatcherEntry] = useState<UnifiedEntry | null>(null)
 
-  // system-only(매핑 없음) 행 → 쿠팡 SKU 연결 다이얼로그 상태
-  const [skuLinkEntry, setSkuLinkEntry] = useState<UnifiedEntry | null>(null)
-  const [skuLinkCode, setSkuLinkCode] = useState('')
-  const [skuLinkSaving, setSkuLinkSaving] = useState(false)
-  // 이 위치의 기존 매핑 — 입력한 SKU 가 이미 쓰이는지 확인해 덮어쓰기를 막는다.
-  const [existingMappings, setExistingMappings] = useState<ExistingMapping[]>([])
+  // 시스템 쪽 미등장 옵션 다이얼로그
+  const [unmatchedOpen, setUnmatchedOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -238,16 +205,7 @@ export function ReconciliationPreview({
       const res = await fetch(`/api/sh/inventory/reconciliation/${reconciliationId}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '조회 실패')
-      const r = data.reconciliation as Reconciliation
-      setRecon(r)
-      const appliedSet = new Set(r.appliedOptionIds ?? [])
-      const diffKeys = (r.matchResults ?? [])
-        .filter(
-          (e): e is Extract<MatchEntry, { status: 'matched-diff' }> => e.status === 'matched-diff'
-        )
-        .filter((e) => !appliedSet.has(e.optionId))
-        .map((e) => `diff-${e.optionId}`)
-      setSelected(new Set(diffKeys))
+      setRecon(data.reconciliation as Reconciliation)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '조회 실패')
     } finally {
@@ -283,32 +241,14 @@ export function ReconciliationPreview({
       ),
     [entries]
   )
-  const systemOnlyEntries = useMemo(
-    () =>
-      entries.filter(
-        (e): e is Extract<MatchEntry, { status: 'system-only' }> => e.status === 'system-only'
-      ),
-    [entries]
-  )
 
-  // 입력한 SKU 가 이미 이 위치에 매핑돼 있는지 — 있으면 교체가 아니라 추가로 처리한다
-  const skuLinkConflict = useMemo(
-    () => existingMappings.find((m) => m.externalCode === skuLinkCode.trim()) ?? null,
-    [existingMappings, skuLinkCode]
-  )
-
-  // 매핑이 없어 자동 대조가 손대지 못한 system-only 건수 — 사용자 안내 대상
-  const needsMappingCount = useMemo(
-    () => systemOnlyEntries.filter((e) => e.hasMapping === false).length,
-    [systemOnlyEntries]
-  )
-
+  // system-only 는 이 표의 대상이 아니다 — 방향이 반대라 [재고 데이터 없는 상품]이 담당한다.
   const counts = {
-    all: entries.length,
+    all: diffEntries.length + equalEntries.length + fileOnlyEntries.length,
+    matched: diffEntries.length + equalEntries.length,
     'matched-diff': diffEntries.length,
     'matched-equal': equalEntries.length,
     'file-only': fileOnlyEntries.length,
-    'system-only': systemOnlyEntries.length,
   }
 
   const unifiedEntries = useMemo<UnifiedEntry[]>(() => {
@@ -316,13 +256,16 @@ export function ReconciliationPreview({
 
     for (const e of diffEntries) {
       result.push({
-        key: `diff-${e.optionId}`,
+        key: `diff-${e.optionId}-${e.row.externalCode}`,
         status: 'matched-diff',
-        productName: e.productName,
-        optionName: e.optionName,
-        externalOptionName: e.row.externalOptionName ?? '-',
+        fileCode: e.row.externalCode,
+        fileProductName: e.row.externalName ?? e.row.externalCode,
+        fileOptionName: e.row.externalOptionName ?? '-',
+        fileRowQty: e.row.quantity,
+        sysProductName: e.productName,
+        sysOptionName: e.optionName,
         systemQty: e.systemQuantity,
-        fileQty: e.fileQuantity,
+        targetQty: e.fileQuantity,
         delta: e.delta,
         optionId: e.optionId,
         row: e.row,
@@ -334,13 +277,16 @@ export function ReconciliationPreview({
 
     for (const e of equalEntries) {
       result.push({
-        key: `equal-${e.optionId}`,
+        key: `equal-${e.optionId}-${e.row.externalCode}`,
         status: 'matched-equal',
-        productName: e.productName,
-        optionName: e.optionName,
-        externalOptionName: e.row.externalOptionName ?? '-',
+        fileCode: e.row.externalCode,
+        fileProductName: e.row.externalName ?? e.row.externalCode,
+        fileOptionName: e.row.externalOptionName ?? '-',
+        fileRowQty: e.row.quantity,
+        sysProductName: e.productName,
+        sysOptionName: e.optionName,
         systemQty: e.systemQuantity,
-        fileQty: e.fileQuantity,
+        targetQty: e.fileQuantity,
         delta: 0,
         optionId: e.optionId,
         row: e.row,
@@ -357,12 +303,13 @@ export function ReconciliationPreview({
 
       // 수동 매칭 시 현재 재고·차이 파생: 현재재고=Σ 옵션별 위치재고, 목표=Σ 파일수량×세트수량, 차이=목표−현재
       let sysQty: number | null = null
+      let target: number | null = null
       let delta: number | null = null
       if (isMapped) {
         const hasStock = items!.every((i) => manualStock[i.optionId] !== undefined)
         if (hasStock) {
           const current = items!.reduce((s, i) => s + (manualStock[i.optionId] ?? 0), 0)
-          const target = items!.reduce((s, i) => s + e.row.quantity * i.quantity, 0)
+          target = items!.reduce((s, i) => s + e.row.quantity * i.quantity, 0)
           sysQty = current
           delta = target - current
         }
@@ -371,104 +318,67 @@ export function ReconciliationPreview({
       result.push({
         key: `file-${code}`,
         status: 'file-only',
-        productName: isMapped
-          ? manualItemsToProductLabel(items!)
-          : (e.row.externalName ?? e.row.externalCode),
-        optionName: isMapped ? manualItemsToOptionLabel(items!) : '-',
-        externalOptionName: e.row.externalOptionName ?? '-',
-        isManualMatched: isMapped,
+        fileCode: code,
+        fileProductName: e.row.externalName ?? code,
+        fileOptionName: e.row.externalOptionName ?? '-',
+        fileRowQty: e.row.quantity,
+        sysProductName: isMapped ? manualItemsToProductLabel(items!) : null,
+        sysOptionName: isMapped ? manualItemsToOptionLabel(items!) : null,
         systemQty: sysQty,
-        fileQty: e.row.quantity,
+        targetQty: target,
         delta,
-        externalCode: code,
+        isManualMatched: isMapped,
         suggestions: e.suggestions,
         row: e.row,
       })
     }
 
-    for (const e of systemOnlyEntries) {
-      result.push({
-        key: `sys-${e.optionId}`,
-        status: 'system-only',
-        productName: e.productName,
-        optionName: e.optionName,
-        externalOptionName: '-',
-        systemQty: e.systemQuantity,
-        fileQty: null,
-        delta: null,
-        optionId: e.optionId,
-        needsMapping: e.hasMapping === false,
-      })
-    }
-
     return result
-  }, [diffEntries, equalEntries, fileOnlyEntries, systemOnlyEntries, manualMap, manualStock])
+  }, [diffEntries, equalEntries, fileOnlyEntries, manualMap, manualStock])
 
-  const filteredEntries = useMemo(
-    () =>
-      statusFilter === 'all'
-        ? unifiedEntries
-        : unifiedEntries.filter((e) => {
-            if (statusFilter === 'file-only') {
-              return e.status === 'file-only'
-            }
-            return e.status === statusFilter
-          }),
-    [unifiedEntries, statusFilter]
-  )
+  const filteredEntries = useMemo(() => {
+    if (tab === 'all') return unifiedEntries
+    if (tab === 'file-only') return unifiedEntries.filter((e) => e.status === 'file-only')
+    // matched
+    return unifiedEntries.filter((e) => {
+      if (e.status === 'file-only') return false
+      if (matchedSub === 'all') return true
+      return e.status === matchedSub
+    })
+  }, [unifiedEntries, tab, matchedSub])
 
   const isApplied = useCallback(
     (entry: UnifiedEntry): boolean => {
       if (entry.optionId && appliedOptionIds.includes(entry.optionId)) return true
-      if (entry.externalCode) {
-        const items = manualMap[entry.externalCode]
-        if (items && items.length > 0) {
-          return items.every((i) => appliedOptionIds.includes(i.optionId))
-        }
+      const items = manualMap[entry.fileCode]
+      if (items && items.length > 0) {
+        return items.every((i) => appliedOptionIds.includes(i.optionId))
       }
       return false
     },
     [appliedOptionIds, manualMap]
   )
 
-  const selectableKeys = useMemo(
-    () =>
-      filteredEntries
-        .filter((e) => isSelectable(e, manualMap))
-        .filter((e) => !isApplied(e))
-        .map((e) => e.key),
-    [filteredEntries, isApplied, manualMap]
-  )
-
-  const allSelected = selectableKeys.length > 0 && selectableKeys.every((k) => selected.has(k))
-
-  function toggleSelectAll() {
-    if (allSelected) {
-      setSelected((s) => {
-        const next = new Set(s)
-        selectableKeys.forEach((k) => next.delete(k))
-        return next
-      })
-    } else {
-      setSelected((s) => {
-        const next = new Set(s)
-        selectableKeys.forEach((k) => next.add(k))
-        return next
-      })
+  // 확정 시 실제로 재고에 반영될 건수.
+  //  - 이미 적용된 건은 재적용 가드가 건너뛰므로 제외 (레거시 부분 적용 세션 대응)
+  //  - ADJUSTMENT 는 옵션 단위 절대량 set 이라, 서로 다른 파일 행(외부 SKU)이 같은 옵션을
+  //    가리키면 한 건으로 합쳐진다. 행 수로 세면 결과 토스트와 어긋난다.
+  const pendingApplyCount = useMemo(() => {
+    const optionIds = new Set<string>()
+    for (const e of unifiedEntries) {
+      if (isApplied(e)) continue
+      if (e.status === 'matched-diff' && e.optionId) {
+        optionIds.add(e.optionId)
+      } else if (e.status === 'file-only' && e.isManualMatched) {
+        for (const i of manualMap[e.fileCode] ?? []) optionIds.add(i.optionId)
+      }
     }
-  }
-
-  function toggleSelect(key: string, index: number, shiftKey: boolean) {
-    setSelected((prev) =>
-      applyRangeSelection(prev, selectableKeys, key, index, shiftKey, lastClickedIndexRef.current)
-    )
-    lastClickedIndexRef.current = index
-  }
+    return optionIds.size
+  }, [unifiedEntries, isApplied, manualMap])
 
   function openPicker(entry: UnifiedEntry) {
-    if (!entry.externalCode) return
-    setPickerExternalCode(entry.externalCode)
-    const name = entry.row?.externalName ?? entry.externalCode
+    setPickerExternalCode(entry.fileCode)
+    const name = entry.row?.externalName ?? entry.fileCode
     const optionName = entry.row?.externalOptionName
     setPickerContext(optionName ? `${name} / ${optionName}` : name)
     setPickerQuery(name)
@@ -479,15 +389,9 @@ export function ReconciliationPreview({
     if (!pickerExternalCode) return
     const code = pickerExternalCode
     setManualMap((m) => ({ ...m, [code]: items }))
-    setSelected((s) => {
-      const next = new Set(s)
-      next.add(`file-${code}`)
-      return next
-    })
     setPickerOpen(false)
-    const label = manualItemsToLabel(items)
-    toast.success(`${label} 매칭됨`)
-    // 매칭 즉시 현재 재고 조회 → 현재재고·차이 표시(적용 전 검토용)
+    toast.success(`${manualItemsToLabel(items)} 매칭됨`)
+    // 매칭 즉시 현재 재고 조회 → 현재재고·차이 표시(확정 전 검토용)
     void fetchManualStock(items.map((i) => i.optionId))
   }
 
@@ -513,88 +417,6 @@ export function ReconciliationPreview({
   function openEditMatcher(entry: UnifiedEntry) {
     setEditMatcherEntry(entry)
     setEditMatcherOpen(true)
-  }
-
-  async function openSkuLink(entry: UnifiedEntry) {
-    setSkuLinkEntry(entry)
-    setSkuLinkCode('')
-    setExistingMappings([])
-    if (!recon) return
-    try {
-      const res = await fetch(`/api/sh/inventory/locations/${recon.location.id}/mappings`)
-      const data = await res.json()
-      if (res.ok) setExistingMappings((data.mappings ?? []) as ExistingMapping[])
-    } catch {
-      // 조회 실패해도 입력은 가능 — 저장 직전 중복 확인이 없을 뿐이다(아래에서 재확인).
-    }
-  }
-
-  // system-only(매핑 없음) 행에 외부 SKU 를 연결한다.
-  // 연결되면 다음 회차 자동 대조부터 이 옵션이 스냅샷과 대조되고, 스냅샷에 없으면 0 처리된다.
-  async function handleSkuLinkSave() {
-    if (!skuLinkEntry?.optionId || !recon) return
-    const externalCode = skuLinkCode.trim()
-    if (!externalCode) {
-      toast.error('쿠팡 SKU 번호를 입력해 주세요')
-      return
-    }
-
-    setSkuLinkSaving(true)
-    try {
-      // 이미 이 SKU 에 매핑이 있으면 PATCH 로 items 를 "추가"한다.
-      // POST 는 items 를 통째로 교체(deleteMany+createMany)하므로 세트 매핑의 나머지 구성품이
-      // 조용히 사라진다 — 그 옵션들이 대조에서 빠지고 매일 자동 조정이 어긋난다.
-      const conflict = existingMappings.find((m) => m.externalCode === externalCode)
-
-      let res: Response
-      if (conflict) {
-        if (conflict.items.some((i) => i.optionId === skuLinkEntry.optionId)) {
-          toast.info('이미 이 SKU 에 연결된 상품입니다')
-          setSkuLinkEntry(null)
-          await load()
-          return
-        }
-        res = await fetch(
-          `/api/sh/inventory/locations/${recon.location.id}/mappings?mappingId=${conflict.id}`,
-          {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              items: [
-                ...conflict.items.map((i) => ({ optionId: i.optionId, quantity: i.quantity })),
-                { optionId: skuLinkEntry.optionId, quantity: 1 },
-              ],
-            }),
-          }
-        )
-      } else {
-        res = await fetch(`/api/sh/inventory/locations/${recon.location.id}/mappings`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            externalCode,
-            externalName: skuLinkEntry.productName,
-            externalOptionName: skuLinkEntry.optionName,
-            items: [{ optionId: skuLinkEntry.optionId, quantity: 1 }],
-          }),
-        })
-      }
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message ?? 'SKU 연결 실패')
-      toast.success(
-        conflict
-          ? `SKU ${externalCode} 연결에 ${skuLinkEntry.productName} 추가됨`
-          : `${skuLinkEntry.productName} → SKU ${externalCode} 연결됨`
-      )
-      setSkuLinkEntry(null)
-      await load()
-      onChanged?.()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'SKU 연결 실패')
-    } finally {
-      setSkuLinkSaving(false)
-    }
   }
 
   // mappingItems → PickedOptionWithQty[] 변환 (sku 등 불필요 필드는 null/0)
@@ -649,19 +471,26 @@ export function ReconciliationPreview({
       delete next[externalCode]
       return next
     })
-    setSelected((s) => {
-      const next = new Set(s)
-      next.delete(`file-${externalCode}`)
-      return next
-    })
   }
 
   // 재고 대조에서는 옵션 중복 항상 허용 — 한 옵션이 여러 외부코드(채널 상품 묶음)에 등장 가능.
   // 같은 외부코드 내 중복은 OptionPickerDialog의 multi-with-qty 토글이 자연스럽게 막음.
   const excludeOptionIds: string[] = []
 
+  // 확정 = 차이 전량 반영 + 잠금. 되돌릴 수 없으므로 기준일·미반영 잔여를 문구에 드러낸다.
   async function handleConfirm() {
     if (!recon) return
+    const snapshotStr = new Date(recon.snapshotDate).toISOString().slice(0, 10)
+    const lines = [
+      `${snapshotStr} 기준 파일 수량으로 재고 ${pendingApplyCount}건을 덮어씁니다.`,
+      '확정 후에는 수정할 수 없습니다.',
+    ]
+    const unmatched = unifiedEntries.filter(
+      (e) => e.status === 'file-only' && !e.isManualMatched
+    ).length
+    if (unmatched > 0) lines.splice(1, 0, `미매칭 ${unmatched}건은 반영되지 않습니다.`)
+    if (!confirm(lines.join('\n'))) return
+
     setSubmitting(true)
     try {
       const manualMappings = Object.entries(manualMap)
@@ -671,76 +500,26 @@ export function ReconciliationPreview({
           items: items.map((i) => ({ optionId: i.optionId, quantity: i.quantity })),
         }))
 
-      const selectedOptionIds: string[] = []
-      for (const key of selected) {
-        if (key.startsWith('diff-')) {
-          selectedOptionIds.push(key.slice(5))
-        } else if (key.startsWith('file-')) {
-          const items = manualMap[key.slice(5)]
-          if (items) {
-            for (const i of items) selectedOptionIds.push(i.optionId)
-          }
-        }
-      }
-
       const res = await fetch(`/api/sh/inventory/reconciliation/${recon.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'confirm',
-          selectedOptionIds,
-          manualMappings,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message ?? '적용 실패')
-      toast.success(`${data.adjustedCount}건 조정 완료`)
-      await load()
-      // 상태·조정 건수가 바뀌었으므로 왼쪽 목록도 갱신 (미리보기는 유지)
-      onChanged?.()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '적용 실패')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  async function handleFinalize() {
-    if (!recon) return
-    if (!confirm('확정하면 더 이상 수정할 수 없습니다. 진행할까요?')) return
-    setSubmitting(true)
-    try {
-      const res = await fetch(`/api/sh/inventory/reconciliation/${recon.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'finalize' }),
+        body: JSON.stringify({ action: 'confirm', manualMappings }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? '확정 실패')
-      toast.success('확정되었습니다')
+
+      if (data.failed?.length) {
+        toast.error(`${data.failed.length}건 실패 — 다시 시도해 주세요`)
+        await load()
+        onChanged?.()
+        return
+      }
+      toast.success(`${data.adjustedCount}건 조정 완료 · 확정됨`)
       onConfirmed()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '확정 실패')
     } finally {
       setSubmitting(false)
-    }
-  }
-
-  async function handleCancel() {
-    if (!recon) return
-    if (!confirm('이 대조를 취소하시겠습니까?')) return
-    try {
-      const res = await fetch(`/api/sh/inventory/reconciliation/${recon.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'cancel' }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message ?? '취소 실패')
-      toast.success('취소되었습니다')
-      onConfirmed()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '취소 실패')
     }
   }
 
@@ -752,8 +531,8 @@ export function ReconciliationPreview({
     )
   }
 
-  const canEdit = ['PENDING', 'PARTIAL'].includes(recon.status)
-  const canFinalize = recon.status === 'APPLIED'
+  const isConfirmed = recon.status === 'CONFIRMED'
+  const canEdit = !isConfirmed
   const appliedCount = appliedOptionIds.length
 
   return (
@@ -771,24 +550,25 @@ export function ReconciliationPreview({
           <p className="mt-1 text-xs text-muted-foreground">
             총 {recon.totalItems}건 · 자동매칭 {recon.matchedItems}건 · 조정 {recon.adjustedItems}건
             {appliedCount > 0 && ` · 적용 ${appliedCount}건`}
+            {isConfirmed &&
+              recon.confirmedAt &&
+              ` · 확정 ${new Date(recon.confirmedAt).toISOString().slice(0, 10)}`}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {canFinalize && (
-            <Button size="sm" onClick={handleFinalize} disabled={submitting}>
-              {submitting && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
-              확정
-            </Button>
-          )}
-          {canEdit && (
+          <Button variant="outline" size="sm" onClick={() => setUnmatchedOpen(true)}>
+            <PackageSearch className="mr-1 h-3.5 w-3.5" />
+            재고 데이터 없는 상품
+          </Button>
+          {!isConfirmed && (
             <Button
-              variant="ghost"
               size="sm"
-              onClick={handleCancel}
-              disabled={submitting}
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={handleConfirm}
+              disabled={submitting || pendingApplyCount === 0}
+              title={pendingApplyCount === 0 ? '반영할 차이 없음' : undefined}
             >
-              대조 취소
+              {submitting && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
+              확정 (재고 반영 {pendingApplyCount}건)
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={onClose}>
@@ -797,37 +577,57 @@ export function ReconciliationPreview({
         </div>
       </div>
 
-      {needsMappingCount > 0 && (
-        <div className="rounded-md border border-orange-200 bg-orange-50 p-3 text-sm">
-          <p className="font-medium text-orange-900">
-            쿠팡 SKU 연결이 필요한 상품 {needsMappingCount}건
-          </p>
-          <p className="mt-1 text-xs leading-relaxed text-orange-800">
-            쿠팡 재고 데이터에는 없는데 이 위치에 재고가 남아 있는 상품입니다. 연결된 SKU 가 없어
-            실제 소진인지 아직 연동되지 않은 상품인지 구분할 수 없어, 자동 대조가 재고를 그대로
-            두었습니다. <strong>&apos;파일 누락&apos;</strong> 필터에서 각 행의{' '}
-            <strong>&apos;쿠팡 SKU 연결&apos;</strong> 버튼으로 SKU 를 연결하면 다음 수집부터 자동
-            반영됩니다.
-          </p>
+      <div className="flex items-center gap-2">
+        <div className="flex gap-1 rounded-lg border bg-muted p-1">
+          {(
+            [
+              { value: 'all', label: '전체', count: counts.all },
+              { value: 'matched', label: '매칭', count: counts.matched },
+              { value: 'file-only', label: '미매칭', count: counts['file-only'] },
+            ] as const
+          ).map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => setTab(f.value)}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                tab === f.value
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {f.label}
+              <span className="ml-1.5 text-xs opacity-70">{f.count}</span>
+            </button>
+          ))}
         </div>
-      )}
 
-      <div className="flex gap-1 rounded-lg border bg-muted p-1">
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            type="button"
-            onClick={() => setStatusFilter(f.value)}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              statusFilter === f.value
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {f.label}
-            <span className="ml-1.5 text-xs opacity-70">{counts[f.value]}</span>
-          </button>
-        ))}
+        {/* 매칭 탭 2차 세그먼트 — 차이/일치 */}
+        {tab === 'matched' && (
+          <div className="flex gap-1 rounded-lg border p-1">
+            {(
+              [
+                { value: 'all', label: '전체', count: counts.matched },
+                { value: 'matched-diff', label: '차이', count: counts['matched-diff'] },
+                { value: 'matched-equal', label: '일치', count: counts['matched-equal'] },
+              ] as const
+            ).map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setMatchedSub(f.value)}
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  matchedSub === f.value
+                    ? 'bg-muted text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {f.label}
+                <span className="ml-1 opacity-70">{f.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {filteredEntries.length === 0 ? (
@@ -838,53 +638,44 @@ export function ReconciliationPreview({
         <div className="overflow-x-auto rounded-md border">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-10">
-                  {canEdit && selectableKeys.length > 0 && (
-                    <Checkbox
-                      checked={allSelected}
-                      onCheckedChange={toggleSelectAll}
-                      aria-label="전체 선택"
-                    />
-                  )}
+              {/* 1단: 기준 그룹 — 어느 값이 파일에서 왔는지 라벨로 못박는다 */}
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-20" />
+                <TableHead colSpan={4} className="border-l bg-muted/40 text-center text-xs">
+                  파일 데이터
                 </TableHead>
+                <TableHead colSpan={3} className="border-l text-center text-xs">
+                  시스템 상품
+                </TableHead>
+                <TableHead className="w-12 border-l" />
+                <TableHead className="w-20" />
+              </TableRow>
+              <TableRow>
                 <TableHead className="w-20">상태</TableHead>
-                <TableHead className="min-w-[8rem]">상품명</TableHead>
-                <TableHead className="w-28">파일 옵션명</TableHead>
-                <TableHead className="min-w-[9rem]">매칭 상품 옵션</TableHead>
+                <TableHead className="w-24 border-l bg-muted/40">SKU</TableHead>
+                <TableHead className="min-w-[8rem] bg-muted/40">상품명</TableHead>
+                <TableHead className="w-24 bg-muted/40">옵션명</TableHead>
+                <TableHead className="w-12 bg-muted/40 text-right">수량</TableHead>
+                <TableHead className="min-w-[7rem] border-l">상품</TableHead>
+                <TableHead className="min-w-[8rem]">옵션</TableHead>
                 <TableHead className="w-14 text-right">현재 재고</TableHead>
-                <TableHead className="w-12 text-right">파일</TableHead>
-                <TableHead className="w-12 text-right">차이</TableHead>
+                <TableHead className="w-12 border-l text-right">차이</TableHead>
                 <TableHead className="w-20 whitespace-nowrap">동작</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredEntries.map((entry, index) => {
-                const selectable = isSelectable(entry, manualMap)
                 const applied = isApplied(entry)
-                const selectKey = entry.key
-                const isMapped =
-                  entry.externalCode !== undefined &&
-                  (manualMap[entry.externalCode]?.length ?? 0) > 0
+                const isMapped = (manualMap[entry.fileCode]?.length ?? 0) > 0
+                // 1:N 매핑으로 한 파일 행이 여러 entry 로 쪼개진 경우 — 파일 셀은 중복 표기다.
+                const repeatsFileRow =
+                  index > 0 && filteredEntries[index - 1].fileCode === entry.fileCode
+                const fileCellClass = repeatsFileRow
+                  ? 'bg-muted/40 text-muted-foreground/60'
+                  : 'bg-muted/40'
 
                 return (
                   <TableRow key={entry.key} className={applied ? 'bg-green-50/30' : undefined}>
-                    <TableCell>
-                      {canEdit && selectable && (
-                        <Checkbox
-                          checked={selected.has(selectKey)}
-                          disabled={applied}
-                          onClick={
-                            applied
-                              ? undefined
-                              : (e) => {
-                                  toggleSelect(selectKey, index, e.shiftKey)
-                                }
-                          }
-                          aria-label="행 선택"
-                        />
-                      )}
-                    </TableCell>
                     <TableCell>
                       {applied ? (
                         <Badge className="border-green-200 bg-green-100 text-green-700">
@@ -892,62 +683,71 @@ export function ReconciliationPreview({
                         </Badge>
                       ) : entry.status === 'file-only' && entry.isManualMatched ? (
                         <Badge className="border-blue-200 bg-blue-100 text-blue-700">매칭됨</Badge>
-                      ) : entry.needsMapping ? (
-                        <Badge className="border-orange-200 bg-orange-100 text-orange-700">
-                          매핑 필요
-                        </Badge>
                       ) : (
                         entryStatusBadge(entry.status)
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{entry.productName}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {entry.externalOptionName}
+
+                    {/* ── 파일 데이터 ── */}
+                    <TableCell className={`border-l font-mono text-xs ${fileCellClass}`}>
+                      {entry.fileCode}
+                    </TableCell>
+                    <TableCell className={`font-medium ${fileCellClass}`}>
+                      {entry.fileProductName}
+                    </TableCell>
+                    <TableCell className={fileCellClass}>{entry.fileOptionName}</TableCell>
+                    <TableCell className={`text-right font-semibold ${fileCellClass}`}>
+                      {entry.fileRowQty}
+                    </TableCell>
+
+                    {/* ── 시스템 상품 ── */}
+                    <TableCell className="border-l">
+                      {entry.sysProductName ?? <span className="text-muted-foreground/50">—</span>}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">
-                          {entry.optionName}
-                          {/* matched-* 행: 수량 비율이 1 초과인 경우 표시 */}
-                          {(entry.status === 'matched-equal' || entry.status === 'matched-diff') &&
-                            entry.mapItemQuantity !== undefined &&
-                            entry.mapItemQuantity > 1 && (
+                      {entry.sysOptionName === null ? (
+                        <span className="text-muted-foreground/50">—</span>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">
+                            {entry.sysOptionName}
+                            {/* 세트 수량 비율이 1 초과면 목표 수량이 파일 수량과 다르다 */}
+                            {entry.mapItemQuantity !== undefined && entry.mapItemQuantity > 1 && (
                               <span className="ml-1 text-xs text-muted-foreground/70">
-                                × {entry.mapItemQuantity}
+                                × {entry.mapItemQuantity} = {entry.targetQty}
                               </span>
                             )}
-                        </span>
-                        {canEdit && isMapped && entry.externalCode && (
-                          <div className="flex shrink-0 items-center gap-0.5">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 px-1.5 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
-                              onClick={() => openPicker(entry)}
-                            >
-                              수정
-                            </Button>
-                            <span className="text-muted-foreground/40">·</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 px-1.5 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-destructive"
-                              onClick={() => removeMapping(entry.externalCode!)}
-                            >
-                              취소
-                            </Button>
-                          </div>
-                        )}
-                      </div>
+                          </span>
+                          {canEdit && isMapped && (
+                            <div className="flex shrink-0 items-center gap-0.5">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1.5 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
+                                onClick={() => openPicker(entry)}
+                              >
+                                수정
+                              </Button>
+                              <span className="text-muted-foreground/40">·</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1.5 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-destructive"
+                                onClick={() => removeMapping(entry.fileCode)}
+                              >
+                                취소
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       {entry.systemQty !== null ? entry.systemQty : '-'}
                     </TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {entry.fileQty !== null ? entry.fileQty : '-'}
-                    </TableCell>
+
                     <TableCell
-                      className={`text-right font-mono ${
+                      className={`border-l text-right font-mono ${
                         entry.delta !== null
                           ? entry.delta > 0
                             ? 'text-emerald-600'
@@ -972,7 +772,7 @@ export function ReconciliationPreview({
                             매칭 수정
                           </Button>
                         )}
-                      {canEdit && entry.status === 'file-only' && entry.externalCode && (
+                      {canEdit && entry.status === 'file-only' && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -983,17 +783,6 @@ export function ReconciliationPreview({
                           상품 선택
                         </Button>
                       )}
-                      {canEdit && entry.needsMapping && entry.optionId && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 px-2 text-xs"
-                          onClick={() => openSkuLink(entry)}
-                        >
-                          <Link2 className="mr-1 h-3 w-3" />
-                          쿠팡 SKU 연결
-                        </Button>
-                      )}
                     </TableCell>
                   </TableRow>
                 )
@@ -1001,28 +790,6 @@ export function ReconciliationPreview({
             </TableBody>
           </Table>
         </div>
-      )}
-
-      {canEdit && (
-        <FloatingActionBar
-          open={selected.size > 0}
-          onClear={() => setSelected(new Set())}
-          actions={
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className={floatingActionButtonClass}
-              onClick={handleConfirm}
-              disabled={submitting}
-            >
-              {submitting && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
-              선택 적용
-            </Button>
-          }
-        >
-          <span className="text-sm font-semibold">{selected.size}건 선택</span>
-        </FloatingActionBar>
       )}
 
       {/* file-only 행 수동 매칭 picker */}
@@ -1059,7 +826,9 @@ export function ReconciliationPreview({
         excludeOptionIds={excludeOptionIds}
         contextLabel="현재 매칭"
         contextValue={
-          editMatcherEntry ? `${editMatcherEntry.productName} / ${editMatcherEntry.optionName}` : ''
+          editMatcherEntry
+            ? `${editMatcherEntry.sysProductName ?? ''} / ${editMatcherEntry.sysOptionName ?? ''}`
+            : ''
         }
         initialItems={
           editMatcherEntry?.mappingItems
@@ -1068,73 +837,18 @@ export function ReconciliationPreview({
         }
       />
 
-      {/* system-only(매핑 없음) 행 → 쿠팡 SKU 연결 */}
-      <Dialog
-        open={!!skuLinkEntry}
-        onOpenChange={(v) => {
-          if (!v && !skuLinkSaving) setSkuLinkEntry(null)
+      {/* 시스템 쪽 미등장 옵션 — 확정 여부와 무관하게 열람·SKU 연결 가능 */}
+      <ReconciliationUnmatchedOptionsDialog
+        open={unmatchedOpen}
+        onOpenChange={setUnmatchedOpen}
+        reconciliationId={recon.id}
+        locationId={recon.location.id}
+        locationName={recon.location.name}
+        onLinked={() => {
+          void load()
+          onChanged?.()
         }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>쿠팡 SKU 연결</DialogTitle>
-            <DialogDescription>
-              이 상품의 쿠팡 SKU 번호를 연결하면 다음 수집부터 자동 대조 대상이 됩니다. 쿠팡 SKU
-              번호는 Wing 재고현황 엑셀의 &apos;SKU ID&apos; 열에서 확인할 수 있습니다.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3">
-            <div className="rounded-md bg-muted px-3 py-2 text-sm">
-              <p className="font-medium">{skuLinkEntry?.productName}</p>
-              <p className="text-xs text-muted-foreground">
-                {skuLinkEntry?.optionName} · 현재 재고 {skuLinkEntry?.systemQty ?? 0}
-              </p>
-            </div>
-            <Input
-              value={skuLinkCode}
-              onChange={(e) => setSkuLinkCode(e.target.value)}
-              placeholder="쿠팡 SKU 번호 (예: 1234567890)"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSkuLinkSave()
-              }}
-              autoFocus
-            />
-            {skuLinkConflict ? (
-              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-                <p className="font-medium">이 SKU 는 이미 연결돼 있습니다</p>
-                <p className="mt-0.5">
-                  {skuLinkConflict.items
-                    .map((i) => `${i.option.product.name} / ${i.option.name}`)
-                    .join(', ')}
-                </p>
-                <p className="mt-1">
-                  기존 연결을 유지한 채 이 상품을 <strong>추가</strong>합니다 (세트 구성품인 경우).
-                </p>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                쿠팡에 등록되지 않은 상품이라면 연결하지 말고, 재고 이동으로 다른 위치로 옮겨
-                주세요.
-              </p>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSkuLinkEntry(null)}
-              disabled={skuLinkSaving}
-            >
-              취소
-            </Button>
-            <Button onClick={handleSkuLinkSave} disabled={skuLinkSaving || !skuLinkCode.trim()}>
-              {skuLinkSaving && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
-              {skuLinkConflict ? '기존 연결에 추가' : '연결'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      />
     </div>
   )
 }

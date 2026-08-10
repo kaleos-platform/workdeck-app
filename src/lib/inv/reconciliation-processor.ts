@@ -2,6 +2,7 @@
 import { prisma } from '@/lib/prisma'
 import { processMovement, MovementError } from './movement-processor'
 import type { MatchEntry } from './reconciliation-matcher'
+import { resolveFileOnlyEntries } from './reconciliation-resolve'
 
 export type ManualMappingItem = {
   optionId: string
@@ -9,8 +10,21 @@ export type ManualMappingItem = {
 }
 
 export type ConfirmOptions = {
+  /**
+   * 적용할 대상 optionId. `finalize: true` 이면 무시된다(차이 전량 적용).
+   * 자동 대조 cron 이 부분 적용을 지시하는 용도.
+   */
   selectedOptionIds: string[]
   manualMappings: { externalCode: string; items: ManualMappingItem[] }[]
+  /**
+   * 수동 "확정" 경로. 켜면
+   *  - selectedOptionIds 를 무시하고 matched-diff 전량 + 매핑된 file-only 전량을 적용하고
+   *  - includeSystemOnly 를 강제로 끄며(부재 ≠ 삭제 — 0 처리는 자동 대조 cron 전용)
+   *  - 종료 시 CONFIRMED 로 잠근다.
+   *
+   * 끄면(기본) 기존 부분 적용 동작 그대로 — 자동 대조 cron 경로는 이 값을 넘기지 않는다.
+   */
+  finalize?: boolean
   /**
    * system-only(외부 스냅샷에 없는데 해당 위치에 재고가 남은 옵션)를 0 으로 내린다.
    *
@@ -51,9 +65,7 @@ export async function findMappedSystemOnlyKeys(
   if (systemOnly.length === 0) return new Set()
 
   const optionIds = Array.from(new Set(systemOnly.map((e) => e.optionId)))
-  const locationIds = Array.from(
-    new Set(systemOnly.map((e) => e.locationId ?? reconLocationId))
-  )
+  const locationIds = Array.from(new Set(systemOnly.map((e) => e.locationId ?? reconLocationId)))
 
   const items = await prisma.invLocationProductMapItem.findMany({
     where: { optionId: { in: optionIds }, map: { locationId: { in: locationIds } } },
@@ -135,13 +147,30 @@ export async function confirmReconciliation(
   if (!recon || recon.spaceId !== spaceId) {
     throw new MovementError('대조 기록을 찾을 수 없습니다', 404)
   }
-  // PENDING/PARTIAL 상태에서만 추가 confirm 허용
-  if (!['PENDING', 'PARTIAL'].includes(recon.status)) {
+  const finalize = options.finalize === true
+  if (finalize) {
+    // 수동 확정 — 레거시 PARTIAL/APPLIED 세션도 마감할 수 있어야 한다.
+    if (recon.status === 'CONFIRMED') {
+      throw new MovementError('이미 확정된 대조입니다', 400)
+    }
+    if (recon.status === 'CANCELLED') {
+      throw new MovementError('삭제된 대조입니다', 400)
+    }
+  } else if (!['PENDING', 'PARTIAL'].includes(recon.status)) {
+    // PENDING/PARTIAL 상태에서만 추가 confirm 허용
     throw new MovementError('이미 적용 완료됐거나 확정·취소된 대조입니다', 400)
   }
 
-  const entries = (recon.matchResults as unknown as MatchEntry[]) ?? []
+  // 수동 확정은 재고 0 처리를 하지 않는다 — 부재 ≠ 삭제.
+  const includeSystemOnly = finalize ? false : options.includeSystemOnly
+
+  const rawEntries = (recon.matchResults as unknown as MatchEntry[]) ?? []
   const { locationId: reconLocationId, snapshotDate, fileName } = recon
+
+  // 수동 확정은 "지금까지 매칭된 것 전부"를 반영해야 한다. matchResults 는 매칭 당시의
+  // 스냅샷이라, 그 뒤 [상품 선택]/[쿠팡 SKU 연결]로 생긴 매핑이 file-only 로 남아 있다.
+  // 상세 GET 과 같은 규칙으로 풀어주지 않으면 화면엔 매칭으로 보이는데 확정은 건너뛴다.
+  const entries = finalize ? await resolveFileOnlyEntries(rawEntries, reconLocationId) : rawEntries
 
   // 1) 수동 매핑 upsert + 해당 file-only 항목을 adjustment 후보로 변환
   const extraAdjustments: {
@@ -222,8 +251,10 @@ export async function confirmReconciliation(
     ])
 
     // 선택된 optionId가 items 중 하나라도 포함되면 전체 items 적용
+    // (확정 경로는 선택 개념이 없으므로 항상 적용)
     const itemOptionIds = validItems.map((i) => i.optionId)
-    const anySelected = itemOptionIds.some((oid) => options.selectedOptionIds.includes(oid))
+    const anySelected =
+      finalize || itemOptionIds.some((oid) => options.selectedOptionIds.includes(oid))
     if (anySelected) {
       for (const item of validItems) {
         extraAdjustments.push({
@@ -235,12 +266,13 @@ export async function confirmReconciliation(
     }
   }
 
-  // 2) matched-diff 중 선택된 항목 adjustment — entry.locationId 우선
+  // 2) matched-diff adjustment — entry.locationId 우선
+  //    확정 경로는 차이 전량, 부분 적용 경로는 선택된 것만.
   const selected = new Set(options.selectedOptionIds)
   const diffAdjustments: { optionId: string; locationId: string; fileQuantity: number }[] = []
   for (const e of entries) {
     if (e.status !== 'matched-diff') continue
-    if (!selected.has(e.optionId)) continue
+    if (!finalize && !selected.has(e.optionId)) continue
     diffAdjustments.push({
       optionId: e.optionId,
       locationId: e.locationId ?? reconLocationId,
@@ -253,7 +285,7 @@ export async function confirmReconciliation(
   //  "스냅샷에 없음"이 매핑 누락일 수 있으므로 호출측이 켜지 않아야 한다.
   const systemOnlyAdjustments: { optionId: string; locationId: string; fileQuantity: number }[] = []
   let unmappedSystemOnlyCount = 0
-  if (options.includeSystemOnly) {
+  if (includeSystemOnly) {
     // 같은 (location, option) 이 앞 단계에서 이미 수량 조정 대상이면 0 으로 덮지 않는다.
     // (사후 수동 매핑으로 file-only 가 system-only 와 같은 옵션을 가리키게 된 경우)
     const alreadyTargeted = new Set(
@@ -274,10 +306,24 @@ export async function confirmReconciliation(
     }
   }
 
-  const all = [...diffAdjustments, ...extraAdjustments, ...systemOnlyAdjustments]
-  const systemOnlyKeys = new Set(
-    systemOnlyAdjustments.map((a) => `${a.locationId}|${a.optionId}`)
-  )
+  const candidates = [...diffAdjustments, ...extraAdjustments, ...systemOnlyAdjustments]
+
+  // 확정 경로만 (locationId, optionId) 중복을 제거한다.
+  // 서로 다른 외부 SKU 가 같은 옵션을 가리키면 목표 수량이 서로 다를 수 있는데(파일 수량 ×
+  // 세트 비율), ADJUSTMENT 는 절대량 set 이라 순차 적용하면 마지막 값만 남는 임의 결과가 된다.
+  // 확정은 "먼저 온 것"으로 고정해 UI 의 반영 건수(옵션 단위)와 실제 movement 수를 일치시킨다.
+  // 부분 적용(cron) 경로는 기존 동작을 그대로 둔다 — 이 함수의 cron 계약은 불변이다.
+  let all = candidates
+  if (finalize) {
+    const seenAdjKeys = new Set<string>()
+    all = candidates.filter((adj) => {
+      const key = `${adj.locationId}|${adj.optionId}`
+      if (seenAdjKeys.has(key)) return false
+      seenAdjKeys.add(key)
+      return true
+    })
+  }
+  const systemOnlyKeys = new Set(systemOnlyAdjustments.map((a) => `${a.locationId}|${a.optionId}`))
   const movementDate = snapshotDate.toISOString()
   const snapshotStr = snapshotDate.toISOString().slice(0, 10)
 
@@ -331,23 +377,24 @@ export async function confirmReconciliation(
   const appliedKeys = new Set(appliedMovements.map((m) => `${m.locationId}|${m.optionId}`))
   const cumulativeApplied = appliedKeys.size
 
-  // 4) 적용 가능 총수 산출
-  const applicableTotal = await calcApplicableCount(
-    entries,
-    reconLocationId,
-    options.includeSystemOnly
-  )
-
-  // 5) 상태 결정: 한 번이라도 confirm 호출 → 최소 PARTIAL
-  //    누적 적용 == 적용 가능 총수이면 APPLIED
-  const newStatus =
-    applicableTotal > 0 && cumulativeApplied >= applicableTotal ? 'APPLIED' : 'PARTIAL'
+  // 4~5) 상태 결정
+  let newStatus: 'PARTIAL' | 'APPLIED' | 'CONFIRMED'
+  if (finalize) {
+    // 수동 확정은 1회성 종결 액션 — 미매칭 잔여가 있어도 마감한다(호출측이 경고 후 진행).
+    // 단 일부가 실패했으면 잠그지 않고 재시도 여지를 남긴다.
+    newStatus = failed.length > 0 ? 'PARTIAL' : 'CONFIRMED'
+  } else {
+    // 적용 가능 총수 대비 누적 적용으로 PARTIAL/APPLIED 판정 (자동 대조 cron 경로)
+    const applicableTotal = await calcApplicableCount(entries, reconLocationId, includeSystemOnly)
+    newStatus = applicableTotal > 0 && cumulativeApplied >= applicableTotal ? 'APPLIED' : 'PARTIAL'
+  }
 
   await prisma.invReconciliation.update({
     where: { id: reconciliationId },
     data: {
       status: newStatus,
       adjustedItems: cumulativeApplied,
+      ...(newStatus === 'CONFIRMED' ? { confirmedAt: new Date() } : {}),
     },
   })
 

@@ -25,7 +25,6 @@ import { NextRequest } from 'next/server'
 import { GET } from '@/app/api/cron/coupang-inventory-sync/route'
 import { processMovement } from '../movement-processor'
 
-
 const SPACE_ID = 'e2e00000-0000-4000-8000-0000000000c1'
 const USER_ID = 'e2e00000-0000-4000-8000-0000000000c2'
 const WS_ID = 'e2e00000-0000-4000-8000-0000000000c3'
@@ -204,6 +203,29 @@ d('자동 재고 대조 cron 멱등성 (dev DB)', () => {
     expect(recons).toBe(1)
 
     // 중간 INBOUND 보존 — 스냅샷 100 으로 덮이지 않음
+    const stock = await prisma.invStockLevel.findUnique({
+      where: { optionId_locationId: { optionId, locationId } },
+    })
+    expect(stock?.quantity).toBe(150)
+  })
+
+  test('사용자가 삭제(CANCELLED)한 대조도 스냅샷 마커로 남아 재처리를 막는다', async () => {
+    // 적용 이력이 있는 대조를 삭제하면 물리 삭제 대신 CANCELLED 로 남는다(DELETE 라우트).
+    // 마커가 빠지면 cron 이 같은 스냅샷으로 새 대조를 만들고, referenceId 가 달라
+    // 재적용 가드가 무력화돼 중간 INBOUND 가 스냅샷 값으로 덮어써진다.
+    await prisma.invReconciliation.updateMany({
+      where: { spaceId: SPACE_ID },
+      data: { status: 'CANCELLED' },
+    })
+
+    const body = await runCron()
+    expect(findSpace(body)?.status).toBe('skip:already-applied')
+
+    // 새 대조가 생기지 않아야 한다
+    const recons = await prisma.invReconciliation.count({ where: { spaceId: SPACE_ID } })
+    expect(recons).toBe(1)
+
+    // 재고도 그대로
     const stock = await prisma.invStockLevel.findUnique({
       where: { optionId_locationId: { optionId, locationId } },
     })

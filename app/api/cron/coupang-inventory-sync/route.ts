@@ -130,7 +130,10 @@ async function runInventorySync() {
           locationId: resolved.locationId,
           snapshotDate: parsed.snapshotDate,
           OR: [
-            { status: { in: ['APPLIED', 'PARTIAL', 'CONFIRMED'] } },
+            // CANCELLED 포함: 적용 이력이 있는 대조를 사용자가 삭제하면 물리 삭제 대신
+            // CANCELLED 로 남는다(목록에서만 숨김). 여기서 빼면 같은 스냅샷으로 새 대조를
+            // 만들어 confirm 하게 되고, referenceId 가 달라 재적용 가드가 무력화된다.
+            { status: { in: ['APPLIED', 'PARTIAL', 'CONFIRMED', 'CANCELLED'] } },
             // 가드에 걸려 PENDING 으로 남긴 자동 대조 — 매일 재생성되면 PENDING 이 쌓인다.
             // 사람이 확인할 1건만 남기고 이후 회차는 skip.
             { status: 'PENDING', fileName: autoFileName },
