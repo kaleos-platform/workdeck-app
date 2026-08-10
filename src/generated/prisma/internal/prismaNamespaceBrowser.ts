@@ -82,6 +82,7 @@ export const ModelName = {
   BusinessAgent: 'BusinessAgent',
   AgentLog: 'AgentLog',
   WorkerHeartbeat: 'WorkerHeartbeat',
+  CronRun: 'CronRun',
   InventoryUpload: 'InventoryUpload',
   InventoryRecord: 'InventoryRecord',
   InventoryExcludedProduct: 'InventoryExcludedProduct',
@@ -674,6 +675,20 @@ export const WorkerHeartbeatScalarFieldEnum = {
 } as const
 
 export type WorkerHeartbeatScalarFieldEnum = (typeof WorkerHeartbeatScalarFieldEnum)[keyof typeof WorkerHeartbeatScalarFieldEnum]
+
+
+export const CronRunScalarFieldEnum = {
+  id: 'id',
+  path: 'path',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  durationMs: 'durationMs',
+  ok: 'ok',
+  detail: 'detail',
+  error: 'error'
+} as const
+
+export type CronRunScalarFieldEnum = (typeof CronRunScalarFieldEnum)[keyof typeof CronRunScalarFieldEnum]
 
 
 export const InventoryUploadScalarFieldEnum = {
