@@ -2,10 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Loader2, Search } from 'lucide-react'
+import { Link2, Loader2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -40,6 +49,17 @@ type MappingItem = {
   quantity: number
   productName: string
   optionName: string
+}
+
+/** GET /locations/[id]/mappings 응답 — SKU 중복 확인용(필요한 필드만) */
+type ExistingMapping = {
+  id: string
+  externalCode: string
+  items: {
+    optionId: string
+    quantity: number
+    option: { name: string; product: { name: string } }
+  }[]
 }
 
 type MatchEntry =
@@ -79,6 +99,8 @@ type MatchEntry =
       productName: string
       optionName: string
       systemQuantity: number
+      /** 이 위치에 연결된 외부 SKU 매핑이 있는지. false면 자동 대조가 재고를 건드리지 않는다. */
+      hasMapping?: boolean
     }
 
 type Reconciliation = {
@@ -119,6 +141,8 @@ type UnifiedEntry = {
   mappingId?: string
   mappingItems?: MappingItem[]
   mapItemQuantity?: number
+  /** system-only 인데 외부 SKU 매핑이 없음 — 자동 대조가 건드리지 못하는 잔여 */
+  needsMapping?: boolean
 }
 
 const STATUS_FILTERS = [
@@ -201,6 +225,13 @@ export function ReconciliationPreview({
   const [editMatcherOpen, setEditMatcherOpen] = useState(false)
   const [editMatcherEntry, setEditMatcherEntry] = useState<UnifiedEntry | null>(null)
 
+  // system-only(매핑 없음) 행 → 쿠팡 SKU 연결 다이얼로그 상태
+  const [skuLinkEntry, setSkuLinkEntry] = useState<UnifiedEntry | null>(null)
+  const [skuLinkCode, setSkuLinkCode] = useState('')
+  const [skuLinkSaving, setSkuLinkSaving] = useState(false)
+  // 이 위치의 기존 매핑 — 입력한 SKU 가 이미 쓰이는지 확인해 덮어쓰기를 막는다.
+  const [existingMappings, setExistingMappings] = useState<ExistingMapping[]>([])
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
@@ -258,6 +289,18 @@ export function ReconciliationPreview({
         (e): e is Extract<MatchEntry, { status: 'system-only' }> => e.status === 'system-only'
       ),
     [entries]
+  )
+
+  // 입력한 SKU 가 이미 이 위치에 매핑돼 있는지 — 있으면 교체가 아니라 추가로 처리한다
+  const skuLinkConflict = useMemo(
+    () => existingMappings.find((m) => m.externalCode === skuLinkCode.trim()) ?? null,
+    [existingMappings, skuLinkCode]
+  )
+
+  // 매핑이 없어 자동 대조가 손대지 못한 system-only 건수 — 사용자 안내 대상
+  const needsMappingCount = useMemo(
+    () => systemOnlyEntries.filter((e) => e.hasMapping === false).length,
+    [systemOnlyEntries]
   )
 
   const counts = {
@@ -354,6 +397,7 @@ export function ReconciliationPreview({
         fileQty: null,
         delta: null,
         optionId: e.optionId,
+        needsMapping: e.hasMapping === false,
       })
     }
 
@@ -469,6 +513,88 @@ export function ReconciliationPreview({
   function openEditMatcher(entry: UnifiedEntry) {
     setEditMatcherEntry(entry)
     setEditMatcherOpen(true)
+  }
+
+  async function openSkuLink(entry: UnifiedEntry) {
+    setSkuLinkEntry(entry)
+    setSkuLinkCode('')
+    setExistingMappings([])
+    if (!recon) return
+    try {
+      const res = await fetch(`/api/sh/inventory/locations/${recon.location.id}/mappings`)
+      const data = await res.json()
+      if (res.ok) setExistingMappings((data.mappings ?? []) as ExistingMapping[])
+    } catch {
+      // 조회 실패해도 입력은 가능 — 저장 직전 중복 확인이 없을 뿐이다(아래에서 재확인).
+    }
+  }
+
+  // system-only(매핑 없음) 행에 외부 SKU 를 연결한다.
+  // 연결되면 다음 회차 자동 대조부터 이 옵션이 스냅샷과 대조되고, 스냅샷에 없으면 0 처리된다.
+  async function handleSkuLinkSave() {
+    if (!skuLinkEntry?.optionId || !recon) return
+    const externalCode = skuLinkCode.trim()
+    if (!externalCode) {
+      toast.error('쿠팡 SKU 번호를 입력해 주세요')
+      return
+    }
+
+    setSkuLinkSaving(true)
+    try {
+      // 이미 이 SKU 에 매핑이 있으면 PATCH 로 items 를 "추가"한다.
+      // POST 는 items 를 통째로 교체(deleteMany+createMany)하므로 세트 매핑의 나머지 구성품이
+      // 조용히 사라진다 — 그 옵션들이 대조에서 빠지고 매일 자동 조정이 어긋난다.
+      const conflict = existingMappings.find((m) => m.externalCode === externalCode)
+
+      let res: Response
+      if (conflict) {
+        if (conflict.items.some((i) => i.optionId === skuLinkEntry.optionId)) {
+          toast.info('이미 이 SKU 에 연결된 상품입니다')
+          setSkuLinkEntry(null)
+          await load()
+          return
+        }
+        res = await fetch(
+          `/api/sh/inventory/locations/${recon.location.id}/mappings?mappingId=${conflict.id}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              items: [
+                ...conflict.items.map((i) => ({ optionId: i.optionId, quantity: i.quantity })),
+                { optionId: skuLinkEntry.optionId, quantity: 1 },
+              ],
+            }),
+          }
+        )
+      } else {
+        res = await fetch(`/api/sh/inventory/locations/${recon.location.id}/mappings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            externalCode,
+            externalName: skuLinkEntry.productName,
+            externalOptionName: skuLinkEntry.optionName,
+            items: [{ optionId: skuLinkEntry.optionId, quantity: 1 }],
+          }),
+        })
+      }
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? 'SKU 연결 실패')
+      toast.success(
+        conflict
+          ? `SKU ${externalCode} 연결에 ${skuLinkEntry.productName} 추가됨`
+          : `${skuLinkEntry.productName} → SKU ${externalCode} 연결됨`
+      )
+      setSkuLinkEntry(null)
+      await load()
+      onChanged?.()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'SKU 연결 실패')
+    } finally {
+      setSkuLinkSaving(false)
+    }
   }
 
   // mappingItems → PickedOptionWithQty[] 변환 (sku 등 불필요 필드는 null/0)
@@ -671,6 +797,21 @@ export function ReconciliationPreview({
         </div>
       </div>
 
+      {needsMappingCount > 0 && (
+        <div className="rounded-md border border-orange-200 bg-orange-50 p-3 text-sm">
+          <p className="font-medium text-orange-900">
+            쿠팡 SKU 연결이 필요한 상품 {needsMappingCount}건
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-orange-800">
+            쿠팡 재고 데이터에는 없는데 이 위치에 재고가 남아 있는 상품입니다. 연결된 SKU 가 없어
+            실제 소진인지 아직 연동되지 않은 상품인지 구분할 수 없어, 자동 대조가 재고를 그대로
+            두었습니다. <strong>&apos;파일 누락&apos;</strong> 필터에서 각 행의{' '}
+            <strong>&apos;쿠팡 SKU 연결&apos;</strong> 버튼으로 SKU 를 연결하면 다음 수집부터 자동
+            반영됩니다.
+          </p>
+        </div>
+      )}
+
       <div className="flex gap-1 rounded-lg border bg-muted p-1">
         {STATUS_FILTERS.map((f) => (
           <button
@@ -751,6 +892,10 @@ export function ReconciliationPreview({
                         </Badge>
                       ) : entry.status === 'file-only' && entry.isManualMatched ? (
                         <Badge className="border-blue-200 bg-blue-100 text-blue-700">매칭됨</Badge>
+                      ) : entry.needsMapping ? (
+                        <Badge className="border-orange-200 bg-orange-100 text-orange-700">
+                          매핑 필요
+                        </Badge>
                       ) : (
                         entryStatusBadge(entry.status)
                       )}
@@ -838,6 +983,17 @@ export function ReconciliationPreview({
                           상품 선택
                         </Button>
                       )}
+                      {canEdit && entry.needsMapping && entry.optionId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => openSkuLink(entry)}
+                        >
+                          <Link2 className="mr-1 h-3 w-3" />
+                          쿠팡 SKU 연결
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 )
@@ -911,6 +1067,74 @@ export function ReconciliationPreview({
             : undefined
         }
       />
+
+      {/* system-only(매핑 없음) 행 → 쿠팡 SKU 연결 */}
+      <Dialog
+        open={!!skuLinkEntry}
+        onOpenChange={(v) => {
+          if (!v && !skuLinkSaving) setSkuLinkEntry(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>쿠팡 SKU 연결</DialogTitle>
+            <DialogDescription>
+              이 상품의 쿠팡 SKU 번호를 연결하면 다음 수집부터 자동 대조 대상이 됩니다. 쿠팡 SKU
+              번호는 Wing 재고현황 엑셀의 &apos;SKU ID&apos; 열에서 확인할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="rounded-md bg-muted px-3 py-2 text-sm">
+              <p className="font-medium">{skuLinkEntry?.productName}</p>
+              <p className="text-xs text-muted-foreground">
+                {skuLinkEntry?.optionName} · 현재 재고 {skuLinkEntry?.systemQty ?? 0}
+              </p>
+            </div>
+            <Input
+              value={skuLinkCode}
+              onChange={(e) => setSkuLinkCode(e.target.value)}
+              placeholder="쿠팡 SKU 번호 (예: 1234567890)"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSkuLinkSave()
+              }}
+              autoFocus
+            />
+            {skuLinkConflict ? (
+              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                <p className="font-medium">이 SKU 는 이미 연결돼 있습니다</p>
+                <p className="mt-0.5">
+                  {skuLinkConflict.items
+                    .map((i) => `${i.option.product.name} / ${i.option.name}`)
+                    .join(', ')}
+                </p>
+                <p className="mt-1">
+                  기존 연결을 유지한 채 이 상품을 <strong>추가</strong>합니다 (세트 구성품인 경우).
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                쿠팡에 등록되지 않은 상품이라면 연결하지 말고, 재고 이동으로 다른 위치로 옮겨
+                주세요.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSkuLinkEntry(null)}
+              disabled={skuLinkSaving}
+            >
+              취소
+            </Button>
+            <Button onClick={handleSkuLinkSave} disabled={skuLinkSaving || !skuLinkCode.trim()}>
+              {skuLinkSaving && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
+              {skuLinkConflict ? '기존 연결에 추가' : '연결'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

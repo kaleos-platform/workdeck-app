@@ -6,15 +6,56 @@
 
 ```
 워커(PM2, 매일 node-cron)
-  ├─ inventory_health 수집 → InventoryRecord (수동 대조 소스로 보관)
+  ├─ inventory_health 수집 → InventoryRecord (자동/수동 대조 소스)
   └─ 판매분석 VENDOR 1일 수집 → InventoryRecord(VENDOR_ITEM_METRICS)  ※ 토글로 끌 수 있음
-       ↓ (수집 직후 워커가 x-worker-api-key 로 체이닝)
-  └─ GET /api/cron/coupang-sales-sync → 로켓 판매를 dated OUTBOUND(**재고 차감**) → 발주예측 + 재고 원장
+       ↓ (수집 직후 워커가 x-worker-api-key 로 체이닝 — 순서 고정)
+  ├─ ① GET /api/cron/coupang-sales-sync      → 로켓 판매를 dated OUTBOUND(재고 차감) → 발주예측 + 재고 원장
+  └─ ② GET /api/cron/coupang-inventory-sync  → 최신 스냅샷으로 자동 대조(절대량 set) → 재고 정합
 ```
 
-- **재고 truth = OUTBOUND 차감 + 사용자 수동 대조 보정.** 자동 대조 cron 은 제거됨.
-- 쿠팡 FC 입고(보충)는 워커가 수집하지 않으므로 재고가 하향 drift → 사용자가 수동
-  재고이동(INBOUND) 또는 수동 대조(절대값 set)로 보충. (수동 대조는 데이터 연동 버튼 그대로.)
+- **재고 truth = inventory_health 스냅샷(실측).** OUTBOUND 차감은 스냅샷 사이를 메우는 보간이다.
+- **①→② 순서가 정확성에 직결된다.** 스냅샷은 수집 시점 Wing 실재고라 어제 판매가 이미
+  반영돼 있다. 절대량 set 인 대조를 ① 앞에 적용하면 그 뒤 OUTBOUND 가 한 번 더 빠져 이중 차감.
+- 쿠팡 FC 입고(보충)는 워커가 수집하지 않아 원장만 보면 재고가 하향 drift 하지만, ② 자동 대조가
+  매일 스냅샷 절대값으로 되돌린다. (수동 '데이터 연동' 버튼도 그대로 동작.)
+
+### ② 자동 대조 반영 정책
+
+| 행 상태 | 처리 |
+| --- | --- |
+| matched-diff | 자동 반영 (ADJUSTMENT, 절대량 set) |
+| matched-equal | 무시 |
+| file-only (미매핑 외부 SKU) | 자동 반영 불가 → PARTIAL 유지 + Slack 알림. 매핑하면 다음 회차부터 자동 |
+| system-only (스냅샷에 없는 위치 재고) | **조건부 0 처리** — ① file-only 0건이고 ② 그 옵션에 외부 SKU 매핑이 있을 때만 |
+
+**매핑 없는 system-only = "쿠팡 SKU 연결 필요"**. 외부 코드가 없으니 file-only 짝도 안 생겨
+file-only 0건 검사로 걸러지지 않는다. 소진인지 미연동인지 구별 불가 → 재고를 건드리지 않고
+대조를 PARTIAL 로 남긴다. 재고 조정 화면의 `파일 누락` 필터에 **매핑 필요** 배지 + `쿠팡 SKU 연결`
+버튼이 뜨고, 상단 안내 배너와 Slack 으로도 알린다. 연결하면 다음 회차부터 자동 반영.
+쿠팡에 없는 상품이면 연결하지 말고 재고 이동으로 다른 위치로 옮기면 된다.
+
+안전장치 — 걸리면 **재고를 건드리지 않고 스킵 + Slack**:
+
+1. **스냅샷 완전성**: 최근 10건 업로드 `insertedRows` MAX 의 50% 미만이면 부분 export 의심 → 대조 생성 안 함
+2. **대량 변동**: 변동 옵션이 10건 이상이면서 30% 초과, 또는 system-only 가 10건 이상이면서 20% 초과
+   → 대조는 PENDING 으로 남겨 사람이 확인. (절대 건수 조건이 없으면 SKU 가 적은 셀러는 정상
+   변동에도 매일 걸려 자동 대조가 영영 안 돈다 — 소규모 부분 export 는 완전성 가드가 잡는다)
+3. **멱등**: 같은 `(spaceId, locationId, snapshotDate)` 가 이미 처리됐으면 skip
+   (`InvReconciliation` 에 unique 제약이 없고, 재적용 가드는 같은 `reconciliationId` 안에서만 동작한다.
+   새 레코드로 다시 confirm 하면 `referenceId` 가 달라져 그 사이 INBOUND/OUTBOUND 가 덮어써진다)
+   가드에 걸려 남긴 PENDING 도 같은 스냅샷이면 재생성하지 않는다(`skip:pending-review`) — 안 그러면 매일 쌓인다
+
+summary status 읽는 법: `ok` / `skip:already-applied`(정상 재실행) / `skip:pending-review`(사람 확인 대기)
+/ `skip:no-snapshot` / `skip:incomplete-snapshot` / `skip:large-delta` / `skip:deck-inactive` / `skip:no-workspace-link` / `error`
+
+**알림 dedupe 없음** — 미매핑 SKU 를 방치하면 매일 알림이 온다. 알림이 반복되면 원인을 없애는 게 정답이다.
+
+`vercel.json` crons 에 등록하지 않는다 — 워커가 수집에 성공했을 때만 도는 게 맞다.
+**도입 첫 실행은 누적 drift 때문에 대량 변동 가드에 걸리는 게 정상**이다. 운영자가 UI 에서
+수동 대조 1회로 baseline 을 맞춘 뒤부터 자동 반영이 정착한다.
+
+되돌리려면 `worker/src/orchestrator.ts` 의 `triggerInventoryReconciliation()` 호출 1줄만 제거하면
+된다. 잘못 반영된 재고는 `InvMovement.referenceId = <reconciliationId>` 로 추적한다.
 - 판매자배송은 제외(이미 DelBatch→OUTBOUND). 로켓 채널은 위치와 동일 externalSource 1:1 페어링.
 - VENDOR 매출(₩)·수량은 채널별 매출 현황의 로켓 채널 행에 합산(주문수 없음 → 수량 표기).
 
