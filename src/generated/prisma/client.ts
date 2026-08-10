@@ -195,6 +195,11 @@ export type AgentLog = Prisma.AgentLogModel
  */
 export type WorkerHeartbeat = Prisma.WorkerHeartbeatModel
 /**
+ * Model CronRun
+ * 
+ */
+export type CronRun = Prisma.CronRunModel
+/**
  * Model InventoryUpload
  * 
  */

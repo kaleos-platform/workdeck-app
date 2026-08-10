@@ -881,6 +881,23 @@ model WorkerHeartbeat {
   updatedAt  DateTime @updatedAt
 }
 
+// Vercel cron 실행 이력 — 스케줄러가 실제로 라우트를 호출했는지 확인하는 유일한 근거.
+// 런타임 로그는 Pro에서도 1일만 보존되고 REST API로 조회할 수 없어, cron 동작 여부를
+// 사후에 증명할 수단이 없었다. 각 cron이 무해한 no-op으로 끝나면 DB에도 흔적이 없다.
+model CronRun {
+  id         String   @id @default(cuid())
+  path       String // 예: "/api/cron/billing-charge"
+  startedAt  DateTime
+  finishedAt DateTime
+  durationMs Int
+  ok         Boolean
+  detail     Json? // 핸들러 반환 요약 (8KB 초과 시 절단)
+  error      String? // 실패 시 메시지
+
+  @@index([path, startedAt(sort: Desc)])
+  @@index([startedAt(sort: Desc)])
+}
+
 // ─── 재고 관리 ────────────────────────────────────────────────
 
 // 재고 엑셀 업로드 이력
