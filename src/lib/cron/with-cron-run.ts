@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 
 /** detail JSON 상한 — 초과하면 절단 마커로 대체 (거대 결과가 테이블을 부풀리지 않게). */
@@ -67,9 +68,11 @@ async function recordRun(args: {
   }
 }
 
-function truncateDetail(detail?: Record<string, unknown>) {
+function truncateDetail(detail?: Record<string, unknown>): Prisma.InputJsonValue | undefined {
   if (!detail) return undefined
   const json = JSON.stringify(detail)
-  if (json.length <= MAX_DETAIL_BYTES) return detail
-  return { truncated: true, bytes: json.length }
+  if (json.length > MAX_DETAIL_BYTES) return { truncated: true, bytes: json.length }
+  // Record<string, unknown>은 Prisma의 InputJsonValue와 구조적으로 호환되지 않는다
+  // (unknown이 JSON 값으로 좁혀지지 않음). 직렬화 가능함은 JSON.stringify로 이미 확인됨.
+  return JSON.parse(json) as Prisma.InputJsonValue
 }
