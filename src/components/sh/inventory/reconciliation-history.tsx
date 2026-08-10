@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Trash2 } from 'lucide-react'
 import { reconStatusBadge, type ReconStatus } from './recon-status-display'
 
 type HistoryRow = {
@@ -22,11 +22,14 @@ type Props = {
   refreshKey: number
   onSelect: (id: string) => void
   selectedId?: string | null
+  /** 열려 있던 대조가 삭제됐을 때 상세 패널을 닫기 위해 호출 */
+  onDeleted?: (id: string) => void
 }
 
-export function ReconciliationHistory({ refreshKey, onSelect, selectedId }: Props) {
+export function ReconciliationHistory({ refreshKey, onSelect, selectedId, onDeleted }: Props) {
   const [rows, setRows] = useState<HistoryRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -45,6 +48,28 @@ export function ReconciliationHistory({ refreshKey, onSelect, selectedId }: Prop
   useEffect(() => {
     load()
   }, [load, refreshKey])
+
+  async function handleDelete(row: HistoryRow) {
+    const lines = ['이 대조 기록을 삭제할까요?']
+    if (row.adjustedItems > 0) {
+      lines.push(`이미 반영된 재고 조정 ${row.adjustedItems}건은 되돌아가지 않습니다.`)
+    }
+    if (!confirm(lines.join('\n'))) return
+
+    setDeletingId(row.id)
+    try {
+      const res = await fetch(`/api/sh/inventory/reconciliation/${row.id}`, { method: 'DELETE' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.message ?? '삭제 실패')
+      toast.success('삭제되었습니다')
+      onDeleted?.(row.id)
+      await load()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '삭제 실패')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -66,11 +91,19 @@ export function ReconciliationHistory({ refreshKey, onSelect, selectedId }: Prop
     <div className="space-y-1">
       <p className="px-1 pb-2 text-xs font-medium text-muted-foreground">파일 내역</p>
       {rows.map((r) => (
-        <button
+        // 삭제 버튼이 안에 들어가므로 button 중첩을 피해 div + role 로 둔다.
+        <div
           key={r.id}
-          type="button"
+          role="button"
+          tabIndex={0}
           onClick={() => onSelect(r.id)}
-          className={`w-full rounded-md border px-3 py-2.5 text-left transition-colors hover:bg-accent ${
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              onSelect(r.id)
+            }
+          }}
+          className={`group w-full cursor-pointer rounded-md border px-3 py-2.5 text-left transition-colors hover:bg-accent ${
             selectedId === r.id ? 'border-primary/30 bg-accent' : 'border-transparent'
           }`}
         >
@@ -84,9 +117,30 @@ export function ReconciliationHistory({ refreshKey, onSelect, selectedId }: Prop
                 총 {r.totalItems} / 매칭 {r.matchedItems} / 조정 {r.adjustedItems}
               </p>
             </div>
-            <div className="shrink-0">{reconStatusBadge(r.status)}</div>
+            <div className="flex shrink-0 items-center gap-1">
+              {reconStatusBadge(r.status)}
+              {/* 확정된 대조는 감사 기록이므로 삭제 불가 */}
+              {r.status !== 'CONFIRMED' && (
+                <button
+                  type="button"
+                  aria-label="삭제"
+                  disabled={deletingId === r.id}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    void handleDelete(r)
+                  }}
+                  className="rounded p-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive focus:opacity-100"
+                >
+                  {deletingId === r.id ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
-        </button>
+        </div>
       ))}
     </div>
   )

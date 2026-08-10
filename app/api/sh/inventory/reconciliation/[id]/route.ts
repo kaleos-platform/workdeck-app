@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import {
-  confirmReconciliation,
-  findMappedSystemOnlyKeys,
-} from '@/lib/inv/reconciliation-processor'
+import { confirmReconciliation, findMappedSystemOnlyKeys } from '@/lib/inv/reconciliation-processor'
 import { MovementError } from '@/lib/inv/movement-processor'
-import type { MatchEntry, FileOnlyEntry } from '@/lib/inv/reconciliation-matcher'
+import type { MatchEntry } from '@/lib/inv/reconciliation-matcher'
+import { resolveFileOnlyEntries } from '@/lib/inv/reconciliation-resolve'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -136,118 +134,10 @@ async function attachMappingInfo(
   })
 }
 
-/**
- * file-only 항목 중 InvLocationProductMap에 매핑이 생긴 것을
- * 현재 InvStockLevel 기준으로 N entries (matched-equal/matched-diff)로 변환한다.
- * items 수만큼 entry 분리. 매핑이 없는 file-only는 그대로 유지.
- */
-async function resolveFileOnlyEntries(
-  entries: MatchEntry[],
-  reconLocationId: string
-): Promise<MatchEntry[]> {
-  const fileOnlyEntries = entries.filter((e): e is FileOnlyEntry => e.status === 'file-only')
-  if (fileOnlyEntries.length === 0) return entries
-
-  // (locationId, externalCode) 페어 수집
-  const codesByLoc = new Map<string, Set<string>>()
-  for (const e of fileOnlyEntries) {
-    if (!e.row.externalCode) continue
-    const locId = e.locationId ?? reconLocationId
-    const s = codesByLoc.get(locId) ?? new Set()
-    s.add(e.row.externalCode)
-    codesByLoc.set(locId, s)
-  }
-  if (codesByLoc.size === 0) return entries
-
-  type MappingFull = {
-    items: {
-      optionId: string
-      quantity: number
-      option: { name: string; product: { name: string } }
-    }[]
-  }
-  const mappingByKey = new Map<string, MappingFull>() // `${locId}|${code}`
-  const stockByKey = new Map<string, number>() // `${locId}|${optionId}`
-
-  for (const [locId, codeSet] of codesByLoc) {
-    const mappings = await prisma.invLocationProductMap.findMany({
-      where: { locationId: locId, externalCode: { in: Array.from(codeSet) } },
-      include: {
-        items: {
-          include: {
-            option: { include: { product: { select: { name: true } } } },
-          },
-        },
-      },
-    })
-    for (const m of mappings) {
-      mappingByKey.set(`${locId}|${m.externalCode}`, { items: m.items })
-    }
-    const optionIds = mappings.flatMap((m) => m.items.map((i) => i.optionId))
-    if (optionIds.length === 0) continue
-    const stocks = await prisma.invStockLevel.findMany({
-      where: { locationId: locId, optionId: { in: optionIds } },
-    })
-    for (const s of stocks) stockByKey.set(`${locId}|${s.optionId}`, s.quantity)
-  }
-
-  const result: MatchEntry[] = []
-  for (const entry of entries) {
-    if (entry.status !== 'file-only') {
-      result.push(entry)
-      continue
-    }
-    const locId = entry.locationId ?? reconLocationId
-    if (!entry.row.externalCode) {
-      result.push(entry)
-      continue
-    }
-    const mapping = mappingByKey.get(`${locId}|${entry.row.externalCode}`)
-    if (!mapping || mapping.items.length === 0) {
-      result.push(entry)
-      continue
-    }
-
-    for (const item of mapping.items) {
-      const systemQty = stockByKey.get(`${locId}|${item.optionId}`) ?? 0
-      const fileQty = entry.row.quantity * item.quantity
-
-      if (fileQty === systemQty) {
-        result.push({
-          status: 'matched-equal' as const,
-          row: entry.row,
-          optionId: item.optionId,
-          locationId: locId,
-          productName: item.option.product.name,
-          optionName: item.option.name,
-          mapItemQuantity: item.quantity,
-          systemQuantity: systemQty,
-          fileQuantity: fileQty,
-        })
-      } else {
-        result.push({
-          status: 'matched-diff' as const,
-          row: entry.row,
-          optionId: item.optionId,
-          locationId: locId,
-          productName: item.option.product.name,
-          optionName: item.option.name,
-          mapItemQuantity: item.quantity,
-          systemQuantity: systemQty,
-          fileQuantity: fileQty,
-          delta: fileQty - systemQty,
-        })
-      }
-    }
-  }
-
-  return result
-}
-
 // POST /api/sh/inventory/reconciliation/[id]
-// { action: 'confirm', selectedOptionIds: string[], manualMappings: [{externalCode, items:[{optionId,quantity}]}] }
-// { action: 'finalize' }
-// { action: 'cancel' }
+// { action: 'confirm', manualMappings: [{externalCode, items:[{optionId,quantity}]}] }
+//   — 수동 "확정". 차이 전량을 재고에 반영하고 CONFIRMED 로 잠근다.
+//     (부분 적용 + PARTIAL/APPLIED 상태 머신은 자동 대조 cron 전용으로, processor 를 직접 호출한다)
 // { action: 'map', externalCode: string, items: [{optionId: string, quantity?: number}] }
 export async function POST(req: NextRequest, ctx: RouteContext) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -262,7 +152,6 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
   const body = (await req.json().catch(() => ({}))) as {
     action?: string
-    selectedOptionIds?: string[]
     manualMappings?: { externalCode: string; items: { optionId: string; quantity?: number }[] }[]
     externalCode?: string
     items?: { optionId: string; quantity?: number }[]
@@ -272,7 +161,8 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
   if (body.action === 'confirm') {
     try {
       const result = await confirmReconciliation(resolved.space.id, id, {
-        selectedOptionIds: body.selectedOptionIds ?? [],
+        selectedOptionIds: [],
+        finalize: true,
         manualMappings: (body.manualMappings ?? []).map((mm) => ({
           externalCode: mm.externalCode,
           items: (mm.items ?? []).map((i) => ({
@@ -291,32 +181,11 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     }
   }
 
-  if (body.action === 'finalize') {
-    if (recon.status !== 'APPLIED') {
-      return errorResponse('모든 항목이 적용된 상태(APPLIED)에서만 확정할 수 있습니다', 400)
-    }
-    await prisma.invReconciliation.update({
-      where: { id },
-      data: { status: 'CONFIRMED', confirmedAt: new Date() },
-    })
-    return NextResponse.json({ success: true, status: 'CONFIRMED' })
-  }
-
-  if (body.action === 'cancel') {
-    if (!['PENDING', 'PARTIAL'].includes(recon.status)) {
-      return errorResponse(
-        '대기 중(PENDING) 또는 부분 적용(PARTIAL) 상태에서만 취소할 수 있습니다',
-        400
-      )
-    }
-    await prisma.invReconciliation.update({
-      where: { id },
-      data: { status: 'CANCELLED' },
-    })
-    return NextResponse.json({ success: true })
-  }
-
   if (body.action === 'map') {
+    // 확정된 대조는 읽기 전용 — 매칭을 바꿔도 재고에 반영할 경로가 없어 화면만 어긋난다.
+    if (recon.status === 'CONFIRMED') {
+      return errorResponse('확정된 대조는 수정할 수 없습니다', 400)
+    }
     const externalCode = body.externalCode?.trim()
     if (!externalCode) return errorResponse('externalCode가 필요합니다', 400)
 
@@ -413,14 +282,27 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
   const { id } = await ctx.params
   const recon = await prisma.invReconciliation.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true, status: true },
+    select: { id: true, status: true, adjustedItems: true },
   })
   if (!recon) return errorResponse('대조 기록을 찾을 수 없습니다', 404)
 
-  if (['APPLIED', 'CONFIRMED'].includes(recon.status)) {
-    return errorResponse('적용 완료 또는 확정된 대조는 삭제할 수 없습니다', 400)
+  if (recon.status === 'CONFIRMED') {
+    return errorResponse('확정된 대조는 삭제할 수 없습니다', 400)
+  }
+
+  // 적용 이력이 있으면 물리 삭제하면 안 된다.
+  // 자동 대조 cron 의 멱등 마커는 (spaceId, locationId, snapshotDate) 로 기존 대조를 찾는데,
+  // 레코드가 사라지면 같은 스냅샷으로 새 대조를 만들어 confirm 한다. referenceId 가 달라
+  // 재적용 가드(preApplied)가 비어 있어, 그 사이의 INBOUND/OUTBOUND 가 스냅샷 수량으로
+  // 조용히 덮어써진다. → CANCELLED 로 남겨 마커 역할을 유지한다(목록에서는 숨김).
+  if (recon.adjustedItems > 0) {
+    await prisma.invReconciliation.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+    })
+    return NextResponse.json({ success: true, softDeleted: true })
   }
 
   await prisma.invReconciliation.delete({ where: { id } })
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true, softDeleted: false })
 }
