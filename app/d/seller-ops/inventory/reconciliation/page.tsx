@@ -49,6 +49,7 @@ export default function ReconciliationPage() {
             refreshKey={refreshKey}
             onSelect={setPreviewId}
             selectedId={previewId}
+            onDeleted={(id) => setPreviewId((cur) => (cur === id ? null : cur))}
           />
         </div>
         <div className="min-w-0 flex-1">

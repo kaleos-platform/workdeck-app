@@ -16,15 +16,22 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(searchParams.get('page') ?? 1))
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)))
 
+  // CANCELLED 는 사용자가 삭제한 대조 — 자동 대조 cron 의 스냅샷 마커로만 남겨두고
+  // 목록에서는 숨긴다(삭제한 것처럼 보여야 한다).
+  const listWhere = {
+    spaceId: resolved.space.id,
+    status: { not: 'CANCELLED' as const },
+  }
+
   const [data, total] = await Promise.all([
     prisma.invReconciliation.findMany({
-      where: { spaceId: resolved.space.id },
+      where: listWhere,
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: { location: { select: { id: true, name: true } } },
     }),
-    prisma.invReconciliation.count({ where: { spaceId: resolved.space.id } }),
+    prisma.invReconciliation.count({ where: listWhere }),
   ])
 
   // matchResults 는 목록에서는 제외 (용량 큼)
