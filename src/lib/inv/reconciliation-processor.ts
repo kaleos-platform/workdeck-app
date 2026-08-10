@@ -11,6 +11,15 @@ export type ManualMappingItem = {
 export type ConfirmOptions = {
   selectedOptionIds: string[]
   manualMappings: { externalCode: string; items: ManualMappingItem[] }[]
+  /**
+   * system-only(외부 스냅샷에 없는데 해당 위치에 재고가 남은 옵션)를 0 으로 내린다.
+   *
+   * 기본 false — 수동 대조는 기존 동작(무시)을 유지한다. 자동 대조 cron 만 켠다.
+   * 켤 때 호출측 책임: 스냅샷 완전성 확인 + file-only(미매핑) 0건 확인.
+   * 미매핑 외부 SKU 가 남아 있으면 "스냅샷에 없음"이 실제 0 이 아니라 매핑 누락일 수
+   * 있어, 살아있는 재고를 0 으로 죽인다.
+   */
+  includeSystemOnly?: boolean
 }
 
 export type ConfirmResult = {
@@ -18,6 +27,40 @@ export type ConfirmResult = {
   status: string
   /** best-effort 루프에서 실패한 항목 목록. 성공 시 undefined 또는 빈 배열. */
   failed?: { optionId: string; locationId: string; reason: string }[]
+  /**
+   * includeSystemOnly 를 켰지만 매핑이 없어 0 처리하지 않은 건수.
+   * 사용자에게 "쿠팡 SKU 연결이 필요하다"고 안내할 대상.
+   */
+  unmappedSystemOnly?: number
+}
+
+/**
+ * system-only 엔트리 중 InvLocationProductMap 매핑이 있는 것의 키(`${locationId}|${optionId}`)를 모은다.
+ *
+ * 매핑이 없는 system-only 는 "쿠팡에서 소진됨"인지 "애초에 연동 안 된 옵션"인지 구별할 수 없다.
+ * (외부 코드가 없으니 file-only 짝도 생기지 않아 file-only 0건 검사로도 걸러지지 않는다.)
+ * → 자동 0 처리 대상에서 제외하고 사용자에게 매핑을 요구한다.
+ */
+export async function findMappedSystemOnlyKeys(
+  entries: MatchEntry[],
+  reconLocationId: string
+): Promise<Set<string>> {
+  const systemOnly = entries.filter(
+    (e): e is Extract<MatchEntry, { status: 'system-only' }> => e.status === 'system-only'
+  )
+  if (systemOnly.length === 0) return new Set()
+
+  const optionIds = Array.from(new Set(systemOnly.map((e) => e.optionId)))
+  const locationIds = Array.from(
+    new Set(systemOnly.map((e) => e.locationId ?? reconLocationId))
+  )
+
+  const items = await prisma.invLocationProductMapItem.findMany({
+    where: { optionId: { in: optionIds }, map: { locationId: { in: locationIds } } },
+    select: { optionId: true, map: { select: { locationId: true } } },
+  })
+
+  return new Set(items.map((i) => `${i.map.locationId}|${i.optionId}`))
 }
 
 /**
@@ -26,16 +69,25 @@ export type ConfirmResult = {
  */
 async function calcApplicableCount(
   entries: MatchEntry[],
-  reconLocationId: string
+  reconLocationId: string,
+  includeSystemOnly = false
 ): Promise<number> {
   // matched-diff 항목 수
   const matchedDiffCount = entries.filter((e) => e.status === 'matched-diff').length
+
+  // system-only 0 반영을 켰으면 그 건수도 분모에 포함 — 빠뜨리면 APPLIED/PARTIAL 판정이
+  // 틀린 총계로 계산돼 이미 다 적용된 대조가 영영 PARTIAL 로 남는다.
+  // 매핑 없는 건은 적용되지 않지만 분모에는 남긴다(file-only 미매핑과 동일) — PARTIAL 로
+  // 유지돼 "매핑 필요"가 목록에서 표면화된다.
+  const systemOnlyCount = includeSystemOnly
+    ? entries.filter((e) => e.status === 'system-only').length
+    : 0
 
   // file-only 전체 + 매핑 여부 분류 — 위치별 그룹핑(멀티 location 대응)
   const fileOnlyEntries = entries.filter(
     (e): e is Extract<MatchEntry, { status: 'file-only' }> => e.status === 'file-only'
   )
-  if (fileOnlyEntries.length === 0) return matchedDiffCount
+  if (fileOnlyEntries.length === 0) return matchedDiffCount + systemOnlyCount
 
   // locationId별로 externalCode 그룹핑
   const codesByLocId = new Map<string, string[]>()
@@ -69,7 +121,7 @@ async function calcApplicableCount(
     return !mappedKeys.has(`${locId}|${code}`)
   }).length
 
-  return matchedDiffCount + mappedFileOnlyCount + unmappedFileOnlyCount
+  return matchedDiffCount + systemOnlyCount + mappedFileOnlyCount + unmappedFileOnlyCount
 }
 
 export async function confirmReconciliation(
@@ -196,7 +248,36 @@ export async function confirmReconciliation(
     })
   }
 
-  const all = [...diffAdjustments, ...extraAdjustments]
+  // 2.5) system-only → 0 반영 (옵션. 자동 대조 cron 전용)
+  //  외부 스냅샷이 authoritative 라는 전제에서만 성립한다. 미매핑(file-only) 이 있으면
+  //  "스냅샷에 없음"이 매핑 누락일 수 있으므로 호출측이 켜지 않아야 한다.
+  const systemOnlyAdjustments: { optionId: string; locationId: string; fileQuantity: number }[] = []
+  let unmappedSystemOnlyCount = 0
+  if (options.includeSystemOnly) {
+    // 같은 (location, option) 이 앞 단계에서 이미 수량 조정 대상이면 0 으로 덮지 않는다.
+    // (사후 수동 매핑으로 file-only 가 system-only 와 같은 옵션을 가리키게 된 경우)
+    const alreadyTargeted = new Set(
+      [...diffAdjustments, ...extraAdjustments].map((a) => `${a.locationId}|${a.optionId}`)
+    )
+    // 매핑 있는 것만 0 처리 — 매핑 없는 건 소진인지 미연동인지 알 수 없다.
+    const mappedKeys = await findMappedSystemOnlyKeys(entries, reconLocationId)
+    for (const e of entries) {
+      if (e.status !== 'system-only') continue
+      const locId = e.locationId ?? reconLocationId
+      const key = `${locId}|${e.optionId}`
+      if (alreadyTargeted.has(key)) continue
+      if (!mappedKeys.has(key)) {
+        unmappedSystemOnlyCount += 1
+        continue
+      }
+      systemOnlyAdjustments.push({ optionId: e.optionId, locationId: locId, fileQuantity: 0 })
+    }
+  }
+
+  const all = [...diffAdjustments, ...extraAdjustments, ...systemOnlyAdjustments]
+  const systemOnlyKeys = new Set(
+    systemOnlyAdjustments.map((a) => `${a.locationId}|${a.optionId}`)
+  )
   const movementDate = snapshotDate.toISOString()
   const snapshotStr = snapshotDate.toISOString().slice(0, 10)
 
@@ -226,7 +307,9 @@ export async function confirmReconciliation(
         locationId: adj.locationId,
         quantity: adj.fileQuantity,
         movementDate,
-        reason: `파일 대조 조정 (${snapshotStr} 기준, 파일: ${fileName})`,
+        reason: systemOnlyKeys.has(`${adj.locationId}|${adj.optionId}`)
+          ? `파일 대조 조정 — 외부 스냅샷 미존재로 0 처리 (${snapshotStr} 기준, 파일: ${fileName})`
+          : `파일 대조 조정 (${snapshotStr} 기준, 파일: ${fileName})`,
         referenceId: reconciliationId,
       })
     } catch (err) {
@@ -249,7 +332,11 @@ export async function confirmReconciliation(
   const cumulativeApplied = appliedKeys.size
 
   // 4) 적용 가능 총수 산출
-  const applicableTotal = await calcApplicableCount(entries, reconLocationId)
+  const applicableTotal = await calcApplicableCount(
+    entries,
+    reconLocationId,
+    options.includeSystemOnly
+  )
 
   // 5) 상태 결정: 한 번이라도 confirm 호출 → 최소 PARTIAL
   //    누적 적용 == 적용 가능 총수이면 APPLIED
@@ -268,5 +355,6 @@ export async function confirmReconciliation(
     adjustedCount: cumulativeApplied,
     status: newStatus,
     ...(failed.length ? { failed } : {}),
+    ...(unmappedSystemOnlyCount > 0 ? { unmappedSystemOnly: unmappedSystemOnlyCount } : {}),
   }
 }

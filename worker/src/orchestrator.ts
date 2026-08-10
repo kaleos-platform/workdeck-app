@@ -424,7 +424,6 @@ async function executeCollectionPipeline(
     // collectInventory 블록 내부이므로 광고만 수집(collectInventory=false)하면 스킵된다 —
     // 신규 VENDOR 스냅샷이 없어 변환할 대상이 없으므로 정당(기존 "항상 호출"은 재고를 늘 수집했기 때문).
     // 수집 직후 호출해야 정확(VENDOR 스냅샷이 방금 적재됨).
-    // 자동 재고 대조(inventory-sync)는 제거됨 — 재고 truth = OUTBOUND 차감 + 사용자 수동 대조.
     // VENDOR 수집을 한 경우에만 판매 알림(변환 트리거는 전 Space 대상이라 항상 호출).
     // cron 일일 수집 = 어제 1일치 VENDOR.
     const salesDateKst = new Date(Date.now() + 9 * 3600 * 1000 - 86400 * 1000)
@@ -437,6 +436,15 @@ async function executeCollectionPipeline(
       isManual,
       credential.workspaceId
     ).catch((err) => console.error('[orchestrator] seller-ops 동기화 트리거 실패:', err))
+
+    // ── Step 12.2: 자동 재고 대조 — 로켓그로스 재고를 스냅샷 기준으로 정합 ──
+    // 반드시 Step 12(판매 OUTBOUND 변환) **뒤에** 호출한다. 스냅샷은 수집 시점의 Wing
+    // 실재고라 어제 판매가 이미 반영돼 있다. 절대량 set 인 대조를 앞에 적용하면 그 뒤
+    // OUTBOUND 가 한 번 더 빠져 이중 차감된다.
+    // sales-sync 가 실패해도 시도한다 — 절대량 set 이라 OUTBOUND 누락과 무관하게 재고는 맞는다.
+    await triggerInventoryReconciliation().catch((err) =>
+      console.error('[orchestrator] 자동 재고 대조 트리거 실패:', err)
+    )
 
     // ── Step 12.5: 판매(VENDOR) 수집 실패 Slack 알림 ──
     // 이번 run 에서 실패한 일자를 모아 1건으로 발송(재시도 도배 방지). 실패 일자가 없으면 발송 안 함.
@@ -536,6 +544,39 @@ async function triggerSellerOpsSync(
     }).catch((err: unknown) => console.error('[slack] 판매 알림 전송 실패:', err))
   } catch (err) {
     console.error('[orchestrator] 쿠팡 판매 변환 트리거 실패:', err)
+  }
+}
+
+/**
+ * 자동 재고 대조 트리거 — 최신 로켓그로스 재고 스냅샷을 InvStockLevel 에 반영한다.
+ * 전 Space 를 쓸어 처리하므로 workspaceId 불필요. 스킵/이상 알림은 API 측에서 발송한다.
+ */
+async function triggerInventoryReconciliation(): Promise<void> {
+  const baseUrl = process.env.WORKDECK_API_URL?.replace(/\/$/, '')
+  const apiKey = process.env.WORKER_API_KEY
+  if (!baseUrl || !apiKey) return
+
+  try {
+    const r = await fetch(`${baseUrl}/api/cron/coupang-inventory-sync`, {
+      headers: { 'x-worker-api-key': apiKey },
+    })
+    console.log(`[orchestrator] 자동 재고 대조 트리거: ${r.status}`)
+    if (!r.ok) return
+
+    const data = (await r.json().catch(() => null)) as {
+      spaces?: Array<{ spaceId: string; status: string; adjusted?: number; zeroed?: number }>
+    } | null
+    for (const s of data?.spaces ?? []) {
+      if (s.status === 'ok') {
+        console.log(
+          `[orchestrator] 재고 대조 ${s.spaceId}: 조정 ${s.adjusted ?? 0}건, 0처리 ${s.zeroed ?? 0}건`
+        )
+      } else if (s.status !== 'skip:already-applied') {
+        console.warn(`[orchestrator] 재고 대조 ${s.spaceId}: ${s.status}`)
+      }
+    }
+  } catch (err) {
+    console.error('[orchestrator] 자동 재고 대조 트리거 실패:', err)
   }
 }
 
