@@ -635,32 +635,46 @@ export function ReconciliationPreview({
           해당 상태의 항목이 없습니다
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-md border">
-          <Table>
-            <TableHeader>
+        // Table 프리미티브가 자체 overflow-x-auto 래퍼를 가지므로 여기서 또 감싸지 않는다.
+        // table-fixed 로 고정폭을 강제해야 긴 한글 상품명이 컬럼을 밀어내지 않는다.
+        <div className="rounded-md border">
+          <Table className="table-fixed">
+            {/* table-fixed 는 첫 행으로 폭을 정하는데 1단이 colSpan 그룹 헤더라 개별 폭을
+                줄 수 없다. colgroup 으로 못박아야 숫자 컬럼이 균등 분배되지 않는다.
+                폭 없는 2개(상품·옵션)가 남는 공간을 나눠 갖는다. */}
+            <colgroup>
+              <col className="w-[76px]" />
+              <col />
+              <col className="w-[56px]" />
+              <col />
+              <col className="w-[68px]" />
+              <col className="w-[64px]" />
+              {/* [상품 선택] 아이콘+텍스트가 가장 넓다. 좁히면 셀을 밀고 나가 표가 넘친다. */}
+              <col className="w-[108px]" />
+            </colgroup>
+            <TableHeader className="sticky top-0 z-10 bg-background shadow-sm">
               {/* 1단: 기준 그룹 — 어느 값이 파일에서 왔는지 라벨로 못박는다 */}
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-20" />
-                <TableHead colSpan={4} className="border-l bg-muted/40 text-center text-xs">
+                <TableHead />
+                <TableHead colSpan={2} className="border-l bg-muted/40 text-center text-xs">
                   파일 데이터
                 </TableHead>
-                <TableHead colSpan={3} className="border-l text-center text-xs">
+                <TableHead colSpan={2} className="border-l text-center text-xs">
                   시스템 상품
                 </TableHead>
-                <TableHead className="w-12 border-l" />
-                <TableHead className="w-20" />
+                <TableHead className="border-l" />
+                <TableHead />
               </TableRow>
               <TableRow>
-                <TableHead className="w-20">상태</TableHead>
-                <TableHead className="w-24 border-l bg-muted/40">SKU</TableHead>
-                <TableHead className="min-w-[8rem] bg-muted/40">상품명</TableHead>
-                <TableHead className="w-24 bg-muted/40">옵션명</TableHead>
-                <TableHead className="w-12 bg-muted/40 text-right">수량</TableHead>
-                <TableHead className="min-w-[7rem] border-l">상품</TableHead>
-                <TableHead className="min-w-[8rem]">옵션</TableHead>
-                <TableHead className="w-14 text-right">현재 재고</TableHead>
-                <TableHead className="w-12 border-l text-right">차이</TableHead>
-                <TableHead className="w-20 whitespace-nowrap">동작</TableHead>
+                <TableHead>상태</TableHead>
+                {/* 상품명·옵션명·SKU 를 한 셀에 쌓는다. 파일/시스템 상품명이 거의 같은 문자열이라
+                    각각 컬럼을 주면 폭만 먹고 정보는 늘지 않았다. */}
+                <TableHead className="border-l bg-muted/40">상품 · 옵션</TableHead>
+                <TableHead className="bg-muted/40 text-right">수량</TableHead>
+                <TableHead className="border-l">상품 · 옵션</TableHead>
+                <TableHead className="text-right">현재고</TableHead>
+                <TableHead className="border-l text-right">차이</TableHead>
+                <TableHead className="whitespace-nowrap">동작</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -688,73 +702,78 @@ export function ReconciliationPreview({
                       )}
                     </TableCell>
 
-                    {/* ── 파일 데이터 ── */}
-                    <TableCell className={`border-l font-mono text-xs ${fileCellClass}`}>
-                      {entry.fileCode}
+                    {/* ── 파일 데이터 ── 상품명(1행) / 옵션명 · SKU(2행) */}
+                    <TableCell className={`border-l ${fileCellClass}`}>
+                      <div className="truncate font-medium" title={entry.fileProductName}>
+                        {entry.fileProductName}
+                      </div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {entry.fileOptionName}
+                        <span className="ml-1.5 font-mono opacity-70">{entry.fileCode}</span>
+                      </div>
                     </TableCell>
-                    <TableCell className={`font-medium ${fileCellClass}`}>
-                      {entry.fileProductName}
-                    </TableCell>
-                    <TableCell className={fileCellClass}>{entry.fileOptionName}</TableCell>
-                    <TableCell className={`text-right font-semibold ${fileCellClass}`}>
+                    <TableCell className={`text-right font-semibold tabular-nums ${fileCellClass}`}>
                       {entry.fileRowQty}
                     </TableCell>
 
                     {/* ── 시스템 상품 ── */}
                     <TableCell className="border-l">
-                      {entry.sysProductName ?? <span className="text-muted-foreground/50">—</span>}
-                    </TableCell>
-                    <TableCell>
-                      {entry.sysOptionName === null ? (
+                      {entry.sysProductName === null ? (
                         <span className="text-muted-foreground/50">—</span>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">
-                            {entry.sysOptionName}
-                            {/* 세트 수량 비율이 1 초과면 목표 수량이 파일 수량과 다르다 */}
-                            {entry.mapItemQuantity !== undefined && entry.mapItemQuantity > 1 && (
-                              <span className="ml-1 text-xs text-muted-foreground/70">
-                                × {entry.mapItemQuantity} = {entry.targetQty}
+                        <>
+                          <div className="truncate font-medium" title={entry.sysProductName}>
+                            {entry.sysProductName}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <span className="truncate">
+                              {entry.sysOptionName}
+                              {/* 세트 수량 비율이 1 초과면 목표 수량이 파일 수량과 다르다 */}
+                              {entry.mapItemQuantity !== undefined && entry.mapItemQuantity > 1 && (
+                                <span className="ml-1 opacity-70">
+                                  × {entry.mapItemQuantity} = {entry.targetQty}
+                                </span>
+                              )}
+                            </span>
+                            {canEdit && isMapped && (
+                              <span className="flex shrink-0 items-center gap-0.5">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-5 px-1 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
+                                  onClick={() => openPicker(entry)}
+                                >
+                                  수정
+                                </Button>
+                                <span className="text-muted-foreground/40">·</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-5 px-1 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-destructive"
+                                  onClick={() => removeMapping(entry.fileCode)}
+                                >
+                                  취소
+                                </Button>
                               </span>
                             )}
-                          </span>
-                          {canEdit && isMapped && (
-                            <div className="flex shrink-0 items-center gap-0.5">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 px-1.5 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
-                                onClick={() => openPicker(entry)}
-                              >
-                                수정
-                              </Button>
-                              <span className="text-muted-foreground/40">·</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 px-1.5 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-destructive"
-                                onClick={() => removeMapping(entry.fileCode)}
-                              >
-                                취소
-                              </Button>
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        </>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right tabular-nums">
                       {entry.systemQty !== null ? entry.systemQty : '-'}
                     </TableCell>
 
+                    {/* 차이 = 이 화면의 핵심 신호. 0 은 눌러서 시선이 0 아닌 값에 가게 한다. */}
                     <TableCell
-                      className={`border-l text-right font-mono ${
-                        entry.delta !== null
-                          ? entry.delta > 0
-                            ? 'text-emerald-600'
+                      className={`border-l text-right font-mono tabular-nums ${
+                        entry.delta === null
+                          ? ''
+                          : entry.delta > 0
+                            ? 'font-semibold text-emerald-600'
                             : entry.delta < 0
-                              ? 'text-red-600'
-                              : ''
-                          : ''
+                              ? 'font-semibold text-red-600'
+                              : 'text-muted-foreground/60'
                       }`}
                     >
                       {entry.delta !== null ? `${entry.delta > 0 ? '+' : ''}${entry.delta}` : '-'}
