@@ -89,7 +89,6 @@ export function ReconciliationHistory({ refreshKey, onSelect, selectedId, onDele
 
   return (
     <div className="space-y-1">
-      <p className="px-1 pb-2 text-xs font-medium text-muted-foreground">파일 내역</p>
       {rows.map((r) => (
         // 삭제 버튼이 안에 들어가므로 button 중첩을 피해 div + role 로 둔다.
         <div

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   ReconciliationFileUploadButton,
   ReconciliationIntegrationButton,
@@ -11,6 +13,7 @@ import { ReconciliationPreview } from '@/components/sh/inventory/reconciliation-
 export default function ReconciliationPage() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [previewId, setPreviewId] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   function handleUploaded(id: string) {
     setRefreshKey((k) => k + 1)
@@ -44,14 +47,44 @@ export default function ReconciliationPage() {
       </div>
 
       <div className="flex gap-4">
-        <div className="w-64 shrink-0">
-          <ReconciliationHistory
-            refreshKey={refreshKey}
-            onSelect={setPreviewId}
-            selectedId={previewId}
-            onDeleted={(id) => setPreviewId((cur) => (cur === id ? null : cur))}
-          />
-        </div>
+        {/* 대조 테이블이 컬럼 수가 많아 가로 폭이 빠듯하다. 파일을 고른 뒤에는 목록이
+            보조 정보이므로 접어서 테이블에 폭을 넘길 수 있게 한다. */}
+        {sidebarOpen ? (
+          <div className="w-64 shrink-0">
+            <div className="flex items-center justify-between pb-1">
+              <span className="px-1 text-xs font-medium text-muted-foreground">파일 내역</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-muted-foreground"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="파일 내역 접기"
+                title="파일 내역 접기"
+              >
+                <PanelLeftClose className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <ReconciliationHistory
+              refreshKey={refreshKey}
+              onSelect={setPreviewId}
+              selectedId={previewId}
+              onDeleted={(id) => setPreviewId((cur) => (cur === id ? null : cur))}
+            />
+          </div>
+        ) : (
+          <div className="shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="파일 내역 펼치기"
+              title="파일 내역 펼치기"
+            >
+              <PanelLeftOpen className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           {previewId ? (
             <ReconciliationPreview
