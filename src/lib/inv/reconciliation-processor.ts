@@ -2,7 +2,7 @@
 import { prisma } from '@/lib/prisma'
 import { processMovement, MovementError } from './movement-processor'
 import type { MatchEntry } from './reconciliation-matcher'
-import { resolveFileOnlyEntries } from './reconciliation-resolve'
+import { refreshMatchedQuantities, resolveFileOnlyEntries } from './reconciliation-resolve'
 
 export type ManualMappingItem = {
   optionId: string
@@ -170,7 +170,17 @@ export async function confirmReconciliation(
   // 수동 확정은 "지금까지 매칭된 것 전부"를 반영해야 한다. matchResults 는 매칭 당시의
   // 스냅샷이라, 그 뒤 [상품 선택]/[쿠팡 SKU 연결]로 생긴 매핑이 file-only 로 남아 있다.
   // 상세 GET 과 같은 규칙으로 풀어주지 않으면 화면엔 매칭으로 보이는데 확정은 건너뛴다.
-  const entries = finalize ? await resolveFileOnlyEntries(rawEntries, reconLocationId) : rawEntries
+  // 확정 경로는 상세 GET 과 완전히 같은 규칙으로 entries 를 만든다 — 화면에 보이는 것과
+  // 실제 적용 대상이 어긋나면 사용자가 잘못된 근거로 확정하게 된다.
+  //   1) 저장 이후 생긴 매핑으로 file-only 를 풀고
+  //   2) matched-* 의 현재 재고를 반영해 재분류한다(목표=fileQuantity 대비 현재 재고 비교).
+  // cron(부분 적용) 경로는 둘 다 타지 않는다 — 기존 계약 그대로.
+  const entries = finalize
+    ? await refreshMatchedQuantities(
+        await resolveFileOnlyEntries(rawEntries, reconLocationId),
+        reconLocationId
+      )
+    : rawEntries
 
   // 1) 수동 매핑 upsert + 해당 file-only 항목을 adjustment 후보로 변환
   const extraAdjustments: {
