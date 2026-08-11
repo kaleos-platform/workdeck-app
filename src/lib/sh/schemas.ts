@@ -23,20 +23,25 @@ export type BrandInput = z.infer<typeof brandSchema>
 
 export const productOptionSchema = z.object({
   name: z.string().min(1).max(200),
+  // null/'' 은 명시적 clear 신호로 null 저장, undefined 는 필드 skip.
+  // (undefined 로 접으면 라우트의 `?? null` 분기에 도달하지 못해 값을 비울 수 없다)
   sku: z
-    .preprocess((v) => (v === null || v === '' ? undefined : v), z.string().max(100))
+    .preprocess(
+      (v) => (v === undefined ? undefined : v === null || v === '' ? null : v),
+      z.string().max(100).nullable()
+    )
     .optional(),
   costPrice: z
     .preprocess(
-      (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
-      z.number().nonnegative()
+      (v) => (v === undefined ? undefined : v === null || v === '' ? null : Number(v)),
+      z.number().nonnegative().nullable()
     )
     .optional(),
   costVatIncluded: z.boolean().optional(),
   retailPrice: z
     .preprocess(
-      (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
-      z.number().nonnegative()
+      (v) => (v === undefined ? undefined : v === null || v === '' ? null : Number(v)),
+      z.number().nonnegative().nullable()
     )
     .optional(),
   sizeLabel: z
@@ -88,9 +93,11 @@ export const productSchema = z.object({
     (v) => (v === null || v === '' ? undefined : v),
     z.string().max(200).optional()
   ),
+  // 제품코드 — SKU 접두어 겸 엑셀 임포트 매칭 키.
+  // null/'' 는 명시적 clear 신호로 null 저장, undefined 는 필드 skip.
   code: z.preprocess(
-    (v) => (v === null || v === '' ? undefined : v),
-    z.string().max(100).optional()
+    (v) => (v === undefined ? undefined : v === null || v === '' ? null : v),
+    z.string().max(100).nullable().optional()
   ),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
   // 공급원가를 완료 생산 차수 가중평균 단가로 파생 표시할지 여부

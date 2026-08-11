@@ -33,9 +33,9 @@ export function MarketingFooter() {
             </p>
           </div>
 
-          {/* 덱 링크 */}
+          {/* 업무 링크 */}
           <div>
-            <h3 className="mb-3 text-sm font-semibold">덱</h3>
+            <h3 className="mb-3 text-sm font-semibold">업무</h3>
             <ul className="space-y-2">
               {MARKETING_DECK_SLUGS.map((slug) => (
                 <li key={slug}>

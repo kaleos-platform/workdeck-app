@@ -217,7 +217,7 @@ d('구독 서비스 e2e (모킹 PG + 실 DB)', () => {
     expect(ent.decks['coupang-ads'].allowed).toBe(false)
     expect(ent.decks['coupang-ads'].reason).toBe('LOCKED')
     // FREE_BETA deck은 만료와 무관하게 정상
-    expect(ent.decks['blog-ops'].reason).toBe('FREE_BETA')
+    expect(ent.decks['sales-content'].reason).toBe('FREE_BETA')
   })
 
   it('dunning 첫 재시도는 +1일 (+3일 아님)', async () => {

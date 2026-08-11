@@ -179,6 +179,38 @@ export function stateToMappingEntries(mapping: FieldMapping, headers: string[]):
   return entries
 }
 
+/** 매핑 엔트리 정규화 비교 키(필드별 헤더 순서 보존, 필드 순서 무관). */
+function mappingSignature(entries: MappingEntry[]): string {
+  const byField = new Map<string, string[]>()
+  for (const { headerName, field } of entries) {
+    const arr = byField.get(field) ?? []
+    arr.push(headerName)
+    byField.set(field, arr)
+  }
+  return [...byField.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([field, headers]) => `${field}:${headers.join('|')}`)
+    .join(';')
+}
+
+/**
+ * 현재 매핑이 매칭된 프리셋과 달라졌는지(= 저장하지 않으면 수정이 사라지는 상태).
+ * 프리셋이 없으면 항상 false — 신규 형식은 저장 여부가 사용자 선택.
+ */
+export function isMappingDirty(
+  mapping: FieldMapping,
+  headers: string[],
+  matchedPreset: MatchedPreset | null | undefined
+): boolean {
+  if (!matchedPreset) return false
+  const current = mappingSignature(stateToMappingEntries(mapping, headers))
+  // 프리셋 매핑도 현재 파일 헤더 기준으로 한 번 통과시켜 비교(없는 헤더 제거 후 동일 규칙)
+  const preset = mappingSignature(
+    stateToMappingEntries(mappingEntriesToState(matchedPreset.mapping, headers), headers)
+  )
+  return current !== preset
+}
+
 /** kind 변경 시 매핑에서 새 kind에 없는 필드 제거 */
 export function filterMappingForKind(mapping: FieldMapping, newKind: FinKind): FieldMapping {
   const validFields = new Set<string>(
@@ -223,16 +255,32 @@ export function resolveInitialSelection(data: PreviewResponse): {
   const presetAccount = candidates.find((a) => a.id === data.matchedPreset?.defaultAccountId)
   const defaultAccount =
     matched?.id ?? presetAccount?.id ?? (candidates.length === 1 ? candidates[0]?.id : null)
+  const selectedAccount = candidates.find((a) => a.id === defaultAccount) ?? null
 
   return {
     kind: resolvedKind,
     accountId: defaultAccount ?? '',
     mapping,
-    // 이름은 표시용 라벨 — 식별은 파일 형식(서버 findBestPreset). 같은 형식이면 기존
-    // 프리셋 이름을 우선 노출하고, 없을 때만 파일명 추정 기관명을 라벨 힌트로 채운다.
-    presetName: data.matchedPreset?.name ?? data.institution ?? '',
+    // 이름은 표시용 라벨 — 식별은 파일 형식(서버 findBestPreset).
+    // 같은 형식이면 기존 프리셋 이름을 그대로 쓰고, 신규 형식일 때만 기본 이름을 만든다.
+    // 기본 이름은 **파일명이 아니라 선택된 계좌**(사용자가 확정한 정보) 기준 — 파일명이
+    // 달라질 때마다 다른 이름의 규칙이 생기는 문제를 막는다. 파일명 추정은 최후 폴백.
+    presetName:
+      data.matchedPreset?.name ?? defaultPresetName(selectedAccount, resolvedKind, data.institution),
     matchedAccount: matched,
   }
+}
+
+/** 신규 형식의 기본 규칙 이름: 계좌 기관/이름 + 종류. 계좌가 없으면 파일명 추정 폴백. */
+export function defaultPresetName(
+  account: Account | null,
+  kind: FinKind,
+  fileInstitution?: string | null
+): string {
+  const kindLabel = kind === 'CARD' ? '카드' : '은행'
+  const base = account?.institution?.trim() || account?.name?.trim() || ''
+  if (base) return base.includes(kindLabel) ? base : `${base} ${kindLabel}`
+  return fileInstitution ?? ''
 }
 
 /** preview 완료 파일의 상태 판정: 계좌 선택 + 매핑 유효 → matched, 아니면 needs_review */

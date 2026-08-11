@@ -103,25 +103,6 @@ export function getSalesContentAnalyticsPath(deploymentId: string): string {
   return `${SALES_CONTENT_ANALYTICS_PATH}/${deploymentId}`
 }
 
-// ─── 블로그 운영 (Blog Ops) ───────────────────────────────────────────────────
-export const BLOG_OPS_DECK_ID = 'blog-ops'
-export const BLOG_OPS_BASE_PATH = '/d/blog-ops'
-export const BLOG_OPS_HOME_PATH = `${BLOG_OPS_BASE_PATH}/home`
-export const BLOG_OPS_PRODUCTS_PATH = `${BLOG_OPS_BASE_PATH}/products`
-export const BLOG_OPS_IDEATION_PATH = `${BLOG_OPS_BASE_PATH}/ideation`
-export const BLOG_OPS_MATERIALS_PATH = `${BLOG_OPS_BASE_PATH}/materials`
-export const BLOG_OPS_POSTS_PATH = `${BLOG_OPS_BASE_PATH}/posts`
-export const BLOG_OPS_CHANNELS_PATH = `${BLOG_OPS_BASE_PATH}/channels`
-export const BLOG_OPS_DEPLOYMENTS_PATH = `${BLOG_OPS_BASE_PATH}/deployments`
-
-export function getBlogOpsPostPath(id: string): string {
-  return `${BLOG_OPS_POSTS_PATH}/${id}`
-}
-
-export function getBlogOpsDeploymentPath(id: string): string {
-  return `${BLOG_OPS_DEPLOYMENTS_PATH}/${id}`
-}
-
 // ─── 재무 관리 (Finance) ───────────────────────────────────────────────────────
 export const FINANCE_DECK_ID = 'finance'
 export const FINANCE_BASE_PATH = '/d/finance'
@@ -130,6 +111,7 @@ export const FINANCE_CASHFLOW_PATH = `${FINANCE_BASE_PATH}/cashflow`
 export const FINANCE_TRANSACTIONS_PATH = `${FINANCE_BASE_PATH}/transactions`
 export const FINANCE_UPLOAD_PATH = `${FINANCE_BASE_PATH}/upload`
 export const FINANCE_IMPORTS_PATH = `${FINANCE_BASE_PATH}/imports`
+export const FINANCE_MAPPING_RULES_PATH = `${FINANCE_BASE_PATH}/mapping-rules`
 export const FINANCE_ACCOUNTS_PATH = `${FINANCE_BASE_PATH}/accounts`
 export const FINANCE_BALANCES_PATH = `${FINANCE_BASE_PATH}/balances`
 

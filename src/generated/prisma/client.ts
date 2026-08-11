@@ -195,6 +195,11 @@ export type AgentLog = Prisma.AgentLogModel
  */
 export type WorkerHeartbeat = Prisma.WorkerHeartbeatModel
 /**
+ * Model CronRun
+ * 
+ */
+export type CronRun = Prisma.CronRunModel
+/**
  * Model InventoryUpload
  * 
  */
@@ -655,56 +660,6 @@ export type HiringBlacklist = Prisma.HiringBlacklistModel
  */
 export type HiringMessageTemplate = Prisma.HiringMessageTemplateModel
 /**
- * Model BoProduct
- * 
- */
-export type BoProduct = Prisma.BoProductModel
-/**
- * Model BoIdeation
- * 
- */
-export type BoIdeation = Prisma.BoIdeationModel
-/**
- * Model BoMaterial
- * 
- */
-export type BoMaterial = Prisma.BoMaterialModel
-/**
- * Model BoPost
- * 
- */
-export type BoPost = Prisma.BoPostModel
-/**
- * Model BoPostVersion
- * 
- */
-export type BoPostVersion = Prisma.BoPostVersionModel
-/**
- * Model BoChannel
- * 
- */
-export type BoChannel = Prisma.BoChannelModel
-/**
- * Model BoPostVariant
- * 
- */
-export type BoPostVariant = Prisma.BoPostVariantModel
-/**
- * Model BoDeployment
- * 
- */
-export type BoDeployment = Prisma.BoDeploymentModel
-/**
- * Model BoJob
- * 
- */
-export type BoJob = Prisma.BoJobModel
-/**
- * Model BoChannelCredential
- * 
- */
-export type BoChannelCredential = Prisma.BoChannelCredentialModel
-/**
  * Model BillingDeckProduct
  * 
  */
@@ -729,3 +684,8 @@ export type BillingMethod = Prisma.BillingMethodModel
  * 
  */
 export type BillingCharge = Prisma.BillingChargeModel
+/**
+ * Model AdminAuditLog
+ * 
+ */
+export type AdminAuditLog = Prisma.AdminAuditLogModel

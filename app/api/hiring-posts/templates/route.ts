@@ -10,7 +10,11 @@ export async function GET() {
   if ('error' in resolved) return resolved.error
 
   const templates = await prisma.hiringDetailTemplate.findMany({
-    where: { OR: [{ spaceId: resolved.space.id }, { isSample: true }] },
+    // 샘플은 블록이 1개 이상인 것만 노출 — 어드민에서 만들다 만 빈 샘플이 고객 목록(불러오기
+    // 다이얼로그)에 뜨는 것 방지. space 소유 템플릿은 무관(사용자가 만든 빈 템플릿도 그대로 노출).
+    where: {
+      OR: [{ spaceId: resolved.space.id }, { isSample: true, contents: { some: {} } }],
+    },
     orderBy: [{ isSample: 'asc' }, { updatedAt: 'desc' }],
     include: { _count: { select: { contents: true } } },
   })
@@ -51,7 +55,7 @@ export async function POST(req: NextRequest) {
   const overwriteId = parsed.data.templateId ?? null
   if (overwriteId) {
     const target = await prisma.hiringDetailTemplate.findFirst({
-      where: { id: overwriteId, spaceId: resolved.space.id },
+      where: { id: overwriteId, spaceId: resolved.space.id, isSample: false },
       select: { id: true },
     })
     if (!target) return errorResponse('템플릿을 찾을 수 없습니다', 404)

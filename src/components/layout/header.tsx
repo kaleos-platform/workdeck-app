@@ -38,7 +38,7 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
       >
         {isDeckVariant && (
           <Button asChild variant="outline" size="sm" className="h-8">
-            <Link href="/my-deck">My Deck</Link>
+            <Link href="/my-deck">내 워크덱</Link>
           </Button>
         )}
 

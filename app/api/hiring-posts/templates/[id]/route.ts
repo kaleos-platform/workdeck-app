@@ -45,7 +45,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params
 
   const existing = await prisma.hiringDetailTemplate.findFirst({
-    where: { id, spaceId: resolved.space.id },
+    where: { id, spaceId: resolved.space.id, isSample: false },
     select: { id: true },
   })
   if (!existing) return errorResponse('템플릿을 찾을 수 없습니다', 404)
@@ -75,7 +75,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const { id } = await params
 
   const existing = await prisma.hiringDetailTemplate.findFirst({
-    where: { id, spaceId: resolved.space.id },
+    where: { id, spaceId: resolved.space.id, isSample: false },
     select: { id: true },
   })
   if (!existing) return errorResponse('템플릿을 찾을 수 없습니다', 404)

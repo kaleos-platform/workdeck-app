@@ -8,6 +8,9 @@ const createJestConfig = nextJest({ dir: './' })
 const base = createJestConfig({
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  // 원격 dev DB 왕복이라 시드 beforeAll 이 jest 기본 5초를 넘긴다(네트워크 상태에 따라 flaky).
+  // 로직 실패와 타임아웃 실패를 구분하기 위해 넉넉히 준다.
+  testTimeout: 60_000,
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',

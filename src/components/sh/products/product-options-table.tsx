@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, Info, Loader2, RefreshCw, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Info, Loader2, Plus, RefreshCw, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { applyRangeSelection } from '@/lib/range-selection'
 import { Button } from '@/components/ui/button'
@@ -33,6 +33,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
+  dedupeOptionSkus,
   generateOptionSku,
   normalizeOptionAttributes,
   type AttrCodeSpec,
@@ -113,6 +114,7 @@ export function ProductOptionsTable({
   const [productionCost, setProductionCost] = useState<ProductionCostInfo | null>(null)
   const [useProductionCost, setUseProductionCost] = useState(false)
   const [toggleSaving, setToggleSaving] = useState(false)
+  const [creatingDefault, setCreatingDefault] = useState(false)
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeSavePromiseRef = useRef<Promise<void> | null>(null)
   const dirtyIdsRef = useRef<Set<string>>(new Set())
@@ -417,22 +419,28 @@ export function ProductOptionsTable({
   async function regenerateSku() {
     if (selected.size === 0 || !product) return
     const productCode = product.code?.trim() || null
+    // Set 순회 순서가 아니라 테이블 표시 순서로 배정해야 접미사가 결정적이다
+    const targets = options.filter((o) => selected.has(o.id))
+    const desired = targets.map((o) => {
+      const attrValues = o.attributeValues ?? {}
+      const specs: AttrCodeSpec[] = attributes.map((attr, attrIdx) => {
+        const val = attrValues[attr.name] ?? ''
+        const match = attr.values.find((v) => v.value === val)
+        const code = match?.code?.trim() ?? ''
+        const maxLen = Math.max(0, ...attr.values.map((v) => v.code?.length ?? 0))
+        return { attrIdx, code, maxLen }
+      })
+      return generateOptionSku({ productCode, attributeCodes: specs })
+    })
+    // 재생성 대상이 아닌 옵션의 기존 SKU와도 겹치면 안 된다
+    const reserved = options.filter((o) => !selected.has(o.id)).map((o) => o.sku ?? '')
+    const finalSkus = dedupeOptionSkus(desired, reserved)
     setBulkSaving(true)
     try {
       await Promise.all(
-        Array.from(selected).map(async (id) => {
-          const o = options.find((x) => x.id === id)
-          if (!o) return
-          const attrValues = o.attributeValues ?? {}
-          const specs: AttrCodeSpec[] = attributes.map((attr, attrIdx) => {
-            const val = attrValues[attr.name] ?? ''
-            const match = attr.values.find((v) => v.value === val)
-            const code = match?.code?.trim() ?? ''
-            const maxLen = Math.max(0, ...attr.values.map((v) => v.code?.length ?? 0))
-            return { attrIdx, code, maxLen }
-          })
-          const newSku = generateOptionSku({ productCode, attributeCodes: specs })
-          const res = await fetch(`/api/sh/products/${productId}/options/${id}`, {
+        targets.map(async (o, idx) => {
+          const newSku = finalSkus[idx]
+          const res = await fetch(`/api/sh/products/${productId}/options/${o.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sku: newSku || null }),
@@ -450,6 +458,31 @@ export function ProductOptionsTable({
       toast.error(err instanceof Error ? err.message : 'SKU 재생성 실패')
     } finally {
       setBulkSaving(false)
+    }
+  }
+
+  /**
+   * 옵션 0건 복구 — 속성 없이 '기본' 옵션 1건을 만든다.
+   * 상품 생성 API가 옵션 미전송 시 자동 생성하는 것과 같은 이름 규칙을 따른다.
+   */
+  async function createDefaultOption() {
+    setCreatingDefault(true)
+    try {
+      const res = await fetch(`/api/sh/products/${productId}/options`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: '기본', attributeValues: {} }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        throw new Error(d?.message ?? '기본 옵션 생성 실패')
+      }
+      await load()
+      onChanged?.()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '기본 옵션 생성 실패')
+    } finally {
+      setCreatingDefault(false)
     }
   }
 
@@ -639,8 +672,28 @@ export function ProductOptionsTable({
           <TableBody>
             {options.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={colSpan} className="py-6 text-center text-muted-foreground">
-                  등록된 옵션이 없습니다. 위에서 속성을 정의하면 자동으로 옵션이 생성됩니다.
+                <TableCell colSpan={colSpan} className="py-8">
+                  <div className="flex flex-col items-center gap-3">
+                    <p className="text-center text-sm text-muted-foreground">
+                      {attrNames.length > 0
+                        ? '등록된 옵션이 없습니다. 위 옵션 속성에서 조합을 적용하면 옵션이 생성됩니다.'
+                        : '등록된 옵션이 없습니다.'}
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={attrNames.length > 0 ? 'outline' : 'default'}
+                      onClick={() => void createDefaultOption()}
+                      disabled={creatingDefault}
+                    >
+                      {creatingDefault ? (
+                        <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Plus className="mr-1 h-4 w-4" />
+                      )}
+                      기본 옵션 추가
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (

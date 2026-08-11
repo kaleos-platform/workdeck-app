@@ -7,14 +7,13 @@
  * 섞이면 Edge 호환성이 깨질 수 있다.
  */
 
-/** deck 랜딩 6개의 루트 슬러그 (앱 라우트와 충돌 없음 — 정적 라우트 우선) */
+/** deck 랜딩 5개의 루트 슬러그 (앱 라우트와 충돌 없음 — 정적 라우트 우선) */
 export const MARKETING_DECK_SLUGS = [
   'coupang-ads',
   'seller-hub',
   'sales-content',
   'finance',
   'recruiting',
-  'blog-ops',
 ] as const
 
 export type MarketingDeckSlugString = (typeof MARKETING_DECK_SLUGS)[number]

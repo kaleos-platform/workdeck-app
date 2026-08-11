@@ -60,7 +60,7 @@ export async function ensureWorkspaceForUser(
     if (!existingMembership) {
       await tx.deckApp.upsert({
         where: { id: 'coupang-ads' },
-        create: { id: 'coupang-ads', name: '쿠팡 광고 자동화', isActive: true },
+        create: { id: 'coupang-ads', name: '쿠팡 광고 관리', isActive: true },
         update: {},
       })
       await tx.space.create({

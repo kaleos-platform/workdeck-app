@@ -90,6 +90,10 @@ const nextConfig: NextConfig = {
         destination: '/d/seller-ops/:path*',
         permanent: true,
       },
+      // blog-ops 폐기 (2026-08) — 앱 진입은 내 워크덱으로, 랜딩은 세일즈 콘텐츠로
+      { source: '/d/blog-ops', destination: '/my-deck', permanent: true },
+      { source: '/d/blog-ops/:path*', destination: '/my-deck', permanent: true },
+      { source: '/blog-ops', destination: '/sales-content', permanent: true },
     ]
   },
 }

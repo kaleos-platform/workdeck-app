@@ -197,8 +197,10 @@ export function PricingCostBar({ cell, discount = 0, basePrice, showLegend = tru
               </span>
             )
           })}
+          {/* 막대 분모는 '프로모션 전' 판매가 — 헤드라인의 프로모션 적용가와 구분되도록 라벨 명시 */}
           <span className="ml-auto inline-flex items-center gap-1.5 tabular-nums">
-            판매가 <span className="font-semibold text-foreground">₩{fmt(base)}</span>
+            {discount > 0 ? '판매가(프로모션 전)' : '판매가'}{' '}
+            <span className="font-semibold text-foreground">₩{fmt(base)}</span>
           </span>
         </div>
       )}

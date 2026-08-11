@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { notifyInventoryStaleData, notifyWorkerDown } from '@/lib/slack-inventory-notifier'
+import { withCronRun } from '@/lib/cron/with-cron-run'
 
 export const runtime = 'nodejs'
 
@@ -21,19 +21,10 @@ function kstMidnight(d: Date): Date {
  * Slack에 알림을 보내는 안전망. 같은 (workspaceId, snapshotDate) 조합에는
  * `triggeredBy='stale-skip'` marker로 dedupe된다.
  *
- * Vercel cron 인증: `Authorization: Bearer ${CRON_SECRET}` 헤더 필수.
- * CRON_SECRET가 설정되지 않으면 라우트가 비활성화된다(401).
+ * Vercel cron 인증(`Authorization: Bearer ${CRON_SECRET}`)과 실행 이력 기록은
+ * `withCronRun`이 담당한다.
  */
-export async function GET(request: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET 미설정' }, { status: 401 })
-  }
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  }
-
+export const GET = withCronRun('/api/cron/inventory-stale-check', async () => {
   // 모든 워크스페이스의 최신 INVENTORY_HEALTH snapshotDate 조회
   const latestPerWorkspace = await prisma.$queryRaw<
     Array<{ workspaceId: string; snapshotDate: Date }>
@@ -181,9 +172,5 @@ export async function GET(request: NextRequest) {
     console.error('[cron/inventory-stale-check] worker heartbeat 체크 실패:', err)
   }
 
-  return NextResponse.json({
-    checkedAt: new Date().toISOString(),
-    workspaces: checked,
-    worker: workerCheck,
-  })
-}
+  return { workspaces: checked, worker: workerCheck }
+})

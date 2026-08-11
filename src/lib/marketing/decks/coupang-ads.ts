@@ -3,9 +3,9 @@ import type { DeckLandingContent } from '../types'
 export const coupangAdsLanding: DeckLandingContent = {
   slug: 'coupang-ads',
   seo: {
-    title: '쿠팡 광고 관리자 — Excel 리포트 업로드로 ROAS·키워드 분석',
+    title: '쿠팡 광고 관리 — Excel 리포트 업로드로 ROAS·키워드 분석',
     description:
-      '쿠팡 광고 리포트 Excel을 업로드하면 캠페인별 ROAS·광고비 추이와 비효율 키워드를 자동으로 분석합니다. 매일 수기 정리하던 광고 리포트를 Workdeck 쿠팡 광고 관리자로 자동화하세요.',
+      '쿠팡 광고 리포트 Excel을 업로드하면 캠페인별 ROAS·광고비 추이와 비효율 키워드를 자동으로 분석합니다. 매일 수기 정리하던 광고 리포트를 Workdeck 쿠팡 광고 관리로 자동화하세요.',
     keywords: [
       '쿠팡 광고 분석',
       '쿠팡 광고 리포트',
@@ -20,7 +20,7 @@ export const coupangAdsLanding: DeckLandingContent = {
     headline: '쿠팡 광고 리포트, 엑셀 대신',
     highlight: 'ROAS 대시보드로',
     subcopy:
-      '쿠팡 광고 관리자에서 다운로드한 Excel 리포트를 그대로 업로드하면 캠페인별 ROAS·광고비·클릭 시계열이 자동으로 정리됩니다. 비효율 키워드를 바로 찾아 운영 액션으로 옮기세요.',
+      '쿠팡에서 다운로드한 광고 리포트 Excel을 그대로 업로드하면 캠페인별 ROAS·광고비·클릭 시계열이 자동으로 정리됩니다. 비효율 키워드를 바로 찾아 운영 액션으로 옮기세요.',
     primaryCta: { label: '무료로 시작하기', href: '/signup' },
     secondaryCta: { label: '로그인', href: '/d/coupang-ads/login' },
   },
@@ -44,7 +44,7 @@ export const coupangAdsLanding: DeckLandingContent = {
     {
       icon: 'upload',
       title: 'Excel 리포트 업로드 자동 파싱',
-      description: '쿠팡 광고 관리자 표준 리포트를 업로드하면 형식을 자동 인식해 즉시 반영합니다.',
+      description: '쿠팡 표준 광고 리포트를 업로드하면 형식을 자동 인식해 즉시 반영합니다.',
     },
     {
       icon: 'chart',
@@ -72,7 +72,7 @@ export const coupangAdsLanding: DeckLandingContent = {
   screenshots: [
     {
       src: '/marketing/coupang-ads/dashboard.png',
-      alt: '쿠팡 광고 관리자 캠페인 대시보드 화면',
+      alt: '쿠팡 광고 관리 캠페인 대시보드 화면',
       caption: '캠페인별 광고비·ROAS·매출 추이를 한눈에 확인',
     },
   ],
@@ -80,7 +80,7 @@ export const coupangAdsLanding: DeckLandingContent = {
     {
       step: 1,
       title: 'Excel 리포트 업로드',
-      description: '쿠팡 광고 관리자에서 받은 리포트를 그대로 끌어다 놓으면 자동으로 파싱됩니다.',
+      description: '쿠팡에서 받은 광고 리포트를 그대로 끌어다 놓으면 자동으로 파싱됩니다.',
     },
     {
       step: 2,
@@ -95,9 +95,9 @@ export const coupangAdsLanding: DeckLandingContent = {
   ],
   faq: [
     {
-      question: '쿠팡 광고 관리자 리포트를 그대로 업로드할 수 있나요?',
+      question: '쿠팡 광고 리포트를 그대로 업로드할 수 있나요?',
       answer:
-        '네. 쿠팡 광고 관리자에서 다운로드하는 표준 Excel 리포트 형식을 그대로 업로드하면 자동으로 파싱됩니다.',
+        '네. 쿠팡에서 다운로드하는 표준 광고 리포트 Excel 형식을 그대로 업로드하면 자동으로 파싱됩니다.',
     },
     {
       question: '자동 수집은 어떻게 동작하나요?',
