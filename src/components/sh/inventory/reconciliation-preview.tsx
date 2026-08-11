@@ -194,7 +194,7 @@ export function ReconciliationPreview({
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerExternalCode, setPickerExternalCode] = useState<string | null>(null)
   const [pickerContext, setPickerContext] = useState('')
-  const [pickerQuery, setPickerQuery] = useState('')
+  const [pickerKeywordSource, setPickerKeywordSource] = useState('')
 
   // matched-* 행 매칭 수정용 picker 상태
   const [editMatcherOpen, setEditMatcherOpen] = useState(false)
@@ -386,7 +386,8 @@ export function ReconciliationPreview({
     const name = entry.row?.externalName ?? entry.fileCode
     const optionName = entry.row?.externalOptionName
     setPickerContext(optionName ? `${name} / ${optionName}` : name)
-    setPickerQuery(name)
+    // 파일 상품명 전체를 검색어로 밀어넣으면 한 글자만 달라도 0건 → 단어별 칩으로 넘긴다.
+    setPickerKeywordSource(optionName ? `${name} ${optionName}` : name)
     setPickerOpen(true)
   }
 
@@ -833,7 +834,8 @@ export function ReconciliationPreview({
         }}
         mode="multi-with-qty"
         onPickMulti={handlePickedMulti}
-        initialQuery={pickerQuery}
+        keywordSource={pickerKeywordSource}
+        tokenized
         searchOfficialName
         excludeOptionIds={excludeOptionIds}
         contextLabel="매칭 대상 (파일)"
@@ -857,6 +859,9 @@ export function ReconciliationPreview({
         mode="multi-with-qty"
         onPickMulti={handleEditMatcherPickMulti}
         excludeOptionIds={excludeOptionIds}
+        keywordSource={editMatcherEntry?.row?.externalName ?? ''}
+        tokenized
+        searchOfficialName
         contextLabel="현재 매칭"
         contextValue={
           editMatcherEntry
