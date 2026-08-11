@@ -61,6 +61,8 @@ type MatchEntry =
       delta: number
       mappingId?: string
       mappingItems?: MappingItem[]
+      /** 대조 당시엔 일치했으나 이후 재고가 변동돼 차이가 생긴 행 */
+      driftedSinceMatch?: boolean
     }
   | {
       status: 'matched-equal'
@@ -133,6 +135,8 @@ type UnifiedEntry = {
   mappingId?: string
   mappingItems?: MappingItem[]
   mapItemQuantity?: number
+  /** 대조 당시엔 일치했으나 이후 재고가 변동된 행 — 확정 범위가 늘어나는 부분 */
+  driftedSinceMatch?: boolean
 }
 
 type TabValue = 'all' | 'matched' | 'file-only'
@@ -272,6 +276,7 @@ export function ReconciliationPreview({
         mappingId: e.mappingId,
         mappingItems: e.mappingItems,
         mapItemQuantity: e.mapItemQuantity,
+        driftedSinceMatch: e.driftedSinceMatch,
       })
     }
 
@@ -481,14 +486,21 @@ export function ReconciliationPreview({
   async function handleConfirm() {
     if (!recon) return
     const snapshotStr = new Date(recon.snapshotDate).toISOString().slice(0, 10)
-    const lines = [
-      `${snapshotStr} 기준 파일 수량으로 재고 ${pendingApplyCount}건을 덮어씁니다.`,
-      '확정 후에는 수정할 수 없습니다.',
-    ]
+    // 대조 당시엔 일치했는데 이후 재고가 움직여 확정 대상에 새로 들어온 건 — 적용 범위가
+    // 늘어나는 부분이므로 조용히 넘기지 않고 드러낸다.
+    // "그중"이 반영 건수를 가리키도록 바로 다음 줄에 붙인다(순서가 뜻을 바꾼다).
+    const drifted = unifiedEntries.filter((e) => e.driftedSinceMatch && !isApplied(e)).length
     const unmatched = unifiedEntries.filter(
       (e) => e.status === 'file-only' && !e.isManualMatched
     ).length
-    if (unmatched > 0) lines.splice(1, 0, `미매칭 ${unmatched}건은 반영되지 않습니다.`)
+    const lines = [
+      `${snapshotStr} 기준 파일 수량으로 재고 ${pendingApplyCount}건을 덮어씁니다.`,
+      ...(drifted > 0
+        ? [`그중 ${drifted}건은 대조 당시엔 일치했으나 이후 재고가 변동됐습니다.`]
+        : []),
+      ...(unmatched > 0 ? [`미매칭 ${unmatched}건은 반영되지 않습니다.`] : []),
+      '확정 후에는 수정할 수 없습니다.',
+    ]
     if (!confirm(lines.join('\n'))) return
 
     setSubmitting(true)
@@ -672,7 +684,9 @@ export function ReconciliationPreview({
                 <TableHead className="border-l bg-muted/40">상품 · 옵션</TableHead>
                 <TableHead className="bg-muted/40 text-right">수량</TableHead>
                 <TableHead className="border-l">상품 · 옵션</TableHead>
-                <TableHead className="text-right">현재고</TableHead>
+                {/* 확정·삭제된 대조는 닫힌 기록이라 매칭 시점 값을 그대로 보여준다.
+                    "현재고"라고 부르면 거짓말이 된다. */}
+                <TableHead className="text-right">{isConfirmed ? '대조시점' : '현재고'}</TableHead>
                 <TableHead className="border-l text-right">차이</TableHead>
                 <TableHead className="whitespace-nowrap">동작</TableHead>
               </TableRow>
