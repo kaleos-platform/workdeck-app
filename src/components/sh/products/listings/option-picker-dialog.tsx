@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Info, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { tokenizeProductName } from '@/lib/inv/search-tokens'
 import { productDisplayName } from '@/lib/sh/product-display'
 
 const PAGE_SIZE = 50
@@ -80,6 +81,12 @@ type Props = {
   initialItems?: PickedOptionWithQty[]
   // 검색 시 공식 상품명(name)도 매칭 대상에 포함(재고조정 상품명 추천용). 기본 false.
   searchOfficialName?: boolean
+  // 파일 상품명 등 원본 문자열. 넘기면 단어별 키워드 칩 UI를 띄우고 앞 N개 토큰으로 검색을 시작한다.
+  keywordSource?: string
+  // keywordSource 사용 시 처음 선택 상태로 둘 앞쪽 토큰 수(기본 2)
+  initialTokenCount?: number
+  // 검색어를 토큰 AND로 매칭(서버 tokenized=1). keywordSource와 함께 쓰는 것을 전제.
+  tokenized?: boolean
 }
 
 export function OptionPickerDialog({
@@ -95,9 +102,26 @@ export function OptionPickerDialog({
   contextValue,
   initialItems,
   searchOfficialName = false,
+  keywordSource,
+  initialTokenCount = 2,
+  tokenized = false,
 }: Props) {
-  const [search, setSearch] = useState(initialQuery)
-  const [debounced, setDebounced] = useState(initialQuery)
+  const keywordTokens = useMemo(
+    () => (keywordSource ? tokenizeProductName(keywordSource) : []),
+    [keywordSource]
+  )
+  // keywordSource가 있으면 전체 문자열 대신 앞쪽 토큰 몇 개만 초기 검색어로 쓴다.
+  const seedQuery = useMemo(
+    () =>
+      keywordTokens.length > 0
+        ? keywordTokens.slice(0, Math.max(1, initialTokenCount)).join(' ')
+        : initialQuery,
+    [keywordTokens, initialTokenCount, initialQuery]
+  )
+
+  const [search, setSearch] = useState(seedQuery)
+  const [debounced, setDebounced] = useState(seedQuery)
+  const [relaxedNote, setRelaxedNote] = useState<string | null>(null)
   const [products, setProducts] = useState<ProductWithOptions[]>([])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
@@ -107,23 +131,31 @@ export function OptionPickerDialog({
   // multi-with-qty: 누적 선택 items (여러 상품에 걸쳐 유지)
   const [accumulatedItems, setAccumulatedItems] = useState<PickedOptionWithQty[]>([])
 
+  // 0건 자동 완화는 시드/칩 클릭으로 만들어진 검색어에만 적용한다.
+  // 직접 타이핑 중에는 완화하지 않는다(입력 중간 상태를 멋대로 잘라내면 방해).
+  const autoRelaxRef = useRef(false)
+
+  // 호출부가 initialItems/initialQuery를 인라인으로 넘기면 매 렌더 identity가 바뀐다.
+  // deps에 그대로 두면 사용자가 고친 검색어·쌓아둔 페이지가 되돌아가므로 ref로 잡고
+  // 시드는 open 전환에서만 수행한다.
+  const seedRef = useRef({ seedQuery, initialItems })
+  seedRef.current = { seedQuery, initialItems }
+
   useEffect(() => {
     if (open) {
-      setSearch(initialQuery)
-      setDebounced(initialQuery)
+      const { seedQuery: q, initialItems: items } = seedRef.current
+      setSearch(q)
+      setDebounced(q)
       setSelectedProductId(null)
+      setRelaxedNote(null)
+      autoRelaxRef.current = true
+      setPage(1)
       // initialItems로 복원 또는 초기화
-      setAccumulatedItems(initialItems ? [...initialItems] : [])
+      setAccumulatedItems(items ? [...items] : [])
     } else {
       // 닫힐 때 누적 state 초기화
       setAccumulatedItems([])
     }
-  }, [open, initialQuery, initialItems])
-
-  // 페이지 리셋은 open 전환에만 반응 — 호출부가 initialItems를 인라인으로 넘겨
-  // 위 effect가 매 렌더 재실행돼도 '더 보기'로 쌓은 페이지가 초기화되지 않도록 분리.
-  useEffect(() => {
-    setPage(1)
   }, [open])
 
   useEffect(() => {
@@ -145,6 +177,7 @@ export function OptionPickerDialog({
         qs.set('pageSize', String(PAGE_SIZE))
         if (debounced.trim()) qs.set('search', debounced.trim())
         if (searchOfficialName) qs.set('includeName', '1')
+        if (tokenized) qs.set('tokenized', '1')
         const res = await fetch(`/api/sh/products?${qs.toString()}`)
         if (!res.ok) throw new Error('검색 실패')
         const data: { data?: ProductRow[]; products?: ProductRow[]; total?: number } =
@@ -175,6 +208,16 @@ export function OptionPickerDialog({
         setTotal(typeof data.total === 'number' ? data.total : rows.length)
         // page > 1은 append(더 보기), page 1은 교체(검색어 변경/최초 로드)
         setProducts((prev) => (page > 1 ? [...prev, ...grouped] : grouped))
+
+        // 0건이면 마지막 토큰을 떼고 자동 재검색 — 토큰이 1개 남을 때까지 단계적으로 완화.
+        if (page === 1 && rows.length === 0 && autoRelaxRef.current) {
+          const tokens = tokenizeProductName(debounced)
+          if (tokens.length > 1) {
+            const next = tokens.slice(0, -1).join(' ')
+            setRelaxedNote(next)
+            setSearch(next)
+          }
+        }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '검색 실패')
       } finally {
@@ -186,6 +229,24 @@ export function OptionPickerDialog({
       cancelled = true
     }
   }, [open, debounced, page, searchOfficialName])
+
+  // 칩 선택 상태는 별도 state 없이 현재 검색어에서 파생 — 직접 타이핑과 어긋나지 않는다.
+  const activeTokens = useMemo(
+    () => new Set(tokenizeProductName(search).map((t) => t.toLowerCase())),
+    [search]
+  )
+
+  function toggleKeywordToken(token: string) {
+    const current = tokenizeProductName(search)
+    const key = token.toLowerCase()
+    const next = current.some((t) => t.toLowerCase() === key)
+      ? current.filter((t) => t.toLowerCase() !== key)
+      : [...current, token]
+    // 칩 클릭은 명시적 조건 지정이므로 자동 완화하지 않는다(누른 단어가 곧바로 떨어져 나가면 오작동으로 보임).
+    autoRelaxRef.current = false
+    setRelaxedNote(null)
+    setSearch(next.join(' '))
+  }
 
   const hasMore = products.length < total
 
@@ -306,6 +367,32 @@ export function OptionPickerDialog({
             </div>
           )}
 
+          {!showOptionStep && keywordTokens.length > 0 && (
+            <div className="space-y-1">
+              <Label>키워드</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {keywordTokens.map((token) => {
+                  const selected = activeTokens.has(token.toLowerCase())
+                  return (
+                    <Button
+                      key={token}
+                      type="button"
+                      size="sm"
+                      variant={selected ? 'default' : 'outline'}
+                      className="h-7 px-2 text-xs"
+                      onClick={() => toggleKeywordToken(token)}
+                    >
+                      {token}
+                    </Button>
+                  )
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                단어를 눌러 검색 조건을 추가/제거하세요 (선택한 단어를 모두 포함하는 상품)
+              </p>
+            </div>
+          )}
+
           {!showOptionStep && (
             <div className="space-y-1">
               <Label htmlFor="option-picker-search">검색</Label>
@@ -314,7 +401,11 @@ export function OptionPickerDialog({
                 <Input
                   id="option-picker-search"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    autoRelaxRef.current = false
+                    setRelaxedNote(null)
+                    setSearch(e.target.value)
+                  }}
                   placeholder={
                     mode === 'two-step' || isMultiMode
                       ? '상품명 / 코드 / 브랜드'
@@ -323,6 +414,11 @@ export function OptionPickerDialog({
                   className="pl-9"
                 />
               </div>
+              {relaxedNote && (
+                <p className="text-xs text-amber-700">
+                  검색 결과가 없어 검색어를 완화했습니다: {relaxedNote}
+                </p>
+              )}
               {isMultiMode && accumulatedItems.length > 0 && (
                 <p className="text-xs text-muted-foreground">
                   선택된 옵션 {accumulatedItems.length}개
