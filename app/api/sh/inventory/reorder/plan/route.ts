@@ -682,7 +682,13 @@ export async function POST(req: NextRequest) {
   if (body.dryRun) {
     const optMeta = await prisma.invProductOption.findMany({
       where: { id: { in: optionIds }, product: { spaceId } },
-      select: { id: true, name: true, sku: true, product: { select: { name: true } } },
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        costPrice: true,
+        product: { select: { name: true } },
+      },
     })
     const metaById = new Map(optMeta.map((o) => [o.id, o]))
     let locationName: string | null = null
@@ -706,6 +712,8 @@ export async function POST(req: NextRequest) {
           optionName: m?.name ?? '',
           sku: m?.sku ?? null,
           productName: m?.product?.name ?? '',
+          // 발주 금액 KPI용 옵션 원가. 미설정이면 null → 금액 표시 생략.
+          costPrice: m?.costPrice != null ? Number(m.costPrice) : null,
           currentStock: it.currentStock,
           onHandStock: it.onHandStock,
           incomingQty: it.incomingQty,

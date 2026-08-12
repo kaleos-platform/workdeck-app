@@ -106,6 +106,7 @@ export type ProductInfo = {
     optionId: string
     optionName: string
     sku: string | null
+    costPrice?: number | null // 발주 금액 표시용 (미설정 시 null)
     optionDeleted?: boolean
   }>
 }
