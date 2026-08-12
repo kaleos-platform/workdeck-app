@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "find .next -mindepth 1 -maxdepth 1 ! -name cache -exec rm -rf {} + 2>/dev/null; npx prisma migrate deploy && npx prisma generate && next build",
+  "buildCommand": "find .next -mindepth 1 -maxdepth 1 ! -name cache -exec rm -rf {} + 2>/dev/null; npx prisma migrate deploy && next build",
   "installCommand": "npm install",
   "ignoreCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then exit 1; fi; git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)*.md'",
   "regions": ["icn1"],
