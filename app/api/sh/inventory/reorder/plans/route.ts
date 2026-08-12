@@ -52,10 +52,25 @@ export async function GET(_req: NextRequest) {
           bias: true,
           stockoutDays: true,
           overstockDays: true,
+          // 실적 모니터링 비교표 — 리드타임 구간의 예측 출고 vs 실 출고.
+          // 발주 수량(totalFinalQty)과는 기준이 다르므로 섞어 쓰지 않는다.
+          actualOutbound: true,
+          forecastOutbound: true,
         },
       },
     },
   })
+
+  // 옵션명 — 모니터링 표에서 optionId만으로는 읽을 수 없다.
+  const accuracyOptionIds = latestConsumed?.accuracies.map((a) => a.optionId) ?? []
+  const optionNameById = new Map<string, { name: string; sku: string | null }>()
+  if (accuracyOptionIds.length > 0) {
+    const opts = await prisma.invProductOption.findMany({
+      where: { id: { in: accuracyOptionIds }, product: { spaceId } },
+      select: { id: true, name: true, sku: true },
+    })
+    for (const o of opts) optionNameById.set(o.id, { name: o.name, sku: o.sku })
+  }
 
   const latestAccuracy = latestConsumed
     ? {
@@ -63,10 +78,15 @@ export async function GET(_req: NextRequest) {
         biasAdjustApplied: latestConsumed.biasAdjustApplied as object | null,
         accuracies: latestConsumed.accuracies.map((a) => ({
           optionId: a.optionId,
-          wape: a.wape,
-          bias: a.bias,
+          optionName: optionNameById.get(a.optionId)?.name ?? null,
+          sku: optionNameById.get(a.optionId)?.sku ?? null,
+          // Decimal → number (클라이언트가 그대로 산술에 사용)
+          wape: Number(a.wape),
+          bias: Number(a.bias),
           stockoutDays: a.stockoutDays,
           overstockDays: a.overstockDays,
+          actualOutbound: a.actualOutbound,
+          forecastOutbound: Number(a.forecastOutbound),
         })),
       }
     : undefined
