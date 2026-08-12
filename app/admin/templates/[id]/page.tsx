@@ -2,11 +2,16 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
+import { requireOperator } from '@/lib/admin/auth'
 import { TemplateBlockEditor } from '@/components/admin/template-block-editor'
 
 type Params = { params: Promise<{ id: string }> }
 
 export default async function AdminTemplateDetailPage({ params }: Params) {
+  // layout이 MFA_REQUIRED 상태에서도 children을 렌더하므로, prisma를 직접 읽는 이 페이지는 자체 가드가 필요하다.
+  const auth = await requireOperator()
+  if (!auth.ok) notFound()
+
   const { id } = await params
 
   const template = await prisma.hiringDetailTemplate.findFirst({
