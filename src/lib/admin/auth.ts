@@ -13,7 +13,8 @@ type OperatorContext = { id: string; email: string }
 
 type RequireOperatorResult =
   | { ok: true; user: OperatorContext }
-  | { ok: false; response: NextResponse }
+  | { ok: false; reason: 'NOT_OPERATOR'; response: NextResponse }
+  | { ok: false; reason: 'MFA_REQUIRED'; user: OperatorContext; response: NextResponse }
 
 function notFoundResponse(): NextResponse {
   // 403이 아닌 404로 존재 자체를 은닉
@@ -35,7 +36,7 @@ function mfaRequiredResponse(): NextResponse {
 export async function requireOperator(): Promise<RequireOperatorResult> {
   const user = await getUser()
   if (!user) {
-    return { ok: false, response: notFoundResponse() }
+    return { ok: false, reason: 'NOT_OPERATOR', response: notFoundResponse() }
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -43,18 +44,25 @@ export async function requireOperator(): Promise<RequireOperatorResult> {
     select: { platformRole: true, email: true },
   })
   if (dbUser?.platformRole !== 'OPERATOR') {
-    return { ok: false, response: notFoundResponse() }
+    return { ok: false, reason: 'NOT_OPERATOR', response: notFoundResponse() }
   }
 
+  const operator: OperatorContext = { id: user.id, email: dbUser.email }
+
+  // ⚠️ ADMIN_REQUIRE_MFA 는 아직 켜면 안 된다 — 켜는 순간 운영자가 영구 잠긴다.
+  // 로그인 폼에 MFA 챌린지 단계가 없어서, 등록 직후(aal2)를 제외하면 재로그인은 항상 aal1 이다.
+  // aal1 에서는 어드민 접근이 막히고, 해제(unenroll)마저 Supabase 가 aal2 를 요구해 실패한다.
+  // 켜려면 먼저 aal1 → aal2 승급 경로(계정 페이지의 코드 입력 또는 로그인 폼의 MFA 단계)가 필요하다.
+  // 그때까지 /admin/account 의 MFA 섹션은 "등록만 가능한" 상태로 둔다.
   if (process.env.ADMIN_REQUIRE_MFA === 'true') {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
     if (error || data?.currentLevel !== 'aal2') {
-      return { ok: false, response: mfaRequiredResponse() }
+      return { ok: false, reason: 'MFA_REQUIRED', user: operator, response: mfaRequiredResponse() }
     }
   }
 
-  return { ok: true, user: { id: user.id, email: dbUser.email } }
+  return { ok: true, user: operator }
 }
 
 /**
