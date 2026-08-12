@@ -14,12 +14,11 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ReorderPlanAccuracyCard } from '@/components/sh/inventory/reorder-plan-accuracy-card'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ReorderPlanCreate } from '@/components/sh/inventory/reorder-plan-create'
-import type {
-  ReorderPlanAccuracy,
-  ReorderPlanSummary,
-} from '@/components/sh/inventory/reorder-plan-types'
+import { ReorderMonitor, type MonitorData } from '@/components/sh/inventory/reorder-monitor'
+import { Kpi, Panel, fmtQty } from '@/components/sh/inventory/reorder-ui'
+import type { ReorderPlanSummary } from '@/components/sh/inventory/reorder-plan-types'
 
 function StatusBadge({ status }: { status: ReorderPlanSummary['status'] }) {
   if (status === 'DRAFT') {
@@ -54,18 +53,17 @@ function formatDate(dateStr: string | null) {
 
 type PlanListResponse = {
   plans: ReorderPlanSummary[]
-  latestAccuracy?: {
-    accuracies: ReorderPlanAccuracy[]
-    planNo: string
-    biasAdjustApplied: Record<string, number> | null
-  }
+  latestAccuracy?: MonitorData
 }
 
 export default function ReorderPage() {
   const [plans, setPlans] = useState<ReorderPlanSummary[]>([])
-  const [latestAccuracy, setLatestAccuracy] = useState<PlanListResponse['latestAccuracy']>()
+  const [latestAccuracy, setLatestAccuracy] = useState<MonitorData>()
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [tab, setTab] = useState<'plans' | 'monitor'>('plans')
+  // 모니터링 → 새 계획 시 위저드에 넘기는 추가 보정계수(자동 bias 보정 위에 곱해짐)
+  const [createDemandAdjust, setCreateDemandAdjust] = useState<number | undefined>()
 
   const fetchPlans = useCallback(async () => {
     setLoading(true)
@@ -87,7 +85,7 @@ export default function ReorderPage() {
     fetchPlans()
   }, [fetchPlans])
 
-  // 생성 모드: 상품 선택 → 예측표 → 계획 생성
+  // 생성 모드: 상품 선택 → 외부 연동 → 자체 출고 → 수량 계산 → 세트 환산·검토
   if (creating) {
     return (
       <div className="space-y-6">
@@ -103,10 +101,18 @@ export default function ReorderPage() {
             계획 목록으로
           </Button>
         </div>
-        <ReorderPlanCreate autoOpen onCancel={() => setCreating(false)} />
+        <ReorderPlanCreate
+          autoOpen
+          onCancel={() => setCreating(false)}
+          initialDemandAdjust={createDemandAdjust}
+        />
       </div>
     )
   }
+
+  const draftCount = plans.filter((p) => p.status === 'DRAFT').length
+  const finalizedCount = plans.filter((p) => p.status === 'FINALIZED').length
+  const finalQtySum = plans.reduce((s, p) => s + (p.totalFinalQty ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -123,78 +129,103 @@ export default function ReorderPage() {
         </Button>
       </div>
 
-      {/* 직전 plan 적중률 카드 */}
-      {latestAccuracy && latestAccuracy.accuracies.length > 0 && (
-        <ReorderPlanAccuracyCard
-          accuracies={latestAccuracy.accuracies}
-          planNo={latestAccuracy.planNo}
-          biasAdjustApplied={latestAccuracy.biasAdjustApplied}
-        />
-      )}
+      <Tabs value={tab} onValueChange={(v) => setTab(v as 'plans' | 'monitor')}>
+        <TabsList>
+          <TabsTrigger value="plans">발주 계획</TabsTrigger>
+          <TabsTrigger value="monitor">실적 모니터링</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
-      {/* 목록 테이블 */}
-      <div className="overflow-x-auto rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>계획번호</TableHead>
-              <TableHead>상품</TableHead>
-              <TableHead>상태</TableHead>
-              <TableHead className="text-right">제안수량 합계</TableHead>
-              <TableHead className="text-right">최종수량 합계</TableHead>
-              <TableHead>생성일</TableHead>
-              <TableHead>확정일</TableHead>
-              <TableHead className="w-20"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
-                  불러오는 중...
-                </TableCell>
-              </TableRow>
-            ) : plans.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
-                  발주 계획이 없습니다. 위에서 새 계획을 생성해보세요.
-                </TableCell>
-              </TableRow>
-            ) : (
-              plans.map((plan) => (
-                <TableRow key={plan.id}>
-                  <TableCell className="font-medium">{plan.planNo}</TableCell>
-                  <TableCell className="text-sm">
-                    {plan.productName ?? <span className="text-muted-foreground">전체</span>}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={plan.status} />
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {plan.totalSuggestedQty}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {plan.totalFinalQty || '-'}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatDate(plan.createdAt)}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatDate(plan.finalizedAt)}
-                  </TableCell>
-                  <TableCell>
-                    <Button asChild size="sm" variant="ghost">
-                      <Link href={`/d/seller-ops/inventory/reorder/plans/${plan.id}`}>
-                        상세 보기
-                      </Link>
-                    </Button>
-                  </TableCell>
+      {tab === 'monitor' ? (
+        <ReorderMonitor
+          data={latestAccuracy}
+          loading={loading}
+          onApplyToNextPlan={(delta) => {
+            setCreateDemandAdjust(delta)
+            setCreating(true)
+          }}
+        />
+      ) : (
+        <div className="space-y-4">
+          <Panel padded={false}>
+            <div className="flex flex-wrap items-start gap-x-10 gap-y-4 px-5 py-4">
+              <Kpi label="전체 계획 (최근 50건)" value={fmtQty(plans.length)} unit="건" />
+              <Kpi label="초안" value={fmtQty(draftCount)} unit="건" />
+              <Kpi label="검증 중" value={fmtQty(finalizedCount)} unit="건" />
+              <Kpi label="최종수량 합계" value={fmtQty(finalQtySum)} unit="개" />
+            </div>
+          </Panel>
+
+          <Panel padded={false}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>계획번호</TableHead>
+                  <TableHead>상품</TableHead>
+                  <TableHead>상태</TableHead>
+                  <TableHead className="text-right">제안수량 합계</TableHead>
+                  <TableHead className="text-right">최종수량 합계</TableHead>
+                  <TableHead>생성일</TableHead>
+                  <TableHead>확정일</TableHead>
+                  <TableHead className="w-20"></TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="py-10 text-center text-sm text-muted-foreground"
+                    >
+                      불러오는 중...
+                    </TableCell>
+                  </TableRow>
+                ) : plans.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="py-10 text-center text-sm text-muted-foreground"
+                    >
+                      발주 계획이 없습니다. 위에서 새 계획을 생성해보세요.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  plans.map((plan) => (
+                    <TableRow key={plan.id}>
+                      <TableCell className="font-mono text-sm font-medium">{plan.planNo}</TableCell>
+                      <TableCell className="text-sm">
+                        {plan.productName ?? <span className="text-muted-foreground">전체</span>}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={plan.status} />
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                        {fmtQty(plan.totalSuggestedQty)}
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-medium tabular-nums">
+                        {plan.totalFinalQty ? fmtQty(plan.totalFinalQty) : '-'}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatDate(plan.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatDate(plan.finalizedAt)}
+                      </TableCell>
+                      <TableCell>
+                        <Button asChild size="sm" variant="ghost">
+                          <Link href={`/d/seller-ops/inventory/reorder/plans/${plan.id}`}>
+                            상세 보기
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </Panel>
+        </div>
+      )}
     </div>
   )
 }
