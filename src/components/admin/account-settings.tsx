@@ -353,7 +353,14 @@ function MfaSection() {
           로그인 시 인증 앱(Google Authenticator 등)의 6자리 코드를 추가로 요구합니다.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-3">
+        {/* 로그인 폼에 MFA 챌린지 단계가 없어 재로그인은 항상 aal1 이다. 이 상태로 강제를 켜면
+            어드민 접근도 해제도 불가능해지므로, 승급 경로가 생기기 전까지는 등록만 지원한다. */}
+        <p className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
+          지금은 등록만 가능합니다. 로그인 화면에 코드 입력 단계가 아직 없어 재로그인 시에는 2단계
+          인증이 적용되지 않습니다. 운영자 잠금을 막기 위해 강제 설정(ADMIN_REQUIRE_MFA)은 켜지
+          마세요.
+        </p>
         {loading ? (
           <p className="text-sm text-muted-foreground">불러오는 중...</p>
         ) : verifiedFactor ? (
