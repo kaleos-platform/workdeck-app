@@ -1,0 +1,47 @@
+name: Typecheck
+
+# Vercel 빌드가 수행하는 TypeScript 체크(빌드 시간의 약 69초)를 GitHub Actions로
+# 옮길 수 있는지 측정하기 위한 실험용 워크플로.
+#
+# 현재는 측정만 한다 — Vercel 쪽 타입 체크는 그대로 두고, 여기서 걸리는 시간과
+# Actions 분 소모를 확인한 뒤 이전 여부를 판단한다. 이전하기로 하면 이 잡을
+# 필수 상태 체크로 지정하고 next.config 에 typescript.ignoreBuildErrors 를 켠다.
+
+on:
+  pull_request:
+    branches: [develop, main]
+
+concurrency:
+  group: typecheck-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    env:
+      # prisma.config.ts 가 datasource url 을 요구한다. generate 는 실제 접속을
+      # 하지 않으므로 형식만 맞는 더미 값이면 된다.
+      DATABASE_URL: postgresql://user:pass@localhost:5432/db
+      DIRECT_URL: postgresql://user:pass@localhost:5432/db
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      # tsc 증분 빌드 정보 재사용 — 정상 운영 시의 소요 시간을 재기 위함.
+      - name: Restore tsbuildinfo
+        uses: actions/cache@v4
+        with:
+          path: tsconfig.tsbuildinfo
+          key: tsbuildinfo-${{ github.sha }}
+          restore-keys: tsbuildinfo-
+
+      # postinstall 이 prisma generate + patch-package 를 실행한다.
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: tsc --noEmit
+        run: npx tsc --noEmit
