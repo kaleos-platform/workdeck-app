@@ -443,6 +443,7 @@ model Space {
   // 키워드 마스터 (§24)
   keywordMasters      KeywordMaster[]
   channelKeywordRules ChannelKeywordRule[]
+  keywordChangeLogs   KeywordChangeLog[] // §26 상품명·검색어 변경 이력
 
   // Slack 연동 (M3)
   slackInstallation SlackInstallation?
@@ -1095,6 +1096,7 @@ model InvProduct {
   reorderPlans     ReorderPlan[]
   adCampaignMaps   AdCampaignProductMap[]
   keywordLinks     KeywordMasterLink[]
+  keywordChanges   KeywordChangeLog[] // §26 변경 이력 (상품 단위)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1975,6 +1977,7 @@ model ProductListing {
   reorderPlanSets   ReorderPlanSet[] // 세트 발주 계획에서 이 listing(=세트)을 참조
   productionRunSets ProductionRunSet[] // 세트 생산차수에서 이 listing(=세트)을 참조
   keywordLinks      KeywordMasterLink[] // 키워드 마스터 연결 (§24)
+  keywordChanges    KeywordChangeLog[] // §26 변경 이력 (리스팅 단위)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2224,6 +2227,68 @@ model ChannelKeywordRule {
   updatedAt DateTime @updatedAt
 
   @@index([spaceId])
+}
+
+// §25 "변경 가능" 사유 목록 + 운영 실무에 필요한 최소 항목(최초 등록·오탈자·기타).
+//
+// ⚠️ 이 enum 은 "변경해도 되는 사유"만 담는다. §25 가 못박은 "변경하지 않음"
+// (노출이 조금 줄었다 / 광고 성과가 며칠 좋지 않다 / 경쟁사가 바꿨다 / 키워드를 하나 더
+// 발견했다)에 해당하는 값은 **의도적으로 없다.** 사유를 고를 수 없다는 사실 자체가
+// 억제 게이트다 — 편의를 이유로 여기에 값을 추가하면 기능의 취지가 무너진다.
+// 한국어 라벨은 src/lib/sh/keyword-labels.ts 의 KEYWORD_CHANGE_REASON_LABELS.
+enum KeywordChangeReason {
+  WRONG_MAIN_KEYWORD // 잘못된 메인 키워드
+  UNCLEAR_NAME // 상품을 이해하기 어려운 상품명
+  POLICY_RISK // 정책 위반 가능성
+  NEW_SEARCH_DATA // 새로운 검색 데이터에서 명확한 개선 근거 발견
+  SPEC_CHANGE // 실제 제품 사양 변경
+  BRAND_MODEL_CHANGE // 브랜드/모델 변경
+  INITIAL_REGISTRATION // 최초 등록
+  TYPO_FIX // 오탈자
+  OTHER // 기타 — reasonNote 필수(앱 검증)
+}
+
+// §26 변경 기록. 상품명·검색어를 바꿀 때마다 1행씩 쌓이는 append-only 이력.
+//
+// 대상은 listingId(채널 리스팅) 또는 productId(InvProduct) 이며 **둘 다 null 일 수 있다**
+// (채널상품 단위 변경처럼 단일 상품으로 귀속되지 않는 경우). 둘 다 null 인 행은 대상
+// 필터에 걸리지 않고 space 전체 목록에서만 보인다.
+//
+// ⚠️ actorUserId 에 FK 를 걸지 않는다 — AdminAuditLog 와 같은 이유다. User 를 참조하는
+// non-CASCADE FK 때문에 계정 삭제가 500 으로 죽은 사고가 있었고, 이력은 담당자 계정이
+// 사라져도 남아야 한다. listing/product 는 SetNull 이라 대상이 지워져도 기록은 보존된다.
+model KeywordChangeLog {
+  id        String  @id @default(cuid())
+  spaceId   String
+  listingId String? // ProductListing — 채널 리스팅 단위 변경
+  productId String? // InvProduct — 상품 단위 변경
+
+  beforeName     String? // 기존 상품명
+  afterName      String? // 변경 상품명
+  // 기존/변경 검색어 (string[]). ProductListing.keywords 와 같은 Json 배열 표현.
+  beforeKeywords Json    @default("[]")
+  afterKeywords  Json    @default("[]")
+
+  reason        KeywordChangeReason
+  reasonNote    String? // OTHER 이면 필수 — DB 제약으로는 표현할 수 없어 앱에서 검증한다
+  observeMetric String? // §26 "관찰 지표" — 이 변경의 효과를 무엇으로 판단할지
+
+  // §26 "가능하면 여러 요소를 동시에 바꾸지 않는다". 상품명과 검색어를 한 번에 바꾼 변경은
+  // 어느 쪽이 성과에 영향을 줬는지 분리할 수 없으므로 표시해 둔다.
+  // ⚠️ 클라이언트 입력이 아니라 **서버가 before/after 로 계산**한 값이다.
+  multiChange Boolean @default(false)
+
+  actorUserId String? // 담당자 User.id (FK 없음)
+
+  space   Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  listing ProductListing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  product InvProduct?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId, createdAt])
+  @@index([listingId, createdAt])
+  @@index([productId, createdAt])
 }
 
 // ─── Sales Content Deck (정보 세팅) ───────────────────────────────────────────

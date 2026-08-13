@@ -413,6 +413,11 @@ export type KeywordMasterLink = Prisma.KeywordMasterLinkModel
  */
 export type ChannelKeywordRule = Prisma.ChannelKeywordRuleModel
 /**
+ * Model KeywordChangeLog
+ * 
+ */
+export type KeywordChangeLog = Prisma.KeywordChangeLogModel
+/**
  * Model Product
  * 
  */

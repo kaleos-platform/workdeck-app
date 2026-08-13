@@ -328,6 +328,21 @@ export const KeywordLinkRole = {
 export type KeywordLinkRole = (typeof KeywordLinkRole)[keyof typeof KeywordLinkRole]
 
 
+export const KeywordChangeReason = {
+  WRONG_MAIN_KEYWORD: 'WRONG_MAIN_KEYWORD',
+  UNCLEAR_NAME: 'UNCLEAR_NAME',
+  POLICY_RISK: 'POLICY_RISK',
+  NEW_SEARCH_DATA: 'NEW_SEARCH_DATA',
+  SPEC_CHANGE: 'SPEC_CHANGE',
+  BRAND_MODEL_CHANGE: 'BRAND_MODEL_CHANGE',
+  INITIAL_REGISTRATION: 'INITIAL_REGISTRATION',
+  TYPO_FIX: 'TYPO_FIX',
+  OTHER: 'OTHER'
+} as const
+
+export type KeywordChangeReason = (typeof KeywordChangeReason)[keyof typeof KeywordChangeReason]
+
+
 export const AiGenerationStatus = {
   PENDING: 'PENDING',
   SUCCEEDED: 'SUCCEEDED',

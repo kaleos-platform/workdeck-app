@@ -463,6 +463,7 @@ export const ModelName = {
   KeywordMaster: 'KeywordMaster',
   KeywordMasterLink: 'KeywordMasterLink',
   ChannelKeywordRule: 'ChannelKeywordRule',
+  KeywordChangeLog: 'KeywordChangeLog',
   Product: 'Product',
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
@@ -532,7 +533,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -6382,6 +6383,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    KeywordChangeLog: {
+      payload: Prisma.$KeywordChangeLogPayload<ExtArgs>
+      fields: Prisma.KeywordChangeLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KeywordChangeLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KeywordChangeLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload>
+        }
+        findFirst: {
+          args: Prisma.KeywordChangeLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KeywordChangeLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload>
+        }
+        findMany: {
+          args: Prisma.KeywordChangeLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload>[]
+        }
+        create: {
+          args: Prisma.KeywordChangeLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload>
+        }
+        createMany: {
+          args: Prisma.KeywordChangeLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.KeywordChangeLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload>[]
+        }
+        delete: {
+          args: Prisma.KeywordChangeLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload>
+        }
+        update: {
+          args: Prisma.KeywordChangeLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.KeywordChangeLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KeywordChangeLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.KeywordChangeLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.KeywordChangeLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordChangeLogPayload>
+        }
+        aggregate: {
+          args: Prisma.KeywordChangeLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKeywordChangeLog>
+        }
+        groupBy: {
+          args: Prisma.KeywordChangeLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KeywordChangeLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KeywordChangeLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KeywordChangeLogCountAggregateOutputType> | number
+        }
+      }
+    }
     Product: {
       payload: Prisma.$ProductPayload<ExtArgs>
       fields: Prisma.ProductFieldRefs
@@ -11679,6 +11754,26 @@ export const ChannelKeywordRuleScalarFieldEnum = {
 export type ChannelKeywordRuleScalarFieldEnum = (typeof ChannelKeywordRuleScalarFieldEnum)[keyof typeof ChannelKeywordRuleScalarFieldEnum]
 
 
+export const KeywordChangeLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  listingId: 'listingId',
+  productId: 'productId',
+  beforeName: 'beforeName',
+  afterName: 'afterName',
+  beforeKeywords: 'beforeKeywords',
+  afterKeywords: 'afterKeywords',
+  reason: 'reason',
+  reasonNote: 'reasonNote',
+  observeMetric: 'observeMetric',
+  multiChange: 'multiChange',
+  actorUserId: 'actorUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type KeywordChangeLogScalarFieldEnum = (typeof KeywordChangeLogScalarFieldEnum)[keyof typeof KeywordChangeLogScalarFieldEnum]
+
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -13153,6 +13248,20 @@ export type ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
+ * Reference to a field of type 'KeywordChangeReason'
+ */
+export type EnumKeywordChangeReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordChangeReason'>
+    
+
+
+/**
+ * Reference to a field of type 'KeywordChangeReason[]'
+ */
+export type ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordChangeReason[]'>
+    
+
+
+/**
  * Reference to a field of type 'AiGenerationStatus'
  */
 export type EnumAiGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiGenerationStatus'>
@@ -13941,6 +14050,7 @@ export type GlobalOmitConfig = {
   keywordMaster?: Prisma.KeywordMasterOmit
   keywordMasterLink?: Prisma.KeywordMasterLinkOmit
   channelKeywordRule?: Prisma.ChannelKeywordRuleOmit
+  keywordChangeLog?: Prisma.KeywordChangeLogOmit
   product?: Prisma.ProductOmit
   productPersona?: Prisma.ProductPersonaOmit
   persona?: Prisma.PersonaOmit

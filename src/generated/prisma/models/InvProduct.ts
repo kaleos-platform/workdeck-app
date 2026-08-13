@@ -345,6 +345,7 @@ export type InvProductWhereInput = {
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
   adCampaignMaps?: Prisma.AdCampaignProductMapListRelationFilter
   keywordLinks?: Prisma.KeywordMasterLinkListRelationFilter
+  keywordChanges?: Prisma.KeywordChangeLogListRelationFilter
 }
 
 export type InvProductOrderByWithRelationInput = {
@@ -378,6 +379,7 @@ export type InvProductOrderByWithRelationInput = {
   reorderPlans?: Prisma.ReorderPlanOrderByRelationAggregateInput
   adCampaignMaps?: Prisma.AdCampaignProductMapOrderByRelationAggregateInput
   keywordLinks?: Prisma.KeywordMasterLinkOrderByRelationAggregateInput
+  keywordChanges?: Prisma.KeywordChangeLogOrderByRelationAggregateInput
 }
 
 export type InvProductWhereUniqueInput = Prisma.AtLeast<{
@@ -415,6 +417,7 @@ export type InvProductWhereUniqueInput = Prisma.AtLeast<{
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
   adCampaignMaps?: Prisma.AdCampaignProductMapListRelationFilter
   keywordLinks?: Prisma.KeywordMasterLinkListRelationFilter
+  keywordChanges?: Prisma.KeywordChangeLogListRelationFilter
 }, "id" | "spaceId_code">
 
 export type InvProductOrderByWithAggregationInput = {
@@ -501,6 +504,7 @@ export type InvProductCreateInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateInput = {
@@ -531,6 +535,7 @@ export type InvProductUncheckedCreateInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUpdateInput = {
@@ -561,6 +566,7 @@ export type InvProductUpdateInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateInput = {
@@ -591,6 +597,7 @@ export type InvProductUncheckedUpdateInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateManyInput = {
@@ -951,6 +958,22 @@ export type InvProductUpdateOneWithoutKeywordLinksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductUpdateToOneWithWhereWithoutKeywordLinksInput, Prisma.InvProductUpdateWithoutKeywordLinksInput>, Prisma.InvProductUncheckedUpdateWithoutKeywordLinksInput>
 }
 
+export type InvProductCreateNestedOneWithoutKeywordChangesInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutKeywordChangesInput, Prisma.InvProductUncheckedCreateWithoutKeywordChangesInput>
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutKeywordChangesInput
+  connect?: Prisma.InvProductWhereUniqueInput
+}
+
+export type InvProductUpdateOneWithoutKeywordChangesNestedInput = {
+  create?: Prisma.XOR<Prisma.InvProductCreateWithoutKeywordChangesInput, Prisma.InvProductUncheckedCreateWithoutKeywordChangesInput>
+  connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutKeywordChangesInput
+  upsert?: Prisma.InvProductUpsertWithoutKeywordChangesInput
+  disconnect?: Prisma.InvProductWhereInput | boolean
+  delete?: Prisma.InvProductWhereInput | boolean
+  connect?: Prisma.InvProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvProductUpdateToOneWithWhereWithoutKeywordChangesInput, Prisma.InvProductUpdateWithoutKeywordChangesInput>, Prisma.InvProductUncheckedUpdateWithoutKeywordChangesInput>
+}
+
 export type InvProductCreateNestedOneWithoutReorderPlansInput = {
   create?: Prisma.XOR<Prisma.InvProductCreateWithoutReorderPlansInput, Prisma.InvProductUncheckedCreateWithoutReorderPlansInput>
   connectOrCreate?: Prisma.InvProductCreateOrConnectWithoutReorderPlansInput
@@ -1008,6 +1031,7 @@ export type InvProductCreateWithoutSpaceInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutSpaceInput = {
@@ -1037,6 +1061,7 @@ export type InvProductUncheckedCreateWithoutSpaceInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutSpaceInput = {
@@ -1119,6 +1144,7 @@ export type InvProductCreateWithoutGroupInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutGroupInput = {
@@ -1148,6 +1174,7 @@ export type InvProductUncheckedCreateWithoutGroupInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutGroupInput = {
@@ -1203,6 +1230,7 @@ export type InvProductCreateWithoutAdCampaignMapsInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutAdCampaignMapsInput = {
@@ -1232,6 +1260,7 @@ export type InvProductUncheckedCreateWithoutAdCampaignMapsInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutAdCampaignMapsInput = {
@@ -1277,6 +1306,7 @@ export type InvProductUpdateWithoutAdCampaignMapsInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutAdCampaignMapsInput = {
@@ -1306,6 +1336,7 @@ export type InvProductUncheckedUpdateWithoutAdCampaignMapsInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateWithoutOptionsInput = {
@@ -1335,6 +1366,7 @@ export type InvProductCreateWithoutOptionsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutOptionsInput = {
@@ -1364,6 +1396,7 @@ export type InvProductUncheckedCreateWithoutOptionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutOptionsInput = {
@@ -1409,6 +1442,7 @@ export type InvProductUpdateWithoutOptionsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutOptionsInput = {
@@ -1438,6 +1472,7 @@ export type InvProductUncheckedUpdateWithoutOptionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateWithoutReorderConfigInput = {
@@ -1467,6 +1502,7 @@ export type InvProductCreateWithoutReorderConfigInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutReorderConfigInput = {
@@ -1496,6 +1532,7 @@ export type InvProductUncheckedCreateWithoutReorderConfigInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutReorderConfigInput = {
@@ -1541,6 +1578,7 @@ export type InvProductUpdateWithoutReorderConfigInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutReorderConfigInput = {
@@ -1570,6 +1608,7 @@ export type InvProductUncheckedUpdateWithoutReorderConfigInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateWithoutBrandInput = {
@@ -1599,6 +1638,7 @@ export type InvProductCreateWithoutBrandInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutBrandInput = {
@@ -1628,6 +1668,7 @@ export type InvProductUncheckedCreateWithoutBrandInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutBrandInput = {
@@ -1683,6 +1724,7 @@ export type InvProductCreateWithoutKeywordLinksInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutKeywordLinksInput = {
@@ -1712,6 +1754,7 @@ export type InvProductUncheckedCreateWithoutKeywordLinksInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutKeywordLinksInput = {
@@ -1757,6 +1800,7 @@ export type InvProductUpdateWithoutKeywordLinksInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutKeywordLinksInput = {
@@ -1786,6 +1830,143 @@ export type InvProductUncheckedUpdateWithoutKeywordLinksInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
+}
+
+export type InvProductCreateWithoutKeywordChangesInput = {
+  id?: string
+  name: string
+  code?: string | null
+  status?: $Enums.InvProductStatus
+  internalName?: string | null
+  nameEn?: string | null
+  manufacturer?: string | null
+  manufactureCountry?: string | null
+  manufactureDate?: Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
+  useProductionCost?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutInvProductsInput
+  group: Prisma.InvProductGroupCreateNestedOneWithoutProductsInput
+  brand?: Prisma.BrandCreateNestedOneWithoutProductsInput
+  options?: Prisma.InvProductOptionCreateNestedManyWithoutProductInput
+  reorderConfig?: Prisma.InvReorderConfigCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
+  adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+}
+
+export type InvProductUncheckedCreateWithoutKeywordChangesInput = {
+  id?: string
+  spaceId: string
+  name: string
+  code?: string | null
+  groupId: string
+  status?: $Enums.InvProductStatus
+  brandId?: string | null
+  internalName?: string | null
+  nameEn?: string | null
+  manufacturer?: string | null
+  manufactureCountry?: string | null
+  manufactureDate?: Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: number
+  useProductionCost?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  options?: Prisma.InvProductOptionUncheckedCreateNestedManyWithoutProductInput
+  reorderConfig?: Prisma.InvReorderConfigUncheckedCreateNestedOneWithoutProductInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
+  adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+}
+
+export type InvProductCreateOrConnectWithoutKeywordChangesInput = {
+  where: Prisma.InvProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvProductCreateWithoutKeywordChangesInput, Prisma.InvProductUncheckedCreateWithoutKeywordChangesInput>
+}
+
+export type InvProductUpsertWithoutKeywordChangesInput = {
+  update: Prisma.XOR<Prisma.InvProductUpdateWithoutKeywordChangesInput, Prisma.InvProductUncheckedUpdateWithoutKeywordChangesInput>
+  create: Prisma.XOR<Prisma.InvProductCreateWithoutKeywordChangesInput, Prisma.InvProductUncheckedCreateWithoutKeywordChangesInput>
+  where?: Prisma.InvProductWhereInput
+}
+
+export type InvProductUpdateToOneWithWhereWithoutKeywordChangesInput = {
+  where?: Prisma.InvProductWhereInput
+  data: Prisma.XOR<Prisma.InvProductUpdateWithoutKeywordChangesInput, Prisma.InvProductUncheckedUpdateWithoutKeywordChangesInput>
+}
+
+export type InvProductUpdateWithoutKeywordChangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
+  internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductsNestedInput
+  group?: Prisma.InvProductGroupUpdateOneRequiredWithoutProductsNestedInput
+  brand?: Prisma.BrandUpdateOneWithoutProductsNestedInput
+  options?: Prisma.InvProductOptionUpdateManyWithoutProductNestedInput
+  reorderConfig?: Prisma.InvReorderConfigUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
+  adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+}
+
+export type InvProductUncheckedUpdateWithoutKeywordChangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvProductStatusFieldUpdateOperationsInput | $Enums.InvProductStatus
+  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufacturer?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manufactureDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  features?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  certifications?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  msrp?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  optionAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reorderRoundUnit?: Prisma.IntFieldUpdateOperationsInput | number
+  useProductionCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  options?: Prisma.InvProductOptionUncheckedUpdateManyWithoutProductNestedInput
+  reorderConfig?: Prisma.InvReorderConfigUncheckedUpdateOneWithoutProductNestedInput
+  reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
+  adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateWithoutReorderPlansInput = {
@@ -1815,6 +1996,7 @@ export type InvProductCreateWithoutReorderPlansInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutReorderPlansInput = {
@@ -1844,6 +2026,7 @@ export type InvProductUncheckedCreateWithoutReorderPlansInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemUncheckedCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutReorderPlansInput = {
@@ -1889,6 +2072,7 @@ export type InvProductUpdateWithoutReorderPlansInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutReorderPlansInput = {
@@ -1918,6 +2102,7 @@ export type InvProductUncheckedUpdateWithoutReorderPlansInput = {
   reorderPlanItems?: Prisma.ReorderPlanItemUncheckedUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateWithoutReorderPlanItemsInput = {
@@ -1947,6 +2132,7 @@ export type InvProductCreateWithoutReorderPlanItemsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutProductInput
 }
 
 export type InvProductUncheckedCreateWithoutReorderPlanItemsInput = {
@@ -1976,6 +2162,7 @@ export type InvProductUncheckedCreateWithoutReorderPlanItemsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutProductInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutProductInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutProductInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type InvProductCreateOrConnectWithoutReorderPlanItemsInput = {
@@ -2021,6 +2208,7 @@ export type InvProductUpdateWithoutReorderPlanItemsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutReorderPlanItemsInput = {
@@ -2050,6 +2238,7 @@ export type InvProductUncheckedUpdateWithoutReorderPlanItemsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductCreateManySpaceInput = {
@@ -2102,6 +2291,7 @@ export type InvProductUpdateWithoutSpaceInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutSpaceInput = {
@@ -2131,6 +2321,7 @@ export type InvProductUncheckedUpdateWithoutSpaceInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateManyWithoutSpaceInput = {
@@ -2206,6 +2397,7 @@ export type InvProductUpdateWithoutGroupInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutGroupInput = {
@@ -2235,6 +2427,7 @@ export type InvProductUncheckedUpdateWithoutGroupInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateManyWithoutGroupInput = {
@@ -2310,6 +2503,7 @@ export type InvProductUpdateWithoutBrandInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateWithoutBrandInput = {
@@ -2339,6 +2533,7 @@ export type InvProductUncheckedUpdateWithoutBrandInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutProductNestedInput
   adCampaignMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutProductNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutProductNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type InvProductUncheckedUpdateManyWithoutBrandInput = {
@@ -2375,6 +2570,7 @@ export type InvProductCountOutputType = {
   reorderPlans: number
   adCampaignMaps: number
   keywordLinks: number
+  keywordChanges: number
 }
 
 export type InvProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2383,6 +2579,7 @@ export type InvProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extens
   reorderPlans?: boolean | InvProductCountOutputTypeCountReorderPlansArgs
   adCampaignMaps?: boolean | InvProductCountOutputTypeCountAdCampaignMapsArgs
   keywordLinks?: boolean | InvProductCountOutputTypeCountKeywordLinksArgs
+  keywordChanges?: boolean | InvProductCountOutputTypeCountKeywordChangesArgs
 }
 
 /**
@@ -2430,6 +2627,13 @@ export type InvProductCountOutputTypeCountKeywordLinksArgs<ExtArgs extends runti
   where?: Prisma.KeywordMasterLinkWhereInput
 }
 
+/**
+ * InvProductCountOutputType without action
+ */
+export type InvProductCountOutputTypeCountKeywordChangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.KeywordChangeLogWhereInput
+}
+
 
 export type InvProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2462,6 +2666,7 @@ export type InvProductSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   reorderPlans?: boolean | Prisma.InvProduct$reorderPlansArgs<ExtArgs>
   adCampaignMaps?: boolean | Prisma.InvProduct$adCampaignMapsArgs<ExtArgs>
   keywordLinks?: boolean | Prisma.InvProduct$keywordLinksArgs<ExtArgs>
+  keywordChanges?: boolean | Prisma.InvProduct$keywordChangesArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invProduct"]>
 
@@ -2554,6 +2759,7 @@ export type InvProductInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   reorderPlans?: boolean | Prisma.InvProduct$reorderPlansArgs<ExtArgs>
   adCampaignMaps?: boolean | Prisma.InvProduct$adCampaignMapsArgs<ExtArgs>
   keywordLinks?: boolean | Prisma.InvProduct$keywordLinksArgs<ExtArgs>
+  keywordChanges?: boolean | Prisma.InvProduct$keywordChangesArgs<ExtArgs>
   _count?: boolean | Prisma.InvProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InvProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2579,6 +2785,7 @@ export type $InvProductPayload<ExtArgs extends runtime.Types.Extensions.Internal
     reorderPlans: Prisma.$ReorderPlanPayload<ExtArgs>[]
     adCampaignMaps: Prisma.$AdCampaignProductMapPayload<ExtArgs>[]
     keywordLinks: Prisma.$KeywordMasterLinkPayload<ExtArgs>[]
+    keywordChanges: Prisma.$KeywordChangeLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3005,6 +3212,7 @@ export interface Prisma__InvProductClient<T, Null = never, ExtArgs extends runti
   reorderPlans<T extends Prisma.InvProduct$reorderPlansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$reorderPlansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   adCampaignMaps<T extends Prisma.InvProduct$adCampaignMapsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$adCampaignMapsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdCampaignProductMapPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   keywordLinks<T extends Prisma.InvProduct$keywordLinksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$keywordLinksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordMasterLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  keywordChanges<T extends Prisma.InvProduct$keywordChangesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InvProduct$keywordChangesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordChangeLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3606,6 +3814,30 @@ export type InvProduct$keywordLinksArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.KeywordMasterLinkScalarFieldEnum | Prisma.KeywordMasterLinkScalarFieldEnum[]
+}
+
+/**
+ * InvProduct.keywordChanges
+ */
+export type InvProduct$keywordChangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the KeywordChangeLog
+   */
+  select?: Prisma.KeywordChangeLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the KeywordChangeLog
+   */
+  omit?: Prisma.KeywordChangeLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KeywordChangeLogInclude<ExtArgs> | null
+  where?: Prisma.KeywordChangeLogWhereInput
+  orderBy?: Prisma.KeywordChangeLogOrderByWithRelationInput | Prisma.KeywordChangeLogOrderByWithRelationInput[]
+  cursor?: Prisma.KeywordChangeLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.KeywordChangeLogScalarFieldEnum | Prisma.KeywordChangeLogScalarFieldEnum[]
 }
 
 /**

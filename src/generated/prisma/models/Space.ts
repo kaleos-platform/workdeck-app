@@ -222,6 +222,7 @@ export type SpaceWhereInput = {
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
   keywordMasters?: Prisma.KeywordMasterListRelationFilter
   channelKeywordRules?: Prisma.ChannelKeywordRuleListRelationFilter
+  keywordChangeLogs?: Prisma.KeywordChangeLogListRelationFilter
   slackInstallation?: Prisma.XOR<Prisma.SlackInstallationNullableScalarRelationFilter, Prisma.SlackInstallationWhereInput> | null
   products?: Prisma.ProductListRelationFilter
   personas?: Prisma.PersonaListRelationFilter
@@ -306,6 +307,7 @@ export type SpaceOrderByWithRelationInput = {
   reorderPlans?: Prisma.ReorderPlanOrderByRelationAggregateInput
   keywordMasters?: Prisma.KeywordMasterOrderByRelationAggregateInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleOrderByRelationAggregateInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogOrderByRelationAggregateInput
   slackInstallation?: Prisma.SlackInstallationOrderByWithRelationInput
   products?: Prisma.ProductOrderByRelationAggregateInput
   personas?: Prisma.PersonaOrderByRelationAggregateInput
@@ -393,6 +395,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
   keywordMasters?: Prisma.KeywordMasterListRelationFilter
   channelKeywordRules?: Prisma.ChannelKeywordRuleListRelationFilter
+  keywordChangeLogs?: Prisma.KeywordChangeLogListRelationFilter
   slackInstallation?: Prisma.XOR<Prisma.SlackInstallationNullableScalarRelationFilter, Prisma.SlackInstallationWhereInput> | null
   products?: Prisma.ProductListRelationFilter
   personas?: Prisma.PersonaListRelationFilter
@@ -501,6 +504,7 @@ export type SpaceCreateInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -585,6 +589,7 @@ export type SpaceUncheckedCreateInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -669,6 +674,7 @@ export type SpaceUpdateInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -753,6 +759,7 @@ export type SpaceUncheckedUpdateInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1354,6 +1361,20 @@ export type SpaceUpdateOneRequiredWithoutChannelKeywordRulesNestedInput = {
   upsert?: Prisma.SpaceUpsertWithoutChannelKeywordRulesInput
   connect?: Prisma.SpaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutChannelKeywordRulesInput, Prisma.SpaceUpdateWithoutChannelKeywordRulesInput>, Prisma.SpaceUncheckedUpdateWithoutChannelKeywordRulesInput>
+}
+
+export type SpaceCreateNestedOneWithoutKeywordChangeLogsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutKeywordChangeLogsInput, Prisma.SpaceUncheckedCreateWithoutKeywordChangeLogsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutKeywordChangeLogsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutKeywordChangeLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutKeywordChangeLogsInput, Prisma.SpaceUncheckedCreateWithoutKeywordChangeLogsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutKeywordChangeLogsInput
+  upsert?: Prisma.SpaceUpsertWithoutKeywordChangeLogsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutKeywordChangeLogsInput, Prisma.SpaceUpdateWithoutKeywordChangeLogsInput>, Prisma.SpaceUncheckedUpdateWithoutKeywordChangeLogsInput>
 }
 
 export type SpaceCreateNestedOneWithoutProductsInput = {
@@ -1960,6 +1981,7 @@ export type SpaceCreateWithoutMembersInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -2043,6 +2065,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -2142,6 +2165,7 @@ export type SpaceUpdateWithoutMembersInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -2225,6 +2249,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2309,6 +2334,7 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -2392,6 +2418,7 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -2491,6 +2518,7 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -2574,6 +2602,7 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2657,6 +2686,7 @@ export type SpaceCreateWithoutAgentToggleInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -2740,6 +2770,7 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -2839,6 +2870,7 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -2922,6 +2954,7 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3005,6 +3038,7 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -3088,6 +3122,7 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -3187,6 +3222,7 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -3270,6 +3306,7 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3353,6 +3390,7 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
   brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
@@ -3436,6 +3474,7 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
   brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
@@ -3535,6 +3574,7 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
   brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
@@ -3618,6 +3658,7 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
   brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
@@ -3700,6 +3741,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -3783,6 +3825,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -3882,6 +3925,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -3965,6 +4009,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4048,6 +4093,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -4131,6 +4177,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -4230,6 +4277,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -4313,6 +4361,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4396,6 +4445,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -4479,6 +4529,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -4578,6 +4629,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -4661,6 +4713,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4744,6 +4797,7 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -4827,6 +4881,7 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -4926,6 +4981,7 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -5009,6 +5065,7 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5092,6 +5149,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -5175,6 +5233,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -5274,6 +5333,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -5357,6 +5417,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5440,6 +5501,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -5523,6 +5585,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -5622,6 +5685,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -5705,6 +5769,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5788,6 +5853,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -5871,6 +5937,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -5970,6 +6037,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -6053,6 +6121,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6136,6 +6205,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -6219,6 +6289,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -6318,6 +6389,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -6401,6 +6473,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6484,6 +6557,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -6567,6 +6641,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -6666,6 +6741,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -6749,6 +6825,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6832,6 +6909,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -6915,6 +6993,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -7014,6 +7093,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -7097,6 +7177,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7180,6 +7261,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -7263,6 +7345,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -7362,6 +7445,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -7445,6 +7529,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7528,6 +7613,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -7611,6 +7697,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -7710,6 +7797,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -7793,6 +7881,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7876,6 +7965,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -7959,6 +8049,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -8058,6 +8149,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -8141,6 +8233,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8224,6 +8317,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -8307,6 +8401,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -8406,6 +8501,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -8489,6 +8585,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8572,6 +8669,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -8655,6 +8753,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -8754,6 +8853,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -8837,6 +8937,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8920,6 +9021,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -9003,6 +9105,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -9102,6 +9205,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -9185,6 +9289,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9268,6 +9373,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -9351,6 +9457,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -9450,6 +9557,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -9533,6 +9641,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9616,6 +9725,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -9699,6 +9809,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -9798,6 +9909,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -9881,6 +9993,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9964,6 +10077,7 @@ export type SpaceCreateWithoutBrandsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -10047,6 +10161,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -10146,6 +10261,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -10229,6 +10345,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10312,6 +10429,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -10395,6 +10513,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -10494,6 +10613,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -10577,6 +10697,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10660,6 +10781,7 @@ export type SpaceCreateWithoutChannelsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -10743,6 +10865,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -10842,6 +10965,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -10925,6 +11049,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11008,6 +11133,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -11091,6 +11217,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -11190,6 +11317,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -11273,6 +11401,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11356,6 +11485,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -11439,6 +11569,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -11538,6 +11669,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -11621,6 +11753,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11704,6 +11837,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -11787,6 +11921,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -11886,6 +12021,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -11969,6 +12105,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12052,6 +12189,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -12135,6 +12273,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -12234,6 +12373,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -12317,6 +12457,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12400,6 +12541,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -12483,6 +12625,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -12582,6 +12725,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -12665,6 +12809,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12748,6 +12893,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -12831,6 +12977,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -12930,6 +13077,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -13013,6 +13161,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13096,6 +13245,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -13179,6 +13329,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -13278,6 +13429,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -13361,6 +13513,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13444,6 +13597,7 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -13527,6 +13681,7 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -13626,6 +13781,7 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -13709,6 +13865,7 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13792,6 +13949,7 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -13875,6 +14033,7 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -13974,6 +14133,7 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -14057,6 +14217,359 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutKeywordChangeLogsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutKeywordChangeLogsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutKeywordChangeLogsInput, Prisma.SpaceUncheckedCreateWithoutKeywordChangeLogsInput>
+}
+
+export type SpaceUpsertWithoutKeywordChangeLogsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutKeywordChangeLogsInput, Prisma.SpaceUncheckedUpdateWithoutKeywordChangeLogsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutKeywordChangeLogsInput, Prisma.SpaceUncheckedCreateWithoutKeywordChangeLogsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutKeywordChangeLogsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutKeywordChangeLogsInput, Prisma.SpaceUncheckedUpdateWithoutKeywordChangeLogsInput>
+}
+
+export type SpaceUpdateWithoutKeywordChangeLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14141,6 +14654,7 @@ export type SpaceCreateWithoutProductsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
   brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
@@ -14224,6 +14738,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
   brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
@@ -14323,6 +14838,7 @@ export type SpaceUpdateWithoutProductsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
   brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
@@ -14406,6 +14922,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
   brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
@@ -14489,6 +15006,7 @@ export type SpaceCreateWithoutPersonasInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
@@ -14572,6 +15090,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
@@ -14671,6 +15190,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
@@ -14754,6 +15274,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
@@ -14837,6 +15358,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -14920,6 +15442,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -15019,6 +15542,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -15102,6 +15626,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15185,6 +15710,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -15268,6 +15794,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -15367,6 +15894,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -15450,6 +15978,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15533,6 +16062,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -15616,6 +16146,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -15715,6 +16246,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -15798,6 +16330,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15881,6 +16414,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -15964,6 +16498,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -16063,6 +16598,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -16146,6 +16682,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16229,6 +16766,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -16312,6 +16850,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -16411,6 +16950,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -16494,6 +17034,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16577,6 +17118,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -16660,6 +17202,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -16759,6 +17302,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -16842,6 +17386,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16925,6 +17470,7 @@ export type SpaceCreateWithoutContentsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -17008,6 +17554,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -17107,6 +17654,7 @@ export type SpaceUpdateWithoutContentsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -17190,6 +17738,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17273,6 +17822,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -17356,6 +17906,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -17455,6 +18006,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -17538,6 +18090,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17621,6 +18174,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -17704,6 +18258,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -17803,6 +18358,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -17886,6 +18442,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17969,6 +18526,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -18052,6 +18610,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -18151,6 +18710,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -18234,6 +18794,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18317,6 +18878,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -18400,6 +18962,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -18499,6 +19062,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -18582,6 +19146,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18665,6 +19230,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -18748,6 +19314,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -18847,6 +19414,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -18930,6 +19498,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19013,6 +19582,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -19096,6 +19666,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -19195,6 +19766,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -19278,6 +19850,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19361,6 +19934,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -19444,6 +20018,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -19543,6 +20118,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -19626,6 +20202,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19709,6 +20286,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -19792,6 +20370,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -19891,6 +20470,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -19974,6 +20554,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20057,6 +20638,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -20140,6 +20722,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -20239,6 +20822,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -20322,6 +20906,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20404,6 +20989,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -20487,6 +21073,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -20586,6 +21173,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -20669,6 +21257,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20753,6 +21342,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -20836,6 +21426,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -20935,6 +21526,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -21018,6 +21610,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21101,6 +21694,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -21184,6 +21778,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -21283,6 +21878,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -21366,6 +21962,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21449,6 +22046,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -21532,6 +22130,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -21631,6 +22230,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -21714,6 +22314,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21797,6 +22398,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -21880,6 +22482,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -21979,6 +22582,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -22062,6 +22666,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22145,6 +22750,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -22228,6 +22834,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -22327,6 +22934,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -22410,6 +23018,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22493,6 +23102,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -22576,6 +23186,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -22675,6 +23286,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -22758,6 +23370,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22841,6 +23454,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -22924,6 +23538,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -23023,6 +23638,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -23106,6 +23722,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23189,6 +23806,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -23272,6 +23890,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -23371,6 +23990,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -23454,6 +24074,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23537,6 +24158,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -23620,6 +24242,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -23719,6 +24342,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -23802,6 +24426,7 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23885,6 +24510,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -23968,6 +24594,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -24067,6 +24694,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -24150,6 +24778,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24233,6 +24862,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -24316,6 +24946,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -24415,6 +25046,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -24498,6 +25130,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24581,6 +25214,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -24664,6 +25298,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -24763,6 +25398,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -24846,6 +25482,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24929,6 +25566,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -25012,6 +25650,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -25111,6 +25750,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -25194,6 +25834,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25277,6 +25918,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -25360,6 +26002,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -25459,6 +26102,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -25542,6 +26186,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25625,6 +26270,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -25708,6 +26354,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -25807,6 +26454,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -25890,6 +26538,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25973,6 +26622,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -26056,6 +26706,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -26155,6 +26806,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -26238,6 +26890,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26321,6 +26974,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -26404,6 +27058,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -26503,6 +27158,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -26586,6 +27242,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26669,6 +27326,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -26752,6 +27410,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -26851,6 +27510,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -26934,6 +27594,7 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27017,6 +27678,7 @@ export type SpaceCreateWithoutSubscriptionInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -27100,6 +27762,7 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -27199,6 +27862,7 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -27282,6 +27946,7 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27365,6 +28030,7 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -27448,6 +28114,7 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -27547,6 +28214,7 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -27630,6 +28298,7 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27713,6 +28382,7 @@ export type SpaceCreateWithoutBillingChargesInput = {
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
@@ -27796,6 +28466,7 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
   slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
   personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
@@ -27895,6 +28566,7 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
@@ -27978,6 +28650,7 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
   slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
   personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28058,6 +28731,7 @@ export type SpaceCountOutputType = {
   reorderPlans: number
   keywordMasters: number
   channelKeywordRules: number
+  keywordChangeLogs: number
   products: number
   personas: number
   workspaceAiCredits: number
@@ -28130,6 +28804,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   reorderPlans?: boolean | SpaceCountOutputTypeCountReorderPlansArgs
   keywordMasters?: boolean | SpaceCountOutputTypeCountKeywordMastersArgs
   channelKeywordRules?: boolean | SpaceCountOutputTypeCountChannelKeywordRulesArgs
+  keywordChangeLogs?: boolean | SpaceCountOutputTypeCountKeywordChangeLogsArgs
   products?: boolean | SpaceCountOutputTypeCountProductsArgs
   personas?: boolean | SpaceCountOutputTypeCountPersonasArgs
   workspaceAiCredits?: boolean | SpaceCountOutputTypeCountWorkspaceAiCreditsArgs
@@ -28389,6 +29064,13 @@ export type SpaceCountOutputTypeCountKeywordMastersArgs<ExtArgs extends runtime.
  */
 export type SpaceCountOutputTypeCountChannelKeywordRulesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ChannelKeywordRuleWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountKeywordChangeLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.KeywordChangeLogWhereInput
 }
 
 /**
@@ -28704,6 +29386,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   reorderPlans?: boolean | Prisma.Space$reorderPlansArgs<ExtArgs>
   keywordMasters?: boolean | Prisma.Space$keywordMastersArgs<ExtArgs>
   channelKeywordRules?: boolean | Prisma.Space$channelKeywordRulesArgs<ExtArgs>
+  keywordChangeLogs?: boolean | Prisma.Space$keywordChangeLogsArgs<ExtArgs>
   slackInstallation?: boolean | Prisma.Space$slackInstallationArgs<ExtArgs>
   products?: boolean | Prisma.Space$productsArgs<ExtArgs>
   personas?: boolean | Prisma.Space$personasArgs<ExtArgs>
@@ -28811,6 +29494,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   reorderPlans?: boolean | Prisma.Space$reorderPlansArgs<ExtArgs>
   keywordMasters?: boolean | Prisma.Space$keywordMastersArgs<ExtArgs>
   channelKeywordRules?: boolean | Prisma.Space$channelKeywordRulesArgs<ExtArgs>
+  keywordChangeLogs?: boolean | Prisma.Space$keywordChangeLogsArgs<ExtArgs>
   slackInstallation?: boolean | Prisma.Space$slackInstallationArgs<ExtArgs>
   products?: boolean | Prisma.Space$productsArgs<ExtArgs>
   personas?: boolean | Prisma.Space$personasArgs<ExtArgs>
@@ -28894,6 +29578,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     reorderPlans: Prisma.$ReorderPlanPayload<ExtArgs>[]
     keywordMasters: Prisma.$KeywordMasterPayload<ExtArgs>[]
     channelKeywordRules: Prisma.$ChannelKeywordRulePayload<ExtArgs>[]
+    keywordChangeLogs: Prisma.$KeywordChangeLogPayload<ExtArgs>[]
     slackInstallation: Prisma.$SlackInstallationPayload<ExtArgs> | null
     products: Prisma.$ProductPayload<ExtArgs>[]
     personas: Prisma.$PersonaPayload<ExtArgs>[]
@@ -29371,6 +30056,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   reorderPlans<T extends Prisma.Space$reorderPlansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$reorderPlansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   keywordMasters<T extends Prisma.Space$keywordMastersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$keywordMastersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordMasterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channelKeywordRules<T extends Prisma.Space$channelKeywordRulesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$channelKeywordRulesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelKeywordRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  keywordChangeLogs<T extends Prisma.Space$keywordChangeLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$keywordChangeLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordChangeLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   slackInstallation<T extends Prisma.Space$slackInstallationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$slackInstallationArgs<ExtArgs>>): Prisma.Prisma__SlackInstallationClient<runtime.Types.Result.GetResult<Prisma.$SlackInstallationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   products<T extends Prisma.Space$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   personas<T extends Prisma.Space$personasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$personasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PersonaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -30592,6 +31278,30 @@ export type Space$channelKeywordRulesArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.ChannelKeywordRuleScalarFieldEnum | Prisma.ChannelKeywordRuleScalarFieldEnum[]
+}
+
+/**
+ * Space.keywordChangeLogs
+ */
+export type Space$keywordChangeLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the KeywordChangeLog
+   */
+  select?: Prisma.KeywordChangeLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the KeywordChangeLog
+   */
+  omit?: Prisma.KeywordChangeLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KeywordChangeLogInclude<ExtArgs> | null
+  where?: Prisma.KeywordChangeLogWhereInput
+  orderBy?: Prisma.KeywordChangeLogOrderByWithRelationInput | Prisma.KeywordChangeLogOrderByWithRelationInput[]
+  cursor?: Prisma.KeywordChangeLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.KeywordChangeLogScalarFieldEnum | Prisma.KeywordChangeLogScalarFieldEnum[]
 }
 
 /**

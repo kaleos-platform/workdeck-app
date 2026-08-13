@@ -317,6 +317,32 @@ export const productListingSchema = z
   })
 export type ProductListingInput = z.infer<typeof productListingSchema>
 
+// ─── 상품명·검색어 변경 사유 (§25 · §26) ────────────────────────────────────
+//
+// enum 값 목록은 Prisma 의 KeywordChangeReason 과 1:1 이어야 한다(§25 "변경 가능" 목록).
+// 정의 위치가 §24 키워드 섹션이 아니라 여기인 것은 순서 때문이다 — 아래 리스팅 PATCH
+// 스키마가 이 값을 참조하며, z.enum 은 런타임 값이라 먼저 선언돼 있어야 한다.
+export const keywordChangeReasonEnum = z.enum([
+  'WRONG_MAIN_KEYWORD',
+  'UNCLEAR_NAME',
+  'POLICY_RISK',
+  'NEW_SEARCH_DATA',
+  'SPEC_CHANGE',
+  'BRAND_MODEL_CHANGE',
+  'INITIAL_REGISTRATION',
+  'TYPO_FIX',
+  'OTHER',
+])
+
+// 기존 저장 라우트(리스팅·채널상품 PATCH)에 얹는 **선택** 입력.
+// ⚠️ 전부 optional 이다 — 사유를 안 보내면 이력만 남기지 않고 저장은 정상 진행한다.
+// 사유를 강제하는 게이트는 UI 단계의 책임이며, 여기서 막으면 기존 화면이 전부 깨진다.
+export const keywordChangeReasonFields = {
+  changeReason: keywordChangeReasonEnum.optional(),
+  reasonNote: emptyToUndefined.pipe(z.string().trim().max(1000)).optional().nullable(),
+  observeMetric: emptyToUndefined.pipe(z.string().trim().max(200)).optional().nullable(),
+}
+
 // PATCH — 모든 필드 선택. items는 있으면 전체 교체.
 export const productListingPatchSchema = z
   .object({
@@ -345,6 +371,7 @@ export const productListingPatchSchema = z
     status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
     memo: emptyToUndefined.pipe(z.string().trim().max(500)).optional().nullable(),
     items: z.array(productListingItemSchema).min(1).max(50).optional(),
+    ...keywordChangeReasonFields, // §26 이력 기록용. 저장 필드가 아니다.
   })
   .superRefine((v, ctx) => {
     if (!v.items) return
@@ -765,6 +792,31 @@ export const keywordValidateSchema = z.object({
   optionNames: z.array(z.string()).max(200).optional(),
 })
 export type KeywordValidateInput = z.infer<typeof keywordValidateSchema>
+
+// §26 변경 기록 생성. 사유 enum 은 위쪽 keywordChangeReasonEnum(§25) 을 그대로 쓴다.
+//
+// ⚠️ multiChange 는 여기에 **없다.** 서버가 before/after 로 계산하는 값이라 클라이언트가
+// 보내도 무시한다(diffKeywordChange — src/lib/sh/keyword-change.ts).
+// .strict() 를 쓰지 않는 이유도 같다 — 순진한 클라이언트가 multiChange 를 실어 보냈다고
+// 400 을 돌려줄 이유는 없다.
+export const keywordChangeLogCreateSchema = z
+  .object({
+    listingId: z.string().min(1).nullable().optional(),
+    productId: z.string().min(1).nullable().optional(),
+    beforeName: nullableText(400),
+    afterName: nullableText(400),
+    beforeKeywords: z.array(z.string().max(100)).max(200).optional(),
+    afterKeywords: z.array(z.string().max(100)).max(200).optional(),
+    reason: keywordChangeReasonEnum,
+    reasonNote: nullableText(1000),
+    observeMetric: nullableText(200),
+  })
+  // OTHER(기타)는 무엇을 왜 바꿨는지 사유 자체로는 알 수 없으므로 메모를 요구한다.
+  .refine((v) => v.reason !== 'OTHER' || Boolean(v.reasonNote?.trim()), {
+    message: '기타 사유는 변경 사유 메모가 필요합니다',
+    path: ['reasonNote'],
+  })
+export type KeywordChangeLogCreateInput = z.infer<typeof keywordChangeLogCreateSchema>
 
 // 채널 키워드 규칙 오버라이드 — 전 필드 nullable(=기본값 사용) 이 정상 상태다.
 const nullableInt = (min: number, max: number) =>

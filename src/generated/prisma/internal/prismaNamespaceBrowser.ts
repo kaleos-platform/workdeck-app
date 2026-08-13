@@ -130,6 +130,7 @@ export const ModelName = {
   KeywordMaster: 'KeywordMaster',
   KeywordMasterLink: 'KeywordMasterLink',
   ChannelKeywordRule: 'ChannelKeywordRule',
+  KeywordChangeLog: 'KeywordChangeLog',
   Product: 'Product',
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
@@ -1462,6 +1463,26 @@ export const ChannelKeywordRuleScalarFieldEnum = {
 } as const
 
 export type ChannelKeywordRuleScalarFieldEnum = (typeof ChannelKeywordRuleScalarFieldEnum)[keyof typeof ChannelKeywordRuleScalarFieldEnum]
+
+
+export const KeywordChangeLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  listingId: 'listingId',
+  productId: 'productId',
+  beforeName: 'beforeName',
+  afterName: 'afterName',
+  beforeKeywords: 'beforeKeywords',
+  afterKeywords: 'afterKeywords',
+  reason: 'reason',
+  reasonNote: 'reasonNote',
+  observeMetric: 'observeMetric',
+  multiChange: 'multiChange',
+  actorUserId: 'actorUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type KeywordChangeLogScalarFieldEnum = (typeof KeywordChangeLogScalarFieldEnum)[keyof typeof KeywordChangeLogScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {

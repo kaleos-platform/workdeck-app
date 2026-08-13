@@ -7,6 +7,7 @@
 // 끌어오면 안 된다. `import type` 은 빌드 시 완전히 지워지고, 대신 enum 값이 바뀌면
 // 아래 Record 가 컴파일 에러를 내므로 스키마와의 드리프트가 자동으로 잡힌다.
 import type {
+  KeywordChangeReason,
   KeywordLinkRole,
   KeywordMasterSource,
   KeywordMasterStatus,
@@ -45,6 +46,22 @@ export const KEYWORD_TYPE_LABELS: Record<KeywordMasterType, string> = {
   ALIAS: '별칭 및 영문명',
   COMPETITOR: '경쟁 브랜드',
   UNCLASSIFIED: '미분류',
+}
+
+/**
+ * §25 상품명 변경 사유. 여기 있는 값이 곧 "변경해도 되는 사유"의 전부다 —
+ * §25 의 "변경하지 않음" 항목(노출 감소·단기 광고 성과 등)은 선택지가 없다.
+ */
+export const KEYWORD_CHANGE_REASON_LABELS: Record<KeywordChangeReason, string> = {
+  WRONG_MAIN_KEYWORD: '잘못된 메인 키워드',
+  UNCLEAR_NAME: '상품을 이해하기 어려운 상품명',
+  POLICY_RISK: '정책 위반 가능성',
+  NEW_SEARCH_DATA: '새로운 검색 데이터 근거',
+  SPEC_CHANGE: '실제 제품 사양 변경',
+  BRAND_MODEL_CHANGE: '브랜드/모델 변경',
+  INITIAL_REGISTRATION: '최초 등록',
+  TYPO_FIX: '오탈자 수정',
+  OTHER: '기타',
 }
 
 /** 상품/리스팅에 대한 키워드 역할 */
