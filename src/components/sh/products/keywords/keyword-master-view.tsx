@@ -70,11 +70,17 @@ type KeywordRow = {
     listingId: string | null
     role: KeywordLinkRole
     sortOrder: number
+    /** 연결 대상이 삭제된 잔여 링크면 null 로 온다. */
+    product: { id: string; name: string; internalName: string | null } | null
+    listing: {
+      id: string
+      searchName: string
+      managementName: string | null
+      channelId: string
+      channel: { id: string; name: string; externalSource: string | null } | null
+    } | null
   }>
 }
-
-type ChannelInfo = { id: string; name: string; externalSource: string | null }
-type ListingInfo = { id: string; name: string; channelId: string }
 
 const STATUS_KEYS = Object.keys(KEYWORD_STATUS_LABELS) as KeywordStatus[]
 const TYPE_KEYS = Object.keys(KEYWORD_TYPE_LABELS) as KeywordMasterType[]
@@ -108,10 +114,6 @@ export function KeywordMasterView() {
   // ─── 중복 클러스터 ────────────────────────────────────────────────────────
   const [clusters, setClusters] = useState<DuplicateCluster[]>([])
   const [clustersLoading, setClustersLoading] = useState(true)
-
-  // ─── 연결 대상 이름/연동 여부 해석용 참조 데이터 ──────────────────────────
-  const [channels, setChannels] = useState<Map<string, ChannelInfo>>(new Map())
-  const [listings, setListings] = useState<Map<string, ListingInfo>>(new Map())
 
   // ─── 다중 선택 ────────────────────────────────────────────────────────────
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -180,40 +182,6 @@ export function KeywordMasterView() {
   useEffect(() => {
     fetchDuplicates()
   }, [fetchDuplicates])
-
-  // 채널·판매채널 상품은 연결 칩의 이름과 "연동 미러" 판정에만 쓰는 참조 데이터다.
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const [chRes, lsRes] = await Promise.all([
-          fetch('/api/channels'),
-          fetch('/api/sh/products/listings?pageSize=100'),
-        ])
-        if (cancelled) return
-        if (chRes.ok) {
-          const data = await chRes.json()
-          const list: ChannelInfo[] = data.channels ?? []
-          setChannels(new Map(list.map((c) => [c.id, c])))
-        }
-        if (lsRes.ok) {
-          const data = await lsRes.json()
-          const list: Array<{ id: string; displayName: string; channelId: string }> =
-            data.data ?? data.listings ?? []
-          setListings(
-            new Map(
-              list.map((l) => [l.id, { id: l.id, name: l.displayName, channelId: l.channelId }])
-            )
-          )
-        }
-      } catch {
-        // 참조 데이터 실패는 목록 자체를 막지 않는다 — 이름 대신 id 축약 표기로 떨어진다.
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   // 필터/페이지가 바뀌면 선택은 무효 — 화면 밖 행에 일괄 액션이 나가지 않게 한다.
   useEffect(() => {
@@ -347,19 +315,28 @@ export function KeywordMasterView() {
   }
 
   /**
-   * 연동 채널(externalSource != null)의 판매채널 상품은 대표 채널의 읽기전용 미러다
-   * (src/lib/sh/channel-relation.ts 의 판정 규칙과 동일 기준). 편집 어포던스를 숨긴다.
-   * 참조 데이터로 확인되지 않는 listing 은 **잠긴 것으로 간주**한다 — 미러를 편집 가능하게
-   * 보여주는 쪽이 그 반대보다 위험하다.
+   * 연결 칩 표시 정보. 이름·채널·미러 여부는 모두 목록 응답의 links[] 에 실려 오므로
+   * 별도 참조 조회 없이 확정적으로 판정한다.
+   * - 상품 표시명: internalName ?? name (관리 상품명 우선)
+   * - 판매채널 상품 표시명: managementName ?? searchName (스키마 fallback 규칙)
+   * - 연동 채널(externalSource != null)의 판매채널 상품은 대표 채널의 읽기전용 미러라
+   *   편집 어포던스를 숨긴다 (src/lib/sh/channel-relation.ts 와 동일 기준).
+   * 관계가 null 인 건 연결 대상이 삭제된 잔여 링크뿐이라 잠글 이유가 없다.
    */
-  function listingLinkInfo(listingId: string) {
-    const listing = listings.get(listingId)
-    if (!listing) return { name: '판매채널 상품', locked: true, channelName: null as string | null }
-    const channel = channels.get(listing.channelId)
+  function linkChipInfo(link: KeywordRow['links'][number]) {
+    if (link.listingId != null) {
+      const listing = link.listing
+      return {
+        name: listing ? (listing.managementName ?? listing.searchName) : '판매채널 상품',
+        channelName: listing?.channel?.name ?? null,
+        locked: listing?.channel?.externalSource != null,
+      }
+    }
+    const product = link.product
     return {
-      name: listing.name,
-      locked: channel ? channel.externalSource != null : true,
-      channelName: channel?.name ?? null,
+      name: product ? (product.internalName ?? product.name) : '상품',
+      channelName: null as string | null,
+      locked: false,
     }
   }
 
@@ -641,16 +618,22 @@ export function KeywordMasterView() {
                         ) : (
                           <div className="flex flex-wrap gap-1">
                             {row.links.map((link) => {
-                              const isListing = link.listingId != null
-                              const info = isListing
-                                ? listingLinkInfo(link.listingId as string)
-                                : { name: '상품', locked: false, channelName: null }
+                              const info = linkChipInfo(link)
                               return (
                                 <span
                                   key={link.id}
                                   className="inline-flex items-center gap-1 rounded-md border bg-muted/40 px-1.5 py-0.5 text-xs"
                                 >
-                                  <span className="max-w-[10rem] truncate">{info.name}</span>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="max-w-[10rem] truncate">{info.name}</span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="max-w-[260px] text-xs">
+                                      {info.channelName
+                                        ? `${info.channelName} · ${info.name}`
+                                        : info.name}
+                                    </TooltipContent>
+                                  </Tooltip>
                                   <Badge variant="outline" className="text-[10px]">
                                     {KEYWORD_LINK_ROLE_LABELS[link.role]}
                                   </Badge>
