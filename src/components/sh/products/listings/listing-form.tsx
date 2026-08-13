@@ -43,6 +43,7 @@ import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 
 import { OptionPickerDialog, type PickedOption } from './option-picker-dialog'
+import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
 import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-dialog'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
@@ -174,6 +175,14 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   // 구매옵션 중복 검증(§22 STEP08)용. 브랜드·상품명 토큰은 추천에 쓰지 않는다
   // (§10 Rule 1 이 금지하는 "상품명 중복"을 유도했던 로직).
   const optionNames = useMemo(() => items.map((it) => it.optionName), [items])
+
+  // 키워드 마스터 연결 대상. 구성 옵션이 여러 상품에 걸쳐 있으면 귀속을 하나로
+  // 특정할 수 없으므로 링크 없이 키워드만 등록한다.
+  const linkProduct = useMemo(() => {
+    const ids = Array.from(new Set(items.map((it) => it.productId)))
+    if (ids.length !== 1) return null
+    return { id: ids[0], name: items[0]?.productName ?? '' }
+  }, [items])
 
   const keywordSuggestions = useMemo(
     () =>
@@ -600,6 +609,15 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
             productName={searchName}
             optionNames={optionNames}
           />
+          {/* 채널 검색어 → 키워드 마스터 단방향 등록. 두 저장소는 동기화하지 않으므로
+              사용자가 명시적으로 누를 때만 올라간다. */}
+          <div className="flex justify-end">
+            <RegisterKeywordsButton
+              keywords={keywords}
+              linkTarget={linkProduct ? { productId: linkProduct.id } : undefined}
+              linkTargetLabel={linkProduct?.name}
+            />
+          </div>
         </CardContent>
       </Card>
 
