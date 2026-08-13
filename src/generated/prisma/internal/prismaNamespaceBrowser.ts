@@ -127,6 +127,9 @@ export const ModelName = {
   ChannelStockMovement: 'ChannelStockMovement',
   DelOrderItemFulfillment: 'DelOrderItemFulfillment',
   ChannelProduct: 'ChannelProduct',
+  KeywordMaster: 'KeywordMaster',
+  KeywordMasterLink: 'KeywordMasterLink',
+  ChannelKeywordRule: 'ChannelKeywordRule',
   Product: 'Product',
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
@@ -1405,6 +1408,60 @@ export const ChannelProductScalarFieldEnum = {
 } as const
 
 export type ChannelProductScalarFieldEnum = (typeof ChannelProductScalarFieldEnum)[keyof typeof ChannelProductScalarFieldEnum]
+
+
+export const KeywordMasterScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  keyword: 'keyword',
+  normalized: 'normalized',
+  despaced: 'despaced',
+  sortedKey: 'sortedKey',
+  category: 'category',
+  type: 'type',
+  source: 'source',
+  status: 'status',
+  score: 'score',
+  scoreInputs: 'scoreInputs',
+  researchedAt: 'researchedAt',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KeywordMasterScalarFieldEnum = (typeof KeywordMasterScalarFieldEnum)[keyof typeof KeywordMasterScalarFieldEnum]
+
+
+export const KeywordMasterLinkScalarFieldEnum = {
+  id: 'id',
+  keywordId: 'keywordId',
+  productId: 'productId',
+  listingId: 'listingId',
+  role: 'role',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KeywordMasterLinkScalarFieldEnum = (typeof KeywordMasterLinkScalarFieldEnum)[keyof typeof KeywordMasterLinkScalarFieldEnum]
+
+
+export const ChannelKeywordRuleScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  maxKeywords: 'maxKeywords',
+  nameTargetMin: 'nameTargetMin',
+  nameTargetMax: 'nameTargetMax',
+  nameSoftMax: 'nameSoftMax',
+  nameHardMax: 'nameHardMax',
+  bannedTerms: 'bannedTerms',
+  replaceDefaultTerms: 'replaceDefaultTerms',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelKeywordRuleScalarFieldEnum = (typeof ChannelKeywordRuleScalarFieldEnum)[keyof typeof ChannelKeywordRuleScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {

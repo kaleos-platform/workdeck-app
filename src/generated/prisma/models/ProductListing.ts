@@ -305,6 +305,7 @@ export type ProductListingWhereInput = {
   stockMovements?: Prisma.ChannelStockMovementListRelationFilter
   reorderPlanSets?: Prisma.ReorderPlanSetListRelationFilter
   productionRunSets?: Prisma.ProductionRunSetListRelationFilter
+  keywordLinks?: Prisma.KeywordMasterLinkListRelationFilter
 }
 
 export type ProductListingOrderByWithRelationInput = {
@@ -332,6 +333,7 @@ export type ProductListingOrderByWithRelationInput = {
   stockMovements?: Prisma.ChannelStockMovementOrderByRelationAggregateInput
   reorderPlanSets?: Prisma.ReorderPlanSetOrderByRelationAggregateInput
   productionRunSets?: Prisma.ProductionRunSetOrderByRelationAggregateInput
+  keywordLinks?: Prisma.KeywordMasterLinkOrderByRelationAggregateInput
 }
 
 export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
@@ -362,6 +364,7 @@ export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
   stockMovements?: Prisma.ChannelStockMovementListRelationFilter
   reorderPlanSets?: Prisma.ReorderPlanSetListRelationFilter
   productionRunSets?: Prisma.ProductionRunSetListRelationFilter
+  keywordLinks?: Prisma.KeywordMasterLinkListRelationFilter
 }, "id">
 
 export type ProductListingOrderByWithAggregationInput = {
@@ -430,6 +433,7 @@ export type ProductListingCreateInput = {
   stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateInput = {
@@ -454,6 +458,7 @@ export type ProductListingUncheckedCreateInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUpdateInput = {
@@ -478,6 +483,7 @@ export type ProductListingUpdateInput = {
   stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateInput = {
@@ -502,6 +508,7 @@ export type ProductListingUncheckedUpdateInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateManyInput = {
@@ -841,6 +848,22 @@ export type ProductListingUncheckedUpdateManyWithoutChannelProductNestedInput = 
   deleteMany?: Prisma.ProductListingScalarWhereInput | Prisma.ProductListingScalarWhereInput[]
 }
 
+export type ProductListingCreateNestedOneWithoutKeywordLinksInput = {
+  create?: Prisma.XOR<Prisma.ProductListingCreateWithoutKeywordLinksInput, Prisma.ProductListingUncheckedCreateWithoutKeywordLinksInput>
+  connectOrCreate?: Prisma.ProductListingCreateOrConnectWithoutKeywordLinksInput
+  connect?: Prisma.ProductListingWhereUniqueInput
+}
+
+export type ProductListingUpdateOneWithoutKeywordLinksNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductListingCreateWithoutKeywordLinksInput, Prisma.ProductListingUncheckedCreateWithoutKeywordLinksInput>
+  connectOrCreate?: Prisma.ProductListingCreateOrConnectWithoutKeywordLinksInput
+  upsert?: Prisma.ProductListingUpsertWithoutKeywordLinksInput
+  disconnect?: Prisma.ProductListingWhereInput | boolean
+  delete?: Prisma.ProductListingWhereInput | boolean
+  connect?: Prisma.ProductListingWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductListingUpdateToOneWithWhereWithoutKeywordLinksInput, Prisma.ProductListingUpdateWithoutKeywordLinksInput>, Prisma.ProductListingUncheckedUpdateWithoutKeywordLinksInput>
+}
+
 export type ProductListingCreateNestedOneWithoutReorderPlanSetsInput = {
   create?: Prisma.XOR<Prisma.ProductListingCreateWithoutReorderPlanSetsInput, Prisma.ProductListingUncheckedCreateWithoutReorderPlanSetsInput>
   connectOrCreate?: Prisma.ProductListingCreateOrConnectWithoutReorderPlanSetsInput
@@ -876,6 +899,7 @@ export type ProductListingCreateWithoutSpaceInput = {
   stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutSpaceInput = {
@@ -899,6 +923,7 @@ export type ProductListingUncheckedCreateWithoutSpaceInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutSpaceInput = {
@@ -969,6 +994,7 @@ export type ProductListingCreateWithoutDelItemsInput = {
   stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutDelItemsInput = {
@@ -992,6 +1018,7 @@ export type ProductListingUncheckedCreateWithoutDelItemsInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutDelItemsInput = {
@@ -1031,6 +1058,7 @@ export type ProductListingUpdateWithoutDelItemsInput = {
   stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutDelItemsInput = {
@@ -1054,6 +1082,7 @@ export type ProductListingUncheckedUpdateWithoutDelItemsInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutAliasesInput = {
@@ -1077,6 +1106,7 @@ export type ProductListingCreateWithoutAliasesInput = {
   stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutAliasesInput = {
@@ -1100,6 +1130,7 @@ export type ProductListingUncheckedCreateWithoutAliasesInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutAliasesInput = {
@@ -1139,6 +1170,7 @@ export type ProductListingUpdateWithoutAliasesInput = {
   stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutAliasesInput = {
@@ -1162,6 +1194,7 @@ export type ProductListingUncheckedUpdateWithoutAliasesInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutChannelInput = {
@@ -1185,6 +1218,7 @@ export type ProductListingCreateWithoutChannelInput = {
   stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutChannelInput = {
@@ -1208,6 +1242,7 @@ export type ProductListingUncheckedCreateWithoutChannelInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutChannelInput = {
@@ -1257,6 +1292,7 @@ export type ProductListingCreateWithoutProductionRunSetsInput = {
   delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
   stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutProductionRunSetsInput = {
@@ -1280,6 +1316,7 @@ export type ProductListingUncheckedCreateWithoutProductionRunSetsInput = {
   delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
   stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutProductionRunSetsInput = {
@@ -1319,6 +1356,7 @@ export type ProductListingUpdateWithoutProductionRunSetsInput = {
   delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
   stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutProductionRunSetsInput = {
@@ -1342,6 +1380,7 @@ export type ProductListingUncheckedUpdateWithoutProductionRunSetsInput = {
   delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
   stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutItemsInput = {
@@ -1365,6 +1404,7 @@ export type ProductListingCreateWithoutItemsInput = {
   stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutItemsInput = {
@@ -1388,6 +1428,7 @@ export type ProductListingUncheckedCreateWithoutItemsInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutItemsInput = {
@@ -1427,6 +1468,7 @@ export type ProductListingUpdateWithoutItemsInput = {
   stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutItemsInput = {
@@ -1450,6 +1492,7 @@ export type ProductListingUncheckedUpdateWithoutItemsInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutStockMovementsInput = {
@@ -1473,6 +1516,7 @@ export type ProductListingCreateWithoutStockMovementsInput = {
   delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutStockMovementsInput = {
@@ -1496,6 +1540,7 @@ export type ProductListingUncheckedCreateWithoutStockMovementsInput = {
   delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutStockMovementsInput = {
@@ -1535,6 +1580,7 @@ export type ProductListingUpdateWithoutStockMovementsInput = {
   delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutStockMovementsInput = {
@@ -1558,6 +1604,7 @@ export type ProductListingUncheckedUpdateWithoutStockMovementsInput = {
   delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutChannelProductInput = {
@@ -1581,6 +1628,7 @@ export type ProductListingCreateWithoutChannelProductInput = {
   stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutChannelProductInput = {
@@ -1604,6 +1652,7 @@ export type ProductListingUncheckedCreateWithoutChannelProductInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutChannelProductInput = {
@@ -1632,6 +1681,118 @@ export type ProductListingUpdateManyWithWhereWithoutChannelProductInput = {
   data: Prisma.XOR<Prisma.ProductListingUpdateManyMutationInput, Prisma.ProductListingUncheckedUpdateManyWithoutChannelProductInput>
 }
 
+export type ProductListingCreateWithoutKeywordLinksInput = {
+  id?: string
+  internalCode?: string | null
+  searchName: string
+  displayName: string
+  managementName?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: number | null
+  status?: $Enums.ProductListingStatus
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutProductListingsInput
+  channel: Prisma.ChannelCreateNestedOneWithoutProductListingsInput
+  channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutListingsInput
+  items?: Prisma.ProductListingItemCreateNestedManyWithoutListingInput
+  aliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutListingInput
+  delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
+  reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
+  productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+}
+
+export type ProductListingUncheckedCreateWithoutKeywordLinksInput = {
+  id?: string
+  spaceId: string
+  channelId: string
+  channelProductId?: string | null
+  internalCode?: string | null
+  searchName: string
+  displayName: string
+  managementName?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: number | null
+  status?: $Enums.ProductListingStatus
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutListingInput
+  aliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutListingInput
+  delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
+  reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
+  productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+}
+
+export type ProductListingCreateOrConnectWithoutKeywordLinksInput = {
+  where: Prisma.ProductListingWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductListingCreateWithoutKeywordLinksInput, Prisma.ProductListingUncheckedCreateWithoutKeywordLinksInput>
+}
+
+export type ProductListingUpsertWithoutKeywordLinksInput = {
+  update: Prisma.XOR<Prisma.ProductListingUpdateWithoutKeywordLinksInput, Prisma.ProductListingUncheckedUpdateWithoutKeywordLinksInput>
+  create: Prisma.XOR<Prisma.ProductListingCreateWithoutKeywordLinksInput, Prisma.ProductListingUncheckedCreateWithoutKeywordLinksInput>
+  where?: Prisma.ProductListingWhereInput
+}
+
+export type ProductListingUpdateToOneWithWhereWithoutKeywordLinksInput = {
+  where?: Prisma.ProductListingWhereInput
+  data: Prisma.XOR<Prisma.ProductListingUpdateWithoutKeywordLinksInput, Prisma.ProductListingUncheckedUpdateWithoutKeywordLinksInput>
+}
+
+export type ProductListingUpdateWithoutKeywordLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  internalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  searchName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutProductListingsNestedInput
+  channel?: Prisma.ChannelUpdateOneRequiredWithoutProductListingsNestedInput
+  channelProduct?: Prisma.ChannelProductUpdateOneWithoutListingsNestedInput
+  items?: Prisma.ProductListingItemUpdateManyWithoutListingNestedInput
+  aliases?: Prisma.ChannelProductAliasUpdateManyWithoutListingNestedInput
+  delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
+  reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
+  productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+}
+
+export type ProductListingUncheckedUpdateWithoutKeywordLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  searchName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.ProductListingItemUncheckedUpdateManyWithoutListingNestedInput
+  aliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutListingNestedInput
+  delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
+  reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
+  productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+}
+
 export type ProductListingCreateWithoutReorderPlanSetsInput = {
   id?: string
   internalCode?: string | null
@@ -1653,6 +1814,7 @@ export type ProductListingCreateWithoutReorderPlanSetsInput = {
   delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
   stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutReorderPlanSetsInput = {
@@ -1676,6 +1838,7 @@ export type ProductListingUncheckedCreateWithoutReorderPlanSetsInput = {
   delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
   stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutReorderPlanSetsInput = {
@@ -1715,6 +1878,7 @@ export type ProductListingUpdateWithoutReorderPlanSetsInput = {
   delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
   stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutReorderPlanSetsInput = {
@@ -1738,6 +1902,7 @@ export type ProductListingUncheckedUpdateWithoutReorderPlanSetsInput = {
   delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
   stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingCreateManySpaceInput = {
@@ -1778,6 +1943,7 @@ export type ProductListingUpdateWithoutSpaceInput = {
   stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutSpaceInput = {
@@ -1801,6 +1967,7 @@ export type ProductListingUncheckedUpdateWithoutSpaceInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateManyWithoutSpaceInput = {
@@ -1858,6 +2025,7 @@ export type ProductListingUpdateWithoutChannelInput = {
   stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutChannelInput = {
@@ -1881,6 +2049,7 @@ export type ProductListingUncheckedUpdateWithoutChannelInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateManyWithoutChannelInput = {
@@ -1938,6 +2107,7 @@ export type ProductListingUpdateWithoutChannelProductInput = {
   stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutChannelProductInput = {
@@ -1961,6 +2131,7 @@ export type ProductListingUncheckedUpdateWithoutChannelProductInput = {
   stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateManyWithoutChannelProductInput = {
@@ -1992,6 +2163,7 @@ export type ProductListingCountOutputType = {
   stockMovements: number
   reorderPlanSets: number
   productionRunSets: number
+  keywordLinks: number
 }
 
 export type ProductListingCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2001,6 +2173,7 @@ export type ProductListingCountOutputTypeSelect<ExtArgs extends runtime.Types.Ex
   stockMovements?: boolean | ProductListingCountOutputTypeCountStockMovementsArgs
   reorderPlanSets?: boolean | ProductListingCountOutputTypeCountReorderPlanSetsArgs
   productionRunSets?: boolean | ProductListingCountOutputTypeCountProductionRunSetsArgs
+  keywordLinks?: boolean | ProductListingCountOutputTypeCountKeywordLinksArgs
 }
 
 /**
@@ -2055,6 +2228,13 @@ export type ProductListingCountOutputTypeCountProductionRunSetsArgs<ExtArgs exte
   where?: Prisma.ProductionRunSetWhereInput
 }
 
+/**
+ * ProductListingCountOutputType without action
+ */
+export type ProductListingCountOutputTypeCountKeywordLinksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.KeywordMasterLinkWhereInput
+}
+
 
 export type ProductListingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2081,6 +2261,7 @@ export type ProductListingSelect<ExtArgs extends runtime.Types.Extensions.Intern
   stockMovements?: boolean | Prisma.ProductListing$stockMovementsArgs<ExtArgs>
   reorderPlanSets?: boolean | Prisma.ProductListing$reorderPlanSetsArgs<ExtArgs>
   productionRunSets?: boolean | Prisma.ProductListing$productionRunSetsArgs<ExtArgs>
+  keywordLinks?: boolean | Prisma.ProductListing$keywordLinksArgs<ExtArgs>
   _count?: boolean | Prisma.ProductListingCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productListing"]>
 
@@ -2155,6 +2336,7 @@ export type ProductListingInclude<ExtArgs extends runtime.Types.Extensions.Inter
   stockMovements?: boolean | Prisma.ProductListing$stockMovementsArgs<ExtArgs>
   reorderPlanSets?: boolean | Prisma.ProductListing$reorderPlanSetsArgs<ExtArgs>
   productionRunSets?: boolean | Prisma.ProductListing$productionRunSetsArgs<ExtArgs>
+  keywordLinks?: boolean | Prisma.ProductListing$keywordLinksArgs<ExtArgs>
   _count?: boolean | Prisma.ProductListingCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProductListingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2180,6 +2362,7 @@ export type $ProductListingPayload<ExtArgs extends runtime.Types.Extensions.Inte
     stockMovements: Prisma.$ChannelStockMovementPayload<ExtArgs>[]
     reorderPlanSets: Prisma.$ReorderPlanSetPayload<ExtArgs>[]
     productionRunSets: Prisma.$ProductionRunSetPayload<ExtArgs>[]
+    keywordLinks: Prisma.$KeywordMasterLinkPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2600,6 +2783,7 @@ export interface Prisma__ProductListingClient<T, Null = never, ExtArgs extends r
   stockMovements<T extends Prisma.ProductListing$stockMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$stockMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelStockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reorderPlanSets<T extends Prisma.ProductListing$reorderPlanSetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$reorderPlanSetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productionRunSets<T extends Prisma.ProductListing$productionRunSetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$productionRunSetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  keywordLinks<T extends Prisma.ProductListing$keywordLinksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$keywordLinksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordMasterLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3200,6 +3384,30 @@ export type ProductListing$productionRunSetsArgs<ExtArgs extends runtime.Types.E
   take?: number
   skip?: number
   distinct?: Prisma.ProductionRunSetScalarFieldEnum | Prisma.ProductionRunSetScalarFieldEnum[]
+}
+
+/**
+ * ProductListing.keywordLinks
+ */
+export type ProductListing$keywordLinksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the KeywordMasterLink
+   */
+  select?: Prisma.KeywordMasterLinkSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the KeywordMasterLink
+   */
+  omit?: Prisma.KeywordMasterLinkOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KeywordMasterLinkInclude<ExtArgs> | null
+  where?: Prisma.KeywordMasterLinkWhereInput
+  orderBy?: Prisma.KeywordMasterLinkOrderByWithRelationInput | Prisma.KeywordMasterLinkOrderByWithRelationInput[]
+  cursor?: Prisma.KeywordMasterLinkWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.KeywordMasterLinkScalarFieldEnum | Prisma.KeywordMasterLinkScalarFieldEnum[]
 }
 
 /**

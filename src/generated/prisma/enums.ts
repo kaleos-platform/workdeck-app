@@ -279,6 +279,55 @@ export const ProductionCostCategory = {
 export type ProductionCostCategory = (typeof ProductionCostCategory)[keyof typeof ProductionCostCategory]
 
 
+export const KeywordMasterStatus = {
+  PRODUCT_NAME: 'PRODUCT_NAME',
+  SEARCH_TERM: 'SEARCH_TERM',
+  SEARCH_OPTION: 'SEARCH_OPTION',
+  CANDIDATE: 'CANDIDATE',
+  EXCLUDED: 'EXCLUDED',
+  BANNED: 'BANNED'
+} as const
+
+export type KeywordMasterStatus = (typeof KeywordMasterStatus)[keyof typeof KeywordMasterStatus]
+
+
+export const KeywordMasterSource = {
+  COUPANG_AUTOCOMPLETE: 'COUPANG_AUTOCOMPLETE',
+  COUPANG_RELATED: 'COUPANG_RELATED',
+  COUPANG_TOP_PRODUCT: 'COUPANG_TOP_PRODUCT',
+  COUPANG_REVIEW: 'COUPANG_REVIEW',
+  AD_KEYWORD: 'AD_KEYWORD',
+  CUSTOMER_INQUIRY: 'CUSTOMER_INQUIRY',
+  INTERNAL: 'INTERNAL'
+} as const
+
+export type KeywordMasterSource = (typeof KeywordMasterSource)[keyof typeof KeywordMasterSource]
+
+
+export const KeywordMasterType = {
+  SYNONYM: 'SYNONYM',
+  PARENT_CATEGORY: 'PARENT_CATEGORY',
+  MATERIAL: 'MATERIAL',
+  SHAPE: 'SHAPE',
+  PURPOSE: 'PURPOSE',
+  FEATURE: 'FEATURE',
+  ALIAS: 'ALIAS',
+  COMPETITOR: 'COMPETITOR',
+  UNCLASSIFIED: 'UNCLASSIFIED'
+} as const
+
+export type KeywordMasterType = (typeof KeywordMasterType)[keyof typeof KeywordMasterType]
+
+
+export const KeywordLinkRole = {
+  MAIN: 'MAIN',
+  SUB: 'SUB',
+  DENY: 'DENY'
+} as const
+
+export type KeywordLinkRole = (typeof KeywordLinkRole)[keyof typeof KeywordLinkRole]
+
+
 export const AiGenerationStatus = {
   PENDING: 'PENDING',
   SUCCEEDED: 'SUCCEEDED',

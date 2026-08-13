@@ -460,6 +460,9 @@ export const ModelName = {
   ChannelStockMovement: 'ChannelStockMovement',
   DelOrderItemFulfillment: 'DelOrderItemFulfillment',
   ChannelProduct: 'ChannelProduct',
+  KeywordMaster: 'KeywordMaster',
+  KeywordMasterLink: 'KeywordMasterLink',
+  ChannelKeywordRule: 'ChannelKeywordRule',
   Product: 'Product',
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
@@ -529,7 +532,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -6157,6 +6160,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    KeywordMaster: {
+      payload: Prisma.$KeywordMasterPayload<ExtArgs>
+      fields: Prisma.KeywordMasterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KeywordMasterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KeywordMasterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload>
+        }
+        findFirst: {
+          args: Prisma.KeywordMasterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KeywordMasterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload>
+        }
+        findMany: {
+          args: Prisma.KeywordMasterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload>[]
+        }
+        create: {
+          args: Prisma.KeywordMasterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload>
+        }
+        createMany: {
+          args: Prisma.KeywordMasterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.KeywordMasterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload>[]
+        }
+        delete: {
+          args: Prisma.KeywordMasterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload>
+        }
+        update: {
+          args: Prisma.KeywordMasterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload>
+        }
+        deleteMany: {
+          args: Prisma.KeywordMasterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KeywordMasterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.KeywordMasterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload>[]
+        }
+        upsert: {
+          args: Prisma.KeywordMasterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterPayload>
+        }
+        aggregate: {
+          args: Prisma.KeywordMasterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKeywordMaster>
+        }
+        groupBy: {
+          args: Prisma.KeywordMasterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KeywordMasterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KeywordMasterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KeywordMasterCountAggregateOutputType> | number
+        }
+      }
+    }
+    KeywordMasterLink: {
+      payload: Prisma.$KeywordMasterLinkPayload<ExtArgs>
+      fields: Prisma.KeywordMasterLinkFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KeywordMasterLinkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KeywordMasterLinkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload>
+        }
+        findFirst: {
+          args: Prisma.KeywordMasterLinkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KeywordMasterLinkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload>
+        }
+        findMany: {
+          args: Prisma.KeywordMasterLinkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload>[]
+        }
+        create: {
+          args: Prisma.KeywordMasterLinkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload>
+        }
+        createMany: {
+          args: Prisma.KeywordMasterLinkCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.KeywordMasterLinkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload>[]
+        }
+        delete: {
+          args: Prisma.KeywordMasterLinkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload>
+        }
+        update: {
+          args: Prisma.KeywordMasterLinkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload>
+        }
+        deleteMany: {
+          args: Prisma.KeywordMasterLinkDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KeywordMasterLinkUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.KeywordMasterLinkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload>[]
+        }
+        upsert: {
+          args: Prisma.KeywordMasterLinkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KeywordMasterLinkPayload>
+        }
+        aggregate: {
+          args: Prisma.KeywordMasterLinkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKeywordMasterLink>
+        }
+        groupBy: {
+          args: Prisma.KeywordMasterLinkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KeywordMasterLinkGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KeywordMasterLinkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KeywordMasterLinkCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChannelKeywordRule: {
+      payload: Prisma.$ChannelKeywordRulePayload<ExtArgs>
+      fields: Prisma.ChannelKeywordRuleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChannelKeywordRuleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChannelKeywordRuleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload>
+        }
+        findFirst: {
+          args: Prisma.ChannelKeywordRuleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChannelKeywordRuleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload>
+        }
+        findMany: {
+          args: Prisma.ChannelKeywordRuleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload>[]
+        }
+        create: {
+          args: Prisma.ChannelKeywordRuleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload>
+        }
+        createMany: {
+          args: Prisma.ChannelKeywordRuleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChannelKeywordRuleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload>[]
+        }
+        delete: {
+          args: Prisma.ChannelKeywordRuleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload>
+        }
+        update: {
+          args: Prisma.ChannelKeywordRuleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload>
+        }
+        deleteMany: {
+          args: Prisma.ChannelKeywordRuleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChannelKeywordRuleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChannelKeywordRuleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload>[]
+        }
+        upsert: {
+          args: Prisma.ChannelKeywordRuleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelKeywordRulePayload>
+        }
+        aggregate: {
+          args: Prisma.ChannelKeywordRuleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelKeywordRule>
+        }
+        groupBy: {
+          args: Prisma.ChannelKeywordRuleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelKeywordRuleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChannelKeywordRuleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelKeywordRuleCountAggregateOutputType> | number
+        }
+      }
+    }
     Product: {
       payload: Prisma.$ProductPayload<ExtArgs>
       fields: Prisma.ProductFieldRefs
@@ -11400,6 +11625,60 @@ export const ChannelProductScalarFieldEnum = {
 export type ChannelProductScalarFieldEnum = (typeof ChannelProductScalarFieldEnum)[keyof typeof ChannelProductScalarFieldEnum]
 
 
+export const KeywordMasterScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  keyword: 'keyword',
+  normalized: 'normalized',
+  despaced: 'despaced',
+  sortedKey: 'sortedKey',
+  category: 'category',
+  type: 'type',
+  source: 'source',
+  status: 'status',
+  score: 'score',
+  scoreInputs: 'scoreInputs',
+  researchedAt: 'researchedAt',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KeywordMasterScalarFieldEnum = (typeof KeywordMasterScalarFieldEnum)[keyof typeof KeywordMasterScalarFieldEnum]
+
+
+export const KeywordMasterLinkScalarFieldEnum = {
+  id: 'id',
+  keywordId: 'keywordId',
+  productId: 'productId',
+  listingId: 'listingId',
+  role: 'role',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KeywordMasterLinkScalarFieldEnum = (typeof KeywordMasterLinkScalarFieldEnum)[keyof typeof KeywordMasterLinkScalarFieldEnum]
+
+
+export const ChannelKeywordRuleScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  maxKeywords: 'maxKeywords',
+  nameTargetMin: 'nameTargetMin',
+  nameTargetMax: 'nameTargetMax',
+  nameSoftMax: 'nameSoftMax',
+  nameHardMax: 'nameHardMax',
+  bannedTerms: 'bannedTerms',
+  replaceDefaultTerms: 'replaceDefaultTerms',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelKeywordRuleScalarFieldEnum = (typeof ChannelKeywordRuleScalarFieldEnum)[keyof typeof ChannelKeywordRuleScalarFieldEnum]
+
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -12818,6 +13097,62 @@ export type ListEnumProductListingStatusFieldRefInput<$PrismaModel> = FieldRefIn
 
 
 /**
+ * Reference to a field of type 'KeywordMasterType'
+ */
+export type EnumKeywordMasterTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordMasterType'>
+    
+
+
+/**
+ * Reference to a field of type 'KeywordMasterType[]'
+ */
+export type ListEnumKeywordMasterTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordMasterType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'KeywordMasterSource'
+ */
+export type EnumKeywordMasterSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordMasterSource'>
+    
+
+
+/**
+ * Reference to a field of type 'KeywordMasterSource[]'
+ */
+export type ListEnumKeywordMasterSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordMasterSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'KeywordMasterStatus'
+ */
+export type EnumKeywordMasterStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordMasterStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'KeywordMasterStatus[]'
+ */
+export type ListEnumKeywordMasterStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordMasterStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'KeywordLinkRole'
+ */
+export type EnumKeywordLinkRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordLinkRole'>
+    
+
+
+/**
+ * Reference to a field of type 'KeywordLinkRole[]'
+ */
+export type ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KeywordLinkRole[]'>
+    
+
+
+/**
  * Reference to a field of type 'AiGenerationStatus'
  */
 export type EnumAiGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiGenerationStatus'>
@@ -13603,6 +13938,9 @@ export type GlobalOmitConfig = {
   channelStockMovement?: Prisma.ChannelStockMovementOmit
   delOrderItemFulfillment?: Prisma.DelOrderItemFulfillmentOmit
   channelProduct?: Prisma.ChannelProductOmit
+  keywordMaster?: Prisma.KeywordMasterOmit
+  keywordMasterLink?: Prisma.KeywordMasterLinkOmit
+  channelKeywordRule?: Prisma.ChannelKeywordRuleOmit
   product?: Prisma.ProductOmit
   productPersona?: Prisma.ProductPersonaOmit
   persona?: Prisma.PersonaOmit
