@@ -621,3 +621,178 @@ export const productListingBulkPatchSchema = z.object({
     ),
 })
 export type ProductListingBulkPatchInput = z.infer<typeof productListingBulkPatchSchema>
+
+// ─── 키워드 마스터 (§24) ─────────────────────────────────────────────────────
+
+export const keywordStatusEnum = z.enum([
+  'PRODUCT_NAME',
+  'SEARCH_TERM',
+  'SEARCH_OPTION',
+  'CANDIDATE',
+  'EXCLUDED',
+  'BANNED',
+])
+export const keywordTypeEnum = z.enum([
+  'SYNONYM',
+  'PARENT_CATEGORY',
+  'MATERIAL',
+  'SHAPE',
+  'PURPOSE',
+  'FEATURE',
+  'ALIAS',
+  'COMPETITOR',
+  'UNCLASSIFIED',
+])
+export const keywordSourceEnum = z.enum([
+  'COUPANG_AUTOCOMPLETE',
+  'COUPANG_RELATED',
+  'COUPANG_TOP_PRODUCT',
+  'COUPANG_REVIEW',
+  'AD_KEYWORD',
+  'CUSTOMER_INQUIRY',
+  'INTERNAL',
+])
+export const keywordLinkRoleEnum = z.enum(['MAIN', 'SUB', 'DENY'])
+
+// §17 점수 입력 10종. 부분 입력을 허용하고 빠진 항목은 false 로 채운다
+// (scoreKeyword 는 10개 전부를 요구하므로 여기서 기본값을 확정한다).
+export const keywordScoreInputsSchema = z.object({
+  exactMatch: z.boolean().default(false),
+  purchaseIntent: z.boolean().default(false),
+  inAutocomplete: z.boolean().default(false),
+  inRelated: z.boolean().default(false),
+  inReviews: z.boolean().default(false),
+  overlapsProductName: z.boolean().default(false),
+  overlapsCategory: z.boolean().default(false),
+  partialRelevanceOnly: z.boolean().default(false),
+  isCompetitorBrand: z.boolean().default(false),
+  isFalseClaim: z.boolean().default(false),
+})
+
+// null/'' 을 null 로, undefined 는 필드 skip — 상품 옵션 스키마와 같은 관례.
+const nullableText = (max: number) =>
+  z
+    .preprocess(
+      (v) => (v === undefined ? undefined : v === null || v === '' ? null : v),
+      z.string().max(max).nullable()
+    )
+    .optional()
+
+export const keywordMasterCreateSchema = z.object({
+  keyword: z.string().trim().min(1, '키워드를 입력하세요').max(200),
+  category: nullableText(100),
+  type: keywordTypeEnum.optional(),
+  source: keywordSourceEnum.optional(),
+  status: keywordStatusEnum.optional(),
+  // score 를 생략하고 scoreInputs 만 보내면 서버가 scoreKeyword 로 계산한다.
+  score: z.number().int().min(-99).max(99).optional(),
+  scoreInputs: keywordScoreInputsSchema.optional(),
+  memo: nullableText(1000),
+  researchedAt: z
+    .preprocess(
+      (v) => (v === undefined ? undefined : v === null || v === '' ? null : v),
+      z.union([z.coerce.date(), z.null()])
+    )
+    .optional(),
+})
+export type KeywordMasterCreateInput = z.infer<typeof keywordMasterCreateSchema>
+
+export const keywordMasterPatchSchema = keywordMasterCreateSchema
+  .partial()
+  .refine((p) => Object.keys(p).length > 0, { message: '변경할 필드가 없습니다' })
+export type KeywordMasterPatchInput = z.infer<typeof keywordMasterPatchSchema>
+
+// 연결 대상은 productId·listingId 중 최소 하나가 필요하다.
+// Prisma 로는 표현할 수 없는 XOR 제약이라 여기서 막는다.
+const linkTargetRefine = (v: { productId?: string | null; listingId?: string | null }) =>
+  Boolean(v.productId) || Boolean(v.listingId)
+const LINK_TARGET_MESSAGE = '상품 또는 판매채널 상품 중 하나를 지정해야 합니다'
+
+export const keywordLinkCreateSchema = z
+  .object({
+    keywordId: z.string().min(1),
+    productId: z.string().min(1).nullable().optional(),
+    listingId: z.string().min(1).nullable().optional(),
+    role: keywordLinkRoleEnum.optional(),
+    sortOrder: z.number().int().min(0).max(9999).optional(),
+  })
+  .refine(linkTargetRefine, { message: LINK_TARGET_MESSAGE })
+export type KeywordLinkCreateInput = z.infer<typeof keywordLinkCreateSchema>
+
+// 해제는 link id 단건 또는 (keywordId + 대상) 조합 둘 다 받는다.
+export const keywordLinkDeleteSchema = z.union([
+  z.object({ id: z.string().min(1) }),
+  z
+    .object({
+      keywordId: z.string().min(1),
+      productId: z.string().min(1).nullable().optional(),
+      listingId: z.string().min(1).nullable().optional(),
+    })
+    .refine(linkTargetRefine, { message: LINK_TARGET_MESSAGE }),
+])
+export type KeywordLinkDeleteInput = z.infer<typeof keywordLinkDeleteSchema>
+
+export const keywordBulkSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('status'),
+    ids: z.array(z.string().min(1)).min(1).max(500),
+    payload: z.object({ status: keywordStatusEnum }),
+  }),
+  z.object({
+    action: z.literal('delete'),
+    ids: z.array(z.string().min(1)).min(1).max(500),
+    payload: z.unknown().optional(),
+  }),
+  z.object({
+    action: z.literal('link'),
+    ids: z.array(z.string().min(1)).min(1).max(500),
+    payload: z
+      .object({
+        productId: z.string().min(1).nullable().optional(),
+        listingId: z.string().min(1).nullable().optional(),
+        role: keywordLinkRoleEnum.optional(),
+      })
+      .refine(linkTargetRefine, { message: LINK_TARGET_MESSAGE }),
+  }),
+])
+export type KeywordBulkInput = z.infer<typeof keywordBulkSchema>
+
+export const keywordValidateSchema = z.object({
+  searchName: z.string().max(1000).default(''),
+  keywords: z.array(z.string()).max(200).default([]),
+  channelId: z.string().min(1).optional().nullable(),
+  categoryNames: z.array(z.string()).max(50).optional(),
+  optionNames: z.array(z.string()).max(200).optional(),
+})
+export type KeywordValidateInput = z.infer<typeof keywordValidateSchema>
+
+// 채널 키워드 규칙 오버라이드 — 전 필드 nullable(=기본값 사용) 이 정상 상태다.
+const nullableInt = (min: number, max: number) =>
+  z
+    .preprocess(
+      (v) => (v === undefined ? undefined : v === null || v === '' ? null : Number(v)),
+      z.union([z.number().int().min(min).max(max), z.null()])
+    )
+    .optional()
+
+const bannedTermList = z.array(z.string().trim().max(100)).max(500).optional()
+
+export const channelKeywordRuleSchema = z.object({
+  maxKeywords: nullableInt(1, 200),
+  nameTargetMin: nullableInt(1, 1000),
+  nameTargetMax: nullableInt(1, 1000),
+  nameSoftMax: nullableInt(1, 1000),
+  nameHardMax: nullableInt(1, 1000),
+  bannedTerms: z
+    .object({
+      promo: bannedTermList,
+      shipping: bannedTermList,
+      seller: bannedTermList,
+      efficacy: bannedTermList,
+      competitorBrand: bannedTermList,
+    })
+    .nullable()
+    .optional(),
+  replaceDefaultTerms: z.boolean().optional(),
+})
+export type ChannelKeywordRuleInput = z.infer<typeof channelKeywordRuleSchema>

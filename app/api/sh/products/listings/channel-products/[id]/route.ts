@@ -11,6 +11,7 @@ import {
   computeListingAvailableStockByLocation,
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
+import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 
 /**
  * 채널상품 단건 조회(GET) / 수정(PATCH) / 삭제(DELETE).
@@ -274,7 +275,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const cp = await prisma.channelProduct.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, channelId: true }, // channelId 는 키워드 규칙 조회용
   })
   if (!cp) return errorResponse('채널상품을 찾을 수 없습니다', 404)
 
@@ -300,7 +301,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     },
   })
 
-  return NextResponse.json({ channelProduct: updated })
+  // 저장 성공 이후 계산 — updated 가 곧 "패치 이후 유효값"이다.
+  const namingWarnings = await buildNamingWarnings(resolved.space.id, cp.channelId, {
+    searchName: updated.baseSearchName,
+    keywords: updated.keywords,
+  })
+
+  return NextResponse.json({
+    channelProduct: updated,
+    ...(namingWarnings ? { namingWarnings } : {}),
+  })
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {

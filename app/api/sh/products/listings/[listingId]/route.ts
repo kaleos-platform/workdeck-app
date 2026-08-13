@@ -10,6 +10,7 @@ import {
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
 import { productDisplayName } from '@/lib/sh/product-display'
+import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 
 type Params = { params: Promise<{ listingId: string }> }
 const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
@@ -153,6 +154,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       channelProductId: true,
       searchName: true,
       managementName: true,
+      keywords: true, // 부분 수정 시 "패치 이후 실제 값"으로 검증하기 위해 필요
       channel: {
         select: { externalSource: true, channelTypeDef: { select: { isSalesChannel: true } } },
       },
@@ -221,7 +223,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
   })
 
-  return NextResponse.json({ listing: { id: listingId } })
+  // 저장 성공 이후 계산. 부분 수정이므로 요청 본문이 아니라 "패치 이후 유효값"을 검증한다.
+  const namingWarnings = await buildNamingWarnings(resolved.space.id, existing.channelId, {
+    searchName: nextSearchName,
+    keywords: input.keywords ?? existing.keywords,
+  })
+
+  return NextResponse.json({
+    listing: { id: listingId },
+    ...(namingWarnings ? { namingWarnings } : {}),
+  })
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
