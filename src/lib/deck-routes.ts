@@ -30,6 +30,7 @@ export function getSellerHubPricingScenarioPath(id: string) {
 }
 export const SELLER_HUB_LISTINGS_PATH = `${SELLER_HUB_BASE_PATH}/products/listings`
 export const SELLER_HUB_LISTING_NEW_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/new`
+export const SELLER_HUB_KEYWORDS_PATH = `${SELLER_HUB_BASE_PATH}/products/keywords`
 export const SELLER_HUB_PRODUCTION_PATH = `${SELLER_HUB_BASE_PATH}/products/production`
 export function getSellerHubProductPath(id: string) {
   return `${SELLER_HUB_BASE_PATH}/products/${id}`
