@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link2, Lock, Search, Trash2, X } from 'lucide-react'
+import { Link2, Lock, Plus, Search, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -47,6 +47,7 @@ import {
   OptionPickerDialog,
   type PickedOption,
 } from '@/components/sh/products/listings/option-picker-dialog'
+import { KeywordCreateDialog } from './keyword-create-dialog'
 import { KeywordDuplicatePanel, type DuplicateCluster } from './keyword-duplicate-panel'
 import { KeywordStatusBadge, type KeywordStatus } from './keyword-status'
 
@@ -125,6 +126,7 @@ export function KeywordMasterView() {
 
   const [filterPickerOpen, setFilterPickerOpen] = useState(false)
   const [linkPickerOpen, setLinkPickerOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -358,6 +360,15 @@ export function KeywordMasterView() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="space-y-4">
+        {/* 키워드가 들어오는 경로는 두 개다 — 여기(직접 조사한 후보 붙여넣기)와
+            판매채널 상품 편집 화면의 "키워드 마스터에 등록"(이미 쓰는 검색어 승격). */}
+        <div className="flex justify-end">
+          <Button type="button" onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4" aria-hidden />
+            키워드 추가
+          </Button>
+        </div>
+
         {/* ─── 필터 바 ───────────────────────────────────────────────────── */}
         <section aria-label="키워드 필터" className="rounded-lg border p-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -807,6 +818,16 @@ export function KeywordMasterView() {
           onOpenChange={setLinkPickerOpen}
           mode="product-with-all-options"
           onPickProduct={(productId) => handleBulkLink(productId)}
+        />
+
+        {/* 키워드 일괄 추가 — 목록과 중복 패널을 함께 갱신한다 */}
+        <KeywordCreateDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onCreated={() => {
+            void fetchKeywords()
+            void fetchDuplicates()
+          }}
         />
       </div>
     </TooltipProvider>

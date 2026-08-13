@@ -33,6 +33,7 @@ import { DEFAULT_KEYWORD_RULES } from '@/lib/sh/keyword-rules'
 import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 
+import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
 import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-dialog'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
@@ -1245,6 +1246,11 @@ export function GroupDetailView({ channelProductId }: Props) {
             productName={baseSearchName}
             optionNames={optionNames}
           />
+          {/* 채널상품 그룹은 리스팅이 여럿이라 귀속 상품을 하나로 특정할 수 없다.
+              링크 없이 키워드만 마스터로 올린다(연결은 키워드 관리에서 붙인다). */}
+          <div className="flex justify-end">
+            <RegisterKeywordsButton keywords={keywords} />
+          </div>
         </CardContent>
       </Card>
 
