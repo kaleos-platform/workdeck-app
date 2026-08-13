@@ -19,6 +19,8 @@ import {
 import { SELLER_HUB_LISTING_NEW_PATH, SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
 import { SaveStatusChip } from '@/components/sh/save-status-chip'
 import { computeDiscount, computeEffectiveStatus } from '@/lib/sh/listing-calc'
+import { DEFAULT_KEYWORD_RULES } from '@/lib/sh/keyword-rules'
+import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 
 import { KeywordEditor } from './keyword-editor'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
@@ -177,19 +179,27 @@ export function GroupDetailView({ channelProductId }: Props) {
     load()
   }, [load])
 
-  const keywordSuggestions = useMemo(() => {
+  // 구매옵션 중복 검증(§22 STEP08)용. 상품명·브랜드 토큰은 추천에 쓰지 않는다
+  // (§10 Rule 1 이 금지하는 "상품명 중복"을 유도했던 로직).
+  const optionNames = useMemo(() => {
     if (!data) return []
     const set = new Set<string>()
-    // single 모드에서만 product.displayName / brand.name 사용
-    if (data.product.kind === 'single') {
-      set.add(data.product.displayName)
-      if (data.product.brand) set.add(data.product.brand.name)
-    }
     for (const l of data.listings) {
       for (const it of l.items) set.add(it.optionName)
     }
     return Array.from(set)
   }, [data])
+
+  const keywordSuggestions = useMemo(
+    () =>
+      suggestKeywords({
+        productName: baseSearchName,
+        existing: keywords,
+        masterPool: [],
+        rules: DEFAULT_KEYWORD_RULES,
+      }),
+    [baseSearchName, keywords]
+  )
 
   const derivedBase = useMemo(() => {
     if (!data) return null
@@ -1133,6 +1143,8 @@ export function GroupDetailView({ channelProductId }: Props) {
             value={keywords}
             onChange={handleKeywordsChange}
             suggestions={keywordSuggestions}
+            productName={baseSearchName}
+            optionNames={optionNames}
           />
         </CardContent>
       </Card>

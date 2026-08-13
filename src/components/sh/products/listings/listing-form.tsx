@@ -34,6 +34,8 @@ import {
   computeListingRetailBaseline,
   type EffectiveListingStatus,
 } from '@/lib/sh/listing-calc'
+import { DEFAULT_KEYWORD_RULES } from '@/lib/sh/keyword-rules'
+import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 
 import { OptionPickerDialog, type PickedOption } from './option-picker-dialog'
 import { KeywordEditor } from './keyword-editor'
@@ -155,18 +157,20 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   )
   const discount = computeDiscount(baselinePrice, saleNumber)
 
-  const keywordSuggestions = useMemo(() => {
-    const set = new Set<string>()
-    for (const it of items) {
-      if (it.brandName) set.add(it.brandName)
-      set.add(it.productName)
-      for (const token of it.optionName.split(/\s+|\//)) {
-        const t = token.trim()
-        if (t.length >= 2 && t.length <= 20) set.add(t)
-      }
-    }
-    return Array.from(set)
-  }, [items])
+  // 구매옵션 중복 검증(§22 STEP08)용. 브랜드·상품명 토큰은 추천에 쓰지 않는다
+  // (§10 Rule 1 이 금지하는 "상품명 중복"을 유도했던 로직).
+  const optionNames = useMemo(() => items.map((it) => it.optionName), [items])
+
+  const keywordSuggestions = useMemo(
+    () =>
+      suggestKeywords({
+        productName: searchName,
+        existing: keywords,
+        masterPool: [],
+        rules: DEFAULT_KEYWORD_RULES,
+      }),
+    [searchName, keywords]
+  )
 
   function addOption(picked: PickedOption) {
     if (items.some((it) => it.optionId === picked.optionId)) {
@@ -536,7 +540,13 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
           <CardDescription>검색 노출을 위한 키워드. 최대 30개</CardDescription>
         </CardHeader>
         <CardContent>
-          <KeywordEditor value={keywords} onChange={setKeywords} suggestions={keywordSuggestions} />
+          <KeywordEditor
+            value={keywords}
+            onChange={setKeywords}
+            suggestions={keywordSuggestions}
+            productName={searchName}
+            optionNames={optionNames}
+          />
         </CardContent>
       </Card>
 
