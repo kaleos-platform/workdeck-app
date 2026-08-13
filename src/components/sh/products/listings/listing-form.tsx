@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Loader2, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, ListChecks, Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { SELLER_HUB_LISTINGS_PATH, getSellerHubListingPath } from '@/lib/deck-routes'
+import {
+  SELLER_HUB_LISTINGS_PATH,
+  getSellerHubListingPath,
+  getSellerHubNamingSopPath,
+} from '@/lib/deck-routes'
 import {
   computeDiscount,
   computeEffectiveStatus,
@@ -536,8 +540,20 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       {/* 키워드 */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">키워드</CardTitle>
-          <CardDescription>검색 노출을 위한 키워드. 최대 30개</CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <CardTitle className="text-lg">키워드</CardTitle>
+              <CardDescription>검색 노출을 위한 키워드. 최대 30개</CardDescription>
+            </div>
+            {mode === 'edit' && initial?.id && (
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link href={getSellerHubNamingSopPath(initial.id)}>
+                  <ListChecks className="h-4 w-4" aria-hidden="true" />
+                  상품명 작성 SOP
+                </Link>
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <KeywordEditor
