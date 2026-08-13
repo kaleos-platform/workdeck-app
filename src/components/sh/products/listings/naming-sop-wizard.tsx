@@ -3,8 +3,8 @@
 // 상품명 작성 SOP 위저드 — 가이드 §22 STEP 01~08.
 //
 // 상태는 전부 이 컴포넌트의 로컬이다. 초안을 DB 에 저장하지 않으므로 중간에 이탈하면 사라진다.
-// 저장은 마지막 STEP 08 에서 `saveToListing` 한 곳으로만 나간다
-// (변경 이력 게이트(§25-26)는 다음 Phase 에서 이 함수 안에 끼운다).
+// 저장은 마지막 STEP 08 에서 `saveToListing` 한 곳으로만 나간다 —
+// 변경 이력 게이트(§25-26)도 같은 함수 안에 있다.
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -16,7 +16,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getSellerHubListingPath, SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
 import { DEFAULT_KEYWORD_RULES, type KeywordRuleSet } from '@/lib/sh/keyword-rules'
 import type { KeywordTypeKey } from '@/lib/sh/keyword-score'
+import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { cn } from '@/lib/utils'
+
+import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-dialog'
 
 import { StepFactSheet, type ProductHints } from './steps/step-01-fact-sheet'
 import { StepMainKeyword } from './steps/step-02-main-keyword'
@@ -112,6 +115,7 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
   const [terms, setTerms] = useState<ResearchTerm[]>([])
   const [finalKeywords, setFinalKeywords] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
+  const [gateOpen, setGateOpen] = useState(false)
 
   // ─── 초기 로드 ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -361,15 +365,39 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
     setStep(clamped)
   }
 
+  /** 저장될 검색어 — 게이트 판정과 요청 본문이 같은 값을 봐야 한다. */
+  const keywordsToSave = useMemo(
+    () => finalKeywords.map((k) => k.trim()).filter(Boolean),
+    [finalKeywords]
+  )
+
+  // §25-26 게이트. 위저드는 언제나 **기존 리스팅**을 고치는 흐름이라(listing 없이는 저장 자체가
+  // 불가능하다) 사유 기본값을 두지 않는다 — 최초 등록으로 미리 채우면 진짜 개명이 그 라벨로
+  // 잘못 기록되고, 무엇보다 미리 채워진 사유는 게이트를 무력화한다.
+  const keywordChange = useMemo(
+    () =>
+      diffKeywordChange({
+        beforeName: listing?.searchName,
+        afterName: productName,
+        beforeKeywords: listing?.keywords ?? [],
+        afterKeywords: keywordsToSave,
+      }),
+    [listing?.searchName, listing?.keywords, productName, keywordsToSave]
+  )
+
   /**
    * 저장 — 유일한 쓰기 경로. searchName 과 keywords 만 리스팅에 반영한다.
-   * 다음 Phase 의 변경 이력 게이트(§25-26)도 여기에 붙인다.
+   * 상품명·검색어가 실제로 바뀌었으면 변경 이력 게이트(§25-26)를 먼저 거친다.
    */
-  async function saveToListing() {
+  async function saveToListing(changeMeta?: KeywordChangeMeta) {
     if (!listing) return
     const name = productName.trim()
     if (!name) {
       toast.error('상품명을 입력해주세요')
+      return
+    }
+    if (keywordChange.changed && !changeMeta) {
+      setGateOpen(true)
       return
     }
 
@@ -380,13 +408,17 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           searchName: name,
-          keywords: finalKeywords.map((k) => k.trim()).filter(Boolean),
+          keywords: keywordsToSave,
+          ...(changeMeta ?? {}),
         }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.message ?? '저장에 실패했습니다')
       }
+      // 반영된 값을 기준선으로 올린다 — 그대로 한 번 더 저장할 때 게이트가 다시 뜨지 않도록.
+      setListing((prev) => (prev ? { ...prev, searchName: name, keywords: keywordsToSave } : prev))
+      setGateOpen(false)
       toast.success('상품명과 검색어를 반영했습니다')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : '저장에 실패했습니다')
@@ -571,7 +603,7 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
           {isLast ? (
             <Button
               type="button"
-              onClick={saveToListing}
+              onClick={() => saveToListing()}
               disabled={!listing || saving}
               className="gap-1"
             >
@@ -580,7 +612,7 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
               ) : (
                 <Save className="h-4 w-4" aria-hidden="true" />
               )}
-              판매채널 상품에 반영
+              {keywordChange.changed ? '변경 사유 입력 후 반영' : '판매채널 상품에 반영'}
             </Button>
           ) : (
             <Button
@@ -595,6 +627,19 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
           )}
         </div>
       </div>
+
+      {listing && (
+        <KeywordChangeDialog
+          open={gateOpen}
+          onOpenChange={setGateOpen}
+          beforeName={listing.searchName}
+          afterName={productName.trim()}
+          beforeKeywords={listing.keywords}
+          afterKeywords={keywordsToSave}
+          saving={saving}
+          onConfirm={(meta) => saveToListing(meta)}
+        />
+      )}
 
       {isLast && !listing && (
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
