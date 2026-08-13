@@ -1,0 +1,152 @@
+// 쿠팡 상품명·검색어 규칙 값 — `docs/쿠팡 상품명 및 검색어 운영 가이드.md` 기준.
+// 값의 출처는 각 필드에 가이드 §번호로 남긴다.
+
+export type BannedTerms = {
+  /** §8.2 프로모션 문구 */
+  promo: string[]
+  /** §19 배송 관련 */
+  shipping: string[]
+  /** §8.3 판매자 이름 */
+  seller: string[]
+  /** §19 검증하기 어려운 효능 */
+  efficacy: string[]
+  /** §8.5 §19 경쟁 브랜드 — 기본 빈 배열(사용자가 워크스페이스별로 관리) */
+  competitorBrand: string[]
+}
+
+export type KeywordRuleSet = {
+  /** §10 검색어 최대 20개 */
+  maxKeywords: number
+  /** §7 목표 40~70자 */
+  nameTargetMin: number
+  nameTargetMax: number
+  /** §7 권장 최대 80자 */
+  nameSoftMax: number
+  /** §7 절대 운영 상한 120자 */
+  nameHardMax: number
+  bannedTerms: BannedTerms
+  /** §8.4 하드 금지 — 장식용 특수문자만. 대괄호·소괄호·+·/ 는 정상 상품명에 쓰이므로 제외. */
+  specialCharPattern: RegExp
+  /** 일반 특수문자(괄호·+·! 등) 개수 임계. 초과하면 경고. */
+  specialCharSoftLimit: number
+}
+
+// §8.4 예시가 ★ ♥ 처럼 "장식" 목적의 기호를 문제 삼으므로 그 계열만 하드 금지한다.
+// g 플래그를 붙이면 .test() 가 lastIndex 를 물고 상태를 갖게 되므로 붙이지 않는다.
+const DECORATIVE_CHARS = /[★☆♥♡◆◇■□▶◀▲▼※○●◎♠♣→←↔『』【】]/
+
+export const COUPANG_KEYWORD_RULES: KeywordRuleSet = {
+  maxKeywords: 20,
+  nameTargetMin: 40,
+  nameTargetMax: 70,
+  nameSoftMax: 80,
+  nameHardMax: 120,
+  bannedTerms: {
+    // §8.2 목록 그대로
+    promo: [
+      '무료배송',
+      '특가',
+      '할인',
+      '세일',
+      '최저가',
+      '대박특가',
+      '인기상품',
+      '신상품',
+      '1+1',
+      'best',
+      '강력추천',
+    ],
+    // §19 배송 관련
+    shipping: ['무료배송', '빠른배송', '당일배송', '로켓배송', '무료 반품'],
+    // §8.3 판매자 이름 — 상호 자체는 알 수 없으므로 "판매자성 수식어"만 잡는다
+    seller: ['판매자직접배송', '스토어인기상품', '마켓추천', '본사직영'],
+    // §19 검증하기 어려운 효능
+    efficacy: ['피부병예방', '질병예방', '간에좋은', '치료', '다이어트효과', '항암', '아토피치료'],
+    competitorBrand: [],
+  },
+  specialCharPattern: DECORATIVE_CHARS,
+  specialCharSoftLimit: 3,
+}
+
+export const DEFAULT_KEYWORD_RULES: KeywordRuleSet = COUPANG_KEYWORD_RULES
+
+export type KeywordRuleOverride = {
+  maxKeywords?: number | null
+  nameTargetMin?: number | null
+  nameTargetMax?: number | null
+  nameSoftMax?: number | null
+  nameHardMax?: number | null
+  bannedTerms?: Partial<BannedTerms> | null
+  /** true = 기본 금지어를 대체, false/미지정 = 기본 금지어와 합집합 */
+  replaceDefaultTerms?: boolean | null
+}
+
+const TERM_KEYS: (keyof BannedTerms)[] = [
+  'promo',
+  'shipping',
+  'seller',
+  'efficacy',
+  'competitorBrand',
+]
+
+function cloneTerms(src: BannedTerms): BannedTerms {
+  return {
+    promo: [...src.promo],
+    shipping: [...src.shipping],
+    seller: [...src.seller],
+    efficacy: [...src.efficacy],
+    competitorBrand: [...src.competitorBrand],
+  }
+}
+
+function mergeTermList(base: string[], extra: string[] | undefined, replace: boolean): string[] {
+  if (!extra) return [...base]
+  if (replace) return dedupe(extra)
+  return dedupe([...base, ...extra])
+}
+
+function dedupe(list: string[]): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const raw of list) {
+    const term = String(raw ?? '').trim()
+    if (!term) continue
+    const key = term.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(term)
+  }
+  return out
+}
+
+/**
+ * DB 오버라이드 병합. row 가 null/undefined 면 기본값 그대로.
+ * non-null 필드만 덮어쓴다. bannedTerms 는 replaceDefaultTerms 로 대체/합집합을 고른다.
+ *
+ * DEFAULT_KEYWORD_RULES 는 COUPANG_KEYWORD_RULES 와 같은 참조라, 배열을 그대로 물려주면
+ * 호출부가 push 하는 순간 모듈 싱글턴이 오염된다. 항상 새 객체·새 배열을 만든다.
+ */
+export function resolveKeywordRules(row: KeywordRuleOverride | null | undefined): KeywordRuleSet {
+  const base = DEFAULT_KEYWORD_RULES
+  if (!row) {
+    return { ...base, bannedTerms: cloneTerms(base.bannedTerms) }
+  }
+
+  const replace = row.replaceDefaultTerms === true
+  const terms = cloneTerms(base.bannedTerms)
+  if (row.bannedTerms) {
+    for (const key of TERM_KEYS) {
+      terms[key] = mergeTermList(base.bannedTerms[key], row.bannedTerms[key], replace)
+    }
+  }
+
+  return {
+    ...base,
+    maxKeywords: row.maxKeywords ?? base.maxKeywords,
+    nameTargetMin: row.nameTargetMin ?? base.nameTargetMin,
+    nameTargetMax: row.nameTargetMax ?? base.nameTargetMax,
+    nameSoftMax: row.nameSoftMax ?? base.nameSoftMax,
+    nameHardMax: row.nameHardMax ?? base.nameHardMax,
+    bannedTerms: terms,
+  }
+}

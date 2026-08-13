@@ -317,6 +317,32 @@ export const productListingSchema = z
   })
 export type ProductListingInput = z.infer<typeof productListingSchema>
 
+// ─── 상품명·검색어 변경 사유 (§25 · §26) ────────────────────────────────────
+//
+// enum 값 목록은 Prisma 의 KeywordChangeReason 과 1:1 이어야 한다(§25 "변경 가능" 목록).
+// 정의 위치가 §24 키워드 섹션이 아니라 여기인 것은 순서 때문이다 — 아래 리스팅 PATCH
+// 스키마가 이 값을 참조하며, z.enum 은 런타임 값이라 먼저 선언돼 있어야 한다.
+export const keywordChangeReasonEnum = z.enum([
+  'WRONG_MAIN_KEYWORD',
+  'UNCLEAR_NAME',
+  'POLICY_RISK',
+  'NEW_SEARCH_DATA',
+  'SPEC_CHANGE',
+  'BRAND_MODEL_CHANGE',
+  'INITIAL_REGISTRATION',
+  'TYPO_FIX',
+  'OTHER',
+])
+
+// 기존 저장 라우트(리스팅·채널상품 PATCH)에 얹는 **선택** 입력.
+// ⚠️ 전부 optional 이다 — 사유를 안 보내면 이력만 남기지 않고 저장은 정상 진행한다.
+// 사유를 강제하는 게이트는 UI 단계의 책임이며, 여기서 막으면 기존 화면이 전부 깨진다.
+export const keywordChangeReasonFields = {
+  changeReason: keywordChangeReasonEnum.optional(),
+  reasonNote: emptyToUndefined.pipe(z.string().trim().max(1000)).optional().nullable(),
+  observeMetric: emptyToUndefined.pipe(z.string().trim().max(200)).optional().nullable(),
+}
+
 // PATCH — 모든 필드 선택. items는 있으면 전체 교체.
 export const productListingPatchSchema = z
   .object({
@@ -345,6 +371,7 @@ export const productListingPatchSchema = z
     status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
     memo: emptyToUndefined.pipe(z.string().trim().max(500)).optional().nullable(),
     items: z.array(productListingItemSchema).min(1).max(50).optional(),
+    ...keywordChangeReasonFields, // §26 이력 기록용. 저장 필드가 아니다.
   })
   .superRefine((v, ctx) => {
     if (!v.items) return
@@ -621,3 +648,203 @@ export const productListingBulkPatchSchema = z.object({
     ),
 })
 export type ProductListingBulkPatchInput = z.infer<typeof productListingBulkPatchSchema>
+
+// ─── 키워드 마스터 (§24) ─────────────────────────────────────────────────────
+
+export const keywordStatusEnum = z.enum([
+  'PRODUCT_NAME',
+  'SEARCH_TERM',
+  'SEARCH_OPTION',
+  'CANDIDATE',
+  'EXCLUDED',
+  'BANNED',
+])
+export const keywordTypeEnum = z.enum([
+  'SYNONYM',
+  'PARENT_CATEGORY',
+  'MATERIAL',
+  'SHAPE',
+  'PURPOSE',
+  'FEATURE',
+  'ALIAS',
+  'COMPETITOR',
+  'UNCLASSIFIED',
+])
+export const keywordSourceEnum = z.enum([
+  'COUPANG_AUTOCOMPLETE',
+  'COUPANG_RELATED',
+  'COUPANG_TOP_PRODUCT',
+  'COUPANG_REVIEW',
+  'AD_KEYWORD',
+  'CUSTOMER_INQUIRY',
+  'INTERNAL',
+])
+export const keywordLinkRoleEnum = z.enum(['MAIN', 'SUB', 'DENY'])
+
+// §17 점수 입력 10종. 부분 입력을 허용하고 빠진 항목은 false 로 채운다
+// (scoreKeyword 는 10개 전부를 요구하므로 여기서 기본값을 확정한다).
+export const keywordScoreInputsSchema = z.object({
+  exactMatch: z.boolean().default(false),
+  purchaseIntent: z.boolean().default(false),
+  inAutocomplete: z.boolean().default(false),
+  inRelated: z.boolean().default(false),
+  inReviews: z.boolean().default(false),
+  overlapsProductName: z.boolean().default(false),
+  overlapsCategory: z.boolean().default(false),
+  partialRelevanceOnly: z.boolean().default(false),
+  isCompetitorBrand: z.boolean().default(false),
+  isFalseClaim: z.boolean().default(false),
+})
+
+// null/'' 을 null 로, undefined 는 필드 skip — 상품 옵션 스키마와 같은 관례.
+const nullableText = (max: number) =>
+  z
+    .preprocess(
+      (v) => (v === undefined ? undefined : v === null || v === '' ? null : v),
+      z.string().max(max).nullable()
+    )
+    .optional()
+
+export const keywordMasterCreateSchema = z.object({
+  keyword: z.string().trim().min(1, '키워드를 입력하세요').max(200),
+  category: nullableText(100),
+  type: keywordTypeEnum.optional(),
+  source: keywordSourceEnum.optional(),
+  status: keywordStatusEnum.optional(),
+  // score 를 생략하고 scoreInputs 만 보내면 서버가 scoreKeyword 로 계산한다.
+  score: z.number().int().min(-99).max(99).optional(),
+  scoreInputs: keywordScoreInputsSchema.optional(),
+  memo: nullableText(1000),
+  researchedAt: z
+    .preprocess(
+      (v) => (v === undefined ? undefined : v === null || v === '' ? null : v),
+      z.union([z.coerce.date(), z.null()])
+    )
+    .optional(),
+})
+export type KeywordMasterCreateInput = z.infer<typeof keywordMasterCreateSchema>
+
+export const keywordMasterPatchSchema = keywordMasterCreateSchema
+  .partial()
+  .refine((p) => Object.keys(p).length > 0, { message: '변경할 필드가 없습니다' })
+export type KeywordMasterPatchInput = z.infer<typeof keywordMasterPatchSchema>
+
+// 연결 대상은 productId·listingId 중 최소 하나가 필요하다.
+// Prisma 로는 표현할 수 없는 XOR 제약이라 여기서 막는다.
+const linkTargetRefine = (v: { productId?: string | null; listingId?: string | null }) =>
+  Boolean(v.productId) || Boolean(v.listingId)
+const LINK_TARGET_MESSAGE = '상품 또는 판매채널 상품 중 하나를 지정해야 합니다'
+
+export const keywordLinkCreateSchema = z
+  .object({
+    keywordId: z.string().min(1),
+    productId: z.string().min(1).nullable().optional(),
+    listingId: z.string().min(1).nullable().optional(),
+    role: keywordLinkRoleEnum.optional(),
+    sortOrder: z.number().int().min(0).max(9999).optional(),
+  })
+  .refine(linkTargetRefine, { message: LINK_TARGET_MESSAGE })
+export type KeywordLinkCreateInput = z.infer<typeof keywordLinkCreateSchema>
+
+// 해제는 link id 단건 또는 (keywordId + 대상) 조합 둘 다 받는다.
+export const keywordLinkDeleteSchema = z.union([
+  z.object({ id: z.string().min(1) }),
+  z
+    .object({
+      keywordId: z.string().min(1),
+      productId: z.string().min(1).nullable().optional(),
+      listingId: z.string().min(1).nullable().optional(),
+    })
+    .refine(linkTargetRefine, { message: LINK_TARGET_MESSAGE }),
+])
+export type KeywordLinkDeleteInput = z.infer<typeof keywordLinkDeleteSchema>
+
+export const keywordBulkSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('status'),
+    ids: z.array(z.string().min(1)).min(1).max(500),
+    payload: z.object({ status: keywordStatusEnum }),
+  }),
+  z.object({
+    action: z.literal('delete'),
+    ids: z.array(z.string().min(1)).min(1).max(500),
+    payload: z.unknown().optional(),
+  }),
+  z.object({
+    action: z.literal('link'),
+    ids: z.array(z.string().min(1)).min(1).max(500),
+    payload: z
+      .object({
+        productId: z.string().min(1).nullable().optional(),
+        listingId: z.string().min(1).nullable().optional(),
+        role: keywordLinkRoleEnum.optional(),
+      })
+      .refine(linkTargetRefine, { message: LINK_TARGET_MESSAGE }),
+  }),
+])
+export type KeywordBulkInput = z.infer<typeof keywordBulkSchema>
+
+export const keywordValidateSchema = z.object({
+  searchName: z.string().max(1000).default(''),
+  keywords: z.array(z.string()).max(200).default([]),
+  channelId: z.string().min(1).optional().nullable(),
+  categoryNames: z.array(z.string()).max(50).optional(),
+  optionNames: z.array(z.string()).max(200).optional(),
+})
+export type KeywordValidateInput = z.infer<typeof keywordValidateSchema>
+
+// §26 변경 기록 생성. 사유 enum 은 위쪽 keywordChangeReasonEnum(§25) 을 그대로 쓴다.
+//
+// ⚠️ multiChange 는 여기에 **없다.** 서버가 before/after 로 계산하는 값이라 클라이언트가
+// 보내도 무시한다(diffKeywordChange — src/lib/sh/keyword-change.ts).
+// .strict() 를 쓰지 않는 이유도 같다 — 순진한 클라이언트가 multiChange 를 실어 보냈다고
+// 400 을 돌려줄 이유는 없다.
+export const keywordChangeLogCreateSchema = z
+  .object({
+    listingId: z.string().min(1).nullable().optional(),
+    productId: z.string().min(1).nullable().optional(),
+    beforeName: nullableText(400),
+    afterName: nullableText(400),
+    beforeKeywords: z.array(z.string().max(100)).max(200).optional(),
+    afterKeywords: z.array(z.string().max(100)).max(200).optional(),
+    reason: keywordChangeReasonEnum,
+    reasonNote: nullableText(1000),
+    observeMetric: nullableText(200),
+  })
+  // OTHER(기타)는 무엇을 왜 바꿨는지 사유 자체로는 알 수 없으므로 메모를 요구한다.
+  .refine((v) => v.reason !== 'OTHER' || Boolean(v.reasonNote?.trim()), {
+    message: '기타 사유는 변경 사유 메모가 필요합니다',
+    path: ['reasonNote'],
+  })
+export type KeywordChangeLogCreateInput = z.infer<typeof keywordChangeLogCreateSchema>
+
+// 채널 키워드 규칙 오버라이드 — 전 필드 nullable(=기본값 사용) 이 정상 상태다.
+const nullableInt = (min: number, max: number) =>
+  z
+    .preprocess(
+      (v) => (v === undefined ? undefined : v === null || v === '' ? null : Number(v)),
+      z.union([z.number().int().min(min).max(max), z.null()])
+    )
+    .optional()
+
+const bannedTermList = z.array(z.string().trim().max(100)).max(500).optional()
+
+export const channelKeywordRuleSchema = z.object({
+  maxKeywords: nullableInt(1, 200),
+  nameTargetMin: nullableInt(1, 1000),
+  nameTargetMax: nullableInt(1, 1000),
+  nameSoftMax: nullableInt(1, 1000),
+  nameHardMax: nullableInt(1, 1000),
+  bannedTerms: z
+    .object({
+      promo: bannedTermList,
+      shipping: bannedTermList,
+      seller: bannedTermList,
+      efficacy: bannedTermList,
+      competitorBrand: bannedTermList,
+    })
+    .nullable()
+    .optional(),
+  replaceDefaultTerms: z.boolean().optional(),
+})
+export type ChannelKeywordRuleInput = z.infer<typeof channelKeywordRuleSchema>

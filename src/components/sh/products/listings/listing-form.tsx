@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Loader2, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, ListChecks, Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { SELLER_HUB_LISTINGS_PATH, getSellerHubListingPath } from '@/lib/deck-routes'
+import {
+  SELLER_HUB_LISTINGS_PATH,
+  getSellerHubListingPath,
+  getSellerHubNamingSopPath,
+} from '@/lib/deck-routes'
 import {
   computeDiscount,
   computeEffectiveStatus,
@@ -34,9 +38,14 @@ import {
   computeListingRetailBaseline,
   type EffectiveListingStatus,
 } from '@/lib/sh/listing-calc'
+import { DEFAULT_KEYWORD_RULES } from '@/lib/sh/keyword-rules'
+import { suggestKeywords } from '@/lib/sh/keyword-suggest'
+import { diffKeywordChange } from '@/lib/sh/keyword-change'
 
 import { OptionPickerDialog, type PickedOption } from './option-picker-dialog'
 import { KeywordEditor } from './keyword-editor'
+import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-dialog'
+import { KeywordChangeTimeline } from './keyword-change-timeline'
 import { countChars, getChannelNameLimit } from './channel-name-limits'
 
 const MAX_NAME_LENGTH = 200
@@ -107,6 +116,13 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  // §25-26 변경 게이트 — 편집 모드에서 상품명·검색어가 실제로 바뀐 저장만 여기를 거친다.
+  const [gateOpen, setGateOpen] = useState(false)
+  const [historyKey, setHistoryKey] = useState(0)
+  // 저장 성공 시 갱신되는 "서버에 반영된 값". initial 은 이 페이지가 다시 마운트되기 전까지
+  // 갱신되지 않으므로, 이것을 쓰지 않으면 한 번 이름을 바꾼 뒤로는 가격만 고쳐도 게이트가 뜬다.
+  const [savedName, setSavedName] = useState(initial?.searchName ?? '')
+  const [savedKeywords, setSavedKeywords] = useState<string[]>(initial?.keywords ?? [])
 
   // 채널 목록 로드
   useEffect(() => {
@@ -155,18 +171,20 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   )
   const discount = computeDiscount(baselinePrice, saleNumber)
 
-  const keywordSuggestions = useMemo(() => {
-    const set = new Set<string>()
-    for (const it of items) {
-      if (it.brandName) set.add(it.brandName)
-      set.add(it.productName)
-      for (const token of it.optionName.split(/\s+|\//)) {
-        const t = token.trim()
-        if (t.length >= 2 && t.length <= 20) set.add(t)
-      }
-    }
-    return Array.from(set)
-  }, [items])
+  // 구매옵션 중복 검증(§22 STEP08)용. 브랜드·상품명 토큰은 추천에 쓰지 않는다
+  // (§10 Rule 1 이 금지하는 "상품명 중복"을 유도했던 로직).
+  const optionNames = useMemo(() => items.map((it) => it.optionName), [items])
+
+  const keywordSuggestions = useMemo(
+    () =>
+      suggestKeywords({
+        productName: searchName,
+        existing: keywords,
+        masterPool: [],
+        rules: DEFAULT_KEYWORD_RULES,
+      }),
+    [searchName, keywords]
+  )
 
   function addOption(picked: PickedOption) {
     if (items.some((it) => it.optionId === picked.optionId)) {
@@ -203,9 +221,28 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
 
   const formValid = channelId.trim().length > 0 && searchName.trim().length > 0 && items.length > 0
 
-  async function handleSave() {
+  // §25-26 게이트 판정. 생성 모드는 before 가 없어 대상이 아니고,
+  // 가격·재고·메모만 고친 저장도 여기서 false 가 되어 그대로 지나간다.
+  const keywordChange = useMemo(
+    () =>
+      diffKeywordChange({
+        beforeName: savedName,
+        afterName: searchName,
+        beforeKeywords: savedKeywords,
+        afterKeywords: keywords,
+      }),
+    [savedName, savedKeywords, searchName, keywords]
+  )
+  const gateRequired = mode === 'edit' && keywordChange.changed
+
+  async function handleSave(changeMeta?: KeywordChangeMeta) {
     if (!formValid) {
       toast.error('필수 항목을 입력해 주세요')
+      return
+    }
+    // 사유 없이 들어온 저장이 게이트 대상이면 다이얼로그로 돌린다.
+    if (gateRequired && !changeMeta) {
+      setGateOpen(true)
       return
     }
     setSaving(true)
@@ -233,6 +270,8 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
           quantity: it.quantity,
           sortOrder: idx,
         })),
+        // 사유 필드는 게이트를 통과한 저장에만 실린다 — 서버는 이때만 이력을 남긴다.
+        ...(changeMeta ?? {}),
       }
       const url =
         mode === 'create' ? '/api/sh/products/listings' : `/api/sh/products/listings/${initial!.id}`
@@ -247,6 +286,12 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       toast.success(
         mode === 'create' ? '판매채널 상품이 생성되었습니다' : '변경사항이 저장되었습니다'
       )
+      if (mode === 'edit') {
+        setSavedName(normalizedSearchName)
+        setSavedKeywords(keywords)
+        setGateOpen(false)
+        if (changeMeta) setHistoryKey((k) => k + 1)
+      }
       const id = mode === 'create' ? data.listing.id : initial!.id
       router.push(getSellerHubListingPath(id))
     } catch (err) {
@@ -297,9 +342,9 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
             <Button variant="outline" onClick={() => router.back()} disabled={saving}>
               취소
             </Button>
-            <Button onClick={handleSave} disabled={!formValid || saving}>
+            <Button onClick={() => handleSave()} disabled={!formValid || saving}>
               {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-              저장
+              {gateRequired ? '변경 사유 입력' : '저장'}
             </Button>
           </div>
         </div>
@@ -532,11 +577,29 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       {/* 키워드 */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">키워드</CardTitle>
-          <CardDescription>검색 노출을 위한 키워드. 최대 30개</CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <CardTitle className="text-lg">키워드</CardTitle>
+              <CardDescription>검색 노출을 위한 키워드. 최대 30개</CardDescription>
+            </div>
+            {mode === 'edit' && initial?.id && (
+              <Button asChild variant="outline" size="sm" className="gap-1">
+                <Link href={getSellerHubNamingSopPath(initial.id)}>
+                  <ListChecks className="h-4 w-4" aria-hidden="true" />
+                  상품명 작성 SOP
+                </Link>
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          <KeywordEditor value={keywords} onChange={setKeywords} suggestions={keywordSuggestions} />
+          <KeywordEditor
+            value={keywords}
+            onChange={setKeywords}
+            suggestions={keywordSuggestions}
+            productName={searchName}
+            optionNames={optionNames}
+          />
         </CardContent>
       </Card>
 
@@ -563,6 +626,24 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
           )}
         </CardContent>
       </Card>
+
+      {/* 변경 이력 (§26) — 편집 모드에서만. 생성 화면에는 남길 과거가 없다. */}
+      {mode === 'edit' && initial?.id && (
+        <KeywordChangeTimeline listingId={initial.id} refreshKey={historyKey} />
+      )}
+
+      {mode === 'edit' && initial && (
+        <KeywordChangeDialog
+          open={gateOpen}
+          onOpenChange={setGateOpen}
+          beforeName={savedName}
+          afterName={searchName.trim()}
+          beforeKeywords={savedKeywords}
+          afterKeywords={keywords}
+          saving={saving}
+          onConfirm={(meta) => handleSave(meta)}
+        />
+      )}
 
       <OptionPickerDialog
         open={pickerOpen}

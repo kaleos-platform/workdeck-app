@@ -11,6 +11,7 @@ import {
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
 import { productDisplayName } from '@/lib/sh/product-display'
+import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 
 const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
 
@@ -292,5 +293,16 @@ export async function POST(req: NextRequest) {
     return listing
   })
 
-  return NextResponse.json({ listing: { id: created.id } }, { status: 201 })
+  // 저장 성공 이후에만 계산 — 경고는 정보 전달용이며 저장을 막지 않는다.
+  // optionNames(§22)는 넘기지 않는다: 두 PATCH 라우트가 옵션명을 갖고 있지 않아,
+  // 여기서만 넘기면 같은 listing 이 생성/수정 때 서로 다른 경고를 내게 된다.
+  const namingWarnings = await buildNamingWarnings(resolved.space.id, channelProduct.channelId, {
+    searchName: input.searchName,
+    keywords: input.keywords ?? [],
+  })
+
+  return NextResponse.json(
+    { listing: { id: created.id }, ...(namingWarnings ? { namingWarnings } : {}) },
+    { status: 201 }
+  )
 }

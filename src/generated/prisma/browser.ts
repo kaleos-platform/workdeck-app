@@ -398,6 +398,26 @@ export type DelOrderItemFulfillment = Prisma.DelOrderItemFulfillmentModel
  */
 export type ChannelProduct = Prisma.ChannelProductModel
 /**
+ * Model KeywordMaster
+ * 
+ */
+export type KeywordMaster = Prisma.KeywordMasterModel
+/**
+ * Model KeywordMasterLink
+ * 
+ */
+export type KeywordMasterLink = Prisma.KeywordMasterLinkModel
+/**
+ * Model ChannelKeywordRule
+ * 
+ */
+export type ChannelKeywordRule = Prisma.ChannelKeywordRuleModel
+/**
+ * Model KeywordChangeLog
+ * 
+ */
+export type KeywordChangeLog = Prisma.KeywordChangeLogModel
+/**
  * Model Product
  * 
  */

@@ -10,6 +10,8 @@ import {
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
 import { productDisplayName } from '@/lib/sh/product-display'
+import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
+import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
 
 type Params = { params: Promise<{ listingId: string }> }
 const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
@@ -153,6 +155,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       channelProductId: true,
       searchName: true,
       managementName: true,
+      keywords: true, // 부분 수정 시 "패치 이후 실제 값"으로 검증하기 위해 필요
+      // §26 이력을 상품 단위로도 조회할 수 있게 귀속 상품을 추정하기 위한 최소 조회.
+      items: { select: { option: { select: { productId: true } } } },
       channel: {
         select: { externalSource: true, channelTypeDef: { select: { isSalesChannel: true } } },
       },
@@ -175,23 +180,46 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (input.channelStock !== undefined && existing.channel.externalSource != null) {
     return errorResponse('채널 자체 배송 채널은 채널 재고를 수동 수정할 수 없습니다', 400)
   }
+  // §26 변경 이력. changeReason 이 없으면 이력만 남기지 않고 저장은 그대로 진행한다
+  // (사유 강제는 UI 의 책임 — 여기서 막으면 이 라우트를 쓰는 기존 화면이 전부 깨진다).
+  // 400 판정은 저장 전에 끝낸다 — 저장 후에 거절하면 값은 바뀐 채 에러만 돌아간다.
+  if (input.changeReason === 'OTHER' && !input.reasonNote?.trim()) {
+    return errorResponse('기타 사유는 변경 사유 메모가 필요합니다', 400)
+  }
+
   const nextSearchName = input.searchName ?? existing.searchName
   const nextDisplayName =
     input.displayName === undefined
       ? undefined
       : normalizeDisplayName(nextSearchName, input.displayName)
 
-  // items 변경 시 옵션 소속 검증
+  // items 변경 시 옵션 소속 검증. 이력 귀속 상품도 여기서 같이 파악한다(패치 이후 구성 기준).
+  let nextProductIds = new Set(existing.items.map((it) => it.option.productId))
   if (input.items) {
     const optionIds = input.items.map((it) => it.optionId)
     const validOptions = await prisma.invProductOption.findMany({
       where: { id: { in: optionIds }, product: { spaceId: resolved.space.id, status: 'ACTIVE' } },
-      select: { id: true },
+      select: { id: true, productId: true },
     })
     if (validOptions.length !== optionIds.length) {
       return errorResponse('일부 옵션을 찾을 수 없거나 미사용 상품에 속해 있습니다', 400)
     }
+    nextProductIds = new Set(validOptions.map((o) => o.productId))
   }
+  // 구성 상품이 정확히 하나일 때만 상품에 귀속한다. 여러 상품이 섞인 세트 리스팅은
+  // 어느 상품의 이력이라 말할 수 없으므로 listingId 로만 남는다.
+  const logProductId = nextProductIds.size === 1 ? [...nextProductIds][0] : null
+
+  // 이력 대상 값은 "패치 이후 유효값" 기준이다(부분 수정이므로 요청 본문만으로는 알 수 없다).
+  const nextKeywords = input.keywords ?? existing.keywords
+  const changeDiff = diffKeywordChange({
+    beforeName: existing.searchName,
+    afterName: nextSearchName,
+    beforeKeywords: existing.keywords,
+    afterKeywords: nextKeywords,
+  })
+  // 사유가 있고 실제로 상품명·검색어가 바뀐 경우에만 기록한다(가격·재고만 바꾼 저장은 제외).
+  const shouldLogChange = Boolean(input.changeReason) && changeDiff.changed
 
   await prisma.$transaction(async (tx) => {
     await tx.productListing.update({
@@ -219,9 +247,37 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         })),
       })
     }
+    // 같은 트랜잭션 안에서 남긴다 — 저장은 됐는데 이력만 빠지는 상태를 만들지 않는다.
+    if (shouldLogChange && input.changeReason) {
+      await tx.keywordChangeLog.create({
+        data: {
+          spaceId: resolved.space.id,
+          listingId,
+          productId: logProductId,
+          beforeName: existing.searchName,
+          afterName: nextSearchName,
+          beforeKeywords: toKeywordList(existing.keywords),
+          afterKeywords: toKeywordList(nextKeywords),
+          reason: input.changeReason,
+          reasonNote: input.reasonNote ?? null,
+          observeMetric: input.observeMetric ?? null,
+          multiChange: changeDiff.multiChange,
+          actorUserId: resolved.user.id,
+        },
+      })
+    }
   })
 
-  return NextResponse.json({ listing: { id: listingId } })
+  // 저장 성공 이후 계산. 부분 수정이므로 요청 본문이 아니라 "패치 이후 유효값"을 검증한다.
+  const namingWarnings = await buildNamingWarnings(resolved.space.id, existing.channelId, {
+    searchName: nextSearchName,
+    keywords: input.keywords ?? existing.keywords,
+  })
+
+  return NextResponse.json({
+    listing: { id: listingId },
+    ...(namingWarnings ? { namingWarnings } : {}),
+  })
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
