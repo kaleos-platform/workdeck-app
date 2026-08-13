@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { ShieldAlert, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
 import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validations/auth'
@@ -40,6 +40,60 @@ function logAuditAction(action: AuditAction) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action }),
   }).catch(() => {})
+}
+
+// 비밀번호 입력 + 표시/숨김 토글. 오타로 인한 재입력을 줄이려면 눈으로 확인할 수단이 필요하다.
+// 버튼이 입력값 위에 겹치므로 pr 로 자리를 비우고, 상태를 aria-label 에 담아 스크린리더에도 알린다.
+function PasswordInput({
+  value,
+  onChange,
+  onBlur,
+  name,
+  disabled,
+  autoComplete,
+}: {
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onBlur: () => void
+  name: string
+  disabled?: boolean
+  autoComplete?: string
+}) {
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <div className="relative">
+      <Input
+        type={visible ? 'text' : 'password'}
+        placeholder="••••••••"
+        className="pr-10"
+        disabled={disabled}
+        autoComplete={autoComplete}
+        name={name}
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        // 폼 제출 흐름을 방해하지 않도록 탭 순서에서 제외 — 마우스/터치 전용 보조 컨트롤이다.
+        tabIndex={-1}
+        disabled={disabled}
+        onClick={() => setVisible((v) => !v)}
+        aria-label={visible ? '비밀번호 숨기기' : '비밀번호 표시'}
+        aria-pressed={visible}
+        className="absolute top-1/2 right-1 size-8 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+      >
+        {visible ? (
+          <EyeOff className="size-4" aria-hidden="true" />
+        ) : (
+          <Eye className="size-4" aria-hidden="true" />
+        )}
+      </Button>
+    </div>
+  )
 }
 
 export function AccountSettings({ email }: { email: string }) {
@@ -96,12 +150,7 @@ function PasswordSection() {
                 <FormItem>
                   <FormLabel>새 비밀번호</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="••••••••"
-                      type="password"
-                      disabled={isLoading}
-                      {...field}
-                    />
+                    <PasswordInput disabled={isLoading} autoComplete="new-password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -114,12 +163,7 @@ function PasswordSection() {
                 <FormItem>
                   <FormLabel>비밀번호 확인</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="••••••••"
-                      type="password"
-                      disabled={isLoading}
-                      {...field}
-                    />
+                    <PasswordInput disabled={isLoading} autoComplete="new-password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
