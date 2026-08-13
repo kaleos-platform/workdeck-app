@@ -3,7 +3,12 @@ import type { Prisma } from '@/generated/prisma/client'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { keywordMasterCreateSchema } from '@/lib/sh/schemas'
+import {
+  keywordMasterCreateSchema,
+  keywordStatusEnum,
+  keywordTypeEnum,
+  keywordSourceEnum,
+} from '@/lib/sh/schemas'
 import { keywordKeys } from '@/lib/sh/keyword-normalize'
 import { scoreKeyword, type KeywordScoreInputs } from '@/lib/sh/keyword-score'
 import { serializeKeyword, keywordSelect } from '@/lib/sh/keyword-serialize'
@@ -29,9 +34,20 @@ export async function GET(req: NextRequest) {
 
   const where: Prisma.KeywordMasterWhereInput = { spaceId: resolved.space.id }
   if (q) where.keyword = { contains: q, mode: 'insensitive' }
-  if (status) where.status = status as Prisma.KeywordMasterWhereInput['status']
-  if (type) where.type = type as Prisma.KeywordMasterWhereInput['type']
-  if (source) where.source = source as Prisma.KeywordMasterWhereInput['source']
+
+  // enum 필터는 화이트리스트를 통과한 값만 넘긴다 — 쿼리 문자열을 그대로 Prisma 에
+  // 넘기면 오타 하나에 PrismaClientValidationError 가 나서 500 이 된다.
+  const statusParsed = status ? keywordStatusEnum.safeParse(status) : null
+  const typeParsed = type ? keywordTypeEnum.safeParse(type) : null
+  const sourceParsed = source ? keywordSourceEnum.safeParse(source) : null
+  if (statusParsed && !statusParsed.success)
+    return errorResponse('status 값이 올바르지 않습니다', 400)
+  if (typeParsed && !typeParsed.success) return errorResponse('type 값이 올바르지 않습니다', 400)
+  if (sourceParsed && !sourceParsed.success)
+    return errorResponse('source 값이 올바르지 않습니다', 400)
+  if (statusParsed?.success) where.status = statusParsed.data
+  if (typeParsed?.success) where.type = typeParsed.data
+  if (sourceParsed?.success) where.source = sourceParsed.data
   // 연결 필터. 두 조건이 같이 오면 각각의 링크가 모두 있어야 통과하도록 AND 로 쌓는다
   // (하나의 `links: { some: {...} }` 에 두 필드를 넣으면 "같은 링크 행"을 요구하게 되는데,
   //  productId·listingId 는 서로 다른 행에 나뉘어 있는 것이 정상이다).

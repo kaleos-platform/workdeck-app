@@ -259,8 +259,7 @@ export async function POST(req: NextRequest) {
   const optionIds = input.items.map((it) => it.optionId)
   const validOptions = await prisma.invProductOption.findMany({
     where: { id: { in: optionIds }, product: { spaceId: resolved.space.id, status: 'ACTIVE' } },
-    // name 은 검색어 검증(§22 구매 옵션)에만 쓴다 — 기존 소속 검증 동작은 그대로.
-    select: { id: true, name: true },
+    select: { id: true },
   })
   if (validOptions.length !== optionIds.length) {
     return errorResponse('일부 옵션을 찾을 수 없거나 미사용 상품에 속해 있습니다', 400)
@@ -295,10 +294,11 @@ export async function POST(req: NextRequest) {
   })
 
   // 저장 성공 이후에만 계산 — 경고는 정보 전달용이며 저장을 막지 않는다.
+  // optionNames(§22)는 넘기지 않는다: 두 PATCH 라우트가 옵션명을 갖고 있지 않아,
+  // 여기서만 넘기면 같은 listing 이 생성/수정 때 서로 다른 경고를 내게 된다.
   const namingWarnings = await buildNamingWarnings(resolved.space.id, channelProduct.channelId, {
     searchName: input.searchName,
     keywords: input.keywords ?? [],
-    optionNames: validOptions.map((o) => o.name),
   })
 
   return NextResponse.json(
