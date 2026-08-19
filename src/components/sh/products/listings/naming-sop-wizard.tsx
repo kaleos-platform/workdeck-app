@@ -95,6 +95,9 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
   const [product, setProduct] = useState<ProductContext | null>(null)
   const [categoryNames, setCategoryNames] = useState<string[]>([])
   const [rules, setRules] = useState<KeywordRuleSet>(DEFAULT_KEYWORD_RULES)
+  // 상품명 Step(04·05)은 검색용 기준으로 판정한다. JSX 안에서 부르면 렌더마다 새 객체가 나와
+  // 하위의 useMemo(…, [rules]) 가 매번 무효화되므로 여기서 한 번만 만든다.
+  const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
   const [adTerms, setAdTerms] = useState<AdTermsState>({
     loading: false,
     linked: false,
@@ -546,14 +549,14 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
               onPartChange={updatePart}
               name={productName}
               onNameChange={setProductName}
-              rules={rulesForNameField(rules, 'searchName')}
+              rules={searchNameRules}
             />
           )}
           {step === 4 && (
             <StepCleanName
               name={productName}
               onNameChange={setProductName}
-              rules={rulesForNameField(rules, 'searchName')}
+              rules={searchNameRules}
               manualChecks={manualChecks}
               onManualCheckChange={(key, checked) =>
                 setManualChecks((prev) => ({ ...prev, [key]: checked }))
