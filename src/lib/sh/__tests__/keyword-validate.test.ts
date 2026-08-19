@@ -1,6 +1,7 @@
 import { tokenizeProductName } from '@/lib/inv/search-tokens'
 import { DEFAULT_KEYWORD_RULES, resolveKeywordRules } from '../keyword-rules'
 import {
+  countNamingViolations,
   validateKeywords,
   validateListingNaming,
   validateProductName,
@@ -403,5 +404,74 @@ describe('validateListingNaming', () => {
     const long = 'x'.repeat(rules.nameHardMax + 1)
     const r = validateListingNaming({ searchName: '타월', displayName: long, keywords: [], rules })
     expect(r.hasError).toBe(true)
+  })
+})
+
+describe('countNamingViolations', () => {
+  const rules = DEFAULT_KEYWORD_RULES
+
+  it('세 갈래 위반을 합산한다', () => {
+    const result = validateListingNaming({
+      searchName: '★특가★ 무료배송 타월',
+      displayName: '모노홈 호텔 세면 타월 200g 5장 대형 도톰한 흡수력 좋은 제품',
+      keywords: ['무료배송'],
+      rules,
+    })
+    const n = countNamingViolations(result, {
+      searchName: '★특가★ 무료배송 타월',
+      displayName: '모노홈 호텔 세면 타월 200g 5장 대형 도톰한 흡수력 좋은 제품',
+    })
+    // 합산이므로 어느 한 갈래보다 크다
+    expect(n).toBeGreaterThan(result.searchName.violations.length)
+  })
+
+  it('노출용이 검색용과 같으면 노출용 위반을 두 번 세지 않는다', () => {
+    // 사용자가 노출용을 비우면 normalizeDisplayName 이 검색용으로 채운다.
+    // 같은 문자열이 두 번 검증되므로 그대로 합산하면 문제 1개가 2개로 보인다.
+    const same = '★특가★ 무료배송 타월'
+    const result = validateListingNaming({
+      searchName: same,
+      displayName: same,
+      keywords: [],
+      rules,
+    })
+    expect(result.displayName).not.toBeNull()
+    expect(result.displayName!.violations.length).toBeGreaterThan(0)
+
+    const n = countNamingViolations(result, { searchName: same, displayName: same })
+    expect(n).toBe(result.searchName.violations.length + result.keywords.violations.length)
+  })
+
+  it('노출용이 다르면 각각 센다', () => {
+    const result = validateListingNaming({
+      searchName: '★특가★ 타월',
+      displayName: '무료배송 수건',
+      keywords: [],
+      rules,
+    })
+    const n = countNamingViolations(result, {
+      searchName: '★특가★ 타월',
+      displayName: '무료배송 수건',
+    })
+    expect(n).toBe(
+      result.searchName.violations.length +
+        result.displayName!.violations.length +
+        result.keywords.violations.length
+    )
+  })
+
+  it('노출용이 없으면 검색용과 검색어만 센다', () => {
+    const result = validateListingNaming({ searchName: '타월', keywords: [], rules })
+    const n = countNamingViolations(result, { searchName: '타월', displayName: '' })
+    expect(n).toBe(result.searchName.violations.length + result.keywords.violations.length)
+  })
+
+  it('위반이 없으면 0', () => {
+    // 목표 40~70자 구간에 들어가는 이름 — 길이 위반(INFO)조차 없어야 0 이 나온다.
+    const clean = '모노홈 40수 코마사 호텔 타월 200g 5장 도톰한 세면 수건 욕실 대형 흡수력'
+    // 검색어는 상품명에 없는 표현이라야 §10 중복에 걸리지 않는다.
+    const result = validateListingNaming({ searchName: clean, keywords: ['답례품'], rules })
+    const n = countNamingViolations(result, { searchName: clean, displayName: '' })
+    expect(n).toBe(0)
   })
 })

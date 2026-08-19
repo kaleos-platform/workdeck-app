@@ -46,6 +46,7 @@ import {
 } from '@/lib/sh/keyword-rules'
 import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
+import { countNamingViolations, type ListingNamingResult } from '@/lib/sh/keyword-validate'
 
 import { OptionPickerDialog, type PickedOption } from './option-picker-dialog'
 import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
@@ -316,8 +317,20 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '저장 실패')
-      toast.success(
+      // 서버가 저장 성공 이후에 붙여 보내는 검증 결과. 없을 수도 있다(검증이 실패하면
+      // 서버가 필드를 생략한다) — 그때는 기존 문구 그대로 둔다.
+      const warnings = (data as { namingWarnings?: ListingNamingResult }).namingWarnings
+      const violationCount = warnings
+        ? countNamingViolations(warnings, {
+            searchName: normalizedSearchName,
+            displayName: normalizedDisplayName,
+          })
+        : 0
+      const savedMessage =
         mode === 'create' ? '판매채널 상품이 생성되었습니다' : '변경사항이 저장되었습니다'
+      // 위반이 있어도 저장은 성공이다 — 경고는 정보 전달이지 실패가 아니다.
+      toast.success(
+        violationCount > 0 ? `${savedMessage} · 규칙 위반 ${violationCount}건` : savedMessage
       )
       if (mode === 'edit') {
         setSavedName(normalizedSearchName)

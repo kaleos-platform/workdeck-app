@@ -474,3 +474,25 @@ export function validateListingNaming(input: {
     keywords.violations.some((v) => v.severity === 'ERROR')
   return { searchName, displayName, keywords, hasError }
 }
+
+/**
+ * 사용자가 고쳐야 할 실제 문제 개수.
+ *
+ * 노출용을 비우면 저장 시 검색용으로 채워진다(listings 라우트의 normalizeDisplayName).
+ * 그러면 같은 문자열이 두 번 검증돼 같은 위반이 두 번 나오고, 그대로 합산하면 사용자가
+ * 문제 1개를 2개로 본다. 그래서 두 이름이 같을 때는 노출용을 세지 않는다.
+ *
+ * 검증 자체를 건너뛰지 않는 이유: 폴백된 노출용도 실제로 저장되는 값이라, 채널의 노출용
+ * 상한이 검색용보다 엄격해지면 진짜 위반을 놓친다. 세는 단계에서만 정리한다.
+ */
+export function countNamingViolations(
+  result: ListingNamingResult,
+  names: { searchName: string; displayName: string }
+): number {
+  const mirrors = names.displayName.trim() === names.searchName.trim()
+  return (
+    result.searchName.violations.length +
+    (mirrors ? 0 : (result.displayName?.violations.length ?? 0)) +
+    result.keywords.violations.length
+  )
+}
