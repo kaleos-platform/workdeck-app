@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveAnyDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { channelKeywordRuleSchema } from '@/lib/sh/schemas'
-import { resolveKeywordRules } from '@/lib/sh/keyword-rules'
+import { resolveKeywordRules, withChannelDefaults } from '@/lib/sh/keyword-rules'
 import {
   ruleRowToOverride,
   serializeKeywordRules,
@@ -41,7 +41,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   const channel = await prisma.channel.findFirst({
     where: { id: channelId, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, name: true, externalSource: true },
   })
   if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
 
@@ -51,7 +51,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
   })
 
   return NextResponse.json({
-    rules: serializeKeywordRules(resolveKeywordRules(ruleRowToOverride(row))),
+    rules: serializeKeywordRules(
+      withChannelDefaults(resolveKeywordRules(ruleRowToOverride(row)), channel)
+    ),
     override: row ? { ...row, bannedTerms: parseBannedTerms(row.bannedTerms) ?? {} } : null,
   })
 }
@@ -64,7 +66,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   const channel = await prisma.channel.findFirst({
     where: { id: channelId, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, name: true, externalSource: true },
   })
   if (!channel) return errorResponse('채널을 찾을 수 없습니다', 404)
 
@@ -104,7 +106,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
   })
 
   return NextResponse.json({
-    rules: serializeKeywordRules(resolveKeywordRules(ruleRowToOverride(row))),
+    rules: serializeKeywordRules(
+      withChannelDefaults(resolveKeywordRules(ruleRowToOverride(row)), channel)
+    ),
     override: { ...row, bannedTerms: parseBannedTerms(row.bannedTerms) ?? {} },
   })
 }

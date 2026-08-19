@@ -125,6 +125,19 @@ describe('withChannelDefaults', () => {
     expect(r.maxKeywords).toBe(10)
     expect(r.channelLimits.searchName).toBe(30)
   })
+
+  it('반환된 channelLimits 를 변형해도 모듈 상수(CHANNEL_LIMITS)가 오염되지 않는다', () => {
+    const r = withChannelDefaults(resolveKeywordRules(null), {
+      name: '무신사',
+      externalSource: null,
+    })
+    r.channelLimits.searchName = 999
+    const again = withChannelDefaults(resolveKeywordRules(null), {
+      name: '무신사',
+      externalSource: null,
+    })
+    expect(again.channelLimits.searchName).toBe(30)
+  })
 })
 
 describe('rulesForNameField', () => {
@@ -155,11 +168,14 @@ describe('rulesForNameField', () => {
     expect(rulesForNameField(base, 'searchName')).toEqual(base)
   })
 
-  it('목표 하한이 상한을 넘지 않는다', () => {
+  it('목표 하한이 상한을 넘지 않는다 (대소문자 무관 매칭도 함께 검증)', () => {
     const base = withChannelDefaults(resolveKeywordRules(null), {
       name: '29CM',
       externalSource: null,
     })
+    // '29cm' 키워드가 대문자 입력('29CM')에도 매칭되는지 확인한다.
+    // 이 단언이 없으면 매칭이 깨져 channelLimits={} 여도 40<=70 이라 항상 통과해버린다.
+    expect(base.channelLimits.searchName).toBe(40)
     const r = rulesForNameField(base, 'searchName')
     expect(r.nameTargetMin).toBeLessThanOrEqual(r.nameTargetMax)
   })

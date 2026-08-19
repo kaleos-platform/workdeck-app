@@ -102,7 +102,9 @@ function lookupChannelLimits(channel: ChannelIdentity | null): ChannelNameLimits
   if (!channel) return {}
   const lower = channel.name.toLowerCase()
   for (const entry of CHANNEL_LIMITS) {
-    if (lower.includes(entry.keyword)) return entry.limits
+    // CHANNEL_LIMITS 항목을 그대로 반환하면 소비자가 결과 객체를 변형하는 순간
+    // 모듈 상수(장수 프로세스에서 공유)가 오염된다 — 항상 새 객체를 돌려준다.
+    if (lower.includes(entry.keyword)) return { ...entry.limits }
   }
   return {}
 }
@@ -201,7 +203,11 @@ function dedupe(list: string[]): string[] {
 export function resolveKeywordRules(row: KeywordRuleOverride | null | undefined): KeywordRuleSet {
   const base = DEFAULT_KEYWORD_RULES
   if (!row) {
-    return { ...base, bannedTerms: cloneTerms(base.bannedTerms) }
+    return {
+      ...base,
+      bannedTerms: cloneTerms(base.bannedTerms),
+      channelLimits: { ...base.channelLimits },
+    }
   }
 
   const replace = row.replaceDefaultTerms === true
@@ -220,5 +226,6 @@ export function resolveKeywordRules(row: KeywordRuleOverride | null | undefined)
     nameSoftMax: row.nameSoftMax ?? base.nameSoftMax,
     nameHardMax: row.nameHardMax ?? base.nameHardMax,
     bannedTerms: terms,
+    channelLimits: { ...base.channelLimits },
   }
 }
