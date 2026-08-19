@@ -697,7 +697,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="listing-search">상품명 (검색용) *</Label>
-              <NameCounter value={baseSearchName} limit={searchNameRules.nameHardMax} />
+              <NameCounter value={baseSearchName} limit={searchNameRules.nameHardMax} guide />
             </div>
             <Input
               id="listing-search"
@@ -719,7 +719,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="listing-display">상품명 (노출용)</Label>
-              <NameCounter value={baseDisplayName} limit={displayNameRules.nameHardMax} />
+              <NameCounter value={baseDisplayName} limit={displayNameRules.nameHardMax} guide />
             </div>
             <Input
               id="listing-display"

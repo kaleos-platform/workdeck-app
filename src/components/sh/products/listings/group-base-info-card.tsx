@@ -114,7 +114,7 @@ export function GroupBaseInfoCard({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-search">상품명 (검색용)</Label>
-            <NameCounter value={baseSearchName} limit={searchNameRules.nameHardMax} />
+            <NameCounter value={baseSearchName} limit={searchNameRules.nameHardMax} guide />
           </div>
           <Input
             id="group-search"
@@ -137,7 +137,7 @@ export function GroupBaseInfoCard({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-display">상품명 (노출용)</Label>
-            <NameCounter value={baseDisplayName} limit={displayNameRules.nameHardMax} />
+            <NameCounter value={baseDisplayName} limit={displayNameRules.nameHardMax} guide />
           </div>
           <Input
             id="group-display"
