@@ -142,13 +142,23 @@ export function resolveKeywordRules(
 채널 상한에서 목표 구간을 파생한다. 채널마다 상한이 다른데 목표를 40~70으로 고정하면 짧은 채널에서 모순이 생긴다.
 
 ```
-nameHardMax  = 채널 상한 (쿠팡은 가이드 §7의 120)
-nameSoftMax  = min(80, hardMax)
+nameHardMax   = 채널 상한 (쿠팡은 가이드 §7의 120)
+nameSoftMax   = min(80, hardMax)
 nameTargetMax = min(70, hardMax)
 nameTargetMin = min(40, floor(hardMax * 0.6))
 ```
 
 무신사(30) → 목표 18~30, 권장상한 30, 절대 30. 모순이 사라진다.
+
+⚠️ **상한은 검색용·노출용이 따로다.** 무신사는 검색용 30 / 노출용 40으로 다르다. 따라서 규칙셋에 `channelLimits: { searchName?: number; displayName?: number }`를 싣고, 검증 시 필드별로 파생한다.
+
+```ts
+export type NameField = 'searchName' | 'displayName'
+/** 필드 상한으로 name* 값을 다시 파생한 규칙셋을 돌려준다. 상한이 없으면 원본 그대로. */
+export function rulesForNameField(rules: KeywordRuleSet, field: NameField): KeywordRuleSet
+```
+
+기존 평면 필드(`nameTargetMin` 등)는 그대로 두어 현 소비자를 깨지 않는다 — 검색용 기준값으로 유지한다.
 
 **쿠팡은 가이드 값을 쓴다**(40/70/80/120). `channel-name-limits.ts`의 100은 출처가 없는 값이라 버린다.
 
