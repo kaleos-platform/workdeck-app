@@ -357,7 +357,51 @@ describe('validateListingNaming', () => {
       rules,
     })
     expect(r.hasError).toBe(false)
-    expect(r.name.violations.map((v) => v.code)).toEqual(['NAME_BELOW_TARGET'])
+    expect(r.searchName.violations.map((v) => v.code)).toEqual(['NAME_BELOW_TARGET'])
     expect(r.keywords.cleaned).toEqual(['세면 수건', '욕실 수건'])
+  })
+
+  it('검색용·검색어를 함께 검증한다', () => {
+    const r = validateListingNaming({
+      searchName: '모노홈 40수 코마사 호텔 타월 200g 5장',
+      keywords: ['호텔 타월'],
+      rules,
+    })
+    expect(r.searchName.length).toBeGreaterThan(0)
+    expect(r.keywords.violations.some((v) => v.code === 'KW_DUP_WITH_NAME')).toBe(true)
+  })
+
+  it('노출용을 주면 함께 검증한다', () => {
+    const r = validateListingNaming({
+      searchName: '모노홈 호텔 타월',
+      displayName: '★특가★ 무료배송 타월',
+      keywords: [],
+      rules,
+    })
+    expect(r.displayName).not.toBeNull()
+    expect(r.displayName!.violations.some((v) => v.code === 'NAME_SPECIAL_CHARS')).toBe(true)
+    expect(r.displayName!.violations.some((v) => v.code === 'NAME_PROMO_TERM')).toBe(true)
+  })
+
+  it('노출용이 없으면 null', () => {
+    const r = validateListingNaming({ searchName: '타월', keywords: [], rules })
+    expect(r.displayName).toBeNull()
+  })
+
+  it('노출용은 검색어 중복 판정에 쓰이지 않는다', () => {
+    // §10 Rule 1 의 대상은 검색에 쓰이는 이름이다.
+    const r = validateListingNaming({
+      searchName: '모노홈 타월',
+      displayName: '호텔 세면 수건',
+      keywords: ['세면 수건'],
+      rules,
+    })
+    expect(r.keywords.violations.some((v) => v.code === 'KW_DUP_WITH_NAME')).toBe(false)
+  })
+
+  it('노출용 위반도 hasError 에 반영된다', () => {
+    const long = 'x'.repeat(rules.nameHardMax + 1)
+    const r = validateListingNaming({ searchName: '타월', displayName: long, keywords: [], rules })
+    expect(r.hasError).toBe(true)
   })
 })

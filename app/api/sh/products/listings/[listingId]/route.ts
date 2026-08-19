@@ -154,6 +154,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       channelId: true,
       channelProductId: true,
       searchName: true,
+      displayName: true, // 부분 수정 시 "패치 이후 실제 값"으로 노출용을 검증하기 위해 필요
       managementName: true,
       keywords: true, // 부분 수정 시 "패치 이후 실제 값"으로 검증하기 위해 필요
       // §26 이력을 상품 단위로도 조회할 수 있게 귀속 상품을 추정하기 위한 최소 조회.
@@ -271,6 +272,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   // 저장 성공 이후 계산. 부분 수정이므로 요청 본문이 아니라 "패치 이후 유효값"을 검증한다.
   const namingWarnings = await buildNamingWarnings(resolved.space.id, existing.channelId, {
     searchName: nextSearchName,
+    displayName: nextDisplayName ?? existing.displayName,
     keywords: input.keywords ?? existing.keywords,
   })
 

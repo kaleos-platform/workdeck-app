@@ -9,7 +9,7 @@ import {
   splitTokens,
   type KeywordKeys,
 } from './keyword-normalize'
-import type { KeywordRuleSet } from './keyword-rules'
+import { rulesForNameField, type KeywordRuleSet } from './keyword-rules'
 
 export type ViolationSeverity = 'ERROR' | 'WARN' | 'INFO'
 
@@ -438,19 +438,29 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
 }
 
 export type ListingNamingResult = {
-  name: NameValidationResult
+  searchName: NameValidationResult
+  /** 노출용을 주지 않았으면 null */
+  displayName: NameValidationResult | null
   keywords: KeywordValidationResult
   hasError: boolean
 }
 
 export function validateListingNaming(input: {
   searchName: string
+  displayName?: string
   keywords: string[]
   categoryNames?: string[]
   optionNames?: string[]
   rules: KeywordRuleSet
 }): ListingNamingResult {
-  const name = validateProductName(input.searchName, input.rules)
+  const searchName = validateProductName(
+    input.searchName,
+    rulesForNameField(input.rules, 'searchName')
+  )
+  // 노출용은 길이·금지어·특수문자만 본다. 검색어 중복 판정의 기준은 검색용이다(§10 Rule 1).
+  const displayName = input.displayName?.trim()
+    ? validateProductName(input.displayName, rulesForNameField(input.rules, 'displayName'))
+    : null
   const keywords = validateKeywords({
     keywords: input.keywords,
     productName: input.searchName,
@@ -459,7 +469,8 @@ export function validateListingNaming(input: {
     rules: input.rules,
   })
   const hasError =
-    name.violations.some((v) => v.severity === 'ERROR') ||
+    searchName.violations.some((v) => v.severity === 'ERROR') ||
+    (displayName?.violations.some((v) => v.severity === 'ERROR') ?? false) ||
     keywords.violations.some((v) => v.severity === 'ERROR')
-  return { name, keywords, hasError }
+  return { searchName, displayName, keywords, hasError }
 }
