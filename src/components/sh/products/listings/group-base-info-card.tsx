@@ -124,11 +124,14 @@ export function GroupBaseInfoCard({
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
           />
+          {/* 변경 작업 중(disabled)에는 원클릭 수정을 막는다 — 자동저장 타이머가 걸려
+              진행 중인 작업의 재적재와 경합한다. */}
           <NameValidationPanel
             value={baseSearchName}
             onChange={onBaseSearchNameChange}
             field="searchName"
             rules={rules}
+            readOnly={disabled}
           />
         </div>
         <div className="space-y-1.5">
@@ -150,6 +153,7 @@ export function GroupBaseInfoCard({
             onChange={onBaseDisplayNameChange}
             field="displayName"
             rules={rules}
+            readOnly={disabled}
           />
         </div>
         <div className="space-y-1.5">
