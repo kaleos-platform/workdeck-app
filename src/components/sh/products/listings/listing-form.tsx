@@ -63,7 +63,7 @@ type Channel = {
   name: string
   kind: string
   isActive: boolean
-  /** 연동 채널이면 소스 식별자, 수기 채널이면 null. 상품명이 대표 채널을 미러링하는지 판단한다. */
+  /** 연동 채널이면 소스 식별자, 수기 채널이면 null. */
   externalSource: string | null
 }
 

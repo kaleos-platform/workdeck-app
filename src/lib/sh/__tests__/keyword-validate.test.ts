@@ -17,6 +17,10 @@ const codesAt = (violations: Violation[], index: number | null): ViolationCode[]
 const hasCode = (violations: Violation[], index: number, code: ViolationCode): boolean =>
   codesAt(violations, index).includes(code)
 
+// countNamingViolations 는 INFO(안내)를 위반으로 세지 않는다.
+const nonInfoCount = (violations: Violation[]): number =>
+  violations.filter((v) => v.severity !== 'INFO').length
+
 // 길이 구간 테스트용 — 단일 토큰이라 반복/금지어 위반이 섞이지 않는다.
 const nameOfLength = (n: number): string => '가'.repeat(n)
 
@@ -422,7 +426,7 @@ describe('countNamingViolations', () => {
       displayName: '모노홈 호텔 세면 타월 200g 5장 대형 도톰한 흡수력 좋은 제품',
     })
     // 합산이므로 어느 한 갈래보다 크다
-    expect(n).toBeGreaterThan(result.searchName.violations.length)
+    expect(n).toBeGreaterThan(nonInfoCount(result.searchName.violations))
   })
 
   it('노출용이 검색용과 같으면 노출용 위반을 두 번 세지 않는다', () => {
@@ -439,7 +443,9 @@ describe('countNamingViolations', () => {
     expect(result.displayName!.violations.length).toBeGreaterThan(0)
 
     const n = countNamingViolations(result, { searchName: same, displayName: same })
-    expect(n).toBe(result.searchName.violations.length + result.keywords.violations.length)
+    expect(n).toBe(
+      nonInfoCount(result.searchName.violations) + nonInfoCount(result.keywords.violations)
+    )
   })
 
   it('노출용이 다르면 각각 센다', () => {
@@ -454,16 +460,29 @@ describe('countNamingViolations', () => {
       displayName: '무료배송 수건',
     })
     expect(n).toBe(
-      result.searchName.violations.length +
-        result.displayName!.violations.length +
-        result.keywords.violations.length
+      nonInfoCount(result.searchName.violations) +
+        nonInfoCount(result.displayName!.violations) +
+        nonInfoCount(result.keywords.violations)
     )
   })
 
   it('노출용이 없으면 검색용과 검색어만 센다', () => {
     const result = validateListingNaming({ searchName: '타월', keywords: [], rules })
     const n = countNamingViolations(result, { searchName: '타월', displayName: '' })
-    expect(n).toBe(result.searchName.violations.length + result.keywords.violations.length)
+    expect(n).toBe(
+      nonInfoCount(result.searchName.violations) + nonInfoCount(result.keywords.violations)
+    )
+  })
+
+  it('INFO 만 있으면 0(예: 목표 40자 미만이지만 그 외 위반 없음)', () => {
+    // 목표 40~70자 미만이지만 그 외엔 깨끗한 이름 — NAME_BELOW_TARGET(INFO) 하나만 발생해야 한다.
+    const shortButClean = '모노홈 호텔 세면 타월 대형'
+    const result = validateListingNaming({ searchName: shortButClean, keywords: [], rules })
+    expect(result.searchName.violations).toEqual([
+      expect.objectContaining({ code: 'NAME_BELOW_TARGET', severity: 'INFO' }),
+    ])
+    const n = countNamingViolations(result, { searchName: shortButClean, displayName: '' })
+    expect(n).toBe(0)
   })
 
   it('위반이 없으면 0', () => {

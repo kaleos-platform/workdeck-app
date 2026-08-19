@@ -18,7 +18,7 @@ export function NameCounter({ value, limit }: { value: string; limit?: number })
       className={cn('text-xs tabular-nums', over ? 'text-destructive' : 'text-muted-foreground')}
     >
       {count}
-      {limit != null ? ` / ${limit}` : ''}
+      {limit != null ? ` / ${limit}(가이드)` : ''}
     </span>
   )
 }

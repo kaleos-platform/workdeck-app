@@ -475,6 +475,10 @@ export function validateListingNaming(input: {
   return { searchName, displayName, keywords, hasError }
 }
 
+// INFO 는 "안내"다(NameValidationPanel 도 같은 항목을 안내로 표기한다) — 저장 시 "규칙 위반"
+// 토스트에 세면 목표 구간 미만(예: 40자 미만) 상품명마다 오경보가 뜬다. ERROR/WARN만 위반으로 센다.
+const isCountableViolation = (v: Violation): boolean => v.severity !== 'INFO'
+
 /**
  * 사용자가 고쳐야 할 실제 문제 개수.
  *
@@ -490,9 +494,10 @@ export function countNamingViolations(
   names: { searchName: string; displayName: string }
 ): number {
   const mirrors = names.displayName.trim() === names.searchName.trim()
+  const count = (violations: Violation[]) => violations.filter(isCountableViolation).length
   return (
-    result.searchName.violations.length +
-    (mirrors ? 0 : (result.displayName?.violations.length ?? 0)) +
-    result.keywords.violations.length
+    count(result.searchName.violations) +
+    (mirrors ? 0 : count(result.displayName?.violations ?? [])) +
+    count(result.keywords.violations)
   )
 }

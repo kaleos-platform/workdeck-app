@@ -159,7 +159,7 @@ export function GroupBaseInfoCard({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-management">상품명 (관리용)</Label>
-            {/* 내부 표시용이라 채널 상한이 없다. 저장 스키마 상한만 보여준다. */}
+            {/* 내부 표시용이라 채널 상한이 없다. 옵션 접미사(최대 30자)를 뺀 여유분만 보여준다. */}
             <NameCounter value={baseManagementName} limit={MAX_NAME_LENGTH - 30} />
           </div>
           <Input

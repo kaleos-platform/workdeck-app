@@ -14,7 +14,11 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getSellerHubListingPath, SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
-import { DEFAULT_KEYWORD_RULES, type KeywordRuleSet } from '@/lib/sh/keyword-rules'
+import {
+  DEFAULT_KEYWORD_RULES,
+  rulesForNameField,
+  type KeywordRuleSet,
+} from '@/lib/sh/keyword-rules'
 import type { KeywordTypeKey } from '@/lib/sh/keyword-score'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 import { cn } from '@/lib/utils'
@@ -542,14 +546,14 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
               onPartChange={updatePart}
               name={productName}
               onNameChange={setProductName}
-              rules={rules}
+              rules={rulesForNameField(rules, 'searchName')}
             />
           )}
           {step === 4 && (
             <StepCleanName
               name={productName}
               onNameChange={setProductName}
-              rules={rules}
+              rules={rulesForNameField(rules, 'searchName')}
               manualChecks={manualChecks}
               onManualCheckChange={(key, checked) =>
                 setManualChecks((prev) => ({ ...prev, [key]: checked }))
