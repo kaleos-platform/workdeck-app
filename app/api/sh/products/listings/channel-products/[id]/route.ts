@@ -11,6 +11,9 @@ import {
   computeListingAvailableStockByLocation,
   computeListingRetailBaseline,
 } from '@/lib/sh/listing-calc'
+import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
+import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
+import { keywordChangeReasonFields } from '@/lib/sh/schemas'
 
 /**
  * 채널상품 단건 조회(GET) / 수정(PATCH) / 삭제(DELETE).
@@ -25,6 +28,8 @@ const patchSchema = z.object({
   baseInternalCode: z.string().max(100).nullable().optional(),
   memo: z.string().max(1000).nullable().optional(),
   keywords: z.array(z.string()).optional(),
+  // §26 이력 기록용 — 저장 필드가 아니므로 update data 로 흘려보내면 안 된다(아래 구조분해).
+  ...keywordChangeReasonFields,
 })
 
 // product 공통 메타 필드 (single: 해당 product, mixed: 첫 번째 product 기준 backward-compat)
@@ -274,7 +279,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const cp = await prisma.channelProduct.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true },
+    select: {
+      id: true,
+      channelId: true, // 키워드 규칙 조회용
+      // §26 이력의 "기존" 값 — 변경 여부를 판정하려면 패치 전 값이 필요하다.
+      baseSearchName: true,
+      keywords: true,
+      // 이력 귀속 상품 추정용. 채널상품은 리스팅 여러 개를 묶고 각 리스팅이 여러 옵션을
+      // 가질 수 있어 단일 상품으로 떨어지지 않을 수 있다(GET 의 kind:'mixed' 참조).
+      listings: { select: { items: { select: { option: { select: { productId: true } } } } } },
+    },
   })
   if (!cp) return errorResponse('채널상품을 찾을 수 없습니다', 404)
 
@@ -284,23 +298,75 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const first = parsed.error.issues[0]
     return errorResponse(first?.message ?? '입력값이 올바르지 않습니다', 400)
   }
+  // 사유 필드는 ChannelProduct 컬럼이 아니다 — 남은 필드만 update data 로 넘긴다.
+  const { changeReason, reasonNote, observeMetric, ...updateData } = parsed.data
 
-  const updated = await prisma.channelProduct.update({
-    where: { id },
-    data: parsed.data,
-    select: {
-      id: true,
-      baseSearchName: true,
-      baseDisplayName: true,
-      baseManagementName: true,
-      baseInternalCode: true,
-      memo: true,
-      keywords: true,
-      updatedAt: true,
-    },
+  // 저장 전에 400 판정을 끝낸다(값만 바뀌고 에러가 나가는 상태 방지).
+  if (changeReason === 'OTHER' && !reasonNote?.trim()) {
+    return errorResponse('기타 사유는 변경 사유 메모가 필요합니다', 400)
+  }
+
+  const nextSearchName = updateData.baseSearchName ?? cp.baseSearchName
+  const nextKeywords = updateData.keywords ?? cp.keywords
+  const changeDiff = diffKeywordChange({
+    beforeName: cp.baseSearchName,
+    afterName: nextSearchName,
+    beforeKeywords: cp.keywords,
+    afterKeywords: nextKeywords,
+  })
+  const shouldLogChange = Boolean(changeReason) && changeDiff.changed
+
+  // 리스팅 구성 상품이 정확히 하나일 때만 productId 로 귀속한다. 여러 상품이 섞였거나
+  // 리스팅이 없으면 대상 없이(둘 다 null) 남는다 — space 전체 목록에서만 보인다.
+  const productIds = new Set(cp.listings.flatMap((l) => l.items.map((it) => it.option.productId)))
+  const logProductId = productIds.size === 1 ? [...productIds][0] : null
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const row = await tx.channelProduct.update({
+      where: { id },
+      data: updateData,
+      select: {
+        id: true,
+        baseSearchName: true,
+        baseDisplayName: true,
+        baseManagementName: true,
+        baseInternalCode: true,
+        memo: true,
+        keywords: true,
+        updatedAt: true,
+      },
+    })
+    // 저장과 이력을 한 트랜잭션으로 묶는다 — 변경만 남고 기록이 빠지는 상태를 만들지 않는다.
+    if (shouldLogChange && changeReason) {
+      await tx.keywordChangeLog.create({
+        data: {
+          spaceId: resolved.space.id,
+          productId: logProductId,
+          beforeName: cp.baseSearchName,
+          afterName: nextSearchName,
+          beforeKeywords: toKeywordList(cp.keywords),
+          afterKeywords: toKeywordList(nextKeywords),
+          reason: changeReason,
+          reasonNote: reasonNote ?? null,
+          observeMetric: observeMetric ?? null,
+          multiChange: changeDiff.multiChange,
+          actorUserId: resolved.user.id,
+        },
+      })
+    }
+    return row
   })
 
-  return NextResponse.json({ channelProduct: updated })
+  // 저장 성공 이후 계산 — updated 가 곧 "패치 이후 유효값"이다.
+  const namingWarnings = await buildNamingWarnings(resolved.space.id, cp.channelId, {
+    searchName: updated.baseSearchName,
+    keywords: updated.keywords,
+  })
+
+  return NextResponse.json({
+    channelProduct: updated,
+    ...(namingWarnings ? { namingWarnings } : {}),
+  })
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {

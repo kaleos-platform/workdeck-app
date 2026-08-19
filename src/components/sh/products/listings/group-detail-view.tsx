@@ -3,7 +3,17 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, Copy, Layers, Loader2, Pause, Play, Plus, Trash2 } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Copy,
+  Layers,
+  Loader2,
+  Pause,
+  Play,
+  Plus,
+  Trash2,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -19,8 +29,14 @@ import {
 import { SELLER_HUB_LISTING_NEW_PATH, SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
 import { SaveStatusChip } from '@/components/sh/save-status-chip'
 import { computeDiscount, computeEffectiveStatus } from '@/lib/sh/listing-calc'
+import { DEFAULT_KEYWORD_RULES } from '@/lib/sh/keyword-rules'
+import { suggestKeywords } from '@/lib/sh/keyword-suggest'
+import { diffKeywordChange } from '@/lib/sh/keyword-change'
 
+import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
+import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-dialog'
+import { KeywordChangeTimeline } from './keyword-change-timeline'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
 import { GroupBulkEditBar, type BulkPatch } from './group-bulk-edit-bar'
 import {
@@ -31,6 +47,9 @@ import {
   joinName,
 } from './group-base-info-card'
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
+
+/** 게이트 보류 중 잠기는 액션의 안내 문구 */
+const GATE_BLOCK_HINT = '상품명·검색어 변경 사유를 먼저 입력해 주세요'
 
 type GroupListingFull = GroupListingRow & {
   memo: string | null
@@ -124,6 +143,10 @@ export function GroupDetailView({ channelProductId }: Props) {
   const [groupDeleteOpen, setGroupDeleteOpen] = useState(false)
   const [groupActionLoading, setGroupActionLoading] = useState(false)
 
+  // §25-26 변경 게이트
+  const [gateOpen, setGateOpen] = useState(false)
+  const [historyKey, setHistoryKey] = useState(0)
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
@@ -177,19 +200,27 @@ export function GroupDetailView({ channelProductId }: Props) {
     load()
   }, [load])
 
-  const keywordSuggestions = useMemo(() => {
+  // 구매옵션 중복 검증(§22 STEP08)용. 상품명·브랜드 토큰은 추천에 쓰지 않는다
+  // (§10 Rule 1 이 금지하는 "상품명 중복"을 유도했던 로직).
+  const optionNames = useMemo(() => {
     if (!data) return []
     const set = new Set<string>()
-    // single 모드에서만 product.displayName / brand.name 사용
-    if (data.product.kind === 'single') {
-      set.add(data.product.displayName)
-      if (data.product.brand) set.add(data.product.brand.name)
-    }
     for (const l of data.listings) {
       for (const it of l.items) set.add(it.optionName)
     }
     return Array.from(set)
   }, [data])
+
+  const keywordSuggestions = useMemo(
+    () =>
+      suggestKeywords({
+        productName: baseSearchName,
+        existing: keywords,
+        masterPool: [],
+        rules: DEFAULT_KEYWORD_RULES,
+      }),
+    [baseSearchName, keywords]
+  )
 
   const derivedBase = useMemo(() => {
     if (!data) return null
@@ -269,6 +300,33 @@ export function GroupDetailView({ channelProductId }: Props) {
 
   const totalDirty = baseDirty || keywordsDirty || dirtyRowIds.size > 0
   const dirtyCount = (baseDirty ? 1 : 0) + (keywordsDirty ? 1 : 0) + dirtyRowIds.size
+
+  // §25-26 게이트 판정.
+  //
+  // dirty 와는 다른 잣대를 쓴다. dirty 는 "저장 요청을 보낼 것인가"(순서 변경 포함)이고,
+  // 게이트는 "채널에 나가는 값이 실제로 달라지는가"(집합·공백 정규화 비교)다. 그래서
+  // 칩 순서만 바꾼 저장은 게이트 없이 지나간다 — 서버도 그런 변경은 기록하지 않는다.
+  //
+  // 비교 대상은 화면의 파생값이 아니라 ChannelProduct 저장값이다. 서버(CP PATCH)가 같은
+  // 기준으로 before/after 와 multiChange 를 계산하므로 다이얼로그가 보여주는 diff 와
+  // 실제로 남는 이력이 어긋나지 않는다.
+  const nameToSave = baseDirty ? baseSearchName : (data?.channelProduct.baseSearchName ?? '')
+  const savedKeywords = data?.channelProduct.keywords
+  const keywordsToSave = useMemo(
+    () => (keywordsDirty ? keywords : (savedKeywords ?? [])),
+    [keywordsDirty, keywords, savedKeywords]
+  )
+  const keywordChange = useMemo(
+    () =>
+      diffKeywordChange({
+        beforeName: data?.channelProduct.baseSearchName,
+        afterName: nameToSave,
+        beforeKeywords: data?.channelProduct.keywords ?? [],
+        afterKeywords: keywordsToSave,
+      }),
+    [data?.channelProduct.baseSearchName, data?.channelProduct.keywords, nameToSave, keywordsToSave]
+  )
+  const gateNeeded = keywordChange.changed
 
   function handleRowChange(id: string, patch: BulkPatch) {
     setRows((prev) =>
@@ -670,7 +728,7 @@ export function GroupDetailView({ channelProductId }: Props) {
     // 필수 필드 가드: 공백이면 저장 스킵 (error chip 대신 dirty 유지)
     if (baseDirty && !baseSearchName.trim()) return
 
-    const promise = doSave()
+    const promise = doSave().then(() => undefined)
     activeSavePromiseRef.current = promise
     try {
       await promise
@@ -679,9 +737,15 @@ export function GroupDetailView({ channelProductId }: Props) {
     }
   }
 
-  async function doSave() {
-    if (!data) return
+  /** 저장 성공 여부를 돌려준다 — 게이트 다이얼로그는 성공했을 때만 닫아야 한다. */
+  async function doSave(changeMeta?: KeywordChangeMeta): Promise<boolean> {
+    if (!data) return false
     setSaving(true)
+
+    // 게이트 대상인데 사유가 없으면 상품명·검색어만 이번 배치에서 뺀다.
+    // 가격·재고·판매상태·메모 등 나머지는 평소대로 자동 저장된다 — 게이트는 §25 가 지목한
+    // 두 값에만 마찰을 만들면 되고, 무관한 편집까지 붙잡으면 그건 그냥 고장이다.
+    const snapGated = gateNeeded && !changeMeta
 
     // 스냅샷 — 저장 도중 state가 바뀌어도 이 배치는 일관되게 적용
     const snapBaseDirty = baseDirty
@@ -752,15 +816,20 @@ export function GroupDetailView({ channelProductId }: Props) {
           )
           return suffix ? ` ${suffix}` : ''
         }
-        const newSearch = (
-          snapBase.searchName.trim() + tail(l.searchName, derivedBase.baseSearchName)
-        ).trim()
-        patch.searchName = newSearch || l.searchName
-        const newDisplay = (
-          (snapBase.displayName.trim() || snapBase.searchName.trim()) +
-          tail(l.displayName, derivedBase.baseDisplayName || derivedBase.baseSearchName)
-        ).trim()
-        patch.displayName = newDisplay || l.displayName
+        // 게이트 보류 중에는 이름을 리스팅으로 내려보내지 않는다. 여기서 새 이름이 먼저
+        // 나가면 리스팅만 바뀌고 ChannelProduct 는 옛 이름으로 남아, 나중에 사유를 넣고
+        // 저장할 때 서버가 계산하는 before 가 이미 어긋나 있게 된다.
+        if (!snapGated) {
+          const newSearch = (
+            snapBase.searchName.trim() + tail(l.searchName, derivedBase.baseSearchName)
+          ).trim()
+          patch.searchName = newSearch || l.searchName
+          const newDisplay = (
+            (snapBase.displayName.trim() || snapBase.searchName.trim()) +
+            tail(l.displayName, derivedBase.baseDisplayName || derivedBase.baseSearchName)
+          ).trim()
+          patch.displayName = newDisplay || l.displayName
+        }
         patch.managementName = snapBase.managementName.trim()
           ? (
               snapBase.managementName.trim() +
@@ -801,49 +870,50 @@ export function GroupDetailView({ channelProductId }: Props) {
       }
     }
 
-    // base 필드 변경: channel-product에 직접 PATCH (single/mixed 모두)
-    // single 모드에서도 cp.baseManagementName이 목록 표시값이라 동기화 필수
-    let channelProductBaseSaved = false
+    // base 필드·키워드 변경: channel-product에 직접 PATCH (single/mixed 모두).
+    // single 모드에서도 cp.baseManagementName이 목록 표시값이라 동기화 필수.
+    //
+    // 기본 정보와 키워드를 **한 요청으로 합친다.** 서버는 요청 본문과 저장값을 비교해
+    // 이력을 남기므로, 두 번 나눠 보내면 첫 요청은 키워드가 아직 옛 값이고 두 번째 요청은
+    // 상품명이 이미 새 값이라 §26 동시 변경(multiChange)이 영영 기록되지 않는다.
+    const cpBody: Record<string, unknown> = {}
     if (snapBaseDirty) {
-      try {
-        const res = await fetch(`/api/sh/products/listings/channel-products/${channelProductId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            baseSearchName: snapBase.searchName.trim() || undefined,
-            baseDisplayName: snapBase.displayName.trim() || null,
-            baseManagementName: snapBase.managementName.trim() || null,
-            baseInternalCode: snapBase.internalCode.trim() || null,
-            memo: snapBase.memo.trim() || null,
-          }),
-        })
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          failures.push(`기본 정보: ${err?.message ?? '저장 실패'}`)
-        } else {
-          channelProductBaseSaved = true
-        }
-      } catch (err) {
-        failures.push(`기본 정보: ${err instanceof Error ? err.message : '저장 실패'}`)
-      }
+      // 게이트 보류 중이면 상품명만 빼고 나머지 기본 정보는 그대로 저장한다.
+      if (!snapGated) cpBody.baseSearchName = snapBase.searchName.trim() || undefined
+      cpBody.baseDisplayName = snapBase.displayName.trim() || null
+      cpBody.baseManagementName = snapBase.managementName.trim() || null
+      cpBody.baseInternalCode = snapBase.internalCode.trim() || null
+      cpBody.memo = snapBase.memo.trim() || null
     }
+    if (snapKeywordsDirty && !snapGated) cpBody.keywords = snapKeywords
 
+    const cpFieldCount = Object.keys(cpBody).length
+    if (changeMeta) Object.assign(cpBody, changeMeta)
+
+    let channelProductBaseSaved = false
     let keywordsSaved = false
-    if (snapKeywordsDirty) {
+    if (cpFieldCount > 0) {
+      const label =
+        snapBaseDirty && snapKeywordsDirty
+          ? '기본 정보·키워드'
+          : snapKeywordsDirty
+            ? '키워드'
+            : '기본 정보'
       try {
         const res = await fetch(`/api/sh/products/listings/channel-products/${channelProductId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ keywords: snapKeywords }),
+          body: JSON.stringify(cpBody),
         })
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
-          failures.push(`키워드: ${err?.message ?? '저장 실패'}`)
+          failures.push(`${label}: ${err?.message ?? '저장 실패'}`)
         } else {
-          keywordsSaved = true
+          channelProductBaseSaved = snapBaseDirty
+          keywordsSaved = snapKeywordsDirty && !snapGated
         }
       } catch (err) {
-        failures.push(`키워드: ${err instanceof Error ? err.message : '저장 실패'}`)
+        failures.push(`${label}: ${err instanceof Error ? err.message : '저장 실패'}`)
       }
     }
 
@@ -859,7 +929,13 @@ export function GroupDetailView({ channelProductId }: Props) {
         if (channelProductBaseSaved) {
           nextChannelProduct = {
             ...nextChannelProduct,
-            baseSearchName: snapBase.searchName.trim() || nextChannelProduct.baseSearchName,
+            // 보류한 상품명은 로컬에도 반영하지 않는다 — 여기서 옮기면 게이트 기준선이
+            // 새 값으로 올라가 사유를 받지 못한 채 게이트가 사라진다.
+            ...(snapGated
+              ? {}
+              : {
+                  baseSearchName: snapBase.searchName.trim() || nextChannelProduct.baseSearchName,
+                }),
             baseDisplayName: snapBase.displayName.trim() || null,
             baseManagementName: snapBase.managementName.trim() || null,
             baseInternalCode: snapBase.internalCode.trim() || null,
@@ -932,9 +1008,31 @@ export function GroupDetailView({ channelProductId }: Props) {
         autoRetryTimerRef.current = null
       }
     }
+    return failures.length === 0
   }
 
   runAutoSaveRef.current = runAutoSave
+
+  /** 게이트 확인 → 사유를 실어 한 번 더 저장한다. 대기 중인 자동 저장은 먼저 정리한다. */
+  async function confirmGatedSave(meta: KeywordChangeMeta) {
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current)
+      autoSaveTimerRef.current = null
+    }
+    if (activeSavePromiseRef.current) await activeSavePromiseRef.current
+    const promise = doSave(meta)
+    activeSavePromiseRef.current = promise.then(() => undefined)
+    let ok = false
+    try {
+      ok = await promise
+    } finally {
+      activeSavePromiseRef.current = null
+    }
+    if (ok) {
+      setGateOpen(false)
+      setHistoryKey((k) => k + 1)
+    }
+  }
 
   function scheduleAutoSave(delay: number) {
     if (autoSaveTimerRef.current) {
@@ -1028,6 +1126,14 @@ export function GroupDetailView({ channelProductId }: Props) {
               void runAutoSave()
             }}
           />
+          {/* 게이트 보류 중에는 상품명·검색어가 자동 저장되지 않는다.
+              저장 칩만으로는 "곧 저장됨"과 구분되지 않으므로 버튼이 직접 알린다. */}
+          {gateNeeded && (
+            <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/50 bg-amber-50 px-2 py-1 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+              <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+              상품명·검색어는 사유 입력 후 저장됩니다
+            </span>
+          )}
           <Button
             size="sm"
             onClick={async () => {
@@ -1038,12 +1144,16 @@ export function GroupDetailView({ channelProductId }: Props) {
                 clearTimeout(autoRetryTimerRef.current)
                 autoRetryTimerRef.current = null
               }
+              if (gateNeeded) {
+                setGateOpen(true)
+                return
+              }
               await flushPendingSave()
             }}
-            disabled={!totalDirty || saving || mutating || groupActionLoading}
+            disabled={(!totalDirty && !gateNeeded) || saving || mutating || groupActionLoading}
           >
             {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-            저장
+            {gateNeeded ? '변경 사유 입력' : '저장'}
           </Button>
           <Button
             variant="outline"
@@ -1133,7 +1243,14 @@ export function GroupDetailView({ channelProductId }: Props) {
             value={keywords}
             onChange={handleKeywordsChange}
             suggestions={keywordSuggestions}
+            productName={baseSearchName}
+            optionNames={optionNames}
           />
+          {/* 채널상품 그룹은 리스팅이 여럿이라 귀속 상품을 하나로 특정할 수 없다.
+              링크 없이 키워드만 마스터로 올린다(연결은 키워드 관리에서 붙인다). */}
+          <div className="flex justify-end">
+            <RegisterKeywordsButton keywords={keywords} />
+          </div>
         </CardContent>
       </Card>
 
@@ -1154,7 +1271,11 @@ export function GroupDetailView({ channelProductId }: Props) {
                 await flushPendingSave()
                 setAddBuilderOpen(true)
               }}
-              disabled={mutating}
+              // 게이트 보류 중 차단. 두 버튼은 편집 중인 baseSearchName 으로 리스팅을 새로
+              // 만들기 때문에, 열어두면 사유 없이 새 이름이 리스팅에 실려 나가고 ChannelProduct
+              // 만 옛 이름으로 남는다(= 게이트 우회).
+              disabled={mutating || gateNeeded}
+              title={gateNeeded ? GATE_BLOCK_HINT : undefined}
             >
               <Plus className="mr-1 h-4 w-4" />
               옵션 추가
@@ -1166,7 +1287,8 @@ export function GroupDetailView({ channelProductId }: Props) {
                 await flushPendingSave()
                 setResetConfirmOpen(true)
               }}
-              disabled={mutating}
+              disabled={mutating || gateNeeded}
+              title={gateNeeded ? GATE_BLOCK_HINT : undefined}
             >
               <Layers className="mr-1 h-4 w-4" />
               구성 다시 설정
@@ -1194,6 +1316,31 @@ export function GroupDetailView({ channelProductId }: Props) {
           />
         </CardContent>
       </Card>
+
+      {/* 변경 이력 (§26).
+          채널 상품 저장은 서버가 listingId 없이 productId 로만 이력을 남기므로 상품 기준으로 읽는다.
+          혼합 구성은 서버가 귀속 상품을 특정하지 못해(productId=null) 어떤 키로도 조회되지 않는다. */}
+      <KeywordChangeTimeline
+        productId={data.product.kind === 'single' ? data.product.id : null}
+        crossChannelNotice={data.product.kind === 'single'}
+        unavailableReason={
+          data.product.kind === 'single'
+            ? null
+            : '혼합 구성 판매채널 상품은 귀속 상품을 특정할 수 없어 이력을 이 화면에서 조회할 수 없습니다. 변경 기록 자체는 정상적으로 저장됩니다.'
+        }
+        refreshKey={historyKey}
+      />
+
+      <KeywordChangeDialog
+        open={gateOpen}
+        onOpenChange={setGateOpen}
+        beforeName={data.channelProduct.baseSearchName}
+        afterName={nameToSave}
+        beforeKeywords={data.channelProduct.keywords}
+        afterKeywords={keywordsToSave}
+        saving={saving}
+        onConfirm={confirmGatedSave}
+      />
 
       {/* 삭제 확인 다이얼로그 */}
       <Dialog

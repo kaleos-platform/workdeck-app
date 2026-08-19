@@ -26,6 +26,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
+import { DEFAULT_KEYWORD_RULES } from '@/lib/sh/keyword-rules'
+import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 import { CompositionRowsTable, type CompositionRow } from './composition-rows-table'
@@ -465,18 +467,27 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   const currentChannel = channels.find((c) => c.id === channelId) ?? null
   const nameLimit = getChannelNameLimit(currentChannel?.name ?? null)
 
-  const keywordSuggestions = useMemo(() => {
+  // 구매옵션 중복 검증(§22 STEP08)용. 상품명·브랜드 토큰은 추천에 쓰지 않는다
+  // (§10 Rule 1 이 금지하는 "상품명 중복"을 유도했던 로직).
+  const optionNames = useMemo(() => {
     const set = new Set<string>()
-    if (productCtx) {
-      set.add(productCtx.displayName)
-      if (productCtx.brandName) set.add(productCtx.brandName)
-    }
     for (const r of rows) {
       for (const s of r.suffixParts) set.add(s)
       for (const it of r.items) set.add(it.optionName)
     }
     return Array.from(set)
-  }, [productCtx, rows])
+  }, [rows])
+
+  const keywordSuggestions = useMemo(
+    () =>
+      suggestKeywords({
+        productName: baseSearchName,
+        existing: keywords,
+        masterPool: [],
+        rules: DEFAULT_KEYWORD_RULES,
+      }),
+    [baseSearchName, keywords]
+  )
 
   function handleBuilderCommit(ctx: ProductContext | null, newGroups: BuiltGroup[]) {
     setProductCtx(ctx)
@@ -725,7 +736,13 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <KeywordEditor value={keywords} onChange={setKeywords} suggestions={keywordSuggestions} />
+          <KeywordEditor
+            value={keywords}
+            onChange={setKeywords}
+            suggestions={keywordSuggestions}
+            productName={baseSearchName}
+            optionNames={optionNames}
+          />
         </CardContent>
       </Card>
 

@@ -440,6 +440,11 @@ model Space {
   // 발주 계획
   reorderPlans ReorderPlan[]
 
+  // 키워드 마스터 (§24)
+  keywordMasters      KeywordMaster[]
+  channelKeywordRules ChannelKeywordRule[]
+  keywordChangeLogs   KeywordChangeLog[] // §26 상품명·검색어 변경 이력
+
   // Slack 연동 (M3)
   slackInstallation SlackInstallation?
 
@@ -1090,6 +1095,8 @@ model InvProduct {
   reorderPlanItems ReorderPlanItem[]
   reorderPlans     ReorderPlan[]
   adCampaignMaps   AdCampaignProductMap[]
+  keywordLinks     KeywordMasterLink[]
+  keywordChanges   KeywordChangeLog[] // §26 변경 이력 (상품 단위)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1667,6 +1674,7 @@ model Channel {
   channelProducts         ChannelProduct[]
   pricingScenarios        PricingScenario[]
   pricingScenarioChannels PricingScenarioChannel[]
+  keywordRule             ChannelKeywordRule? // 키워드 규칙 오버라이드 (없으면 코드 기본값)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1968,6 +1976,8 @@ model ProductListing {
   stockMovements    ChannelStockMovement[]
   reorderPlanSets   ReorderPlanSet[] // 세트 발주 계획에서 이 listing(=세트)을 참조
   productionRunSets ProductionRunSet[] // 세트 생산차수에서 이 listing(=세트)을 참조
+  keywordLinks      KeywordMasterLink[] // 키워드 마스터 연결 (§24)
+  keywordChanges    KeywordChangeLog[] // §26 변경 이력 (리스팅 단위)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2053,6 +2063,232 @@ model ChannelProduct {
   updatedAt DateTime @updatedAt
 
   @@index([spaceId, channelId])
+}
+
+// ─── 키워드 마스터 (Seller Hub) ──────────────────────────────────────────────
+//
+// 출처: docs/decks/seller-hub/guides/쿠팡 상품명 및 검색어 운영 가이드.md §24 "키워드 마스터 관리".
+//
+// ⚠️ ProductListing.keywords / ChannelProduct.keywords (Json string[]) 와 **별개 저장소이며
+// 동기화하지 않는다.** 역할이 다르다:
+//   - Json 배열  = "이 채널 리스팅에 실제로 등록된 검색어". 채널에 나가는 값의 권위 소스.
+//   - 이 표      = "후보 풀 · 평가(§17 점수) · 상태(§24 Status) · 출처 관리". 운영 자산.
+// 후보를 골라 Json 에 넣는 것은 사용자의 명시적 행동이고, 그 시점에도 이 표는 바뀌지 않는다.
+// (양방향 동기화를 넣으면 §10 "상품명에 있는 단어는 검색어에서 뺀다" 같은 상품별 판단이
+//  전역 사전을 오염시킨다.)
+//
+// 접두사 주의: 최상단 `model KeywordStatus` 는 coupang-ads deck 이 이미 점유 중인 별개 모델이다.
+// 이 영역의 신규 식별자는 전부 KeywordMaster* / ChannelKeywordRule 로 구분한다.
+
+// §24 Status 표준값 (상품명/검색어/검색옵션/후보/제외/금지).
+// src/lib/sh/keyword-suggest.ts 의 `SuggestPoolStatus` 와 값이 1:1 이어야 캐스팅 없이 쓴다.
+enum KeywordMasterStatus {
+  PRODUCT_NAME
+  SEARCH_TERM
+  SEARCH_OPTION
+  CANDIDATE
+  EXCLUDED
+  BANNED
+}
+
+// §24 Source 표준값 (쿠팡 자동완성/연관검색/상위상품/리뷰, 광고 검색어, 고객문의, 내부 아이디어)
+enum KeywordMasterSource {
+  COUPANG_AUTOCOMPLETE
+  COUPANG_RELATED
+  COUPANG_TOP_PRODUCT
+  COUPANG_REVIEW
+  AD_KEYWORD
+  CUSTOMER_INQUIRY
+  INTERNAL
+}
+
+// §13 후보 분류 체계 A~G + §8.5 경쟁 브랜드.
+// src/lib/sh/keyword-score.ts 의 `KeywordTypeKey` 와 값이 1:1 이어야 keywordPriority(§18)를
+// 캐스팅 없이 호출할 수 있다. UNCLASSIFIED = 아직 분류하지 않음(우선순위 9, 등록 대상은 됨).
+enum KeywordMasterType {
+  SYNONYM
+  PARENT_CATEGORY
+  MATERIAL
+  SHAPE
+  PURPOSE
+  FEATURE
+  ALIAS
+  COMPETITOR
+  UNCLASSIFIED
+}
+
+// 키워드가 상품/리스팅에 대해 갖는 역할. MAIN = §5 메인 키워드(상품당 1개가 원칙이나
+// DB 제약으로 강제하지 않는다 — 교체 중 일시적 2개를 막으면 UI 가 저장할 수 없다).
+// DENY = 이 상품에 한해 쓰지 않음(전역 BANNED 와 구분: 전역은 status 로 표현).
+enum KeywordLinkRole {
+  MAIN
+  SUB
+  DENY
+}
+
+// space 스코프 키워드 사전 (§24).
+model KeywordMaster {
+  id      String @id @default(cuid())
+  spaceId String
+  keyword String // 원문 표기 — 사용자가 입력한 그대로. 표시·채널 등록에 쓰는 값.
+
+  // 중복 탐지 3키. 전부 src/lib/sh/keyword-normalize.ts 의 출력을 그대로 저장한다.
+  // 저장 시점에 계산해 넣는 파생값이므로, 정규화 함수를 바꾸면 재계산 배치가 필요하다.
+  normalized String // normalizeKeyword — 소문자 + 공백 축약. 동일성 판정의 기준.
+  despaced   String // despaceKeyword  — 구분자 제거. §11 "호텔 타월" vs "호텔타월" 탐지.
+  sortedKey  String // sortedTokenKey  — 토큰 정렬. §12 단어 순서만 바꾼 순열 탐지.
+
+  category String? // §24 Category 열 — 자유 텍스트(예: "여성의류"). enum 으로 고정하지 않는다.
+  type     KeywordMasterType   @default(UNCLASSIFIED)
+  source   KeywordMasterSource @default(INTERNAL)
+  status   KeywordMasterStatus @default(CANDIDATE)
+
+  // §17 평가 결과와 그 입력 스냅샷. scoreInputs 는 src/lib/sh/keyword-score.ts 의
+  // `KeywordScoreInputs` 형태(boolean 10개)를 담는다. 점수 규칙이 바뀌어도 "그때 무엇을
+  // 근거로 몇 점이었는지"를 재현할 수 있도록 결과(score)와 입력을 함께 보관한다.
+  score       Int  @default(0)
+  scoreInputs Json @default("{}")
+
+  researchedAt DateTime? // §23 "키워드 조사일" — 마지막으로 쿠팡에서 실제 조사한 시각
+  memo         String?
+
+  space Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  links KeywordMasterLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 키워드는 space 당 1행이고 여러 상품이 공유한다(§24 표가 Product 열을 갖지만 사전 자체는
+  // 전역이다). 상품별로 갈리는 판단(역할·순서·제외)은 KeywordMasterLink 가 흡수한다.
+  @@unique([spaceId, normalized])
+  @@index([spaceId, status])
+  @@index([spaceId, despaced])
+  @@index([spaceId, sortedKey])
+  @@index([spaceId, score])
+}
+
+// 키워드 ↔ 상품(InvProduct) / 리스팅(ProductListing) 연결.
+//
+// ⚠️ productId·listingId 중 최소 하나는 non-null 이어야 하지만 **Prisma 로 표현할 수 없다**
+// (CHECK 제약 미지원). 애플리케이션에서 검증해야 한다.
+//
+// ⚠️ 아래 @@unique 는 완전한 중복 방지가 아니다. Postgres 는 NULL 을 서로 다른 값으로 취급해
+// (keyword, product, NULL) 같은 행이 몇 개든 들어간다. 그래서 다음 단계 API 는 upsert 를 쓰면
+// 안 되고 findFirst → create 로 직접 중복을 막아야 한다.
+model KeywordMasterLink {
+  id        String  @id @default(cuid())
+  keywordId String
+  productId String? // InvProduct — 상품 단위 귀속
+  listingId String? // ProductListing — 특정 채널 리스팅 단위 귀속
+
+  role      KeywordLinkRole @default(SUB)
+  sortOrder Int             @default(0) // 표시 순서. 동률은 생성순.
+
+  keyword KeywordMaster   @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+  product InvProduct?     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  listing ProductListing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([keywordId, productId, listingId])
+  @@index([productId])
+  @@index([listingId])
+}
+
+// 채널별 규칙 오버라이드 (§7 길이, §10 검색어 개수, §8/§19 금지어).
+//
+// **행이 없으면 코드 기본값**(src/lib/sh/keyword-rules.ts 의 COUPANG_KEYWORD_RULES)을 쓴다.
+// 그래서 시드 마이그레이션을 두지 않는다 — 기본값을 DB 로 복제하면 가이드 개정 때 두 곳이
+// 갈라진다. 필드 구성은 같은 파일의 `KeywordRuleOverride` 타입과 1:1 이며,
+// nullable 필드는 "해당 항목만 덮어쓰기"를 뜻한다(null = 기본값 유지).
+//
+// bannedTerms 는 `Partial<BannedTerms>`(promo/shipping/seller/efficacy/competitorBrand 키를
+// 가진 string[] 맵)를 담지만, Json 컬럼이라 읽을 때 Prisma.JsonValue 로 나온다.
+// resolveKeywordRules 에 넘기기 전 호출부에서 캐스팅이 필요하다 — Json 인 이상 불가피하다.
+// 기본값 "{}" 는 no-op 이다(mergeTermList 가 undefined 항목에 base 를 그대로 돌려준다).
+model ChannelKeywordRule {
+  id        String @id @default(cuid())
+  spaceId   String
+  channelId String @unique // 채널당 1행
+
+  maxKeywords         Int? // §10 검색어 최대 개수
+  nameTargetMin       Int? // §7 상품명 목표 길이 하한
+  nameTargetMax       Int? // §7 상품명 목표 길이 상한
+  nameSoftMax         Int? // §7 권장 최대 (초과 시 경고)
+  nameHardMax         Int? // §7 운영 상한 (초과 시 오류)
+  bannedTerms         Json    @default("{}")
+  replaceDefaultTerms Boolean @default(false) // true = 기본 금지어 대체, false = 합집합
+
+  space   Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId])
+}
+
+// §25 "변경 가능" 사유 목록 + 운영 실무에 필요한 최소 항목(최초 등록·오탈자·기타).
+//
+// ⚠️ 이 enum 은 "변경해도 되는 사유"만 담는다. §25 가 못박은 "변경하지 않음"
+// (노출이 조금 줄었다 / 광고 성과가 며칠 좋지 않다 / 경쟁사가 바꿨다 / 키워드를 하나 더
+// 발견했다)에 해당하는 값은 **의도적으로 없다.** 사유를 고를 수 없다는 사실 자체가
+// 억제 게이트다 — 편의를 이유로 여기에 값을 추가하면 기능의 취지가 무너진다.
+// 한국어 라벨은 src/lib/sh/keyword-labels.ts 의 KEYWORD_CHANGE_REASON_LABELS.
+enum KeywordChangeReason {
+  WRONG_MAIN_KEYWORD // 잘못된 메인 키워드
+  UNCLEAR_NAME // 상품을 이해하기 어려운 상품명
+  POLICY_RISK // 정책 위반 가능성
+  NEW_SEARCH_DATA // 새로운 검색 데이터에서 명확한 개선 근거 발견
+  SPEC_CHANGE // 실제 제품 사양 변경
+  BRAND_MODEL_CHANGE // 브랜드/모델 변경
+  INITIAL_REGISTRATION // 최초 등록
+  TYPO_FIX // 오탈자
+  OTHER // 기타 — reasonNote 필수(앱 검증)
+}
+
+// §26 변경 기록. 상품명·검색어를 바꿀 때마다 1행씩 쌓이는 append-only 이력.
+//
+// 대상은 listingId(채널 리스팅) 또는 productId(InvProduct) 이며 **둘 다 null 일 수 있다**
+// (채널상품 단위 변경처럼 단일 상품으로 귀속되지 않는 경우). 둘 다 null 인 행은 대상
+// 필터에 걸리지 않고 space 전체 목록에서만 보인다.
+//
+// ⚠️ actorUserId 에 FK 를 걸지 않는다 — AdminAuditLog 와 같은 이유다. User 를 참조하는
+// non-CASCADE FK 때문에 계정 삭제가 500 으로 죽은 사고가 있었고, 이력은 담당자 계정이
+// 사라져도 남아야 한다. listing/product 는 SetNull 이라 대상이 지워져도 기록은 보존된다.
+model KeywordChangeLog {
+  id        String  @id @default(cuid())
+  spaceId   String
+  listingId String? // ProductListing — 채널 리스팅 단위 변경
+  productId String? // InvProduct — 상품 단위 변경
+
+  beforeName     String? // 기존 상품명
+  afterName      String? // 변경 상품명
+  // 기존/변경 검색어 (string[]). ProductListing.keywords 와 같은 Json 배열 표현.
+  beforeKeywords Json    @default("[]")
+  afterKeywords  Json    @default("[]")
+
+  reason        KeywordChangeReason
+  reasonNote    String? // OTHER 이면 필수 — DB 제약으로는 표현할 수 없어 앱에서 검증한다
+  observeMetric String? // §26 "관찰 지표" — 이 변경의 효과를 무엇으로 판단할지
+
+  // §26 "가능하면 여러 요소를 동시에 바꾸지 않는다". 상품명과 검색어를 한 번에 바꾼 변경은
+  // 어느 쪽이 성과에 영향을 줬는지 분리할 수 없으므로 표시해 둔다.
+  // ⚠️ 클라이언트 입력이 아니라 **서버가 before/after 로 계산**한 값이다.
+  multiChange Boolean @default(false)
+
+  actorUserId String? // 담당자 User.id (FK 없음)
+
+  space   Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  listing ProductListing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  product InvProduct?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId, createdAt])
+  @@index([listingId, createdAt])
+  @@index([productId, createdAt])
 }
 
 // ─── Sales Content Deck (정보 세팅) ───────────────────────────────────────────
