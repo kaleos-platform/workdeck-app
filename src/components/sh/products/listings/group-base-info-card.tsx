@@ -1,11 +1,15 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
 
-import { countChars, getChannelNameLimit } from './channel-name-limits'
+import { NameCounter } from './name-counter'
+import { NameValidationPanel } from './name-validation-panel'
 
 const MAX_NAME_LENGTH = 200
 
@@ -26,6 +30,11 @@ export type OptionAttribute = { name: string; values: Array<{ value: string }> }
 
 type Props = {
   channelName: string
+  /**
+   * 연동 채널이면 소스 식별자. 그룹 상세 API 가 아직 이 필드를 내려주지 않아 현재는 항상 미지정이다
+   * (상위에서 넘기려면 채널 payload 에 externalSource 를 추가해야 한다).
+   */
+  channelExternalSource?: string | null
   baseSearchName: string
   baseDisplayName: string
   baseManagementName: string
@@ -47,6 +56,7 @@ type Props = {
  */
 export function GroupBaseInfoCard({
   channelName,
+  channelExternalSource = null,
   baseSearchName,
   baseDisplayName,
   baseManagementName,
@@ -60,7 +70,21 @@ export function GroupBaseInfoCard({
   onMemoChange,
   disabled,
 }: Props) {
-  const nameLimit = getChannelNameLimit(channelName)
+  // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
+  // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다 — 규칙 편집 UI 를 붙일 때 여기서 연결한다.
+  const rules = useMemo(
+    () =>
+      withChannelDefaults(
+        resolveKeywordRules(null),
+        channelName ? { name: channelName, externalSource: channelExternalSource } : null
+      ),
+    [channelName, channelExternalSource]
+  )
+  const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
+  const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
+  // 연동 채널의 상품명은 대표 채널을 미러링한 값이라 이 화면에서 고칠 수 없다.
+  // 저장 중(disabled)에도 원클릭 수정을 막는다 — 저장 페이로드와 화면이 어긋난다.
+  const nameReadOnly = channelExternalSource != null || disabled === true
 
   return (
     <Card>
@@ -98,7 +122,7 @@ export function GroupBaseInfoCard({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-search">상품명 (검색용)</Label>
-            <NameCounter value={baseSearchName} limit={nameLimit.searchName} />
+            <NameCounter value={baseSearchName} limit={searchNameRules.nameHardMax} />
           </div>
           <Input
             id="group-search"
@@ -108,11 +132,18 @@ export function GroupBaseInfoCard({
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
           />
+          <NameValidationPanel
+            value={baseSearchName}
+            onChange={onBaseSearchNameChange}
+            field="searchName"
+            rules={rules}
+            readOnly={nameReadOnly}
+          />
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-display">상품명 (노출용)</Label>
-            <NameCounter value={baseDisplayName} limit={nameLimit.displayName} />
+            <NameCounter value={baseDisplayName} limit={displayNameRules.nameHardMax} />
           </div>
           <Input
             id="group-display"
@@ -122,11 +153,20 @@ export function GroupBaseInfoCard({
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
           />
+          {/* 빈 값은 "검색용을 그대로 쓴다"는 뜻이라 폴백값을 넣지 않는다 — 패널이 알아서 숨는다. */}
+          <NameValidationPanel
+            value={baseDisplayName}
+            onChange={onBaseDisplayNameChange}
+            field="displayName"
+            rules={rules}
+            readOnly={nameReadOnly}
+          />
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-management">상품명 (관리용)</Label>
-            <NameCounter value={baseManagementName} />
+            {/* 내부 표시용이라 채널 상한이 없다. 저장 스키마 상한만 보여준다. */}
+            <NameCounter value={baseManagementName} limit={MAX_NAME_LENGTH - 30} />
           </div>
           <Input
             id="group-management"
@@ -244,16 +284,4 @@ function mostCommon(values: string[]): string {
     }
   }
   return best
-}
-
-function NameCounter({ value, limit }: { value: string; limit?: number }) {
-  const n = countChars(value)
-  const overflow = limit != null && n > limit
-  const color = overflow ? 'text-destructive' : 'text-muted-foreground'
-  return (
-    <span className={`text-xs ${color}`}>
-      {n}
-      {limit != null ? ` / ${limit}(가이드)` : ` / ${MAX_NAME_LENGTH - 30}`}
-    </span>
-  )
 }

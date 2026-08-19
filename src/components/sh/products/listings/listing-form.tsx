@@ -38,7 +38,12 @@ import {
   computeListingRetailBaseline,
   type EffectiveListingStatus,
 } from '@/lib/sh/listing-calc'
-import { DEFAULT_KEYWORD_RULES } from '@/lib/sh/keyword-rules'
+import {
+  DEFAULT_KEYWORD_RULES,
+  resolveKeywordRules,
+  rulesForNameField,
+  withChannelDefaults,
+} from '@/lib/sh/keyword-rules'
 import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 
@@ -47,7 +52,8 @@ import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
 import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-dialog'
 import { KeywordChangeTimeline } from './keyword-change-timeline'
-import { countChars, getChannelNameLimit } from './channel-name-limits'
+import { NameCounter } from './name-counter'
+import { NameValidationPanel } from './name-validation-panel'
 
 const MAX_NAME_LENGTH = 200
 
@@ -56,6 +62,8 @@ type Channel = {
   name: string
   kind: string
   isActive: boolean
+  /** 연동 채널이면 소스 식별자, 수기 채널이면 null. 상품명이 대표 채널을 미러링하는지 판단한다. */
+  externalSource: string | null
 }
 
 type ItemDraft = {
@@ -145,7 +153,25 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   }, [])
 
   const currentChannel = channels.find((c) => c.id === channelId) ?? null
-  const nameLimit = getChannelNameLimit(currentChannel?.name ?? initial?.channel.name ?? null)
+  // 채널 목록 fetch 가 끝나기 전(그리고 실패했을 때)에도 편집 대상 채널명을 알고 있으므로
+  // initial 을 폴백으로 둔다 — 없으면 상한이 기본값 120 이었다가 뒤늦게 30 으로 튄다.
+  const channelName = currentChannel?.name ?? initial?.channel.name ?? null
+  const channelExternalSource = currentChannel?.externalSource ?? null
+
+  // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
+  // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다 — 규칙 편집 UI 를 붙일 때 여기서 연결한다.
+  const rules = useMemo(
+    () =>
+      withChannelDefaults(
+        resolveKeywordRules(null),
+        channelName ? { name: channelName, externalSource: channelExternalSource } : null
+      ),
+    [channelName, channelExternalSource]
+  )
+  const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
+  const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
+  // 연동 채널의 상품명은 대표 채널을 미러링한 값이라 이 화면에서 고칠 수 없다.
+  const nameReadOnly = channelExternalSource != null
 
   const baselinePrice = useMemo(
     () =>
@@ -401,7 +427,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="listing-search">상품명 (검색용) *</Label>
-              <NameCounter value={searchName} limit={nameLimit.searchName} />
+              <NameCounter value={searchName} limit={searchNameRules.nameHardMax} />
             </div>
             <Input
               id="listing-search"
@@ -410,12 +436,19 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               placeholder="판매채널 리스팅에 노출되는 상품명"
               maxLength={MAX_NAME_LENGTH}
             />
+            <NameValidationPanel
+              value={searchName}
+              onChange={setSearchName}
+              field="searchName"
+              rules={rules}
+              readOnly={nameReadOnly}
+            />
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="listing-display">상품명 (노출용)</Label>
-              <NameCounter value={displayName} limit={nameLimit.displayName} />
+              <NameCounter value={displayName} limit={displayNameRules.nameHardMax} />
             </div>
             <Input
               id="listing-display"
@@ -424,12 +457,21 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               placeholder="비우면 검색용 상품명을 그대로 사용합니다"
               maxLength={MAX_NAME_LENGTH}
             />
+            {/* 빈 값은 "검색용을 그대로 쓴다"는 뜻이라 폴백값을 넣지 않는다 — 패널이 알아서 숨는다. */}
+            <NameValidationPanel
+              value={displayName}
+              onChange={setDisplayName}
+              field="displayName"
+              rules={rules}
+              readOnly={nameReadOnly}
+            />
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="listing-management">상품명 (관리용)</Label>
-              <NameCounter value={managementName} />
+              {/* 내부 표시용이라 채널 상한이 없다. 저장 스키마 상한만 보여준다. */}
+              <NameCounter value={managementName} limit={MAX_NAME_LENGTH} />
             </div>
             <Input
               id="listing-management"
@@ -691,17 +733,5 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
         </DialogContent>
       </Dialog>
     </div>
-  )
-}
-
-function NameCounter({ value, limit }: { value: string; limit?: number }) {
-  const n = countChars(value)
-  const overflow = limit != null && n > limit
-  const color = overflow ? 'text-destructive' : 'text-muted-foreground'
-  return (
-    <span className={`text-xs ${color}`}>
-      {n}
-      {limit != null ? ` / ${limit}(가이드)` : ` / ${MAX_NAME_LENGTH}`}
-    </span>
   )
 }
