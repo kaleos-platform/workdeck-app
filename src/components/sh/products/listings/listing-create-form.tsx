@@ -492,8 +492,6 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   )
   const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
   const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
-  // 연동 채널의 상품명은 대표 채널을 미러링한 값이라 이 화면에서 고칠 수 없다.
-  const nameReadOnly = channelExternalSource != null
 
   // 구매옵션 중복 검증(§22 STEP08)용. 상품명·브랜드 토큰은 추천에 쓰지 않는다
   // (§10 Rule 1 이 금지하는 "상품명 중복"을 유도했던 로직).
@@ -716,7 +714,6 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               onChange={setBaseSearchName}
               field="searchName"
               rules={rules}
-              readOnly={nameReadOnly}
             />
           </div>
           <div className="space-y-1.5">
@@ -737,7 +734,6 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               onChange={setBaseDisplayName}
               field="displayName"
               rules={rules}
-              readOnly={nameReadOnly}
             />
           </div>
           <div className="space-y-1.5">
@@ -797,6 +793,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             suggestions={keywordSuggestions}
             productName={baseSearchName}
             optionNames={optionNames}
+            rules={rules}
           />
         </CardContent>
       </Card>

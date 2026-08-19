@@ -170,8 +170,6 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
   )
   const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
   const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
-  // 연동 채널의 상품명은 대표 채널을 미러링한 값이라 이 화면에서 고칠 수 없다.
-  const nameReadOnly = channelExternalSource != null
 
   const baselinePrice = useMemo(
     () =>
@@ -441,7 +439,6 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               onChange={setSearchName}
               field="searchName"
               rules={rules}
-              readOnly={nameReadOnly}
             />
           </div>
 
@@ -463,7 +460,6 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
               onChange={setDisplayName}
               field="displayName"
               rules={rules}
-              readOnly={nameReadOnly}
             />
           </div>
 
@@ -650,6 +646,7 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
             suggestions={keywordSuggestions}
             productName={searchName}
             optionNames={optionNames}
+            rules={rules}
           />
           {/* 채널 검색어 → 키워드 마스터 단방향 등록. 두 저장소는 동기화하지 않으므로
               사용자가 명시적으로 누를 때만 올라간다. */}

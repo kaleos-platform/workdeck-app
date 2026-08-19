@@ -30,11 +30,6 @@ export type OptionAttribute = { name: string; values: Array<{ value: string }> }
 
 type Props = {
   channelName: string
-  /**
-   * 연동 채널이면 소스 식별자. 그룹 상세 API 가 아직 이 필드를 내려주지 않아 현재는 항상 미지정이다
-   * (상위에서 넘기려면 채널 payload 에 externalSource 를 추가해야 한다).
-   */
-  channelExternalSource?: string | null
   baseSearchName: string
   baseDisplayName: string
   baseManagementName: string
@@ -56,7 +51,6 @@ type Props = {
  */
 export function GroupBaseInfoCard({
   channelName,
-  channelExternalSource = null,
   baseSearchName,
   baseDisplayName,
   baseManagementName,
@@ -76,15 +70,13 @@ export function GroupBaseInfoCard({
     () =>
       withChannelDefaults(
         resolveKeywordRules(null),
-        channelName ? { name: channelName, externalSource: channelExternalSource } : null
+        // 상한 조회는 채널명만 쓴다. 그룹 상세 API 가 externalSource 를 내려주지 않아 null 로 둔다.
+        channelName ? { name: channelName, externalSource: null } : null
       ),
-    [channelName, channelExternalSource]
+    [channelName]
   )
   const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
   const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
-  // 연동 채널의 상품명은 대표 채널을 미러링한 값이라 이 화면에서 고칠 수 없다.
-  // 저장 중(disabled)에도 원클릭 수정을 막는다 — 저장 페이로드와 화면이 어긋난다.
-  const nameReadOnly = channelExternalSource != null || disabled === true
 
   return (
     <Card>
@@ -137,7 +129,6 @@ export function GroupBaseInfoCard({
             onChange={onBaseSearchNameChange}
             field="searchName"
             rules={rules}
-            readOnly={nameReadOnly}
           />
         </div>
         <div className="space-y-1.5">
@@ -159,7 +150,6 @@ export function GroupBaseInfoCard({
             onChange={onBaseDisplayNameChange}
             field="displayName"
             rules={rules}
-            readOnly={nameReadOnly}
           />
         </div>
         <div className="space-y-1.5">
