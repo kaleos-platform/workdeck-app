@@ -115,3 +115,24 @@ export const STEP_TITLES = [
 ] as const
 
 export type StepIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+
+/**
+ * 리스팅 구성 옵션에서 SOP 의 기준 상품을 정한다.
+ *
+ * 세트·묶음은 구성 옵션이 여러 상품에 걸친다. 이때 첫 상품을 기준으로 삼으면 그 상품의
+ * 브랜드·카테고리·광고 검색어가 나머지 옵션과 무관한데도 Fact Sheet 프리필과 검색어 후보
+ * 전체를 좌우한다(§10 관련성 판정이 어긋난다). 그래서 **하나로 좁혀질 때만** 기준으로 쓰고,
+ * 섞여 있으면 null 을 돌려 자동 채우기를 건너뛰게 한다.
+ */
+export function resolveBaseProduct(items: Array<{ productId?: string | null }>): {
+  productId: string | null
+  mixedProducts: boolean
+} {
+  const ids = Array.from(
+    new Set(items.map((it) => it.productId).filter((id): id is string => Boolean(id)))
+  )
+  return {
+    productId: ids.length === 1 ? ids[0] : null,
+    mixedProducts: ids.length > 1,
+  }
+}
