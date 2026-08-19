@@ -42,8 +42,12 @@ export type AdTermsState = {
   /** 광고 데이터 연동 여부. false 면 이 space 는 coupang-ads 를 쓰지 않는다. */
   linked: boolean
   data: AdTerm[]
-  /** 상품을 특정할 수 없어 조회 자체를 하지 않은 경우 */
-  skipped: boolean
+  /**
+   * 상품을 특정할 수 없어 조회 자체를 하지 않은 사유. false 면 조회한 것이다.
+   * - 'no-listing': 판매채널 상품 없이 연습용으로 연 경우
+   * - 'mixed-products': 구성 옵션이 여러 상품에 걸쳐 기준 상품이 하나로 좁혀지지 않는 경우
+   */
+  skipped: false | 'no-listing' | 'mixed-products'
 }
 
 type Props = {
@@ -151,7 +155,12 @@ export function StepResearch({ terms, onAdd, onRemove, adTerms }: Props) {
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             불러오는 중...
           </p>
-        ) : adTerms.skipped ? (
+        ) : adTerms.skipped === 'mixed-products' ? (
+          <p className="rounded-md border border-dashed px-3 py-4 text-sm text-muted-foreground">
+            구성 옵션이 여러 상품에 걸쳐 있어 기준 상품을 특정할 수 없습니다. 광고 검색어는 상품별로
+            따로 확인하세요.
+          </p>
+        ) : adTerms.skipped === 'no-listing' ? (
           <p className="rounded-md border border-dashed px-3 py-4 text-sm text-muted-foreground">
             판매채널 상품에서 진입하면 해당 상품의 광고 검색어를 함께 볼 수 있습니다.
           </p>
