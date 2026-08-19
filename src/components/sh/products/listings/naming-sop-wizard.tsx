@@ -32,6 +32,7 @@ import { StepDedupe } from './steps/step-08-dedupe'
 import {
   EMPTY_FACT_SHEET,
   STEP_TITLES,
+  resolveBaseProduct,
   type FactSheet,
   type NameParts,
   type ResearchSource,
@@ -47,6 +48,8 @@ type ListingContext = {
   searchName: string
   keywords: string[]
   productId: string | null
+  /** 구성 옵션이 여러 상품에 걸쳐 있어 기준 상품을 특정하지 못한 경우 */
+  mixedProducts: boolean
   optionNames: string[]
 }
 
@@ -92,7 +95,7 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
     loading: false,
     linked: false,
     data: [],
-    skipped: true,
+    skipped: 'no-listing',
   })
 
   const [factSheet, setFactSheet] = useState<FactSheet>(EMPTY_FACT_SHEET)
@@ -138,13 +141,17 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
         }
         if (cancelled) return
 
+        // 세트·묶음은 구성 옵션이 여러 상품에 걸친다 — 기준 상품은 하나로 좁혀질 때만 쓴다.
+        const base = resolveBaseProduct(l.items)
+
         const ctx: ListingContext = {
           id: l.id,
           channelId: l.channel.id,
           channelName: l.channel.name,
           searchName: l.searchName,
           keywords: l.keywords ?? [],
-          productId: l.items[0]?.productId ?? null,
+          productId: base.productId,
+          mixedProducts: base.mixedProducts,
           optionNames: l.items.map((it) => it.optionName).filter(Boolean),
         }
         setListing(ctx)
@@ -245,7 +252,12 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
   useEffect(() => {
     const productId = listing?.productId
     if (!productId) {
-      setAdTerms({ loading: false, linked: false, data: [], skipped: true })
+      setAdTerms({
+        loading: false,
+        linked: false,
+        data: [],
+        skipped: listing?.mixedProducts ? 'mixed-products' : 'no-listing',
+      })
       return
     }
     let cancelled = false
@@ -271,7 +283,7 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
     return () => {
       cancelled = true
     }
-  }, [listing?.productId])
+  }, [listing?.productId, listing?.mixedProducts])
 
   // 상품 정보가 오면 Fact Sheet 의 "채울 수 있는 칸"만 채운다. 사용자가 이미 손댄 칸은 두고,
   // 소재·용도·대상은 대응 컬럼이 없으므로 비워둔다(features 는 참고 정보로만 보여준다).
@@ -460,6 +472,8 @@ export function NamingSopWizard({ listingId }: { listingId: string | null }) {
         <p className="text-sm text-muted-foreground">
           8단계를 순서대로 진행해 상품명과 검색어를 정리합니다.
           {!listing && ' 저장 대상이 없어 연습용으로만 사용됩니다.'}
+          {listing?.mixedProducts &&
+            ' 구성 옵션이 여러 상품에 걸쳐 있어 상품 정보 자동 채우기는 건너뜁니다.'}
         </p>
       </header>
 
