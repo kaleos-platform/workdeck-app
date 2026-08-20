@@ -25,6 +25,7 @@ import {
   OptionPickerDialog,
   type PickedOptionWithQty,
 } from '@/components/sh/products/listings/option-picker-dialog'
+import { isSyntheticExternalCode } from '@/lib/inv/reconciliation-external-code'
 import { reconStatusBadge, type ReconStatus } from './recon-status-display'
 import { ReconciliationUnmatchedOptionsDialog } from './reconciliation-unmatched-options-dialog'
 
@@ -301,7 +302,7 @@ export function ReconciliationPreview({
       })
     }
 
-    for (const e of fileOnlyEntries) {
+    fileOnlyEntries.forEach((e, i) => {
       const code = e.row.externalCode
       const items = manualMap[code]
       const isMapped = !!(items && items.length > 0)
@@ -321,7 +322,7 @@ export function ReconciliationPreview({
       }
 
       result.push({
-        key: `file-${code}`,
+        key: `file-${code}-${i}`,
         status: 'file-only',
         fileCode: code,
         fileProductName: e.row.externalName ?? code,
@@ -336,7 +337,7 @@ export function ReconciliationPreview({
         suggestions: e.suggestions,
         row: e.row,
       })
-    }
+    })
 
     return result
   }, [diffEntries, equalEntries, fileOnlyEntries, manualMap, manualStock])
@@ -392,7 +393,12 @@ export function ReconciliationPreview({
   }
 
   function handlePickedMulti(items: PickedOptionWithQty[]) {
-    if (!pickerExternalCode) return
+    // 파서가 항상 externalCode를 채우므로 도달 불가. 다시는 무음으로 버리지 않는다.
+    if (!pickerExternalCode) {
+      setPickerOpen(false)
+      toast.error('이 행은 매칭 키가 없어 저장할 수 없습니다')
+      return
+    }
     const code = pickerExternalCode
     setManualMap((m) => ({ ...m, [code]: items }))
     setPickerOpen(false)
@@ -724,7 +730,9 @@ export function ReconciliationPreview({
                       </div>
                       <div className="truncate text-xs text-muted-foreground">
                         {entry.fileOptionName}
-                        <span className="ml-1.5 font-mono opacity-70">{entry.fileCode}</span>
+                        {!isSyntheticExternalCode(entry.fileCode) && (
+                          <span className="ml-1.5 font-mono opacity-70">{entry.fileCode}</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className={`text-right font-semibold tabular-nums ${fileCellClass}`}>
