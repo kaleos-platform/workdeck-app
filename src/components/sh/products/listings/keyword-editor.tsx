@@ -8,12 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { DEFAULT_KEYWORD_RULES, type KeywordRuleSet } from '@/lib/sh/keyword-rules'
-import {
-  validateKeywords,
-  validateProductName,
-  type Violation,
-  type ViolationSeverity,
-} from '@/lib/sh/keyword-validate'
+import { validateKeywords, type Violation, type ViolationSeverity } from '@/lib/sh/keyword-validate'
 import { cn } from '@/lib/utils'
 
 // 저장 스키마(schemas.ts)와 같은 하드 상한. rules.maxKeywords(쿠팡 20)는 "권장"이라
@@ -84,13 +79,8 @@ export function KeywordEditor({
     [value, productName, categoryNames, optionNames, activeRules]
   )
 
-  // 요약 줄의 상품명 글자수만 쓴다. 상품명 자체의 위반은 이 화면에서 고칠 수 없으므로
-  // "위반 N" 집계에 넣지 않는다(칩에 보이는 개수와 어긋나면 버그로 읽힌다).
-  const nameLength = useMemo(() => {
-    const name = productName?.trim()
-    if (!name) return null
-    return validateProductName(name, activeRules).length
-  }, [productName, activeRules])
+  // 상품명 길이·위반은 상품명 입력란 아래의 NameValidationPanel 이 담당한다.
+  // productName 은 여기서도 §10 Rule 1(검색어가 상품명과 중복) 판정에 계속 쓰인다.
 
   /** 칩 index → 위반 목록 */
   const violationsByIndex = useMemo(() => {
@@ -179,12 +169,6 @@ export function KeywordEditor({
       <div className="space-y-2">
         {/* 요약 줄 */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" aria-live="polite">
-          {nameLength != null && (
-            <span className="text-muted-foreground">
-              상품명 {nameLength}자 (목표 {activeRules.nameTargetMin}~{activeRules.nameTargetMax})
-            </span>
-          )}
-          {nameLength != null && <span className="text-muted-foreground/50">·</span>}
           <span
             className={cn(
               overRuleLimit

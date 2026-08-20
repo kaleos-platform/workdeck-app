@@ -6,7 +6,9 @@
 import { prisma } from '@/lib/prisma'
 import {
   resolveKeywordRules,
+  withChannelDefaults,
   type BannedTerms,
+  type ChannelIdentity,
   type KeywordRuleOverride,
   type KeywordRuleSet,
 } from './keyword-rules'
@@ -28,6 +30,7 @@ export function serializeKeywordRules(rules: KeywordRuleSet): SerializedKeywordR
     nameHardMax: rules.nameHardMax,
     bannedTerms: rules.bannedTerms,
     specialCharSoftLimit: rules.specialCharSoftLimit,
+    channelLimits: rules.channelLimits,
   }
 }
 
@@ -84,17 +87,27 @@ export async function loadKeywordRules(
   channelId?: string | null
 ): Promise<KeywordRuleSet> {
   if (!channelId) return resolveKeywordRules(null)
-  const row = await prisma.channelKeywordRule.findFirst({
-    where: { channelId, spaceId },
-    select: {
-      maxKeywords: true,
-      nameTargetMin: true,
-      nameTargetMax: true,
-      nameSoftMax: true,
-      nameHardMax: true,
-      bannedTerms: true,
-      replaceDefaultTerms: true,
-    },
-  })
-  return resolveKeywordRules(ruleRowToOverride(row))
+  const [row, channel] = await Promise.all([
+    prisma.channelKeywordRule.findFirst({
+      where: { channelId, spaceId },
+      select: {
+        maxKeywords: true,
+        nameTargetMin: true,
+        nameTargetMax: true,
+        nameSoftMax: true,
+        nameHardMax: true,
+        bannedTerms: true,
+        replaceDefaultTerms: true,
+      },
+    }),
+    prisma.channel.findFirst({
+      where: { id: channelId, spaceId },
+      select: { name: true, externalSource: true },
+    }),
+  ])
+  const rules = resolveKeywordRules(ruleRowToOverride(row))
+  const identity: ChannelIdentity | null = channel
+    ? { name: channel.name, externalSource: channel.externalSource }
+    : null
+  return withChannelDefaults(rules, identity)
 }

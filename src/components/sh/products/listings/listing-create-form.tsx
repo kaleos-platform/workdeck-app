@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, Layers, Loader2, PackagePlus, Plus, Unlink, X } from 'lucide-react'
+import { ArrowLeft, Layers, ListChecks, Loader2, PackagePlus, Plus, Unlink, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -25,14 +25,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
-import { DEFAULT_KEYWORD_RULES } from '@/lib/sh/keyword-rules'
+import { SELLER_HUB_LISTINGS_PATH, getSellerHubNamingSopPath } from '@/lib/deck-routes'
+import {
+  DEFAULT_KEYWORD_RULES,
+  resolveKeywordRules,
+  rulesForNameField,
+  withChannelDefaults,
+} from '@/lib/sh/keyword-rules'
 import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 import { CompositionRowsTable, type CompositionRow } from './composition-rows-table'
 import { KeywordEditor } from './keyword-editor'
-import { countChars, getChannelNameLimit } from './channel-name-limits'
+import { NameCounter } from './name-counter'
+import { NameValidationPanel } from './name-validation-panel'
 import { deriveBaseValues, type OptionAttribute } from './group-base-info-card'
 
 const COPY_SUFFIX_RE = / \(복사( \d+)?\)$/
@@ -42,7 +48,13 @@ function stripCopySuffix(name: string | null | undefined): string {
 
 const MAX_NAME_LENGTH = 200
 
-type Channel = { id: string; name: string; kind: string }
+type Channel = {
+  id: string
+  name: string
+  kind: string
+  /** 연동 채널이면 소스 식별자, 수기 채널이면 null. */
+  externalSource: string | null
+}
 
 type Props = {
   defaultChannelId?: string | null
@@ -465,7 +477,21 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
   }, [duplicateFromChannelProductId, duplicateFromProductId, duplicateFromChannelId])
 
   const currentChannel = channels.find((c) => c.id === channelId) ?? null
-  const nameLimit = getChannelNameLimit(currentChannel?.name ?? null)
+  const channelName = currentChannel?.name ?? null
+  const channelExternalSource = currentChannel?.externalSource ?? null
+
+  // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
+  // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다 — 규칙 편집 UI 를 붙일 때 여기서 연결한다.
+  const rules = useMemo(
+    () =>
+      withChannelDefaults(
+        resolveKeywordRules(null),
+        channelName ? { name: channelName, externalSource: channelExternalSource } : null
+      ),
+    [channelName, channelExternalSource]
+  )
+  const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
+  const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
 
   // 구매옵션 중복 검증(§22 STEP08)용. 상품명·브랜드 토큰은 추천에 쓰지 않는다
   // (§10 Rule 1 이 금지하는 "상품명 중복"을 유도했던 로직).
@@ -671,7 +697,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="listing-search">상품명 (검색용) *</Label>
-              <NameCounter value={baseSearchName} limit={nameLimit.searchName} />
+              <NameCounter value={baseSearchName} limit={searchNameRules.nameHardMax} guide />
             </div>
             <Input
               id="listing-search"
@@ -683,11 +709,17 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             <p className="text-xs text-muted-foreground">
               생성 시 속성값(예: S / M / L)이 자동으로 뒤에 붙습니다
             </p>
+            <NameValidationPanel
+              value={baseSearchName}
+              onChange={setBaseSearchName}
+              field="searchName"
+              rules={rules}
+            />
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="listing-display">상품명 (노출용)</Label>
-              <NameCounter value={baseDisplayName} limit={nameLimit.displayName} />
+              <NameCounter value={baseDisplayName} limit={displayNameRules.nameHardMax} guide />
             </div>
             <Input
               id="listing-display"
@@ -696,11 +728,19 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
               placeholder="비우면 검색용 상품명을 그대로 사용합니다"
               maxLength={MAX_NAME_LENGTH - 30}
             />
+            {/* 빈 값은 "검색용을 그대로 쓴다"는 뜻이라 폴백값을 넣지 않는다 — 패널이 알아서 숨는다. */}
+            <NameValidationPanel
+              value={baseDisplayName}
+              onChange={setBaseDisplayName}
+              field="displayName"
+              rules={rules}
+            />
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="listing-management">상품명 (관리용)</Label>
-              <NameCounter value={baseManagementName} />
+              {/* 내부 표시용이라 채널 상한이 없다. 옵션 접미사(최대 30자)를 뺀 여유분만 보여준다. */}
+              <NameCounter value={baseManagementName} limit={MAX_NAME_LENGTH - 30} />
             </div>
             <Input
               id="listing-management"
@@ -727,13 +767,24 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
       {/* 2) 키워드 (상품 단위) */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">키워드 (상품 단위)</CardTitle>
-          <CardDescription>
-            {currentChannel
-              ? `${currentChannel.name} 상의 이 상품에 공통 적용되는 검색 키워드`
-              : '채널을 선택하면 이 상품의 검색 키워드가 저장됩니다'}
-            . 최대 30개.
-          </CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <CardTitle className="text-lg">키워드 (상품 단위)</CardTitle>
+              <CardDescription>
+                {currentChannel
+                  ? `${currentChannel.name} 상의 이 상품에 공통 적용되는 검색 키워드`
+                  : '채널을 선택하면 이 상품의 검색 키워드가 저장됩니다'}
+                . 최대 30개.
+              </CardDescription>
+            </div>
+            {/* 신규 등록에는 아직 리스팅 id 가 없으므로 인자 없이 연다(연습 모드). */}
+            <Button asChild variant="outline" size="sm" className="gap-1">
+              <Link href={getSellerHubNamingSopPath()}>
+                <ListChecks className="h-4 w-4" aria-hidden="true" />
+                상품명 작성 SOP
+              </Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <KeywordEditor
@@ -742,6 +793,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
             suggestions={keywordSuggestions}
             productName={baseSearchName}
             optionNames={optionNames}
+            rules={rules}
           />
         </CardContent>
       </Card>
@@ -894,16 +946,4 @@ function buildRowsFromGroups(groups: BuiltGroup[]): CompositionRow[] {
     status: 'ACTIVE',
     manualNames: g.manualNames,
   }))
-}
-
-function NameCounter({ value, limit }: { value: string; limit?: number }) {
-  const n = countChars(value)
-  const overflow = limit != null && n > limit
-  const color = overflow ? 'text-destructive' : 'text-muted-foreground'
-  return (
-    <span className={`text-xs ${color}`}>
-      {n}
-      {limit != null ? ` / ${limit}(가이드)` : ` / ${MAX_NAME_LENGTH - 30}`}
-    </span>
-  )
 }

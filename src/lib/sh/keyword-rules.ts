@@ -29,6 +29,19 @@ export type KeywordRuleSet = {
   specialCharPattern: RegExp
   /** 일반 특수문자(괄호·+·! 등) 개수 임계. 초과하면 경고. */
   specialCharSoftLimit: number
+  /** 채널별 상품명 글자수 상한(검색용/노출용). 채널을 모르면 빈 객체. */
+  channelLimits: ChannelNameLimits
+}
+
+/** 채널별 상품명 글자수 가이드. channel-name-limits.ts 에서 흡수했다. */
+export type ChannelNameLimits = {
+  searchName?: number
+  displayName?: number
+}
+
+export type ChannelIdentity = {
+  name: string
+  externalSource: string | null
 }
 
 // §8.4 예시가 ★ ♥ 처럼 "장식" 목적의 기호를 문제 삼으므로 그 계열만 하드 금지한다.
@@ -66,9 +79,70 @@ export const COUPANG_KEYWORD_RULES: KeywordRuleSet = {
   },
   specialCharPattern: DECORATIVE_CHARS,
   specialCharSoftLimit: 3,
+  // 기본 상수는 채널 무관 — 채널 상한은 withChannelDefaults 로 얹는다.
+  channelLimits: {},
 }
 
 export const DEFAULT_KEYWORD_RULES: KeywordRuleSet = COUPANG_KEYWORD_RULES
+
+// 쿠팡은 가이드 §7 이 출처라 120 을 쓴다(구 channel-name-limits 의 100 은 출처 불명이라 버린다).
+// 나머지는 각 채널 공지 기준. 채널명 부분일치로 찾는다 — 사용자가 "쿠팡 로켓그로스"처럼 접두어를 붙인다.
+const CHANNEL_LIMITS: Array<{ keyword: string; limits: ChannelNameLimits }> = [
+  { keyword: '쿠팡', limits: { searchName: 120, displayName: 120 } },
+  { keyword: '스마트스토어', limits: { searchName: 50, displayName: 50 } },
+  { keyword: '네이버', limits: { searchName: 50, displayName: 50 } },
+  { keyword: '29cm', limits: { searchName: 40, displayName: 40 } },
+  { keyword: '무신사', limits: { searchName: 30, displayName: 40 } },
+  { keyword: '에이블리', limits: { searchName: 40, displayName: 40 } },
+  { keyword: '지그재그', limits: { searchName: 40, displayName: 40 } },
+  { keyword: '오늘의집', limits: { searchName: 40, displayName: 40 } },
+]
+
+function lookupChannelLimits(channel: ChannelIdentity | null): ChannelNameLimits {
+  if (!channel) return {}
+  const lower = channel.name.toLowerCase()
+  for (const entry of CHANNEL_LIMITS) {
+    // CHANNEL_LIMITS 항목을 그대로 반환하면 소비자가 결과 객체를 변형하는 순간
+    // 모듈 상수(장수 프로세스에서 공유)가 오염된다 — 항상 새 객체를 돌려준다.
+    if (lower.includes(entry.keyword)) return { ...entry.limits }
+  }
+  return {}
+}
+
+/**
+ * 채널 상한을 규칙셋에 얹는다. 채널을 모르면(또는 등록되지 않은 채널이면) 원본 그대로.
+ *
+ * resolveKeywordRules 의 시그니처는 그대로 둔다(DB 오버라이드 병합만 담당) — 채널 상한은
+ * 별도 단계로 합성해 기존 호출부·테스트의 회귀 범위를 좁힌다.
+ */
+export function withChannelDefaults(
+  rules: KeywordRuleSet,
+  channel: ChannelIdentity | null
+): KeywordRuleSet {
+  const channelLimits = lookupChannelLimits(channel)
+  if (Object.keys(channelLimits).length === 0) return rules
+  return { ...rules, channelLimits }
+}
+
+export type NameField = 'searchName' | 'displayName'
+
+/**
+ * 필드 상한에서 목표 구간을 다시 파생한 규칙셋.
+ *
+ * 채널 상한이 30자인데 목표를 40~70 으로 고정하면 사용자에게 상반된 지시가 뜬다.
+ * 상한이 없으면 원본을 그대로 돌려준다.
+ */
+export function rulesForNameField(rules: KeywordRuleSet, field: NameField): KeywordRuleSet {
+  const limit = rules.channelLimits[field]
+  if (!limit) return rules
+  return {
+    ...rules,
+    nameHardMax: limit,
+    nameSoftMax: Math.min(rules.nameSoftMax, limit),
+    nameTargetMax: Math.min(rules.nameTargetMax, limit),
+    nameTargetMin: Math.min(rules.nameTargetMin, Math.floor(limit * 0.6)),
+  }
+}
 
 export type KeywordRuleOverride = {
   maxKeywords?: number | null
@@ -129,7 +203,11 @@ function dedupe(list: string[]): string[] {
 export function resolveKeywordRules(row: KeywordRuleOverride | null | undefined): KeywordRuleSet {
   const base = DEFAULT_KEYWORD_RULES
   if (!row) {
-    return { ...base, bannedTerms: cloneTerms(base.bannedTerms) }
+    return {
+      ...base,
+      bannedTerms: cloneTerms(base.bannedTerms),
+      channelLimits: { ...base.channelLimits },
+    }
   }
 
   const replace = row.replaceDefaultTerms === true
@@ -148,5 +226,6 @@ export function resolveKeywordRules(row: KeywordRuleOverride | null | undefined)
     nameSoftMax: row.nameSoftMax ?? base.nameSoftMax,
     nameHardMax: row.nameHardMax ?? base.nameHardMax,
     bannedTerms: terms,
+    channelLimits: { ...base.channelLimits },
   }
 }

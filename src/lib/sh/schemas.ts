@@ -786,6 +786,7 @@ export type KeywordBulkInput = z.infer<typeof keywordBulkSchema>
 
 export const keywordValidateSchema = z.object({
   searchName: z.string().max(1000).default(''),
+  displayName: z.string().max(1000).optional(),
   keywords: z.array(z.string()).max(200).default([]),
   channelId: z.string().min(1).optional().nullable(),
   categoryNames: z.array(z.string()).max(50).optional(),

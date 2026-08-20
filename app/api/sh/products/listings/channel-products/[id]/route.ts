@@ -360,6 +360,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   // 저장 성공 이후 계산 — updated 가 곧 "패치 이후 유효값"이다.
   const namingWarnings = await buildNamingWarnings(resolved.space.id, cp.channelId, {
     searchName: updated.baseSearchName,
+    displayName: updated.baseDisplayName,
     keywords: updated.keywords,
   })
 

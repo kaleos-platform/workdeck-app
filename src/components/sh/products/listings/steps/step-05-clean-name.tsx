@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { fixForViolation } from '@/lib/sh/keyword-fix'
 import type { KeywordRuleSet } from '@/lib/sh/keyword-rules'
 import {
   validateProductName,
@@ -49,42 +50,6 @@ export const MANUAL_CHECKS = [
 
 export type ManualCheckKey = (typeof MANUAL_CHECKS)[number]['key']
 
-function escapeRegExp(raw: string): string {
-  return raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-function collapse(raw: string): string {
-  return raw.replace(/\s+/g, ' ').trim()
-}
-
-/** 지정한 표현을 상품명에서 모두 지운다(띄어쓴 회피형도 함께). */
-export function removeTerm(name: string, term: string): string {
-  const variants = [term, term.replace(/\s+/g, '')].filter((v) => v.length > 0)
-  let next = name
-  for (const variant of new Set(variants)) {
-    next = next.replace(new RegExp(escapeRegExp(variant), 'gi'), ' ')
-  }
-  return collapse(next)
-}
-
-/** 반복된 단어의 두 번째 이후 등장만 지운다(첫 등장은 남긴다). */
-export function removeRepeatedToken(name: string, token: string): string {
-  const target = token.toLowerCase()
-  let seen = false
-  const kept = name.split(/\s+/).filter((word) => {
-    if (word.toLowerCase() !== target) return true
-    if (seen) return false
-    seen = true
-    return true
-  })
-  return collapse(kept.join(' '))
-}
-
-/** §8.4 장식용 특수문자 제거. 공유 RegExp 는 상태를 갖지 않도록 source 로 새로 만든다. */
-export function removeDecorativeChars(name: string, rules: KeywordRuleSet): string {
-  return collapse(name.replace(new RegExp(rules.specialCharPattern.source, 'g'), ' '))
-}
-
 type Props = {
   name: string
   onNameChange: (next: string) => void
@@ -103,25 +68,9 @@ export function StepCleanName({
   const result = useMemo(() => validateProductName(name, rules), [name, rules])
 
   function fixFor(violation: Violation): (() => void) | null {
-    if (violation.code === 'NAME_REPEATED_TOKEN' && violation.conflictWith) {
-      const token = violation.conflictWith
-      return () => onNameChange(removeRepeatedToken(name, token))
-    }
-    if (
-      (violation.code === 'NAME_PROMO_TERM' ||
-        violation.code === 'NAME_SELLER_TERM' ||
-        violation.code === 'NAME_COMPETITOR_BRAND') &&
-      violation.conflictWith
-    ) {
-      const term = violation.conflictWith
-      return () => onNameChange(removeTerm(name, term))
-    }
-    // 장식용 문자가 실제로 있을 때만 자동 제거를 제안한다.
-    // (개수 초과 경고는 어떤 문자를 남길지 사람이 골라야 한다)
-    if (violation.code === 'NAME_SPECIAL_CHARS' && rules.specialCharPattern.test(name)) {
-      return () => onNameChange(removeDecorativeChars(name, rules))
-    }
-    return null
+    const fixed = fixForViolation(name, violation, rules)
+    if (fixed === null) return null
+    return () => onNameChange(fixed)
   }
 
   return (

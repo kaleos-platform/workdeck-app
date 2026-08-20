@@ -1,4 +1,10 @@
-import { COUPANG_KEYWORD_RULES, DEFAULT_KEYWORD_RULES, resolveKeywordRules } from '../keyword-rules'
+import {
+  COUPANG_KEYWORD_RULES,
+  DEFAULT_KEYWORD_RULES,
+  resolveKeywordRules,
+  withChannelDefaults,
+  rulesForNameField,
+} from '../keyword-rules'
 
 describe('COUPANG_KEYWORD_RULES', () => {
   it('가이드 §7 §10 값을 그대로 담는다', () => {
@@ -72,5 +78,105 @@ describe('resolveKeywordRules', () => {
     r.bannedTerms.promo.push('오염')
     expect(DEFAULT_KEYWORD_RULES.bannedTerms.promo).not.toContain('오염')
     expect(resolveKeywordRules(null).bannedTerms.promo).not.toContain('오염')
+  })
+})
+
+describe('withChannelDefaults', () => {
+  it('쿠팡은 가이드 §7 값을 그대로 쓴다(채널 상한도 120)', () => {
+    const r = withChannelDefaults(resolveKeywordRules(null), {
+      name: '쿠팡 로켓그로스',
+      externalSource: null,
+    })
+    expect(r.nameTargetMin).toBe(40)
+    expect(r.nameTargetMax).toBe(70)
+    expect(r.nameSoftMax).toBe(80)
+    expect(r.nameHardMax).toBe(120)
+    expect(r.channelLimits.searchName).toBe(120)
+  })
+
+  it('무신사는 검색용 30·노출용 40', () => {
+    const r = withChannelDefaults(resolveKeywordRules(null), {
+      name: '무신사',
+      externalSource: null,
+    })
+    expect(r.channelLimits.searchName).toBe(30)
+    expect(r.channelLimits.displayName).toBe(40)
+  })
+
+  it('등록되지 않은 채널은 기본값(빈 channelLimits)', () => {
+    const r = withChannelDefaults(resolveKeywordRules(null), {
+      name: '자사몰',
+      externalSource: null,
+    })
+    expect(r.nameHardMax).toBe(DEFAULT_KEYWORD_RULES.nameHardMax)
+    expect(r.channelLimits.searchName).toBeUndefined()
+  })
+
+  it('채널이 null 이면 원본 그대로', () => {
+    const base = resolveKeywordRules(null)
+    expect(withChannelDefaults(base, null)).toBe(base)
+  })
+
+  it('DB 오버라이드가 병합된 규칙 위에 채널 상한을 얹을 수 있다', () => {
+    const r = withChannelDefaults(resolveKeywordRules({ maxKeywords: 10 }), {
+      name: '무신사',
+      externalSource: null,
+    })
+    expect(r.maxKeywords).toBe(10)
+    expect(r.channelLimits.searchName).toBe(30)
+  })
+
+  it('반환된 channelLimits 를 변형해도 모듈 상수(CHANNEL_LIMITS)가 오염되지 않는다', () => {
+    const r = withChannelDefaults(resolveKeywordRules(null), {
+      name: '무신사',
+      externalSource: null,
+    })
+    r.channelLimits.searchName = 999
+    const again = withChannelDefaults(resolveKeywordRules(null), {
+      name: '무신사',
+      externalSource: null,
+    })
+    expect(again.channelLimits.searchName).toBe(30)
+  })
+})
+
+describe('rulesForNameField', () => {
+  it('검색용 상한에서 목표 구간을 파생한다', () => {
+    const base = withChannelDefaults(resolveKeywordRules(null), {
+      name: '무신사',
+      externalSource: null,
+    })
+    const r = rulesForNameField(base, 'searchName')
+    expect(r.nameHardMax).toBe(30)
+    expect(r.nameSoftMax).toBe(30)
+    expect(r.nameTargetMax).toBe(30)
+    expect(r.nameTargetMin).toBe(18) // floor(30 * 0.6)
+  })
+
+  it('노출용은 노출용 상한을 쓴다', () => {
+    const base = withChannelDefaults(resolveKeywordRules(null), {
+      name: '무신사',
+      externalSource: null,
+    })
+    const r = rulesForNameField(base, 'displayName')
+    expect(r.nameHardMax).toBe(40)
+    expect(r.nameTargetMin).toBe(24) // floor(40 * 0.6)
+  })
+
+  it('상한이 없으면 원본 그대로', () => {
+    const base = resolveKeywordRules(null)
+    expect(rulesForNameField(base, 'searchName')).toEqual(base)
+  })
+
+  it('목표 하한이 상한을 넘지 않는다 (대소문자 무관 매칭도 함께 검증)', () => {
+    const base = withChannelDefaults(resolveKeywordRules(null), {
+      name: '29CM',
+      externalSource: null,
+    })
+    // '29cm' 키워드가 대문자 입력('29CM')에도 매칭되는지 확인한다.
+    // 이 단언이 없으면 매칭이 깨져 channelLimits={} 여도 40<=70 이라 항상 통과해버린다.
+    expect(base.channelLimits.searchName).toBe(40)
+    const r = rulesForNameField(base, 'searchName')
+    expect(r.nameTargetMin).toBeLessThanOrEqual(r.nameTargetMax)
   })
 })

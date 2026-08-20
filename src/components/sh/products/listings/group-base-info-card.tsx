@@ -1,11 +1,15 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
 
-import { countChars, getChannelNameLimit } from './channel-name-limits'
+import { NameCounter } from './name-counter'
+import { NameValidationPanel } from './name-validation-panel'
 
 const MAX_NAME_LENGTH = 200
 
@@ -60,7 +64,19 @@ export function GroupBaseInfoCard({
   onMemoChange,
   disabled,
 }: Props) {
-  const nameLimit = getChannelNameLimit(channelName)
+  // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
+  // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다 — 규칙 편집 UI 를 붙일 때 여기서 연결한다.
+  const rules = useMemo(
+    () =>
+      withChannelDefaults(
+        resolveKeywordRules(null),
+        // 상한 조회는 채널명만 쓴다. 그룹 상세 API 가 externalSource 를 내려주지 않아 null 로 둔다.
+        channelName ? { name: channelName, externalSource: null } : null
+      ),
+    [channelName]
+  )
+  const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
+  const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
 
   return (
     <Card>
@@ -98,7 +114,7 @@ export function GroupBaseInfoCard({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-search">상품명 (검색용)</Label>
-            <NameCounter value={baseSearchName} limit={nameLimit.searchName} />
+            <NameCounter value={baseSearchName} limit={searchNameRules.nameHardMax} guide />
           </div>
           <Input
             id="group-search"
@@ -108,11 +124,20 @@ export function GroupBaseInfoCard({
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
           />
+          {/* 변경 작업 중(disabled)에는 원클릭 수정을 막는다 — 자동저장 타이머가 걸려
+              진행 중인 작업의 재적재와 경합한다. */}
+          <NameValidationPanel
+            value={baseSearchName}
+            onChange={onBaseSearchNameChange}
+            field="searchName"
+            rules={rules}
+            readOnly={disabled}
+          />
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-display">상품명 (노출용)</Label>
-            <NameCounter value={baseDisplayName} limit={nameLimit.displayName} />
+            <NameCounter value={baseDisplayName} limit={displayNameRules.nameHardMax} guide />
           </div>
           <Input
             id="group-display"
@@ -122,11 +147,20 @@ export function GroupBaseInfoCard({
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
           />
+          {/* 빈 값은 "검색용을 그대로 쓴다"는 뜻이라 폴백값을 넣지 않는다 — 패널이 알아서 숨는다. */}
+          <NameValidationPanel
+            value={baseDisplayName}
+            onChange={onBaseDisplayNameChange}
+            field="displayName"
+            rules={rules}
+            readOnly={disabled}
+          />
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-management">상품명 (관리용)</Label>
-            <NameCounter value={baseManagementName} />
+            {/* 내부 표시용이라 채널 상한이 없다. 옵션 접미사(최대 30자)를 뺀 여유분만 보여준다. */}
+            <NameCounter value={baseManagementName} limit={MAX_NAME_LENGTH - 30} />
           </div>
           <Input
             id="group-management"
@@ -244,16 +278,4 @@ function mostCommon(values: string[]): string {
     }
   }
   return best
-}
-
-function NameCounter({ value, limit }: { value: string; limit?: number }) {
-  const n = countChars(value)
-  const overflow = limit != null && n > limit
-  const color = overflow ? 'text-destructive' : 'text-muted-foreground'
-  return (
-    <span className={`text-xs ${color}`}>
-      {n}
-      {limit != null ? ` / ${limit}(가이드)` : ` / ${MAX_NAME_LENGTH - 30}`}
-    </span>
-  )
 }

@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
 
   const result = validateListingNaming({
     searchName: input.searchName,
+    displayName: input.displayName,
     keywords: input.keywords,
     categoryNames: input.categoryNames,
     optionNames: input.optionNames,
