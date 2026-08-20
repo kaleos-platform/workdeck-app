@@ -17,7 +17,14 @@ import {
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -402,6 +409,25 @@ export function GroupDetailView({ channelProductId }: Props) {
   function handleKeywordsChange(next: string[]) {
     setKeywords(next)
     scheduleAutoSave(0)
+  }
+
+  async function handleCopyKeywords() {
+    const clipboardText = keywords
+      .map((keyword: string) => keyword.trim())
+      .filter(Boolean)
+      .join(',')
+
+    if (!clipboardText) {
+      toast.info('복사할 키워드가 없습니다')
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(clipboardText)
+      toast.success(`키워드 ${clipboardText.split(',').length}개를 복사했습니다`)
+    } catch {
+      toast.error('키워드 복사에 실패했습니다. 브라우저 클립보드 권한을 확인해 주세요')
+    }
   }
 
   function handleBaseChange(
@@ -1255,10 +1281,24 @@ export function GroupDetailView({ channelProductId }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">키워드 (상품 단위)</CardTitle>
-          <CardDescription>
-            {data.channel.name} 상의 이 상품에 공통 적용되는 검색 키워드입니다. 최대 30개.
-          </CardDescription>
+          <div>
+            <CardTitle className="text-lg">키워드 (상품 단위)</CardTitle>
+            <CardDescription>
+              {data.channel.name} 상의 이 상품에 공통 적용되는 검색 키워드입니다. 최대 30개.
+            </CardDescription>
+          </div>
+          <CardAction>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleCopyKeywords}
+              disabled={keywords.every((keyword: string) => keyword.trim().length === 0)}
+            >
+              <Copy className="mr-1 h-4 w-4" aria-hidden="true" />
+              키워드 복사
+            </Button>
+          </CardAction>
         </CardHeader>
         <CardContent>
           <KeywordEditor
