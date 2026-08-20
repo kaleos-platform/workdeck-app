@@ -195,6 +195,7 @@ export function ProductKeywordCard({ card, onSaved }: Props) {
             onChange={setKeywords}
             productName={searchName}
             rules={rules}
+            readOnly={readOnly}
           />
         </div>
 
