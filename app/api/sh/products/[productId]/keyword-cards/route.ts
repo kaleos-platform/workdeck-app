@@ -40,7 +40,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
 
   const listings = await prisma.productListing.findMany({
-    where: { spaceId: resolved.space.id, items: { some: { option: { productId } } } },
+    where: {
+      spaceId: resolved.space.id,
+      items: { some: { option: { productId, deletedAt: null } } },
+    },
     select: {
       id: true,
       channelId: true,
@@ -57,7 +60,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
           keywords: true,
         },
       },
-      items: { select: { option: { select: { productId: true } } } },
+      items: {
+        where: { option: { deletedAt: null } },
+        select: { option: { select: { productId: true } } },
+      },
     },
     orderBy: [{ channelId: 'asc' }, { updatedAt: 'desc' }],
   })
