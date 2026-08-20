@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { createOrUpdateLink } from '@/lib/sh/keyword-link'
 import { keywordKeys } from '@/lib/sh/keyword-normalize'
 
 /**
@@ -83,15 +82,34 @@ export async function absorbKeywords(target: AbsorbTarget): Promise<void> {
       for (const r of created) idByNormalized.set(r.normalized, r.id)
     }
 
-    // 링크는 findFirst+create 계약을 지키는 공용 헬퍼를 쓴다.
-    // (@@unique 는 NULL 열을 제약하지 않아서 upsert 로는 중복이 쌓인다.)
-    for (const item of items) {
-      const keywordId = idByNormalized.get(item.normalized)
-      if (!keywordId) continue
-      await createOrUpdateLink({
-        keywordId,
+    // 링크도 배치로 만든다. 키워드마다 findFirst+create 를 돌면 30개에 60회 왕복이고,
+    // 이 호출은 저장 응답 앞에 있어서 사용자가 그 지연을 그대로 기다린다.
+    // @@unique([keywordId, productId, listingId]) 는 NULL 열을 제약하지 못하므로
+    // createMany 의 skipDuplicates 에만 기대지 않고, 있는 링크를 먼저 읽어 뺀다.
+    const keywordIds = items
+      .map((i) => idByNormalized.get(i.normalized))
+      .filter((id): id is string => Boolean(id))
+    if (keywordIds.length === 0) return
+
+    const existingLinks = await prisma.keywordMasterLink.findMany({
+      where: {
+        keywordId: { in: keywordIds },
+        // 명시적 null — undefined 로 두면 "필터 없음"이 되어 다른 대상의 링크까지 잡는다.
         productId: target.productId,
         listingId: target.listingId,
+      },
+      select: { keywordId: true },
+    })
+    const linked = new Set(existingLinks.map((l) => l.keywordId))
+    const newLinks = keywordIds.filter((id) => !linked.has(id))
+    if (newLinks.length > 0) {
+      await prisma.keywordMasterLink.createMany({
+        data: newLinks.map((keywordId) => ({
+          keywordId,
+          productId: target.productId,
+          listingId: target.listingId,
+        })),
+        skipDuplicates: true,
       })
     }
   } catch (e) {
