@@ -91,26 +91,35 @@ export async function absorbKeywords(target: AbsorbTarget): Promise<void> {
       .filter((id): id is string => Boolean(id))
     if (keywordIds.length === 0) return
 
-    const existingLinks = await prisma.keywordMasterLink.findMany({
-      where: {
-        keywordId: { in: keywordIds },
-        // 명시적 null — undefined 로 두면 "필터 없음"이 되어 다른 대상의 링크까지 잡는다.
-        productId: target.productId,
-        listingId: target.listingId,
-      },
-      select: { keywordId: true },
-    })
-    const linked = new Set(existingLinks.map((l) => l.keywordId))
-    const newLinks = keywordIds.filter((id) => !linked.has(id))
-    if (newLinks.length > 0) {
-      await prisma.keywordMasterLink.createMany({
-        data: newLinks.map((keywordId) => ({
-          keywordId,
-          productId: target.productId,
-          listingId: target.listingId,
-        })),
-        skipDuplicates: true,
+    // 링크는 대상 조합마다 한 행씩 만든다(productId 행 / listingId 행을 분리) — 한 행에
+    // 둘 다 담으면 리스팅이 삭제될 때 Cascade 로 상품 귀속까지 같이 사라지고, 화면은
+    // listingId 유무만 보고 칩을 고르므로 상품 칩이 영영 뜨지 않는다.
+    const targets: Array<{ productId: string | null; listingId: string | null }> = []
+    if (target.productId) targets.push({ productId: target.productId, listingId: null })
+    if (target.listingId) targets.push({ productId: null, listingId: target.listingId })
+
+    for (const t of targets) {
+      const existingLinks = await prisma.keywordMasterLink.findMany({
+        where: {
+          keywordId: { in: keywordIds },
+          // 명시적 null — undefined 로 두면 "필터 없음"이 되어 다른 대상의 링크까지 잡는다.
+          productId: t.productId,
+          listingId: t.listingId,
+        },
+        select: { keywordId: true },
       })
+      const linked = new Set(existingLinks.map((l) => l.keywordId))
+      const newLinks = keywordIds.filter((id) => !linked.has(id))
+      if (newLinks.length > 0) {
+        await prisma.keywordMasterLink.createMany({
+          data: newLinks.map((keywordId) => ({
+            keywordId,
+            productId: t.productId,
+            listingId: t.listingId,
+          })),
+          skipDuplicates: true,
+        })
+      }
     }
   } catch (e) {
     // R3 계약: 흡수 실패는 저장을 되돌리지 않는다. 로깅만 하고 삼킨다.

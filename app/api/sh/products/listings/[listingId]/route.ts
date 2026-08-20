@@ -159,7 +159,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       managementName: true,
       keywords: true, // 부분 수정 시 "패치 이후 실제 값"으로 검증하기 위해 필요
       // §26 이력을 상품 단위로도 조회할 수 있게 귀속 상품을 추정하기 위한 최소 조회.
-      items: { select: { option: { select: { productId: true } } } },
+      // 삭제된 옵션은 제외 — 살아있는 옵션이 상품 하나뿐인데 삭제 옵션이 섞여 있으면
+      // 귀속이 조용히 null 이 되어(§흡수) 화면이 노출하는 상품 카드에서 저장이 실패한다.
+      items: {
+        where: { option: { deletedAt: null } },
+        select: { option: { select: { productId: true } } },
+      },
       channel: {
         select: { externalSource: true, channelTypeDef: { select: { isSalesChannel: true } } },
       },

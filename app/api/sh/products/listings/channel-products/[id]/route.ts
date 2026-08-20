@@ -288,7 +288,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       keywords: true,
       // 이력 귀속 상품 추정용. 채널상품은 리스팅 여러 개를 묶고 각 리스팅이 여러 옵션을
       // 가질 수 있어 단일 상품으로 떨어지지 않을 수 있다(GET 의 kind:'mixed' 참조).
-      listings: { select: { items: { select: { option: { select: { productId: true } } } } } },
+      // 삭제된 옵션은 제외 — listings/[listingId] 와 같은 귀속 오염을 막는다.
+      listings: {
+        select: {
+          items: {
+            where: { option: { deletedAt: null } },
+            select: { option: { select: { productId: true } } },
+          },
+        },
+      },
     },
   })
   if (!cp) return errorResponse('채널상품을 찾을 수 없습니다', 404)

@@ -43,11 +43,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
     where: {
       spaceId: resolved.space.id,
       items: { some: { option: { productId, deletedAt: null } } },
+      // 판매채널이 아닌 채널의 리스팅은 카드로 보여줘도 편집 저장이 400 으로 막힌다
+      // (listings/[listingId]/route.ts 의 SALES_CHANNEL_ONLY_MESSAGE 가드) — 애초에 제외한다.
+      channel: { channelTypeDef: { isSalesChannel: true } },
     },
     select: {
       id: true,
       channelId: true,
-      channelProductId: true,
       searchName: true,
       displayName: true,
       keywords: true,

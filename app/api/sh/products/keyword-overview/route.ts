@@ -59,7 +59,6 @@ export async function GET(req: NextRequest) {
             items: { some: { option: { productId: { in: productIds }, deletedAt: null } } },
           },
           select: {
-            id: true,
             channelId: true,
             items: {
               where: { option: { deletedAt: null } },
@@ -68,19 +67,17 @@ export async function GET(req: NextRequest) {
           },
         })
 
+  const productIdSet = new Set(productIds)
   const channelsByProduct = new Map<string, Set<string>>()
-  const listingsByProduct = new Map<string, Set<string>>()
   for (const l of listings) {
     const ids = new Set(l.items.map((it) => it.option.productId))
     // 혼합 세트는 세지 않는다 — keyword-cards 가 카드로 만들지 않는 것과 같은 기준이라야
     // 좌측의 "채널 N개" 와 우측 카드 수가 어긋나지 않는다.
     if (ids.size !== 1) continue
     const productId = [...ids][0]
-    if (!productIds.includes(productId)) continue
+    if (!productIdSet.has(productId)) continue
     if (!channelsByProduct.has(productId)) channelsByProduct.set(productId, new Set())
-    if (!listingsByProduct.has(productId)) listingsByProduct.set(productId, new Set())
     channelsByProduct.get(productId)!.add(l.channelId)
-    listingsByProduct.get(productId)!.add(l.id)
   }
 
   const data = rows.map((p) => ({
@@ -88,7 +85,6 @@ export async function GET(req: NextRequest) {
     name: p.internalName ?? p.name,
     brandName: p.brand?.name ?? null,
     channelCount: channelsByProduct.get(p.id)?.size ?? 0,
-    listingCount: listingsByProduct.get(p.id)?.size ?? 0,
   }))
 
   return NextResponse.json({ data, total, page, pageSize })
