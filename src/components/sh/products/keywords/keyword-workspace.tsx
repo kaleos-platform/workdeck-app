@@ -15,14 +15,22 @@ import { ProductRail } from './product-rail'
  */
 export function KeywordWorkspace() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+  const [tab, setTab] = useState('products')
+  const [dictVisited, setDictVisited] = useState(false)
+
+  function handleTabChange(next: string) {
+    setTab(next)
+    if (next === 'dictionary') setDictVisited(true)
+  }
 
   return (
-    <Tabs defaultValue="products">
+    <Tabs value={tab} onValueChange={handleTabChange}>
       <TabsList>
         <TabsTrigger value="products">상품별 관리</TabsTrigger>
         <TabsTrigger value="dictionary">키워드 사전</TabsTrigger>
       </TabsList>
-      <TabsContent value="products" className="mt-4">
+      {/* 상품 탭은 언마운트하지 않는다 — 저장 안 한 편집 내용이 탭 전환만으로 사라지면 안 된다. */}
+      <TabsContent value="products" forceMount className={tab === 'products' ? 'mt-4' : 'hidden'}>
         <div className="grid gap-4 md:grid-cols-[280px_1fr]">
           <Card className="p-3">
             <ProductRail
@@ -33,7 +41,13 @@ export function KeywordWorkspace() {
           <ProductKeywordPanel productId={selectedProductId} />
         </div>
       </TabsContent>
-      <TabsContent value="dictionary" className="mt-4">
+      {/* 사전 탭은 한 번 열기 전까지 마운트하지 않는다 — 안 쓰는 탭의 목록 조회를
+          페이지 진입마다 내보내지 않기 위해서. 한 번 열면 그 뒤로는 유지한다. */}
+      <TabsContent
+        value="dictionary"
+        {...(dictVisited ? { forceMount: true as const } : {})}
+        className={tab === 'dictionary' ? 'mt-4' : 'hidden'}
+      >
         <KeywordMasterView />
       </TabsContent>
     </Tabs>

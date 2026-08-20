@@ -31,6 +31,9 @@ export function ProductRail({ selectedProductId, onSelectProduct }: Props) {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  // 재시도 버튼은 debounced/page 를 안 바꿀 수도 있어(예: page 1 실패) 별도 카운터로 effect 를 다시 태운다.
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -53,6 +56,7 @@ export function ProductRail({ selectedProductId, onSelectProduct }: Props) {
         if (!res.ok) throw new Error('상품 조회 실패')
         const data: { data: ProductRow[]; total: number } = await res.json()
         if (cancelled) return
+        setError(false)
         setTotal(data.total ?? 0)
         setProducts((prev) => (page > 1 ? [...prev, ...(data.data ?? [])] : (data.data ?? [])))
         if (page === 1 && !selectedProductId && (data.data ?? []).length > 0) {
@@ -60,6 +64,7 @@ export function ProductRail({ selectedProductId, onSelectProduct }: Props) {
         }
       } catch {
         if (!cancelled) {
+          setError(true)
           setProducts([])
           setTotal(0)
         }
@@ -72,7 +77,7 @@ export function ProductRail({ selectedProductId, onSelectProduct }: Props) {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debounced, page])
+  }, [debounced, page, refreshKey])
 
   const hasMore = products.length < total
 
@@ -89,6 +94,18 @@ export function ProductRail({ selectedProductId, onSelectProduct }: Props) {
       </div>
       {loading && page === 1 ? (
         <p className="px-2 text-sm text-muted-foreground">불러오는 중...</p>
+      ) : error && products.length === 0 ? (
+        <div className="space-y-2 px-2">
+          <p className="text-sm text-muted-foreground">목록을 불러오지 못했습니다</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setRefreshKey((n) => n + 1)}
+          >
+            다시 시도
+          </Button>
+        </div>
       ) : products.length === 0 ? (
         <p className="px-2 text-sm text-muted-foreground">상품이 없습니다</p>
       ) : (
