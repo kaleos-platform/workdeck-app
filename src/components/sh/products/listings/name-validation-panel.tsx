@@ -73,13 +73,19 @@ export function NameValidationPanel({ value, onChange, field, rules, readOnly }:
             const Icon = SEVERITY_ICON[v.severity]
             const fix = fixFor(v)
             return (
-              <li key={`${v.code}-${i}`} className="flex items-start gap-1.5 text-xs">
-                <Icon
-                  className={cn('mt-0.5 h-3.5 w-3.5 shrink-0', SEVERITY_CLASS[v.severity])}
-                  aria-hidden="true"
-                />
-                <span className="sr-only">{SEVERITY_LABEL[v.severity]}</span>
-                <span className="flex-1">{v.message}</span>
+              // 수정 버튼은 메시지 바로 옆 — flex-1 로 밀어내면 넓은 폼에서 화면 끝까지 가서 안 보인다.
+              <li
+                key={`${v.code}-${i}`}
+                className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Icon
+                    className={cn('h-3.5 w-3.5 shrink-0', SEVERITY_CLASS[v.severity])}
+                    aria-hidden="true"
+                  />
+                  <span className="sr-only">{SEVERITY_LABEL[v.severity]}</span>
+                  {v.message}
+                </span>
                 {fix && (
                   <Button
                     type="button"
