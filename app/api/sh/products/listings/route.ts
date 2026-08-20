@@ -298,6 +298,7 @@ export async function POST(req: NextRequest) {
   // 여기서만 넘기면 같은 listing 이 생성/수정 때 서로 다른 경고를 내게 된다.
   const namingWarnings = await buildNamingWarnings(resolved.space.id, channelProduct.channelId, {
     searchName: input.searchName,
+    displayName,
     keywords: input.keywords ?? [],
   })
 

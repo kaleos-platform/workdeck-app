@@ -9,7 +9,7 @@ import {
   splitTokens,
   type KeywordKeys,
 } from './keyword-normalize'
-import type { KeywordRuleSet } from './keyword-rules'
+import { rulesForNameField, type KeywordRuleSet } from './keyword-rules'
 
 export type ViolationSeverity = 'ERROR' | 'WARN' | 'INFO'
 
@@ -438,19 +438,29 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
 }
 
 export type ListingNamingResult = {
-  name: NameValidationResult
+  searchName: NameValidationResult
+  /** 노출용을 주지 않았으면 null */
+  displayName: NameValidationResult | null
   keywords: KeywordValidationResult
   hasError: boolean
 }
 
 export function validateListingNaming(input: {
   searchName: string
+  displayName?: string
   keywords: string[]
   categoryNames?: string[]
   optionNames?: string[]
   rules: KeywordRuleSet
 }): ListingNamingResult {
-  const name = validateProductName(input.searchName, input.rules)
+  const searchName = validateProductName(
+    input.searchName,
+    rulesForNameField(input.rules, 'searchName')
+  )
+  // 노출용은 길이·금지어·특수문자만 본다. 검색어 중복 판정의 기준은 검색용이다(§10 Rule 1).
+  const displayName = input.displayName?.trim()
+    ? validateProductName(input.displayName, rulesForNameField(input.rules, 'displayName'))
+    : null
   const keywords = validateKeywords({
     keywords: input.keywords,
     productName: input.searchName,
@@ -459,7 +469,35 @@ export function validateListingNaming(input: {
     rules: input.rules,
   })
   const hasError =
-    name.violations.some((v) => v.severity === 'ERROR') ||
+    searchName.violations.some((v) => v.severity === 'ERROR') ||
+    (displayName?.violations.some((v) => v.severity === 'ERROR') ?? false) ||
     keywords.violations.some((v) => v.severity === 'ERROR')
-  return { name, keywords, hasError }
+  return { searchName, displayName, keywords, hasError }
+}
+
+// INFO 는 "안내"다(NameValidationPanel 도 같은 항목을 안내로 표기한다) — 저장 시 "규칙 위반"
+// 토스트에 세면 목표 구간 미만(예: 40자 미만) 상품명마다 오경보가 뜬다. ERROR/WARN만 위반으로 센다.
+const isCountableViolation = (v: Violation): boolean => v.severity !== 'INFO'
+
+/**
+ * 사용자가 고쳐야 할 실제 문제 개수.
+ *
+ * 노출용을 비우면 저장 시 검색용으로 채워진다(listings 라우트의 normalizeDisplayName).
+ * 그러면 같은 문자열이 두 번 검증돼 같은 위반이 두 번 나오고, 그대로 합산하면 사용자가
+ * 문제 1개를 2개로 본다. 그래서 두 이름이 같을 때는 노출용을 세지 않는다.
+ *
+ * 검증 자체를 건너뛰지 않는 이유: 폴백된 노출용도 실제로 저장되는 값이라, 채널의 노출용
+ * 상한이 검색용보다 엄격해지면 진짜 위반을 놓친다. 세는 단계에서만 정리한다.
+ */
+export function countNamingViolations(
+  result: ListingNamingResult,
+  names: { searchName: string; displayName: string }
+): number {
+  const mirrors = names.displayName.trim() === names.searchName.trim()
+  const count = (violations: Violation[]) => violations.filter(isCountableViolation).length
+  return (
+    count(result.searchName.violations) +
+    (mirrors ? 0 : count(result.displayName?.violations ?? [])) +
+    count(result.keywords.violations)
+  )
 }

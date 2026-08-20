@@ -10,7 +10,12 @@ import { loadKeywordRules } from './keyword-rules-query'
 export async function buildNamingWarnings(
   spaceId: string,
   channelId: string | null | undefined,
-  input: { searchName: string; keywords: unknown; optionNames?: string[] }
+  input: {
+    searchName: string
+    displayName?: string | null
+    keywords: unknown
+    optionNames?: string[]
+  }
 ): Promise<ListingNamingResult | null> {
   try {
     const rules = await loadKeywordRules(spaceId, channelId)
@@ -19,6 +24,7 @@ export async function buildNamingWarnings(
       : []
     return validateListingNaming({
       searchName: input.searchName ?? '',
+      displayName: input.displayName ?? undefined,
       keywords,
       optionNames: input.optionNames,
       rules,

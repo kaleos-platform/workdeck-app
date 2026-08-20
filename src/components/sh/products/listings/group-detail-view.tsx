@@ -29,7 +29,11 @@ import {
 import { SELLER_HUB_LISTING_NEW_PATH, SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
 import { SaveStatusChip } from '@/components/sh/save-status-chip'
 import { computeDiscount, computeEffectiveStatus } from '@/lib/sh/listing-calc'
-import { DEFAULT_KEYWORD_RULES } from '@/lib/sh/keyword-rules'
+import {
+  DEFAULT_KEYWORD_RULES,
+  resolveKeywordRules,
+  withChannelDefaults,
+} from '@/lib/sh/keyword-rules'
 import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
 
@@ -210,6 +214,19 @@ export function GroupDetailView({ channelProductId }: Props) {
     }
     return Array.from(set)
   }, [data])
+
+  // 기본 정보 카드와 같은 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서
+  // 내려오는 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다.
+  // 상한 조회는 채널명만 쓴다 — 그룹 상세 API 가 externalSource 를 내려주지 않는다.
+  const channelName = data?.channel.name ?? null
+  const rules = useMemo(
+    () =>
+      withChannelDefaults(
+        resolveKeywordRules(null),
+        channelName ? { name: channelName, externalSource: null } : null
+      ),
+    [channelName]
+  )
 
   const keywordSuggestions = useMemo(
     () =>
@@ -1245,6 +1262,7 @@ export function GroupDetailView({ channelProductId }: Props) {
             suggestions={keywordSuggestions}
             productName={baseSearchName}
             optionNames={optionNames}
+            rules={rules}
           />
           {/* 채널상품 그룹은 리스팅이 여럿이라 귀속 상품을 하나로 특정할 수 없다.
               링크 없이 키워드만 마스터로 올린다(연결은 키워드 관리에서 붙인다). */}
