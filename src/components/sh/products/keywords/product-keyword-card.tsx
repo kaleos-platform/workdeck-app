@@ -112,12 +112,17 @@ export function ProductKeywordCard({ card, onSaved }: Props) {
               ...(changeMeta ?? {}),
             }
           : {
-              // 바뀐 필드만 담는다. displayName 빈 값은 "설정 안 함"(null)이지 '' 가 아니다.
+              // 바뀐 필드만 담는다.
+              // displayName 은 null 을 보내면 안 된다 — ProductListing 쪽 스키마는
+              // nullable 이 아니고(schemas.ts listingOptionalNameSchema), 라우트가 빈 값을
+              // searchName 으로 채운다. null 을 보내면 Zod 가 400 으로 막는다.
+              // (null 관례는 ChannelProduct.baseDisplayName 쪽 얘기고, 그 분기는 애초에
+              //  이름 필드를 보내지 않는다.)
               ...(normalizedSearchName !== card.searchName
                 ? { searchName: normalizedSearchName }
                 : {}),
               ...(normalizedDisplayName !== (card.displayName ?? '')
-                ? { displayName: normalizedDisplayName || null }
+                ? { displayName: normalizedDisplayName }
                 : {}),
               keywords,
               ...(changeMeta ?? {}),

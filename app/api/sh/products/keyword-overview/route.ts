@@ -21,7 +21,16 @@ export async function GET(req: NextRequest) {
   const where: Prisma.InvProductWhereInput = {
     spaceId: resolved.space.id,
     status: 'ACTIVE',
-    options: { some: { deletedAt: null, listingItems: { some: {} } } },
+    // 목록에 오르는 조건도 집계와 같은 채널 기준을 쓴다 — 판매채널이 아닌 곳에만
+    // 걸린 상품이 "채널 0개"로 목록에 남으면 고를 이유가 없는 행이 된다.
+    options: {
+      some: {
+        deletedAt: null,
+        listingItems: {
+          some: { listing: { channel: { channelTypeDef: { isSalesChannel: true } } } },
+        },
+      },
+    },
   }
   if (q) {
     where.OR = [
@@ -56,6 +65,9 @@ export async function GET(req: NextRequest) {
       : await prisma.productListing.findMany({
           where: {
             spaceId: resolved.space.id,
+            // 카드 라우트와 같은 채널 조건을 건다 — 한쪽만 걸면 좌측 "채널 N개" 가
+            // 우측 카드 수보다 커진다(혼합 세트 규칙을 양쪽에 복제한 것과 같은 이유).
+            channel: { channelTypeDef: { isSalesChannel: true } },
             items: { some: { option: { productId: { in: productIds }, deletedAt: null } } },
           },
           select: {
