@@ -1,9 +1,11 @@
 // 재고 대조 파일 파서 — 쿠팡 health / 3PL 현재고조회 / 범용 포맷을 자동 감지한다.
 import * as XLSX from 'xlsx'
+import { syntheticExternalCode } from './reconciliation-external-code'
 
 export type ParsedRow = {
-  // stock-status export는 externalCode가 비어있을 수 있어 옵셔널.
-  // 다른 포맷(coupang_health/threepl_current/generic)은 항상 채워서 푸시.
+  // 타입은 옵셔널이지만 모든 파서가 항상 채운다.
+  // stock-status export는 파일에 코드 컬럼이 없으면 상품명+옵션명 기반 합성 코드를 쓴다
+  // (수동 매칭을 저장할 키가 필요 — reconciliation-external-code.ts).
   externalCode?: string
   externalName?: string
   externalOptionName?: string
@@ -175,7 +177,8 @@ function parseStockStatusExport(rawData: unknown[][]): ParsedRow[] {
     }
 
     rows.push({
-      externalCode,
+      // 위 가드를 통과했으므로 코드가 없으면 externalName 은 반드시 존재한다.
+      externalCode: externalCode ?? syntheticExternalCode(externalName!, externalOptionName),
       externalName,
       externalOptionName,
       externalBrandName,

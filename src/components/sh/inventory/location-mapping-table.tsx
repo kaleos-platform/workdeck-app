@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Loader2, Pencil, Trash2 } from 'lucide-react'
+import { isSyntheticExternalCode } from '@/lib/inv/reconciliation-external-code'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -189,7 +190,14 @@ export function LocationMappingTable({ locationId }: Props) {
           <TableBody>
             {mappings.map((m) => (
               <TableRow key={m.id}>
-                <TableCell className="font-mono text-xs">{m.externalCode}</TableCell>
+                <TableCell className="font-mono text-xs">
+                  {isSyntheticExternalCode(m.externalCode) ? (
+                    // 코드 없는 파일용 합성 키 — 사용자에게 보여줄 값이 아니다(옆 외부 상품명이 대신 읽힌다)
+                    <span className="text-muted-foreground/50">—</span>
+                  ) : (
+                    m.externalCode
+                  )}
+                </TableCell>
                 <TableCell>{renderOptionCell(m.items)}</TableCell>
                 <TableCell className="text-muted-foreground">
                   {m.externalName ?? '-'}
