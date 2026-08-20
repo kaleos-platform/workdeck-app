@@ -76,10 +76,11 @@ export function ProductKeywordCard({ card, onSaved }: Props) {
     searchName !== card.searchName ||
     displayName !== (card.displayName ?? '') ||
     diff.keywordsChanged
-  // R6 — 상품명 또는 키워드가 바뀌면 사유가 필요하다. displayName 만 바뀌었을 때는
-  // diffKeywordChange 가 이름 변경으로 잡지 않으므로 여기서 따로 본다.
-  const gateRequired =
-    diff.nameChanged || diff.keywordsChanged || displayName !== (card.displayName ?? '')
+  // 게이트는 서버의 기록 조건과 같은 함수(diffKeywordChange)로 판정한다 — searchName·keywords 만
+  // 본다. displayName(노출용 상품명)은 KeywordChangeLog 대상이 아니라서, 여기서만 사유를
+  // 요구하면 사용자가 고른 사유가 서버에서 조용히 버려진다. 노출용만 바꾼 저장은 dirty 는
+  // true 지만 게이트는 걸리지 않고 바로 PATCH 된다.
+  const gateRequired = diff.changed
 
   async function handleSave(changeMeta?: KeywordChangeMeta) {
     if (gateRequired && !changeMeta) {
