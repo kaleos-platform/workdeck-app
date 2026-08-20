@@ -16,7 +16,6 @@ type ProductRow = {
   name: string
   brandName: string | null
   channelCount: number
-  listingCount: number
 }
 
 type Props = {
