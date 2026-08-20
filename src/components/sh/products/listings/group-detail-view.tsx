@@ -26,7 +26,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { SELLER_HUB_LISTING_NEW_PATH, SELLER_HUB_LISTINGS_PATH } from '@/lib/deck-routes'
+import {
+  SELLER_HUB_LISTING_NEW_PATH,
+  SELLER_HUB_LISTINGS_PATH,
+  getSellerHubPricingScenarioPath,
+} from '@/lib/deck-routes'
 import { SaveStatusChip } from '@/components/sh/save-status-chip'
 import { computeDiscount, computeEffectiveStatus } from '@/lib/sh/listing-calc'
 import {
@@ -51,6 +55,7 @@ import {
   joinName,
 } from './group-base-info-card'
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
+import { PricingScenarioHistoryPanel } from '../pricing-sim/pricing-scenario-history-panel'
 
 /** 게이트 보류 중 잠기는 액션의 안내 문구 */
 const GATE_BLOCK_HINT = '상품명·검색어 변경 사유를 먼저 입력해 주세요'
@@ -1331,6 +1336,23 @@ export function GroupDetailView({ channelProductId }: Props) {
             onDeleteRequest={requestDeleteOne}
             dirtyIds={dirtyRowIds}
             disabled={mutating}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">가격 시뮬레이션 내역</CardTitle>
+          <CardDescription>
+            이 판매채널 상품과 {data.channel.name} 채널에 함께 연결된 가격 시뮬레이션입니다.
+            최신순으로 표시됩니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PricingScenarioHistoryPanel
+            channelProductId={channelProductId}
+            onRowClick={(id) => router.push(getSellerHubPricingScenarioPath(id))}
+            emptyMessage="이 판매채널 상품과 채널에 대한 가격 시뮬레이션 내역이 없습니다."
           />
         </CardContent>
       </Card>

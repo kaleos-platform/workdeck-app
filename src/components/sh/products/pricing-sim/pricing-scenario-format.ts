@@ -8,6 +8,8 @@ export type ScenarioRow = {
   name: string
   memo: string | null
   productIds: string[]
+  channelIds?: string[]
+  channelNames?: string[]
   summary: PricingSimSummary | null
   updatedAt: string
 }
