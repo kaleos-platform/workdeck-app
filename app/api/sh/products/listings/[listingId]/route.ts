@@ -12,6 +12,7 @@ import {
 import { productDisplayName } from '@/lib/sh/product-display'
 import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
+import { absorbKeywords } from '@/lib/sh/keyword-absorb'
 
 type Params = { params: Promise<{ listingId: string }> }
 const SALES_CHANNEL_ONLY_MESSAGE = '판매채널 상품은 판매채널 유형의 채널에만 등록할 수 있습니다'
@@ -267,6 +268,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         },
       })
     }
+  })
+
+  // 저장이 커밋된 뒤에 흡수한다 — 트랜잭션 안에 넣으면 흡수 실패가 저장을 되돌린다.
+  await absorbKeywords({
+    spaceId: resolved.space.id,
+    keywords: nextKeywords,
+    productId: logProductId,
+    listingId,
   })
 
   // 저장 성공 이후 계산. 부분 수정이므로 요청 본문이 아니라 "패치 이후 유효값"을 검증한다.

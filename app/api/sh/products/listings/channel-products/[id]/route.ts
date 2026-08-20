@@ -14,6 +14,7 @@ import {
 import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
 import { keywordChangeReasonFields } from '@/lib/sh/schemas'
+import { absorbKeywords } from '@/lib/sh/keyword-absorb'
 
 /**
  * 채널상품 단건 조회(GET) / 수정(PATCH) / 삭제(DELETE).
@@ -355,6 +356,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       })
     }
     return row
+  })
+
+  // R2: 채널상품 키워드는 정의상 상품 단위다. 자식 리스팅으로 팬아웃하지 않는다.
+  await absorbKeywords({
+    spaceId: resolved.space.id,
+    keywords: nextKeywords,
+    productId: logProductId,
+    listingId: null,
   })
 
   // 저장 성공 이후 계산 — updated 가 곧 "패치 이후 유효값"이다.
