@@ -13,21 +13,6 @@ import { NameValidationPanel } from './name-validation-panel'
 
 const MAX_NAME_LENGTH = 200
 
-export type GroupListingForBase = {
-  id: string
-  searchName: string
-  displayName: string
-  managementName: string | null
-  internalCode: string | null
-  memo: string | null
-  items: Array<{
-    optionId: string
-    attributeValues: Record<string, string>
-  }>
-}
-
-export type OptionAttribute = { name: string; values: Array<{ value: string }> }
-
 type Props = {
   channelName: string
   baseSearchName: string
@@ -185,97 +170,4 @@ export function GroupBaseInfoCard({
       </CardContent>
     </Card>
   )
-}
-
-export function buildSuffix(listing: GroupListingForBase, attrs: OptionAttribute[]): string {
-  if (listing.items.length === 0) return ''
-  // 모든 item이 공통으로 가지는 속성값만 suffix로 사용 (묶음 item일 때 안전).
-  // 단, 공통값이라도 listing 이름 끝에 실제로 들어가지 않을 수 있으므로 후처리는 stripSuffix에서.
-  const parts: string[] = []
-  for (const a of attrs) {
-    const first = listing.items[0].attributeValues?.[a.name]
-    if (!first) continue
-    const allSame = listing.items.every((it) => (it.attributeValues ?? {})[a.name] === first)
-    if (allSame) parts.push(first)
-  }
-  return parts.join(' ')
-}
-
-export function joinName(base: string, suffix: string): string {
-  if (!base) return suffix
-  if (!suffix) return base
-  return `${base} ${suffix}`
-}
-
-function stripSuffix(value: string | null, suffix: string): string {
-  if (!value) return ''
-  // 끝의 묶음 라벨(` #N ...`)과 ` N개` 차원을 먼저 제거
-  let v = value.replace(/\s+#\d+\s.*$/, '').replace(/\s+\d+개$/, '')
-  if (suffix && v.endsWith(suffix)) {
-    v = v.slice(0, v.length - suffix.length).trimEnd()
-  }
-  return v
-}
-
-export function deriveBaseValues(
-  listings: GroupListingForBase[],
-  attrs: OptionAttribute[]
-): {
-  baseSearchName: string
-  baseDisplayName: string
-  baseManagementName: string
-  baseInternalCode: string
-  memo: string
-  inconsistentBases: string[]
-} {
-  const searchBases: string[] = []
-  const displayBases: string[] = []
-  const managementBases: string[] = []
-  const codeBases: string[] = []
-  for (const l of listings) {
-    const suffix = buildSuffix(l, attrs)
-    searchBases.push(stripSuffix(l.searchName, suffix))
-    displayBases.push(stripSuffix(l.displayName, suffix))
-    managementBases.push(stripSuffix(l.managementName, suffix))
-    codeBases.push(stripSuffix(l.internalCode, suffix))
-  }
-
-  const inconsistent: string[] = []
-  const baseSearchName = mostCommon(searchBases)
-  if (new Set(searchBases.filter((s) => s)).size > 1) inconsistent.push('검색명')
-  const rawBaseDisplayName = mostCommon(displayBases)
-  const sameAsSearchForAll = listings.every((_, idx) => displayBases[idx] === searchBases[idx])
-  if (new Set(displayBases.filter((s) => s)).size > 1) inconsistent.push('노출명')
-  const baseDisplayName = sameAsSearchForAll ? '' : rawBaseDisplayName
-  const baseManagementName = mostCommon(managementBases)
-  if (new Set(managementBases.filter((s) => s)).size > 1) inconsistent.push('관리명')
-  const baseInternalCode = mostCommon(codeBases)
-  if (new Set(codeBases.filter((s) => s)).size > 1) inconsistent.push('관리 코드')
-
-  const memos = listings.map((l) => l.memo ?? '')
-  const memo = mostCommon(memos)
-
-  return {
-    baseSearchName,
-    baseDisplayName,
-    baseManagementName,
-    baseInternalCode,
-    memo,
-    inconsistentBases: inconsistent,
-  }
-}
-
-function mostCommon(values: string[]): string {
-  if (values.length === 0) return ''
-  const counts = new Map<string, number>()
-  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1)
-  let best = values[0]
-  let bestCount = 0
-  for (const [v, c] of counts) {
-    if (c > bestCount || (c === bestCount && v.length > best.length)) {
-      best = v
-      bestCount = c
-    }
-  }
-  return best
 }
