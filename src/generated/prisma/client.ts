@@ -235,6 +235,16 @@ export type InvProduct = Prisma.InvProductModel
  */
 export type AdCampaignProductMap = Prisma.AdCampaignProductMapModel
 /**
+ * Model ProductExtractionJob
+ * 
+ */
+export type ProductExtractionJob = Prisma.ProductExtractionJobModel
+/**
+ * Model ProductExtractionSource
+ * 
+ */
+export type ProductExtractionSource = Prisma.ProductExtractionSourceModel
+/**
  * Model InvProductOption
  * 
  */

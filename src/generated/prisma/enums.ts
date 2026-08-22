@@ -227,6 +227,26 @@ export const InvStorageLocationType = {
 export type InvStorageLocationType = (typeof InvStorageLocationType)[keyof typeof InvStorageLocationType]
 
 
+export const ProductExtractionStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED'
+} as const
+
+export type ProductExtractionStatus = (typeof ProductExtractionStatus)[keyof typeof ProductExtractionStatus]
+
+
+export const ProductExtractionSourceKind = {
+  URL: 'URL',
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  PDF: 'PDF'
+} as const
+
+export type ProductExtractionSourceKind = (typeof ProductExtractionSourceKind)[keyof typeof ProductExtractionSourceKind]
+
+
 export const DelBatchStatus = {
   DRAFT: 'DRAFT',
   COMPLETED: 'COMPLETED'
