@@ -32,6 +32,15 @@ type ProductData = {
   groupId: string | null
 }
 
+/** AI 추출 패널이 폼 상태에 직접 주입할 수 있는 필드 — 서버가 직접 쓰면 autosave가 덮어쓴다 */
+export type ProductApplyPatch = {
+  description?: string | null
+  features?: string[]
+  certifications?: string[]
+  manufacturer?: string | null
+  manufactureCountry?: string | null
+}
+
 type Props = {
   productId: string
   onSaved?: () => void
@@ -43,6 +52,12 @@ type Props = {
   onError?: (msg: string | null) => void
   /** 자동 저장 재시도 트리거를 상위에서 호출할 수 있게 노출 */
   onRetryRefAvailable?: (retry: () => void) => void
+  /**
+   * 상위(AI 추출 패널)가 폼 상태에 직접 값을 주입할 수 있게 노출한다.
+   * 반환된 Promise는 이 주입으로 촉발된 autosave가 성공하면 resolve, 실패하면 reject된다 —
+   * 호출자는 이 Promise가 끝난 뒤에만 "적용됨"으로 확정해야 한다.
+   */
+  onApplyRefAvailable?: (apply: (patch: ProductApplyPatch) => Promise<void>) => void
 }
 
 export function ProductBasicForm({
@@ -52,12 +67,15 @@ export function ProductBasicForm({
   onSavingChange,
   onError,
   onRetryRefAvailable,
+  onApplyRefAvailable,
 }: Props) {
   const [data, setData] = useState<ProductData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeSavePromiseRef = useRef<Promise<void> | null>(null)
+  // onApplyRefAvailable로 주입된 값이 저장 완료(성공/실패)될 때까지 기다리는 호출자들
+  const applyResolversRef = useRef<Array<{ resolve: () => void; reject: (err: Error) => void }>>([])
 
   const [brands, setBrands] = useState<Brand[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -188,8 +206,11 @@ export function ProductBasicForm({
         const savedProd: ProductData = resData.product ?? resData
         setData(savedProd)
         onSaved?.()
+        applyResolversRef.current.splice(0).forEach((r) => r.resolve())
       } catch (err) {
-        onError?.(err instanceof Error ? err.message : '저장 실패')
+        const message = err instanceof Error ? err.message : '저장 실패'
+        onError?.(message)
+        applyResolversRef.current.splice(0).forEach((r) => r.reject(new Error(message)))
       } finally {
         setSaving(false)
         activeSavePromiseRef.current = null
@@ -255,6 +276,24 @@ export function ProductBasicForm({
       })
     }
   }, [onRetryRefAvailable, onError])
+
+  // AI 추출 패널 등 상위가 폼 상태에 직접 값을 주입할 수 있는 핸들 노출.
+  // 서버가 직접 DB에 쓰면 사용자가 다른 필드를 편집하는 순간 autosave가 덮어쓰므로,
+  // 반드시 이 함수로 로컬 state를 갱신해 기존 dirty/autosave 경로를 태워야 한다.
+  useEffect(() => {
+    if (!onApplyRefAvailable) return
+    onApplyRefAvailable((patch: ProductApplyPatch) => {
+      if (patch.description !== undefined) setDescription(patch.description ?? '')
+      if (patch.features !== undefined) setFeatures(patch.features)
+      if (patch.certifications !== undefined) setCertifications(patch.certifications)
+      if (patch.manufacturer !== undefined) setManufacturer(patch.manufacturer ?? '')
+      if (patch.manufactureCountry !== undefined)
+        setManufactureCountry(patch.manufactureCountry ?? '')
+      return new Promise<void>((resolve, reject) => {
+        applyResolversRef.current.push({ resolve, reject })
+      })
+    })
+  }, [onApplyRefAvailable])
 
   // 언마운트 정리
   useEffect(() => {
