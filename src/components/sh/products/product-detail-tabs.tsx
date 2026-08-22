@@ -12,7 +12,11 @@ import {
   SELLER_HUB_PRODUCTS_LIST_PATH,
   getSellerHubPricingScenarioPath,
 } from '@/lib/deck-routes'
-import { ProductBasicForm } from '@/components/sh/products/product-basic-form'
+import {
+  ProductBasicForm,
+  type ProductApplyPatch,
+} from '@/components/sh/products/product-basic-form'
+import { ProductExtractPanel } from '@/components/sh/products/extract/product-extract-panel'
 import { ProductCodeField } from '@/components/sh/products/product-code-field'
 import { ProductAttributesEditor } from '@/components/sh/products/product-attributes-editor'
 import { ProductOptionsTable } from '@/components/sh/products/product-options-table'
@@ -25,7 +29,7 @@ type Props = {
   productId: string
 }
 
-type SectionKey = 'basic' | 'options' | 'production' | 'listings' | 'pricing'
+type SectionKey = 'basic' | 'source' | 'options' | 'production' | 'listings' | 'pricing'
 
 const SECTIONS: { key: SectionKey; label: string; title: string; description: string }[] = [
   {
@@ -33,6 +37,12 @@ const SECTIONS: { key: SectionKey; label: string; title: string; description: st
     label: '기본 정보',
     title: '기본 정보',
     description: '상품명·브랜드·제조사·특징·인증 등 상품 메타데이터',
+  },
+  {
+    key: 'source',
+    label: 'AI 상품정보 추출',
+    title: 'AI 상품정보 추출',
+    description: '상세페이지 URL·이미지·PDF에서 설명·특징·인증정보를 추출해 기본 정보에 반영합니다',
   },
   {
     key: 'options',
@@ -82,6 +92,11 @@ export function ProductDetailTabs({ productId }: Props) {
   const basicRetryRef = useRef<(() => void) | null>(null)
   const codeRetryRef = useRef<(() => void) | null>(null)
   const optionsRetryRef = useRef<(() => void) | null>(null)
+  // AI 추출 패널이 기본 정보 폼 state에 직접 값을 주입할 수 있는 핸들
+  const basicApplyRef = useRef<((patch: ProductApplyPatch) => Promise<void>) | null>(null)
+  // basicSaving은 autosave 진행 여부만 나타내 dirty(입력 직후)인 순간을 못 잡는다 —
+  // 적용 버튼은 dirty 상태에서도 눌러선 안 되므로 둘을 합쳐 노출한다.
+  const basicBusy = basicSaving || basicDirty > 0
 
   const dirtyCount = basicDirty + codeDirty + optionsDirty
   const saving = basicSaving || codeSaving || optionsSaving
@@ -118,6 +133,7 @@ export function ProductDetailTabs({ productId }: Props) {
 
   const sectionRefs = useRef<Record<SectionKey, HTMLElement | null>>({
     basic: null,
+    source: null,
     options: null,
     production: null,
     listings: null,
@@ -240,6 +256,30 @@ export function ProductDetailTabs({ productId }: Props) {
           onRetryRefAvailable={(fn) => {
             basicRetryRef.current = fn
           }}
+          onApplyRefAvailable={(fn) => {
+            basicApplyRef.current = fn
+          }}
+        />
+      </section>
+
+      <section
+        id="section-source"
+        data-section="source"
+        ref={(el) => {
+          sectionRefs.current.source = el
+        }}
+        className="scroll-mt-24 space-y-4 border-t pt-8"
+      >
+        <SectionHeader title={SECTIONS[1].title} description={SECTIONS[1].description} />
+        <ProductExtractPanel
+          productId={productId}
+          basicBusy={basicBusy}
+          onApply={(patch) => {
+            if (!basicApplyRef.current) {
+              return Promise.reject(new Error('기본 정보 폼이 아직 준비되지 않았습니다'))
+            }
+            return basicApplyRef.current(patch)
+          }}
         />
       </section>
 
@@ -251,7 +291,7 @@ export function ProductDetailTabs({ productId }: Props) {
         }}
         className="scroll-mt-24 space-y-6 border-t pt-8"
       >
-        <SectionHeader title={SECTIONS[1].title} description={SECTIONS[1].description} />
+        <SectionHeader title={SECTIONS[2].title} description={SECTIONS[2].description} />
         {/* refreshKey로 리마운트하지 않는다 — 다른 섹션 저장이 입력 중인 제품코드를 날리면 안 됨 */}
         <ProductCodeField
           productId={productId}
@@ -289,7 +329,7 @@ export function ProductDetailTabs({ productId }: Props) {
         }}
         className="scroll-mt-24 space-y-4 border-t pt-8"
       >
-        <SectionHeader title={SECTIONS[2].title} description={SECTIONS[2].description} />
+        <SectionHeader title={SECTIONS[3].title} description={SECTIONS[3].description} />
         <ProductProductionRunsPanel key={`production-${refreshKey}`} productId={productId} />
       </section>
 
@@ -301,7 +341,7 @@ export function ProductDetailTabs({ productId }: Props) {
         }}
         className="scroll-mt-24 space-y-4 border-t pt-8"
       >
-        <SectionHeader title={SECTIONS[3].title} description={SECTIONS[3].description} />
+        <SectionHeader title={SECTIONS[4].title} description={SECTIONS[4].description} />
         <ProductListingsPanel key={`listings-${refreshKey}`} productId={productId} />
       </section>
 
@@ -314,8 +354,8 @@ export function ProductDetailTabs({ productId }: Props) {
         className="scroll-mt-24 space-y-4 border-t pt-8"
       >
         <SectionHeader
-          title={SECTIONS[4].title}
-          description={SECTIONS[4].description}
+          title={SECTIONS[5].title}
+          description={SECTIONS[5].description}
           action={
             <Button size="sm" variant="outline" asChild>
               <Link href={`${SELLER_HUB_PRICING_SIM_NEW_PATH}?productId=${productId}`}>

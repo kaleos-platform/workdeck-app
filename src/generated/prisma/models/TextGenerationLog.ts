@@ -52,6 +52,7 @@ export type TextGenerationLogMinAggregateOutputType = {
   latencyMs: number | null
   errorCode: string | null
   errorMessage: string | null
+  creditMonth: string | null
   createdAt: Date | null
 }
 
@@ -69,6 +70,7 @@ export type TextGenerationLogMaxAggregateOutputType = {
   latencyMs: number | null
   errorCode: string | null
   errorMessage: string | null
+  creditMonth: string | null
   createdAt: Date | null
 }
 
@@ -86,6 +88,7 @@ export type TextGenerationLogCountAggregateOutputType = {
   latencyMs: number
   errorCode: number
   errorMessage: number
+  creditMonth: number
   createdAt: number
   _all: number
 }
@@ -117,6 +120,7 @@ export type TextGenerationLogMinAggregateInputType = {
   latencyMs?: true
   errorCode?: true
   errorMessage?: true
+  creditMonth?: true
   createdAt?: true
 }
 
@@ -134,6 +138,7 @@ export type TextGenerationLogMaxAggregateInputType = {
   latencyMs?: true
   errorCode?: true
   errorMessage?: true
+  creditMonth?: true
   createdAt?: true
 }
 
@@ -151,6 +156,7 @@ export type TextGenerationLogCountAggregateInputType = {
   latencyMs?: true
   errorCode?: true
   errorMessage?: true
+  creditMonth?: true
   createdAt?: true
   _all?: true
 }
@@ -255,6 +261,7 @@ export type TextGenerationLogGroupByOutputType = {
   latencyMs: number | null
   errorCode: string | null
   errorMessage: string | null
+  creditMonth: string | null
   createdAt: Date
   _count: TextGenerationLogCountAggregateOutputType | null
   _avg: TextGenerationLogAvgAggregateOutputType | null
@@ -295,6 +302,7 @@ export type TextGenerationLogWhereInput = {
   latencyMs?: Prisma.IntNullableFilter<"TextGenerationLog"> | number | null
   errorCode?: Prisma.StringNullableFilter<"TextGenerationLog"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"TextGenerationLog"> | string | null
+  creditMonth?: Prisma.StringNullableFilter<"TextGenerationLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"TextGenerationLog"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
 }
@@ -313,6 +321,7 @@ export type TextGenerationLogOrderByWithRelationInput = {
   latencyMs?: Prisma.SortOrderInput | Prisma.SortOrder
   errorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  creditMonth?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
 }
@@ -334,6 +343,7 @@ export type TextGenerationLogWhereUniqueInput = Prisma.AtLeast<{
   latencyMs?: Prisma.IntNullableFilter<"TextGenerationLog"> | number | null
   errorCode?: Prisma.StringNullableFilter<"TextGenerationLog"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"TextGenerationLog"> | string | null
+  creditMonth?: Prisma.StringNullableFilter<"TextGenerationLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"TextGenerationLog"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
 }, "id">
@@ -352,6 +362,7 @@ export type TextGenerationLogOrderByWithAggregationInput = {
   latencyMs?: Prisma.SortOrderInput | Prisma.SortOrder
   errorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  creditMonth?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.TextGenerationLogCountOrderByAggregateInput
   _avg?: Prisma.TextGenerationLogAvgOrderByAggregateInput
@@ -377,6 +388,7 @@ export type TextGenerationLogScalarWhereWithAggregatesInput = {
   latencyMs?: Prisma.IntNullableWithAggregatesFilter<"TextGenerationLog"> | number | null
   errorCode?: Prisma.StringNullableWithAggregatesFilter<"TextGenerationLog"> | string | null
   errorMessage?: Prisma.StringNullableWithAggregatesFilter<"TextGenerationLog"> | string | null
+  creditMonth?: Prisma.StringNullableWithAggregatesFilter<"TextGenerationLog"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TextGenerationLog"> | Date | string
 }
 
@@ -393,6 +405,7 @@ export type TextGenerationLogCreateInput = {
   latencyMs?: number | null
   errorCode?: string | null
   errorMessage?: string | null
+  creditMonth?: string | null
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutTextGenerationLogsInput
 }
@@ -411,6 +424,7 @@ export type TextGenerationLogUncheckedCreateInput = {
   latencyMs?: number | null
   errorCode?: string | null
   errorMessage?: string | null
+  creditMonth?: string | null
   createdAt?: Date | string
 }
 
@@ -427,6 +441,7 @@ export type TextGenerationLogUpdateInput = {
   latencyMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutTextGenerationLogsNestedInput
 }
@@ -445,6 +460,7 @@ export type TextGenerationLogUncheckedUpdateInput = {
   latencyMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -462,6 +478,7 @@ export type TextGenerationLogCreateManyInput = {
   latencyMs?: number | null
   errorCode?: string | null
   errorMessage?: string | null
+  creditMonth?: string | null
   createdAt?: Date | string
 }
 
@@ -478,6 +495,7 @@ export type TextGenerationLogUpdateManyMutationInput = {
   latencyMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -495,6 +513,7 @@ export type TextGenerationLogUncheckedUpdateManyInput = {
   latencyMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -522,6 +541,7 @@ export type TextGenerationLogCountOrderByAggregateInput = {
   latencyMs?: Prisma.SortOrder
   errorCode?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
+  creditMonth?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -545,6 +565,7 @@ export type TextGenerationLogMaxOrderByAggregateInput = {
   latencyMs?: Prisma.SortOrder
   errorCode?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
+  creditMonth?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -562,6 +583,7 @@ export type TextGenerationLogMinOrderByAggregateInput = {
   latencyMs?: Prisma.SortOrder
   errorCode?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
+  creditMonth?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -626,6 +648,7 @@ export type TextGenerationLogCreateWithoutSpaceInput = {
   latencyMs?: number | null
   errorCode?: string | null
   errorMessage?: string | null
+  creditMonth?: string | null
   createdAt?: Date | string
 }
 
@@ -642,6 +665,7 @@ export type TextGenerationLogUncheckedCreateWithoutSpaceInput = {
   latencyMs?: number | null
   errorCode?: string | null
   errorMessage?: string | null
+  creditMonth?: string | null
   createdAt?: Date | string
 }
 
@@ -688,6 +712,7 @@ export type TextGenerationLogScalarWhereInput = {
   latencyMs?: Prisma.IntNullableFilter<"TextGenerationLog"> | number | null
   errorCode?: Prisma.StringNullableFilter<"TextGenerationLog"> | string | null
   errorMessage?: Prisma.StringNullableFilter<"TextGenerationLog"> | string | null
+  creditMonth?: Prisma.StringNullableFilter<"TextGenerationLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"TextGenerationLog"> | Date | string
 }
 
@@ -704,6 +729,7 @@ export type TextGenerationLogCreateManySpaceInput = {
   latencyMs?: number | null
   errorCode?: string | null
   errorMessage?: string | null
+  creditMonth?: string | null
   createdAt?: Date | string
 }
 
@@ -720,6 +746,7 @@ export type TextGenerationLogUpdateWithoutSpaceInput = {
   latencyMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -736,6 +763,7 @@ export type TextGenerationLogUncheckedUpdateWithoutSpaceInput = {
   latencyMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -752,6 +780,7 @@ export type TextGenerationLogUncheckedUpdateManyWithoutSpaceInput = {
   latencyMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   errorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creditMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -771,6 +800,7 @@ export type TextGenerationLogSelect<ExtArgs extends runtime.Types.Extensions.Int
   latencyMs?: boolean
   errorCode?: boolean
   errorMessage?: boolean
+  creditMonth?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["textGenerationLog"]>
@@ -789,6 +819,7 @@ export type TextGenerationLogSelectCreateManyAndReturn<ExtArgs extends runtime.T
   latencyMs?: boolean
   errorCode?: boolean
   errorMessage?: boolean
+  creditMonth?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["textGenerationLog"]>
@@ -807,6 +838,7 @@ export type TextGenerationLogSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   latencyMs?: boolean
   errorCode?: boolean
   errorMessage?: boolean
+  creditMonth?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["textGenerationLog"]>
@@ -825,10 +857,11 @@ export type TextGenerationLogSelectScalar = {
   latencyMs?: boolean
   errorCode?: boolean
   errorMessage?: boolean
+  creditMonth?: boolean
   createdAt?: boolean
 }
 
-export type TextGenerationLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "userId" | "provider" | "model" | "responseFormat" | "status" | "contentPreview" | "inputTokens" | "outputTokens" | "latencyMs" | "errorCode" | "errorMessage" | "createdAt", ExtArgs["result"]["textGenerationLog"]>
+export type TextGenerationLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "userId" | "provider" | "model" | "responseFormat" | "status" | "contentPreview" | "inputTokens" | "outputTokens" | "latencyMs" | "errorCode" | "errorMessage" | "creditMonth" | "createdAt", ExtArgs["result"]["textGenerationLog"]>
 export type TextGenerationLogInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }
@@ -858,6 +891,7 @@ export type $TextGenerationLogPayload<ExtArgs extends runtime.Types.Extensions.I
     latencyMs: number | null
     errorCode: string | null
     errorMessage: string | null
+    creditMonth: string | null
     createdAt: Date
   }, ExtArgs["result"]["textGenerationLog"]>
   composites: {}
@@ -1296,6 +1330,7 @@ export interface TextGenerationLogFieldRefs {
   readonly latencyMs: Prisma.FieldRef<"TextGenerationLog", 'Int'>
   readonly errorCode: Prisma.FieldRef<"TextGenerationLog", 'String'>
   readonly errorMessage: Prisma.FieldRef<"TextGenerationLog", 'String'>
+  readonly creditMonth: Prisma.FieldRef<"TextGenerationLog", 'String'>
   readonly createdAt: Prisma.FieldRef<"TextGenerationLog", 'DateTime'>
 }
     

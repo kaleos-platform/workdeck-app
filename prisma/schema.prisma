@@ -436,6 +436,7 @@ model Space {
   productionRuns         ProductionRun[]
   pricingScenarios       PricingScenario[]
   adCampaignProductMaps  AdCampaignProductMap[]
+  productExtractionJobs  ProductExtractionJob[]
 
   // 발주 계획
   reorderPlans ReorderPlan[]
@@ -1097,6 +1098,7 @@ model InvProduct {
   adCampaignMaps   AdCampaignProductMap[]
   keywordLinks     KeywordMasterLink[]
   keywordChanges   KeywordChangeLog[] // §26 변경 이력 (상품 단위)
+  extractionJobs   ProductExtractionJob[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1133,6 +1135,86 @@ model AdCampaignProductMap {
   @@index([spaceId])
   @@index([spaceId, campaignId])
   @@index([productId])
+}
+
+enum ProductExtractionStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+enum ProductExtractionSourceKind {
+  URL
+  TEXT
+  IMAGE
+  PDF
+}
+
+// 상품 정보 자동 추출 작업 — URL/텍스트/이미지/PDF 원천에서 AI로 상품 필드를 뽑아
+// InvProduct 에 적용하는 1회성 잡. 적용 전/후 스냅샷을 남겨 롤백 가능.
+model ProductExtractionJob {
+  id        String @id @default(cuid())
+  spaceId   String
+  productId String
+
+  status        ProductExtractionStatus @default(PENDING)
+  provider      String                  @default("gemini")
+  model         String
+  promptVersion String                  @default("v1")
+
+  result       Json? // 정규화된 추출 결과 JSON
+  rawResponse  String? // 모델 원문 앞 20,000자(파싱 실패 디버깅용)
+  inputTokens  Int?
+  outputTokens Int?
+  latencyMs    Int?
+  errorCode    String?
+  errorMessage String?
+
+  textLogId   String? // TextGenerationLog.id (FK 없음, 감사용 단방향)
+  creditMonth String? // WorkspaceAiCredit.yearMonth (refund 판단용)
+
+  appliedAt     DateTime?
+  appliedFields Json? // 실제 적용한 필드명 string[]
+  appliedBefore Json? // 적용 직전 InvProduct 값 스냅샷(롤백용)
+  rolledBackAt  DateTime?
+
+  createdByUserId String?
+
+  space   Space                     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  product InvProduct                @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sources ProductExtractionSource[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, createdAt])
+  @@index([spaceId, createdAt])
+  @@index([status])
+}
+
+// ProductExtractionJob 의 입력 원천(복수 가능). 파일 바이트는 DB에 넣지 않고
+// storagePath 만 보관한다.
+model ProductExtractionSource {
+  id      String @id @default(cuid())
+  jobId   String
+  spaceId String
+
+  kind        ProductExtractionSourceKind
+  url         String?
+  finalUrl    String?
+  storagePath String?
+  fileName    String?
+  mimeType    String?
+  byteSize    Int?
+  textContent String? // kind=URL|TEXT 의 정제 텍스트(최대 30,000자)
+
+  job ProductExtractionJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([jobId])
+  @@index([spaceId, createdAt])
 }
 
 // 상품 옵션
@@ -2376,6 +2458,8 @@ model WorkspaceAiCredit {
   yearMonth  String // "YYYY-MM"
   imageUsed  Int    @default(0)
   imageQuota Int    @default(50)
+  textUsed   Int    @default(0)
+  textQuota  Int    @default(200)
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 
@@ -2426,6 +2510,7 @@ model TextGenerationLog {
   latencyMs      Int?
   errorCode      String?
   errorMessage   String?
+  creditMonth    String? // 연결된 WorkspaceAiCredit.yearMonth — refund 판단용
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 

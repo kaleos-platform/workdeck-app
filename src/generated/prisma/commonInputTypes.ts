@@ -602,6 +602,40 @@ export type EnumInvProductStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumInvProductStatusFilter<$PrismaModel>
 }
 
+export type EnumProductExtractionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionStatus | Prisma.EnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel> | $Enums.ProductExtractionStatus
+}
+
+export type EnumProductExtractionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionStatus | Prisma.EnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProductExtractionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel>
+}
+
+export type EnumProductExtractionSourceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionSourceKind | Prisma.EnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel> | $Enums.ProductExtractionSourceKind
+}
+
+export type EnumProductExtractionSourceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionSourceKind | Prisma.EnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionSourceKindWithAggregatesFilter<$PrismaModel> | $Enums.ProductExtractionSourceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel>
+}
+
 export type EnumInvStorageLocationTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.InvStorageLocationType | Prisma.EnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
   in?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
@@ -2173,6 +2207,40 @@ export type NestedEnumInvProductStatusWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumInvProductStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumInvProductStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumProductExtractionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionStatus | Prisma.EnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel> | $Enums.ProductExtractionStatus
+}
+
+export type NestedEnumProductExtractionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionStatus | Prisma.EnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProductExtractionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumProductExtractionSourceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionSourceKind | Prisma.EnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel> | $Enums.ProductExtractionSourceKind
+}
+
+export type NestedEnumProductExtractionSourceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionSourceKind | Prisma.EnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionSourceKindWithAggregatesFilter<$PrismaModel> | $Enums.ProductExtractionSourceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel>
 }
 
 export type NestedEnumInvStorageLocationTypeFilter<$PrismaModel = never> = {
