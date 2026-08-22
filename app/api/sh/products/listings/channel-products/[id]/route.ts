@@ -293,8 +293,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       id: true,
       channelId: true, // 키워드 규칙 조회용
       // §26 이력의 "기존" 값 — 변경 여부를 판정하려면 패치 전 값이 필요하다.
+      // baseDisplayName 은 여기서 안 읽는다: 전파의 old base 는 컬럼이 아니라
+      // deriveBaseValues 로 자식 리스팅에서 역산한 값을 쓴다.
       baseSearchName: true,
-      baseDisplayName: true,
       keywords: true,
       // 이력 귀속 상품 추정용. 채널상품은 리스팅 여러 개를 묶고 각 리스팅이 여러 옵션을
       // 가질 수 있어 단일 상품으로 떨어지지 않을 수 있다(GET 의 kind:'mixed' 참조).
