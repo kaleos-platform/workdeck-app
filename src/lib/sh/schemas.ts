@@ -1,5 +1,11 @@
 import { z } from 'zod'
 
+import {
+  PRODUCT_DESCRIPTION_MAX,
+  PRODUCT_LIST_FIELD_MAX_ITEMS,
+  PRODUCT_LIST_FIELD_MAX_ITEM_LENGTH,
+} from '@/lib/sh/constants'
+
 // ─── 공용 id 검증 ──────────────────────────────────────────────────────────────
 //
 // 레거시 백필 데이터는 UUID(36자, hyphen 포함)이고, 신규 데이터는 Prisma cuid
@@ -105,14 +111,26 @@ export const productSchema = z.object({
   brandId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike.optional()),
   // 카테고리 — POST에선 required, PATCH에선 partial()로 optional이 된다.
   groupId: z.preprocess((v) => (v === null || v === '' ? undefined : v), idLike),
-  manufacturer: z.preprocess(
-    (v) => (v === null || v === '' ? undefined : v),
-    z.string().max(200).optional()
-  ),
-  manufactureCountry: z.preprocess(
-    (v) => (v === null || v === '' ? undefined : v),
-    z.string().max(100).optional()
-  ),
+  // null/'' 는 명시적 clear 신호로 null 저장, undefined 는 필드 skip
+  // (AI 추출 롤백이 이 필드를 되돌리려면 clear 가 반드시 동작해야 한다)
+  manufacturer: z
+    .preprocess((v) => {
+      if (v === undefined) return undefined
+      if (v === null) return null
+      if (typeof v === 'string' && v.trim() === '') return null
+      return v
+    }, z.string().max(200).nullable())
+    .optional(),
+  // null/'' 는 명시적 clear 신호로 null 저장, undefined 는 필드 skip
+  // (AI 추출 롤백이 이 필드를 되돌리려면 clear 가 반드시 동작해야 한다)
+  manufactureCountry: z
+    .preprocess((v) => {
+      if (v === undefined) return undefined
+      if (v === null) return null
+      if (typeof v === 'string' && v.trim() === '') return null
+      return v
+    }, z.string().max(100).nullable())
+    .optional(),
   // date-only(YYYY-MM-DD) / ISO datetime / null / '' 모두 허용
   manufactureDate: z.preprocess(
     (v) => (v === null || v === '' ? undefined : v),
@@ -121,17 +139,28 @@ export const productSchema = z.object({
       .refine((s) => !Number.isNaN(new Date(s).getTime()), '유효한 날짜가 아닙니다')
       .optional()
   ),
-  features: z.array(z.string()).optional(),
+  features: z
+    .array(z.string().max(PRODUCT_LIST_FIELD_MAX_ITEM_LENGTH))
+    .max(PRODUCT_LIST_FIELD_MAX_ITEMS)
+    .optional(),
   // 프론트가 문자열 배열로 전송 — 인증번호 한 줄씩
-  certifications: z.array(z.string()).optional(),
+  certifications: z
+    .array(z.string().max(PRODUCT_LIST_FIELD_MAX_ITEM_LENGTH))
+    .max(PRODUCT_LIST_FIELD_MAX_ITEMS)
+    .optional(),
   msrp: z.preprocess(
     (v) => (v === null || v === '' || v === undefined ? undefined : Number(v)),
     z.number().nonnegative().optional()
   ),
-  description: z.preprocess(
-    (v) => (v === null || v === '' ? undefined : v),
-    z.string().max(2000).optional()
-  ),
+  // null/'' 는 명시적 clear 신호로 null 저장, undefined 는 필드 skip
+  description: z
+    .preprocess((v) => {
+      if (v === undefined) return undefined
+      if (v === null) return null
+      if (typeof v === 'string' && v.trim() === '') return null
+      return v
+    }, z.string().max(PRODUCT_DESCRIPTION_MAX).nullable())
+    .optional(),
   optionAttributes: z.array(optionAttributeSchema).optional(),
   options: z.array(productOptionSchema).optional(),
 })
@@ -849,3 +878,46 @@ export const channelKeywordRuleSchema = z.object({
   replaceDefaultTerms: z.boolean().optional(),
 })
 export type ChannelKeywordRuleInput = z.infer<typeof channelKeywordRuleSchema>
+
+// ─── 상품 설명 자동 추출 (AI) ─────────────────────────────────────────────────
+
+export const productExtractUrlSchema = z.object({
+  url: z.string().url().max(2048),
+})
+export type ProductExtractUrlInput = z.infer<typeof productExtractUrlSchema>
+
+const extractFileRefSchema = z.object({
+  storagePath: z.string().min(1).max(500),
+  fileName: z.string().max(255),
+  mimeType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'application/pdf']),
+  byteSize: z
+    .number()
+    .int()
+    .positive()
+    .max(10 * 1024 * 1024),
+})
+
+export const productExtractRequestSchema = z
+  .object({
+    url: z.string().url().max(2048).nullish(),
+    urlText: z.string().max(30000).nullish(),
+    pastedText: z.string().max(30000).nullish(),
+    files: z.array(extractFileRefSchema).max(5).default([]),
+  })
+  .refine(
+    (v) => Boolean(v.urlText?.trim() || v.pastedText?.trim() || v.files.length),
+    '소재를 1개 이상 입력해주세요'
+  )
+export type ProductExtractRequestInput = z.infer<typeof productExtractRequestSchema>
+
+export const productExtractApplySchema = z.object({
+  fields: z
+    .array(
+      z.enum(['description', 'features', 'certifications', 'manufacturer', 'manufactureCountry'])
+    )
+    .min(1),
+})
+export type ProductExtractApplyInput = z.infer<typeof productExtractApplySchema>
+
+export const productExtractAppliedSchema = productExtractApplySchema
+export type ProductExtractAppliedInput = z.infer<typeof productExtractAppliedSchema>
