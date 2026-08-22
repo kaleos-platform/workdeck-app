@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import {
+  deriveBaseValues,
+  type GroupListingForBase,
+  type OptionAttribute,
+} from '@/lib/sh/listing-name-propagation'
 
 type Params = { params: Promise<{ productId: string }> }
 
@@ -122,15 +127,33 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const cpListings = await prisma.productListing.findMany({
       where: { channelProductId: { in: cpIds } },
       select: {
+        id: true,
         channelProductId: true,
+        searchName: true,
+        displayName: true,
+        managementName: true,
+        internalCode: true,
+        memo: true,
         items: {
           where: { option: { deletedAt: null } },
-          select: { option: { select: { productId: true } } },
+          select: {
+            optionId: true,
+            option: {
+              select: {
+                productId: true,
+                attributeValues: true,
+                product: { select: { optionAttributes: true } },
+              },
+            },
+          },
         },
       },
     })
     const productIdsByCp = new Map<string, Set<string>>()
     const listingCountByCp = new Map<string, number>()
+    // 역산(deriveBaseValues) 입력 — CP 별 자식 리스팅과 대표 상품의 옵션 속성 정의.
+    const listingsByCp = new Map<string, GroupListingForBase[]>()
+    const attrsByCp = new Map<string, OptionAttribute[]>()
     for (const l of cpListings) {
       const cpId = l.channelProductId
       if (!cpId) continue
@@ -141,11 +164,47 @@ export async function GET(_req: NextRequest, { params }: Params) {
         productIdsByCp.set(cpId, set)
       }
       for (const it of l.items) set.add(it.option.productId)
+
+      const glb: GroupListingForBase = {
+        id: l.id,
+        searchName: l.searchName,
+        displayName: l.displayName,
+        managementName: l.managementName,
+        internalCode: l.internalCode,
+        memo: l.memo,
+        items: l.items.map((it) => ({
+          optionId: it.optionId,
+          attributeValues: (it.option.attributeValues ?? {}) as Record<string, string>,
+        })),
+      }
+      const glbList = listingsByCp.get(cpId)
+      if (glbList) glbList.push(glb)
+      else listingsByCp.set(cpId, [glb])
+
+      if (!attrsByCp.has(cpId)) {
+        const rawAttrs = l.items[0]?.option.product?.optionAttributes
+        attrsByCp.set(cpId, Array.isArray(rawAttrs) ? (rawAttrs as OptionAttribute[]) : [])
+      }
     }
     for (const card of cpCards) {
       card.listingCount = listingCountByCp.get(card.id) ?? card.listingCount
       const productIds = productIdsByCp.get(card.id)
       card.nameEditable = !productIds || productIds.size <= 1
+
+      // group-detail-view.tsx 와 같은 역산 규칙 — 컬럼값(baseSearchName/baseDisplayName)은
+      // baseDirty===false 면 갱신되지 않는 잔상일 수 있어, 실제 리스팅 이름에서 역산한 값을
+      // 우선한다. mixed CP(nameEditable===false)는 애초에 역산이 불가능해 컬럼값을 유지한다.
+      if (card.nameEditable) {
+        const cardListings = listingsByCp.get(card.id) ?? []
+        if (cardListings.length > 0) {
+          const derived = deriveBaseValues(cardListings, attrsByCp.get(card.id) ?? [])
+          if (derived.baseSearchName) {
+            card.searchName = derived.baseSearchName
+            card.displayName = derived.baseDisplayName || null
+          }
+          // baseSearchName 이 빈 문자열이면(형태 이상 등) 컬럼값을 그대로 유지 — 빈 이름 노출 금지.
+        }
+      }
     }
   }
 
