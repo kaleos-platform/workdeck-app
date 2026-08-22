@@ -89,6 +89,8 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
   const [locationStepOpen, setLocationStepOpen] = useState(false)
   const [locationId, setLocationId] = useState('')
   const [locationStepReason, setLocationStepReason] = useState<string | null>(null)
+  // 위치명이 적힌 행 수 — 0보다 크면 그 행들도 선택한 장소로 덮어써진다는 사실을 알려야 한다.
+  const [locationStepNamedRows, setLocationStepNamedRows] = useState(0)
   const locations = useLocations(locationStepOpen)
 
   function resetAll() {
@@ -96,6 +98,7 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
     setLocationId('')
     setLocationStepOpen(false)
     setLocationStepReason(null)
+    setLocationStepNamedRows(0)
     setUploadError(null)
   }
 
@@ -172,7 +175,9 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
 
       // 위치명이 없는 행 → 보관 장소를 고르면 해결되는 문제. 2차 다이얼로그로 넘긴다.
       if (code === 'LOCATION_REQUIRED') {
+        const d = (data?.details ?? {}) as { missingCount?: number; totalRows?: number }
         setLocationStepReason(msg)
+        setLocationStepNamedRows(Math.max(0, (d.totalRows ?? 0) - (d.missingCount ?? 0)))
         setLocationStepOpen(true)
         return
       }
@@ -327,10 +332,17 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
               {locationStepReason ??
                 '이 파일은 위치명 컬럼이 없어 자동 분배가 불가합니다. 어느 보관 장소로 반영할지 선택해 주세요.'}
             </p>
-            <p className="text-xs text-muted-foreground">
-              여러 장소로 나눠 반영하려면 파일의 <strong>위치명</strong> 컬럼을 보관 장소 이름으로
-              채워 다시 올리세요.
-            </p>
+            {locationStepNamedRows > 0 ? (
+              <p className="text-xs text-amber-600 dark:text-amber-500">
+                위치명이 적힌 {locationStepNamedRows}건도 <strong>선택한 장소로 반영</strong>됩니다.
+                파일에 적힌 대로 나눠 반영하려면 취소 후 위치명을 모두 채워 다시 올리세요.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                여러 장소로 나눠 반영하려면 파일의 <strong>위치명</strong> 컬럼을 보관 장소 이름으로
+                채워 다시 올리세요.
+              </p>
+            )}
             <div className="space-y-2">
               <Label>보관 장소</Label>
               <Select value={locationId} onValueChange={setLocationId}>

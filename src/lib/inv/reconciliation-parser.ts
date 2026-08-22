@@ -289,7 +289,8 @@ export function parseReconciliationFile(buffer: ArrayBuffer, fileName: string): 
     const rows = parseStockStatusExport(rawData as unknown[][])
     if (rows.length === 0) {
       throw new Error(
-        '재고 현황 내보내기 파일에서 변경된 행을 찾지 못했습니다. 실재고 값을 입력했는지 확인해 주세요.'
+        '재고 현황 내보내기 파일에서 반영할 행을 찾지 못했습니다. 실재고 값이 채워져 있는지, ' +
+          '해당 행에 상품명(또는 externalCode)이 있는지, 실재고가 현재재고와 다른지 확인해 주세요.'
       )
     }
     return { format: 'stock_status_export', rows, snapshotDate }
