@@ -147,9 +147,7 @@ function parseStockStatusExport(rawData: unknown[][]): ParsedRow[] {
   const dataRows = rawData.slice(1)
 
   const rows: ParsedRow[] = []
-  const missingLocationRows: number[] = []
-  for (let i = 0; i < dataRows.length; i++) {
-    const raw = dataRows[i]
+  for (const raw of dataRows) {
     const rec = rowToRecord(headers, raw as unknown[])
     const realQty = parseInt_(rec['실재고'])
     // 실재고 빈값 → 사용자가 미입력 = 변동 없음으로 간주, 스킵
@@ -164,17 +162,10 @@ function parseStockStatusExport(rawData: unknown[][]): ParsedRow[] {
     const externalLocationName = parseStr(rec['위치명'])
     const externalBrandName = parseStr(rec['브랜드'])
 
-    // 매칭 가능한 키 검증
-    // - externalCode 있으면 OK
-    // - 없으면 상품명 + 위치명 필요 (위치명 누락 행은 따로 모아서 에러)
-    if (!externalCode) {
-      if (!externalLocationName) {
-        // 엑셀 행 번호 = 헤더(1) + 데이터 인덱스(0-based) + 1
-        missingLocationRows.push(i + 2)
-        continue
-      }
-      if (!externalName) continue
-    }
+    // 매칭 키는 externalCode 또는 상품명(→합성 코드) 둘 중 하나면 충분하다.
+    // 위치명이 비어도 여기서 막지 않는다 — 보관 장소는 업로드 시 사용자가 고를 수 있고
+    // (runReconciliationMatch 의 locationId 경로), 파서는 그 선택을 알 수 없다.
+    if (!externalCode && !externalName) continue
 
     rows.push({
       // 위 가드를 통과했으므로 코드가 없으면 externalName 은 반드시 존재한다.
@@ -187,11 +178,6 @@ function parseStockStatusExport(rawData: unknown[][]): ParsedRow[] {
     })
   }
 
-  if (missingLocationRows.length > 0) {
-    const preview = missingLocationRows.slice(0, 5).join(', ')
-    const more = missingLocationRows.length > 5 ? ` 외 ${missingLocationRows.length - 5}건` : ''
-    throw new Error(`실재고가 입력됐지만 위치명이 비어있는 행이 있습니다 (행 ${preview}${more})`)
-  }
   return rows
 }
 
@@ -303,7 +289,8 @@ export function parseReconciliationFile(buffer: ArrayBuffer, fileName: string): 
     const rows = parseStockStatusExport(rawData as unknown[][])
     if (rows.length === 0) {
       throw new Error(
-        '재고 현황 내보내기 파일에서 변경된 행을 찾지 못했습니다. 실재고 값을 입력했는지 확인해 주세요.'
+        '재고 현황 내보내기 파일에서 반영할 행을 찾지 못했습니다. 실재고 값이 채워져 있는지, ' +
+          '해당 행에 상품명(또는 externalCode)이 있는지, 실재고가 현재재고와 다른지 확인해 주세요.'
       )
     }
     return { format: 'stock_status_export', rows, snapshotDate }
