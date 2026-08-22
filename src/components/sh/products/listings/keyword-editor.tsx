@@ -48,6 +48,8 @@ type Props = {
   rules?: KeywordRuleSet
   /** "규칙 위반 정리" 결과 반영. 미지정 시 onChange 로 적용한다. */
   onCleanup?: (cleaned: string[]) => void
+  /** true 면 칩·글자수·위반 배지는 그대로 보여주되 편집(삭제·추가·정리·추천)은 막는다. */
+  readOnly?: boolean
 }
 
 export function KeywordEditor({
@@ -60,6 +62,7 @@ export function KeywordEditor({
   optionNames,
   rules,
   onCleanup,
+  readOnly = false,
 }: Props) {
   const [draft, setDraft] = useState('')
 
@@ -187,7 +190,7 @@ export function KeywordEditor({
               </span>
             </>
           )}
-          {violationCount > 0 && (
+          {violationCount > 0 && !readOnly && (
             <Button
               type="button"
               variant="outline"
@@ -247,31 +250,40 @@ export function KeywordEditor({
                   </Tooltip>
                 )}
                 <span>{v}</span>
-                <button
-                  type="button"
-                  onClick={() => remove(idx)}
-                  aria-label={`키워드 ${v} 제거`}
-                  className="rounded-sm p-0.5 hover:bg-muted-foreground/20"
-                >
-                  <X className="h-3 w-3" />
-                </button>
+                {/* readOnly 일 때는 disabled 가 아니라 아예 렌더하지 않는다 — 회색 X 는
+                    "지울 수 있는데 막혔다"로 읽혀 거짓 어포던스가 된다. */}
+                {!readOnly && (
+                  <button
+                    type="button"
+                    onClick={() => remove(idx)}
+                    aria-label={`키워드 ${v} 제거`}
+                    className="rounded-sm p-0.5 hover:bg-muted-foreground/20"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
               </Badge>
             )
           })}
-          <Input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={onInputKeyDown}
-            onPaste={onInputPaste}
-            placeholder={atMax ? `최대 ${MAX_KEYWORDS}개` : (placeholder ?? '키워드 입력 후 Enter')}
-            disabled={atMax}
-            className="h-7 min-w-[140px] flex-1 border-0 px-1 shadow-none focus-visible:ring-0"
-          />
+          {!readOnly && (
+            <Input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onInputKeyDown}
+              onPaste={onInputPaste}
+              placeholder={
+                atMax ? `최대 ${MAX_KEYWORDS}개` : (placeholder ?? '키워드 입력 후 Enter')
+              }
+              disabled={atMax}
+              className="h-7 min-w-[140px] flex-1 border-0 px-1 shadow-none focus-visible:ring-0"
+            />
+          )}
         </div>
         <p className="text-xs text-muted-foreground">
-          {value.length} / {MAX_KEYWORDS} · Enter 또는 ,(쉼표)로 추가, Backspace로 마지막 삭제
+          {value.length} / {MAX_KEYWORDS}
+          {!readOnly && ' · Enter 또는 ,(쉼표)로 추가, Backspace로 마지막 삭제'}
         </p>
-        {freshSuggestions.length > 0 && (
+        {freshSuggestions.length > 0 && !readOnly && (
           <div className="flex flex-wrap gap-1.5">
             <span className="text-xs text-muted-foreground">추천:</span>
             {freshSuggestions.map((s) => (

@@ -14,6 +14,7 @@ import {
 import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
 import { keywordChangeReasonFields } from '@/lib/sh/schemas'
+import { absorbKeywords } from '@/lib/sh/keyword-absorb'
 
 /**
  * 채널상품 단건 조회(GET) / 수정(PATCH) / 삭제(DELETE).
@@ -287,7 +288,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       keywords: true,
       // 이력 귀속 상품 추정용. 채널상품은 리스팅 여러 개를 묶고 각 리스팅이 여러 옵션을
       // 가질 수 있어 단일 상품으로 떨어지지 않을 수 있다(GET 의 kind:'mixed' 참조).
-      listings: { select: { items: { select: { option: { select: { productId: true } } } } } },
+      // 삭제된 옵션은 제외 — listings/[listingId] 와 같은 귀속 오염을 막는다.
+      listings: {
+        select: {
+          items: {
+            where: { option: { deletedAt: null } },
+            select: { option: { select: { productId: true } } },
+          },
+        },
+      },
     },
   })
   if (!cp) return errorResponse('채널상품을 찾을 수 없습니다', 404)
@@ -355,6 +364,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       })
     }
     return row
+  })
+
+  // R2: 채널상품 키워드는 정의상 상품 단위다. 자식 리스팅으로 팬아웃하지 않는다.
+  await absorbKeywords({
+    spaceId: resolved.space.id,
+    keywords: nextKeywords,
+    productId: logProductId,
+    listingId: null,
   })
 
   // 저장 성공 이후 계산 — updated 가 곧 "패치 이후 유효값"이다.
