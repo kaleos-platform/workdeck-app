@@ -33,13 +33,13 @@ import {
   withChannelDefaults,
 } from '@/lib/sh/keyword-rules'
 import { suggestKeywords } from '@/lib/sh/keyword-suggest'
+import { deriveBaseValues, type OptionAttribute } from '@/lib/sh/listing-name-propagation'
 
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 import { CompositionRowsTable, type CompositionRow } from './composition-rows-table'
 import { KeywordEditor } from './keyword-editor'
 import { NameCounter } from './name-counter'
 import { NameValidationPanel } from './name-validation-panel'
-import { deriveBaseValues, type OptionAttribute } from './group-base-info-card'
 
 const COPY_SUFFIX_RE = / \(복사( \d+)?\)$/
 function stripCopySuffix(name: string | null | undefined): string {

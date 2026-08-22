@@ -47,6 +47,13 @@ import {
 } from '@/lib/sh/keyword-rules'
 import { suggestKeywords } from '@/lib/sh/keyword-suggest'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
+import {
+  type OptionAttribute,
+  applyBaseRename,
+  buildSuffix,
+  deriveBaseValues,
+  joinName,
+} from '@/lib/sh/listing-name-propagation'
 
 import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
@@ -54,13 +61,7 @@ import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-di
 import { KeywordChangeTimeline } from './keyword-change-timeline'
 import { GroupListingsTable, type GroupListingRow } from './group-listings-table'
 import { GroupBulkEditBar, type BulkPatch } from './group-bulk-edit-bar'
-import {
-  GroupBaseInfoCard,
-  type OptionAttribute,
-  buildSuffix,
-  deriveBaseValues,
-  joinName,
-} from './group-base-info-card'
+import { GroupBaseInfoCard } from './group-base-info-card'
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
 import { PricingScenarioHistoryPanel } from '../pricing-sim/pricing-scenario-history-panel'
 
@@ -868,15 +869,28 @@ export function GroupDetailView({ channelProductId }: Props) {
         // 나가면 리스팅만 바뀌고 ChannelProduct 는 옛 이름으로 남아, 나중에 사유를 넣고
         // 저장할 때 서버가 계산하는 before 가 이미 어긋나 있게 된다.
         if (!snapGated) {
-          const newSearch = (
-            snapBase.searchName.trim() + tail(l.searchName, derivedBase.baseSearchName)
-          ).trim()
-          patch.searchName = newSearch || l.searchName
-          const newDisplay = (
-            (snapBase.displayName.trim() || snapBase.searchName.trim()) +
-            tail(l.displayName, derivedBase.baseDisplayName || derivedBase.baseSearchName)
-          ).trim()
-          patch.displayName = newDisplay || l.displayName
+          const renamed = applyBaseRename(
+            {
+              id: l.id,
+              searchName: l.searchName,
+              displayName: l.displayName,
+              managementName: l.managementName,
+              internalCode: l.internalCode,
+              memo: l.memo,
+              items: l.items.map((it) => ({
+                optionId: it.optionId,
+                attributeValues: it.attributeValues,
+              })),
+            },
+            data.product.optionAttributes,
+            {
+              baseSearchName: derivedBase.baseSearchName,
+              baseDisplayName: derivedBase.baseDisplayName,
+            },
+            { searchName: snapBase.searchName, displayName: snapBase.displayName }
+          )
+          patch.searchName = renamed.searchName
+          patch.displayName = renamed.displayName
         }
         patch.managementName = snapBase.managementName.trim()
           ? (

@@ -15,6 +15,7 @@ type Card = {
   displayName: string | null
   keywords: string[]
   listingCount: number
+  nameEditable: boolean
 }
 
 function toKeywordList(raw: unknown): string[] {
@@ -92,6 +93,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         displayName: l.channelProduct.baseDisplayName,
         keywords: toKeywordList(l.channelProduct.keywords),
         listingCount: 1,
+        nameEditable: true, // 아래에서 CP 전체 자식 기준으로 교정한다
       })
       continue
     }
@@ -106,7 +108,45 @@ export async function GET(_req: NextRequest, { params }: Params) {
       displayName: l.displayName,
       keywords: toKeywordList(l.keywords),
       listingCount: 1,
+      nameEditable: true, // 전파 대상이 없는 단독 리스팅은 항상 편집 가능
     })
+  }
+
+  // channel-products/[id] GET의 kind:'mixed' 판정과 범위를 맞춘다 — 이 상품에 걸친 리스팅만이
+  // 아니라 CP 아래 "전체" 자식 리스팅을 기준으로 여러 상품이 섞였는지 재판정해야 한다.
+  // 위 루프는 productId 로 필터된 listings 만 보므로, CP 가 다른 상품의 리스팅도 갖고 있으면
+  // 놓친다 — mixed CP 를 "단일 상품"으로 오판하는 원래 버그를 여기서 교정한다.
+  const cpCards = [...cards.values()].filter((c) => c.kind === 'channelProduct')
+  if (cpCards.length > 0) {
+    const cpIds = cpCards.map((c) => c.id)
+    const cpListings = await prisma.productListing.findMany({
+      where: { channelProductId: { in: cpIds } },
+      select: {
+        channelProductId: true,
+        items: {
+          where: { option: { deletedAt: null } },
+          select: { option: { select: { productId: true } } },
+        },
+      },
+    })
+    const productIdsByCp = new Map<string, Set<string>>()
+    const listingCountByCp = new Map<string, number>()
+    for (const l of cpListings) {
+      const cpId = l.channelProductId
+      if (!cpId) continue
+      listingCountByCp.set(cpId, (listingCountByCp.get(cpId) ?? 0) + 1)
+      let set = productIdsByCp.get(cpId)
+      if (!set) {
+        set = new Set<string>()
+        productIdsByCp.set(cpId, set)
+      }
+      for (const it of l.items) set.add(it.option.productId)
+    }
+    for (const card of cpCards) {
+      card.listingCount = listingCountByCp.get(card.id) ?? card.listingCount
+      const productIds = productIdsByCp.get(card.id)
+      card.nameEditable = !productIds || productIds.size <= 1
+    }
   }
 
   return NextResponse.json({ cards: [...cards.values()] })

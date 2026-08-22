@@ -15,6 +15,12 @@ import { buildNamingWarnings } from '@/lib/sh/keyword-warnings'
 import { diffKeywordChange, toKeywordList } from '@/lib/sh/keyword-change'
 import { keywordChangeReasonFields } from '@/lib/sh/schemas'
 import { absorbKeywords } from '@/lib/sh/keyword-absorb'
+import {
+  applyBaseRename,
+  deriveBaseValues,
+  type GroupListingForBase,
+  type OptionAttribute,
+} from '@/lib/sh/listing-name-propagation'
 
 /**
  * 채널상품 단건 조회(GET) / 수정(PATCH) / 삭제(DELETE).
@@ -29,6 +35,9 @@ const patchSchema = z.object({
   baseInternalCode: z.string().max(100).nullable().optional(),
   memo: z.string().max(1000).nullable().optional(),
   keywords: z.array(z.string()).optional(),
+  // true면 baseSearchName/baseDisplayName 변경을 자식 리스팅에도 전파한다.
+  // 요청 본문 전용 필드 — ChannelProduct 컬럼이 아니므로 update data 로 흘려보내면 안 된다(아래 구조분해).
+  propagateNames: z.boolean().optional(),
   // §26 이력 기록용 — 저장 필드가 아니므로 update data 로 흘려보내면 안 된다(아래 구조분해).
   ...keywordChangeReasonFields,
 })
@@ -284,6 +293,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       id: true,
       channelId: true, // 키워드 규칙 조회용
       // §26 이력의 "기존" 값 — 변경 여부를 판정하려면 패치 전 값이 필요하다.
+      // baseDisplayName 은 여기서 안 읽는다: 전파의 old base 는 컬럼이 아니라
+      // deriveBaseValues 로 자식 리스팅에서 역산한 값을 쓴다.
       baseSearchName: true,
       keywords: true,
       // 이력 귀속 상품 추정용. 채널상품은 리스팅 여러 개를 묶고 각 리스팅이 여러 옵션을
@@ -307,8 +318,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const first = parsed.error.issues[0]
     return errorResponse(first?.message ?? '입력값이 올바르지 않습니다', 400)
   }
-  // 사유 필드는 ChannelProduct 컬럼이 아니다 — 남은 필드만 update data 로 넘긴다.
-  const { changeReason, reasonNote, observeMetric, ...updateData } = parsed.data
+  // 사유 필드·propagateNames는 ChannelProduct 컬럼이 아니다 — 남은 필드만 update data 로 넘긴다.
+  const { changeReason, reasonNote, observeMetric, propagateNames, ...updateData } = parsed.data
 
   // 저장 전에 400 판정을 끝낸다(값만 바뀌고 에러가 나가는 상태 방지).
   if (changeReason === 'OTHER' && !reasonNote?.trim()) {
@@ -330,41 +341,136 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const productIds = new Set(cp.listings.flatMap((l) => l.items.map((it) => it.option.productId)))
   const logProductId = productIds.size === 1 ? [...productIds][0] : null
 
-  const updated = await prisma.$transaction(async (tx) => {
-    const row = await tx.channelProduct.update({
-      where: { id },
-      data: updateData,
+  // propagateNames=true 일 때만 자식 리스팅 이름 전파를 준비한다. 플래그가 없으면(기존
+  // group-detail-view 요청) 아래 블록은 전혀 실행되지 않고 기존 경로를 그대로 탄다 —
+  // 그 화면은 자기가 리스팅을 따로 PATCH 하므로 서버가 또 전파하면 이중 쓰기가 된다.
+  let listingUpdates: Array<{ id: string; searchName: string; displayName: string }> = []
+  if (propagateNames === true) {
+    // mixed 재검증 — CP 전체 자식이 여러 상품을 섞고 있으면 상품명 일괄 변경 대상이 아니다.
+    // 조용히 스킵하면 원래 버그(카드가 mixed 를 단일 상품으로 오판)를 플래그만 씌워 재현하는 것이다.
+    if (productIds.size >= 2) {
+      return errorResponse('여러 상품이 섞인 채널 상품은 상품명을 일괄 변경할 수 없습니다', 400)
+    }
+
+    const propagationListings = await prisma.productListing.findMany({
+      where: { channelProductId: id },
       select: {
         id: true,
-        baseSearchName: true,
-        baseDisplayName: true,
-        baseManagementName: true,
-        baseInternalCode: true,
+        searchName: true,
+        displayName: true,
+        managementName: true,
+        internalCode: true,
         memo: true,
-        keywords: true,
-        updatedAt: true,
+        items: {
+          where: { option: { deletedAt: null } },
+          select: {
+            optionId: true,
+            option: {
+              select: {
+                attributeValues: true,
+                product: { select: { optionAttributes: true } },
+              },
+            },
+          },
+        },
       },
     })
-    // 저장과 이력을 한 트랜잭션으로 묶는다 — 변경만 남고 기록이 빠지는 상태를 만들지 않는다.
-    if (shouldLogChange && changeReason) {
-      await tx.keywordChangeLog.create({
-        data: {
-          spaceId: resolved.space.id,
-          productId: logProductId,
-          beforeName: cp.baseSearchName,
-          afterName: nextSearchName,
-          beforeKeywords: toKeywordList(cp.keywords),
-          afterKeywords: toKeywordList(nextKeywords),
-          reason: changeReason,
-          reasonNote: reasonNote ?? null,
-          observeMetric: observeMetric ?? null,
-          multiChange: changeDiff.multiChange,
-          actorUserId: resolved.user.id,
+
+    const attrs: OptionAttribute[] = (() => {
+      for (const l of propagationListings) {
+        const raw = l.items[0]?.option.product?.optionAttributes
+        if (Array.isArray(raw)) return raw as OptionAttribute[]
+      }
+      return []
+    })()
+
+    const listingsForBase: GroupListingForBase[] = propagationListings.map((l) => ({
+      id: l.id,
+      searchName: l.searchName,
+      displayName: l.displayName,
+      managementName: l.managementName,
+      internalCode: l.internalCode,
+      memo: l.memo,
+      items: l.items.map((it) => ({
+        optionId: it.optionId,
+        attributeValues: (it.option.attributeValues ?? {}) as Record<string, string>,
+      })),
+    }))
+
+    // old base는 cp.baseSearchName 컬럼이 아니라 자식 리스팅에서 역산한다 — CP 와 자식이
+    // 이미 어긋난 케이스에서 결과가 달라지고, 기존 화면(group-detail-view)의 계산과 갈린다.
+    const oldBase = deriveBaseValues(listingsForBase, attrs)
+    const nextDisplayName =
+      updateData.baseDisplayName !== undefined
+        ? (updateData.baseDisplayName ?? '')
+        : oldBase.baseDisplayName
+
+    listingUpdates = listingsForBase
+      .map((l) => {
+        const renamed = applyBaseRename(
+          l,
+          attrs,
+          { baseSearchName: oldBase.baseSearchName, baseDisplayName: oldBase.baseDisplayName },
+          { searchName: nextSearchName, displayName: nextDisplayName }
+        )
+        return { id: l.id, ...renamed }
+      })
+      // 값이 실제로 달라진 리스팅만 갱신한다 — 불필요한 updatedAt 갱신 방지.
+      .filter((next, idx) => {
+        const before = listingsForBase[idx]
+        return next.searchName !== before.searchName || next.displayName !== before.displayName
+      })
+  }
+
+  const updated = await prisma.$transaction(
+    async (tx) => {
+      const row = await tx.channelProduct.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          baseSearchName: true,
+          baseDisplayName: true,
+          baseManagementName: true,
+          baseInternalCode: true,
+          memo: true,
+          keywords: true,
+          updatedAt: true,
         },
       })
-    }
-    return row
-  })
+      // 저장과 이력을 한 트랜잭션으로 묶는다 — 변경만 남고 기록이 빠지는 상태를 만들지 않는다.
+      if (shouldLogChange && changeReason) {
+        await tx.keywordChangeLog.create({
+          data: {
+            spaceId: resolved.space.id,
+            productId: logProductId,
+            beforeName: cp.baseSearchName,
+            afterName: nextSearchName,
+            beforeKeywords: toKeywordList(cp.keywords),
+            afterKeywords: toKeywordList(nextKeywords),
+            reason: changeReason,
+            reasonNote: reasonNote ?? null,
+            observeMetric: observeMetric ?? null,
+            multiChange: changeDiff.multiChange,
+            actorUserId: resolved.user.id,
+          },
+        })
+      }
+      // propagateNames=true 일 때만 자식 리스팅 이름을 같은 트랜잭션에서 갱신한다 — CP update·
+      // KeywordChangeLog 와 한 번에 커밋된다. searchName/displayName 만 전파한다.
+      // managementName·internalCode·memo 는 대상이 아니다 — 새 화면에 그 입력 UI 가 없고,
+      // 특히 memo 는 기존 화면이 tail 없이 통째로 덮어써 화면에 안 보이는 필드가 조용히
+      // 사라질 수 있다.
+      for (const lu of listingUpdates) {
+        await tx.productListing.update({
+          where: { id: lu.id },
+          data: { searchName: lu.searchName, displayName: lu.displayName },
+        })
+      }
+      return row
+    },
+    listingUpdates.length > 0 ? { timeout: 30000, maxWait: 10000 } : undefined
+  )
 
   // R2: 채널상품 키워드는 정의상 상품 단위다. 자식 리스팅으로 팬아웃하지 않는다.
   await absorbKeywords({
