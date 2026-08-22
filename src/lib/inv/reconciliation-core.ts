@@ -12,11 +12,27 @@ import {
   type MatchReconciliationResult,
 } from '@/lib/inv/reconciliation-matcher'
 
+// code: 클라이언트가 메시지 문자열을 파싱하지 않고 분기하기 위한 식별자.
+// details: 사용자가 스스로 고칠 수 있도록 화면에 그대로 보여줄 부가 정보.
+export type ReconciliationErrorCode =
+  | 'LOCATION_REQUIRED'
+  | 'LOCATION_UNKNOWN'
+  | 'LOCATION_INACTIVE'
+  | 'LOCATION_NOT_FOUND'
+
 export class ReconciliationCoreError extends Error {
   status: number
-  constructor(message: string, status = 400) {
+  code?: ReconciliationErrorCode
+  details?: Record<string, unknown>
+  constructor(
+    message: string,
+    status = 400,
+    opts?: { code?: ReconciliationErrorCode; details?: Record<string, unknown> }
+  ) {
     super(message)
     this.status = status
+    this.code = opts?.code
+    this.details = opts?.details
   }
 }
 
@@ -56,17 +72,37 @@ export async function runReconciliationMatch(params: {
       where: { id: locationId, spaceId },
       select: { id: true, isActive: true },
     })
-    if (!location) throw new ReconciliationCoreError('보관 장소를 찾을 수 없습니다', 404)
-    if (!location.isActive) throw new ReconciliationCoreError('보관 장소가 비활성화되었습니다', 400)
+    if (!location)
+      throw new ReconciliationCoreError('보관 장소를 찾을 수 없습니다', 404, {
+        code: 'LOCATION_NOT_FOUND',
+      })
+    if (!location.isActive)
+      throw new ReconciliationCoreError('보관 장소가 비활성화되었습니다', 400, {
+        code: 'LOCATION_INACTIVE',
+      })
 
     primaryLocationId = location.id
     matchResult = await matchReconciliation(spaceId, location.id, parsed)
   } else {
     const rowsWithoutLoc = parsed.rows.filter((r) => !r.externalLocationName)
     if (rowsWithoutLoc.length > 0) {
+      const activeLocations = await prisma.invStorageLocation.findMany({
+        where: { spaceId, isActive: true },
+        select: { name: true },
+        orderBy: { name: 'asc' },
+      })
       throw new ReconciliationCoreError(
-        '파일 행에 위치명이 없습니다. 보관 장소를 선택하거나 위치명 컬럼을 채워 주세요.',
-        400
+        `위치명이 비어있는 행이 ${rowsWithoutLoc.length}건 있습니다 (전체 ${parsed.rows.length}건). ` +
+          '보관 장소를 선택하면 그 장소 재고로 반영합니다.',
+        400,
+        {
+          code: 'LOCATION_REQUIRED',
+          details: {
+            missingCount: rowsWithoutLoc.length,
+            totalRows: parsed.rows.length,
+            locationNames: activeLocations.map((l) => l.name),
+          },
+        }
       )
     }
 
@@ -81,9 +117,21 @@ export async function runReconciliationMatch(params: {
 
     const unknownNames = locationNames.filter((n) => !locByName.has(n))
     if (unknownNames.length > 0) {
+      // 안내에 쓰는 목록은 파일에 등장한 이름이 아니라 워크스페이스의 활성 장소 전체다.
+      const activeLocations = await prisma.invStorageLocation.findMany({
+        where: { spaceId, isActive: true },
+        select: { name: true },
+        orderBy: { name: 'asc' },
+      })
       throw new ReconciliationCoreError(
-        `알 수 없는 위치명: ${unknownNames.join(', ')}. 보관 장소 설정을 확인해 주세요.`,
-        400
+        `파일의 위치명 ${unknownNames.join(', ')} 이(가) 보관 장소에 없습니다. ` +
+          `사용 가능한 보관 장소: ${activeLocations.map((l) => l.name).join(', ')}. ` +
+          '파일의 위치명을 맞추거나 보관 장소를 추가해 주세요.',
+        400,
+        {
+          code: 'LOCATION_UNKNOWN',
+          details: { unknownNames, locationNames: activeLocations.map((l) => l.name) },
+        }
       )
     }
     const inactiveNames = locationNames.filter((n) => {
@@ -92,8 +140,9 @@ export async function runReconciliationMatch(params: {
     })
     if (inactiveNames.length > 0) {
       throw new ReconciliationCoreError(
-        `비활성 위치를 포함합니다: ${inactiveNames.join(', ')}`,
-        400
+        `비활성 보관 장소를 포함합니다: ${inactiveNames.join(', ')}. 해당 장소를 다시 활성화하거나 파일에서 제외해 주세요.`,
+        400,
+        { code: 'LOCATION_INACTIVE', details: { inactiveNames } }
       )
     }
 
