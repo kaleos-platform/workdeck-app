@@ -233,10 +233,15 @@ Phase 4가 의미를 가지려면 데이터가 있어야 한다.
 - **API 는 기존 라우트 확장 대신 전용 라우트 2개.** 위 설계는 `GET .../[productId]/listings` 확장을 적었지만, 카드가 필요로 하는 건 ChannelProduct 그룹핑 + base 상품명이라 기존 응답 형태와 다르다. 기존 소비자(`ProductListingsPanel`) 페이로드를 부풀리지 않으려고 `GET /api/sh/products/keyword-overview` 와 `GET /api/sh/products/[productId]/keyword-cards` 를 새로 만들었다.
 - **혼합 세트 리스팅은 양쪽에서 똑같이 뺀다.** 여러 상품이 섞인 리스팅은 특정 상품의 상품명이라 말할 수 없다. 좌측 "채널 N개" 집계도 같은 기준을 쓴다 — 한쪽만 빼면 좌측 숫자와 우측 카드 수가 어긋난다. 부작용: 혼합 세트에만 들어간 상품은 목록에 뜨지만 카드가 0개다. 그래서 빈 상태 문구를 `이 상품만으로 구성된 판매채널 상품이 없습니다` 로 쓴다 — "판매채널이 없습니다"는 거짓말이다.
 - **변경 사유 게이트는 `diffKeywordChange` 로 판정한다.** 서버가 `KeywordChangeLog` 를 남기는 조건과 같은 함수를 쓴다. 노출용 상품명은 그 함수가 보지 않으므로 게이트 대상이 아니다 — 여기서만 사유를 요구하면 받은 사유가 저장되지 않고 버려진다. 대신 저장 버튼 라벨을 사유가 필요할 때 `변경 사유 입력 후 저장` 으로 바꿔, 눌렀더니 다이얼로그가 튀어나오는 놀람을 없앤다.
-- **묶인 채널상품 카드에서는 상품명을 편집하지 않는다 — 이 화면의 가장 큰 제약이다.** 채널에 실제로 나가는 이름은 `ProductListing.searchName` 이고 `ChannelProduct.baseSearchName` 는 그 파생의 원본이다. 기존 `group-detail-view` 는 base 가 바뀌면 자식 리스팅마다 `새 base + 옵션 접미사` 를 계산해 각각 PATCH 한다. 그 전파 로직은 `deriveBaseValues`+`buildSuffix`+`optionAttributes`+리스팅별 `attributeValues` 에 얹혀 있어서, 카드가 재현하려면 group-detail 페이로드를 통째로 들고 와야 한다 — 그 시점엔 카드가 곧 그 화면이다. 접두 제거만 흉내 내면 매칭 안 되는 리스팅이 조용히 안 바뀌는데, 그게 바로 막으려는 실패다.
-  - 따라서 `kind === 'channelProduct'` 카드는 상품명 2종을 읽기전용으로 보여주고 `이 판매채널 상품 편집` 링크로 넘긴다. 저장 body 에는 `keywords` 만 담는다.
-  - `kind === 'listing'`(단독 리스팅) 카드는 전파 대상이 없으므로 이름 편집을 그대로 둔다.
-  - **미해결로 남은 것**: "상품명도 한 화면에서 관리"라는 목표가 묶인 채널에서는 절반만 충족된다. 제대로 풀려면 전파 로직을 `group-detail-view` 밖으로 꺼내 순수 함수로 공유해야 한다 — 별건으로 다룰 것.
+- **채널 카드의 상품명 편집은 서버가 자식 리스팅까지 전파한다** (2026-08-22 추가, `feat/sh-keyword-card-name-propagate`). 채널에 실제로 나가는 이름은 `ProductListing.searchName` 이고 `ChannelProduct.baseSearchName` 는 그 파생의 원본이다. base 만 바꾸면 저장은 되는데 채널 상품명이 안 바뀐다.
+  - 최초 릴리스에서는 "전파 로직이 `group-detail-view` 에 얹혀 있어 재현하려면 그 화면을 통째로 복제해야 한다"고 판단해 **상품명을 잠갔다. 그 판단은 틀렸다** — 계산 함수(`deriveBaseValues`·`buildSuffix`)는 이미 순수 함수였고 React·prisma·fetch 의존이 없었다.
+  - 지금은 `src/lib/sh/listing-name-propagation.ts` 로 추출해 **두 화면이 같은 함수를 쓴다**(`applyBaseRename`). 서버가 재구현했으면 두 화면 계산이 서서히 어긋났을 것이다.
+  - 전파는 `PATCH .../channel-products/[id]` 의 **opt-in 플래그 `propagateNames`** 로만 켜진다. 기존 `group-detail-view` 는 자기가 리스팅을 따로 PATCH 하므로 플래그를 안 보낸다 — 서버가 또 전파하면 이중 쓰기가 된다.
+  - CP·자식 리스팅·이력을 **한 트랜잭션**으로 커밋한다. 기존 화면은 리스팅 N번 → CP 1번을 트랜잭션 없이 보내서 중간 실패 시 어긋난 채 남는다 — 그 문제를 새 경로에 이식하지 않았다.
+  - **`old base` 는 `cp.baseSearchName` 컬럼이 아니라 `deriveBaseValues(자식리스팅, attrs)` 역산값이다.** 컬럼을 쓰면 CP 와 자식이 이미 어긋난 케이스에서 기존 화면과 계산이 갈린다.
+  - 전파 대상은 `searchName`·`displayName` 둘뿐. `managementName`·`internalCode`·`memo` 는 건드리지 않는다 — 새 카드에 그 입력 UI 가 없고, 특히 memo 는 기존 화면이 tail 없이 통째로 덮어써서 화면에 안 보이는 필드가 조용히 사라진다.
+  - **여러 상품이 섞인 CP 는 여전히 잠긴다.** `deriveBaseValues`/`buildSuffix` 가 단일 `attrs` 하나만 받는 시그니처라 계산 자체가 불가능하다. 그런 CP 에 `propagateNames: true` 가 오면 서버가 400 으로 거절한다 — 조용히 스킵하면 원래 버그를 플래그만 씌워 재현하는 것이다.
+- **`keyword-cards` 의 혼합 판정은 CP 전체 기준이다.** 처음에는 listing 단위(`이 listing 이 여러 상품을 섞었나`)로 봤는데, 그건 `channel-products/[id]` GET 의 `kind: 'mixed'`(`CP 아래 모든 listing 이 서로 다른 상품을 참조하나`)와 범위가 다르다. 게다가 `where` 가 현재 상품에 걸린 listing 만 잡아서, 상품 P 를 보는 중에 CP 가 P·Q 를 함께 갖고 있으면 카드가 "단일 상품"으로 보였다. 이름 편집을 열기 전에는 전부 잠겨 있어 드러나지 않았을 뿐이다. `nameEditable` 과 `listingCount` 둘 다 CP 전체 자식 기준으로 계산한다.
 - **저장 body 에는 바뀐 필드만 담는다.** 빈 노출용 상품명은 `''` 가 아니라 `null` 로 보낸다(기존 화면과 같은 관례). 안 그러면 "설정 안 함"과 "빈 문자열"의 구분이 새 화면 저장 한 번에 사라진다.
 - **자동저장 없음.** 게이트가 걸리는 필드라 자동저장과 섞으면 "저장이 안 된다"는 오해가 난다(앞선 릴리스에서 실제로 그 혼란이 있었다).
 - **`KeywordEditor` 에 `readOnly` 를 추가했다.** 연동 채널 카드에서 칩 삭제·입력·"규칙 위반 정리"가 살아 있으면, 지운 칩이 저장도 안 되고 새로고침하면 되살아나는 거짓 어포던스가 된다. 삭제 버튼은 `disabled` 가 아니라 **미렌더** — 회색 X 는 "지울 수 있는데 막혔다"로 읽힌다. 위반 배지·글자수 표시는 남긴다(읽기전용은 "안 보인다"가 아니라 "못 바꾼다"다).
@@ -259,7 +264,7 @@ Phase 4가 의미를 가지려면 데이터가 있어야 한다.
 
 - **상품 축 화면은 `KeywordMaster` 를 읽지 않는다.** 카드는 `ProductListing.keywords`/`ChannelProduct.keywords` 만 보여주고 `KeywordEditor` 에 `suggestions` 를 넘기지 않는다. 즉 Phase 3 축적물의 소비자가 아직 강등된 사전 탭뿐이다 — 이 화면에 추천 칩을 붙이는 것이 "축적해서 뭐 하나"의 답이 된다.
 - **`keyword-overview` 의 리스팅 팬아웃에 상한이 없다.** 현재 페이지 30개 상품에 걸리는 모든 리스팅을 중첩 `items` 까지 끌어온다. 리스팅 수천 건 규모에서 여기가 먼저 무너진다 — `groupBy` 집계로 좁혀야 한다.
-- 묶인 채널상품의 상품명 편집(위 "미해결로 남은 것").
+- **전파 라우트 배선에 자동 테스트가 없다.** 전파 _계산_ 은 `listing-name-propagation.test.ts` 16건으로 덮여 있지만, 라우트 쪽 배선(`propagateNames` on/off 분기, mixed 400, old base 역산)은 수동 QA 로만 확인했다. 누군가 플래그 가드를 지워도 테스트가 못 잡는다.
 
 ---
 
