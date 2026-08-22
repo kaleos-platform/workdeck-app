@@ -70,13 +70,20 @@ describe('parseStockStatusExport — 합성 externalCode', () => {
     expect(res.rows[0].externalOptionName).toBe('누드 / M')
   })
 
-  it('실재고가 있는데 위치명이 비면 기존대로 에러를 던진다', () => {
-    expect(() =>
-      parseReconciliationFile(
-        build([['에이엠엘', '모달 머드팬티', '누드 / S', '', 0, 3]], NO_CODE_HEADERS),
-        'a.xlsx'
-      )
-    ).toThrow(/위치명이 비어있는 행/)
+  it('위치명이 비어도 행을 살린다 — 보관 장소는 업로드 시 사용자가 고른다', () => {
+    const res = parseReconciliationFile(
+      build(
+        [
+          ['에이엠엘', '모달 머드팬티', '누드 / S', '', 0, 3],
+          ['에이엠엘', '모달 머드팬티', '누드 / M', '', 0, 4],
+        ],
+        NO_CODE_HEADERS
+      ),
+      'a.xlsx'
+    )
+    expect(res.rows).toHaveLength(2)
+    expect(res.rows.every((r) => r.externalLocationName === undefined)).toBe(true)
+    expect(res.rows.every((r) => isSyntheticExternalCode(r.externalCode))).toBe(true)
   })
 
   it('위치명이 여러 개면 externalLocationName 이 유지된다(다중 위치 분배 경로)', () => {

@@ -26,6 +26,37 @@ import { ReconciliationTemplateDownload } from './reconciliation-template-downlo
 
 type Location = { id: string; name: string; isActive: boolean }
 
+type UploadError = { message: string; hint?: string }
+
+// 서버 에러를 "다음에 뭘 하면 되는지"로 번역한다. 사용자가 직접 고칠 수 있는 것만 담는다.
+function hintFor(
+  code: string | undefined,
+  data: { details?: { locationNames?: string[] } }
+): string | undefined {
+  const names = data?.details?.locationNames
+  switch (code) {
+    case 'LOCATION_UNKNOWN':
+      return names?.length
+        ? `파일의 위치명 칸을 다음 중 하나로 맞춰 주세요: ${names.join(', ')}. 또는 재고 > 위치 관리에서 보관 장소를 추가하세요.`
+        : '재고 > 위치 관리에서 보관 장소 이름을 확인해 주세요.'
+    case 'LOCATION_INACTIVE':
+      return '재고 > 위치 관리에서 해당 보관 장소를 다시 활성화하거나, 파일에서 그 위치 행을 빼고 올려 주세요.'
+    case 'LOCATION_NOT_FOUND':
+      return '보관 장소가 삭제됐을 수 있습니다. 재고 > 위치 관리에서 확인 후 다시 시도해 주세요.'
+    default:
+      return undefined
+  }
+}
+
+function UploadErrorBox({ error }: { error: UploadError }) {
+  return (
+    <div className="space-y-1 rounded-md border border-destructive/40 bg-destructive/5 p-3">
+      <p className="text-sm font-medium text-destructive">{error.message}</p>
+      {error.hint && <p className="text-xs text-muted-foreground">{error.hint}</p>}
+    </div>
+  )
+}
+
 type CommonProps = {
   onUploaded: (reconciliationId: string) => void
 }
@@ -51,15 +82,21 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
   const [submitting, setSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
+  // 실패 사유는 토스트로 흘려보내지 않고 다이얼로그 안에 남긴다 — 사용자가 읽고 고쳐야 하므로.
+  const [uploadError, setUploadError] = useState<UploadError | null>(null)
+
   // 2차 다이얼로그(보관 장소 선택) 상태
   const [locationStepOpen, setLocationStepOpen] = useState(false)
   const [locationId, setLocationId] = useState('')
+  const [locationStepReason, setLocationStepReason] = useState<string | null>(null)
   const locations = useLocations(locationStepOpen)
 
   function resetAll() {
     setFile(null)
     setLocationId('')
     setLocationStepOpen(false)
+    setLocationStepReason(null)
+    setUploadError(null)
   }
 
   function handleDragOver(e: React.DragEvent<HTMLLabelElement>) {
@@ -73,11 +110,17 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
     e.preventDefault()
     setIsDragOver(false)
     const dropped = e.dataTransfer.files?.[0]
-    if (dropped) setFile(dropped)
+    if (dropped) {
+      setFile(dropped)
+      setUploadError(null)
+    }
   }
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const picked = e.target.files?.[0]
-    if (picked) setFile(picked)
+    if (picked) {
+      setFile(picked)
+      setUploadError(null)
+    }
   }
 
   // 서버 응답 분기 헬퍼
@@ -112,6 +155,7 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
   async function handleSubmit() {
     if (!file) return toast.error('파일을 선택해 주세요')
     setSubmitting(true)
+    setUploadError(null)
     try {
       const result = await postFile({})
       if (!result) return
@@ -123,17 +167,19 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
         return
       }
 
-      // 400 "행에 위치명이 없습니다." → 2차 다이얼로그로 진입
       const msg = typeof data?.message === 'string' ? (data.message as string) : ''
-      const needsLocation = res.status === 400 && msg.includes('위치명')
-      if (needsLocation) {
+      const code = typeof data?.code === 'string' ? (data.code as string) : undefined
+
+      // 위치명이 없는 행 → 보관 장소를 고르면 해결되는 문제. 2차 다이얼로그로 넘긴다.
+      if (code === 'LOCATION_REQUIRED') {
+        setLocationStepReason(msg)
         setLocationStepOpen(true)
         return
       }
 
-      throw new Error(msg || '업로드 실패')
+      setUploadError({ message: msg || '업로드 실패', hint: hintFor(code, data) })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '업로드 실패')
+      setUploadError({ message: err instanceof Error ? err.message : '업로드 실패' })
     } finally {
       setSubmitting(false)
     }
@@ -147,10 +193,16 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
       const result = await postFile({ locationId })
       if (!result) return
       const { res, data } = result
-      if (!res.ok) throw new Error(data?.message ?? '업로드 실패')
+      if (!res.ok) {
+        const code = typeof data?.code === 'string' ? (data.code as string) : undefined
+        setUploadError({ message: data?.message ?? '업로드 실패', hint: hintFor(code, data) })
+        setLocationStepOpen(false)
+        return
+      }
       handleSuccess(data as { id: string; totalItems: number; matchedItems: number })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '업로드 실패')
+      setUploadError({ message: err instanceof Error ? err.message : '업로드 실패' })
+      setLocationStepOpen(false)
     } finally {
       setSubmitting(false)
     }
@@ -248,6 +300,8 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
                 목록(SKU번호) / (제품코드+수량) 엑셀 지원
               </p>
             </div>
+
+            {uploadError && <UploadErrorBox error={uploadError} />}
           </div>
 
           <DialogFooter>
@@ -270,8 +324,12 @@ export function ReconciliationFileUploadButton({ onUploaded }: CommonProps) {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
-              이 파일은 위치명 컬럼이 없어 자동 분배가 불가합니다. 어느 보관 장소로 반영할지 선택해
-              주세요.
+              {locationStepReason ??
+                '이 파일은 위치명 컬럼이 없어 자동 분배가 불가합니다. 어느 보관 장소로 반영할지 선택해 주세요.'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              여러 장소로 나눠 반영하려면 파일의 <strong>위치명</strong> 컬럼을 보관 장소 이름으로
+              채워 다시 올리세요.
             </p>
             <div className="space-y-2">
               <Label>보관 장소</Label>
