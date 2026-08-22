@@ -195,7 +195,7 @@ export function ShProductList() {
       {/* 필터 바 */}
       <div className="flex flex-wrap items-center gap-2">
         <Input
-          placeholder="관리 상품명·영문명·제품코드·옵션 검색"
+          placeholder="상품명·관리명·제품코드·옵션 검색"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
