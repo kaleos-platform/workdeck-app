@@ -48,7 +48,6 @@ function renderPicker() {
       onPickMulti={() => {}}
       keywordSource={KEYWORD_SOURCE}
       tokenized
-      searchOfficialName
     />
   )
 }

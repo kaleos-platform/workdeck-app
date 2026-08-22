@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
-import { tokenizeProductName } from '@/lib/inv/search-tokens'
 import { prisma } from '@/lib/prisma'
 import { productSchema } from '@/lib/sh/schemas'
+import { productSearchFilter } from '@/lib/sh/product-search'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -26,32 +26,13 @@ export async function GET(req: NextRequest) {
   if (groupId === 'none') where.groupId = null
   else if (groupId) where.groupId = groupId
 
-  // includeName=1이면 공식명(name)도 검색 대상에 포함(재고조정 추천 등 상품명 기반 매칭용).
-  const includeName = searchParams.get('includeName') === '1'
-  // tokenized=1이면 검색어를 토큰으로 쪼개 각 토큰이 모두 매칭돼야 한다(AND).
-  // 파일 상품명 전체를 통째로 contains 하면 한 글자만 달라도 0건이라 재고조정 매칭에서만 opt-in.
+  // tokenized=1이면 파일 상품명 등 검증된 규칙(tokenizeProductName)으로 토큰을 쪼갠다.
+  // 기본은 공백 분리 — 'BLK-S' 같은 정확 검색어가 과분리되지 않도록.
   const tokenized = searchParams.get('tokenized') === '1'
 
-  // 기본 검색은 관리 상품명(internalName) 기준 — 공식명(name)은 opt-in 시에만, 브랜드명 포함
-  const fieldOr = (term: string) => [
-    ...(includeName ? [{ name: { contains: term, mode: 'insensitive' as const } }] : []),
-    { internalName: { contains: term, mode: 'insensitive' as const } },
-    { nameEn: { contains: term, mode: 'insensitive' as const } },
-    { code: { contains: term, mode: 'insensitive' as const } },
-    { brand: { name: { contains: term, mode: 'insensitive' as const } } },
-    { options: { some: { name: { contains: term, mode: 'insensitive' as const } } } },
-    { options: { some: { sku: { contains: term, mode: 'insensitive' as const } } } },
-  ]
-
-  if (search) {
-    if (tokenized) {
-      const tokens = tokenizeProductName(search)
-      if (tokens.length > 0) {
-        where.AND = tokens.map((t) => ({ OR: fieldOr(t) }))
-      }
-    } else {
-      where.OR = fieldOr(search)
-    }
+  const searchFilter = productSearchFilter(search, { aggressive: tokenized })
+  if (searchFilter) {
+    Object.assign(where, searchFilter)
   }
 
   const [products, total] = await Promise.all([

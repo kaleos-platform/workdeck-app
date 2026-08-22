@@ -844,7 +844,6 @@ export function ReconciliationPreview({
         onPickMulti={handlePickedMulti}
         keywordSource={pickerKeywordSource}
         tokenized
-        searchOfficialName
         excludeOptionIds={excludeOptionIds}
         contextLabel="매칭 대상 (파일)"
         contextValue={pickerContext}
@@ -869,7 +868,6 @@ export function ReconciliationPreview({
         excludeOptionIds={excludeOptionIds}
         keywordSource={editMatcherEntry?.row?.externalName ?? ''}
         tokenized
-        searchOfficialName
         contextLabel="현재 매칭"
         contextValue={
           editMatcherEntry
