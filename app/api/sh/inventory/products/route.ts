@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { Prisma } from '@/generated/prisma/client'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { productSearchFilter } from '@/lib/sh/product-search'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -17,17 +19,7 @@ export async function GET(req: NextRequest) {
 
   const groupIdParam = searchParams.get('groupId')
 
-  const where: {
-    spaceId: string
-    status?: 'ACTIVE' | 'INACTIVE'
-    groupId?: string
-    OR?: Array<
-      | { internalName: { contains: string; mode: 'insensitive' } }
-      | { code: { contains: string; mode: 'insensitive' } }
-      | { options: { some: { name: { contains: string; mode: 'insensitive' } } } }
-      | { options: { some: { sku: { contains: string; mode: 'insensitive' } } } }
-    >
-  } = { spaceId: resolved.space.id }
+  const where: Prisma.InvProductWhereInput = { spaceId: resolved.space.id }
 
   if (statusParam === 'ACTIVE' || statusParam === 'INACTIVE') {
     where.status = statusParam
@@ -40,14 +32,9 @@ export async function GET(req: NextRequest) {
     where.groupId = groupIdParam
   }
 
-  if (search) {
-    // 검색은 관리 상품명(internalName) 기준 — 공식명(name) 제외
-    where.OR = [
-      { internalName: { contains: search, mode: 'insensitive' } },
-      { code: { contains: search, mode: 'insensitive' } },
-      { options: { some: { name: { contains: search, mode: 'insensitive' } } } },
-      { options: { some: { sku: { contains: search, mode: 'insensitive' } } } },
-    ]
+  const searchFilter = productSearchFilter(search)
+  if (searchFilter) {
+    Object.assign(where, searchFilter)
   }
 
   const [productsRaw, total] = await Promise.all([

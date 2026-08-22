@@ -79,8 +79,6 @@ type Props = {
   contextValue?: string
   // multi-with-qty 수정 시 기존 선택 복원
   initialItems?: PickedOptionWithQty[]
-  // 검색 시 공식 상품명(name)도 매칭 대상에 포함(재고조정 상품명 추천용). 기본 false.
-  searchOfficialName?: boolean
   // 파일 상품명 등 원본 문자열. 넘기면 단어별 키워드 칩 UI를 띄우고 앞 N개 토큰으로 검색을 시작한다.
   keywordSource?: string
   // keywordSource 사용 시 처음 선택 상태로 둘 앞쪽 토큰 수(기본 2)
@@ -101,7 +99,6 @@ export function OptionPickerDialog({
   contextLabel,
   contextValue,
   initialItems,
-  searchOfficialName = false,
   keywordSource,
   initialTokenCount = 2,
   tokenized = false,
@@ -176,7 +173,6 @@ export function OptionPickerDialog({
         qs.set('page', String(page))
         qs.set('pageSize', String(PAGE_SIZE))
         if (debounced.trim()) qs.set('search', debounced.trim())
-        if (searchOfficialName) qs.set('includeName', '1')
         if (tokenized) qs.set('tokenized', '1')
         const res = await fetch(`/api/sh/products?${qs.toString()}`)
         if (!res.ok) throw new Error('검색 실패')
@@ -228,7 +224,7 @@ export function OptionPickerDialog({
     return () => {
       cancelled = true
     }
-  }, [open, debounced, page, searchOfficialName])
+  }, [open, debounced, page])
 
   // 칩 선택 상태는 별도 state 없이 현재 검색어에서 파생 — 직접 타이핑과 어긋나지 않는다.
   const activeTokens = useMemo(
