@@ -262,8 +262,14 @@ Phase 4가 의미를 가지려면 데이터가 있어야 한다.
 
 ### 후속으로 남긴 것
 
-- **상품 축 화면은 `KeywordMaster` 를 읽지 않는다.** 카드는 `ProductListing.keywords`/`ChannelProduct.keywords` 만 보여주고 `KeywordEditor` 에 `suggestions` 를 넘기지 않는다. 즉 Phase 3 축적물의 소비자가 아직 강등된 사전 탭뿐이다 — 이 화면에 추천 칩을 붙이는 것이 "축적해서 뭐 하나"의 답이 된다.
-- **`keyword-overview` 의 리스팅 팬아웃에 상한이 없다.** 현재 페이지 30개 상품에 걸리는 모든 리스팅을 중첩 `items` 까지 끌어온다. 리스팅 수천 건 규모에서 여기가 먼저 무너진다 — `groupBy` 집계로 좁혀야 한다.
+- ~~상품 축 화면은 `KeywordMaster` 를 읽지 않는다~~ → **해소(2026-08-24).** 조사해 보니 공백이 더 넓었다 — `GET /api/sh/keywords/suggest` 는 Phase 2 에 완성돼 있었으나 **레포 전체에서 아무도 호출하지 않았고**, 기존 3개 화면(`listing-form`·`listing-create-form`·`group-detail-view`)도 전부 `masterPool: []` 로 호출하고 있었다. Phase 1 이 잘못된 추천을 끄면서 "Phase 2 에서 마스터 풀로 복귀한다"고 적었는데 그 복귀가 안 된 것이다. 네 화면 모두 `?productId=` 로 연결했다.
+  - 상품 축 화면은 **패널에서 한 번만** 조회해 카드들에 내린다(카드 수와 무관하게 상품당 2요청). 카드는 자기 키워드를 `normalizeKeyword` 기준으로 걸러 넘기고, 연동 채널 카드에는 아예 넘기지 않는다
+  - 여러 상품이 섞인 구성(`linkProduct === null` / `kind !== 'single'` / `productCtx === null`)에서는 **조회하지 않고 빈 배열로 초기화**한다 — 어느 상품의 추천인지 말할 수 없고, 초기화를 빼먹으면 이전 상품의 추천이 남는다
+  - 조회 실패는 조용히 무시한다(토스트 없음). 추천은 부가 기능이고 저장 화면에 에러가 뜨면 안 된다
+- ~~`keyword-overview` 의 리스팅 팬아웃에 상한이 없다~~ → **해소(2026-08-24).** 집계를 `$queryRaw` GROUP BY 로 DB 에 내렸다. 응답은 상품당 1행(페이지 상한 30행)이고 리스팅 총량과 무관하다.
+  - **혼합 세트 판정에는 그 리스팅의 옵션이 전부 필요하다.** 그래서 `target_listings` 로 대상 리스팅을 먼저 좁히고(spaceId + productId), `listing_products` 는 그 리스팅들의 **전체 옵션**을 집계한다. 상품으로 옵션까지 거르면 혼합 세트가 단일 상품으로 오판된다
+  - 첫 구현은 CTE 에 범위 제한이 없어 **매 페이지마다 DB 전체의 `ProductListingItem` 을 테넌트 경계 없이 GROUP BY** 했다. 최종 `WHERE` 가 유출은 막지만 겨냥한 규모에서 새 병목이 된다 — 그룹 키가 아닌 컬럼 조건이라 Postgres 가 CTE 안으로 밀어 넣어 주지 않는다
+  - 동일성 검증: dev DB 실측(2 space, mismatch 0) + **혼합 세트가 dev DB 에 0건이라** 합성 데이터를 트랜잭션으로 만들어 비교 후 롤백. 성능 개선폭은 dev DB 규모(331행)로는 입증 못 함 — prod 규모에서 재현 필요
 - **전파 라우트 배선에 자동 테스트가 없다.** 전파 _계산_ 은 `listing-name-propagation.test.ts` 16건으로 덮여 있지만, 라우트 쪽 배선(`propagateNames` on/off 분기, mixed 400, old base 역산)은 수동 QA 로만 확인했다. 누군가 플래그 가드를 지워도 테스트가 못 잡는다.
 
 ---

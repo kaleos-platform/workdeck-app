@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { getSellerHubChannelProductPath } from '@/lib/deck-routes'
 import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
+import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 
 import { KeywordChangeDialog, type KeywordChangeMeta } from '../listings/keyword-change-dialog'
 import { KeywordEditor } from '../listings/keyword-editor'
@@ -40,10 +41,11 @@ export type KeywordCard = {
 
 type Props = {
   card: KeywordCard
+  suggestions?: string[]
   onSaved: () => void
 }
 
-export function ProductKeywordCard({ card, onSaved }: Props) {
+export function ProductKeywordCard({ card, suggestions, onSaved }: Props) {
   const readOnly = card.externalSource != null
   // 묶인 채널상품(channelProduct) 카드는 서버가 CP 전체 자식을 확인해 상품이 하나로 맞는 경우에만
   // nameEditable=true 를 내려준다. 그 경우 PATCH 의 propagateNames 로 서버가 접미사를 보존한 채
@@ -68,6 +70,14 @@ export function ProductKeywordCard({ card, onSaved }: Props) {
   )
   const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
   const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
+
+  // 패널이 상품 단위로 한 번 받아온 추천 풀 — 이 카드에 이미 담긴 키워드는 빼고 보여준다.
+  // 읽기전용 카드는 애초에 suggestions 를 넘기지 않는다(호출부에서 처리).
+  const cardSuggestions = useMemo(() => {
+    if (!suggestions || suggestions.length === 0) return []
+    const existing = new Set(keywords.map((k) => normalizeKeyword(k)))
+    return suggestions.filter((s) => !existing.has(normalizeKeyword(s)))
+  }, [suggestions, keywords])
 
   const diff = useMemo(
     () =>
@@ -247,6 +257,7 @@ export function ProductKeywordCard({ card, onSaved }: Props) {
           <KeywordEditor
             value={keywords}
             onChange={setKeywords}
+            suggestions={readOnly ? undefined : cardSuggestions}
             productName={searchName}
             rules={rules}
             readOnly={readOnly}

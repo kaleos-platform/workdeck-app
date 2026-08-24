@@ -15,6 +15,7 @@ type Props = {
 
 export function ProductKeywordPanel({ productId }: Props) {
   const [cards, setCards] = useState<KeywordCard[]>([])
+  const [suggestions, setSuggestions] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   // onSaved 재조회는 카운터를 올려 같은 effect 를 다시 태운다 — productId 전환의
@@ -24,6 +25,7 @@ export function ProductKeywordPanel({ productId }: Props) {
   useEffect(() => {
     if (!productId) {
       setCards([])
+      setSuggestions([])
       setError(false)
       return
     }
@@ -44,6 +46,19 @@ export function ProductKeywordPanel({ productId }: Props) {
         setError(true)
       } finally {
         if (!cancelled) setLoading(false)
+      }
+
+      // 추천은 부가 기능이라 카드 조회와 별개의 try — 실패해도 error 상태(카드 조회 전용)를
+      // 건드리지 않고 조용히 빈 배열로 둔다.
+      try {
+        const res = await fetch(`/api/sh/keywords/suggest?productId=${productId}`)
+        if (!res.ok) throw new Error('추천 조회 실패')
+        const data: { suggestions: string[] } = await res.json()
+        if (cancelled) return
+        setSuggestions(data.suggestions ?? [])
+      } catch {
+        if (cancelled) return
+        setSuggestions([])
       }
     }
     load()
@@ -105,7 +120,7 @@ export function ProductKeywordPanel({ productId }: Props) {
   return (
     <div className="space-y-4">
       {cards.map((card) => (
-        <ProductKeywordCard key={card.id} card={card} onSaved={reload} />
+        <ProductKeywordCard key={card.id} card={card} suggestions={suggestions} onSaved={reload} />
       ))}
     </div>
   )
