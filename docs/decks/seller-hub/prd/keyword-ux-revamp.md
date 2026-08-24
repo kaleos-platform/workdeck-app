@@ -270,7 +270,9 @@ Phase 4가 의미를 가지려면 데이터가 있어야 한다.
   - **혼합 세트 판정에는 그 리스팅의 옵션이 전부 필요하다.** 그래서 `target_listings` 로 대상 리스팅을 먼저 좁히고(spaceId + productId), `listing_products` 는 그 리스팅들의 **전체 옵션**을 집계한다. 상품으로 옵션까지 거르면 혼합 세트가 단일 상품으로 오판된다
   - 첫 구현은 CTE 에 범위 제한이 없어 **매 페이지마다 DB 전체의 `ProductListingItem` 을 테넌트 경계 없이 GROUP BY** 했다. 최종 `WHERE` 가 유출은 막지만 겨냥한 규모에서 새 병목이 된다 — 그룹 키가 아닌 컬럼 조건이라 Postgres 가 CTE 안으로 밀어 넣어 주지 않는다
   - 동일성 검증: dev DB 실측(2 space, mismatch 0) + **혼합 세트가 dev DB 에 0건이라** 합성 데이터를 트랜잭션으로 만들어 비교 후 롤백. 성능 개선폭은 dev DB 규모(331행)로는 입증 못 함 — prod 규모에서 재현 필요
-- **전파 라우트 배선에 자동 테스트가 없다.** 전파 _계산_ 은 `listing-name-propagation.test.ts` 16건으로 덮여 있지만, 라우트 쪽 배선(`propagateNames` on/off 분기, mixed 400, old base 역산)은 수동 QA 로만 확인했다. 누군가 플래그 가드를 지워도 테스트가 못 잡는다.
+- ~~전파 라우트 배선에 자동 테스트가 없다~~ → **해소(2026-08-25).** `src/lib/sh/__tests__/channel-product-name-propagate.e2e.test.ts` 6건. 라우트 핸들러를 직접 호출하고 `resolveDeckContext` 를 모킹하는 기존 e2e 관례를 따른다(dev DB 에 throwaway space, `afterAll` 정리, DB URL 없으면 skip). 실행: `npx jest --config jest.config.e2e.ts <파일>`
+  - 덮은 것: 플래그 없으면 자식 불변 / 플래그 있으면 접미사 보존 전파 / mixed CP 는 400 이고 저장 **전** 거절 / **old base 가 컬럼이 아니라 역산값** / `managementName`·`internalCode`·`memo` 불변 / `KeywordChangeLog` 는 base 기준 1건
+  - **핵심은 "역산 vs 컬럼" 케이스다.** 나머지는 누가 old base 를 컬럼으로 바꿔도 통과할 수 있다. 그래서 컬럼값을 자식 이름과 일부러 어긋나게 심어 두 구현이 서로 다른 결과를 내도록 구성했다 — 컬럼을 쓰면 접두어 매칭이 실패해 `buildSuffix` 폴백으로 빠지면서 **없던 옵션 접미사를 지어붙인다**(`새상품 블랙`), 역산이면 `새상품` 이 나온다
 
 ---
 
