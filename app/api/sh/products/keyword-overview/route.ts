@@ -58,17 +58,32 @@ export async function GET(req: NextRequest) {
   const productIds = rows.map((p) => p.id)
   // 집계는 DB 쪽 GROUP BY 로 내린다 — 리스팅 행과 중첩 items 를 앱 메모리로
   // 끌어오면(구 구현) 리스팅이 수천 건인 space 에서 이 라우트가 먼저 무너진다.
-  // listing_products: 리스팅별로 (삭제 안 된) 옵션이 가리키는 distinct productId 를 센다.
-  //   product_count = 1 인 것만 "단일 상품 리스팅" — 2개 이상이면 혼합 세트라 특정
-  //   상품 것이라 말할 수 없으므로 keyword-cards 카드 생성 규칙과 맞춰 제외한다
-  //   (여기서 한쪽만 바꾸면 좌측 "채널 N개" 와 우측 카드 수가 어긋난다).
+  // target_listings: 이번 페이지 상품이 걸린 리스팅만 먼저 좁힌다(spaceId 포함) —
+  //   이 필터를 CTE 밖에 두면 Postgres 가 안으로 밀어 넣어 줄 거라 기대할 수 없어서
+  //   (그룹 키가 아닌 컬럼 조건) DB 가 여전히 ProductListingItem 전체를 훑는다.
+  // listing_products: 위에서 좁힌 리스팅에 한해 (삭제 안 된) 옵션이 가리키는
+  //   distinct productId 를 센다 — 혼합 세트 판정에는 그 리스팅의 옵션 전부가
+  //   필요하므로 여기서는 productId 로 다시 거르지 않는다(거르면 혼합 세트가
+  //   단일 상품으로 오판된다). product_count = 1 인 것만 "단일 상품 리스팅" —
+  //   2개 이상이면 혼합 세트라 특정 상품 것이라 말할 수 없으므로 keyword-cards
+  //   카드 생성 규칙과 맞춰 제외한다(한쪽만 바꾸면 좌측 "채널 N개" 와 우측
+  //   카드 수가 어긋난다).
   // qualifying: 판매채널(isSalesChannel=true)에 걸린, 단일 상품 리스팅만 남기고
   //   그 상품이 이번 페이지 대상(productIds)일 때만 distinct channelId 를 센다.
   const counts =
     productIds.length === 0
       ? []
       : await prisma.$queryRaw<Array<{ productId: string; channelCount: bigint }>>`
-          WITH listing_products AS (
+          WITH target_listings AS (
+            SELECT DISTINCT pli."listingId" AS "listingId"
+            FROM "ProductListingItem" pli
+            JOIN "InvProductOption" ipo ON ipo.id = pli."optionId"
+            JOIN "ProductListing" pl0 ON pl0.id = pli."listingId"
+            WHERE ipo."deletedAt" IS NULL
+              AND pl0."spaceId" = ${resolved.space.id}
+              AND ipo."productId" IN (${Prisma.join(productIds)})
+          ),
+          listing_products AS (
             SELECT
               pli."listingId" AS "listingId",
               COUNT(DISTINCT ipo."productId") AS product_count,
@@ -76,6 +91,7 @@ export async function GET(req: NextRequest) {
             FROM "ProductListingItem" pli
             JOIN "InvProductOption" ipo ON ipo.id = pli."optionId"
             WHERE ipo."deletedAt" IS NULL
+              AND pli."listingId" IN (SELECT "listingId" FROM target_listings)
             GROUP BY pli."listingId"
           )
           SELECT
