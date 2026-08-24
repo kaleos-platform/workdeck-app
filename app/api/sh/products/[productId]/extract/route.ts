@@ -18,12 +18,23 @@ import {
   extractProductInfo,
   type ExtractSourcePart,
 } from '@/lib/sh/product-extract'
+import { safeFetchBinary, SafeFetchError } from '@/lib/net/safe-fetch'
 import {
   TextCreditExceededError,
   commitTextCredit,
   refundTextCredit,
   reserveTextCredit,
 } from '@/lib/ai/credit'
+
+// URL 소재 HTML에서 뽑아낸 상세 이미지 다운로드 결과 집계 — 사용자가 "이미지를 봤는지"
+// 알 수 있게 job.result에 함께 남긴다(스키마 변경 없이 기존 Json 필드에 병기).
+type ImageFetchStats = {
+  requested: number
+  succeeded: number
+  failed: number
+  /** 업로드 파일 + 이미지 합산이 12MB 상한(MAX_JOB_INLINE_BYTES)에 닿아 아예 받지 않은 개수 */
+  skippedByteLimit: number
+}
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -55,7 +66,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (!parsed.success) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
-  const { url, urlText, pastedText, files } = parsed.data
+  const { url, urlText, pastedText, files, imageUrls } = parsed.data
 
   // 다른 Space가 남의 storagePath를 참조하지 못하게 막는 가드.
   for (const f of files) {
@@ -154,9 +165,13 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     const fileSources = job.sources.filter((s) => s.kind === 'IMAGE' || s.kind === 'PDF')
     const inlineParts: ExtractSourcePart[] = []
+    // 업로드 파일 + URL 상세이미지가 같은 12MB 예산(MAX_JOB_INLINE_BYTES)을 공유한다.
+    // files는 위에서 이미 413으로 사전 검증했으므로 여기서는 실 다운로드 바이트로 누적한다.
+    let inlineBudgetBytes = 0
     for (const s of fileSources) {
       if (!s.storagePath || !s.mimeType) continue
       const bytes = await downloadProductSourceFile(s.storagePath)
+      inlineBudgetBytes += bytes.byteLength
       inlineParts.push({
         kind: 'inline',
         mimeType: s.mimeType,
@@ -165,16 +180,84 @@ export async function POST(req: NextRequest, { params }: Params) {
       })
     }
 
+    // URL 소재 HTML에서 뽑아낸 상세 이미지를 내려받아 멀티모달 입력에 추가한다.
+    // 한국 쇼핑몰 상세페이지는 소재·인증 정보가 HTML 텍스트가 아니라 이미지 안에 박혀 있는
+    // 경우가 많아, 이미지 없이는 URL 소재가 사실상 무용지물이다.
+    // - 개별 이미지 실패(404/타임아웃/MIME 불일치/SSRF 차단 등)는 전체를 죽이지 않고 건너뛴다.
+    // - 12MB 예산을 넘기면 더 받지 않되, 몇 장을 못 넣었는지 imageFetchStats에 남긴다(무음 절단 금지).
+    const imageParts: ExtractSourcePart[] = []
+    let imgSucceeded = 0
+    let imgFailed = 0
+    let imgSkippedByteLimit = 0
+    for (let i = 0; i < imageUrls.length; i++) {
+      if (inlineBudgetBytes >= MAX_JOB_INLINE_BYTES) {
+        imgSkippedByteLimit += imageUrls.length - i
+        break
+      }
+      const imgUrl = imageUrls[i]
+      try {
+        const fetched = await safeFetchBinary(imgUrl)
+        if (inlineBudgetBytes + fetched.bytes.byteLength > MAX_JOB_INLINE_BYTES) {
+          imgSkippedByteLimit += imageUrls.length - i
+          break
+        }
+        inlineBudgetBytes += fetched.bytes.byteLength
+        imageParts.push({
+          kind: 'inline',
+          mimeType: fetched.mimeType,
+          data: fetched.bytes,
+          fileName: `상세이미지-${i + 1}`,
+        })
+        imgSucceeded += 1
+      } catch (err) {
+        imgFailed += 1
+        const detail = err instanceof SafeFetchError ? `${err.code}: ${err.message}` : String(err)
+        console.warn('[sh/products/extract] 상세 이미지 다운로드 실패 — 건너뛰고 계속 진행', {
+          productId,
+          jobId: job.id,
+          imgUrl,
+          detail,
+        })
+      }
+    }
+    const imageFetchStats: ImageFetchStats = {
+      requested: imageUrls.length,
+      succeeded: imgSucceeded,
+      failed: imgFailed,
+      skippedByteLimit: imgSkippedByteLimit,
+    }
+
     const extracted = await extractProductInfo({
       productName: product.name,
-      parts: [...textParts, ...inlineParts],
+      parts: [...textParts, ...inlineParts, ...imageParts],
     })
+
+    // URL 소재 row(kind=URL)의 기존 byteSize 필드에 "실제로 모델에 넣은 이미지 총 바이트"를
+    // 남긴다 — 이미지별 ProductExtractionSource row는 만들지 않는다(그 storagePath는 우리
+    // 버킷 객체 대조용이라 외부 URL을 섞으면 고아 파일 정리 cron의 대조가 오염된다).
+    // 상세 성공/실패/한도초과 개수는 구조화된 필드가 없어 job.result에 imageFetchStats로 병기한다.
+    const urlSource = job.sources.find((s) => s.kind === 'URL')
+    const imageBytesUsed = imageParts.reduce(
+      (sum, p) => sum + (p.kind === 'inline' ? p.data.byteLength : 0),
+      0
+    )
+    if (urlSource && imageUrls.length > 0) {
+      await prisma.productExtractionSource.update({
+        where: { id: urlSource.id },
+        data: { byteSize: imageBytesUsed },
+      })
+    }
+
+    const resultWithImageStats: Prisma.InputJsonValue = {
+      ...(extracted.result as unknown as Record<string, unknown>),
+      imageFetchStats: imageFetchStats as unknown as Prisma.InputJsonValue,
+    } as Prisma.InputJsonValue
 
     const succeeded = await prisma.productExtractionJob.update({
       where: { id: job.id },
       data: {
         status: 'SUCCEEDED',
-        result: extracted.result as unknown as Prisma.InputJsonValue,
+        result: resultWithImageStats,
         rawResponse: extracted.raw.slice(0, 20000),
         inputTokens: extracted.usage.inputTokens,
         outputTokens: extracted.usage.outputTokens,

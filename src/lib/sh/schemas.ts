@@ -902,6 +902,8 @@ export const productExtractRequestSchema = z
     url: z.string().url().max(2048).nullish(),
     urlText: z.string().max(30000).nullish(),
     pastedText: z.string().max(30000).nullish(),
+    // URL 수집 단계가 찾아낸 상세 이미지 후보. 추출 단계에서 내려받아 멀티모달 입력으로 쓴다.
+    imageUrls: z.array(z.string().url().max(2048)).max(12).default([]),
     files: z.array(extractFileRefSchema).max(5).default([]),
   })
   .refine(
