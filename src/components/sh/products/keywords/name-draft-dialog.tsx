@@ -146,6 +146,12 @@ export function NameDraftDialog({
             <div className="space-y-5">
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">상품명(검색용) 후보</h4>
+                {/* 아래 검색어 위반은 "지금 등록된 상품명" 기준으로 계산된 것이다(§10 중복).
+                    상품명 후보를 적용하면 그 기준이 바뀌므로 사용자에게 미리 알린다. */}
+                <p className="text-xs text-muted-foreground">
+                  상품명을 적용하면 검색어 중복 검사 기준이 새 이름으로 바뀝니다. 필요하면 검색어도
+                  다시 확인해 주세요.
+                </p>
                 {names.length === 0 ? (
                   <p className="text-xs text-muted-foreground">후보가 없습니다.</p>
                 ) : (
