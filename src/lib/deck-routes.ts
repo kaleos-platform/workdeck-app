@@ -43,6 +43,10 @@ export const SELLER_HUB_PRODUCTION_PATH = `${SELLER_HUB_BASE_PATH}/products/prod
 export function getSellerHubProductPath(id: string) {
   return `${SELLER_HUB_BASE_PATH}/products/${id}`
 }
+/** AI 상품정보 추출 딥링크 — 상품 상세 다이얼로그를 초기 오픈 상태로 진입한다 */
+export function getSellerHubProductExtractPath(id: string) {
+  return `${SELLER_HUB_BASE_PATH}/products/${id}/extract`
+}
 export function getSellerHubListingPath(id: string) {
   return `${SELLER_HUB_BASE_PATH}/products/listings/${id}`
 }

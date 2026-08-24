@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { AlertTriangle, Check, Loader2, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -28,6 +28,7 @@ type CurrentProduct = {
 }
 
 type ListMode = 'replace' | 'merge'
+type DescMode = 'append' | 'replace'
 
 function mergeList(
   current: string[],
@@ -84,47 +85,51 @@ export function ProductExtractReview({
   // ─── 편집 상태 (job이 바뀌면 초기화) ───
   const [descSelected, setDescSelected] = useState(false)
   const [descText, setDescText] = useState('')
+  const [descMode, setDescMode] = useState<DescMode>('append')
   const [featureSel, setFeatureSel] = useState<Set<number>>(new Set())
-  const [featureMode, setFeatureMode] = useState<ListMode>('replace')
+  const [featureMode, setFeatureMode] = useState<ListMode>('merge')
   const [featureExtras, setFeatureExtras] = useState<string[]>([])
   const [certSel, setCertSel] = useState<Set<number>>(new Set())
-  const [certMode, setCertMode] = useState<ListMode>('replace')
+  const [certMode, setCertMode] = useState<ListMode>('merge')
   const [mfrSelected, setMfrSelected] = useState(false)
   const [countrySelected, setCountrySelected] = useState(false)
   const [applying, setApplying] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    // 추출된 값이 있는 필드는 기본 선택 — 이 기능의 산출물이 곧 상품 설명이라,
-    // 기본 미선택이면 사용자가 적용을 눌러도 설명이 빠진 채 저장된다.
-    // 예외는 인증정보뿐: 인증번호는 오독 시 법적 리스크가 있어 반드시 직접 선택하게 한다.
-    setDescSelected(Boolean(result?.description))
-    setDescText(result?.description ?? '')
-    setFeatureSel(new Set((result?.features ?? []).map((_, i) => i)))
-    setFeatureMode('replace')
-    setFeatureExtras([])
-    setCertSel(new Set())
-    setCertMode('replace')
-    setMfrSelected(Boolean(result?.manufacturer))
-    setCountrySelected(Boolean(result?.originCountry))
-    setError(null)
-  }, [job.id, result])
-
+  // 현재 상품값 로딩과 편집 상태 초기화를 하나의 effect로 묶는다 — 두 fetch가 분리되어 있으면
+  // "기존 값이 있을 때만 기본 미선택" 판단이 current가 아직 도착하기 전 result만으로 이뤄져
+  // 매 번 잘못된 기본값(기존 값이 있어도 기본 선택됨)으로 렌더될 수 있다.
   useEffect(() => {
     let cancelled = false
     setLoadingCurrent(true)
+    setError(null)
     fetch(`/api/sh/products/${productId}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (cancelled || !data) return
-        const p = data.product ?? data
-        setCurrent({
-          description: p.description ?? null,
-          features: Array.isArray(p.features) ? p.features : [],
-          certifications: Array.isArray(p.certifications) ? p.certifications : [],
-          manufacturer: p.manufacturer ?? null,
-          manufactureCountry: p.manufactureCountry ?? null,
-        })
+        if (cancelled) return
+        const p = data ? (data.product ?? data) : null
+        const curr: CurrentProduct = {
+          description: p?.description ?? null,
+          features: Array.isArray(p?.features) ? p.features : [],
+          certifications: Array.isArray(p?.certifications) ? p.certifications : [],
+          manufacturer: p?.manufacturer ?? null,
+          manufactureCountry: p?.manufactureCountry ?? null,
+        }
+        setCurrent(curr)
+
+        // 추출된 값이 있고 "기존 값이 없는" 필드만 기본 선택 — 기존 정보가 있으면
+        // 사용자가 명시적으로 선택해야 반영되게 해 무음 덮어쓰기를 막는다.
+        // 예외는 인증정보뿐: 인증번호는 오독 시 법적 리스크가 있어 항상 직접 선택하게 한다.
+        setDescSelected(Boolean(result?.description) && !curr.description)
+        setDescText(result?.description ?? '')
+        setDescMode('append')
+        setFeatureSel(new Set((result?.features ?? []).map((_, i) => i)))
+        setFeatureMode('merge')
+        setFeatureExtras([])
+        setCertSel(new Set())
+        setCertMode('merge')
+        setMfrSelected(Boolean(result?.manufacturer) && !curr.manufacturer)
+        setCountrySelected(Boolean(result?.originCountry) && !curr.manufactureCountry)
       })
       .finally(() => {
         if (!cancelled) setLoadingCurrent(false)
@@ -132,7 +137,16 @@ export function ProductExtractReview({
     return () => {
       cancelled = true
     }
-  }, [productId, job.id])
+  }, [productId, job.id, result])
+
+  // 이어붙이기 모드일 때 기존 설명 + 추출 설명을 합친 실제 저장값 — 잘림 여부를
+  // 조용히 처리하지 않고 배지로 드러내기 위해 미리 계산해 둔다.
+  const combinedDescription = useMemo(() => {
+    const base = descMode === 'append' && current?.description ? current.description : ''
+    if (base && descText) return `${base}\n\n${descText}`
+    return base || descText
+  }, [descMode, current?.description, descText])
+  const descWillTruncate = combinedDescription.length > PRODUCT_DESCRIPTION_MAX
 
   const addToFeatures = useCallback((text: string) => {
     const trimmed = text.trim()
@@ -183,7 +197,9 @@ export function ProductExtractReview({
       }
 
       const patch: ProductApplyPatch = {}
-      if (descSelected) patch.description = descText.trim() || null
+      if (descSelected) {
+        patch.description = combinedDescription.slice(0, PRODUCT_DESCRIPTION_MAX).trim() || null
+      }
       if (featuresIncluded) {
         const selected = result.features.filter((_, i) => featureSel.has(i))
         patch.features = mergeList(current?.features ?? [], selected, featureExtras, featureMode)
@@ -222,7 +238,7 @@ export function ProductExtractReview({
     productId,
     job.id,
     descSelected,
-    descText,
+    combinedDescription,
     featuresIncluded,
     featureSel,
     featureExtras,
@@ -313,11 +329,34 @@ export function ProductExtractReview({
           onCheckedChange={setDescSelected}
           label="상품 설명"
           currentPreview={loadingCurrent ? '불러오는 중...' : current?.description || '(없음)'}
+          hint={
+            current?.description
+              ? '기존 설명이 있습니다 — 선택하면 아래 방식대로 반영됩니다'
+              : undefined
+          }
         >
           {job.result?.truncatedFields.includes('description') && (
             <Badge variant="outline" className="mb-1.5">
-              {PRODUCT_DESCRIPTION_MAX}자로 잘렸습니다
+              추출 원문이 {PRODUCT_DESCRIPTION_MAX}자로 잘렸습니다
             </Badge>
+          )}
+          {current?.description && (
+            <div className="mb-1.5 flex flex-wrap gap-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setDescMode('append')}
+                className={`rounded-full border px-2.5 py-1 ${descMode === 'append' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+              >
+                뒤에 추가
+              </button>
+              <button
+                type="button"
+                onClick={() => setDescMode('replace')}
+                className={`rounded-full border px-2.5 py-1 ${descMode === 'replace' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+              >
+                교체
+              </button>
+            </div>
           )}
           <Textarea
             value={descText}
@@ -329,6 +368,11 @@ export function ProductExtractReview({
           <p className="mt-1 text-right text-xs text-muted-foreground">
             {descText.length} / {PRODUCT_DESCRIPTION_MAX}자
           </p>
+          {descWillTruncate && (
+            <Badge variant="outline" className="mt-1.5">
+              기존 설명과 합치면 {PRODUCT_DESCRIPTION_MAX}자로 잘립니다
+            </Badge>
+          )}
         </FieldBlock>
 
         <Separator />
@@ -388,6 +432,7 @@ export function ProductExtractReview({
             onCheckedChange={setMfrSelected}
             label="제조사"
             currentPreview={loadingCurrent ? '불러오는 중...' : current?.manufacturer || '(없음)'}
+            hint={current?.manufacturer ? '기존 값이 있습니다 — 선택하면 교체됩니다' : undefined}
           >
             <p className="text-sm">{result.manufacturer || '(추출되지 않음)'}</p>
           </FieldBlock>
@@ -397,6 +442,9 @@ export function ProductExtractReview({
             label="제조국"
             currentPreview={
               loadingCurrent ? '불러오는 중...' : current?.manufactureCountry || '(없음)'
+            }
+            hint={
+              current?.manufactureCountry ? '기존 값이 있습니다 — 선택하면 교체됩니다' : undefined
             }
           >
             <p className="text-sm">{result.originCountry || '(추출되지 않음)'}</p>
@@ -482,12 +530,15 @@ function FieldBlock({
   onCheckedChange,
   label,
   currentPreview,
+  hint,
   children,
 }: {
   checked: boolean
   onCheckedChange: (v: boolean) => void
   label: string
   currentPreview: string
+  /** 기존 값이 있어 기본 미선택인 경우 사용자에게 알리는 안내 문구 */
+  hint?: string
   children: React.ReactNode
 }) {
   return (
@@ -504,6 +555,7 @@ function FieldBlock({
             {label}
           </Label>
           <p className="truncate text-xs text-muted-foreground">현재값: {currentPreview}</p>
+          {hint && <p className="text-xs text-amber-600">{hint}</p>}
           {children}
         </div>
       </div>

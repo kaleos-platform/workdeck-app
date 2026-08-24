@@ -49,6 +49,9 @@ export function ProductExtractSourceForm({ productId, onCreated }: Props) {
   const [urlError, setUrlError] = useState<string | null>(null)
   const [urlTitle, setUrlTitle] = useState<string | null>(null)
   const [urlText, setUrlText] = useState<string | null>(null)
+  // 상세페이지 이미지 후보 — 한국 상세페이지는 소재·인증이 본문이 아니라 이미지에 박혀 있어
+  // 이 목록을 추출 요청에 함께 실어보내야 모델이 그 정보를 볼 수 있다.
+  const [imageUrls, setImageUrls] = useState<string[]>([])
   const [urlPreviewOpen, setUrlPreviewOpen] = useState(false)
 
   const [pastedText, setPastedText] = useState('')
@@ -100,6 +103,7 @@ export function ProductExtractSourceForm({ productId, onCreated }: Props) {
       }
       setUrlTitle(data.title ?? null)
       setUrlText(data.text ?? '')
+      setImageUrls(Array.isArray(data.imageUrls) ? data.imageUrls : [])
       setUrlPreviewOpen(false)
     } catch {
       setUrlError('URL을 불러오는 중 오류가 발생했습니다')
@@ -206,6 +210,7 @@ export function ProductExtractSourceForm({ productId, onCreated }: Props) {
           url: url.trim() || undefined,
           urlText: urlText || undefined,
           pastedText: pastedText.trim() || undefined,
+          imageUrls,
           files: doneFiles.map((f) => f.uploaded),
         }),
       })
@@ -235,7 +240,17 @@ export function ProductExtractSourceForm({ productId, onCreated }: Props) {
       setExtracting(false)
       setTimeout(() => setProgress(0), 400)
     }
-  }, [files, onCreated, pastedText, productId, startProgress, stopProgress, url, urlText])
+  }, [
+    files,
+    imageUrls,
+    onCreated,
+    pastedText,
+    productId,
+    startProgress,
+    stopProgress,
+    url,
+    urlText,
+  ])
 
   return (
     <Card>
@@ -291,6 +306,18 @@ export function ProductExtractSourceForm({ productId, onCreated }: Props) {
               >
                 {urlText || '(추출된 본문 없음)'}
               </p>
+              {/* 상세 이미지를 함께 분석한다는 사실을 드러낸다 — 한국 상세페이지는 소재·인증 등
+                  핵심 정보가 본문이 아니라 이미지 안에 있어서, 이 숫자가 0이면 결과가 빈약해진다. */}
+              {imageUrls.length > 0 ? (
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  상세 이미지 {imageUrls.length}장을 함께 분석합니다 — 소재·인증 정보는 대개 본문이
+                  아니라 이미지 안에 있습니다.
+                </p>
+              ) : (
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  상세 이미지를 찾지 못했습니다. 결과가 부족하면 상세페이지를 캡처해 첨부해 주세요.
+                </p>
+              )}
             </div>
           )}
         </div>
