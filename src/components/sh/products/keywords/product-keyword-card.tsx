@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Loader2, Lock } from 'lucide-react'
+import { Loader2, Lock, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +22,7 @@ import { KeywordChangeDialog, type KeywordChangeMeta } from '../listings/keyword
 import { KeywordEditor } from '../listings/keyword-editor'
 import { NameCounter } from '../listings/name-counter'
 import { NameValidationPanel } from '../listings/name-validation-panel'
+import { NameDraftDialog } from './name-draft-dialog'
 
 const MAX_NAME_LENGTH = 200
 
@@ -41,11 +42,14 @@ export type KeywordCard = {
 
 type Props = {
   card: KeywordCard
+  /** AI 초안 API(POST /api/sh/products/<productId>/name-draft)에 필요한 상품 단위 id.
+   * card.id 는 kind 에 따라 channelProductId/listingId 라 여기 상품 id 는 패널에서 따로 받는다. */
+  productId: string
   suggestions?: string[]
   onSaved: () => void
 }
 
-export function ProductKeywordCard({ card, suggestions, onSaved }: Props) {
+export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Props) {
   const readOnly = card.externalSource != null
   // 묶인 채널상품(channelProduct) 카드는 서버가 CP 전체 자식을 확인해 상품이 하나로 맞는 경우에만
   // nameEditable=true 를 내려준다. 그 경우 PATCH 의 propagateNames 로 서버가 접미사를 보존한 채
@@ -57,6 +61,7 @@ export function ProductKeywordCard({ card, suggestions, onSaved }: Props) {
   const [keywords, setKeywords] = useState<string[]>(card.keywords)
   const [saving, setSaving] = useState(false)
   const [gateOpen, setGateOpen] = useState(false)
+  const [draftOpen, setDraftOpen] = useState(false)
 
   // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
   // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다.
@@ -208,8 +213,22 @@ export function ProductKeywordCard({ card, suggestions, onSaved }: Props) {
             </p>
           )}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor={`kw-search-${card.id}`}>상품명 (검색용)</Label>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor={`kw-search-${card.id}`}>상품명 (검색용)</Label>
+              {!readOnly && !nameLocked && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-6 gap-1 px-2 text-xs"
+                  onClick={() => setDraftOpen(true)}
+                >
+                  <Sparkles className="h-3 w-3" aria-hidden="true" />
+                  AI 초안
+                </Button>
+              )}
+            </div>
             <NameCounter value={searchName} limit={searchNameRules.nameHardMax} guide />
           </div>
           <Input
@@ -284,6 +303,25 @@ export function ProductKeywordCard({ card, suggestions, onSaved }: Props) {
           afterKeywords={keywords}
           saving={saving}
           onConfirm={(meta) => handleSave(meta)}
+        />
+      )}
+
+      {!readOnly && !nameLocked && (
+        <NameDraftDialog
+          open={draftOpen}
+          onOpenChange={setDraftOpen}
+          productId={productId}
+          channelId={card.channelId}
+          existingKeywords={keywords}
+          onApplyName={setSearchName}
+          onAddKeyword={(keyword) => {
+            // KeywordEditor 와 같은 규칙: 이미 담긴 키워드(정규화 기준)는 다시 추가하지 않는다.
+            setKeywords((prev) => {
+              const existing = new Set(prev.map((k) => normalizeKeyword(k)))
+              if (existing.has(normalizeKeyword(keyword))) return prev
+              return [...prev, keyword]
+            })
+          }}
         />
       )}
     </Card>

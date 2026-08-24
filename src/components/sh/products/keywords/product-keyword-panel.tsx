@@ -120,7 +120,13 @@ export function ProductKeywordPanel({ productId }: Props) {
   return (
     <div className="space-y-4">
       {cards.map((card) => (
-        <ProductKeywordCard key={card.id} card={card} suggestions={suggestions} onSaved={reload} />
+        <ProductKeywordCard
+          key={card.id}
+          card={card}
+          productId={productId}
+          suggestions={suggestions}
+          onSaved={reload}
+        />
       ))}
     </div>
   )
