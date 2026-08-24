@@ -50,6 +50,10 @@
     {
       "path": "/api/cron/agent-conversations-sweep",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/product-source-orphan-sweep",
+      "schedule": "0 5 * * *"
     }
   ]
 }
