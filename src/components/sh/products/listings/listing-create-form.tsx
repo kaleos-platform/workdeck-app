@@ -26,13 +26,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SELLER_HUB_LISTINGS_PATH, getSellerHubNamingSopPath } from '@/lib/deck-routes'
-import {
-  DEFAULT_KEYWORD_RULES,
-  resolveKeywordRules,
-  rulesForNameField,
-  withChannelDefaults,
-} from '@/lib/sh/keyword-rules'
-import { suggestKeywords } from '@/lib/sh/keyword-suggest'
+import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
+import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 import { deriveBaseValues, type OptionAttribute } from '@/lib/sh/listing-name-propagation'
 
 import { CompositionBuilder, type BuiltGroup, type ProductContext } from './composition-builder'
@@ -504,16 +499,37 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
     return Array.from(set)
   }, [rows])
 
-  const keywordSuggestions = useMemo(
-    () =>
-      suggestKeywords({
-        productName: baseSearchName,
-        existing: keywords,
-        masterPool: [],
-        rules: DEFAULT_KEYWORD_RULES,
-      }),
-    [baseSearchName, keywords]
-  )
+  // 키워드 마스터 추천 — 구성이 상품 하나로 확정될 때만 조회한다(productCtx). 여러 상품이
+  // 섞이면 어느 상품 추천인지 특정할 수 없어 빈 배열로 둔다. 실패는 조용히 무시(부가 기능).
+  const productCtxId = productCtx?.id ?? null
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  useEffect(() => {
+    if (!productCtxId) {
+      setSuggestions([])
+      return
+    }
+    let cancelled = false
+    fetch(`/api/sh/keywords/suggest?productId=${productCtxId}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data: { suggestions?: string[] }) => {
+        if (cancelled) return
+        setSuggestions(data.suggestions ?? [])
+      })
+      .catch(() => {
+        if (cancelled) return
+        setSuggestions([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [productCtxId])
+
+  // 조회 시점 이후 사용자가 방금 추가한 키워드는 걸러낸다.
+  const keywordSuggestions = useMemo(() => {
+    if (suggestions.length === 0) return []
+    const existing = new Set(keywords.map((k) => normalizeKeyword(k)))
+    return suggestions.filter((s) => !existing.has(normalizeKeyword(s)))
+  }, [suggestions, keywords])
 
   function handleBuilderCommit(ctx: ProductContext | null, newGroups: BuiltGroup[]) {
     setProductCtx(ctx)

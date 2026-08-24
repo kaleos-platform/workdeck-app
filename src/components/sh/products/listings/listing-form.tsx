@@ -38,14 +38,9 @@ import {
   computeListingRetailBaseline,
   type EffectiveListingStatus,
 } from '@/lib/sh/listing-calc'
-import {
-  DEFAULT_KEYWORD_RULES,
-  resolveKeywordRules,
-  rulesForNameField,
-  withChannelDefaults,
-} from '@/lib/sh/keyword-rules'
-import { suggestKeywords } from '@/lib/sh/keyword-suggest'
+import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
 import { diffKeywordChange } from '@/lib/sh/keyword-change'
+import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 import { countNamingViolations, type ListingNamingResult } from '@/lib/sh/keyword-validate'
 
 import { OptionPickerDialog, type PickedOption } from './option-picker-dialog'
@@ -209,16 +204,37 @@ export function ListingForm({ mode, initial, defaultChannelId }: Props) {
     return { id: ids[0], name: items[0]?.productName ?? '' }
   }, [items])
 
-  const keywordSuggestions = useMemo(
-    () =>
-      suggestKeywords({
-        productName: searchName,
-        existing: keywords,
-        masterPool: [],
-        rules: DEFAULT_KEYWORD_RULES,
-      }),
-    [searchName, keywords]
-  )
+  // 키워드 마스터 추천 — 구성 옵션이 상품 하나로 확정될 때만 조회한다(linkProduct). 여러
+  // 상품이 섞이면 어느 상품 추천인지 특정할 수 없어 빈 배열로 둔다. 실패는 조용히 무시(부가 기능).
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const linkProductId = linkProduct?.id ?? null
+  useEffect(() => {
+    if (!linkProductId) {
+      setSuggestions([])
+      return
+    }
+    let cancelled = false
+    fetch(`/api/sh/keywords/suggest?productId=${linkProductId}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data: { suggestions?: string[] }) => {
+        if (cancelled) return
+        setSuggestions(data.suggestions ?? [])
+      })
+      .catch(() => {
+        if (cancelled) return
+        setSuggestions([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [linkProductId])
+
+  // 조회 시점 이후 사용자가 방금 추가한 키워드는 걸러낸다.
+  const keywordSuggestions = useMemo(() => {
+    if (suggestions.length === 0) return []
+    const existing = new Set(keywords.map((k) => normalizeKeyword(k)))
+    return suggestions.filter((s) => !existing.has(normalizeKeyword(s)))
+  }, [suggestions, keywords])
 
   function addOption(picked: PickedOption) {
     if (items.some((it) => it.optionId === picked.optionId)) {
