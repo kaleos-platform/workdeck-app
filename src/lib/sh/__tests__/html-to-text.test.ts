@@ -1,4 +1,6 @@
-import { htmlToText, HTML_TEXT_MAX_CHARS } from '../html-to-text'
+import { readFileSync } from 'fs'
+import { join } from 'path'
+import { htmlToText, HTML_TEXT_MAX_CHARS, MAX_IMAGE_URLS } from '../html-to-text'
 
 describe('htmlToText 위험 블록 제거', () => {
   it('script 내용은 출력에 나타나지 않는다', () => {
@@ -182,5 +184,183 @@ describe('htmlToText 카페24 스타일 실제 상세페이지 조각', () => {
     expect(text).not.toContain('ga(')
     expect(text).not.toContain('margin:0')
     expect(text).not.toContain('image.jpg')
+  })
+})
+
+describe('htmlToText JSON-LD 구조화 데이터 추출', () => {
+  it('Product 블록에서 name/description/brand/offers/image를 뽑는다', () => {
+    const html = `
+      <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"Product","name":"테스트 상품",
+       "description":"테스트 설명","brand":{"@type":"Brand","name":"테스트 브랜드"},
+       "offers":[{"name":"테스트 상품 - S","price":10000,"priceCurrency":"KRW","availability":"InStock"}],
+       "image":["https://img.example.com/a.jpg"]}
+      </script>
+    `
+    const { structured, text } = htmlToText(html)
+    expect(structured).not.toBeNull()
+    expect(structured?.name).toBe('테스트 상품')
+    expect(structured?.description).toBe('테스트 설명')
+    expect(structured?.brand).toBe('테스트 브랜드')
+    expect(structured?.offers).toEqual([
+      { name: '테스트 상품 - S', price: 10000, priceCurrency: 'KRW', availability: 'InStock' },
+    ])
+    expect(structured?.images).toEqual(['https://img.example.com/a.jpg'])
+    // 구조화 요약이 본문 맨 앞부분에 온다
+    expect(text.indexOf('[상품 구조화 정보]')).toBeLessThan(text.indexOf('테스트 상품 - S'))
+  })
+
+  it('@graph 배열 안의 Product 노드도 찾는다', () => {
+    const html = `
+      <script type="application/ld+json">
+      {"@context":"https://schema.org","@graph":[
+        {"@type":"BreadcrumbList","itemListElement":[]},
+        {"@type":"Product","name":"그래프 안 상품"}
+      ]}
+      </script>
+    `
+    const { structured } = htmlToText(html)
+    expect(structured?.name).toBe('그래프 안 상품')
+  })
+
+  it('깨진 JSON-LD는 조용히 건너뛰고 전체를 죽이지 않는다', () => {
+    const html = `
+      <script type="application/ld+json">{ 이건 JSON이 아님 }</script>
+      <p>본문은 살아있다</p>
+    `
+    const { structured, text } = htmlToText(html)
+    expect(structured).toBeNull()
+    expect(text).toContain('본문은 살아있다')
+  })
+
+  it('Product 타입이 없으면 structured는 null', () => {
+    const html = `<script type="application/ld+json">{"@type":"WebSite","name":"사이트"}</script>`
+    const { structured } = htmlToText(html)
+    expect(structured).toBeNull()
+  })
+})
+
+describe('htmlToText 이미지 URL 수집', () => {
+  it('ec-data-src/data-src 등 지연로딩 속성을 절대 URL로 수집한다', () => {
+    const html = `
+      <div id="prdDetail">
+        <img ec-data-src="//img.example.com/detail1.jpg">
+        <img data-src="/rel/detail2.jpg">
+      </div>
+    `
+    const { imageUrls } = htmlToText(html, undefined, { baseUrl: 'https://shop.example.com/p/1' })
+    expect(imageUrls).toContain('https://img.example.com/detail1.jpg')
+    expect(imageUrls).toContain('https://shop.example.com/rel/detail2.jpg')
+  })
+
+  it('base URL이 없으면 상대경로는 절대화하지 못해 제외된다', () => {
+    const html = `<div id="prdDetail"><img data-src="/rel/detail.jpg"></div>`
+    const { imageUrls } = htmlToText(html)
+    expect(imageUrls).toEqual([])
+  })
+
+  it('아이콘/로고/배너/썸네일 경로는 제외한다', () => {
+    const html = `
+      <div id="prdDetail">
+        <img src="https://img.example.com/icon_search.svg">
+        <img src="https://img.example.com/logo.png">
+        <img src="https://img.example.com/product/small/a.jpg">
+        <img src="https://img.example.com/product/big/a.jpg">
+      </div>
+    `
+    const { imageUrls } = htmlToText(html)
+    expect(imageUrls).not.toContain('https://img.example.com/icon_search.svg')
+    expect(imageUrls).not.toContain('https://img.example.com/logo.png')
+    expect(imageUrls).not.toContain('https://img.example.com/product/small/a.jpg')
+    expect(imageUrls).toContain('https://img.example.com/product/big/a.jpg')
+  })
+
+  it('MAX_IMAGE_URLS개를 넘지 않는다', () => {
+    const imgs = Array.from(
+      { length: 20 },
+      (_, i) => `<img src="https://img.example.com/detail${i}.jpg">`
+    ).join('')
+    const html = `<div id="prdDetail">${imgs}</div>`
+    const { imageUrls } = htmlToText(html)
+    expect(imageUrls.length).toBe(MAX_IMAGE_URLS)
+  })
+
+  it('중복 URL은 한 번만 담긴다', () => {
+    const html = `
+      <div id="prdDetail">
+        <img src="https://img.example.com/a.jpg">
+        <img ec-data-src="https://img.example.com/a.jpg">
+      </div>
+    `
+    const { imageUrls } = htmlToText(html)
+    expect(imageUrls.filter((u) => u === 'https://img.example.com/a.jpg').length).toBe(1)
+  })
+})
+
+describe('htmlToText select/nav 등 대용량 노이즈 제거', () => {
+  it('select 옵션 목록은 통째로 제거된다', () => {
+    const html = `
+      <select><option>가나(GHANA)</option><option>대한민국(KOREA)</option></select>
+      <p>진짜 본문</p>
+    `
+    const { text } = htmlToText(html)
+    expect(text).not.toContain('GHANA')
+    expect(text).toContain('진짜 본문')
+  })
+
+  it('nav/header/footer/aside 블록은 제거된다', () => {
+    const html = `
+      <nav>전역 메뉴</nav>
+      <header>헤더 영역</header>
+      <aside>사이드바</aside>
+      <p>본문 내용</p>
+      <footer>회사 정보</footer>
+    `
+    const { text } = htmlToText(html)
+    expect(text).not.toContain('전역 메뉴')
+    expect(text).not.toContain('헤더 영역')
+    expect(text).not.toContain('사이드바')
+    expect(text).not.toContain('회사 정보')
+    expect(text).toContain('본문 내용')
+  })
+})
+
+describe('htmlToText 카페24 실제 fixture (ameaning.co.kr)', () => {
+  const fixturePath = join(__dirname, 'fixtures', 'cafe24-product.html')
+  const fixtureHtml = readFileSync(fixturePath, 'utf-8')
+
+  it('JSON-LD Product 구조화 데이터를 뽑는다', () => {
+    const { structured } = htmlToText(fixtureHtml)
+    expect(structured).not.toBeNull()
+    expect(structured?.name).toBe('쿨 메쉬 심리스 커버 브라')
+    expect(structured?.brand).toBe('에이엠엘 | aml')
+    expect(structured?.offers.length).toBeGreaterThan(0)
+    expect(structured?.offers[0].name).toContain('쿨 메쉬 심리스 커버 브라')
+  })
+
+  it('#prdDetail 안의 지연로딩 상세 이미지(ec-data-src)를 포함하고 small/icon/logo는 제외한다', () => {
+    const { imageUrls } = htmlToText(fixtureHtml, undefined, {
+      baseUrl: 'https://ameaning.co.kr/product/156/',
+    })
+    expect(imageUrls.some((u) => u.includes('NNEditor/20260811'))).toBe(true)
+    expect(imageUrls.some((u) => /\/small\//i.test(u))).toBe(false)
+    expect(imageUrls.some((u) => /icon|logo/i.test(u))).toBe(false)
+  })
+
+  it('배송 국가 목록("SHIPPING TO : 가나(GHANA)")이 결과에서 사라진다', () => {
+    const { text } = htmlToText(fixtureHtml)
+    expect(text).not.toContain('GHANA')
+  })
+
+  it('개선 전 대비 결과 텍스트 길이가 유의미하게 줄어든다', () => {
+    const { text } = htmlToText(fixtureHtml)
+    // 개선 전(구조화/노이즈 제거 적용 전) 이 fixture는 10,977자였다.
+    expect(text.length).toBeLessThan(10977 * 0.6)
+  })
+
+  it('노이즈 제거가 본문을 죽이지 않는다 — 핵심 상품 정보가 남아있다', () => {
+    const { text } = htmlToText(fixtureHtml)
+    expect(text).toContain('쿨 메쉬 심리스 커버 브라')
+    expect(text).toMatch(/25,?400/)
   })
 })

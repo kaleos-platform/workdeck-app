@@ -13,7 +13,7 @@ var mockJob: {
   delete: jest.Mock
 }
 // eslint-disable-next-line no-var
-var mockSource: { createMany: jest.Mock }
+var mockSource: { createMany: jest.Mock; update: jest.Mock }
 
 function ensureMockProduct() {
   if (!mockProduct) {
@@ -38,7 +38,7 @@ function ensureMockJob() {
 
 function ensureMockSource() {
   if (!mockSource) {
-    mockSource = { createMany: jest.fn() }
+    mockSource = { createMany: jest.fn(), update: jest.fn() }
   }
   return mockSource
 }
@@ -91,9 +91,71 @@ jest.mock('@/lib/ai/credit', () => {
   }
 })
 
+// 실제 스토리지 다운로드(Supabase) 없이 파일 소재 흐름을 검증하기 위한 모킹.
+jest.mock('@/lib/sh/product-source-storage', () => {
+  const actual = jest.requireActual('@/lib/sh/product-source-storage')
+  return {
+    ...actual,
+    downloadProductSourceFile: jest.fn(),
+  }
+})
+
+// 실제 Gemini 호출 없이 소재(텍스트/이미지) 취합 로직만 검증하기 위한 모킹.
+// 모듈 최상단은 @google/genai를 타입으로만 import하므로 requireActual이 안전하다.
+jest.mock('@/lib/sh/product-extract', () => {
+  const actual = jest.requireActual('@/lib/sh/product-extract')
+  return {
+    ...actual,
+    extractProductInfo: jest.fn(),
+  }
+})
+
+// SSRF 가드를 실제로 태우지 않고, 라우트가 개별 이미지 실패/성공/한도초과를 어떻게
+// 다루는지만 검증하기 위한 모킹. safeFetchBinary 자체의 SSRF 동작은
+// src/lib/net/__tests__/safe-fetch.test.ts 에서 별도로 검증한다.
+jest.mock('@/lib/net/safe-fetch', () => {
+  const actual = jest.requireActual('@/lib/net/safe-fetch')
+  return {
+    ...actual,
+    safeFetchBinary: jest.fn(),
+  }
+})
+
 import { TextCreditExceededError, reserveTextCredit } from '@/lib/ai/credit'
+import { downloadProductSourceFile } from '@/lib/sh/product-source-storage'
+import { extractProductInfo } from '@/lib/sh/product-extract'
+import { safeFetchBinary, SafeFetchError } from '@/lib/net/safe-fetch'
 import { POST as extractPost, GET as extractGet } from '../route'
 import { POST as applyPost } from '../[jobId]/apply/route'
+
+const mockDownloadProductSourceFile = downloadProductSourceFile as jest.Mock
+const mockExtractProductInfo = extractProductInfo as jest.Mock
+const mockSafeFetchBinary = safeFetchBinary as jest.Mock
+
+const SUCCESS_RESULT = {
+  description: '추출된 설명입니다.',
+  features: [],
+  certifications: [],
+  ingredients: [],
+  capacity: null,
+  originCountry: null,
+  manufacturer: null,
+  cautions: [],
+  confidence: 0.5,
+  notes: null,
+  truncatedFields: [],
+}
+
+/** job.create + job.update(트랜잭션 내부/최종) 모킹 — 성공 경로 테스트 공용 헬퍼. */
+function mockJobPersistence(sources: Array<Record<string, unknown>>) {
+  mockJob.create.mockResolvedValue({ id: 'job-1' })
+  mockJob.update.mockImplementation((args: { data: { status?: string } }) => {
+    if (args.data.status === 'RUNNING') {
+      return Promise.resolve({ id: 'job-1', sources })
+    }
+    return Promise.resolve({ id: 'job-1', sources, ...args.data })
+  })
+}
 
 function jsonRequest(body: unknown) {
   return { json: async () => body } as Parameters<typeof extractPost>[0]
@@ -113,6 +175,18 @@ describe('POST /api/sh/products/[productId]/extract', () => {
     job.findMany.mockReset()
     job.delete.mockReset()
     source.createMany.mockReset()
+    source.update.mockReset()
+    source.update.mockResolvedValue({})
+    mockDownloadProductSourceFile.mockReset()
+    mockExtractProductInfo.mockReset()
+    mockExtractProductInfo.mockResolvedValue({
+      result: SUCCESS_RESULT,
+      raw: '{}',
+      model: 'gemini-2.5-flash',
+      usage: { inputTokens: 10, outputTokens: 5 },
+      latencyMs: 100,
+    })
+    mockSafeFetchBinary.mockReset()
     ;(reserveTextCredit as jest.Mock).mockReset()
     ;(reserveTextCredit as jest.Mock).mockResolvedValue({
       reservationId: 'log-1',
@@ -183,6 +257,122 @@ describe('POST /api/sh/products/[productId]/extract', () => {
     expect(res.status).toBe(429)
     expect(body.code).toBe('TEXT_CREDIT_EXCEEDED')
     expect(mockJob.create).not.toHaveBeenCalled()
+  })
+
+  test('URL 상세이미지 1장이 실패해도 나머지로 추출은 성공한다', async () => {
+    mockJobPersistence([{ id: 'src-url-1', kind: 'URL', url: 'https://shop.example.com/p/1' }])
+    mockSafeFetchBinary
+      .mockRejectedValueOnce(new SafeFetchError('FETCH_FAILED', '요청에 실패했습니다'))
+      .mockResolvedValueOnce({
+        finalUrl: 'https://img.example.com/2.jpg',
+        bytes: Buffer.from([1, 2, 3]),
+        mimeType: 'image/jpeg',
+      })
+
+    const res = (await extractPost(
+      jsonRequest({
+        url: 'https://shop.example.com/p/1',
+        urlText: '상세페이지 텍스트',
+        imageUrls: ['https://img.example.com/1.jpg', 'https://img.example.com/2.jpg'],
+      }),
+      { params: Promise.resolve({ productId: 'product-1' }) }
+    ))!
+    const body = (await res.json()) as { job: { status: string; result: Record<string, unknown> } }
+
+    expect(res.status).toBe(200)
+    expect(body.job.status).toBe('SUCCEEDED')
+    expect(body.job.result.imageFetchStats).toEqual({
+      requested: 2,
+      succeeded: 1,
+      failed: 1,
+      skippedByteLimit: 0,
+    })
+    expect(mockSafeFetchBinary).toHaveBeenCalledTimes(2)
+
+    // extractProductInfo에 넘어간 parts: 텍스트(URL 소재) 1개 + 성공한 이미지 1개.
+    const partsArg = mockExtractProductInfo.mock.calls[0][0].parts as Array<{ kind: string }>
+    expect(partsArg.filter((p) => p.kind === 'text')).toHaveLength(1)
+    expect(partsArg.filter((p) => p.kind === 'inline')).toHaveLength(1)
+  })
+
+  test('업로드 파일 + URL 이미지 합계가 12MB 상한에 닿으면 남은 이미지는 skippedByteLimit로 남고 추출은 계속된다', async () => {
+    mockJobPersistence([
+      { id: 'src-url-1', kind: 'URL', url: 'https://shop.example.com/p/1' },
+      {
+        id: 'src-file-1',
+        kind: 'IMAGE',
+        storagePath: 'space-1/products/product-1/a.png',
+        mimeType: 'image/png',
+        fileName: 'a.png',
+      },
+    ])
+    const tenMb = 10 * 1024 * 1024
+    mockDownloadProductSourceFile.mockResolvedValue(Buffer.alloc(tenMb, 1))
+    // 10MB(파일) + 3MB(이미지1) > 12MB 상한 → 첫 이미지 시도 후 나머지는 못 받는다.
+    mockSafeFetchBinary.mockResolvedValue({
+      finalUrl: 'https://img.example.com/1.jpg',
+      bytes: Buffer.alloc(3 * 1024 * 1024, 1),
+      mimeType: 'image/jpeg',
+    })
+
+    const res = (await extractPost(
+      jsonRequest({
+        url: 'https://shop.example.com/p/1',
+        urlText: '상세페이지 텍스트',
+        files: [
+          {
+            storagePath: 'space-1/products/product-1/a.png',
+            fileName: 'a.png',
+            mimeType: 'image/png',
+            byteSize: tenMb,
+          },
+        ],
+        imageUrls: ['https://img.example.com/1.jpg', 'https://img.example.com/2.jpg'],
+      }),
+      { params: Promise.resolve({ productId: 'product-1' }) }
+    ))!
+    const body = (await res.json()) as { job: { status: string; result: Record<string, unknown> } }
+
+    expect(res.status).toBe(200)
+    expect(body.job.status).toBe('SUCCEEDED')
+    expect(body.job.result.imageFetchStats).toEqual({
+      requested: 2,
+      succeeded: 0,
+      failed: 0,
+      skippedByteLimit: 2,
+    })
+    // 예산 초과가 확인된 첫 이미지만 실제로 내려받고, 두 번째는 시도조차 하지 않는다.
+    expect(mockSafeFetchBinary).toHaveBeenCalledTimes(1)
+  })
+
+  test('사설 IP를 가리키는 이미지 URL은 거부되고, 다른 소재로 추출은 계속된다', async () => {
+    mockJobPersistence([{ id: 'src-url-1', kind: 'URL', url: 'https://shop.example.com/p/1' }])
+    mockSafeFetchBinary.mockRejectedValue(
+      new SafeFetchError('PRIVATE_ADDRESS', '사설/예약 대역 주소는 허용되지 않습니다')
+    )
+
+    const res = (await extractPost(
+      jsonRequest({
+        url: 'https://shop.example.com/p/1',
+        urlText: '상세페이지 텍스트',
+        imageUrls: ['http://169.254.169.254/x.jpg'],
+      }),
+      { params: Promise.resolve({ productId: 'product-1' }) }
+    ))!
+    const body = (await res.json()) as { job: { status: string; result: Record<string, unknown> } }
+
+    expect(res.status).toBe(200)
+    expect(body.job.status).toBe('SUCCEEDED')
+    expect(body.job.result.imageFetchStats).toEqual({
+      requested: 1,
+      succeeded: 0,
+      failed: 1,
+      skippedByteLimit: 0,
+    })
+
+    // 실패한 이미지는 소재에 섞이지 않는다 — inline part 0개.
+    const partsArg = mockExtractProductInfo.mock.calls[0][0].parts as Array<{ kind: string }>
+    expect(partsArg.filter((p) => p.kind === 'inline')).toHaveLength(0)
   })
 })
 

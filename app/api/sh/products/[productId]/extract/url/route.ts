@@ -66,12 +66,22 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   try {
     const { finalUrl, html, truncated: fetchTruncated } = await safeFetchHtml(parsed.data.url)
-    const { title, text, truncated: textTruncated } = htmlToText(html)
+    // baseUrl 을 넘겨야 상대경로·프로토콜상대(//) 이미지가 절대 URL 로 정규화된다.
+    const {
+      title,
+      text,
+      truncated: textTruncated,
+      imageUrls,
+    } = htmlToText(html, undefined, { baseUrl: finalUrl })
+    // 한국 상세페이지는 소재·인증 같은 핵심 정보가 본문이 아니라 상세 이미지 안에 있다.
+    // URL 만으로는 그 정보를 못 읽으므로 이미지 후보를 함께 돌려주고, 추출 단계에서
+    // 내려받아 멀티모달 입력으로 넣는다.
     return NextResponse.json({
       title,
       text,
       finalUrl,
       truncated: fetchTruncated || textTruncated,
+      imageUrls,
     })
   } catch (err) {
     if (err instanceof SafeFetchError) {
