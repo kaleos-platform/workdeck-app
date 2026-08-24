@@ -112,7 +112,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   const latencyMs = Date.now() - startedAt
 
   if (!draft) {
-    logDraftUsage({
+    await logDraftUsage({
       spaceId: resolved.space.id,
       userId: resolved.user.id,
       status: 'FAILED',
@@ -151,7 +151,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     violations: violationsByIndex.get(index) ?? [],
   }))
 
-  logDraftUsage({
+  await logDraftUsage({
     spaceId: resolved.space.id,
     userId: resolved.user.id,
     status: 'SUCCEEDED',
@@ -170,7 +170,9 @@ function logDraftUsage(input: {
   contentPreview: string | null
   latencyMs: number
 }) {
-  prisma.textGenerationLog
+  // 프라미스를 반환한다 — 호출부가 await 해도 이걸 안 돌려주면 undefined 를 기다리게 되고,
+  // Vercel 서버리스는 응답 직후 인스턴스를 얼려서 기록이 유실된다(하필 FAILED 경로가 제일 중요).
+  return prisma.textGenerationLog
     .create({
       data: {
         spaceId: input.spaceId,
