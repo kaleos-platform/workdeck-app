@@ -2,10 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Copy, Loader2, Plus } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowLeft, Copy, Loader2, Plus, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import {
   SELLER_HUB_PRICING_SIM_NEW_PATH,
@@ -29,7 +36,7 @@ type Props = {
   productId: string
 }
 
-type SectionKey = 'basic' | 'source' | 'options' | 'production' | 'listings' | 'pricing'
+type SectionKey = 'basic' | 'options' | 'production' | 'listings' | 'pricing'
 
 const SECTIONS: { key: SectionKey; label: string; title: string; description: string }[] = [
   {
@@ -37,12 +44,6 @@ const SECTIONS: { key: SectionKey; label: string; title: string; description: st
     label: '기본 정보',
     title: '기본 정보',
     description: '상품명·브랜드·제조사·특징·인증 등 상품 메타데이터',
-  },
-  {
-    key: 'source',
-    label: 'AI 상품정보 추출',
-    title: 'AI 상품정보 추출',
-    description: '상세페이지 URL·이미지·PDF에서 설명·특징·인증정보를 추출해 기본 정보에 반영합니다',
   },
   {
     key: 'options',
@@ -77,6 +78,7 @@ const SECTIONS: { key: SectionKey; label: string; title: string; description: st
  */
 export function ProductDetailTabs({ productId }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [refreshKey, setRefreshKey] = useState(0)
   const [active, setActive] = useState<SectionKey>('basic')
   const [duplicating, setDuplicating] = useState(false)
@@ -97,6 +99,22 @@ export function ProductDetailTabs({ productId }: Props) {
   // basicSaving은 autosave 진행 여부만 나타내 dirty(입력 직후)인 순간을 못 잡는다 —
   // 적용 버튼은 dirty 상태에서도 눌러선 안 되므로 둘을 합쳐 노출한다.
   const basicBusy = basicSaving || basicDirty > 0
+
+  // AI 상품정보 추출은 고정 섹션이 아니라 다이얼로그다. `/extract` 딥링크(위 리다이렉트
+  // 페이지)가 `?extract=1`을 붙여 진입시키므로 초기값을 쿼리에서 읽는다.
+  const [extractOpen, setExtractOpen] = useState(() => searchParams.get('extract') === '1')
+
+  const closeExtract = useCallback(() => {
+    setExtractOpen(false)
+    if (searchParams.get('extract') === '1') {
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('extract')
+      const qs = params.toString()
+      router.replace(`/d/seller-ops/products/${productId}${qs ? `?${qs}` : ''}`, {
+        scroll: false,
+      })
+    }
+  }, [productId, router, searchParams])
 
   const dirtyCount = basicDirty + codeDirty + optionsDirty
   const saving = basicSaving || codeSaving || optionsSaving
@@ -133,7 +151,6 @@ export function ProductDetailTabs({ productId }: Props) {
 
   const sectionRefs = useRef<Record<SectionKey, HTMLElement | null>>({
     basic: null,
-    source: null,
     options: null,
     production: null,
     listings: null,
@@ -246,7 +263,16 @@ export function ProductDetailTabs({ productId }: Props) {
         }}
         className="scroll-mt-24 space-y-4"
       >
-        <SectionHeader title={SECTIONS[0].title} description={SECTIONS[0].description} />
+        <SectionHeader
+          title={SECTIONS[0].title}
+          description={SECTIONS[0].description}
+          action={
+            <Button type="button" size="sm" variant="outline" onClick={() => setExtractOpen(true)}>
+              <Sparkles className="mr-1 h-4 w-4" />
+              AI로 채우기
+            </Button>
+          }
+        />
         <ProductBasicForm
           productId={productId}
           onSaved={() => setRefreshKey((k) => k + 1)}
@@ -263,27 +289,6 @@ export function ProductDetailTabs({ productId }: Props) {
       </section>
 
       <section
-        id="section-source"
-        data-section="source"
-        ref={(el) => {
-          sectionRefs.current.source = el
-        }}
-        className="scroll-mt-24 space-y-4 border-t pt-8"
-      >
-        <SectionHeader title={SECTIONS[1].title} description={SECTIONS[1].description} />
-        <ProductExtractPanel
-          productId={productId}
-          basicBusy={basicBusy}
-          onApply={(patch) => {
-            if (!basicApplyRef.current) {
-              return Promise.reject(new Error('기본 정보 폼이 아직 준비되지 않았습니다'))
-            }
-            return basicApplyRef.current(patch)
-          }}
-        />
-      </section>
-
-      <section
         id="section-options"
         data-section="options"
         ref={(el) => {
@@ -291,7 +296,7 @@ export function ProductDetailTabs({ productId }: Props) {
         }}
         className="scroll-mt-24 space-y-6 border-t pt-8"
       >
-        <SectionHeader title={SECTIONS[2].title} description={SECTIONS[2].description} />
+        <SectionHeader title={SECTIONS[1].title} description={SECTIONS[1].description} />
         {/* refreshKey로 리마운트하지 않는다 — 다른 섹션 저장이 입력 중인 제품코드를 날리면 안 됨 */}
         <ProductCodeField
           productId={productId}
@@ -329,7 +334,7 @@ export function ProductDetailTabs({ productId }: Props) {
         }}
         className="scroll-mt-24 space-y-4 border-t pt-8"
       >
-        <SectionHeader title={SECTIONS[3].title} description={SECTIONS[3].description} />
+        <SectionHeader title={SECTIONS[2].title} description={SECTIONS[2].description} />
         <ProductProductionRunsPanel key={`production-${refreshKey}`} productId={productId} />
       </section>
 
@@ -341,7 +346,7 @@ export function ProductDetailTabs({ productId }: Props) {
         }}
         className="scroll-mt-24 space-y-4 border-t pt-8"
       >
-        <SectionHeader title={SECTIONS[4].title} description={SECTIONS[4].description} />
+        <SectionHeader title={SECTIONS[3].title} description={SECTIONS[3].description} />
         <ProductListingsPanel key={`listings-${refreshKey}`} productId={productId} />
       </section>
 
@@ -354,8 +359,8 @@ export function ProductDetailTabs({ productId }: Props) {
         className="scroll-mt-24 space-y-4 border-t pt-8"
       >
         <SectionHeader
-          title={SECTIONS[5].title}
-          description={SECTIONS[5].description}
+          title={SECTIONS[4].title}
+          description={SECTIONS[4].description}
           action={
             <Button size="sm" variant="outline" asChild>
               <Link href={`${SELLER_HUB_PRICING_SIM_NEW_PATH}?productId=${productId}`}>
@@ -370,6 +375,35 @@ export function ProductDetailTabs({ productId }: Props) {
           onRowClick={(id) => router.push(getSellerHubPricingScenarioPath(id))}
         />
       </section>
+
+      <Dialog
+        open={extractOpen}
+        onOpenChange={(open) => {
+          if (open) setExtractOpen(true)
+          else closeExtract()
+        }}
+      >
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>AI 상품정보 추출</DialogTitle>
+            <DialogDescription>
+              상세페이지 URL·이미지·PDF에서 설명·특징·인증정보를 추출해 기본 정보에 반영합니다
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[70vh] overflow-y-auto pr-1">
+            <ProductExtractPanel
+              productId={productId}
+              basicBusy={basicBusy}
+              onApply={(patch) => {
+                if (!basicApplyRef.current) {
+                  return Promise.reject(new Error('기본 정보 폼이 아직 준비되지 않았습니다'))
+                }
+                return basicApplyRef.current(patch)
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
