@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import {
   PRODUCT_DESCRIPTION_MAX,
@@ -162,7 +162,10 @@ export function ProductExtractReview({
   // 롤백된 잡은 다시 적용할 수 있어야 한다 — appliedAt 만 보면 롤백 후에도 읽기 전용으로
   // 잠겨서 "이미 롤백한 것을 또 롤백하라"는 막다른 안내가 남는다.
   const alreadyApplied = Boolean(job.appliedAt) && !job.rolledBackAt
-  const canReview = job.status === 'SUCCEEDED' && Boolean(result) && !alreadyApplied
+  // 적용된 잡도 결과 자체는 보여준다 — 다만 편집/선택 컨트롤 없이 읽기 전용으로.
+  const isReadOnly = alreadyApplied
+  const canShow = job.status === 'SUCCEEDED' && Boolean(result)
+  const appliedFieldSet = useMemo(() => new Set(job.appliedFields ?? []), [job.appliedFields])
 
   const featuresIncluded = featureSel.size > 0 || featureExtras.length > 0
   const certsIncluded = certSel.size > 0
@@ -257,11 +260,19 @@ export function ProductExtractReview({
   if (job.status === 'FAILED') {
     return (
       <Card className="border-destructive/40">
-        <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardHeader>
           <CardTitle className="text-base">추출 실패</CardTitle>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+          <CardAction>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={onClose}
+              aria-label="닫기"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </CardAction>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-destructive">
@@ -283,36 +294,41 @@ export function ProductExtractReview({
     )
   }
 
-  if (alreadyApplied) {
-    return (
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base">이미 적용된 추출 결과</CardTitle>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          <p>
-            {new Date(job.appliedAt as string).toLocaleString('ko-KR')}에 적용됨 — 되돌리려면 아래
-            이력에서 [롤백]을 사용하세요.
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (!canReview || !result) return null
+  if (!canShow || !result) return null
 
   return (
     <Card className="border-primary/30">
-      <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">추출 결과 검토</CardTitle>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
+      <CardHeader>
+        <CardTitle className="text-base">
+          {isReadOnly ? '적용된 추출 결과' : '추출 결과 검토'}
+        </CardTitle>
+        <CardAction>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={onClose}
+            aria-label="닫기"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardAction>
       </CardHeader>
       <CardContent className="space-y-5">
+        {isReadOnly && (
+          <div className="rounded-md border bg-muted/30 p-3 text-sm">
+            <p className="font-medium">
+              {job.appliedAt
+                ? `${new Date(job.appliedAt).toLocaleString('ko-KR')}에 적용됨`
+                : '적용됨'}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              아래는 적용 당시 AI 추출값과 현재 상품값을 비교하는 읽기 전용 화면입니다 — 되돌리려면
+              이력에서 [롤백]을 사용하세요.
+            </p>
+          </div>
+        )}
+
         {result.confidence < 0.5 && (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
@@ -334,44 +350,56 @@ export function ProductExtractReview({
               ? '기존 설명이 있습니다 — 선택하면 아래 방식대로 반영됩니다'
               : undefined
           }
+          readOnly={isReadOnly}
+          applied={appliedFieldSet.has('description')}
         >
           {job.result?.truncatedFields.includes('description') && (
             <Badge variant="outline" className="mb-1.5">
               추출 원문이 {PRODUCT_DESCRIPTION_MAX}자로 잘렸습니다
             </Badge>
           )}
-          {current?.description && (
-            <div className="mb-1.5 flex flex-wrap gap-1.5 text-xs">
-              <button
-                type="button"
-                onClick={() => setDescMode('append')}
-                className={`rounded-full border px-2.5 py-1 ${descMode === 'append' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
-              >
-                뒤에 추가
-              </button>
-              <button
-                type="button"
-                onClick={() => setDescMode('replace')}
-                className={`rounded-full border px-2.5 py-1 ${descMode === 'replace' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
-              >
-                교체
-              </button>
+          {isReadOnly ? (
+            <div className="rounded-md border bg-muted/20 p-2 text-sm whitespace-pre-wrap">
+              {descText || (
+                <span className="text-muted-foreground">AI가 추출한 설명이 없습니다</span>
+              )}
             </div>
-          )}
-          <Textarea
-            value={descText}
-            onChange={(e) => setDescText(e.target.value)}
-            rows={4}
-            maxLength={PRODUCT_DESCRIPTION_MAX}
-            placeholder="추출된 설명이 없습니다"
-          />
-          <p className="mt-1 text-right text-xs text-muted-foreground">
-            {descText.length} / {PRODUCT_DESCRIPTION_MAX}자
-          </p>
-          {descWillTruncate && (
-            <Badge variant="outline" className="mt-1.5">
-              기존 설명과 합치면 {PRODUCT_DESCRIPTION_MAX}자로 잘립니다
-            </Badge>
+          ) : (
+            <>
+              {current?.description && (
+                <div className="mb-1.5 flex flex-wrap gap-1.5 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setDescMode('append')}
+                    className={`rounded-full border px-2.5 py-1 ${descMode === 'append' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+                  >
+                    뒤에 추가
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDescMode('replace')}
+                    className={`rounded-full border px-2.5 py-1 ${descMode === 'replace' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+                  >
+                    교체
+                  </button>
+                </div>
+              )}
+              <Textarea
+                value={descText}
+                onChange={(e) => setDescText(e.target.value)}
+                rows={4}
+                maxLength={PRODUCT_DESCRIPTION_MAX}
+                placeholder="추출된 설명이 없습니다"
+              />
+              <p className="mt-1 text-right text-xs text-muted-foreground">
+                {descText.length} / {PRODUCT_DESCRIPTION_MAX}자
+              </p>
+              {descWillTruncate && (
+                <Badge variant="outline" className="mt-1.5">
+                  기존 설명과 합치면 {PRODUCT_DESCRIPTION_MAX}자로 잘립니다
+                </Badge>
+              )}
+            </>
           )}
         </FieldBlock>
 
@@ -395,16 +423,20 @@ export function ProductExtractReview({
           currentCount={current?.features.length ?? 0}
           extras={featureExtras}
           onRemoveExtra={removeExtra}
+          readOnly={isReadOnly}
+          applied={appliedFieldSet.has('features')}
         />
 
         <Separator />
 
         {/* 인증정보 */}
         <div className="space-y-1.5">
-          <p className="text-xs text-muted-foreground">
-            KC 인증번호 등은 오독 시 법적 리스크가 있어 기본적으로 선택되지 않습니다 — 원문과 대조
-            후 직접 선택하세요.
-          </p>
+          {!isReadOnly && (
+            <p className="text-xs text-muted-foreground">
+              KC 인증번호 등은 오독 시 법적 리스크가 있어 기본적으로 선택되지 않습니다 — 원문과 대조
+              후 직접 선택하세요.
+            </p>
+          )}
           <ListFieldBlock
             title="인증 정보 (certifications)"
             items={result.certifications}
@@ -417,6 +449,8 @@ export function ProductExtractReview({
                 return next
               })
             }
+            readOnly={isReadOnly}
+            applied={appliedFieldSet.has('certifications')}
             mode={certMode}
             onModeChange={setCertMode}
             currentCount={current?.certifications.length ?? 0}
@@ -433,6 +467,8 @@ export function ProductExtractReview({
             label="제조사"
             currentPreview={loadingCurrent ? '불러오는 중...' : current?.manufacturer || '(없음)'}
             hint={current?.manufacturer ? '기존 값이 있습니다 — 선택하면 교체됩니다' : undefined}
+            readOnly={isReadOnly}
+            applied={appliedFieldSet.has('manufacturer')}
           >
             <p className="text-sm">{result.manufacturer || '(추출되지 않음)'}</p>
           </FieldBlock>
@@ -446,6 +482,8 @@ export function ProductExtractReview({
             hint={
               current?.manufactureCountry ? '기존 값이 있습니다 — 선택하면 교체됩니다' : undefined
             }
+            readOnly={isReadOnly}
+            applied={appliedFieldSet.has('manufactureCountry')}
           >
             <p className="text-sm">{result.originCountry || '(추출되지 않음)'}</p>
           </FieldBlock>
@@ -458,15 +496,15 @@ export function ProductExtractReview({
             <div className="space-y-2 rounded-md border bg-muted/30 p-3">
               <p className="text-sm font-medium">참고 정보</p>
               <p className="text-xs text-muted-foreground">
-                성분·용량·주의사항은 상품 필드가 따로 없어 저장되지 않습니다. 필요하면 특징으로
-                추가하세요.
+                성분·용량·주의사항은 상품 필드가 따로 없어 저장되지 않습니다.
+                {!isReadOnly && ' 필요하면 특징으로 추가하세요.'}
               </p>
               <div className="space-y-1.5">
                 {result.capacity && (
                   <ReferenceRow
                     label="용량"
                     text={result.capacity}
-                    onAdd={() => addToFeatures(`용량: ${result.capacity}`)}
+                    onAdd={isReadOnly ? undefined : () => addToFeatures(`용량: ${result.capacity}`)}
                   />
                 )}
                 {result.ingredients.map((item, i) => (
@@ -474,7 +512,7 @@ export function ProductExtractReview({
                     key={`ing-${i}`}
                     label="성분"
                     text={item}
-                    onAdd={() => addToFeatures(item)}
+                    onAdd={isReadOnly ? undefined : () => addToFeatures(item)}
                   />
                 ))}
                 {result.cautions.map((item, i) => (
@@ -482,7 +520,7 @@ export function ProductExtractReview({
                     key={`cau-${i}`}
                     label="주의사항"
                     text={item}
-                    onAdd={() => addToFeatures(item)}
+                    onAdd={isReadOnly ? undefined : () => addToFeatures(item)}
                   />
                 ))}
               </div>
@@ -492,9 +530,9 @@ export function ProductExtractReview({
 
         {result.notes && <p className="text-xs text-muted-foreground">AI 메모: {result.notes}</p>}
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {!isReadOnly && error && <p className="text-sm text-destructive">{error}</p>}
 
-        {basicBusy && (
+        {!isReadOnly && basicBusy && (
           <p className="text-xs text-amber-600">기본 정보 저장 중입니다. 잠시 후 적용해주세요.</p>
         )}
 
@@ -502,23 +540,25 @@ export function ProductExtractReview({
           <Button type="button" variant="outline" onClick={onClose} disabled={applying}>
             닫기
           </Button>
-          <Button
-            type="button"
-            onClick={handleApply}
-            disabled={applying || basicBusy || !anySelected}
-          >
-            {applying ? (
-              <>
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                적용 중...
-              </>
-            ) : (
-              <>
-                <Check className="mr-1.5 h-4 w-4" />
-                선택 항목 적용
-              </>
-            )}
-          </Button>
+          {!isReadOnly && (
+            <Button
+              type="button"
+              onClick={handleApply}
+              disabled={applying || basicBusy || !anySelected}
+            >
+              {applying ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  적용 중...
+                </>
+              ) : (
+                <>
+                  <Check className="mr-1.5 h-4 w-4" />
+                  선택 항목 적용
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -531,6 +571,8 @@ function FieldBlock({
   label,
   currentPreview,
   hint,
+  readOnly,
+  applied,
   children,
 }: {
   checked: boolean
@@ -539,23 +581,39 @@ function FieldBlock({
   currentPreview: string
   /** 기존 값이 있어 기본 미선택인 경우 사용자에게 알리는 안내 문구 */
   hint?: string
+  /** true면 체크박스·선택 없이 비교만 보여준다(적용 완료된 잡 재열람) */
+  readOnly?: boolean
+  /** readOnly일 때 이 필드가 실제로 적용됐는지 — 배지로 표시 */
+  applied?: boolean
   children: React.ReactNode
 }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-start gap-2">
-        <Checkbox
-          id={`ex-chk-${label}`}
-          checked={checked}
-          onCheckedChange={(v) => onCheckedChange(v === true)}
-          className="mt-0.5"
-        />
+        {!readOnly && (
+          <Checkbox
+            id={`ex-chk-${label}`}
+            checked={checked}
+            onCheckedChange={(v) => onCheckedChange(v === true)}
+            className="mt-0.5"
+          />
+        )}
         <div className="min-w-0 flex-1 space-y-1">
-          <Label htmlFor={`ex-chk-${label}`} className="text-sm font-medium">
-            {label}
-          </Label>
+          <div className="flex items-center gap-1.5">
+            <Label
+              htmlFor={readOnly ? undefined : `ex-chk-${label}`}
+              className="text-sm font-medium"
+            >
+              {label}
+            </Label>
+            {readOnly && applied && (
+              <Badge variant="secondary" className="text-[10px]">
+                적용됨
+              </Badge>
+            )}
+          </div>
           <p className="truncate text-xs text-muted-foreground">현재값: {currentPreview}</p>
-          {hint && <p className="text-xs text-amber-600">{hint}</p>}
+          {hint && !readOnly && <p className="text-xs text-amber-600">{hint}</p>}
           {children}
         </div>
       </div>
@@ -573,6 +631,8 @@ function ListFieldBlock({
   currentCount,
   extras,
   onRemoveExtra,
+  readOnly,
+  applied,
 }: {
   title: string
   items: string[]
@@ -583,57 +643,73 @@ function ListFieldBlock({
   currentCount: number
   extras?: string[]
   onRemoveExtra?: (text: string) => void
+  /** true면 체크박스·모드 선택 없이 비교만 보여준다(적용 완료된 잡 재열람) */
+  readOnly?: boolean
+  /** readOnly일 때 이 필드가 실제로 적용됐는지 — 배지로 표시 */
+  applied?: boolean
 }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-medium">{title}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-sm font-medium">{title}</p>
+          {readOnly && applied && (
+            <Badge variant="secondary" className="text-[10px]">
+              적용됨
+            </Badge>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground">현재 {currentCount}개</p>
       </div>
       {items.length === 0 && (!extras || extras.length === 0) ? (
         <p className="text-xs text-muted-foreground">추출된 항목이 없습니다</p>
       ) : (
         <>
-          <div className="flex flex-wrap gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => onModeChange('replace')}
-              className={`rounded-full border px-2.5 py-1 ${mode === 'replace' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
-            >
-              교체
-            </button>
-            <button
-              type="button"
-              onClick={() => onModeChange('merge')}
-              className={`rounded-full border px-2.5 py-1 ${mode === 'merge' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
-            >
-              추가 (중복 제거 병합)
-            </button>
-          </div>
+          {!readOnly && (
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => onModeChange('replace')}
+                className={`rounded-full border px-2.5 py-1 ${mode === 'replace' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+              >
+                교체
+              </button>
+              <button
+                type="button"
+                onClick={() => onModeChange('merge')}
+                className={`rounded-full border px-2.5 py-1 ${mode === 'merge' ? 'border-primary bg-primary/10 font-medium text-primary' : 'text-muted-foreground'}`}
+              >
+                추가 (중복 제거 병합)
+              </button>
+            </div>
+          )}
           <ul className="space-y-1">
             {items.map((item, i) => (
               <li key={i} className="flex items-start gap-2">
-                <Checkbox
-                  checked={selected.has(i)}
-                  onCheckedChange={() => onToggle(i)}
-                  className="mt-0.5"
-                />
+                {!readOnly && (
+                  <Checkbox
+                    checked={selected.has(i)}
+                    onCheckedChange={() => onToggle(i)}
+                    className="mt-0.5"
+                  />
+                )}
                 <span className="text-sm">{item}</span>
               </li>
             ))}
-            {extras?.map((item) => (
-              <li key={item} className="flex items-center gap-2 text-sm text-primary">
-                <Plus className="h-3.5 w-3.5 shrink-0" />
-                <span className="flex-1">{item}</span>
-                <button
-                  type="button"
-                  onClick={() => onRemoveExtra?.(item)}
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </li>
-            ))}
+            {!readOnly &&
+              extras?.map((item) => (
+                <li key={item} className="flex items-center gap-2 text-sm text-primary">
+                  <Plus className="h-3.5 w-3.5 shrink-0" />
+                  <span className="flex-1">{item}</span>
+                  <button
+                    type="button"
+                    onClick={() => onRemoveExtra?.(item)}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
           </ul>
         </>
       )}
@@ -641,23 +717,34 @@ function ListFieldBlock({
   )
 }
 
-function ReferenceRow({ label, text, onAdd }: { label: string; text: string; onAdd: () => void }) {
+function ReferenceRow({
+  label,
+  text,
+  onAdd,
+}: {
+  label: string
+  text: string
+  /** 없으면(읽기 전용) 액션 버튼을 렌더하지 않는다 */
+  onAdd?: () => void
+}) {
   return (
     <div className="flex items-center justify-between gap-2 text-xs">
       <span className="min-w-0 flex-1">
         <span className="text-muted-foreground">[{label}] </span>
         {text}
       </span>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="h-6 shrink-0 px-2 text-xs"
-        onClick={onAdd}
-      >
-        <Plus className="mr-1 h-3 w-3" />
-        특징으로 추가
-      </Button>
+      {onAdd && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-6 shrink-0 px-2 text-xs"
+          onClick={onAdd}
+        >
+          <Plus className="mr-1 h-3 w-3" />
+          특징으로 추가
+        </Button>
+      )}
     </div>
   )
 }

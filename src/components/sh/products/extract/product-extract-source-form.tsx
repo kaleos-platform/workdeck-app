@@ -2,13 +2,14 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { FileText, Link2, Loader2, Paperclip, Upload, X } from 'lucide-react'
+import { FileText, ImageOff, Link2, Loader2, Paperclip, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import type { ExtractJob, UploadedSourceFile } from './types'
 
@@ -53,6 +54,9 @@ export function ProductExtractSourceForm({ productId, onCreated }: Props) {
   // 이 목록을 추출 요청에 함께 실어보내야 모델이 그 정보를 볼 수 있다.
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [urlPreviewOpen, setUrlPreviewOpen] = useState(false)
+  // 썸네일 로드 실패(핫링크 차단 등)를 표시만 하기 위한 집합 — 추출 자체는
+  // 서버가 별도로 내려받으므로 미리보기 실패가 추출 실패를 의미하지 않는다.
+  const [brokenThumbs, setBrokenThumbs] = useState<Set<string>>(new Set())
 
   const [pastedText, setPastedText] = useState('')
 
@@ -105,6 +109,7 @@ export function ProductExtractSourceForm({ productId, onCreated }: Props) {
       setUrlText(data.text ?? '')
       setImageUrls(Array.isArray(data.imageUrls) ? data.imageUrls : [])
       setUrlPreviewOpen(false)
+      setBrokenThumbs(new Set())
     } catch {
       setUrlError('URL을 불러오는 중 오류가 발생했습니다')
     } finally {
@@ -286,38 +291,89 @@ export function ProductExtractSourceForm({ productId, onCreated }: Props) {
           {urlError && <p className="text-xs text-destructive">{urlError}</p>}
           {urlText !== null && (
             <div className="rounded-md border bg-muted/30 p-3 text-xs">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-medium">{urlTitle || '(제목 없음)'}</p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={() => setUrlPreviewOpen((v) => !v)}
-                >
-                  {urlPreviewOpen ? '접기' : '본문 미리보기'}
-                </Button>
-              </div>
-              <p
-                className={cn(
-                  'mt-1 whitespace-pre-wrap text-muted-foreground',
-                  !urlPreviewOpen && 'line-clamp-2'
-                )}
-              >
-                {urlText || '(추출된 본문 없음)'}
-              </p>
-              {/* 상세 이미지를 함께 분석한다는 사실을 드러낸다 — 한국 상세페이지는 소재·인증 등
-                  핵심 정보가 본문이 아니라 이미지 안에 있어서, 이 숫자가 0이면 결과가 빈약해진다. */}
-              {imageUrls.length > 0 ? (
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  상세 이미지 {imageUrls.length}장을 함께 분석합니다 — 소재·인증 정보는 대개 본문이
-                  아니라 이미지 안에 있습니다.
-                </p>
-              ) : (
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  상세 이미지를 찾지 못했습니다. 결과가 부족하면 상세페이지를 캡처해 첨부해 주세요.
-                </p>
-              )}
+              <p className="font-medium">{urlTitle || '(제목 없음)'}</p>
+              {/* 텍스트/이미지를 탭으로 명확히 분리 — URL을 제대로 불러왔는지, 특히
+                  소재·인증처럼 이미지 안에만 있는 정보가 몇 장이나 잡혔는지 눈으로 확인할 수 있게 한다. */}
+              <Tabs defaultValue="text" className="mt-2 gap-2">
+                <TabsList className="h-8">
+                  <TabsTrigger value="text" className="text-xs">
+                    본문 텍스트 ({urlText.length.toLocaleString()}자)
+                  </TabsTrigger>
+                  <TabsTrigger value="images" className="text-xs">
+                    상세 이미지 ({imageUrls.length}장)
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="text">
+                  <div className="flex items-center justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => setUrlPreviewOpen((v) => !v)}
+                    >
+                      {urlPreviewOpen ? '접기' : '펼치기'}
+                    </Button>
+                  </div>
+                  <p
+                    className={cn(
+                      'whitespace-pre-wrap text-muted-foreground',
+                      !urlPreviewOpen && 'line-clamp-2'
+                    )}
+                  >
+                    {urlText || '(추출된 본문 없음)'}
+                  </p>
+                </TabsContent>
+                <TabsContent value="images">
+                  {imageUrls.length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                        {imageUrls.map((src, idx) => {
+                          const broken = brokenThumbs.has(src)
+                          return (
+                            <a
+                              key={src}
+                              href={src}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group relative block aspect-square overflow-hidden rounded-md border bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                              title={`상세 이미지 ${idx + 1} 원본 보기`}
+                            >
+                              {broken ? (
+                                <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-1 text-center text-[10px] text-muted-foreground">
+                                  <ImageOff className="h-4 w-4" />
+                                  <span className="truncate">이미지 {idx + 1}</span>
+                                </div>
+                              ) : (
+                                // 외부 도메인 이미지라 next/image의 remotePatterns 제약을 피하려고
+                                // 일반 img 태그를 사용한다. 크기를 몰라 aspect-square로 레이아웃 시프트를 막는다.
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={src}
+                                  alt={`상세 이미지 ${idx + 1}`}
+                                  loading="lazy"
+                                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                  onError={() => setBrokenThumbs((prev) => new Set(prev).add(src))}
+                                />
+                              )}
+                            </a>
+                          )
+                        })}
+                      </div>
+                      <p className="mt-2 text-[11px] text-muted-foreground">
+                        소재·인증 정보는 대개 본문이 아니라 이미지 안에 있습니다. 썸네일이 일부
+                        보이지 않아도(핫링크 차단 등) 서버가 별도로 내려받아 분석에는 그대로
+                        사용됩니다.
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      상세 이미지를 찾지 못했습니다. 소재·인증 정보는 대개 이미지 안에 있으니,
+                      결과가 부족하면 상세페이지를 캡처해 첨부해 주세요.
+                    </p>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </div>
