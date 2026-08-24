@@ -276,7 +276,34 @@ Phase 4가 의미를 가지려면 데이터가 있어야 한다.
 
 ---
 
-## Phase 5 — AI 초안 생성 (⏸ 보류)
+## Phase 5 — AI 초안 생성 (✅ 구현 완료 — 2026-08-25)
+
+> **2026-08-25: 사용자가 외부 LLM SaaS 사용을 명시적으로 승인.** 아래 "결정 필요" 가 해소됐다.
+> `src/lib/ai/providers/index.ts` 헤더의 "외부 LLM SaaS 금지" 문구도 사실에 맞게 고쳤다 —
+> 공유 체인은 여전히 로컬/self-host 전용이고, 재무와 seller-hub 두 곳만 Gemini API 직결 예외다.
+
+### 구현 결과
+
+- `src/lib/sh/keyword-ai-draft.ts` — `@google/genai` 직결. **절대 throw 하지 않는다**(키 미설정·API 오류·파싱 실패 전부 `null`). 재무 `ai-suggest.ts` 와 같은 구조
+- `POST /api/sh/products/[productId]/name-draft` — body `{ channelId }`. 상품 컨텍스트 + 채널 규칙(`loadKeywordRules` 재사용) → 초안 → **후보마다 검증 결과를 붙여** 반환. AI 실패는 502 가 아니라 **200 + `unavailable: true`** — 초안은 부가 기능이고 화면이 에러로 죽으면 안 된다
+- UI 는 상품 축 카드의 `✨ AI 초안` 버튼 + 다이얼로그. **`!readOnly && !nameLocked` 일 때만 렌더**(연동 채널·섞인 CP 는 어차피 이름을 못 바꾼다)
+- **후보를 버리지 않는다.** 위반을 배지로 표시하고 사용자가 판단한다
+- **`적용` 은 입력란만 채운다.** 저장은 기존 버튼으로만 — 변경 사유 게이트(§25-26)를 우회하는 경로를 만들지 않았다
+- `TextGenerationLog` 에 성공·실패 모두 기록(`provider: 'gemini-api'`, latency, preview 500자). **마이그레이션 없음**
+
+### 구현하며 드러난 것
+
+- **`thinkingConfig` 없이 부르면 조용히 실패한다.** gemini-2.5-flash 가 thinking 토큰 980개로 `maxOutputTokens` 를 다 먹어 JSON 이 잘리고 파싱이 실패한다 → `null`. 실제로 호출해 보기 전까지 안 드러났다. 재무와 동일하게 `thinkingBudget: 0` 으로 해결
+- **사용량 기록을 fire-and-forget 하면 유실된다.** Vercel 서버리스는 응답 직후 인스턴스를 얼려서, `await` 하지 않은 로그 write 가 사라진다 — 하필 관측이 제일 중요한 FAILED 경로가 그 위험에 노출된다. 헬퍼가 프라미스를 **반환**하고 호출부가 **`await`** 해야 둘 다 성립한다(레포의 기존 4곳이 그렇게 한다)
+- **검색어 §10 중복 판정 기준은 "지금 등록된 상품명"이다.** AI 후보를 기준 삼으면 후보 3개 중 무엇을 고를지 모르는 상태에서 검증 기준이 매번 달라지는 순환이 생긴다. 대신 다이얼로그가 그 전제를 문구로 알린다
+
+### 쿼터
+
+**넣지 않았다.** `TextGenerationLog` 로 실측한 뒤 근거를 갖고 정한다 — 실측 없이 상한을 정하면 근거 없는 숫자가 된다.
+
+---
+
+## Phase 5 원설계 (참고)
 
 > **2026-08-20 결정: 이번 범위에서 제외.** Phase 1~4를 먼저 낸다.
 > 아래 조사 결과는 재개 시점에 그대로 유효하다 — 특히 공유 체인이 prod에서
