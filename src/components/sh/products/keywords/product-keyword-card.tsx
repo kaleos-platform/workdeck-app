@@ -313,6 +313,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
           productId={productId}
           channelId={card.channelId}
           existingKeywords={keywords}
+          currentSearchName={searchName}
           onApplyName={setSearchName}
           onAddKeyword={(keyword) => {
             // KeywordEditor 와 같은 규칙: 이미 담긴 키워드(정규화 기준)는 다시 추가하지 않는다.
