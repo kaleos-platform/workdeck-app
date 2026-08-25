@@ -178,8 +178,26 @@ export function NameDraftDialog({
                   <p className="text-xs text-muted-foreground">후보가 없습니다.</p>
                 ) : (
                   <ul className="space-y-2">
+                    {/* 현재 상품명 — 후보와 같은 줄 형식으로 두어 위아래로 눈으로 비교할 수 있게 한다.
+                        기준선일 뿐 후보가 아니므로 배경을 구분하고 적용 버튼 자리는 비운다. */}
+                    <li className="flex items-start justify-between gap-2 rounded-md border bg-muted/40 p-2">
+                      <div className="min-w-0 space-y-1">
+                        <p className="text-sm break-words">
+                          {normalizedCurrentName || '(상품명 없음)'}
+                        </p>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span>{normalizedCurrentName.length}자</span>
+                        </div>
+                      </div>
+                      <span className="shrink-0 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                        현재
+                      </span>
+                    </li>
                     {names.map((c, i) => {
                       const isApplied = c.value.trim() === normalizedCurrentName
+                      const lengthDelta = normalizedCurrentName
+                        ? c.value.length - normalizedCurrentName.length
+                        : 0
                       return (
                         <li
                           key={`${c.value}-${i}`}
@@ -188,7 +206,22 @@ export function NameDraftDialog({
                           <div className="min-w-0 space-y-1">
                             <p className="text-sm break-words">{c.value}</p>
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <span>{c.value.length}자</span>
+                              <span>
+                                {c.value.length}자
+                                {lengthDelta !== 0 && (
+                                  <span
+                                    className={
+                                      lengthDelta > 0
+                                        ? 'text-amber-600 dark:text-amber-400'
+                                        : 'text-emerald-600 dark:text-emerald-400'
+                                    }
+                                  >
+                                    {' '}
+                                    ({lengthDelta > 0 ? '+' : ''}
+                                    {lengthDelta})
+                                  </span>
+                                )}
+                              </span>
                               {c.violations.length === 0 ? (
                                 <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                                   <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
@@ -243,69 +276,98 @@ export function NameDraftDialog({
                 )}
               </div>
 
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">AI 초안 검색어</h4>
-                {keywords.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">후보가 없습니다.</p>
-                ) : (
-                  <div className="flex flex-wrap gap-1.5">
-                    {keywords.map((c, i) => {
-                      const added = existingKeys.has(normalizeKeyword(c.value))
-                      const severity = c.violations[0]?.severity ?? null
-                      const violationSummary = c.violations.map((v) => v.message).join(' / ')
-                      const summary = added
-                        ? ['이미 담긴 검색어입니다.', violationSummary].filter(Boolean).join(' ')
-                        : violationSummary
-                      const chip = (
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">AI 추천 키워드</h4>
+
+                {/* 지금 카드에 실제로 담긴 값 — 클릭해도 아무 일도 일어나지 않는다. AI 추천과
+                    시각적으로 확실히 구분해 "이게 실제 등록값" 임을 보여준다. */}
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    현재 키워드 ({existingKeywords.length})
+                  </p>
+                  {existingKeywords.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">아직 없습니다.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {existingKeywords.map((k, i) => (
                         <Badge
-                          key={`${c.value}-${i}`}
-                          variant="outline"
-                          role="button"
-                          aria-disabled={added}
-                          tabIndex={added ? -1 : 0}
-                          onClick={() => {
-                            if (added) return
-                            onAddKeyword(c.value)
-                          }}
-                          onKeyDown={(e) => {
-                            if (added) return
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              onAddKeyword(c.value)
-                            }
-                          }}
-                          className={cn(
-                            'gap-1 text-sm font-normal',
-                            added ? 'cursor-default opacity-70' : 'cursor-pointer',
-                            !added && severity && SEVERITY_CLASS[severity]
-                          )}
+                          key={`${k}-${i}`}
+                          variant="secondary"
+                          className="cursor-default gap-1 text-sm font-normal"
                         >
-                          {added ? (
-                            <Check className="h-3 w-3" aria-hidden="true" />
-                          ) : (
-                            severity &&
-                            (() => {
-                              const Icon = SEVERITY_ICON[severity]
-                              return <Icon className="h-3 w-3" aria-hidden="true" />
-                            })()
-                          )}
-                          {c.value}
-                          {!added && <span aria-hidden="true">+</span>}
+                          {k}
                         </Badge>
-                      )
-                      return summary ? (
-                        <Tooltip key={`${c.value}-${i}`}>
-                          <TooltipTrigger asChild>{chip}</TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-xs">
-                            {summary}
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        chip
-                      )
-                    })}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    AI 추천 ({keywords.length})
+                  </p>
+                  {keywords.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">후보가 없습니다.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {keywords.map((c, i) => {
+                        const added = existingKeys.has(normalizeKeyword(c.value))
+                        const severity = c.violations[0]?.severity ?? null
+                        const violationSummary = c.violations.map((v) => v.message).join(' / ')
+                        const summary = added
+                          ? ['이미 담긴 검색어입니다.', violationSummary].filter(Boolean).join(' ')
+                          : violationSummary
+                        const chip = (
+                          <Badge
+                            key={`${c.value}-${i}`}
+                            variant="outline"
+                            role="button"
+                            aria-disabled={added}
+                            tabIndex={added ? -1 : 0}
+                            onClick={() => {
+                              if (added) return
+                              onAddKeyword(c.value)
+                            }}
+                            onKeyDown={(e) => {
+                              if (added) return
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                onAddKeyword(c.value)
+                              }
+                            }}
+                            className={cn(
+                              'gap-1 text-sm font-normal',
+                              added ? 'cursor-default opacity-70' : 'cursor-pointer',
+                              !added && severity && SEVERITY_CLASS[severity]
+                            )}
+                          >
+                            {added ? (
+                              <Check className="h-3 w-3" aria-hidden="true" />
+                            ) : (
+                              severity &&
+                              (() => {
+                                const Icon = SEVERITY_ICON[severity]
+                                return <Icon className="h-3 w-3" aria-hidden="true" />
+                              })()
+                            )}
+                            {c.value}
+                            {!added && <span aria-hidden="true">+</span>}
+                          </Badge>
+                        )
+                        return summary ? (
+                          <Tooltip key={`${c.value}-${i}`}>
+                            <TooltipTrigger asChild>{chip}</TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              {summary}
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          chip
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
