@@ -155,7 +155,10 @@ export function NameDraftDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto py-4">
+          {/* max-h 는 보험이다. flex-1+min-h-0 이 정상 동작하면 이 값에 닿기 전에 부모가 높이를
+              제한하므로 무해하고, display 가 flex 로 안 잡히는 경우에도 스크롤은 반드시 생긴다.
+              이게 없으면 그 상황에서 내용이 잘린 채 스크롤바도 안 보인다. */}
+          <div className="max-h-[70vh] min-h-0 flex-1 space-y-4 overflow-y-auto py-4">
             {loading && (
               <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
