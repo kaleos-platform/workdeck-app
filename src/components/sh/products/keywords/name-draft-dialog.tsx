@@ -208,14 +208,12 @@ export function NameDraftDialog({
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                               <span>
                                 {c.value.length}자
+                                {/* 증감에 색을 입히지 않는다 — 길어지는 게 좋은지 나쁜지는
+                                    목표 구간(채널 규칙)에 달렸다. 현재 35자면 길어지는 쪽이
+                                    맞는 방향인데 경고색을 칠하면 정반대를 가리킨다.
+                                    길이 품질 판단은 아래 위반 배지가 이미 한다. */}
                                 {lengthDelta !== 0 && (
-                                  <span
-                                    className={
-                                      lengthDelta > 0
-                                        ? 'text-amber-600 dark:text-amber-400'
-                                        : 'text-emerald-600 dark:text-emerald-400'
-                                    }
-                                  >
+                                  <span>
                                     {' '}
                                     ({lengthDelta > 0 ? '+' : ''}
                                     {lengthDelta})
