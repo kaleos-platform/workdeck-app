@@ -9,8 +9,16 @@
 // "적용"은 카드의 로컬 폼 state 만 바꾼다. 저장은 카드의 기존 저장 버튼(+변경 사유 게이트)이
 // 그대로 맡는다 — 여기서 자동 저장하면 사유 게이트를 우회하게 된다.
 
-import { useEffect, useState } from 'react'
-import { AlertCircle, AlertTriangle, CheckCircle2, Info, Loader2, Sparkles } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  AlertCircle,
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  Info,
+  Loader2,
+  Sparkles,
+} from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,6 +26,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -52,8 +61,10 @@ type Props = {
   onOpenChange: (open: boolean) => void
   productId: string
   channelId: string
-  /** 카드에 이미 담긴 검색어 — normalizeKeyword 기준으로 겹치는 후보를 숨긴다. */
+  /** 카드에 이미 담긴 검색어 — 적용된 칩을 구분하는 데 쓴다(더 이상 목록에서 숨기지 않는다). */
   existingKeywords: string[]
+  /** 카드의 현재 상품명(검색용) — 어느 후보가 지금 적용된 상태인지 판정하는 데 쓴다. */
+  currentSearchName: string
   onApplyName: (name: string) => void
   onAddKeyword: (keyword: string) => void
 }
@@ -64,6 +75,7 @@ export function NameDraftDialog({
   productId,
   channelId,
   existingKeywords,
+  currentSearchName,
   onApplyName,
   onAddKeyword,
 }: Props) {
@@ -71,6 +83,15 @@ export function NameDraftDialog({
   const [unavailable, setUnavailable] = useState(false)
   const [names, setNames] = useState<Candidate[]>([])
   const [keywords, setKeywords] = useState<Candidate[]>([])
+  // 다이얼로그를 연 시점의 검색어 개수 — 적용 상태 바의 "전/후" 비교 기준. open 이 true 로
+  // 바뀌는 순간에만 한 번 스냅샷을 잡는다(의존성은 open 뿐 — existingKeywords 변화로는 재스냅샷하지 않는다).
+  const openedKeywordCountRef = useRef(existingKeywords.length)
+  const existingKeywordsRef = useRef(existingKeywords)
+  existingKeywordsRef.current = existingKeywords
+
+  useEffect(() => {
+    if (open) openedKeywordCountRef.current = existingKeywordsRef.current.length
+  }, [open])
 
   // 열릴 때마다 새로 호출한다 — 상품명이 그 사이 바뀌었을 수 있어 캐시하지 않는다.
   useEffect(() => {
@@ -112,7 +133,8 @@ export function NameDraftDialog({
   }, [open, productId, channelId])
 
   const existingKeys = new Set(existingKeywords.map((k) => normalizeKeyword(k)))
-  const freshKeywords = keywords.filter((c) => !existingKeys.has(normalizeKeyword(c.value)))
+  const normalizedCurrentName = currentSearchName.trim()
+  const keywordDelta = existingKeywords.length - openedKeywordCountRef.current
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -156,99 +178,119 @@ export function NameDraftDialog({
                   <p className="text-xs text-muted-foreground">후보가 없습니다.</p>
                 ) : (
                   <ul className="space-y-2">
-                    {names.map((c, i) => (
-                      <li
-                        key={`${c.value}-${i}`}
-                        className="flex items-start justify-between gap-2 rounded-md border p-2"
-                      >
-                        <div className="min-w-0 space-y-1">
-                          <p className="text-sm break-words">{c.value}</p>
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <span>{c.value.length}자</span>
-                            {c.violations.length === 0 ? (
-                              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                                <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
-                                검사 통과
-                              </span>
-                            ) : (
-                              <span className="flex flex-wrap items-center gap-1.5">
-                                {c.violations.map((v, vi) => {
-                                  const Icon = SEVERITY_ICON[v.severity]
-                                  return (
-                                    <Tooltip key={`${v.code}-${vi}`}>
-                                      <TooltipTrigger asChild>
-                                        <span
-                                          className={cn(
-                                            'flex items-center gap-0.5',
-                                            SEVERITY_CLASS[v.severity]
-                                          )}
-                                        >
-                                          <Icon className="h-3 w-3" aria-hidden="true" />
-                                        </span>
-                                      </TooltipTrigger>
-                                      <TooltipContent side="top" className="max-w-xs">
-                                        {v.message}
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )
-                                })}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="shrink-0"
-                          onClick={() => {
-                            onApplyName(c.value)
-                            onOpenChange(false)
-                          }}
+                    {names.map((c, i) => {
+                      const isApplied = c.value.trim() === normalizedCurrentName
+                      return (
+                        <li
+                          key={`${c.value}-${i}`}
+                          className="flex items-start justify-between gap-2 rounded-md border p-2"
                         >
-                          적용
-                        </Button>
-                      </li>
-                    ))}
+                          <div className="min-w-0 space-y-1">
+                            <p className="text-sm break-words">{c.value}</p>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <span>{c.value.length}자</span>
+                              {c.violations.length === 0 ? (
+                                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                  <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+                                  검사 통과
+                                </span>
+                              ) : (
+                                <span className="flex flex-wrap items-center gap-1.5">
+                                  {c.violations.map((v, vi) => {
+                                    const Icon = SEVERITY_ICON[v.severity]
+                                    return (
+                                      <Tooltip key={`${v.code}-${vi}`}>
+                                        <TooltipTrigger asChild>
+                                          <span
+                                            className={cn(
+                                              'flex items-center gap-0.5',
+                                              SEVERITY_CLASS[v.severity]
+                                            )}
+                                          >
+                                            <Icon className="h-3 w-3" aria-hidden="true" />
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" className="max-w-xs">
+                                          {v.message}
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )
+                                  })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {isApplied ? (
+                            <span className="flex shrink-0 items-center gap-1 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                              <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                              적용됨
+                            </span>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="shrink-0"
+                              onClick={() => onApplyName(c.value)}
+                            >
+                              적용
+                            </Button>
+                          )}
+                        </li>
+                      )
+                    })}
                   </ul>
                 )}
               </div>
 
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">AI 초안 검색어</h4>
-                {freshKeywords.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    {keywords.length === 0 ? '후보가 없습니다.' : '이미 담긴 검색어뿐입니다.'}
-                  </p>
+                {keywords.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">후보가 없습니다.</p>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
-                    {freshKeywords.map((c, i) => {
+                    {keywords.map((c, i) => {
+                      const added = existingKeys.has(normalizeKeyword(c.value))
                       const severity = c.violations[0]?.severity ?? null
-                      const summary = c.violations.map((v) => v.message).join(' / ')
+                      const violationSummary = c.violations.map((v) => v.message).join(' / ')
+                      const summary = added
+                        ? ['이미 담긴 검색어입니다.', violationSummary].filter(Boolean).join(' ')
+                        : violationSummary
                       const chip = (
                         <Badge
                           key={`${c.value}-${i}`}
                           variant="outline"
                           role="button"
-                          tabIndex={0}
-                          onClick={() => onAddKeyword(c.value)}
+                          aria-disabled={added}
+                          tabIndex={added ? -1 : 0}
+                          onClick={() => {
+                            if (added) return
+                            onAddKeyword(c.value)
+                          }}
                           onKeyDown={(e) => {
+                            if (added) return
                             if (e.key === 'Enter' || e.key === ' ') {
                               e.preventDefault()
                               onAddKeyword(c.value)
                             }
                           }}
                           className={cn(
-                            'cursor-pointer gap-1 text-sm font-normal',
-                            severity && SEVERITY_CLASS[severity]
+                            'gap-1 text-sm font-normal',
+                            added ? 'cursor-default opacity-70' : 'cursor-pointer',
+                            !added && severity && SEVERITY_CLASS[severity]
                           )}
                         >
-                          {severity &&
+                          {added ? (
+                            <Check className="h-3 w-3" aria-hidden="true" />
+                          ) : (
+                            severity &&
                             (() => {
                               const Icon = SEVERITY_ICON[severity]
                               return <Icon className="h-3 w-3" aria-hidden="true" />
-                            })()}
+                            })()
+                          )}
                           {c.value}
+                          {!added && <span aria-hidden="true">+</span>}
                         </Badge>
                       )
                       return summary ? (
@@ -266,6 +308,45 @@ export function NameDraftDialog({
                 )}
               </div>
             </div>
+          )}
+
+          {!loading && !unavailable && (
+            <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 flex-col items-stretch gap-2 border-t bg-background px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-0.5 text-xs text-muted-foreground">
+                <p className="flex items-center gap-1">
+                  <span className="shrink-0 font-medium text-foreground">현재 상품명</span>
+                  <span className="truncate">
+                    {normalizedCurrentName || '(비어 있음)'} ({normalizedCurrentName.length}자)
+                  </span>
+                </p>
+                <p>
+                  <span className="font-medium text-foreground">검색어</span>{' '}
+                  {openedKeywordCountRef.current}개 → {existingKeywords.length}개
+                  {keywordDelta !== 0 && (
+                    <span
+                      className={cn(
+                        'ml-1',
+                        keywordDelta > 0
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-destructive'
+                      )}
+                    >
+                      ({keywordDelta > 0 ? '+' : ''}
+                      {keywordDelta})
+                    </span>
+                  )}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => onOpenChange(false)}
+              >
+                닫기
+              </Button>
+            </DialogFooter>
           )}
         </DialogContent>
       </Dialog>
