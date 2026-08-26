@@ -72,7 +72,7 @@ const SYSTEM_INSTRUCTION = [
   '- 소재에 없는 필드는 null 또는 빈 배열로 두세요.',
   '',
   '[원문 표기를 그대로 옮길 필드]',
-  'certifications(KC 등 인증번호), ingredients, capacity, manufacturer, originCountry는 소재의 표기를 그대로 옮기세요.',
+  'ingredients, capacity, manufacturer, originCountry는 소재의 표기를 그대로 옮기세요.',
   '',
   '[description]',
   '한국어 평문 2~5문장으로 작성하세요.',
@@ -85,10 +85,22 @@ const SYSTEM_INSTRUCTION = [
   '- 좋은 예: "티셔츠처럼 위에서 아래로 편하게 입고 벗는 런닝형 구조"',
   '- 인증번호는 certifications에, 주의·경고 문구는 cautions에 넣고 features에는 넣지 마세요.',
   '- 소재가 빈약하면 억지로 항목 수를 늘리지 마세요.',
+  '',
+  '[certifications — 인증·시험 정보]',
+  '- 항목은 "내용" + "번호" 두 부분으로 씁니다. 내용을 먼저 쓰고, 인증번호·규격번호는 항목 맨 끝 괄호 안에만 넣으세요.',
+  '- 내용에는 시험기관명, 시험·인증 이름, 측정값을 담으세요. 번호 외의 설명을 괄호에 넣지 마세요.',
+  '- 인증번호·규격번호가 없으면 괄호를 아예 쓰지 마세요.',
+  '- 좋은 예: "한국의류시험연구원(KATRI) 접촉냉감 공인시험 통과, Qmax 0.157 W/cm2 (JIS L 1927)"',
+  '- 좋은 예: "OEKO-TEX STANDARD 100 인증 취득 (SH025 174851 TESTEX)"',
+  '- 좋은 예(번호 없음): "국내 자사 시험실 항균 테스트 완료"',
+  '- 나쁜 예: "JIS L 1927 (국제 접촉냉감 시험 기준)" — 번호가 앞, 설명이 괄호 안이라 뒤바뀜',
+  '- 나쁜 예: "항균 테스트 완료 (국내 자사 시험실)" — 번호가 아닌 것이 괄호 안',
+  '- 소재에 나온 인증·시험은 빠짐없이 항목으로 만들고, 규격번호와 측정값도 누락하지 마세요.',
+  '- 번호 문자열 자체는 소재 표기를 그대로 옮기고 임의로 고치지 마세요.',
 ].join('\n')
 
 /** 프롬프트 개정 버전 — ProductExtractionJob.promptVersion에 기록해 신/구 결과를 구분한다. */
-export const EXTRACT_PROMPT_VERSION = 'v2'
+export const EXTRACT_PROMPT_VERSION = 'v3'
 
 // truncatedFields는 응답 스키마에서 제외하고 로컬에서 계산한다.
 // `Schema` 타입 명시 — SchemaUnion = Schema | unknown 이라 무주석이면 tsc가 형태를 전혀 검사하지 않는다.
@@ -106,7 +118,16 @@ const RESPONSE_SCHEMA: Schema = {
           '근거가 되는 속성과 그로 인한 사용자 이점을 함께 담은 명사구. 예: "티셔츠처럼 위에서 아래로 편하게 입고 벗는 런닝형 구조"',
       },
     },
-    certifications: { type: 'ARRAY' as Type, items: { type: 'STRING' as Type } },
+    certifications: {
+      type: 'ARRAY' as Type,
+      description:
+        '인증·시험 정보. 내용을 먼저 쓰고 인증번호·규격번호가 있을 때만 항목 끝 괄호 안에 표기.',
+      items: {
+        type: 'STRING' as Type,
+        description:
+          '예: "국제 접촉냉감 시험 기준 통과 (JIS L 1927)", 번호가 없으면 "접촉냉감 KATRI 공인시험 통과"',
+      },
+    },
     ingredients: { type: 'ARRAY' as Type, items: { type: 'STRING' as Type } },
     capacity: { type: 'STRING' as Type, nullable: true },
     originCountry: { type: 'STRING' as Type, nullable: true },
