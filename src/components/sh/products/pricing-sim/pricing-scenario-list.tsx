@@ -49,6 +49,11 @@ type ProductOption = { id: string; label: string }
 
 const PAGE_SIZE = 20
 
+function joinedOrDash(values: string[] | undefined): string {
+  const compact = (values ?? []).filter(Boolean)
+  return compact.length > 0 ? compact.join(', ') : '—'
+}
+
 export function PricingScenarioList() {
   const router = useRouter()
   const [search, setSearch] = useState('')
@@ -305,7 +310,7 @@ export function PricingScenarioList() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground tabular-nums">
-                      {row.summary ? `${row.summary.channelCount}개` : '—'}
+                      {joinedOrDash(row.channelNames)}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {row.summary ? `${row.summary.targetMarginPct}%` : '—'}

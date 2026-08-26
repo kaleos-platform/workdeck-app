@@ -198,7 +198,10 @@ export async function POST(req: NextRequest) {
       snapshotDateOverride,
     })
   } catch (err) {
-    if (err instanceof ReconciliationCoreError) return errorResponse(err.message, err.status)
+    if (err instanceof ReconciliationCoreError) {
+      // code/details 를 그대로 내려 클라이언트가 문자열 파싱 없이 분기·안내할 수 있게 한다.
+      return errorResponse(err.message, err.status, { code: err.code, details: err.details })
+    }
     console.error('[reconciliation POST] match 실패', err)
     return errorResponse('매칭 처리에 실패했습니다', 500)
   }

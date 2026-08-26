@@ -602,6 +602,40 @@ export type EnumInvProductStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumInvProductStatusFilter<$PrismaModel>
 }
 
+export type EnumProductExtractionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionStatus | Prisma.EnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel> | $Enums.ProductExtractionStatus
+}
+
+export type EnumProductExtractionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionStatus | Prisma.EnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProductExtractionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel>
+}
+
+export type EnumProductExtractionSourceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionSourceKind | Prisma.EnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel> | $Enums.ProductExtractionSourceKind
+}
+
+export type EnumProductExtractionSourceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionSourceKind | Prisma.EnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionSourceKindWithAggregatesFilter<$PrismaModel> | $Enums.ProductExtractionSourceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel>
+}
+
 export type EnumInvStorageLocationTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.InvStorageLocationType | Prisma.EnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
   in?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
@@ -787,6 +821,91 @@ export type EnumProductListingStatusWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumProductListingStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumProductListingStatusFilter<$PrismaModel>
+}
+
+export type EnumKeywordMasterTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterType | Prisma.EnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterType[] | Prisma.ListEnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterType[] | Prisma.ListEnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterTypeFilter<$PrismaModel> | $Enums.KeywordMasterType
+}
+
+export type EnumKeywordMasterSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterSource | Prisma.EnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterSource[] | Prisma.ListEnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterSource[] | Prisma.ListEnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterSourceFilter<$PrismaModel> | $Enums.KeywordMasterSource
+}
+
+export type EnumKeywordMasterStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterStatus | Prisma.EnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterStatus[] | Prisma.ListEnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterStatus[] | Prisma.ListEnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterStatusFilter<$PrismaModel> | $Enums.KeywordMasterStatus
+}
+
+export type EnumKeywordMasterTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterType | Prisma.EnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterType[] | Prisma.ListEnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterType[] | Prisma.ListEnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterTypeWithAggregatesFilter<$PrismaModel> | $Enums.KeywordMasterType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordMasterTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordMasterTypeFilter<$PrismaModel>
+}
+
+export type EnumKeywordMasterSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterSource | Prisma.EnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterSource[] | Prisma.ListEnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterSource[] | Prisma.ListEnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterSourceWithAggregatesFilter<$PrismaModel> | $Enums.KeywordMasterSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordMasterSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordMasterSourceFilter<$PrismaModel>
+}
+
+export type EnumKeywordMasterStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterStatus | Prisma.EnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterStatus[] | Prisma.ListEnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterStatus[] | Prisma.ListEnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterStatusWithAggregatesFilter<$PrismaModel> | $Enums.KeywordMasterStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordMasterStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordMasterStatusFilter<$PrismaModel>
+}
+
+export type EnumKeywordLinkRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordLinkRole | Prisma.EnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordLinkRole[] | Prisma.ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordLinkRole[] | Prisma.ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordLinkRoleFilter<$PrismaModel> | $Enums.KeywordLinkRole
+}
+
+export type EnumKeywordLinkRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordLinkRole | Prisma.EnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordLinkRole[] | Prisma.ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordLinkRole[] | Prisma.ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordLinkRoleWithAggregatesFilter<$PrismaModel> | $Enums.KeywordLinkRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordLinkRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordLinkRoleFilter<$PrismaModel>
+}
+
+export type EnumKeywordChangeReasonFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel> | $Enums.KeywordChangeReason
+}
+
+export type EnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel> | $Enums.KeywordChangeReason
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
 }
 
 export type EnumAiGenerationStatusFilter<$PrismaModel = never> = {
@@ -2090,6 +2209,40 @@ export type NestedEnumInvProductStatusWithAggregatesFilter<$PrismaModel = never>
   _max?: Prisma.NestedEnumInvProductStatusFilter<$PrismaModel>
 }
 
+export type NestedEnumProductExtractionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionStatus | Prisma.EnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel> | $Enums.ProductExtractionStatus
+}
+
+export type NestedEnumProductExtractionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionStatus | Prisma.EnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionStatus[] | Prisma.ListEnumProductExtractionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionStatusWithAggregatesFilter<$PrismaModel> | $Enums.ProductExtractionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductExtractionStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumProductExtractionSourceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionSourceKind | Prisma.EnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel> | $Enums.ProductExtractionSourceKind
+}
+
+export type NestedEnumProductExtractionSourceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductExtractionSourceKind | Prisma.EnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProductExtractionSourceKind[] | Prisma.ListEnumProductExtractionSourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProductExtractionSourceKindWithAggregatesFilter<$PrismaModel> | $Enums.ProductExtractionSourceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProductExtractionSourceKindFilter<$PrismaModel>
+}
+
 export type NestedEnumInvStorageLocationTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.InvStorageLocationType | Prisma.EnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
   in?: $Enums.InvStorageLocationType[] | Prisma.ListEnumInvStorageLocationTypeFieldRefInput<$PrismaModel>
@@ -2275,6 +2428,91 @@ export type NestedEnumProductListingStatusWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumProductListingStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumProductListingStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumKeywordMasterTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterType | Prisma.EnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterType[] | Prisma.ListEnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterType[] | Prisma.ListEnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterTypeFilter<$PrismaModel> | $Enums.KeywordMasterType
+}
+
+export type NestedEnumKeywordMasterSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterSource | Prisma.EnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterSource[] | Prisma.ListEnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterSource[] | Prisma.ListEnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterSourceFilter<$PrismaModel> | $Enums.KeywordMasterSource
+}
+
+export type NestedEnumKeywordMasterStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterStatus | Prisma.EnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterStatus[] | Prisma.ListEnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterStatus[] | Prisma.ListEnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterStatusFilter<$PrismaModel> | $Enums.KeywordMasterStatus
+}
+
+export type NestedEnumKeywordMasterTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterType | Prisma.EnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterType[] | Prisma.ListEnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterType[] | Prisma.ListEnumKeywordMasterTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterTypeWithAggregatesFilter<$PrismaModel> | $Enums.KeywordMasterType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordMasterTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordMasterTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumKeywordMasterSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterSource | Prisma.EnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterSource[] | Prisma.ListEnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterSource[] | Prisma.ListEnumKeywordMasterSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterSourceWithAggregatesFilter<$PrismaModel> | $Enums.KeywordMasterSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordMasterSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordMasterSourceFilter<$PrismaModel>
+}
+
+export type NestedEnumKeywordMasterStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordMasterStatus | Prisma.EnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordMasterStatus[] | Prisma.ListEnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordMasterStatus[] | Prisma.ListEnumKeywordMasterStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordMasterStatusWithAggregatesFilter<$PrismaModel> | $Enums.KeywordMasterStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordMasterStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordMasterStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumKeywordLinkRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordLinkRole | Prisma.EnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordLinkRole[] | Prisma.ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordLinkRole[] | Prisma.ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordLinkRoleFilter<$PrismaModel> | $Enums.KeywordLinkRole
+}
+
+export type NestedEnumKeywordLinkRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordLinkRole | Prisma.EnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordLinkRole[] | Prisma.ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordLinkRole[] | Prisma.ListEnumKeywordLinkRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordLinkRoleWithAggregatesFilter<$PrismaModel> | $Enums.KeywordLinkRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordLinkRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordLinkRoleFilter<$PrismaModel>
+}
+
+export type NestedEnumKeywordChangeReasonFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel> | $Enums.KeywordChangeReason
+}
+
+export type NestedEnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KeywordChangeReason | Prisma.EnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KeywordChangeReason[] | Prisma.ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel> | $Enums.KeywordChangeReason
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
 }
 
 export type NestedEnumAiGenerationStatusFilter<$PrismaModel = never> = {

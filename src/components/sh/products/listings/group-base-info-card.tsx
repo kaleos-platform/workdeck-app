@@ -1,28 +1,17 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
 
-import { countChars, getChannelNameLimit } from './channel-name-limits'
+import { NameCounter } from './name-counter'
+import { NameValidationPanel } from './name-validation-panel'
 
 const MAX_NAME_LENGTH = 200
-
-export type GroupListingForBase = {
-  id: string
-  searchName: string
-  displayName: string
-  managementName: string | null
-  internalCode: string | null
-  memo: string | null
-  items: Array<{
-    optionId: string
-    attributeValues: Record<string, string>
-  }>
-}
-
-export type OptionAttribute = { name: string; values: Array<{ value: string }> }
 
 type Props = {
   channelName: string
@@ -60,7 +49,19 @@ export function GroupBaseInfoCard({
   onMemoChange,
   disabled,
 }: Props) {
-  const nameLimit = getChannelNameLimit(channelName)
+  // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
+  // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다 — 규칙 편집 UI 를 붙일 때 여기서 연결한다.
+  const rules = useMemo(
+    () =>
+      withChannelDefaults(
+        resolveKeywordRules(null),
+        // 상한 조회는 채널명만 쓴다. 그룹 상세 API 가 externalSource 를 내려주지 않아 null 로 둔다.
+        channelName ? { name: channelName, externalSource: null } : null
+      ),
+    [channelName]
+  )
+  const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
+  const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
 
   return (
     <Card>
@@ -98,7 +99,7 @@ export function GroupBaseInfoCard({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-search">상품명 (검색용)</Label>
-            <NameCounter value={baseSearchName} limit={nameLimit.searchName} />
+            <NameCounter value={baseSearchName} limit={searchNameRules.nameHardMax} guide />
           </div>
           <Input
             id="group-search"
@@ -108,11 +109,20 @@ export function GroupBaseInfoCard({
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
           />
+          {/* 변경 작업 중(disabled)에는 원클릭 수정을 막는다 — 자동저장 타이머가 걸려
+              진행 중인 작업의 재적재와 경합한다. */}
+          <NameValidationPanel
+            value={baseSearchName}
+            onChange={onBaseSearchNameChange}
+            field="searchName"
+            rules={rules}
+            readOnly={disabled}
+          />
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-display">상품명 (노출용)</Label>
-            <NameCounter value={baseDisplayName} limit={nameLimit.displayName} />
+            <NameCounter value={baseDisplayName} limit={displayNameRules.nameHardMax} guide />
           </div>
           <Input
             id="group-display"
@@ -122,11 +132,20 @@ export function GroupBaseInfoCard({
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
           />
+          {/* 빈 값은 "검색용을 그대로 쓴다"는 뜻이라 폴백값을 넣지 않는다 — 패널이 알아서 숨는다. */}
+          <NameValidationPanel
+            value={baseDisplayName}
+            onChange={onBaseDisplayNameChange}
+            field="displayName"
+            rules={rules}
+            readOnly={disabled}
+          />
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="group-management">상품명 (관리용)</Label>
-            <NameCounter value={baseManagementName} />
+            {/* 내부 표시용이라 채널 상한이 없다. 옵션 접미사(최대 30자)를 뺀 여유분만 보여준다. */}
+            <NameCounter value={baseManagementName} limit={MAX_NAME_LENGTH - 30} />
           </div>
           <Input
             id="group-management"
@@ -150,110 +169,5 @@ export function GroupBaseInfoCard({
         </div>
       </CardContent>
     </Card>
-  )
-}
-
-export function buildSuffix(listing: GroupListingForBase, attrs: OptionAttribute[]): string {
-  if (listing.items.length === 0) return ''
-  // 모든 item이 공통으로 가지는 속성값만 suffix로 사용 (묶음 item일 때 안전).
-  // 단, 공통값이라도 listing 이름 끝에 실제로 들어가지 않을 수 있으므로 후처리는 stripSuffix에서.
-  const parts: string[] = []
-  for (const a of attrs) {
-    const first = listing.items[0].attributeValues?.[a.name]
-    if (!first) continue
-    const allSame = listing.items.every((it) => (it.attributeValues ?? {})[a.name] === first)
-    if (allSame) parts.push(first)
-  }
-  return parts.join(' ')
-}
-
-export function joinName(base: string, suffix: string): string {
-  if (!base) return suffix
-  if (!suffix) return base
-  return `${base} ${suffix}`
-}
-
-function stripSuffix(value: string | null, suffix: string): string {
-  if (!value) return ''
-  // 끝의 묶음 라벨(` #N ...`)과 ` N개` 차원을 먼저 제거
-  let v = value.replace(/\s+#\d+\s.*$/, '').replace(/\s+\d+개$/, '')
-  if (suffix && v.endsWith(suffix)) {
-    v = v.slice(0, v.length - suffix.length).trimEnd()
-  }
-  return v
-}
-
-export function deriveBaseValues(
-  listings: GroupListingForBase[],
-  attrs: OptionAttribute[]
-): {
-  baseSearchName: string
-  baseDisplayName: string
-  baseManagementName: string
-  baseInternalCode: string
-  memo: string
-  inconsistentBases: string[]
-} {
-  const searchBases: string[] = []
-  const displayBases: string[] = []
-  const managementBases: string[] = []
-  const codeBases: string[] = []
-  for (const l of listings) {
-    const suffix = buildSuffix(l, attrs)
-    searchBases.push(stripSuffix(l.searchName, suffix))
-    displayBases.push(stripSuffix(l.displayName, suffix))
-    managementBases.push(stripSuffix(l.managementName, suffix))
-    codeBases.push(stripSuffix(l.internalCode, suffix))
-  }
-
-  const inconsistent: string[] = []
-  const baseSearchName = mostCommon(searchBases)
-  if (new Set(searchBases.filter((s) => s)).size > 1) inconsistent.push('검색명')
-  const rawBaseDisplayName = mostCommon(displayBases)
-  const sameAsSearchForAll = listings.every((_, idx) => displayBases[idx] === searchBases[idx])
-  if (new Set(displayBases.filter((s) => s)).size > 1) inconsistent.push('노출명')
-  const baseDisplayName = sameAsSearchForAll ? '' : rawBaseDisplayName
-  const baseManagementName = mostCommon(managementBases)
-  if (new Set(managementBases.filter((s) => s)).size > 1) inconsistent.push('관리명')
-  const baseInternalCode = mostCommon(codeBases)
-  if (new Set(codeBases.filter((s) => s)).size > 1) inconsistent.push('관리 코드')
-
-  const memos = listings.map((l) => l.memo ?? '')
-  const memo = mostCommon(memos)
-
-  return {
-    baseSearchName,
-    baseDisplayName,
-    baseManagementName,
-    baseInternalCode,
-    memo,
-    inconsistentBases: inconsistent,
-  }
-}
-
-function mostCommon(values: string[]): string {
-  if (values.length === 0) return ''
-  const counts = new Map<string, number>()
-  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1)
-  let best = values[0]
-  let bestCount = 0
-  for (const [v, c] of counts) {
-    if (c > bestCount || (c === bestCount && v.length > best.length)) {
-      best = v
-      bestCount = c
-    }
-  }
-  return best
-}
-
-function NameCounter({ value, limit }: { value: string; limit?: number }) {
-  const n = countChars(value)
-  const overflow = limit != null && n > limit
-  const color = overflow ? 'text-destructive' : 'text-muted-foreground'
-  return (
-    <span className={`text-xs ${color}`}>
-      {n}
-      {limit != null ? ` / ${limit}(가이드)` : ` / ${MAX_NAME_LENGTH - 30}`}
-    </span>
   )
 }

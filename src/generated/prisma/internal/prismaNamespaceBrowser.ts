@@ -90,6 +90,8 @@ export const ModelName = {
   InvProductGroup: 'InvProductGroup',
   InvProduct: 'InvProduct',
   AdCampaignProductMap: 'AdCampaignProductMap',
+  ProductExtractionJob: 'ProductExtractionJob',
+  ProductExtractionSource: 'ProductExtractionSource',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
   InvMovement: 'InvMovement',
@@ -127,6 +129,10 @@ export const ModelName = {
   ChannelStockMovement: 'ChannelStockMovement',
   DelOrderItemFulfillment: 'DelOrderItemFulfillment',
   ChannelProduct: 'ChannelProduct',
+  KeywordMaster: 'KeywordMaster',
+  KeywordMasterLink: 'KeywordMasterLink',
+  ChannelKeywordRule: 'ChannelKeywordRule',
+  KeywordChangeLog: 'KeywordChangeLog',
   Product: 'Product',
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
@@ -831,6 +837,53 @@ export const AdCampaignProductMapScalarFieldEnum = {
 export type AdCampaignProductMapScalarFieldEnum = (typeof AdCampaignProductMapScalarFieldEnum)[keyof typeof AdCampaignProductMapScalarFieldEnum]
 
 
+export const ProductExtractionJobScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  productId: 'productId',
+  status: 'status',
+  provider: 'provider',
+  model: 'model',
+  promptVersion: 'promptVersion',
+  result: 'result',
+  rawResponse: 'rawResponse',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  latencyMs: 'latencyMs',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  textLogId: 'textLogId',
+  creditMonth: 'creditMonth',
+  appliedAt: 'appliedAt',
+  appliedFields: 'appliedFields',
+  appliedBefore: 'appliedBefore',
+  rolledBackAt: 'rolledBackAt',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductExtractionJobScalarFieldEnum = (typeof ProductExtractionJobScalarFieldEnum)[keyof typeof ProductExtractionJobScalarFieldEnum]
+
+
+export const ProductExtractionSourceScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  spaceId: 'spaceId',
+  kind: 'kind',
+  url: 'url',
+  finalUrl: 'finalUrl',
+  storagePath: 'storagePath',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  byteSize: 'byteSize',
+  textContent: 'textContent',
+  createdAt: 'createdAt'
+} as const
+
+export type ProductExtractionSourceScalarFieldEnum = (typeof ProductExtractionSourceScalarFieldEnum)[keyof typeof ProductExtractionSourceScalarFieldEnum]
+
+
 export const InvProductOptionScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
@@ -1407,6 +1460,80 @@ export const ChannelProductScalarFieldEnum = {
 export type ChannelProductScalarFieldEnum = (typeof ChannelProductScalarFieldEnum)[keyof typeof ChannelProductScalarFieldEnum]
 
 
+export const KeywordMasterScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  keyword: 'keyword',
+  normalized: 'normalized',
+  despaced: 'despaced',
+  sortedKey: 'sortedKey',
+  category: 'category',
+  type: 'type',
+  source: 'source',
+  status: 'status',
+  score: 'score',
+  scoreInputs: 'scoreInputs',
+  researchedAt: 'researchedAt',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KeywordMasterScalarFieldEnum = (typeof KeywordMasterScalarFieldEnum)[keyof typeof KeywordMasterScalarFieldEnum]
+
+
+export const KeywordMasterLinkScalarFieldEnum = {
+  id: 'id',
+  keywordId: 'keywordId',
+  productId: 'productId',
+  listingId: 'listingId',
+  role: 'role',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KeywordMasterLinkScalarFieldEnum = (typeof KeywordMasterLinkScalarFieldEnum)[keyof typeof KeywordMasterLinkScalarFieldEnum]
+
+
+export const ChannelKeywordRuleScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  maxKeywords: 'maxKeywords',
+  nameTargetMin: 'nameTargetMin',
+  nameTargetMax: 'nameTargetMax',
+  nameSoftMax: 'nameSoftMax',
+  nameHardMax: 'nameHardMax',
+  bannedTerms: 'bannedTerms',
+  replaceDefaultTerms: 'replaceDefaultTerms',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelKeywordRuleScalarFieldEnum = (typeof ChannelKeywordRuleScalarFieldEnum)[keyof typeof ChannelKeywordRuleScalarFieldEnum]
+
+
+export const KeywordChangeLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  listingId: 'listingId',
+  productId: 'productId',
+  beforeName: 'beforeName',
+  afterName: 'afterName',
+  beforeKeywords: 'beforeKeywords',
+  afterKeywords: 'afterKeywords',
+  reason: 'reason',
+  reasonNote: 'reasonNote',
+  observeMetric: 'observeMetric',
+  multiChange: 'multiChange',
+  actorUserId: 'actorUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type KeywordChangeLogScalarFieldEnum = (typeof KeywordChangeLogScalarFieldEnum)[keyof typeof KeywordChangeLogScalarFieldEnum]
+
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -1465,6 +1592,8 @@ export const WorkspaceAiCreditScalarFieldEnum = {
   yearMonth: 'yearMonth',
   imageUsed: 'imageUsed',
   imageQuota: 'imageQuota',
+  textUsed: 'textUsed',
+  textQuota: 'textQuota',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1507,6 +1636,7 @@ export const TextGenerationLogScalarFieldEnum = {
   latencyMs: 'latencyMs',
   errorCode: 'errorCode',
   errorMessage: 'errorMessage',
+  creditMonth: 'creditMonth',
   createdAt: 'createdAt'
 } as const
 

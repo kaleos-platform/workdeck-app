@@ -2,17 +2,28 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Copy, Loader2, Plus } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowLeft, Copy, Loader2, Plus, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import {
   SELLER_HUB_PRICING_SIM_NEW_PATH,
   SELLER_HUB_PRODUCTS_LIST_PATH,
   getSellerHubPricingScenarioPath,
 } from '@/lib/deck-routes'
-import { ProductBasicForm } from '@/components/sh/products/product-basic-form'
+import {
+  ProductBasicForm,
+  type ProductApplyPatch,
+} from '@/components/sh/products/product-basic-form'
+import { ProductExtractPanel } from '@/components/sh/products/extract/product-extract-panel'
 import { ProductCodeField } from '@/components/sh/products/product-code-field'
 import { ProductAttributesEditor } from '@/components/sh/products/product-attributes-editor'
 import { ProductOptionsTable } from '@/components/sh/products/product-options-table'
@@ -67,6 +78,7 @@ const SECTIONS: { key: SectionKey; label: string; title: string; description: st
  */
 export function ProductDetailTabs({ productId }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [refreshKey, setRefreshKey] = useState(0)
   const [active, setActive] = useState<SectionKey>('basic')
   const [duplicating, setDuplicating] = useState(false)
@@ -82,6 +94,27 @@ export function ProductDetailTabs({ productId }: Props) {
   const basicRetryRef = useRef<(() => void) | null>(null)
   const codeRetryRef = useRef<(() => void) | null>(null)
   const optionsRetryRef = useRef<(() => void) | null>(null)
+  // AI 추출 패널이 기본 정보 폼 state에 직접 값을 주입할 수 있는 핸들
+  const basicApplyRef = useRef<((patch: ProductApplyPatch) => Promise<void>) | null>(null)
+  // basicSaving은 autosave 진행 여부만 나타내 dirty(입력 직후)인 순간을 못 잡는다 —
+  // 적용 버튼은 dirty 상태에서도 눌러선 안 되므로 둘을 합쳐 노출한다.
+  const basicBusy = basicSaving || basicDirty > 0
+
+  // AI 상품정보 추출은 고정 섹션이 아니라 다이얼로그다. `/extract` 딥링크(위 리다이렉트
+  // 페이지)가 `?extract=1`을 붙여 진입시키므로 초기값을 쿼리에서 읽는다.
+  const [extractOpen, setExtractOpen] = useState(() => searchParams.get('extract') === '1')
+
+  const closeExtract = useCallback(() => {
+    setExtractOpen(false)
+    if (searchParams.get('extract') === '1') {
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('extract')
+      const qs = params.toString()
+      router.replace(`/d/seller-ops/products/${productId}${qs ? `?${qs}` : ''}`, {
+        scroll: false,
+      })
+    }
+  }, [productId, router, searchParams])
 
   const dirtyCount = basicDirty + codeDirty + optionsDirty
   const saving = basicSaving || codeSaving || optionsSaving
@@ -230,7 +263,16 @@ export function ProductDetailTabs({ productId }: Props) {
         }}
         className="scroll-mt-24 space-y-4"
       >
-        <SectionHeader title={SECTIONS[0].title} description={SECTIONS[0].description} />
+        <SectionHeader
+          title={SECTIONS[0].title}
+          description={SECTIONS[0].description}
+          action={
+            <Button type="button" size="sm" variant="outline" onClick={() => setExtractOpen(true)}>
+              <Sparkles className="mr-1 h-4 w-4" />
+              AI로 채우기
+            </Button>
+          }
+        />
         <ProductBasicForm
           productId={productId}
           onSaved={() => setRefreshKey((k) => k + 1)}
@@ -239,6 +281,9 @@ export function ProductDetailTabs({ productId }: Props) {
           onError={setLastError}
           onRetryRefAvailable={(fn) => {
             basicRetryRef.current = fn
+          }}
+          onApplyRefAvailable={(fn) => {
+            basicApplyRef.current = fn
           }}
         />
       </section>
@@ -330,6 +375,35 @@ export function ProductDetailTabs({ productId }: Props) {
           onRowClick={(id) => router.push(getSellerHubPricingScenarioPath(id))}
         />
       </section>
+
+      <Dialog
+        open={extractOpen}
+        onOpenChange={(open) => {
+          if (open) setExtractOpen(true)
+          else closeExtract()
+        }}
+      >
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>AI 상품정보 추출</DialogTitle>
+            <DialogDescription>
+              상세페이지 URL·이미지·PDF에서 설명·특징·인증정보를 추출해 기본 정보에 반영합니다
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[70vh] overflow-y-auto pr-1">
+            <ProductExtractPanel
+              productId={productId}
+              basicBusy={basicBusy}
+              onApply={(patch) => {
+                if (!basicApplyRef.current) {
+                  return Promise.reject(new Error('기본 정보 폼이 아직 준비되지 않았습니다'))
+                }
+                return basicApplyRef.current(patch)
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

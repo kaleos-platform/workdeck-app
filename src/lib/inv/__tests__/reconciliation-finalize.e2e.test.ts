@@ -18,6 +18,7 @@ config({ path: path.resolve(process.cwd(), '.env.local') })
 
 import { prisma } from '@/lib/prisma'
 import { confirmReconciliation } from '../reconciliation-processor'
+import { processMovement } from '../movement-processor'
 
 const SPACE_ID = 'e2e00000-0000-4000-8000-0000000000f5'
 const USER_ID = 'e2e00000-0000-4000-8000-0000000000f6'
@@ -25,6 +26,7 @@ const RUN = !!(process.env.DATABASE_URL || process.env.DIRECT_URL)
 const d = RUN ? describe : describe.skip
 
 let locationId = ''
+let productId = ''
 let diffOptionId = ''
 let mappedOptionId = ''
 let systemOnlyOptionId = ''
@@ -91,6 +93,7 @@ d('수동 확정(finalize) 경로 (dev DB)', () => {
     const product = await prisma.invProduct.create({
       data: { spaceId: SPACE_ID, name: 'E2E 확정상품', groupId: group.id, status: 'ACTIVE' },
     })
+    productId = product.id
     diffOptionId = (
       await prisma.invProductOption.create({ data: { productId: product.id, name: '차이옵션' } })
     ).id
@@ -253,5 +256,123 @@ d('수동 확정(finalize) 경로 (dev DB)', () => {
 
     expect(result.status).toBe('CONFIRMED')
     expect(await stockOf(systemOnlyOptionId)).toBe(12) // 0 으로 죽지 않음
+  })
+  test('저장은 matched-diff 지만 현재 재고가 이미 목표와 같으면 write 하지 않는다', async () => {
+    // 매칭 시점 재고 0 / 파일 5 로 저장된 diff. 그 사이 다른 경로로 재고가 5 가 됐다.
+    const opt = await prisma.invProductOption.create({
+      data: { productId: productId, name: '이미일치옵션' },
+    })
+    await processMovement(SPACE_ID, {
+      type: 'INBOUND',
+      optionId: opt.id,
+      locationId,
+      quantity: 5,
+      movementDate: new Date('2026-02-05').toISOString(),
+      reason: '사전 입고',
+    })
+
+    const reconId = await createRecon([
+      {
+        status: 'matched-diff',
+        row: { externalCode: 'F-004', quantity: 5 },
+        optionId: opt.id,
+        locationId,
+        productName: 'E2E 확정상품',
+        optionName: '이미일치옵션',
+        mapItemQuantity: 1,
+        systemQuantity: 0, // 매칭 시점 값(낡음)
+        fileQuantity: 5,
+        delta: 5,
+      },
+    ])
+
+    await confirmReconciliation(SPACE_ID, reconId, {
+      selectedOptionIds: [],
+      manualMappings: [],
+      finalize: true,
+    })
+
+    // 목표와 현재가 같으므로 ADJUSTMENT 를 만들지 않는다
+    const movements = await prisma.invMovement.findMany({
+      where: { referenceId: reconId, type: 'ADJUSTMENT' },
+    })
+    expect(movements).toHaveLength(0)
+    expect(await stockOf(opt.id)).toBe(5)
+  })
+
+  test('저장은 matched-equal 이지만 이후 재고가 변동됐으면 확정이 목표로 맞춘다', async () => {
+    // 매칭 시점엔 재고 9 == 파일 9 라 equal 로 저장됐다.
+    const opt = await prisma.invProductOption.create({
+      data: { productId: productId, name: '사후변동옵션' },
+    })
+    await processMovement(SPACE_ID, {
+      type: 'INBOUND',
+      optionId: opt.id,
+      locationId,
+      quantity: 30, // 그 뒤 입고로 30 이 됨
+      movementDate: new Date('2026-02-06').toISOString(),
+      reason: '사후 입고',
+    })
+
+    const reconId = await createRecon([
+      {
+        status: 'matched-equal',
+        row: { externalCode: 'F-005', quantity: 9 },
+        optionId: opt.id,
+        locationId,
+        productName: 'E2E 확정상품',
+        optionName: '사후변동옵션',
+        mapItemQuantity: 1,
+        systemQuantity: 9, // 매칭 시점 값
+        fileQuantity: 9,
+      },
+    ])
+
+    await confirmReconciliation(SPACE_ID, reconId, {
+      selectedOptionIds: [],
+      manualMappings: [],
+      finalize: true,
+    })
+
+    // 현재 재고(30) != 목표(9) 이므로 재분류돼 적용된다
+    expect(await stockOf(opt.id)).toBe(9)
+  })
+
+  test('cron 경로(finalize 미지정)는 라이브 재계산을 타지 않는다', async () => {
+    // 저장은 matched-equal, 현재 재고는 다름 → finalize 였다면 적용됐을 행.
+    const opt = await prisma.invProductOption.create({
+      data: { productId: productId, name: 'cron불변옵션' },
+    })
+    await processMovement(SPACE_ID, {
+      type: 'INBOUND',
+      optionId: opt.id,
+      locationId,
+      quantity: 40,
+      movementDate: new Date('2026-02-07').toISOString(),
+      reason: 'cron 계약 확인용 입고',
+    })
+
+    const reconId = await createRecon([
+      {
+        status: 'matched-equal',
+        row: { externalCode: 'F-006', quantity: 11 },
+        optionId: opt.id,
+        locationId,
+        productName: 'E2E 확정상품',
+        optionName: 'cron불변옵션',
+        mapItemQuantity: 1,
+        systemQuantity: 11,
+        fileQuantity: 11,
+      },
+    ])
+
+    await confirmReconciliation(SPACE_ID, reconId, {
+      selectedOptionIds: [opt.id], // cron 은 선택 목록으로 지시한다
+      manualMappings: [],
+      // finalize 없음
+    })
+
+    // matched-equal 그대로라 조정 대상이 아니다 — 재고 불변
+    expect(await stockOf(opt.id)).toBe(40)
   })
 })

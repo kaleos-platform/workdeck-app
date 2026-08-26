@@ -25,6 +25,7 @@ import {
   OptionPickerDialog,
   type PickedOptionWithQty,
 } from '@/components/sh/products/listings/option-picker-dialog'
+import { isSyntheticExternalCode } from '@/lib/inv/reconciliation-external-code'
 import { reconStatusBadge, type ReconStatus } from './recon-status-display'
 import { ReconciliationUnmatchedOptionsDialog } from './reconciliation-unmatched-options-dialog'
 
@@ -61,6 +62,8 @@ type MatchEntry =
       delta: number
       mappingId?: string
       mappingItems?: MappingItem[]
+      /** 대조 당시엔 일치했으나 이후 재고가 변동돼 차이가 생긴 행 */
+      driftedSinceMatch?: boolean
     }
   | {
       status: 'matched-equal'
@@ -133,6 +136,8 @@ type UnifiedEntry = {
   mappingId?: string
   mappingItems?: MappingItem[]
   mapItemQuantity?: number
+  /** 대조 당시엔 일치했으나 이후 재고가 변동된 행 — 확정 범위가 늘어나는 부분 */
+  driftedSinceMatch?: boolean
 }
 
 type TabValue = 'all' | 'matched' | 'file-only'
@@ -190,7 +195,7 @@ export function ReconciliationPreview({
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerExternalCode, setPickerExternalCode] = useState<string | null>(null)
   const [pickerContext, setPickerContext] = useState('')
-  const [pickerQuery, setPickerQuery] = useState('')
+  const [pickerKeywordSource, setPickerKeywordSource] = useState('')
 
   // matched-* 행 매칭 수정용 picker 상태
   const [editMatcherOpen, setEditMatcherOpen] = useState(false)
@@ -272,6 +277,7 @@ export function ReconciliationPreview({
         mappingId: e.mappingId,
         mappingItems: e.mappingItems,
         mapItemQuantity: e.mapItemQuantity,
+        driftedSinceMatch: e.driftedSinceMatch,
       })
     }
 
@@ -296,7 +302,7 @@ export function ReconciliationPreview({
       })
     }
 
-    for (const e of fileOnlyEntries) {
+    fileOnlyEntries.forEach((e, i) => {
       const code = e.row.externalCode
       const items = manualMap[code]
       const isMapped = !!(items && items.length > 0)
@@ -316,7 +322,7 @@ export function ReconciliationPreview({
       }
 
       result.push({
-        key: `file-${code}`,
+        key: `file-${code}-${i}`,
         status: 'file-only',
         fileCode: code,
         fileProductName: e.row.externalName ?? code,
@@ -331,7 +337,7 @@ export function ReconciliationPreview({
         suggestions: e.suggestions,
         row: e.row,
       })
-    }
+    })
 
     return result
   }, [diffEntries, equalEntries, fileOnlyEntries, manualMap, manualStock])
@@ -381,12 +387,18 @@ export function ReconciliationPreview({
     const name = entry.row?.externalName ?? entry.fileCode
     const optionName = entry.row?.externalOptionName
     setPickerContext(optionName ? `${name} / ${optionName}` : name)
-    setPickerQuery(name)
+    // 파일 상품명 전체를 검색어로 밀어넣으면 한 글자만 달라도 0건 → 단어별 칩으로 넘긴다.
+    setPickerKeywordSource(optionName ? `${name} ${optionName}` : name)
     setPickerOpen(true)
   }
 
   function handlePickedMulti(items: PickedOptionWithQty[]) {
-    if (!pickerExternalCode) return
+    // 파서가 항상 externalCode를 채우므로 도달 불가. 다시는 무음으로 버리지 않는다.
+    if (!pickerExternalCode) {
+      setPickerOpen(false)
+      toast.error('이 행은 매칭 키가 없어 저장할 수 없습니다')
+      return
+    }
     const code = pickerExternalCode
     setManualMap((m) => ({ ...m, [code]: items }))
     setPickerOpen(false)
@@ -481,14 +493,21 @@ export function ReconciliationPreview({
   async function handleConfirm() {
     if (!recon) return
     const snapshotStr = new Date(recon.snapshotDate).toISOString().slice(0, 10)
-    const lines = [
-      `${snapshotStr} 기준 파일 수량으로 재고 ${pendingApplyCount}건을 덮어씁니다.`,
-      '확정 후에는 수정할 수 없습니다.',
-    ]
+    // 대조 당시엔 일치했는데 이후 재고가 움직여 확정 대상에 새로 들어온 건 — 적용 범위가
+    // 늘어나는 부분이므로 조용히 넘기지 않고 드러낸다.
+    // "그중"이 반영 건수를 가리키도록 바로 다음 줄에 붙인다(순서가 뜻을 바꾼다).
+    const drifted = unifiedEntries.filter((e) => e.driftedSinceMatch && !isApplied(e)).length
     const unmatched = unifiedEntries.filter(
       (e) => e.status === 'file-only' && !e.isManualMatched
     ).length
-    if (unmatched > 0) lines.splice(1, 0, `미매칭 ${unmatched}건은 반영되지 않습니다.`)
+    const lines = [
+      `${snapshotStr} 기준 파일 수량으로 재고 ${pendingApplyCount}건을 덮어씁니다.`,
+      ...(drifted > 0
+        ? [`그중 ${drifted}건은 대조 당시엔 일치했으나 이후 재고가 변동됐습니다.`]
+        : []),
+      ...(unmatched > 0 ? [`미매칭 ${unmatched}건은 반영되지 않습니다.`] : []),
+      '확정 후에는 수정할 수 없습니다.',
+    ]
     if (!confirm(lines.join('\n'))) return
 
     setSubmitting(true)
@@ -672,7 +691,9 @@ export function ReconciliationPreview({
                 <TableHead className="border-l bg-muted/40">상품 · 옵션</TableHead>
                 <TableHead className="bg-muted/40 text-right">수량</TableHead>
                 <TableHead className="border-l">상품 · 옵션</TableHead>
-                <TableHead className="text-right">현재고</TableHead>
+                {/* 확정·삭제된 대조는 닫힌 기록이라 매칭 시점 값을 그대로 보여준다.
+                    "현재고"라고 부르면 거짓말이 된다. */}
+                <TableHead className="text-right">{isConfirmed ? '대조시점' : '현재고'}</TableHead>
                 <TableHead className="border-l text-right">차이</TableHead>
                 <TableHead className="whitespace-nowrap">동작</TableHead>
               </TableRow>
@@ -709,7 +730,9 @@ export function ReconciliationPreview({
                       </div>
                       <div className="truncate text-xs text-muted-foreground">
                         {entry.fileOptionName}
-                        <span className="ml-1.5 font-mono opacity-70">{entry.fileCode}</span>
+                        {!isSyntheticExternalCode(entry.fileCode) && (
+                          <span className="ml-1.5 font-mono opacity-70">{entry.fileCode}</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className={`text-right font-semibold tabular-nums ${fileCellClass}`}>
@@ -819,8 +842,8 @@ export function ReconciliationPreview({
         }}
         mode="multi-with-qty"
         onPickMulti={handlePickedMulti}
-        initialQuery={pickerQuery}
-        searchOfficialName
+        keywordSource={pickerKeywordSource}
+        tokenized
         excludeOptionIds={excludeOptionIds}
         contextLabel="매칭 대상 (파일)"
         contextValue={pickerContext}
@@ -843,6 +866,8 @@ export function ReconciliationPreview({
         mode="multi-with-qty"
         onPickMulti={handleEditMatcherPickMulti}
         excludeOptionIds={excludeOptionIds}
+        keywordSource={editMatcherEntry?.row?.externalName ?? ''}
+        tokenized
         contextLabel="현재 매칭"
         contextValue={
           editMatcherEntry

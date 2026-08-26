@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import type { DelFieldMapping } from '@/lib/del/format-templates'
+import { productSearchFilter } from '@/lib/sh/product-search'
 
 type Params = { params: Promise<{ methodId: string }> }
 
@@ -32,15 +33,9 @@ export async function GET(req: NextRequest, { params }: Params) {
   if (brandId && brandId !== 'all') {
     productWhere.brandId = brandId === 'none' ? null : brandId
   }
-  if (search) {
-    // 검색은 관리 상품명(internalName) 기준 — 공식명(name) 제외
-    productWhere.OR = [
-      { internalName: { contains: search, mode: 'insensitive' } },
-      { nameEn: { contains: search, mode: 'insensitive' } },
-      { code: { contains: search, mode: 'insensitive' } },
-      { options: { some: { name: { contains: search, mode: 'insensitive' } } } },
-      { options: { some: { sku: { contains: search, mode: 'insensitive' } } } },
-    ]
+  const searchFilter = productSearchFilter(search)
+  if (searchFilter) {
+    Object.assign(productWhere, searchFilter)
   }
 
   const [products, total] = await Promise.all([

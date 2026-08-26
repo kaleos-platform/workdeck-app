@@ -1,7 +1,13 @@
+import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { requireOperator } from '@/lib/admin/auth'
 import { TemplatesList } from '@/components/admin/templates-list'
 
 export default async function AdminTemplatesPage() {
+  // layout이 MFA_REQUIRED 상태에서도 children을 렌더하므로, prisma를 직접 읽는 이 페이지는 자체 가드가 필요하다.
+  const auth = await requireOperator()
+  if (!auth.ok) notFound()
+
   const templates = await prisma.hiringDetailTemplate.findMany({
     where: { spaceId: null, isSample: true },
     orderBy: { updatedAt: 'desc' },

@@ -1,6 +1,13 @@
 // AI 공급자 레이어. TextProvider / ImageProvider 인터페이스 + factory.
-// 외부 LLM SaaS 금지 — codex CLI(1순위) → gemini CLI(2순위) → Ollama 맥미니(최종).
-// 모두 로컬/self-host exec: child_process.execFile 인자 배열, 외부 API 키 HTTP 호출 없음.
+// 이 공유 체인 자체는 여전히 로컬/self-host 전용이다 — codex CLI(1순위) → gemini CLI(2순위) →
+// Ollama 맥미니(최종). 모두 로컬/self-host exec: child_process.execFile 인자 배열, 외부 API 키
+// HTTP 호출 없음.
+//
+// 예외(2026-08-25 승인): 사용자가 외부 LLM SaaS 사용을 명시적으로 승인해, 재무 추천과
+// seller-hub AI 초안 두 곳만 이 체인을 우회해 Gemini API(@google/genai)를 직접 호출한다.
+// - src/lib/finance/ai-suggest.ts (미분류 거래 계정 제안)
+// - src/lib/sh/keyword-ai-draft.ts (상품명·검색어 초안 생성)
+// 위 두 파일 밖에서는 여전히 이 체인만 사용한다 — "외부 LLM SaaS 금지" 원칙은 기본값으로 유지.
 
 import { CodexCliProvider } from './text-codex'
 import { GeminiCliProvider } from './text-gemini'

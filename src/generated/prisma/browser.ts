@@ -213,6 +213,16 @@ export type InvProduct = Prisma.InvProductModel
  */
 export type AdCampaignProductMap = Prisma.AdCampaignProductMapModel
 /**
+ * Model ProductExtractionJob
+ * 
+ */
+export type ProductExtractionJob = Prisma.ProductExtractionJobModel
+/**
+ * Model ProductExtractionSource
+ * 
+ */
+export type ProductExtractionSource = Prisma.ProductExtractionSourceModel
+/**
  * Model InvProductOption
  * 
  */
@@ -397,6 +407,26 @@ export type DelOrderItemFulfillment = Prisma.DelOrderItemFulfillmentModel
  * 
  */
 export type ChannelProduct = Prisma.ChannelProductModel
+/**
+ * Model KeywordMaster
+ * 
+ */
+export type KeywordMaster = Prisma.KeywordMasterModel
+/**
+ * Model KeywordMasterLink
+ * 
+ */
+export type KeywordMasterLink = Prisma.KeywordMasterLinkModel
+/**
+ * Model ChannelKeywordRule
+ * 
+ */
+export type ChannelKeywordRule = Prisma.ChannelKeywordRuleModel
+/**
+ * Model KeywordChangeLog
+ * 
+ */
+export type KeywordChangeLog = Prisma.KeywordChangeLogModel
 /**
  * Model Product
  * 

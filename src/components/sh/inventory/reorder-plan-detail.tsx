@@ -1,12 +1,10 @@
 'use client'
 
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
   CheckIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
   CircleHelpIcon,
   PackageIcon,
   PencilIcon,
@@ -54,6 +52,7 @@ import type {
 import type { SafetyStockSuggestion } from '@/lib/inv/forecast/safety-stock-suggestion'
 import { ProductionRunFormDialog } from '@/components/sh/products/production/production-run-form-dialog'
 import { ReorderPlanAccuracyCard } from '@/components/sh/inventory/reorder-plan-accuracy-card'
+import { Kpi, PlanSummaryBar, fmtQty, fmtWon } from './reorder-ui'
 
 // 시즌 계수 선택지 — 서버 AnswerSchema의 seasonFactor(0.1~5)와 정합. 패널·셀 공용.
 const SEASON_FACTOR_OPTIONS = [
@@ -147,13 +146,14 @@ function StatusBadge({ status }: { status: ReorderPlan['status'] }) {
 function buildOptionMap(productInfo: ProductInfo[]) {
   const optionMap = new Map<
     string,
-    { optionName: string; sku: string | null; optionDeleted?: boolean }
+    { optionName: string; sku: string | null; costPrice: number | null; optionDeleted?: boolean }
   >()
   for (const p of productInfo) {
     for (const o of p.options) {
       optionMap.set(o.optionId, {
         optionName: o.optionName,
         sku: o.sku,
+        costPrice: o.costPrice ?? null,
         optionDeleted: o.optionDeleted,
       })
     }
@@ -398,8 +398,8 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const [accuracies, setAccuracies] = useState<PlanDetailAccuracy[]>(initialData?.accuracies ?? [])
   // 연동 위치 세트 계획 (locationId non-null일 때만 유효)
   const [sets, setSets] = useState<ReorderPlanSet[]>(initialData?.sets ?? [])
-  // 펼쳐진 세트 행 (setId Set)
-  const [expandedSets, setExpandedSets] = useState<Set<string>>(new Set())
+  // 역산 0인 세트까지 펼쳐 볼지
+  const [showZeroSets, setShowZeroSets] = useState(false)
   const [loading, setLoading] = useState(!initialData)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
@@ -514,16 +514,6 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
     },
     [itemFinalQtyMap]
   )
-
-  // 세트 행 펼침/접힘 토글
-  const toggleSetExpand = (setId: string) => {
-    setExpandedSets((prev) => {
-      const next = new Set(prev)
-      if (next.has(setId)) next.delete(setId)
-      else next.add(setId)
-      return next
-    })
-  }
 
   // ────────────────────────────────────────────────────────────────────────────
 
@@ -740,11 +730,22 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
   const isSetMode = isLayered || plan.locationId != null
   // 멀티상품 = 위치 세트 계획은 한 로켓 위치에 여러 상품(캡나시·쿨핏 등)이 공존 → 옵션표에 상품명 표기.
   const isMultiProduct = new Set(items.map((it) => it.productId)).size > 1
+  // 세트 환산 합계 — 옵션 최종수량의 역산(참고값)이므로 편집 즉시 반영된다.
+  const totalSetQty = sets.reduce((sum, s) => sum + backDerivedSetQty(s.items), 0)
+  // 세트가 수십 종인 상품이 흔하다. 역산 0인 세트는 기본으로 접는다.
+  const activeSets = sets.filter((s) => backDerivedSetQty(s.items) > 0)
+  const zeroSetCount = sets.length - activeSets.length
+  const visibleSets = showZeroSets ? sets : activeSets
+  // 발주 금액 — 옵션 원가가 하나도 없으면 null(표시 생략)
+  const hasCost = items.some((it) => optionMap.get(it.optionId)?.costPrice != null)
+  const totalAmount = hasCost
+    ? items.reduce((sum, it) => sum + it.finalQty * (optionMap.get(it.optionId)?.costPrice ?? 0), 0)
+    : null
 
   return (
     <div className="space-y-4">
       {/* 헤더 */}
-      <div className="flex flex-wrap items-start justify-between gap-4 rounded-md border bg-card px-4 py-3">
+      <div className="flex flex-wrap items-start justify-between gap-4 rounded-lg border bg-card px-5 py-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <PackageIcon className="h-4 w-4 text-muted-foreground" />
@@ -765,11 +766,15 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
               </Badge>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">
-            예측 창 {plan.windowDays}일 · 제안 합계{' '}
-            <span className="font-medium tabular-nums">{plan.totalSuggestedQty}</span>개 · 최종 합계{' '}
-            <span className="font-medium tabular-nums">{totalFinalQty}</span>개
-          </p>
+          <div className="flex flex-wrap items-start gap-x-7 gap-y-2 pt-1.5">
+            <Kpi label="예측 창" value={plan.windowDays} unit="일" size="sm" />
+            <Kpi label="제안 합계" value={fmtQty(plan.totalSuggestedQty)} unit="개" size="sm" />
+            <Kpi label="최종 합계" value={fmtQty(totalFinalQty)} unit="개" size="sm" />
+            {isSetMode && (
+              <Kpi label="세트 환산" value={fmtQty(totalSetQty)} unit="세트" size="sm" />
+            )}
+            {totalAmount != null && <Kpi label="발주 금액" value={fmtWon(totalAmount)} size="sm" />}
+          </div>
           {/* 힌트가 가리키는 "아래 패널"은 평이 상품 계획에서만 렌더되므로(세트/레이어드 제외) 게이트를 패널과 일치시킨다. */}
           {!readonly && coldStartCount > 0 && !isSetMode && (
             <p className="text-xs text-amber-700">
@@ -1113,97 +1118,121 @@ export function ReorderPlanDetail({ planId, initialData }: Props) {
 
       {/* ── 연동 세트 환산 — 최종 발주 하단 참고 섹션 ── */}
       {isSetMode && (
-        <p className="text-sm font-medium">
-          연동 세트 환산{' '}
-          <span className="text-xs font-normal text-muted-foreground">
-            · 참고용 — 위 최종 발주수량으로 구성 가능한 완성 세트 수(수정은 최종 발주에서)
-          </span>
-        </p>
-      )}
-      {isSetMode && (
-        <div className="overflow-x-auto rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-8"></TableHead>
-                <TableHead>세트명</TableHead>
-                <TableHead className="text-right">현재 세트재고</TableHead>
-                {/* 세트는 옵션 발주수량의 역산(읽기전용) — 제안=최종이라 단일 컬럼으로 표시. */}
-                <TableHead className="text-right">발주 세트수량(역산)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sets.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="py-10 text-center text-sm text-muted-foreground"
-                  >
-                    세트 항목이 없습니다
-                  </TableCell>
-                </TableRow>
-              ) : (
-                sets.map((set) => {
-                  const isExpanded = expandedSets.has(set.id)
-                  return (
-                    <Fragment key={set.id}>
-                      {/* 세트 행 */}
-                      <TableRow>
-                        <TableCell className="w-8 px-2">
-                          <button
-                            type="button"
-                            onClick={() => toggleSetExpand(set.id)}
-                            className="inline-flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground"
-                            aria-label={isExpanded ? '접기' : '구성옵션 펼치기'}
-                          >
-                            {isExpanded ? (
-                              <ChevronDownIcon className="h-4 w-4" />
-                            ) : (
-                              <ChevronRightIcon className="h-4 w-4" />
-                            )}
-                          </button>
-                        </TableCell>
-                        <TableCell className="text-sm font-medium">{set.listingName}</TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {QTY.format(set.currentSetStock)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {/* 위치·레이어드 두 세트 모드 모두 세트는 옵션 발주수량의 역산(읽기전용). */}
-                          <span
-                            className="text-muted-foreground tabular-nums"
-                            title="최종 발주수량의 역산(참고) — 수정은 최종 발주에서"
-                          >
-                            {backDerivedSetQty(set.items)}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                      {/* 펼침: 구성옵션 분해 */}
-                      {isExpanded &&
-                        set.items.map((si) => {
-                          const finalQty = itemFinalQtyMap.get(si.optionId) ?? 0
-                          return (
-                            <TableRow key={`${set.id}-${si.optionId}`} className="bg-muted/20">
-                              <TableCell className="w-8"></TableCell>
-                              <TableCell className="pl-6 text-xs text-muted-foreground">
-                                {si.optionName}
-                                <span className="ml-1.5 text-[10px]">· 세트당 {si.perSet}개</span>
-                              </TableCell>
-                              <TableCell></TableCell>
-                              <TableCell className="text-right text-xs tabular-nums">
-                                <span className="font-medium">{QTY.format(finalQty)}</span>
-                                <span className="ml-1 text-[10px] text-muted-foreground">개</span>
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })}
-                    </Fragment>
-                  )
-                })
-              )}
-            </TableBody>
-          </Table>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-medium">
+            연동 세트 환산{' '}
+            <span className="text-xs font-normal text-muted-foreground">
+              · 참고용 — 위 최종 발주수량으로 구성 가능한 완성 세트 수(수정은 최종 발주에서) · 발주
+              대상 {activeSets.length}종 / 전체 {sets.length}종
+            </span>
+          </p>
+          {zeroSetCount > 0 && (
+            <Button size="sm" variant="outline" onClick={() => setShowZeroSets((v) => !v)}>
+              {showZeroSets ? '0세트 접기' : `0세트 ${zeroSetCount}종 보기`}
+            </Button>
+          )}
         </div>
       )}
+      {isSetMode &&
+        (sets.length === 0 ? (
+          <div className="rounded-lg border py-10 text-center text-sm text-muted-foreground">
+            세트 항목이 없습니다
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {visibleSets.map((set) => {
+              const derived = backDerivedSetQty(set.items)
+              // 병목 = 역산 세트 수를 결정한 구성옵션(가장 모자란 옵션)
+              const bottleneck = set.items.filter(
+                (si) =>
+                  si.perSet > 0 &&
+                  Math.floor((itemFinalQtyMap.get(si.optionId) ?? 0) / si.perSet) === derived
+              )
+              return (
+                <div key={set.id} className="rounded-lg border bg-card">
+                  <div className="flex items-end justify-between gap-3 border-b px-4 py-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold">{set.listingName}</div>
+                      <div className="text-xs text-muted-foreground">
+                        현재 세트재고 {fmtQty(set.currentSetStock)}세트
+                      </div>
+                    </div>
+                    <div
+                      className="flex flex-none items-baseline gap-1 whitespace-nowrap"
+                      title="최종 발주수량의 역산(참고) — 수정은 최종 발주에서"
+                    >
+                      <span className="font-mono text-xl font-semibold tabular-nums">
+                        {fmtQty(derived)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">세트</span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3">
+                    <div className="mb-2 text-xs text-muted-foreground">구성 (세트 1개 기준)</div>
+                    <table className="w-full">
+                      <tbody>
+                        {set.items.map((si) => {
+                          const finalQty = itemFinalQtyMap.get(si.optionId) ?? 0
+                          return (
+                            <tr key={`${set.id}-${si.optionId}`}>
+                              <td className="py-1 text-sm">{si.optionName}</td>
+                              <td className="w-14 py-1 text-right font-mono text-sm text-muted-foreground tabular-nums">
+                                ×{si.perSet}
+                              </td>
+                              <td className="w-20 py-1 text-right font-mono text-sm tabular-nums">
+                                {fmtQty(finalQty)}개
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                    {/* 모든 구성옵션이 동시에 병목이면 정보가 없다 — 일부만 병목일 때만 안내 */}
+                    {bottleneck.length > 0 &&
+                      bottleneck.length < set.items.length &&
+                      derived > 0 && (
+                        <p className="mt-2 text-[11px] text-amber-700">
+                          {bottleneck.map((si) => si.optionName).join(' · ')} 수량이 세트 수를
+                          결정합니다
+                        </p>
+                      )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ))}
+
+      {/* 결론 바 — 어느 위치로 스크롤해도 최종 수량이 보이게 */}
+      <PlanSummaryBar
+        stats={[
+          { label: '최종 발주 수량', value: fmtQty(totalFinalQty), unit: '개' },
+          ...(isSetMode ? [{ label: '세트 환산', value: fmtQty(totalSetQty), unit: '세트' }] : []),
+          ...(totalAmount != null ? [{ label: '발주 금액', value: fmtWon(totalAmount) }] : []),
+        ]}
+        actions={
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => {
+                setEditRunId(null)
+                setRunFormOpen(true)
+              }}
+            >
+              <PackageIcon className="h-3.5 w-3.5" />
+              생산차수 생성
+            </Button>
+            {plan.status === 'DRAFT' && (
+              <Button size="sm" className="gap-1.5" onClick={() => setFinalizeOpen(true)}>
+                <CheckIcon className="h-3.5 w-3.5" />
+                예측 검증 시작
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* 확정 확인 다이얼로그 */}
       <Dialog open={finalizeOpen} onOpenChange={setFinalizeOpen}>

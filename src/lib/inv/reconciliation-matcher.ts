@@ -66,7 +66,14 @@ async function findSuggestions(spaceId: string, row: ParsedRow): Promise<Suggest
 
   const options = await prisma.invProductOption.findMany({
     where: {
-      product: { spaceId, name: { contains: token, mode: 'insensitive' } },
+      product: {
+        spaceId,
+        // 파일 상품명은 정식명(name)일 수도, 관리명(internalName)일 수도 있다.
+        OR: [
+          { name: { contains: token, mode: 'insensitive' } },
+          { internalName: { contains: token, mode: 'insensitive' } },
+        ],
+      },
     },
     include: { product: { select: { name: true } } },
     take: 5,
@@ -90,7 +97,14 @@ async function findOptionByName(
   const options = await prisma.invProductOption.findMany({
     where: {
       name: { equals: optionName, mode: 'insensitive' },
-      product: { spaceId, name: { equals: productName, mode: 'insensitive' } },
+      // 앱 재고현황 export는 상품명 칸에 관리명(internalName)을 쓴다 → 둘 다 본다.
+      product: {
+        spaceId,
+        OR: [
+          { name: { equals: productName, mode: 'insensitive' } },
+          { internalName: { equals: productName, mode: 'insensitive' } },
+        ],
+      },
     },
     include: { product: { select: { name: true } } },
     take: 2,
@@ -108,7 +122,13 @@ async function findSingleOptionByProductName(
   productName: string
 ): Promise<{ optionId: string; productName: string; optionName: string } | null> {
   const products = await prisma.invProduct.findMany({
-    where: { spaceId, name: { equals: productName, mode: 'insensitive' } },
+    where: {
+      spaceId,
+      OR: [
+        { name: { equals: productName, mode: 'insensitive' } },
+        { internalName: { equals: productName, mode: 'insensitive' } },
+      ],
+    },
     include: { options: { select: { id: true, name: true } } },
     take: 2,
   })

@@ -30,6 +30,8 @@ import type { ExcalidrawScene } from '@/components/hiring-posts/excalidraw-canva
 import { CONTENT_TYPE_META, type ContentType } from '@/components/hiring-posts/block-editors'
 import { BlockEditOverlay } from '@/components/hiring-posts/block-edit-overlay'
 import { ContentBlockPreview } from '@/components/hiring-posts/posting-preview'
+import { PreviewFrame } from '@/components/hiring-posts/preview-frame'
+import { Card, CardContent } from '@/components/ui/card'
 
 // 어드민 샘플 템플릿 블록에서 허용하는 타입 — 'positions'(직무 정보)는 실제 공고
 // (HiringPostingPosition)에 종속된 블록이라 postingId 없는 샘플 템플릿에는 추가할 수 없다.
@@ -277,127 +279,167 @@ export function TemplateBlockEditor({
     ? (contents.find((c) => c.id === editingBlockId) ?? null)
     : null
 
-  return (
-    <div className="space-y-4">
-      {contents.length === 0 && (
-        <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-          블록이 없습니다. 아래에서 블록을 추가하세요.
-        </div>
-      )}
+  // 우측 미리보기 대상 — 빈 블록/미지원 타입은 실제 공고에서도 아무것도 렌더하지 않으므로 제외.
+  // positions는 예외: 실제 공고에 적용되면 렌더되는 블록이라 통째로 숨기면 "이 블록이 결과물에
+  // 없다"는 오해를 줄 수 있어, 아래 렌더에서 placeholder로 표시한다(제외하지 않음).
+  const previewableContents = contents.filter(
+    (c) =>
+      Boolean(CONTENT_TYPE_META[c.contentType as ContentType]) &&
+      (c.contentType === 'positions' || blockHasContent(c))
+  )
 
-      <div className="space-y-3">
-        {contents.map((c, idx) => {
-          const meta = CONTENT_TYPE_META[c.contentType as ContentType]
-          // 'positions' 는 실제 공고 종속 블록 — 샘플 템플릿에서는 편집 불가(삭제만 허용).
-          const isEditable = Boolean(meta) && c.contentType !== 'positions'
-          const Icon = meta?.icon ?? TriangleAlert
-          return (
-            <div key={c.id} className="space-y-3 rounded-lg border p-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                  <Icon className="size-4 shrink-0 text-muted-foreground" />
-                  {editingTitleId === c.id ? (
-                    <Input
-                      autoFocus
-                      value={titleDraft}
-                      onChange={(e) => setTitleDraft(e.target.value)}
-                      onBlur={() => commitTitle(c.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault()
-                          commitTitle(c.id)
-                        } else if (e.key === 'Escape') {
-                          e.preventDefault()
-                          cancelTitle()
-                        }
-                      }}
-                      maxLength={100}
-                      className="h-7 w-48"
-                    />
-                  ) : (
-                    <>
-                      <span className="truncate">{c.title?.trim() || `카드 ${idx + 1}`}</span>
+  return (
+    <>
+      <div className="grid gap-8 lg:grid-cols-[38fr_62fr]">
+        <div className="space-y-4">
+          {contents.length === 0 && (
+            <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+              블록이 없습니다. 아래에서 블록을 추가하세요.
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {contents.map((c, idx) => {
+              const meta = CONTENT_TYPE_META[c.contentType as ContentType]
+              // 'positions' 는 실제 공고 종속 블록 — 샘플 템플릿에서는 편집 불가(삭제만 허용).
+              const isEditable = Boolean(meta) && c.contentType !== 'positions'
+              const Icon = meta?.icon ?? TriangleAlert
+              return (
+                <div key={c.id} className="space-y-3 rounded-lg border p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                      <Icon className="size-4 shrink-0 text-muted-foreground" />
+                      {editingTitleId === c.id ? (
+                        <Input
+                          autoFocus
+                          value={titleDraft}
+                          onChange={(e) => setTitleDraft(e.target.value)}
+                          onBlur={() => commitTitle(c.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              commitTitle(c.id)
+                            } else if (e.key === 'Escape') {
+                              e.preventDefault()
+                              cancelTitle()
+                            }
+                          }}
+                          maxLength={100}
+                          className="h-7 w-48"
+                        />
+                      ) : (
+                        <>
+                          <span className="truncate">{c.title?.trim() || `카드 ${idx + 1}`}</span>
+                          <Button
+                            size="icon-sm"
+                            variant="ghost"
+                            aria-label="제목 편집"
+                            onClick={() => startEditTitle(c)}
+                          >
+                            <Pencil />
+                          </Button>
+                          <span className="shrink-0 text-xs text-muted-foreground">
+                            {meta?.label ?? '지원하지 않는'}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      {isEditable && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mr-1"
+                          onClick={() => setEditingBlockId(c.id)}
+                        >
+                          <SquarePen /> 편집
+                        </Button>
+                      )}
                       <Button
                         size="icon-sm"
                         variant="ghost"
-                        aria-label="제목 편집"
-                        onClick={() => startEditTitle(c)}
+                        onClick={() => handleMove(idx, -1)}
+                        disabled={idx === 0}
                       >
-                        <Pencil />
+                        <ArrowUp />
                       </Button>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {meta?.label ?? '지원하지 않는'}
-                      </span>
-                    </>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        onClick={() => handleMove(idx, 1)}
+                        disabled={idx === contents.length - 1}
+                      >
+                        <ArrowDown />
+                      </Button>
+                      <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(c.id)}>
+                        <Trash2 />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {!isEditable ? (
+                    <p className="text-xs text-muted-foreground">
+                      {meta
+                        ? '직무 정보 블록은 실제 공고에 종속되어 이 화면에서 편집할 수 없습니다. 삭제만 가능합니다.'
+                        : '지원하지 않는 블록입니다. 삭제 후 새 블록을 추가하세요.'}
+                    </p>
+                  ) : blockHasContent(c) ? (
+                    <div className="pointer-events-none max-h-32 overflow-hidden rounded-md border bg-muted/20 p-3">
+                      <ContentBlockPreview content={c} positions={[]} />
+                    </div>
+                  ) : (
+                    <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
+                      아직 내용이 없습니다. 편집을 눌러 작성하세요.
+                    </div>
                   )}
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  {isEditable && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="mr-1"
-                      onClick={() => setEditingBlockId(c.id)}
-                    >
-                      <SquarePen /> 편집
-                    </Button>
-                  )}
-                  <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    onClick={() => handleMove(idx, -1)}
-                    disabled={idx === 0}
-                  >
-                    <ArrowUp />
-                  </Button>
-                  <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    onClick={() => handleMove(idx, 1)}
-                    disabled={idx === contents.length - 1}
-                  >
-                    <ArrowDown />
-                  </Button>
-                  <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(c.id)}>
-                    <Trash2 />
-                  </Button>
-                </div>
+              )
+            })}
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" disabled={busy}>
+                <Plus /> 블록 추가
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {ADDABLE_TYPES.map(({ type, icon: ItemIcon, label }) => (
+                <DropdownMenuItem key={type} onClick={() => handleAdd(type)}>
+                  <ItemIcon /> {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="space-y-3 lg:sticky lg:top-8 lg:max-h-[calc(100vh-4rem)] lg:self-start lg:overflow-y-auto">
+          <PreviewFrame>
+            {previewableContents.length === 0 ? (
+              <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                블록을 추가하면 여기에 미리보기가 표시됩니다.
               </div>
-
-              {!isEditable ? (
-                <p className="text-xs text-muted-foreground">
-                  {meta
-                    ? '직무 정보 블록은 실제 공고에 종속되어 이 화면에서 편집할 수 없습니다. 삭제만 가능합니다.'
-                    : '지원하지 않는 블록입니다. 삭제 후 새 블록을 추가하세요.'}
-                </p>
-              ) : blockHasContent(c) ? (
-                <div className="pointer-events-none max-h-32 overflow-hidden rounded-md border bg-muted/20 p-3">
-                  <ContentBlockPreview content={c} positions={[]} />
-                </div>
-              ) : (
-                <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
-                  아직 내용이 없습니다. 편집을 눌러 작성하세요.
-                </div>
-              )}
-            </div>
-          )
-        })}
+            ) : (
+              <Card className="rounded-xl">
+                <CardContent className="space-y-6">
+                  {previewableContents.map((c) =>
+                    c.contentType === 'positions' ? (
+                      <div
+                        key={c.id}
+                        className="rounded-md border border-dashed p-3 text-center text-xs text-muted-foreground"
+                      >
+                        직무 정보 — 공고에 적용하면 이 위치에 모집 직무가 표시됩니다.
+                      </div>
+                    ) : (
+                      <ContentBlockPreview key={c.id} content={c} positions={[]} />
+                    )
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </PreviewFrame>
+        </div>
       </div>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="outline" disabled={busy}>
-            <Plus /> 블록 추가
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          {ADDABLE_TYPES.map(({ type, icon: ItemIcon, label }) => (
-            <DropdownMenuItem key={type} onClick={() => handleAdd(type)}>
-              <ItemIcon /> {label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
 
       <BlockEditOverlay
         open={editingBlockId !== null}
@@ -414,6 +456,6 @@ export function TemplateBlockEditor({
         onDesignSave={handleDesignSave}
         onDesignLinkSave={handleDesignLinkSave}
       />
-    </div>
+    </>
   )
 }

@@ -1,8 +1,8 @@
 {
   "framework": "nextjs",
-  "buildCommand": "find .next -mindepth 1 -maxdepth 1 ! -name cache -exec rm -rf {} + 2>/dev/null; npx prisma migrate deploy && npx prisma generate && next build",
+  "buildCommand": "find .next -mindepth 1 -maxdepth 1 ! -name cache -exec rm -rf {} + 2>/dev/null; npx prisma migrate deploy && next build",
   "installCommand": "npm install",
-  "ignoreCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then exit 1; fi; git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)*.md'",
+  "ignoreCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then exit 1; fi; git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)*.md' ':(exclude).github'",
   "regions": ["icn1"],
   "functions": {
     "app/api/reports/upload/route.ts": {
@@ -18,6 +18,15 @@
       "maxDuration": 300
     },
     "app/api/cron/billing-charge/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/sh/products/[productId]/extract/url/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/sh/products/[productId]/extract/files/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/sh/products/[productId]/extract/route.ts": {
       "maxDuration": 300
     }
   },
@@ -41,6 +50,10 @@
     {
       "path": "/api/cron/agent-conversations-sweep",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/product-source-orphan-sweep",
+      "schedule": "0 5 * * *"
     }
   ]
 }

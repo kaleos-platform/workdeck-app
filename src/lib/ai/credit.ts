@@ -15,6 +15,16 @@ export class CreditExceededError extends Error {
   }
 }
 
+// 월 단위 AI 텍스트 크레딧 관리(이미지와 동일한 2-phase 패턴).
+export const DEFAULT_TEXT_MONTHLY_QUOTA = Number(process.env.AI_TEXT_MONTHLY_QUOTA ?? 200)
+
+export class TextCreditExceededError extends Error {
+  readonly code = 'TEXT_CREDIT_EXCEEDED' as const
+  constructor(public readonly yearMonth: string) {
+    super(`월간 텍스트 크레딧(${yearMonth})이 소진되었습니다`)
+  }
+}
+
 // UTC 기준 YYYY-MM (공유 DB이므로 타임존 일관성 확보)
 export function currentYearMonth(now: Date = new Date()): string {
   const y = now.getUTCFullYear()
@@ -44,7 +54,14 @@ export interface ReserveInput {
 async function ensureCreditRow(spaceId: string, yearMonth: string): Promise<void> {
   await prisma.workspaceAiCredit.upsert({
     where: { spaceId_yearMonth: { spaceId, yearMonth } },
-    create: { spaceId, yearMonth, imageUsed: 0, imageQuota: DEFAULT_IMAGE_MONTHLY_QUOTA },
+    create: {
+      spaceId,
+      yearMonth,
+      imageUsed: 0,
+      imageQuota: DEFAULT_IMAGE_MONTHLY_QUOTA,
+      textUsed: 0,
+      textQuota: DEFAULT_TEXT_MONTHLY_QUOTA,
+    },
     update: {},
   })
 }
@@ -148,5 +165,133 @@ export async function getMonthUsage(
     yearMonth,
     imageUsed: credit?.imageUsed ?? 0,
     imageQuota: credit?.imageQuota ?? DEFAULT_IMAGE_MONTHLY_QUOTA,
+  }
+}
+
+export interface TextReservation {
+  reservationId: string // TextGenerationLog.id
+  yearMonth: string
+  textUsedAfter: number
+  textQuota: number
+}
+
+export interface ReserveTextInput {
+  spaceId: string
+  userId?: string | null
+  provider: string
+  model?: string | null
+  responseFormat?: string | null
+  now?: Date
+}
+
+// 크레딧 1건 예약. 쿼터 초과 시 TextCreditExceededError 던짐.
+export async function reserveTextCredit(input: ReserveTextInput): Promise<TextReservation> {
+  const yearMonth = currentYearMonth(input.now)
+  await ensureCreditRow(input.spaceId, yearMonth)
+
+  // atomic: textUsed + 1 WHERE textUsed < textQuota
+  const updated = await prisma.$executeRaw`
+    UPDATE "WorkspaceAiCredit"
+    SET "textUsed" = "textUsed" + 1, "updatedAt" = NOW()
+    WHERE "spaceId" = ${input.spaceId}
+      AND "yearMonth" = ${yearMonth}
+      AND "textUsed" < "textQuota"
+  `
+  if (updated === 0) throw new TextCreditExceededError(yearMonth)
+
+  const credit = await prisma.workspaceAiCredit.findUnique({
+    where: { spaceId_yearMonth: { spaceId: input.spaceId, yearMonth } },
+    select: { textUsed: true, textQuota: true },
+  })
+
+  const log = await prisma.textGenerationLog.create({
+    data: {
+      spaceId: input.spaceId,
+      userId: input.userId ?? null,
+      provider: input.provider,
+      model: input.model ?? null,
+      responseFormat: input.responseFormat ?? null,
+      creditMonth: yearMonth,
+      status: 'PENDING',
+    },
+    select: { id: true },
+  })
+
+  return {
+    reservationId: log.id,
+    yearMonth,
+    textUsedAfter: credit?.textUsed ?? 0,
+    textQuota: credit?.textQuota ?? DEFAULT_TEXT_MONTHLY_QUOTA,
+  }
+}
+
+// 성공 확정. textUsed 는 그대로 두고 로그 상태만 전환.
+export async function commitTextCredit(
+  reservationId: string,
+  usage: {
+    inputTokens?: number
+    outputTokens?: number
+    latencyMs?: number
+    contentPreview?: string
+  }
+): Promise<void> {
+  await prisma.textGenerationLog.update({
+    where: { id: reservationId },
+    data: {
+      status: 'SUCCEEDED',
+      inputTokens: usage.inputTokens ?? null,
+      outputTokens: usage.outputTokens ?? null,
+      latencyMs: usage.latencyMs ?? null,
+      contentPreview: usage.contentPreview ?? null,
+    },
+  })
+}
+
+// 실패 환불. 같은 월에 한해서만 textUsed 감소(월이 바뀐 뒤 환불은 창조 방지).
+// 로그 상태가 이미 최종(SUCCEEDED/FAILED/REFUNDED)이면 멱등 no-op.
+export async function refundTextCredit(
+  reservationId: string,
+  errorCode?: string,
+  errorMessage?: string
+): Promise<void> {
+  const log = await prisma.textGenerationLog.findUnique({
+    where: { id: reservationId },
+    select: { spaceId: true, creditMonth: true, status: true },
+  })
+  if (!log) return
+  if (log.status !== 'PENDING') return
+
+  const thisMonth = currentYearMonth()
+  if (log.creditMonth && log.creditMonth === thisMonth) {
+    await prisma.$executeRaw`
+      UPDATE "WorkspaceAiCredit"
+      SET "textUsed" = GREATEST("textUsed" - 1, 0), "updatedAt" = NOW()
+      WHERE "spaceId" = ${log.spaceId} AND "yearMonth" = ${log.creditMonth}
+    `
+  }
+
+  await prisma.textGenerationLog.update({
+    where: { id: reservationId },
+    data: {
+      status: 'REFUNDED',
+      errorCode: errorCode ?? null,
+      errorMessage: errorMessage ?? null,
+    },
+  })
+}
+
+// 읽기 전용. 현재 월 텍스트 사용량 조회.
+export async function getTextMonthUsage(
+  spaceId: string,
+  yearMonth: string = currentYearMonth()
+): Promise<{ yearMonth: string; textUsed: number; textQuota: number }> {
+  const credit = await prisma.workspaceAiCredit.findUnique({
+    where: { spaceId_yearMonth: { spaceId, yearMonth } },
+    select: { textUsed: true, textQuota: true },
+  })
+  return {
+    yearMonth,
+    textUsed: credit?.textUsed ?? 0,
+    textQuota: credit?.textQuota ?? DEFAULT_TEXT_MONTHLY_QUOTA,
   }
 }

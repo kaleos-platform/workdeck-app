@@ -18,7 +18,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
       product: { select: { name: true, internalName: true } },
       items: {
         include: {
-          option: { select: { id: true, name: true, sku: true, deletedAt: true } },
+          option: {
+            select: { id: true, name: true, sku: true, costPrice: true, deletedAt: true },
+          },
           product: {
             select: {
               id: true,
@@ -99,6 +101,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
         optionId: string
         optionName: string
         sku: string | null
+        costPrice: number | null
         optionDeleted: boolean
       }>
     }
@@ -121,6 +124,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pla
         optionId: item.option.id,
         optionName: item.option.name,
         sku: item.option.sku ?? null,
+        // 발주 금액 표시용 옵션 원가. 미설정이면 null → 금액 KPI 생략.
+        costPrice: item.option.costPrice != null ? Number(item.option.costPrice) : null,
         optionDeleted: item.option.deletedAt != null,
       })
     }

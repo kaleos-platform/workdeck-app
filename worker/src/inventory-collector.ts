@@ -304,6 +304,37 @@ async function dismissModals(page: Page): Promise<boolean> {
     dismissed = true
   }
 
+  // "페이지 평점을 주세요!" 평점 위젯 — 2026-08-26 Wing 재배포와 함께 등장. 위 후보/타이틀
+  // 목록으로는 안 닫힌다. 판매분석 툴바를 가리진 않지만 엑셀 드롭다운 클릭을 삼킬 수 있다.
+  // ⚠️ 위 모달들과 달리 좌표 블라인드 클릭은 쓰지 않는다 — 임계값 미달 박스에서 조상이
+  // 잡히면 그리드 행이 선택돼 "선택분만 export" 사고로 이어진다(위 계측 주석 참조).
+  // Escape 를 먼저 쓰고, 남으면 위젯 조상 안으로 좁힌 닫기 요소만 클릭한다.
+  const ratingTitle = page.locator('text=페이지 평점을 주세요').first()
+  if (await ratingTitle.isVisible().catch(() => false)) {
+    await page.keyboard.press('Escape').catch(() => {})
+    await page.waitForTimeout(400)
+
+    if (await ratingTitle.isVisible().catch(() => false)) {
+      // ancestor 축은 문서 순서상 바깥쪽이 먼저 — first() = 4단계 위(닫기 버튼을 포함할
+      // 만큼 넓되, 페이지 전체로 번지지 않는 범위).
+      const widget = ratingTitle.locator('xpath=ancestor::*[position()<=4]').first()
+      const closeBtn = widget
+        .locator(
+          'button[aria-label*="닫기"], button[aria-label*="Close"], [role="button"][aria-label*="닫기"], [class*="close"]'
+        )
+        .first()
+      if (await closeBtn.isVisible().catch(() => false)) {
+        await closeBtn.click({ force: true }).catch(() => {})
+        await page.waitForTimeout(400)
+      }
+    }
+
+    if (await ratingTitle.isVisible().catch(() => false)) {
+      console.warn('[inventory][diag] "페이지 평점" 위젯이 닫히지 않음 — 셀렉터 확인 필요')
+    }
+    dismissed = true
+  }
+
   return dismissed
 }
 
@@ -381,7 +412,11 @@ async function clearCartSelection(page: Page): Promise<void> {
   console.log(`[inventory]   → 선택 상품(장바구니) ${before}건 감지 — 전체 비우기 시도`)
 
   // 1) 장바구니 패널 펼치기 (접혀 있으면 "전체 비우기" 가 DOM 에 없다)
-  await page.locator('div.cart').first().click({ timeout: 5000 }).catch(() => {})
+  await page
+    .locator('div.cart')
+    .first()
+    .click({ timeout: 5000 })
+    .catch(() => {})
   await page.waitForTimeout(1500)
 
   // 2) "전체 비우기" → 3) "전체삭제 하시겠습니까?" 확인
@@ -588,34 +623,269 @@ async function clickWithJsFallback(locator: Locator, label: string): Promise<voi
   }
 }
 
-async function selectSalesAnalysisOneDay(page: Page, targetDateKst: string): Promise<void> {
-  // 1) 기간 트리거 열기 — 툴바 내 기간 라벨(텍스트 가변)
-  const trigger = page
-    .locator('._toolbar_ejsky_5 span', {
-      hasText: /최근|일별|직접|\d{4}\./,
-    })
-    .first()
-  if (!(await trigger.isVisible({ timeout: 5000 }).catch(() => false))) {
-    await saveScreenshot(page, 'sales-analysis-no-period-trigger')
-    throw new Error('[inventory] 판매분석 기간 트리거를 찾지 못했습니다 — DOM 변경 의심')
+/** KST 기준 N일 전 날짜(YYYY-MM-DD). orchestrator.ts 의 yesterdayKst 계산식과 동일. */
+function kstDateOffset(offsetDays: number): string {
+  return new Date(Date.now() + 9 * 3600 * 1000 - offsetDays * 86400 * 1000)
+    .toISOString()
+    .slice(0, 10)
+}
+
+/** KST 기준 어제 날짜(YYYY-MM-DD). */
+function yesterdayKstDate(): string {
+  return kstDateOffset(1)
+}
+
+/**
+ * 기간 라벨 텍스트 패턴. 앵커(^$)를 걸어 라벨 자체만 잡는다 —
+ * "최근 7일 데이터의 최대값" 같은 설명 문구는 제외된다.
+ *
+ * 캘린더로 지정하면 라벨이 연도 없는 날짜가 된다 — 2026-08-26 실측값은 "08.21 (금)".
+ * 처음엔 `\d{4}\.\d{2}\.\d{2}` 만 받아서 정상 선택을 오탐으로 막았다. 그래서
+ * MM.DD (+요일) (+`~` 범위) 형태까지 받되, 그 이상 넓히지는 않는다.
+ * `%` 포함은 제외 — KPI 카드의 "4.03%" 같은 수치가 후보로 섞이는 것을 막기 위함.
+ */
+const PERIOD_LABEL_RE =
+  /^\s*(?!.*%)(오늘|어제|직접\s*입력|최근\s*\d+\s*일|\d{1,4}[.\-/]\d{1,2}([.\-/]\d{1,2})?(\s*\([^)]{1,3}\))?(\s*~.*)?)\s*$/
+
+/**
+ * 판매분석 툴바의 기간 트리거를 찾는다.
+ *
+ * Wing 의 CSS-module 해시 클래스(`_toolbar_ejsky_5` 등)는 재배포마다 회전한다.
+ * 2026-08-25 수집 실패의 직접 원인이 이 해시 의존이었다(툴바는 정상 렌더돼 있었고
+ * 셀렉터만 안 맞았다). 그래서 엑셀 다운로드 버튼과 같은 방식으로 텍스트+좌표로 좁힌다:
+ *   - x > 300  : 좌측 글로벌 내비 오발사 방지(:686-700 과 동일 패턴)
+ *   - y 최소   : 툴바는 컨텐츠 최상단. 옵션목록 헤더에도 "최근 7일" 라벨이 있다.
+ */
+async function findPeriodTrigger(page: Page): Promise<Locator | null> {
+  const candidates = page.getByText(PERIOD_LABEL_RE)
+  const count = await candidates.count().catch(() => 0)
+  let best: { loc: Locator; y: number } | null = null
+  for (let i = 0; i < count; i++) {
+    const loc = candidates.nth(i)
+    const box = await loc.boundingBox().catch(() => null)
+    if (!box || box.width === 0 || box.height === 0) continue
+    if (box.x <= 300) continue
+    if (best === null || box.y < best.y) best = { loc, y: box.y }
   }
-  await trigger.click()
+  return best?.loc ?? null
+}
+
+/**
+ * 트리거를 못 찾았을 때 툴바 후보를 전수 덤프한다(:737-754 엑셀 덤프와 같은 패턴).
+ * 다음 DOM 변경 때 스크린샷 고고학 없이 한 사이클로 진단하기 위한 계측.
+ */
+async function dumpPeriodTriggerCandidates(page: Page): Promise<void> {
+  const dump = await page
+    .locator(':is(span,button,div,a):has-text("일")')
+    .evaluateAll((els) =>
+      els
+        .filter((e) => {
+          const t = (e.textContent ?? '').trim()
+          return t.length > 0 && t.length < 40
+        })
+        .slice(0, 12)
+        .map((e) => {
+          const r = e.getBoundingClientRect()
+          return {
+            tag: e.tagName,
+            t: (e.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 30),
+            cls: String((e as HTMLElement).className).slice(0, 60),
+            x: Math.round(r.x),
+            y: Math.round(r.y),
+            w: Math.round(r.width),
+          }
+        })
+    )
+    .catch(() => [])
+  console.log(`[inventory]   → 기간 트리거 후보 덤프: ${JSON.stringify(dump).slice(0, 1500)}`)
+}
+
+/**
+ * 적용된 기간 라벨이 targetDateKst 를 반영하는지 검사한다.
+ *
+ * 이 사후조건이 없으면 "엉뚱한 걸 클릭했는데 통과"가 조용히 지나가고,
+ * 기본 기간(최근 7일)으로 export 되어 하루치로 귀속되는 7배 과대집계가 발생한다.
+ *
+ * 라벨 포맷은 가변이므로 느슨하게 본다. 단 `최근 N일`이 남아 있으면 무조건 실패다
+ * (= 기간이 바뀌지 않았다는 뜻).
+ */
+function periodLabelMatchesDate(label: string, targetDateKst: string): boolean {
+  const norm = label.replace(/\s+/g, ' ').trim()
+  if (norm.length === 0) return false
+  if (/최근\s*\d+\s*일/.test(norm)) return false
+
+  // Wing 은 오늘/어제를 날짜 대신 상대 토큰으로 표기한다 — 캘린더로 골라도 마찬가지다
+  // (2026-08-26 실측: 캘린더로 08-25 선택 → 라벨 "어제"). 경로가 아니라 날짜의 문제라
+  // 두 경로 모두에서 인정하되, 요청 대상이 실제로 그 날일 때만 유효하다.
+  if (/(^|[^가-힣])어제([^가-힣]|$)/.test(norm)) return targetDateKst === kstDateOffset(1)
+  if (/(^|[^가-힣])오늘([^가-힣]|$)/.test(norm)) return targetDateKst === kstDateOffset(0)
+
+  const [y, m, d] = targetDateKst.split('-')
+  return (
+    norm.includes(`${y}.${m}.${d}`) ||
+    norm.includes(`${y}-${m}-${d}`) ||
+    norm.includes(`${m}.${d}`) ||
+    norm.includes(`${m}/${d}`)
+  )
+}
+
+/** 적용 후 트리거 라벨을 되읽어 기간이 실제로 반영됐는지 확인한다. */
+async function verifyPeriodApplied(
+  page: Page,
+  targetDateKst: string,
+  presetPath: boolean
+): Promise<boolean> {
+  // 기간 적용 후 Wing 이 목록을 재조회하며 툴바를 리렌더한다. 짧게만 기다린다 —
+  // 트리거가 오래 안 보이면 대기가 아니라 셀렉터 문제이므로 길게 끌 이유가 없다.
+  let trigger: Locator | null = null
+  for (let i = 0; i < 4; i++) {
+    trigger = await findPeriodTrigger(page)
+    if (trigger) break
+    await page.waitForTimeout(500)
+  }
+  if (!trigger) {
+    console.warn('[inventory]   → 기간 라벨 검증: 트리거를 다시 찾지 못함(리렌더 미완?)')
+    await dumpPeriodTriggerCandidates(page)
+    return false
+  }
+  const label = (await trigger.textContent().catch(() => ''))?.trim() ?? ''
+  const ok = periodLabelMatchesDate(label, targetDateKst)
+  console.log(
+    `[inventory]   → 기간 라벨 검증: "${label}" vs ${targetDateKst} (경로=${presetPath ? '프리셋' : '캘린더'}) → ${ok ? 'OK' : 'MISMATCH'}`
+  )
+  if (!ok) {
+    // 라벨이 안 맞을 때, 엉뚱한 요소를 잡은 것인지 라벨 포맷이 바뀐 것인지 구분해야 한다
+    // (:712-718 엑셀 트리거 계측과 같은 목적).
+    const box = await trigger.boundingBox().catch(() => null)
+    const html = await trigger
+      .evaluate((el) => (el.parentElement ?? el).outerHTML.slice(0, 200))
+      .catch(() => 'n/a')
+    console.warn(`[inventory]   → 기간 트리거 실측: box=${JSON.stringify(box)} html=${html}`)
+  }
+  return ok
+}
+
+/**
+ * picker 하단 "선택 완료" 버튼이 있으면 누른다.
+ *
+ * 캘린더 경로에선 이 버튼을 눌러야 기간이 적용된다(안 누르면 picker 가 열린 채 남고
+ * 기본 기간으로 export → 백필이 전부 어제 데이터로 채워지는 silent 과대집계).
+ * 프리셋은 즉시 적용일 수도 있어 존재 여부로 분기한다.
+ * 버튼 라벨은 "'06.05 (금)' 선택 완료"처럼 날짜 prefix 가 가변이라 substring 매칭.
+ */
+async function clickPeriodConfirmIfPresent(page: Page): Promise<boolean> {
+  const confirmBtn = page.locator('button:has-text("선택 완료")').first()
+  if (!(await confirmBtn.isVisible().catch(() => false))) return false
+  await clickWithJsFallback(confirmBtn, '선택 완료')
+  await page.waitForTimeout(500)
+  return true
+}
+
+/** picker 안의 "어제" 프리셋을 클릭한다. 못 찾으면 false. */
+async function trySelectYesterdayPreset(page: Page): Promise<boolean> {
+  const preset = page.getByText(/^\s*어제\s*$/).first()
+  try {
+    await preset.waitFor({ state: 'visible', timeout: 3000 })
+  } catch {
+    console.log('[inventory]   → "어제" 프리셋 없음')
+    return false
+  }
+  await clickWithJsFallback(preset, '어제 프리셋')
+  await page.waitForTimeout(500)
+  await clickPeriodConfirmIfPresent(page)
+  return true
+}
+
+/** 기간 picker 를 (다시) 연다. 트리거를 못 찾으면 throw. */
+async function openPeriodPicker(page: Page, targetDateKst: string): Promise<void> {
+  const trigger = await findPeriodTrigger(page)
+  if (!trigger) {
+    await dumpPeriodTriggerCandidates(page)
+    await saveScreenshot(page, 'sales-analysis-no-period-trigger')
+    throw new Error(
+      `[inventory] 판매분석 기간 트리거를 찾지 못했습니다 (${targetDateKst}) — DOM 변경 의심`
+    )
+  }
+  await clickWithJsFallback(trigger, '기간 트리거')
   await page.waitForTimeout(800)
+}
 
+/**
+ * "이전 달" 화살표를 찾는다.
+ * vue-datepicker 자체 네임스페이스(dp__*)를 우선하고, Wing 해시형은 폴백 끝에 둔다.
+ */
+async function findPrevMonthButton(page: Page): Promise<Locator | null> {
+  const selectors = [
+    '[class*="dp__"][class*="arrow_left"]',
+    '.dp__inner_nav:not(.dp--arrow-btn-nav-right)',
+    'button[aria-label*="Previous"]',
+    '[aria-label*="이전"]',
+    '[class*="_prev_"]',
+  ]
+  for (const sel of selectors) {
+    const loc = page.locator(sel).first()
+    if (await loc.isVisible().catch(() => false)) return loc
+  }
+  return null
+}
+
+/**
+ * 판매분석 기간 컨트롤(@vuepic/vue-datepicker)에서 targetDateKst(YYYY-MM-DD) 하루를 선택한다.
+ *
+ * 경로 2가지:
+ *   - 프리셋(자동 수집 전용): options.preferPreset && targetDateKst === 어제(KST) 일 때
+ *     "어제" 프리셋 1클릭. 월 네비게이션 취약점이 일일 수집에서 사라진다.
+ *   - 캘린더(수동/백필/폴백): [data-test-id="dp-YYYY-MM-DD"] 셀을 시작·종료로 2번 클릭.
+ *     대상 월이 안 보이면 "이전 달"로 이동한다.
+ *
+ * 어느 경로든 마지막에 트리거 라벨을 되읽어 기간 반영을 검증하고, 실패하면 스크린샷 후 throw
+ * 한다 — 조용히 기본 기간(최근 7일)으로 export 되어 7배 과대 집계되는 것을 막기 위함이다.
+ * 폴백은 로그로 드러난다(경로=프리셋|캘린더).
+ */
+async function selectSalesAnalysisOneDay(
+  page: Page,
+  targetDateKst: string,
+  options: { preferPreset?: boolean } = {}
+): Promise<void> {
+  // 1) 기간 트리거 열기 — 툴바 내 기간 라벨(텍스트·위치 기반, 해시 클래스 비의존)
+  await openPeriodPicker(page, targetDateKst)
+
+  // 2) 프리셋 경로 — 어제 1일에 한해서만
+  const presetEligible = options.preferPreset === true && targetDateKst === yesterdayKstDate()
+  if (presetEligible && (await trySelectYesterdayPreset(page))) {
+    if (await verifyPeriodApplied(page, targetDateKst, true)) {
+      console.log(`[inventory]   → 판매분석 기간 1일 선택 완료: ${targetDateKst} (경로=프리셋)`)
+      return
+    }
+    // 프리셋이 적용되지 않았다 — 캘린더로 폴백(원래 경로라 안전). 조용히 넘기지 않는다.
+    console.warn('[inventory]   → 프리셋 적용 확인 실패 — 캘린더 경로로 폴백')
+    await openPeriodPicker(page, targetDateKst)
+  }
+
+  // 3) 캘린더 경로 — 대상 날짜 셀이 보일 때까지 "이전 달"로 이동(최대 18개월 = 백필 한도 여유)
   const cellSelector = `[data-test-id="dp-${targetDateKst}"]`
-
-  // 2) 대상 날짜 셀이 보일 때까지 "이전 달"로 이동(최대 18개월 = 백필 한도 여유)
   let cell = page.locator(`${cellSelector}[aria-selected]`).first()
   for (let i = 0; i < 18; i++) {
-    if (await cell.isVisible({ timeout: 1000 }).catch(() => false)) break
-    const prevMonth = page.locator('[class*="_prev_"]').first()
-    if (!(await prevMonth.isVisible({ timeout: 800 }).catch(() => false))) break
+    if (await cell.isVisible().catch(() => false)) break
+    const prevMonth = await findPrevMonthButton(page)
+    if (!prevMonth) break
     await clickWithJsFallback(prevMonth, '이전 달').catch(() => {})
     await page.waitForTimeout(300)
     cell = page.locator(`${cellSelector}[aria-selected]`).first()
   }
 
-  if (!(await cell.isVisible({ timeout: 2000 }).catch(() => false))) {
+  // [aria-selected] 는 datepicker 버전에 따라 사라질 수 있다 — 매치 0이면 필터 없이 재시도.
+  if (!(await cell.isVisible().catch(() => false))) {
+    const bare = page.locator(cellSelector).first()
+    if (await bare.isVisible().catch(() => false)) {
+      console.log('[inventory]   → 날짜 셀 [aria-selected] 미매치 — 필터 없이 사용')
+      cell = bare
+    }
+  }
+
+  try {
+    await cell.waitFor({ state: 'visible', timeout: 2000 })
+  } catch {
     await saveScreenshot(page, 'sales-analysis-no-date-cell')
     throw new Error(
       `[inventory] 판매분석 캘린더에서 ${targetDateKst} 셀을 찾지 못했습니다 — DOM/월 네비 변경 의심`
@@ -628,26 +898,27 @@ async function selectSalesAnalysisOneDay(page: Page, targetDateKst: string): Pro
   await clickWithJsFallback(cell, `${targetDateKst} 날짜 셀`)
   await page.waitForTimeout(500)
 
-  // vue-datepicker 는 "선택 완료" 버튼을 눌러야 기간이 적용된다(즉시 적용 아님).
-  // 이걸 누르지 않으면 picker 가 열린 채 남고 기존 기본 기간("어제")으로 export 되어
-  // 과거 날짜 백필이 전부 어제 데이터로 채워지는 silent 과대집계가 발생한다.
-  // 버튼 라벨은 "'06.05 (금)' 선택 완료"처럼 날짜 prefix 가 가변이므로 substring 매칭.
-  const confirmBtn = page.locator('button:has-text("선택 완료")').first()
-  if (!(await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+  if (!(await clickPeriodConfirmIfPresent(page))) {
     await saveScreenshot(page, 'sales-analysis-no-confirm-btn')
     throw new Error(
       `[inventory] 판매분석 기간 "선택 완료" 버튼을 찾지 못했습니다 (${targetDateKst}) — DOM 변경 의심`
     )
   }
-  await clickWithJsFallback(confirmBtn, '선택 완료')
-  await page.waitForTimeout(500)
-  console.log(`[inventory]   → 판매분석 기간 1일 선택 완료: ${targetDateKst}`)
+
+  if (!(await verifyPeriodApplied(page, targetDateKst, false))) {
+    await saveScreenshot(page, 'sales-analysis-period-not-applied')
+    throw new Error(
+      `[inventory] 판매분석 기간이 ${targetDateKst} 로 반영되지 않았습니다 — 기본 기간으로 export 되면 과대집계되므로 중단합니다.`
+    )
+  }
+  console.log(`[inventory]   → 판매분석 기간 1일 선택 완료: ${targetDateKst} (경로=캘린더)`)
 }
 
 async function downloadSalesAnalysisVendor(
   page: Page,
   downloadDir: string,
-  targetDateKst: string
+  targetDateKst: string,
+  options: { preferPreset?: boolean } = {}
 ): Promise<{ filePath: string; fileName: string }> {
   console.log(`[inventory] 판매분석(VENDOR) 페이지 진입... (대상 날짜: ${targetDateKst})`)
 
@@ -663,11 +934,13 @@ async function downloadSalesAnalysisVendor(
 
   // ── 날짜 필터: 기간 = targetDateKst 1일 ──────────────────────────────────────
   // Wing 판매분석 기간 컨트롤은 @vuepic/vue-datepicker 다(2026-06 live DOM 확인).
-  //   - 기간 트리거: 툴바(._toolbar_ejsky_5) 내 기간 라벨 span(텍스트 가변: "최근 7일" 등).
+  //   - 기간 트리거: 툴바 내 기간 라벨(텍스트 가변: "최근 7일" 등).
+  //     ⚠️ Wing 해시 클래스(_toolbar_xxxxx_5)로 잡지 말 것 — 재배포마다 회전한다
+  //     (2026-08-25 수집 실패 원인). findPeriodTrigger 가 텍스트+좌표로 찾는다.
   //   - picker: 프리셋 버튼(오늘/어제/최근 N일) + 2개월 캘린더(셀 [data-test-id="dp-YYYY-MM-DD"]).
-  //   - 선택 즉시 적용(별도 조회 버튼 없음, 하단 "초기화"만).
-  // input fill 방식이 아니므로 캘린더 셀/프리셋 클릭으로 1일 범위를 지정한다.
-  await selectSalesAnalysisOneDay(page, targetDateKst)
+  //   - 캘린더 선택은 "선택 완료"를 눌러야 적용된다. 프리셋은 즉시 적용일 수 있어 분기 처리.
+  // 자동 수집(어제 1일)만 프리셋 경로를 쓰고, 수동/백필은 캘린더로 날짜별 1일씩 지정한다.
+  await selectSalesAnalysisOneDay(page, targetDateKst, options)
 
   await page.waitForLoadState('networkidle', { timeout: DEFAULT_TIMEOUT }).catch(() => {})
   await page.waitForTimeout(3000)
@@ -878,7 +1151,10 @@ export async function collectInventoryData(
     // 판매분석(VENDOR) 다운로드 — targetDateKst 가 지정된 경우에만 수집
     if (targetDateKst) {
       try {
-        salesVendor = await downloadSalesAnalysisVendor(page, downloadDir, targetDateKst)
+        // 일일 cron 경로 — 대상이 어제 1일이므로 "어제" 프리셋을 우선 사용한다.
+        salesVendor = await downloadSalesAnalysisVendor(page, downloadDir, targetDateKst, {
+          preferPreset: true,
+        })
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error('[inventory] 판매분석(VENDOR) 다운로드 실패:', msg)

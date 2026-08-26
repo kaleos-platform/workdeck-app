@@ -30,9 +30,22 @@ export function getSellerHubPricingScenarioPath(id: string) {
 }
 export const SELLER_HUB_LISTINGS_PATH = `${SELLER_HUB_BASE_PATH}/products/listings`
 export const SELLER_HUB_LISTING_NEW_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/new`
+export const SELLER_HUB_KEYWORDS_PATH = `${SELLER_HUB_BASE_PATH}/products/keywords`
+/** 상품명 작성 SOP 위저드 (가이드 §22) */
+export const SELLER_HUB_NAMING_SOP_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/naming-sop`
+/** listingId 를 주면 해당 판매채널 상품의 상품명·검색어를 이어서 편집한다. */
+export function getSellerHubNamingSopPath(listingId?: string | null) {
+  return listingId
+    ? `${SELLER_HUB_NAMING_SOP_PATH}?listingId=${encodeURIComponent(listingId)}`
+    : SELLER_HUB_NAMING_SOP_PATH
+}
 export const SELLER_HUB_PRODUCTION_PATH = `${SELLER_HUB_BASE_PATH}/products/production`
 export function getSellerHubProductPath(id: string) {
   return `${SELLER_HUB_BASE_PATH}/products/${id}`
+}
+/** AI 상품정보 추출 딥링크 — 상품 상세 다이얼로그를 초기 오픈 상태로 진입한다 */
+export function getSellerHubProductExtractPath(id: string) {
+  return `${SELLER_HUB_BASE_PATH}/products/${id}/extract`
 }
 export function getSellerHubListingPath(id: string) {
   return `${SELLER_HUB_BASE_PATH}/products/listings/${id}`

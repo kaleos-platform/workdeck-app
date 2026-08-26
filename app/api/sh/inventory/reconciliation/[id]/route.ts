@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { confirmReconciliation, findMappedSystemOnlyKeys } from '@/lib/inv/reconciliation-processor'
 import { MovementError } from '@/lib/inv/movement-processor'
 import type { MatchEntry } from '@/lib/inv/reconciliation-matcher'
-import { resolveFileOnlyEntries } from '@/lib/inv/reconciliation-resolve'
+import { refreshMatchedQuantities, resolveFileOnlyEntries } from '@/lib/inv/reconciliation-resolve'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -34,8 +34,14 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   const rawEntries = (recon.matchResults ?? []) as MatchEntry[]
   const resolved2 = await resolveFileOnlyEntries(rawEntries, recon.locationId)
 
+  // matched-* 의 systemQuantity/delta 를 현재 재고로 갱신 — 저장된 값은 매칭 시점 값이라
+  // 오래된 대조를 열면 확정 결과와 다른 숫자를 보여준다. 확정 경로도 같은 규칙을 쓴다.
+  // CONFIRMED/CANCELLED 는 닫힌 기록이므로 그대로 둔다(정상 입출고를 "차이"로 보이면 안 됨).
+  const isOpen = !['CONFIRMED', 'CANCELLED'].includes(recon.status)
+  const refreshed = isOpen ? await refreshMatchedQuantities(resolved2, recon.locationId) : resolved2
+
   // matched-equal/matched-diff 항목에 mappingId + mapping.items 첨부
-  const withMapping = await attachMappingInfo(resolved2, recon.locationId)
+  const withMapping = await attachMappingInfo(refreshed, recon.locationId)
 
   // system-only 항목에 매핑 보유 여부 첨부 — 매핑 없는 건은 자동 0 처리 대상이 아니며
   // UI 가 "매핑 필요"로 표면화해 사용자가 쿠팡 SKU 를 연결하도록 안내한다.
