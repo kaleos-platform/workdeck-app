@@ -16,6 +16,7 @@ import type { GoogleGenAI, Part, Schema, Type } from '@google/genai'
 
 import {
   PRODUCT_DESCRIPTION_MAX,
+  PRODUCT_FEATURES_MAX_ITEMS,
   PRODUCT_LIST_FIELD_MAX_ITEMS as MAX_ARRAY_ITEMS,
   PRODUCT_LIST_FIELD_MAX_ITEM_LENGTH as MAX_ITEM_CHARS,
 } from '@/lib/sh/constants'
@@ -84,7 +85,7 @@ const SYSTEM_INSTRUCTION = [
   '- 나쁜 예: "조이지 않는 편안함"',
   '- 좋은 예: "티셔츠처럼 위에서 아래로 편하게 입고 벗는 런닝형 구조"',
   '- 인증번호는 certifications에, 주의·경고 문구는 cautions에 넣고 features에는 넣지 마세요.',
-  '- 소재가 빈약하면 억지로 항목 수를 늘리지 마세요.',
+  '- 항목 수에 상한은 없습니다. 소재에 주제가 많으면 그만큼 항목을 늘리세요. 반대로 소재가 빈약하면 억지로 늘리지 마세요.',
   '',
   '[certifications — 인증·시험 정보]',
   '- 항목은 "내용" + "번호" 두 부분으로 씁니다. 내용을 먼저 쓰고, 인증번호·규격번호는 항목 맨 끝 괄호 안에만 넣으세요.',
@@ -100,7 +101,7 @@ const SYSTEM_INSTRUCTION = [
 ].join('\n')
 
 /** 프롬프트 개정 버전 — ProductExtractionJob.promptVersion에 기록해 신/구 결과를 구분한다. */
-export const EXTRACT_PROMPT_VERSION = 'v3'
+export const EXTRACT_PROMPT_VERSION = 'v4'
 
 // truncatedFields는 응답 스키마에서 제외하고 로컬에서 계산한다.
 // `Schema` 타입 명시 — SchemaUnion = Schema | unknown 이라 무주석이면 tsc가 형태를 전혀 검사하지 않는다.
@@ -250,7 +251,10 @@ function toNullableString(v: unknown): string | null {
   return trimmed ? trimmed : null
 }
 
-function normalizeStringArray(v: unknown): { items: string[]; truncated: boolean } {
+function normalizeStringArray(
+  v: unknown,
+  maxItems: number
+): { items: string[]; truncated: boolean } {
   const raw = Array.isArray(v) ? v : []
   const seen = new Set<string>()
   const out: string[] = []
@@ -267,9 +271,9 @@ function normalizeStringArray(v: unknown): { items: string[]; truncated: boolean
     seen.add(trimmed)
     out.push(trimmed)
   }
-  if (out.length > MAX_ARRAY_ITEMS) {
+  if (out.length > maxItems) {
     truncated = true
-    return { items: out.slice(0, MAX_ARRAY_ITEMS), truncated }
+    return { items: out.slice(0, maxItems), truncated }
   }
   return { items: out, truncated }
 }
@@ -301,7 +305,10 @@ export function normalizeExtracted(raw: unknown): ExtractedProductInfo {
     cautions: [],
   }
   for (const field of ARRAY_FIELDS) {
-    const { items, truncated } = normalizeStringArray(obj[field])
+    const { items, truncated } = normalizeStringArray(
+      obj[field],
+      field === 'features' ? PRODUCT_FEATURES_MAX_ITEMS : MAX_ARRAY_ITEMS
+    )
     arrays[field] = items
     if (truncated) truncatedFields.push(field)
   }
