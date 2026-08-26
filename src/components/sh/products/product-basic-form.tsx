@@ -100,9 +100,16 @@ export function ProductBasicForm({
   const pendingFocusRef = useRef<{ list: 'features' | 'certifications'; idx: number } | null>(null)
 
   useEffect(() => {
+    // 삭제로 배열이 줄면 ref에 분리된 노드가 남는다 — 길이를 맞춰 잘라낸다.
+    featureInputsRef.current.length = features.length
+    certInputsRef.current.length = certifications.length
+
     const pending = pendingFocusRef.current
     if (!pending) return
     pendingFocusRef.current = null
+    const list = pending.list === 'features' ? features : certifications
+    // 저장 응답으로 배열이 다시 동기화되면 인덱스가 어긋날 수 있다 — 범위를 벗어나면 포기.
+    if (pending.idx >= list.length) return
     const el =
       pending.list === 'features'
         ? featureInputsRef.current[pending.idx]
@@ -479,12 +486,10 @@ export function ProductBasicForm({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() =>
-              setFeatures((prev) => {
-                pendingFocusRef.current = { list: 'features', idx: prev.length }
-                return [...prev, '']
-              })
-            }
+            onClick={() => {
+              pendingFocusRef.current = { list: 'features', idx: features.length }
+              setFeatures((prev) => [...prev, ''])
+            }}
           >
             <Plus className="mr-1 h-3 w-3" />
             추가
@@ -528,12 +533,10 @@ export function ProductBasicForm({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() =>
-              setCertifications((prev) => {
-                pendingFocusRef.current = { list: 'certifications', idx: prev.length }
-                return [...prev, '']
-              })
-            }
+            onClick={() => {
+              pendingFocusRef.current = { list: 'certifications', idx: certifications.length }
+              setCertifications((prev) => [...prev, ''])
+            }}
           >
             <Plus className="mr-1 h-3 w-3" />
             추가

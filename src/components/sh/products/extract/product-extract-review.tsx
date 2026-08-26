@@ -31,7 +31,7 @@ type CurrentProduct = {
 type ListMode = 'replace' | 'merge'
 type DescMode = 'append' | 'replace'
 
-function mergeList(
+export function mergeList(
   current: string[],
   selected: string[],
   extras: string[],

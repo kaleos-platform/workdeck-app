@@ -9,7 +9,7 @@
 /** 상품 설명(InvProduct.description) 최대 길이. AI 추출 결과도 이 길이로 잘라낸다. */
 export const PRODUCT_DESCRIPTION_MAX = 2000
 
-/** 인증정보 배열의 최대 항목 수 */
+/** 인증정보·성분·주의사항 배열의 최대 항목 수 (특징은 PRODUCT_FEATURES_MAX_ITEMS) */
 export const PRODUCT_LIST_FIELD_MAX_ITEMS = 20
 
 /**
