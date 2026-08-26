@@ -13,6 +13,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import { Separator } from '@/components/ui/separator'
 import {
   PRODUCT_DESCRIPTION_MAX,
+  PRODUCT_FEATURES_MAX_ITEMS,
   PRODUCT_LIST_FIELD_MAX_ITEMS,
   PRODUCT_LIST_FIELD_MAX_ITEM_LENGTH,
 } from '@/lib/sh/constants'
@@ -30,11 +31,12 @@ type CurrentProduct = {
 type ListMode = 'replace' | 'merge'
 type DescMode = 'append' | 'replace'
 
-function mergeList(
+export function mergeList(
   current: string[],
   selected: string[],
   extras: string[],
-  mode: ListMode
+  mode: ListMode,
+  maxItems: number
 ): string[] {
   const combined =
     mode === 'replace' ? [...selected, ...extras] : [...current, ...selected, ...extras]
@@ -45,7 +47,7 @@ function mergeList(
     if (!trimmed || seen.has(trimmed)) continue
     seen.add(trimmed)
     out.push(trimmed)
-    if (out.length >= PRODUCT_LIST_FIELD_MAX_ITEMS) break
+    if (out.length >= maxItems) break
   }
   return out
 }
@@ -205,11 +207,23 @@ export function ProductExtractReview({
       }
       if (featuresIncluded) {
         const selected = result.features.filter((_, i) => featureSel.has(i))
-        patch.features = mergeList(current?.features ?? [], selected, featureExtras, featureMode)
+        patch.features = mergeList(
+          current?.features ?? [],
+          selected,
+          featureExtras,
+          featureMode,
+          PRODUCT_FEATURES_MAX_ITEMS
+        )
       }
       if (certsIncluded) {
         const selected = result.certifications.filter((_, i) => certSel.has(i))
-        patch.certifications = mergeList(current?.certifications ?? [], selected, [], certMode)
+        patch.certifications = mergeList(
+          current?.certifications ?? [],
+          selected,
+          [],
+          certMode,
+          PRODUCT_LIST_FIELD_MAX_ITEMS
+        )
       }
       if (mfrSelected) patch.manufacturer = result.manufacturer
       if (countrySelected) patch.manufactureCountry = result.originCountry

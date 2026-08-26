@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import {
   PRODUCT_DESCRIPTION_MAX,
+  PRODUCT_FEATURES_MAX_ITEMS,
   PRODUCT_LIST_FIELD_MAX_ITEMS,
   PRODUCT_LIST_FIELD_MAX_ITEM_LENGTH,
 } from '@/lib/sh/constants'
@@ -141,7 +142,7 @@ export const productSchema = z.object({
   ),
   features: z
     .array(z.string().max(PRODUCT_LIST_FIELD_MAX_ITEM_LENGTH))
-    .max(PRODUCT_LIST_FIELD_MAX_ITEMS)
+    .max(PRODUCT_FEATURES_MAX_ITEMS)
     .optional(),
   // 프론트가 문자열 배열로 전송 — 인증번호 한 줄씩
   certifications: z
