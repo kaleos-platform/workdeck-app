@@ -123,7 +123,7 @@ jest.mock('@/lib/net/safe-fetch', () => {
 
 import { TextCreditExceededError, reserveTextCredit } from '@/lib/ai/credit'
 import { downloadProductSourceFile } from '@/lib/sh/product-source-storage'
-import { extractProductInfo } from '@/lib/sh/product-extract'
+import { extractProductInfo, EXTRACT_PROMPT_VERSION } from '@/lib/sh/product-extract'
 import { safeFetchBinary, SafeFetchError } from '@/lib/net/safe-fetch'
 import { POST as extractPost, GET as extractGet } from '../route'
 import { POST as applyPost } from '../[jobId]/apply/route'
@@ -293,6 +293,22 @@ describe('POST /api/sh/products/[productId]/extract', () => {
     const partsArg = mockExtractProductInfo.mock.calls[0][0].parts as Array<{ kind: string }>
     expect(partsArg.filter((p) => p.kind === 'text')).toHaveLength(1)
     expect(partsArg.filter((p) => p.kind === 'inline')).toHaveLength(1)
+  })
+
+  test('잡 생성 시 현재 프롬프트 버전을 명시적으로 기록한다', async () => {
+    mockJobPersistence([{ id: 'src-text-1', kind: 'TEXT' }])
+
+    const res = (await extractPost(jsonRequest({ pastedText: '상품 소개 텍스트' }), {
+      params: Promise.resolve({ productId: 'product-1' }),
+    }))!
+
+    expect(res.status).toBe(200)
+    // DB default('v1')에 의존하지 않고 코드가 값을 써야 신/구 프롬프트 결과를 구분할 수 있다.
+    expect(mockJob.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ promptVersion: EXTRACT_PROMPT_VERSION }),
+      })
+    )
   })
 
   test('업로드 파일 + URL 이미지 합계가 12MB 상한에 닿으면 남은 이미지는 skippedByteLimit로 남고 추출은 계속된다', async () => {
