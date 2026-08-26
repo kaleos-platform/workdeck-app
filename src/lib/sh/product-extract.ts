@@ -60,11 +60,35 @@ export class ProductExtractError extends Error {
   }
 }
 
-const SYSTEM_INSTRUCTION =
-  '당신은 한국 이커머스 상품 정보를 정리하는 보조원입니다. 제공된 소재(텍스트/이미지/PDF)에서 ' +
-  '상품 정보를 있는 그대로 "발췌"하세요. 소재에 없는 내용을 추론하거나 창작하지 마세요. ' +
-  '소재에 명시되지 않은 필드는 null 또는 빈 배열로 두세요. 인증번호(KC 등)는 원문 표기를 그대로 옮기세요. ' +
-  'description은 한국어 평문 2~5문장으로 작성하세요.'
+// "있는 그대로 발췌" 지시를 전역으로 걸면 features가 항상 최단 키워드로 수축한다
+// (temperature 0.1에서 모델은 더 엄격한 지시를 택함). 그래서 '사실'과 '표현'을 분리해
+// 축자 전사는 인증번호/성분처럼 표기가 곧 정보인 필드에만 적용한다.
+const SYSTEM_INSTRUCTION = [
+  '당신은 한국 이커머스 상품 정보를 정리하는 보조원입니다. 제공된 소재(텍스트/이미지/PDF)를 바탕으로 상품 정보를 정리하세요.',
+  '',
+  '[사실과 표현의 구분]',
+  '- 사실: 소재에 실제로 나타난 내용만 사용하세요. 소재에 없는 사실·수치·효능·인증을 추가하거나 추측하지 마세요.',
+  '- 표현: 소재의 상세페이지 카피와 이미지 속 문구를 참고해 문장을 다시 다듬어도 됩니다. 사실을 바꾸지 않는 재구성은 허용됩니다.',
+  '- 소재에 없는 필드는 null 또는 빈 배열로 두세요.',
+  '',
+  '[원문 표기를 그대로 옮길 필드]',
+  'certifications(KC 등 인증번호), ingredients, capacity, manufacturer, originCountry는 소재의 표기를 그대로 옮기세요.',
+  '',
+  '[description]',
+  '한국어 평문 2~5문장으로 작성하세요.',
+  '',
+  '[features — 상품의 "특징"]',
+  '- 주제 단위로 묶으세요. 착용·사용 구조, 소재·원단, 기능, 핏·사이즈, 구성 등 주제마다 항목 하나를 만들고, 같은 주제를 여러 항목으로 잘게 쪼개지 마세요.',
+  '- 각 항목에는 근거가 되는 속성과 그로 인한 사용자 이점이 함께 담겨야 합니다. 수식어나 단어만 나열하지 마세요.',
+  '- 명사구로 끝맺으세요(예: ~구조, ~원단, ~설계). "~입니다", "~합니다" 같은 서술형 어미는 쓰지 마세요.',
+  '- 나쁜 예: "조이지 않는 편안함"',
+  '- 좋은 예: "티셔츠처럼 위에서 아래로 편하게 입고 벗는 런닝형 구조"',
+  '- 인증번호는 certifications에, 주의·경고 문구는 cautions에 넣고 features에는 넣지 마세요.',
+  '- 소재가 빈약하면 억지로 항목 수를 늘리지 마세요.',
+].join('\n')
+
+/** 프롬프트 개정 버전 — ProductExtractionJob.promptVersion에 기록해 신/구 결과를 구분한다. */
+export const EXTRACT_PROMPT_VERSION = 'v2'
 
 // truncatedFields는 응답 스키마에서 제외하고 로컬에서 계산한다.
 // `Schema` 타입 명시 — SchemaUnion = Schema | unknown 이라 무주석이면 tsc가 형태를 전혀 검사하지 않는다.
@@ -72,7 +96,16 @@ const RESPONSE_SCHEMA: Schema = {
   type: 'OBJECT' as Type,
   properties: {
     description: { type: 'STRING' as Type, nullable: true },
-    features: { type: 'ARRAY' as Type, items: { type: 'STRING' as Type } },
+    features: {
+      type: 'ARRAY' as Type,
+      description:
+        '상품의 특징. 주제(착용·사용 구조, 소재·원단, 기능, 핏·사이즈, 구성 등) 단위로 묶어 주제마다 항목 하나. 인증번호·주의사항은 제외.',
+      items: {
+        type: 'STRING' as Type,
+        description:
+          '근거가 되는 속성과 그로 인한 사용자 이점을 함께 담은 명사구. 예: "티셔츠처럼 위에서 아래로 편하게 입고 벗는 런닝형 구조"',
+      },
+    },
     certifications: { type: 'ARRAY' as Type, items: { type: 'STRING' as Type } },
     ingredients: { type: 'ARRAY' as Type, items: { type: 'STRING' as Type } },
     capacity: { type: 'STRING' as Type, nullable: true },

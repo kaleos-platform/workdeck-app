@@ -14,6 +14,7 @@ import {
 } from '@/lib/sh/product-source-storage'
 import {
   EXTRACT_MODEL,
+  EXTRACT_PROMPT_VERSION,
   ProductExtractError,
   extractProductInfo,
   type ExtractSourcePart,
@@ -106,6 +107,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         productId,
         status: 'PENDING',
         model: EXTRACT_MODEL,
+        promptVersion: EXTRACT_PROMPT_VERSION,
         creditMonth: reservation.yearMonth,
         textLogId: reservation.reservationId,
         createdByUserId: resolved.user.id,
