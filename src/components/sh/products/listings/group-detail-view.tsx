@@ -9,13 +9,16 @@ import {
   Copy,
   Layers,
   Loader2,
+  Lock,
   Pause,
   Play,
   Plus,
+  Sparkles,
   Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -33,6 +36,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   SELLER_HUB_LISTING_NEW_PATH,
   SELLER_HUB_LISTINGS_PATH,
@@ -51,6 +55,8 @@ import {
   joinName,
 } from '@/lib/sh/listing-name-propagation'
 
+import { NameDraftDialog } from '../keywords/name-draft-dialog'
+import { useNameDraft } from '../keywords/use-name-draft'
 import { RegisterKeywordsButton } from '../keywords/register-keywords-button'
 import { KeywordEditor } from './keyword-editor'
 import { KeywordChangeDialog, type KeywordChangeMeta } from './keyword-change-dialog'
@@ -99,6 +105,7 @@ type GroupDetail = {
   channel: {
     id: string
     name: string
+    externalSource: string | null
     channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
   }
   channelProduct: {
@@ -159,6 +166,11 @@ export function GroupDetailView({ channelProductId }: Props) {
   // §25-26 변경 게이트
   const [gateOpen, setGateOpen] = useState(false)
   const [historyKey, setHistoryKey] = useState(0)
+
+  // AI 초안 다이얼로그 2종(상품명·키워드) — useNameDraft 훅 하나를 공유해 화면 방문당
+  // API 호출을 1회로 고정한다(아래 productId 확정 후 호출).
+  const [nameDraftOpen, setNameDraftOpen] = useState(false)
+  const [keywordDraftOpen, setKeywordDraftOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -224,22 +236,36 @@ export function GroupDetailView({ channelProductId }: Props) {
     return Array.from(set)
   }, [data])
 
+  // 연동 채널(externalSource != null)이면 이 화면에서 상품명·검색어를 읽기전용으로 잠근다.
+  // §키워드 관리 카드(product-keyword-card.tsx)와 같은 판정 기준이다. 이 잠금은 순수
+  // 클라이언트 UX 규칙이다 — PATCH 라우트는 externalSource 를 검사하지 않으므로, 이 화면을
+  // 우회해 API 를 직접 호출하면 서버는 여전히 값을 받아들인다.
+  const readOnly = data?.channel.externalSource != null
+
   // 기본 정보 카드와 같은 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서
   // 내려오는 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다.
-  // 상한 조회는 채널명만 쓴다 — 그룹 상세 API 가 externalSource 를 내려주지 않는다.
+  // 이 카드와 GroupBaseInfoCard 가 각자 계산하면 한쪽만 고칠 때 재발하므로 여기서 한 번만
+  // 만들어 props 로 내려보낸다.
   const channelName = data?.channel.name ?? null
+  const channelExternalSource = data?.channel.externalSource ?? null
   const rules = useMemo(
     () =>
       withChannelDefaults(
         resolveKeywordRules(null),
-        channelName ? { name: channelName, externalSource: null } : null
+        channelName ? { name: channelName, externalSource: channelExternalSource } : null
       ),
-    [channelName]
+    [channelName, channelExternalSource]
   )
 
   // 키워드 마스터 추천 — single 상품일 때만 조회한다. mixed 는 여러 상품이 섞여 있어 어느
   // 상품 추천인지 특정할 수 없으므로 빈 배열로 둔다. 실패는 조용히 무시(부가 기능).
+  // AI 초안(상품명·키워드) 도 같은 이유로 mixed 에서는 쓸 수 없다 — mixed 의 backward-compat
+  // id(data.product.id)를 여기 쓰면 안 된다. 다른 상품이 섞여 나간다(위 SingleProduct/MixedProduct
+  // 타입 주석 참조).
   const productId = data?.product.kind === 'single' ? data.product.id : null
+  // 연동 채널이면 상품명·검색어가 잠기므로 AI 초안도 의미가 없다 — productId 를 null 로 두어
+  // 훅이 아예 fetch 하지 않게 한다.
+  const draft = useNameDraft(readOnly ? null : productId, data?.channel.id ?? '')
   const [suggestions, setSuggestions] = useState<string[]>([])
   useEffect(() => {
     if (!productId) {
@@ -427,6 +453,19 @@ export function GroupDetailView({ channelProductId }: Props) {
   function handleKeywordsChange(next: string[]) {
     setKeywords(next)
     scheduleAutoSave(0)
+  }
+
+  // AI 키워드 다이얼로그 전용 — KeywordEditor 의 개별 Enter 커밋(handleKeywordsChange, 0ms)과
+  // 다르다. 다이얼로그에서 칩을 연속으로 누르면 클릭마다 0ms 저장이 걸려 요청이 난립하므로
+  // 800ms 로 묶어 디바운스한다. product-keyword-card.tsx 의 handleAddKeyword 와 같은 중복
+  // 판정(정규화 기준)을 쓴다.
+  function handleAddKeywordFromDraft(keyword: string) {
+    setKeywords((prev) => {
+      const existing = new Set(prev.map((k) => normalizeKeyword(k)))
+      if (existing.has(normalizeKeyword(keyword))) return prev
+      return [...prev, keyword]
+    })
+    scheduleAutoSave(800)
   }
 
   async function handleCopyKeywords() {
@@ -1296,6 +1335,7 @@ export function GroupDetailView({ channelProductId }: Props) {
 
       <GroupBaseInfoCard
         channelName={data.channel.name}
+        rules={rules}
         baseSearchName={baseSearchName}
         baseDisplayName={baseDisplayName}
         baseManagementName={baseManagementName}
@@ -1308,17 +1348,61 @@ export function GroupDetailView({ channelProductId }: Props) {
         onBaseInternalCodeChange={(v) => handleBaseChange('internalCode', v)}
         onMemoChange={(v) => handleBaseChange('memo', v)}
         disabled={mutating}
+        namesReadOnly={readOnly}
+        aiNameButton={
+          readOnly
+            ? undefined
+            : {
+                disabled: !productId,
+                tooltip: !productId ? '혼합 구성에서는 사용할 수 없습니다' : undefined,
+                onClick: () => {
+                  draft.load()
+                  setNameDraftOpen(true)
+                },
+              }
+        }
       />
 
       <Card>
         <CardHeader>
           <div>
-            <CardTitle className="text-lg">키워드 (상품 단위)</CardTitle>
+            <CardTitle className="flex items-center gap-1.5 text-lg">
+              키워드 (상품 단위)
+              {readOnly && <Lock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
+            </CardTitle>
             <CardDescription>
               {data.channel.name} 상의 이 상품에 공통 적용되는 검색 키워드입니다. 최대 30개.
+              {readOnly && ' 연동 채널이라 이 화면에서 수정할 수 없습니다.'}
             </CardDescription>
           </div>
-          <CardAction>
+          <CardAction className="flex items-center gap-1.5">
+            {readOnly && <Badge variant="outline">연동 채널 (읽기전용)</Badge>}
+            {!readOnly && (
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={!productId}
+                        onClick={() => {
+                          draft.load()
+                          setKeywordDraftOpen(true)
+                        }}
+                      >
+                        <Sparkles className="mr-1 h-4 w-4" aria-hidden="true" />
+                        AI 키워드
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {!productId && (
+                    <TooltipContent side="top">혼합 구성에서는 사용할 수 없습니다</TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            )}
             <Button
               type="button"
               variant="outline"
@@ -1335,10 +1419,11 @@ export function GroupDetailView({ channelProductId }: Props) {
           <KeywordEditor
             value={keywords}
             onChange={handleKeywordsChange}
-            suggestions={keywordSuggestions}
+            suggestions={readOnly ? undefined : keywordSuggestions}
             productName={baseSearchName}
             optionNames={optionNames}
             rules={rules}
+            readOnly={readOnly}
           />
           {/* 채널상품 그룹은 리스팅이 여럿이라 귀속 상품을 하나로 특정할 수 없다.
               링크 없이 키워드만 마스터로 올린다(연결은 키워드 관리에서 붙인다). */}
@@ -1451,6 +1536,35 @@ export function GroupDetailView({ channelProductId }: Props) {
         afterKeywords={keywordsToSave}
         saving={saving}
         onConfirm={confirmGatedSave}
+      />
+
+      {/* AI 초안 다이얼로그 2종 — useNameDraft 훅 하나를 공유한다(화면 방문당 API 호출 1회).
+          연동 채널·mixed 상품에서는 버튼 자체를 안 보이거나 잠그므로 여기 open 은 항상 false 로
+          유지된다. 상품명 적용은 handleBaseChange 를 거쳐야 자동저장 타이머가 걸린다
+          (setBaseSearchName 직접 호출 금지). */}
+      <NameDraftDialog
+        open={nameDraftOpen}
+        onOpenChange={setNameDraftOpen}
+        mode="name"
+        status={draft.status}
+        names={draft.names}
+        keywords={draft.keywords}
+        existingKeywords={keywords}
+        currentSearchName={baseSearchName}
+        onApplyName={(v) => handleBaseChange('searchName', v)}
+        onAddKeyword={handleAddKeywordFromDraft}
+      />
+      <NameDraftDialog
+        open={keywordDraftOpen}
+        onOpenChange={setKeywordDraftOpen}
+        mode="keyword"
+        status={draft.status}
+        names={draft.names}
+        keywords={draft.keywords}
+        existingKeywords={keywords}
+        currentSearchName={baseSearchName}
+        onApplyName={(v) => handleBaseChange('searchName', v)}
+        onAddKeyword={handleAddKeywordFromDraft}
       />
 
       {/* 삭제 확인 다이얼로그 */}
