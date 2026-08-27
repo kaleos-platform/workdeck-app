@@ -2,10 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { draftProductNames, type NameDraftInput } from '@/lib/sh/keyword-ai-draft'
+import { loadAdTermsForProduct } from '@/lib/sh/ad-terms-query'
+import {
+  draftProductNames,
+  KEYWORD_OVERGENERATE,
+  KEYWORD_TARGET,
+  REVIEW_LIMIT,
+  type NameDraftInput,
+} from '@/lib/sh/keyword-ai-draft'
+import { filterDraftKeywords } from '@/lib/sh/keyword-draft-filter'
 import { loadKeywordRules } from '@/lib/sh/keyword-rules-query'
-import { validateProductName, validateKeywords, type Violation } from '@/lib/sh/keyword-validate'
+import { validateProductName, type Violation } from '@/lib/sh/keyword-validate'
 import { productDisplayName } from '@/lib/sh/product-display'
+
+/** 광고 근거로 프롬프트에 넣을 실검색어 수. 너무 많이 넣으면 입력 토큰만 커진다. */
+const AD_TERM_HINTS = 15
+/** 참고용으로 넣을 KeywordMaster 풀 크기. */
+const KEYWORD_POOL_HINTS = 40
 
 type Params = { params: Promise<{ productId: string }> }
 
@@ -74,8 +87,14 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const rules = await loadKeywordRules(resolved.space.id, channelId)
 
-  // 이미 등록된 검색어 — 상품 단위 귀속(KeywordMasterLink) + 이 상품이 걸린 리스팅들의 키워드.
-  const [links, listings] = await Promise.all([
+  // 이미 등록된 검색어 — 화면에서 편집되는 Json 배열(ChannelProduct/ProductListing)과
+  // 상품 단위 귀속(KeywordMasterLink)을 합친다.
+  //
+  // ⚠️ ChannelProduct.keywords 를 빼면 안 된다. 채널상품 카드가 편집·표시하는 값이 바로 이것이고,
+  // KeywordMaster 와는 **동기화되지 않는다**(schema.prisma 의 KeywordMaster 상단 주석). 이게
+  // 빠지면 화면에 이미 있는 검색어를 AI 가 다시 추천하고(중복 필터가 새고), 진단 대상도 화면과
+  // 어긋난다.
+  const [links, listings, channelProducts, pool, adTerms] = await Promise.all([
     prisma.keywordMasterLink.findMany({
       where: { productId, keyword: { spaceId: resolved.space.id } },
       select: { keyword: { select: { keyword: true } } },
@@ -84,13 +103,30 @@ export async function POST(req: NextRequest, { params }: Params) {
       where: { spaceId: resolved.space.id, items: { some: { option: { productId } } } },
       select: { keywords: true },
     }),
+    prisma.channelProduct.findMany({
+      where: {
+        spaceId: resolved.space.id,
+        channelId,
+        listings: { some: { items: { some: { option: { productId } } } } },
+      },
+      select: { keywords: true },
+    }),
+    prisma.keywordMaster.findMany({
+      where: { spaceId: resolved.space.id, status: { in: ['SEARCH_TERM', 'CANDIDATE'] } },
+      select: { keyword: true },
+      orderBy: [{ score: 'desc' }, { createdAt: 'desc' }],
+      take: KEYWORD_POOL_HINTS,
+    }),
+    loadAdTermsForProduct(resolved.space.id, productId, AD_TERM_HINTS),
   ])
+  // 카드 자신의 값(Json 배열)을 앞에 둔다 — REVIEW_LIMIT 로 자를 때 화면에 보이는 것부터 남는다.
   const existingKeywords = [
     ...new Set([
-      ...links.map((l) => l.keyword.keyword),
+      ...channelProducts.flatMap((c) => toStringArray(c.keywords)),
       ...listings.flatMap((l) => toStringArray(l.keywords)),
+      ...links.map((l) => l.keyword.keyword),
     ]),
-  ]
+  ].slice(0, REVIEW_LIMIT)
 
   const productName = product.name || productDisplayName(product)
   const draftInput: NameDraftInput = {
@@ -102,6 +138,12 @@ export async function POST(req: NextRequest, { params }: Params) {
     certifications: toStringArray(product.certifications),
     optionSummary: summarizeOptionAttributes(product.optionAttributes),
     existingKeywords,
+    adTerms: adTerms.data.map((t) => ({
+      keyword: t.keyword,
+      clicks: t.clicks,
+      orders: t.orders,
+    })),
+    keywordPool: pool.map((k) => k.keyword),
     channelName: channel.name,
     nameTargetMin: rules.nameTargetMin,
     nameTargetMax: rules.nameTargetMax,
@@ -119,7 +161,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       contentPreview: null,
       latencyMs,
     })
-    return NextResponse.json({ names: [], keywords: [], unavailable: true })
+    return NextResponse.json({ names: [], keywords: [], reviews: [], unavailable: true })
   }
 
   const names: ScoredCandidate[] = draft.names.map((value) => ({
@@ -127,39 +169,36 @@ export async function POST(req: NextRequest, { params }: Params) {
     violations: validateProductName(value, rules).violations,
   }))
 
-  // 검색어 후보는 서로 간의 중복(§11/§12)·상품명 중복(§10)까지 한 번에 검증한다.
-  // 판정 기준 상품명은 AI 후보가 아니라 현재 등록된 상품명(호출 시점 문맥과 동일).
-  const kwValidation =
-    draft.keywords.length > 0
-      ? validateKeywords({
-          keywords: draft.keywords,
-          productName,
-          categoryNames: draftInput.categoryName ? [draftInput.categoryName] : [],
-          optionNames: draftInput.optionSummary,
-          rules,
-        })
-      : null
-  const violationsByIndex = new Map<number, Violation[]>()
-  for (const v of kwValidation?.violations ?? []) {
-    if (v.keywordIndex === null) continue
-    const list = violationsByIndex.get(v.keywordIndex)
-    if (list) list.push(v)
-    else violationsByIndex.set(v.keywordIndex, [v])
-  }
-  const keywords: ScoredCandidate[] = draft.keywords.map((value, index) => ({
-    value,
-    violations: violationsByIndex.get(index) ?? [],
-  }))
+  // 검색어는 등록분과 병합해 한 번에 검증한다 — 후보↔등록분 중복, 후보끼리 중복, 등록분 진단이
+  // 한 패스에서 나온다. 결정적 규칙에 걸린 후보는 여기서 버려지고(AI 판정은 버리지 않는다),
+  // 판정 기준 상품명은 AI 후보가 아니라 현재 등록된 상품명이다(호출 시점 문맥과 동일).
+  const { keywords, reviews } = filterDraftKeywords({
+    existingKeywords,
+    candidates: draft.keywords,
+    reviews: draft.reviews,
+    productName,
+    categoryNames: draftInput.categoryName ? [draftInput.categoryName] : [],
+    optionNames: draftInput.optionSummary,
+    rules,
+    target: KEYWORD_TARGET,
+  })
 
   await logDraftUsage({
     spaceId: resolved.space.id,
     userId: resolved.user.id,
     status: 'SUCCEEDED',
-    contentPreview: JSON.stringify(draft).slice(0, 500),
+    // 원문을 500자로 자르면 names 만 담고 끝난다(응답이 커졌다) — 요약을 남긴다.
+    contentPreview: JSON.stringify({
+      names: draft.names,
+      generated: draft.keywords.length,
+      kept: keywords.length,
+      reviews: reviews.length,
+      overgenerate: KEYWORD_OVERGENERATE,
+    }).slice(0, 500),
     latencyMs,
   })
 
-  return NextResponse.json({ names, keywords })
+  return NextResponse.json({ names, keywords, reviews })
 }
 
 /** TextGenerationLog 감사 기록. 실패해도 응답을 막지 않는다 — try/catch 로 흡수. */
