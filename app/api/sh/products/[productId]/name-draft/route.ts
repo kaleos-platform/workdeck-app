@@ -119,14 +119,18 @@ export async function POST(req: NextRequest, { params }: Params) {
     }),
     loadAdTermsForProduct(resolved.space.id, productId, AD_TERM_HINTS),
   ])
-  // 카드 자신의 값(Json 배열)을 앞에 둔다 — REVIEW_LIMIT 로 자를 때 화면에 보이는 것부터 남는다.
-  const existingKeywords = [
+  // 카드 자신의 값(Json 배열)을 앞에 둔다 — 프롬프트용으로 자를 때 화면에 보이는 것부터 남는다.
+  const allExistingKeywords = [
     ...new Set([
       ...channelProducts.flatMap((c) => toStringArray(c.keywords)),
       ...listings.flatMap((l) => toStringArray(l.keywords)),
       ...links.map((l) => l.keyword.keyword),
     ]),
-  ].slice(0, REVIEW_LIMIT)
+  ]
+  // 상한은 **프롬프트/진단 입력에만** 적용한다. 중복 판정까지 자른 목록으로 하면 26번째 이후
+  // 등록어와 겹치는 후보가 검사를 빠져나가 "이미 담긴 검색어"가 추천 자리를 차지한다 —
+  // 세 소스(ChannelProduct/ProductListing/KeywordMasterLink)를 합치면 25개 초과는 흔하다.
+  const promptKeywords = allExistingKeywords.slice(0, REVIEW_LIMIT)
 
   const productName = product.name || productDisplayName(product)
   const draftInput: NameDraftInput = {
@@ -137,7 +141,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     features: toStringArray(product.features),
     certifications: toStringArray(product.certifications),
     optionSummary: summarizeOptionAttributes(product.optionAttributes),
-    existingKeywords,
+    existingKeywords: promptKeywords,
     adTerms: adTerms.data.map((t) => ({
       keyword: t.keyword,
       clicks: t.clicks,
@@ -173,7 +177,8 @@ export async function POST(req: NextRequest, { params }: Params) {
   // 한 패스에서 나온다. 결정적 규칙에 걸린 후보는 여기서 버려지고(AI 판정은 버리지 않는다),
   // 판정 기준 상품명은 AI 후보가 아니라 현재 등록된 상품명이다(호출 시점 문맥과 동일).
   const { keywords, reviews } = filterDraftKeywords({
-    existingKeywords,
+    // 중복 판정은 자르지 않은 전체 목록으로 한다(진단은 판정이 없는 항목이 KEEP 으로 떨어진다).
+    existingKeywords: allExistingKeywords,
     candidates: draft.keywords,
     reviews: draft.reviews,
     productName,

@@ -97,6 +97,14 @@ describe('filterDraftKeywords — KW_OVER_LIMIT 함정', () => {
     )
   })
 
+  it('상한을 넘긴 등록 검색어와 겹치는 후보도 중복으로 드롭된다 (프롬프트 상한과 무관해야 한다)', () => {
+    // 등록 검색어 30개 중 28번째와 겹치는 후보. 라우트가 프롬프트용 상한(25)으로 자른 목록을
+    // 필터에 넘기면 이 후보가 그대로 통과해 "이미 담긴 검색어"가 추천 자리를 차지한다.
+    const many = Array.from({ length: 30 }, (_, i) => `등록어${i}`)
+    const r = run({ existing: many, candidates: [cand('등록어27'), cand('자취 살림')] })
+    expect(r.keywords.map((k) => k.value)).toEqual(['자취 살림'])
+  })
+
   it('등록 검색어 쪽 KW_OVER_LIMIT 은 진짜 진단이므로 남는다', () => {
     const over = [...existing, '초과등록어']
     const r = run({ existing: over, candidates: [cand('자취 살림')] })
