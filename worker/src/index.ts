@@ -14,6 +14,19 @@ import { startWorkerHeartbeat } from './heartbeat.js'
 import { startBackfillPoller } from './backfill-poller.js'
 import { pruneScreenshots } from './screenshot-retention.js'
 
+// playwright-extra 의 puppeteer 호환 shim 은 브라우저/페이지가 먼저 닫히면
+// cdpSession.send 를 await 되지 않는 promise 에서 던진다. Node 기본 정책상 이 unhandled
+// rejection 이 uncaughtException 으로 승격돼 워커 프로세스가 통째로 죽는다 —
+// 2026-08-27 09시 수집이 이렇게 사망했다(판매분석 엑셀 다운로드 중 크래시 →
+// 재고현황·판매분석 업로드 통째 유실, launchd 가 재시작했지만 그 회차는 복구 불가).
+// 개별 수집은 각자 try/catch 로 실패 처리되므로 프로세스는 살려 둔다.
+// uncaughtException 은 일부러 잡지 않는다 — 손상된 상태로 계속 도는 게 더 위험하고,
+// 그 경우는 launchd 재시작이 옳다.
+process.on('unhandledRejection', (reason) => {
+  const msg = reason instanceof Error ? `${reason.message}\n${reason.stack}` : String(reason)
+  console.error(`[worker] unhandledRejection — 프로세스 유지: ${msg}`)
+})
+
 console.log('=== Workdeck Worker 시작 ===')
 console.log(`API URL: ${process.env.WORKDECK_API_URL}`)
 console.log(`수집 스케줄: DB 기반 (매 분 체크)`)
