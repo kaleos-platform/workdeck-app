@@ -40,11 +40,18 @@ export function useNameDraft(
   // productId/channelId 변경 시 토큰이 갱신되므로 늦게 도착한 응답은 자동으로 무시된다.
   const requestTokenRef = useRef(0)
 
+  // 멱등 가드는 **ref 로 잡는다.** status state 로 판정하면 같은 틱에 load() 가 두 번 불릴 때
+  // (두 버튼이 한 핸들러에서 호출되거나 React 가 배치할 때) 두 번째 호출이 아직 갱신되지 않은
+  // 'idle' 을 읽어 fetch 가 두 번 나간다 — 서버가 한 번의 Gemini 호출로 결과를 만들므로 그대로
+  // AI 비용 2배다. ref 는 동기 반영되므로 그 창이 없다.
+  const startedRef = useRef(false)
+
   // productId·channelId 가 바뀌면 이전 결과는 다른 대상 것이라 재사용할 수 없다 — idle 로
   // 되돌려 다음 load() 가 새로 받아오게 한다. 진행 중이던 요청도 이 시점에 토큰이 바뀌어
   // 무효화된다.
   useEffect(() => {
     requestTokenRef.current += 1
+    startedRef.current = false
     setStatus('idle')
     setNames([])
     setKeywords([])
@@ -58,9 +65,10 @@ export function useNameDraft(
   }, [])
 
   function load() {
-    if (status !== 'idle') return // 멱등 — 두 버튼이 같은 훅을 공유하므로 이미 로드됐거나
-    // 로드 중이면 아무것도 하지 않는다.
+    // 멱등 — 두 버튼이 같은 훅을 공유하므로 이미 로드됐거나 로드 중이면 아무것도 하지 않는다.
+    if (startedRef.current) return
     if (!productId) return
+    startedRef.current = true
 
     const token = ++requestTokenRef.current
 
