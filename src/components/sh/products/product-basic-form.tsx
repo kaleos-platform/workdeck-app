@@ -93,6 +93,31 @@ export function ProductBasicForm({
   const [features, setFeatures] = useState<string[]>([])
   const [certifications, setCertifications] = useState<string[]>([])
 
+  // '추가' 직후 새 입력칸으로 포커스·스크롤을 옮긴다. 항목이 많으면 새 행이
+  // 화면 밖에 붙어 버튼이 안 먹은 것처럼 보인다.
+  const featureInputsRef = useRef<Array<HTMLInputElement | null>>([])
+  const certInputsRef = useRef<Array<HTMLInputElement | null>>([])
+  const pendingFocusRef = useRef<{ list: 'features' | 'certifications'; idx: number } | null>(null)
+
+  useEffect(() => {
+    // 삭제로 배열이 줄면 ref에 분리된 노드가 남는다 — 길이를 맞춰 잘라낸다.
+    featureInputsRef.current.length = features.length
+    certInputsRef.current.length = certifications.length
+
+    const pending = pendingFocusRef.current
+    if (!pending) return
+    pendingFocusRef.current = null
+    const list = pending.list === 'features' ? features : certifications
+    // 저장 응답으로 배열이 다시 동기화되면 인덱스가 어긋날 수 있다 — 범위를 벗어나면 포기.
+    if (pending.idx >= list.length) return
+    const el =
+      pending.list === 'features'
+        ? featureInputsRef.current[pending.idx]
+        : certInputsRef.current[pending.idx]
+    el?.focus()
+    el?.scrollIntoView({ block: 'nearest' })
+  }, [features, certifications])
+
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
@@ -151,8 +176,9 @@ export function ProductBasicForm({
       manufactureDate !== ymdToYm(data.manufactureDate) ||
       brandId !== (data.brandId ?? '') ||
       groupId !== (data.groupId ?? '') ||
-      JSON.stringify(features) !== JSON.stringify(data.features ?? []) ||
-      JSON.stringify(certifications) !== JSON.stringify(data.certifications ?? [])
+      JSON.stringify(features.filter((f) => f.trim())) !== JSON.stringify(data.features ?? []) ||
+      JSON.stringify(certifications.filter((c) => c.trim())) !==
+        JSON.stringify(data.certifications ?? [])
     )
   })()
 
@@ -460,7 +486,10 @@ export function ProductBasicForm({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => setFeatures((prev) => [...prev, ''])}
+            onClick={() => {
+              pendingFocusRef.current = { list: 'features', idx: features.length }
+              setFeatures((prev) => [...prev, ''])
+            }}
           >
             <Plus className="mr-1 h-3 w-3" />
             추가
@@ -470,6 +499,9 @@ export function ProductBasicForm({
           {features.map((f, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <Input
+                ref={(el) => {
+                  featureInputsRef.current[idx] = el
+                }}
                 value={f}
                 onChange={(e) =>
                   setFeatures((prev) => prev.map((x, i) => (i === idx ? e.target.value : x)))
@@ -501,7 +533,10 @@ export function ProductBasicForm({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => setCertifications((prev) => [...prev, ''])}
+            onClick={() => {
+              pendingFocusRef.current = { list: 'certifications', idx: certifications.length }
+              setCertifications((prev) => [...prev, ''])
+            }}
           >
             <Plus className="mr-1 h-3 w-3" />
             추가
@@ -511,6 +546,9 @@ export function ProductBasicForm({
           {certifications.map((c, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <Input
+                ref={(el) => {
+                  certInputsRef.current[idx] = el
+                }}
                 value={c}
                 onChange={(e) =>
                   setCertifications((prev) => prev.map((x, i) => (i === idx ? e.target.value : x)))
