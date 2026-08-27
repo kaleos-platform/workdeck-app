@@ -71,6 +71,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         select: {
           id: true,
           name: true,
+          externalSource: true,
           channelTypeDef: { select: { id: true, name: true, isSalesChannel: true } },
         },
       },
@@ -276,6 +277,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     channel: {
       id: cp.channel.id,
       name: cp.channel.name,
+      externalSource: cp.channel.externalSource,
       channelTypeDef: cp.channel.channelTypeDef,
     },
     listings,

@@ -23,6 +23,7 @@ import { KeywordEditor } from '../listings/keyword-editor'
 import { NameCounter } from '../listings/name-counter'
 import { NameValidationPanel } from '../listings/name-validation-panel'
 import { NameDraftDialog } from './name-draft-dialog'
+import { useNameDraft } from './use-name-draft'
 
 const MAX_NAME_LENGTH = 200
 
@@ -61,7 +62,13 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
   const [keywords, setKeywords] = useState<string[]>(card.keywords)
   const [saving, setSaving] = useState(false)
   const [gateOpen, setGateOpen] = useState(false)
-  const [draftOpen, setDraftOpen] = useState(false)
+  const [nameDraftOpen, setNameDraftOpen] = useState(false)
+  const [keywordDraftOpen, setKeywordDraftOpen] = useState(false)
+
+  // 상품명·키워드 두 다이얼로그가 이 훅 하나를 공유한다 — load() 는 멱등이라 두 버튼 중 먼저
+  // 눌린 쪽에서만 실제 fetch 가 나가고, 나중에 다른 버튼을 눌러도 이미 받아온 결과를 재사용한다
+  // (화면 방문당 API 호출 1회).
+  const draft = useNameDraft(readOnly || nameLocked ? null : productId, card.channelId)
 
   // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
   // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다.
@@ -103,6 +110,16 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
   // 요구하면 사용자가 고른 사유가 서버에서 조용히 버려진다. 노출용만 바꾼 저장은 dirty 는
   // true 지만 게이트는 걸리지 않고 바로 PATCH 된다.
   const gateRequired = diff.changed
+
+  // KeywordEditor 와 같은 규칙: 이미 담긴 키워드(정규화 기준)는 다시 추가하지 않는다.
+  // 상품명·키워드 두 다이얼로그가 공유한다.
+  function handleAddKeyword(keyword: string) {
+    setKeywords((prev) => {
+      const existing = new Set(prev.map((k) => normalizeKeyword(k)))
+      if (existing.has(normalizeKeyword(keyword))) return prev
+      return [...prev, keyword]
+    })
+  }
 
   async function handleSave(changeMeta?: KeywordChangeMeta) {
     if (gateRequired && !changeMeta) {
@@ -222,10 +239,13 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
                   variant="outline"
                   size="sm"
                   className="h-6 gap-1 px-2 text-xs"
-                  onClick={() => setDraftOpen(true)}
+                  onClick={() => {
+                    draft.load()
+                    setNameDraftOpen(true)
+                  }}
                 >
                   <Sparkles className="h-3 w-3" aria-hidden="true" />
-                  AI 초안
+                  AI 상품명
                 </Button>
               )}
             </div>
@@ -272,7 +292,24 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
         </div>
 
         <div className="space-y-1.5">
-          <Label>키워드</Label>
+          <div className="flex items-center gap-2">
+            <Label>키워드</Label>
+            {!readOnly && !nameLocked && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-6 gap-1 px-2 text-xs"
+                onClick={() => {
+                  draft.load()
+                  setKeywordDraftOpen(true)
+                }}
+              >
+                <Sparkles className="h-3 w-3" aria-hidden="true" />
+                AI 키워드
+              </Button>
+            )}
+          </div>
           <KeywordEditor
             value={keywords}
             onChange={setKeywords}
@@ -307,23 +344,32 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
       )}
 
       {!readOnly && !nameLocked && (
-        <NameDraftDialog
-          open={draftOpen}
-          onOpenChange={setDraftOpen}
-          productId={productId}
-          channelId={card.channelId}
-          existingKeywords={keywords}
-          currentSearchName={searchName}
-          onApplyName={setSearchName}
-          onAddKeyword={(keyword) => {
-            // KeywordEditor 와 같은 규칙: 이미 담긴 키워드(정규화 기준)는 다시 추가하지 않는다.
-            setKeywords((prev) => {
-              const existing = new Set(prev.map((k) => normalizeKeyword(k)))
-              if (existing.has(normalizeKeyword(keyword))) return prev
-              return [...prev, keyword]
-            })
-          }}
-        />
+        <>
+          <NameDraftDialog
+            open={nameDraftOpen}
+            onOpenChange={setNameDraftOpen}
+            mode="name"
+            status={draft.status}
+            names={draft.names}
+            keywords={draft.keywords}
+            existingKeywords={keywords}
+            currentSearchName={searchName}
+            onApplyName={setSearchName}
+            onAddKeyword={handleAddKeyword}
+          />
+          <NameDraftDialog
+            open={keywordDraftOpen}
+            onOpenChange={setKeywordDraftOpen}
+            mode="keyword"
+            status={draft.status}
+            names={draft.names}
+            keywords={draft.keywords}
+            existingKeywords={keywords}
+            currentSearchName={searchName}
+            onApplyName={setSearchName}
+            onAddKeyword={handleAddKeyword}
+          />
+        </>
       )}
     </Card>
   )
