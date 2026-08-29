@@ -3,8 +3,11 @@
 // 상품명(검색용)·검색어 AI 초안 다이얼로그 — Phase 5.
 //
 // 서버(POST /api/sh/products/<productId>/name-draft)가 후보를 만들어 내려주면
-// 이 다이얼로그는 그대로 보여줄 뿐이다. 위반이 있어도 후보를 버리지 않는다 —
-// 사용자가 위반 배지를 보고 직접 판단해서 적용하거나 무시한다.
+// 이 다이얼로그는 그대로 보여줄 뿐이다. 결정적 규칙에 걸린 검색어 후보는 서버가 이미 버렸고,
+// 남은 위반(안내성)이 있어도 후보를 숨기지 않는다 — 사용자가 배지를 보고 직접 판단한다.
+//
+// 등록된 검색어에는 진단(reviews)이 붙는다. 제거 권장은 **개별 원클릭**만 제공한다 —
+// AI 판정은 틀릴 수 있으므로 일괄 제거는 두지 않는다.
 //
 // "적용"은 카드의 로컬 폼 state 만 바꾼다. 저장은 카드의 기존 저장 버튼(+변경 사유 게이트)이
 // 그대로 맡는다 — 여기서 자동 저장하면 사유 게이트를 우회하게 된다.
@@ -22,6 +25,7 @@ import {
   Info,
   Loader2,
   Sparkles,
+  X,
 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -39,7 +43,12 @@ import { normalizeKeyword } from '@/lib/sh/keyword-normalize'
 import type { ViolationSeverity } from '@/lib/sh/keyword-validate'
 import { cn } from '@/lib/utils'
 
-import type { DraftCandidate, NameDraftStatus } from './use-name-draft'
+import type {
+  DraftCandidate,
+  DraftKeywordCandidate,
+  DraftKeywordReview,
+  NameDraftStatus,
+} from './use-name-draft'
 
 // name-validation-panel.tsx 의 관례를 그대로 따른다 — 같은 severity 는 같은 색·아이콘이어야 한다.
 const SEVERITY_ICON: Record<ViolationSeverity, typeof AlertCircle> = {
@@ -67,13 +76,17 @@ type Props = {
   mode: Mode
   status: NameDraftStatus
   names: DraftCandidate[]
-  keywords: DraftCandidate[]
+  keywords: DraftKeywordCandidate[]
+  /** 등록된 검색어 진단 — 로드 시점 스냅샷이라 existingKeywords 와 어긋날 수 있다(아래 조인). */
+  reviews: DraftKeywordReview[]
   /** 카드에 이미 담긴 검색어 — 적용된 칩을 구분하는 데 쓴다(더 이상 목록에서 숨기지 않는다). */
   existingKeywords: string[]
   /** 카드의 현재 상품명(검색용) — 어느 후보가 지금 적용된 상태인지 판정하는 데 쓴다. */
   currentSearchName: string
   onApplyName: (name: string) => void
   onAddKeyword: (keyword: string) => void
+  /** 없으면 제거 버튼을 렌더하지 않는다(읽기 전용 카드). */
+  onRemoveKeyword?: (keyword: string) => void
 }
 
 export function NameDraftDialog({
@@ -83,10 +96,12 @@ export function NameDraftDialog({
   status,
   names,
   keywords,
+  reviews,
   existingKeywords,
   currentSearchName,
   onApplyName,
   onAddKeyword,
+  onRemoveKeyword,
 }: Props) {
   const loading = status === 'idle' || status === 'loading'
   const unavailable = status === 'unavailable'
@@ -110,6 +125,16 @@ export function NameDraftDialog({
   const existingKeys = new Set(existingKeywords.map((k) => normalizeKeyword(k)))
   const normalizedCurrentName = currentSearchName.trim()
   const keywordDelta = existingKeywords.length - openedKeywordCount
+
+  // 진단은 로드 시점 스냅샷이다. 사용자가 키워드를 지우는 순간 목록과 어긋나므로 재호출 대신
+  // 렌더 시점에 정규화 기준으로 조인한다 — 방금 지운 항목의 진단은 자동으로 사라지고, 로드 후
+  // 추가된 키워드는 진단 없이 평범한 배지로 그려진다.
+  //
+  // despaceKeyword 를 쓰면 안 된다 — "밀프렙 용기"와 "밀프렙용기"가 하나의 진단을 공유해
+  // 엉뚱한 키워드에 제거를 권하게 된다.
+  const reviewByKey = new Map(reviews.map((r) => [normalizeKeyword(r.keyword), r]))
+  const shownReviews = existingKeywords.map((k) => reviewByKey.get(normalizeKeyword(k)) ?? null)
+  const removeCount = shownReviews.filter((r) => r?.recommendRemove).length
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -137,7 +162,9 @@ export function NameDraftDialog({
             {loading && (
               <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                초안을 만드는 중입니다…
+                {/* 후보 생성과 등록 검색어 진단을 한 번의 호출로 만든다 — 예전보다 오래 걸리므로
+                  대략적인 소요를 알려준다. */}
+                초안과 진단을 함께 만드는 중입니다… (10초 정도 걸립니다)
               </div>
             )}
 
@@ -261,25 +288,74 @@ export function NameDraftDialog({
               <div className="space-y-3">
                 <h4 className="text-sm font-medium">AI 추천 키워드</h4>
 
-                {/* 지금 카드에 실제로 담긴 값 — 클릭해도 아무 일도 일어나지 않는다. AI 추천과
-                  시각적으로 확실히 구분해 "이게 실제 등록값" 임을 보여준다. */}
+                {/* 지금 카드에 실제로 담긴 값. AI 추천과 시각적으로 구분해 "이게 실제 등록값" 임을
+                  보여주고, 진단이 붙은 것만 색과 라벨로 드러낸다. 순서는 저장 배열 그대로 둔다 —
+                  정리 권장을 위로 끌어올리면 "지금 등록값"이라는 의미가 깨진다. */}
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-muted-foreground">
                     현재 키워드 ({existingKeywords.length})
+                    {removeCount > 0 && (
+                      <span className="ml-1 text-destructive">· 정리 권장 {removeCount}</span>
+                    )}
                   </p>
                   {existingKeywords.length === 0 ? (
                     <p className="text-xs text-muted-foreground">아직 없습니다.</p>
                   ) : (
                     <div className="flex flex-wrap gap-1.5">
-                      {existingKeywords.map((k, i) => (
-                        <Badge
-                          key={`${k}-${i}`}
-                          variant="secondary"
-                          className="cursor-default gap-1 text-sm font-normal"
-                        >
-                          {k}
-                        </Badge>
-                      ))}
+                      {existingKeywords.map((k, i) => {
+                        const review = shownReviews[i]
+                        const flagged = review?.recommendRemove ?? false
+                        const moveToOption = review?.label === 'MOVE_TO_OPTION'
+                        const summary = review
+                          ? [
+                              review.label === 'KEEP' ? '' : review.labelText,
+                              review.reason,
+                              ...review.violations.map((v) => v.message),
+                            ]
+                              .filter(Boolean)
+                              .join(' — ')
+                          : ''
+                        const badge = (
+                          <Badge
+                            variant={flagged ? 'outline' : 'secondary'}
+                            className={cn(
+                              'cursor-default gap-1 text-sm font-normal',
+                              // 검색옵션 이관은 "잘못된 키워드"가 아니라 "여기 있을 값이 아니다" 라
+                              // 경고색과 구분한다.
+                              moveToOption && 'border-sky-500/60 text-sky-700 dark:text-sky-400',
+                              flagged && !moveToOption && 'border-destructive/60 text-destructive'
+                            )}
+                          >
+                            {k}
+                            {flagged && (
+                              <span className="text-xs opacity-80">{review?.labelText}</span>
+                            )}
+                            {flagged && onRemoveKeyword && (
+                              <button
+                                type="button"
+                                aria-label={`${k} 제거`}
+                                className="ml-0.5 rounded-sm opacity-70 hover:opacity-100"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onRemoveKeyword(k)
+                                }}
+                              >
+                                <X className="h-3 w-3" aria-hidden="true" />
+                              </button>
+                            )}
+                          </Badge>
+                        )
+                        return summary ? (
+                          <Tooltip key={`${k}-${i}`}>
+                            <TooltipTrigger asChild>{badge}</TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              {summary}
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <span key={`${k}-${i}`}>{badge}</span>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
@@ -296,9 +372,13 @@ export function NameDraftDialog({
                         const added = existingKeys.has(normalizeKeyword(c.value))
                         const severity = c.violations[0]?.severity ?? null
                         const violationSummary = c.violations.map((v) => v.message).join(' / ')
-                        const summary = added
-                          ? ['이미 담긴 검색어입니다.', violationSummary].filter(Boolean).join(' ')
-                          : violationSummary
+                        const summary = [
+                          added ? '이미 담긴 검색어입니다.' : '',
+                          c.reason,
+                          violationSummary,
+                        ]
+                          .filter(Boolean)
+                          .join(' — ')
                         const chip = (
                           <Badge
                             key={`${c.value}-${i}`}
@@ -333,6 +413,9 @@ export function NameDraftDialog({
                               })()
                             )}
                             {c.value}
+                            {/* 생성 축 — 후보가 어느 관점에서 나왔는지 보여준다(축이 한쪽에
+                              몰렸는지 눈으로 확인할 수 있다). */}
+                            <span className="text-xs text-muted-foreground">{c.intentLabel}</span>
                             {!added && <span aria-hidden="true">+</span>}
                           </Badge>
                         )

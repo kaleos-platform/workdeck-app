@@ -11,9 +11,28 @@ import { NameDraftDialog } from '../name-draft-dialog'
 
 const NAMES = [{ value: '쿨 메쉬 브라 노와이어', violations: [] }]
 const KEYWORDS = [
-  { value: '여름브라', violations: [] },
-  { value: '이미담긴', violations: [] },
+  {
+    value: '여름브라',
+    violations: [],
+    intent: 'PURPOSE' as const,
+    intentLabel: '용도',
+    reason: '여름 착용',
+  },
+  { value: '이미담긴', violations: [], intent: 'TARGET' as const, intentLabel: '대상', reason: '' },
 ]
+
+const review = (
+  keyword: string,
+  overrides: Partial<React.ComponentProps<typeof NameDraftDialog>['reviews'][number]> = {}
+) => ({
+  keyword,
+  label: 'KEEP' as const,
+  labelText: '유지',
+  reason: '',
+  violations: [],
+  recommendRemove: false,
+  ...overrides,
+})
 
 function renderDialog(overrides: Partial<React.ComponentProps<typeof NameDraftDialog>> = {}) {
   const onApplyName = jest.fn()
@@ -27,6 +46,7 @@ function renderDialog(overrides: Partial<React.ComponentProps<typeof NameDraftDi
       status="success"
       names={NAMES}
       keywords={KEYWORDS}
+      reviews={[]}
       existingKeywords={['이미담긴']}
       currentSearchName="현재 상품명"
       onApplyName={onApplyName}
@@ -94,6 +114,7 @@ describe('NameDraftDialog mode 분리', () => {
         status="unavailable"
         names={[]}
         keywords={[]}
+        reviews={[]}
         existingKeywords={[]}
         currentSearchName="현재 상품명"
         onApplyName={jest.fn()}
@@ -107,5 +128,79 @@ describe('NameDraftDialog mode 분리', () => {
     renderDialog({ mode: 'keyword', status: 'unavailable', names: [], keywords: [] })
     expect(screen.getByText(/AI 초안을 사용할 수 없습니다/)).toBeInTheDocument()
     expect(screen.queryByText('AI 추천 키워드')).not.toBeInTheDocument()
+  })
+})
+
+describe('NameDraftDialog 등록 검색어 진단', () => {
+  const flagged = review('이미담긴', {
+    label: 'LOW_INTENT',
+    labelText: '구매의도 낮음',
+    reason: '정보 탐색성 표현',
+    recommendRemove: true,
+  })
+
+  it('제거 권장 키워드에 라벨과 제거 버튼이 붙는다', () => {
+    renderDialog({ mode: 'keyword', reviews: [flagged], onRemoveKeyword: jest.fn() })
+
+    expect(screen.getByText('구매의도 낮음')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '이미담긴 제거' })).toBeInTheDocument()
+    expect(screen.getByText(/정리 권장 1/)).toBeInTheDocument()
+  })
+
+  it('KEEP 판정에는 제거 버튼이 없다', () => {
+    renderDialog({ mode: 'keyword', reviews: [review('이미담긴')], onRemoveKeyword: jest.fn() })
+
+    expect(screen.queryByRole('button', { name: '이미담긴 제거' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/정리 권장/)).not.toBeInTheDocument()
+  })
+
+  it('제거를 누르면 원문 키워드로 콜백이 1회 불린다', async () => {
+    const user = userEvent.setup()
+    const onRemoveKeyword = jest.fn()
+    renderDialog({ mode: 'keyword', reviews: [flagged], onRemoveKeyword })
+
+    await user.click(screen.getByRole('button', { name: '이미담긴 제거' }))
+
+    expect(onRemoveKeyword).toHaveBeenCalledTimes(1)
+    expect(onRemoveKeyword).toHaveBeenCalledWith('이미담긴')
+  })
+
+  it('onRemoveKeyword 가 없으면 제거 버튼을 그리지 않는다', () => {
+    renderDialog({ mode: 'keyword', reviews: [flagged] })
+
+    expect(screen.getByText('구매의도 낮음')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '이미담긴 제거' })).not.toBeInTheDocument()
+  })
+
+  it('등록 목록에 없는 진단(방금 제거된 것)은 렌더하지 않는다', () => {
+    renderDialog({
+      mode: 'keyword',
+      reviews: [
+        review('유령키워드', {
+          label: 'FALSE_CLAIM',
+          labelText: '없는 기능',
+          recommendRemove: true,
+        }),
+      ],
+      onRemoveKeyword: jest.fn(),
+    })
+
+    expect(screen.queryByText('유령키워드')).not.toBeInTheDocument()
+    expect(screen.queryByText('없는 기능')).not.toBeInTheDocument()
+  })
+
+  it('진단이 없는 등록 키워드도 평범한 배지로 그린다', () => {
+    renderDialog({ mode: 'keyword', reviews: [], onRemoveKeyword: jest.fn() })
+
+    // 현재 키워드 섹션의 배지 — AI 추천 칩과 같은 문자열이라 getAllByText 로 확인한다.
+    expect(screen.getAllByText('이미담긴').length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: '이미담긴 제거' })).not.toBeInTheDocument()
+  })
+
+  it('AI 추천 칩에 생성 축 라벨이 붙는다', () => {
+    renderDialog({ mode: 'keyword' })
+
+    expect(screen.getByText('용도')).toBeInTheDocument()
+    expect(screen.getByText('대상')).toBeInTheDocument()
   })
 })
