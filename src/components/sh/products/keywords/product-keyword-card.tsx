@@ -121,6 +121,13 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
     })
   }
 
+  // 제거도 추가와 같다 — 로컬 폼 state 만 바꾸고 저장은 기존 저장 버튼 + 변경 사유 게이트가
+  // 맡는다. 여기서 자동 저장하면 게이트를 우회한다.
+  function handleRemoveKeyword(keyword: string) {
+    const target = normalizeKeyword(keyword)
+    setKeywords((prev) => prev.filter((k) => normalizeKeyword(k) !== target))
+  }
+
   async function handleSave(changeMeta?: KeywordChangeMeta) {
     if (gateRequired && !changeMeta) {
       setGateOpen(true)
@@ -352,10 +359,12 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             status={draft.status}
             names={draft.names}
             keywords={draft.keywords}
+            reviews={draft.reviews}
             existingKeywords={keywords}
             currentSearchName={searchName}
             onApplyName={setSearchName}
             onAddKeyword={handleAddKeyword}
+            onRemoveKeyword={handleRemoveKeyword}
           />
           <NameDraftDialog
             open={keywordDraftOpen}
@@ -364,10 +373,12 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             status={draft.status}
             names={draft.names}
             keywords={draft.keywords}
+            reviews={draft.reviews}
             existingKeywords={keywords}
             currentSearchName={searchName}
             onApplyName={setSearchName}
             onAddKeyword={handleAddKeyword}
+            onRemoveKeyword={handleRemoveKeyword}
           />
         </>
       )}

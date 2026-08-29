@@ -21,7 +21,19 @@ function setupFetch(impl: () => Promise<Response>) {
 
 const SUCCESS = {
   names: [{ value: '상품명 후보', violations: [] }],
-  keywords: [{ value: '키워드후보', violations: [] }],
+  keywords: [
+    { value: '키워드후보', violations: [], intent: 'PURPOSE', intentLabel: '용도', reason: '사유' },
+  ],
+  reviews: [
+    {
+      keyword: '등록어',
+      label: 'LOW_INTENT',
+      labelText: '구매의도 낮음',
+      reason: '정보 탐색성',
+      violations: [],
+      recommendRemove: true,
+    },
+  ],
 }
 
 afterEach(() => {
@@ -143,5 +155,38 @@ describe('useNameDraft', () => {
     // p1 의 결과가 새어 들어오면 안 된다.
     expect(result.current.names).toHaveLength(0)
     expect(result.current.status).toBe('idle')
+  })
+})
+
+describe('useNameDraft — 등록 검색어 진단', () => {
+  it('응답의 reviews 를 그대로 노출한다', async () => {
+    setupFetch(async () => okResponse(SUCCESS))
+
+    const { result } = renderHook(() => useNameDraft('p1', 'c1'))
+    act(() => result.current.load())
+    await waitFor(() => expect(result.current.status).toBe('success'))
+
+    expect(result.current.reviews).toHaveLength(1)
+    expect(result.current.reviews[0].recommendRemove).toBe(true)
+  })
+
+  it('reviews 가 없는 구버전 응답에도 빈 배열로 안전하다', async () => {
+    setupFetch(async () => okResponse({ names: SUCCESS.names, keywords: SUCCESS.keywords }))
+
+    const { result } = renderHook(() => useNameDraft('p1', 'c1'))
+    act(() => result.current.load())
+    await waitFor(() => expect(result.current.status).toBe('success'))
+
+    expect(result.current.reviews).toEqual([])
+  })
+
+  it('unavailable 이면 reviews 도 비어 있다', async () => {
+    setupFetch(async () => okResponse({ names: [], keywords: [], reviews: [], unavailable: true }))
+
+    const { result } = renderHook(() => useNameDraft('p1', 'c1'))
+    act(() => result.current.load())
+    await waitFor(() => expect(result.current.status).toBe('unavailable'))
+
+    expect(result.current.reviews).toEqual([])
   })
 })

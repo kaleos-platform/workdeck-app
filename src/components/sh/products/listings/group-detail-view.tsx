@@ -468,6 +468,16 @@ export function GroupDetailView({ channelProductId }: Props) {
     scheduleAutoSave(800)
   }
 
+  // 진단이 제거를 권한 키워드를 지운다. 자동저장은 게이트를 우회하지 않는다 — runAutoSave 는
+  // 사유가 필요한데 없으면 keywords 를 body 에 아예 담지 않으므로, 실제 반영은 사용자가
+  // 변경 사유를 입력해 저장할 때 일어난다. 디바운스는 유지해야 다른 dirty 필드와 같은
+  // 사이클에 처리되고 게이트 칩이 즉시 갱신된다.
+  function handleRemoveKeywordFromDraft(keyword: string) {
+    const target = normalizeKeyword(keyword)
+    setKeywords((prev: string[]) => prev.filter((k) => normalizeKeyword(k) !== target))
+    scheduleAutoSave(800)
+  }
+
   async function handleCopyKeywords() {
     const clipboardText = keywords
       .map((keyword: string) => keyword.trim())
@@ -1549,10 +1559,12 @@ export function GroupDetailView({ channelProductId }: Props) {
         status={draft.status}
         names={draft.names}
         keywords={draft.keywords}
+        reviews={draft.reviews}
         existingKeywords={keywords}
         currentSearchName={baseSearchName}
         onApplyName={(v) => handleBaseChange('searchName', v)}
         onAddKeyword={handleAddKeywordFromDraft}
+        onRemoveKeyword={handleRemoveKeywordFromDraft}
       />
       <NameDraftDialog
         open={keywordDraftOpen}
@@ -1561,10 +1573,12 @@ export function GroupDetailView({ channelProductId }: Props) {
         status={draft.status}
         names={draft.names}
         keywords={draft.keywords}
+        reviews={draft.reviews}
         existingKeywords={keywords}
         currentSearchName={baseSearchName}
         onApplyName={(v) => handleBaseChange('searchName', v)}
         onAddKeyword={handleAddKeywordFromDraft}
+        onRemoveKeyword={handleRemoveKeywordFromDraft}
       />
 
       {/* 삭제 확인 다이얼로그 */}
