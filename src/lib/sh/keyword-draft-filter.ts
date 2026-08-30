@@ -22,6 +22,7 @@ const DRAFT_DROP_CODES: ReadonlySet<ViolationCode> = new Set<ViolationCode>([
   'KW_DUP_SPACING_VARIANT', // §11 띄어쓰기 변형
   'KW_DUP_PERMUTATION', // §12 단어 순서만 다른 조합
   'KW_DUP_WITH_NAME', // §10 Rule 1 — 가이드가 "가장 중요"라 한 규칙
+  'KW_NAME_COMPOUND', // §10 — 상품명 단어를 붙여 만든 복합어(한국어는 이쪽이 대부분이다)
   'KW_DUP_WITH_CATEGORY', // §22 카테고리·구매옵션 재사용
   'KW_SHIPPING_TERM', // §19 배송 표현
   'KW_EFFICACY_TERM', // §19 효능 표현

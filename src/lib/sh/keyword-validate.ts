@@ -3,6 +3,7 @@
 
 import { tokenizeProductName } from '@/lib/inv/search-tokens'
 import {
+  coverByNameTokens,
   despaceKeyword,
   keywordKeys,
   normalizeKeyword,
@@ -26,6 +27,7 @@ export type ViolationCode =
   | 'NAME_COMPETITOR_BRAND'
   | 'KW_OVER_LIMIT'
   | 'KW_DUP_WITH_NAME'
+  | 'KW_NAME_COMPOUND'
   | 'KW_DUP_SPACING_VARIANT'
   | 'KW_DUP_PERMUTATION'
   | 'KW_DUP_EXACT'
@@ -90,22 +92,49 @@ function findTerms(text: TextKeys, terms: string[]): string[] {
  */
 export function overlapsProductName(keyword: string, productName: string): boolean {
   const nameTokens = tokenizeProductName(productName ?? '', Number.POSITIVE_INFINITY)
-  return overlapsNameTokens(
-    keyword,
-    new Set(nameTokens.map((t) => t.toLowerCase())),
-    despaceKeyword(productName ?? '')
+  return (
+    overlapsNameTokens(
+      keyword,
+      new Set(nameTokens.map((t) => t.toLowerCase())),
+      despaceKeyword(productName ?? ''),
+      nameTokens
+    ) !== null
   )
 }
 
+/**
+ * 상품명 중복 판정 결과. 어느 게이트가 잡았는지까지 돌려준다 — 코드·메시지가 게이트마다 다르다.
+ */
+type NameOverlap =
+  | { kind: 'all-tokens' }
+  | { kind: 'substring' }
+  | { kind: 'compound'; pieces: string[] }
+
+/**
+ * 게이트 순서는 **all-tokens → substring → compound** 이고, compound 는 앞의 둘이 모두
+ * 실패했을 때만 평가한다. 이 순서가 §9 오라클(keyword-validate.test.ts)을 지키는 장치다 —
+ * `40수 타월`(all-tokens)·`호텔타월`(substring)·`커버브라`(substring, 상품명에 `커버 브라` 가
+ * 인접)는 전부 기존 KW_DUP_WITH_NAME 으로 남아야 한다. compound 를 앞으로 옮기면 코드와
+ * conflictWith 가 바뀌어 그 테스트들이 죽는다.
+ */
 function overlapsNameTokens(
   keyword: string,
   nameTokenSet: Set<string>,
-  nameDespaced: string
-): boolean {
+  nameDespaced: string,
+  nameTokens: string[]
+): NameOverlap | null {
   const kwTokens = splitTokens(keyword).map((t) => t.toLowerCase())
   const despaced = despaceKeyword(keyword)
-  if (kwTokens.length > 0 && kwTokens.every((t) => nameTokenSet.has(t))) return true
-  return despaced.length > 0 && nameDespaced.includes(despaced)
+  if (kwTokens.length > 0 && kwTokens.every((t) => nameTokenSet.has(t)))
+    return { kind: 'all-tokens' }
+  if (despaced.length > 0 && nameDespaced.includes(despaced)) return { kind: 'substring' }
+
+  // §10 한국어 복합어 — `노와이어브라` 처럼 상품명 단어를 붙여 만든 조합. 앞의 두 게이트는
+  // 구조적으로 못 잡는다(토큰 1개라 완전 일치 불가, 상품명 어순이 달라 부분문자열도 불가).
+  const cover = coverByNameTokens(keyword, nameTokens)
+  // 조각 1개는 상품명 토큰과 같다는 뜻이라 이미 all-tokens 게이트가 소유한다.
+  if (cover && cover.pieces.length >= 2) return { kind: 'compound', pieces: cover.pieces }
+  return null
 }
 
 export type NameValidationResult = {
@@ -364,8 +393,20 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
 
     // ─── §10 Rule 1 상품명 중복 ──────────────────────────────────────────
     // 판정은 overlapsNameTokens 한 곳에서만 한다(suggest 와 규칙이 갈리지 않도록).
-    if (overlapsNameTokens(raw, nameTokenSet, nameDespaced)) {
-      const allTokensInName = kwTokens.length > 0 && kwTokens.every((t) => nameTokenSet.has(t))
+    const overlap = overlapsNameTokens(raw, nameTokenSet, nameDespaced, nameTokens)
+    if (overlap?.kind === 'compound') {
+      // 상품명에 그 문자열이 통째로 들어있는 건 아니므로 "이미 있습니다"라고 하면 거짓말이다.
+      // 어떻게 쪼개졌는지를 그대로 보여줘야 사용자가 판정을 납득한다.
+      const pieces = overlap.pieces.join(' + ')
+      push({
+        code: 'KW_NAME_COMPOUND',
+        severity: 'WARN',
+        keywordIndex: index,
+        message: `'${raw}'는 상품명 단어 ${overlap.pieces.length}개(${pieces})를 붙여 만든 조합입니다. 상품명에 이미 있는 단어라 새 유입을 만들지 못합니다.`,
+        conflictWith: pieces,
+      })
+    } else if (overlap) {
+      const allTokensInName = overlap.kind === 'all-tokens'
       const conflict = allTokensInName
         ? kwTokens.join(' ')
         : nameTokens.filter((t) => keys.despaced.includes(t.toLowerCase())).join(' ') ||

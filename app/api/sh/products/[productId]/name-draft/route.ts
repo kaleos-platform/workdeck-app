@@ -12,6 +12,7 @@ import {
 } from '@/lib/sh/keyword-ai-draft'
 import { filterDraftKeywords } from '@/lib/sh/keyword-draft-filter'
 import { loadKeywordRules } from '@/lib/sh/keyword-rules-query'
+import { nameDraftRequestSchema } from '@/lib/sh/schemas'
 import { validateProductName, type Violation } from '@/lib/sh/keyword-validate'
 import { productDisplayName } from '@/lib/sh/product-display'
 
@@ -58,10 +59,11 @@ export async function POST(req: NextRequest, { params }: Params) {
   } catch {
     return errorResponse('잘못된 요청 형식입니다', 400)
   }
-  const channelId = (body as { channelId?: unknown } | null)?.channelId
-  if (typeof channelId !== 'string' || !channelId.trim()) {
+  const parsedBody = nameDraftRequestSchema.safeParse(body)
+  if (!parsedBody.success) {
     return errorResponse('channelId 가 필요합니다', 400)
   }
+  const { channelId, searchName: bodySearchName, keywords: bodyKeywords } = parsedBody.data
 
   const product = await prisma.invProduct.findFirst({
     where: { id: productId, spaceId: resolved.space.id },
@@ -100,8 +102,15 @@ export async function POST(req: NextRequest, { params }: Params) {
       select: { keyword: { select: { keyword: true } } },
     }),
     prisma.productListing.findMany({
-      where: { spaceId: resolved.space.id, items: { some: { option: { productId } } } },
-      select: { keywords: true },
+      // channelId 를 건다 — keywords 만 읽을 때는 무해했지만, 아래에서 searchName 을 기준
+      // 상품명 폴백으로 꺼내므로 다른 채널 이름을 집어오면 판정 기준이 통째로 어긋난다.
+      where: {
+        spaceId: resolved.space.id,
+        channelId,
+        items: { some: { option: { productId } } },
+      },
+      select: { keywords: true, searchName: true },
+      orderBy: { updatedAt: 'desc' },
     }),
     prisma.channelProduct.findMany({
       where: {
@@ -109,7 +118,8 @@ export async function POST(req: NextRequest, { params }: Params) {
         channelId,
         listings: { some: { items: { some: { option: { productId } } } } },
       },
-      select: { keywords: true },
+      select: { keywords: true, baseSearchName: true },
+      orderBy: { updatedAt: 'desc' },
     }),
     prisma.keywordMaster.findMany({
       where: { spaceId: resolved.space.id, status: { in: ['SEARCH_TERM', 'CANDIDATE'] } },
@@ -122,6 +132,9 @@ export async function POST(req: NextRequest, { params }: Params) {
   // 카드 자신의 값(Json 배열)을 앞에 둔다 — 프롬프트용으로 자를 때 화면에 보이는 것부터 남는다.
   const allExistingKeywords = [
     ...new Set([
+      // 화면에서 편집 중인 값이 있으면 그것이 가장 최신이다 — 카드 경로는 자동저장이 없어
+      // DB 만 읽으면 저장 전 편집분을 못 본다(중복 후보가 그대로 새어 나온다).
+      ...(bodyKeywords ?? []),
       ...channelProducts.flatMap((c) => toStringArray(c.keywords)),
       ...listings.flatMap((l) => toStringArray(l.keywords)),
       ...links.map((l) => l.keyword.keyword),
@@ -132,7 +145,15 @@ export async function POST(req: NextRequest, { params }: Params) {
   // 세 소스(ChannelProduct/ProductListing/KeywordMasterLink)를 합치면 25개 초과는 흔하다.
   const promptKeywords = allExistingKeywords.slice(0, REVIEW_LIMIT)
 
-  const productName = product.name || productDisplayName(product)
+  // 판정 기준 상품명은 **채널에 실제로 나가는 검색용 이름**이다. 공식 상품명(InvProduct.name)은
+  // 관리용이라 훨씬 짧아, 그걸 기준으로 삼으면 상품명 단어 상당수가 토큰 집합에 아예 없다.
+  // 화면이 보낸 값 > 채널상품 > 리스팅 > 공식 상품명 순으로 폴백한다.
+  const productName =
+    bodySearchName?.trim() ||
+    channelProducts[0]?.baseSearchName?.trim() ||
+    listings[0]?.searchName?.trim() ||
+    product.name ||
+    productDisplayName(product)
   const draftInput: NameDraftInput = {
     brandName: product.brand?.name ?? null,
     productName,

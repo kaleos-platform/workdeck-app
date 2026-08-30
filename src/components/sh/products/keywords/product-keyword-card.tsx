@@ -247,7 +247,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
                   size="sm"
                   className="h-6 gap-1 px-2 text-xs"
                   onClick={() => {
-                    draft.load()
+                    draft.load({ keywords, searchName })
                     setNameDraftOpen(true)
                   }}
                 >
@@ -308,7 +308,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
                 size="sm"
                 className="h-6 gap-1 px-2 text-xs"
                 onClick={() => {
-                  draft.load()
+                  draft.load({ keywords, searchName })
                   setKeywordDraftOpen(true)
                 }}
               >
