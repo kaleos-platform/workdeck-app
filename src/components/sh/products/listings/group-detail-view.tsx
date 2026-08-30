@@ -273,7 +273,13 @@ export function GroupDetailView({ channelProductId }: Props) {
       return
     }
     let cancelled = false
-    fetch(`/api/sh/keywords/suggest?productId=${productId}`)
+    // 추천 제외 기준을 편집기 검증과 맞춘다 — 서버 기본값은 공식 상품명이라, 그대로 두면
+    // 추천 칩을 누르는 순간 편집기가 위반으로 표시하는 모순이 생긴다.
+    // 저장된 값(state 가 아니라 data)을 쓴다 — 타이핑마다 재조회되면 안 된다.
+    const suggestName = data?.channelProduct.baseSearchName ?? ''
+    const query = new URLSearchParams({ productId })
+    if (suggestName) query.set('searchName', suggestName)
+    fetch(`/api/sh/keywords/suggest?${query.toString()}`)
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data: { suggestions?: string[] }) => {
         if (cancelled) return
@@ -286,7 +292,7 @@ export function GroupDetailView({ channelProductId }: Props) {
     return () => {
       cancelled = true
     }
-  }, [productId])
+  }, [productId, data?.channelProduct.baseSearchName])
 
   // 조회 시점 이후 사용자가 방금 추가한 키워드는 걸러낸다.
   const keywordSuggestions = useMemo(() => {
@@ -1366,7 +1372,7 @@ export function GroupDetailView({ channelProductId }: Props) {
                 disabled: !productId,
                 tooltip: !productId ? '혼합 구성에서는 사용할 수 없습니다' : undefined,
                 onClick: () => {
-                  draft.load()
+                  draft.load({ keywords, searchName: baseSearchName })
                   setNameDraftOpen(true)
                 },
               }
@@ -1398,7 +1404,7 @@ export function GroupDetailView({ channelProductId }: Props) {
                         size="sm"
                         disabled={!productId}
                         onClick={() => {
-                          draft.load()
+                          draft.load({ keywords, searchName: baseSearchName })
                           setKeywordDraftOpen(true)
                         }}
                       >

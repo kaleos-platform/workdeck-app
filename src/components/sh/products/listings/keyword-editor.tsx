@@ -8,7 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { DEFAULT_KEYWORD_RULES, type KeywordRuleSet } from '@/lib/sh/keyword-rules'
-import { validateKeywords, type Violation, type ViolationSeverity } from '@/lib/sh/keyword-validate'
+import {
+  validateKeywords,
+  type Violation,
+  type ViolationCode,
+  type ViolationSeverity,
+} from '@/lib/sh/keyword-validate'
 import { cn } from '@/lib/utils'
 
 // 저장 스키마(schemas.ts)와 같은 하드 상한. rules.maxKeywords(쿠팡 20)는 "권장"이라
@@ -16,6 +21,23 @@ import { cn } from '@/lib/utils'
 const MAX_KEYWORDS = 30
 
 const SEVERITY_RANK: Record<ViolationSeverity, number> = { INFO: 0, WARN: 1, ERROR: 2 }
+
+// 정리 버튼이 무엇을 지우는지 사람이 읽을 수 있게 묶는다. 상품명 복합어 판정이 들어오면서
+// 삭제 건수가 갑자기 뛸 수 있어(한 상품에서 2건), 이유 없이 숫자만 커지면 버그로 읽힌다.
+const CLEANUP_GROUPS: { label: string; codes: ViolationCode[] }[] = [
+  { label: '상품명 단어 재사용', codes: ['KW_DUP_WITH_NAME', 'KW_NAME_COMPOUND'] },
+  {
+    label: '중복',
+    codes: ['KW_DUP_EXACT', 'KW_DUP_SPACING_VARIANT', 'KW_DUP_PERMUTATION'],
+  },
+  { label: '카테고리·구매옵션 중복', codes: ['KW_DUP_WITH_CATEGORY'] },
+  {
+    label: '금지 표현',
+    codes: ['KW_SHIPPING_TERM', 'KW_EFFICACY_TERM', 'KW_COMPETITOR_BRAND'],
+  },
+  { label: '길이 초과', codes: ['KW_TOO_LONG'] },
+  { label: '개수 초과', codes: ['KW_OVER_LIMIT'] },
+]
 
 const SEVERITY_CHIP: Record<ViolationSeverity, string> = {
   ERROR: 'border-destructive/50 bg-destructive/10 text-destructive',
@@ -167,6 +189,28 @@ export function KeywordEditor({
   // (덜 세면 라벨이 실제 삭제 개수보다 작아진다).
   const removeCount = Math.max(0, value.length - validation.cleaned.length)
 
+  // 삭제 내역 — 코드 그룹별로 몇 개가, 어떤 검색어가 지워지는지. 한 검색어가 여러 위반을
+  // 받을 수 있으므로 **첫 매칭 그룹에만** 넣어 합계가 부풀지 않게 한다.
+  const cleanupBreakdown = useMemo(() => {
+    const assigned = new Set<number>()
+    const rows: { label: string; samples: string[]; count: number }[] = []
+    for (const group of CLEANUP_GROUPS) {
+      const samples: string[] = []
+      for (const [idx, hits] of violationsByIndex) {
+        if (assigned.has(idx)) continue
+        if (!hits.some((h) => group.codes.includes(h.code))) continue
+        assigned.add(idx)
+        const raw = (value[idx] ?? '').trim()
+        if (raw) samples.push(raw)
+      }
+      if (samples.length > 0) rows.push({ label: group.label, samples, count: samples.length })
+    }
+    // removeCount 는 value.length - cleaned.length 라 빈 행 삭제까지 포함한다(의도적).
+    // 내역 합계와 어긋나므로 남는 만큼을 빈 항목으로 밝힌다.
+    const blanks = Math.max(0, removeCount - assigned.size)
+    return { rows, blanks }
+  }, [violationsByIndex, value, removeCount])
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="space-y-2">
@@ -191,16 +235,35 @@ export function KeywordEditor({
             </>
           )}
           {violationCount > 0 && !readOnly && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={applyCleanup}
-              className="ml-auto h-6 gap-1 px-2 text-xs"
-            >
-              <Sparkles className="h-3 w-3" aria-hidden="true" />
-              규칙 위반 정리{removeCount > 0 ? ` (${removeCount}개 제거)` : ''}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={applyCleanup}
+                  className="ml-auto h-6 gap-1 px-2 text-xs"
+                >
+                  <Sparkles className="h-3 w-3" aria-hidden="true" />
+                  {/* "정리"는 "고쳐준다"로도 읽히지만 실제 동작은 통째 삭제다. */}
+                  위반 검색어 정리{removeCount > 0 ? ` (${removeCount}개 삭제)` : ''}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" align="end" className="max-w-xs">
+                <p className="font-medium">
+                  아래 검색어를 목록에서 지웁니다. 되돌리려면 다시 입력해야 합니다.
+                </p>
+                <ul className="mt-1 space-y-0.5">
+                  {cleanupBreakdown.rows.map((row) => (
+                    <li key={row.label}>
+                      · {row.label} {row.count}개 ({row.samples.slice(0, 4).join(', ')}
+                      {row.samples.length > 4 ? ' 외' : ''})
+                    </li>
+                  ))}
+                  {cleanupBreakdown.blanks > 0 && <li>· 빈 항목 {cleanupBreakdown.blanks}개</li>}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
           )}
         </div>
 

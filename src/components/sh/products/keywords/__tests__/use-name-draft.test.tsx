@@ -190,3 +190,72 @@ describe('useNameDraft — 등록 검색어 진단', () => {
     expect(result.current.reviews).toEqual([])
   })
 })
+
+describe('useNameDraft — 키워드가 바뀌면 재조회', () => {
+  it('같은 키워드 목록으로 두 번 부르면 fetch 1회', async () => {
+    const mock = setupFetch(async () => okResponse(SUCCESS))
+
+    const { result } = renderHook(() => useNameDraft('p1', 'c1'))
+    act(() => result.current.load({ keywords: ['가', '나'] }))
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    act(() => result.current.load({ keywords: ['가', '나'] }))
+
+    expect(mock).toHaveBeenCalledTimes(1)
+  })
+
+  it('키워드가 바뀌면 다시 조회한다', async () => {
+    const mock = setupFetch(async () => okResponse(SUCCESS))
+
+    const { result } = renderHook(() => useNameDraft('p1', 'c1'))
+    act(() => result.current.load({ keywords: ['가'] }))
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    act(() => result.current.load({ keywords: ['가', '나'] }))
+    await waitFor(() => expect(mock).toHaveBeenCalledTimes(2))
+  })
+
+  it('순서만 바뀐 목록은 재조회하지 않는다 (칩 재정렬로 AI 를 부르지 않는다)', async () => {
+    const mock = setupFetch(async () => okResponse(SUCCESS))
+
+    const { result } = renderHook(() => useNameDraft('p1', 'c1'))
+    act(() => result.current.load({ keywords: ['가', '나'] }))
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    act(() => result.current.load({ keywords: ['나', '가'] }))
+
+    expect(mock).toHaveBeenCalledTimes(1)
+  })
+
+  it('같은 틱에 두 번 불러도 fetch 는 1회 (ref 동기 반영)', async () => {
+    const mock = setupFetch(async () => okResponse(SUCCESS))
+
+    const { result } = renderHook(() => useNameDraft('p1', 'c1'))
+    act(() => {
+      result.current.load({ keywords: ['가'] })
+      result.current.load({ keywords: ['가'] })
+    })
+    await waitFor(() => expect(result.current.status).toBe('success'))
+
+    expect(mock).toHaveBeenCalledTimes(1)
+  })
+
+  it('실패 후에는 같은 목록으로도 재시도할 수 있다', async () => {
+    const mock = setupFetch(async () => okResponse({ names: [], keywords: [], unavailable: true }))
+
+    const { result } = renderHook(() => useNameDraft('p1', 'c1'))
+    act(() => result.current.load({ keywords: ['가'] }))
+    await waitFor(() => expect(result.current.status).toBe('unavailable'))
+    act(() => result.current.load({ keywords: ['가'] }))
+
+    await waitFor(() => expect(mock).toHaveBeenCalledTimes(2))
+  })
+
+  it('body 에 편집 중인 검색명·키워드를 실어 보낸다', async () => {
+    const mock = setupFetch(async () => okResponse(SUCCESS))
+
+    const { result } = renderHook(() => useNameDraft('p1', 'c1'))
+    act(() => result.current.load({ keywords: ['가'], searchName: '검색용 상품명' }))
+    await waitFor(() => expect(result.current.status).toBe('success'))
+
+    const body = JSON.parse((mock.mock.calls[0][1] as RequestInit).body as string)
+    expect(body).toEqual({ channelId: 'c1', searchName: '검색용 상품명', keywords: ['가'] })
+  })
+})

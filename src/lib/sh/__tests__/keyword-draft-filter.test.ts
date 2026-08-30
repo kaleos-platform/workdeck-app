@@ -182,3 +182,26 @@ describe('filterDraftKeywords — 등록 검색어 진단', () => {
     expect(r.keywords.map((k) => k.value)).toEqual(['자취 살림'])
   })
 })
+
+describe('filterDraftKeywords — 상품명 복합어(§10 한국어)', () => {
+  const productName = '에이엠엘 쿨 메쉬 심리스 커버 브라 노와이어 후크없이 편안한 중년 여성 속옷'
+
+  it('상품명 단어를 붙여 만든 후보는 드롭된다', () => {
+    const r = run({
+      candidates: [cand('노와이어브라'), cand('중년여성브라'), cand('티셔츠브라')],
+      productName,
+    })
+    expect(r.keywords.map((k) => k.value)).toEqual(['티셔츠브라'])
+  })
+
+  it('등록 검색어에 붙으면 제거를 권한다', () => {
+    const r = run({
+      existing: ['심리스브라', '티셔츠브라'],
+      candidates: [],
+      productName,
+    })
+    expect(r.reviews[0].recommendRemove).toBe(true)
+    expect(r.reviews[0].violations.map((v) => v.code)).toContain('KW_NAME_COMPOUND')
+    expect(r.reviews[1].recommendRemove).toBe(false)
+  })
+})

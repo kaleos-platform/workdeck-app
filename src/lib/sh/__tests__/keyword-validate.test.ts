@@ -494,3 +494,56 @@ describe('countNamingViolations', () => {
     expect(n).toBe(0)
   })
 })
+
+// §10 한국어 복합어 — prod 실제 사례(에이엠엘 쿨 메쉬 브라)에서 나온 회귀.
+// 기존 두 게이트는 이 형태를 구조적으로 못 잡아 사실상 아무것도 걸러지지 않고 있었다.
+describe('validateKeywords — §10 한국어 복합 검색어', () => {
+  const productName = '에이엠엘 쿨 메쉬 심리스 커버 브라 노와이어 후크없이 편안한 중년 여성 속옷'
+
+  it('상품명 단어를 붙여 만든 조합은 KW_NAME_COMPOUND', () => {
+    const keywords = ['노와이어브라', '심리스브라', '중년여성브라']
+    const r = validateKeywords({ keywords, productName, rules })
+    keywords.forEach((_, i) => {
+      expect(hasCode(r.violations, i, 'KW_NAME_COMPOUND')).toBe(true)
+    })
+  })
+
+  it('상품명에 없는 단어가 하나라도 섞이면 통과', () => {
+    const keywords = ['티셔츠브라', '여름브라', '갱년기여성속옷', '브라탑']
+    const r = validateKeywords({ keywords, productName, rules })
+    expect(r.violations).toEqual([])
+    expect(r.cleaned).toEqual(keywords)
+  })
+
+  it('conflictWith 에 분해 조각을 담는다', () => {
+    const r = validateKeywords({ keywords: ['노와이어브라'], productName, rules })
+    expect(r.violations[0].conflictWith).toBe('노와이어 + 브라')
+    expect(r.violations[0].message).toContain('노와이어 + 브라')
+  })
+
+  it('cleaned 에서 빠진다', () => {
+    const r = validateKeywords({ keywords: ['노와이어브라', '티셔츠브라'], productName, rules })
+    expect(r.cleaned).toEqual(['티셔츠브라'])
+  })
+
+  // 게이트 순서 락 — 아래 셋은 전부 앞선 게이트가 소유해야 한다.
+  // compound 를 앞으로 옮기는 리팩터가 들어오면 여기서 죽는다.
+  it('단일 토큰은 여전히 KW_DUP_WITH_NAME (게이트 a)', () => {
+    const r = validateKeywords({ keywords: ['브라'], productName, rules })
+    expect(hasCode(r.violations, 0, 'KW_DUP_WITH_NAME')).toBe(true)
+    expect(hasCode(r.violations, 0, 'KW_NAME_COMPOUND')).toBe(false)
+  })
+
+  it('상품명에 인접한 단어 조합은 여전히 KW_DUP_WITH_NAME (게이트 b)', () => {
+    // 상품명이 `… 심리스 커버 브라 노와이어 …` 라 despaced 에 '커버브라' 가 연속으로 있다.
+    // 상품명 단어로 만든 복합어지만 부분문자열 게이트가 먼저 잡는 것이 맞다.
+    const r = validateKeywords({ keywords: ['커버브라'], productName, rules })
+    expect(hasCode(r.violations, 0, 'KW_DUP_WITH_NAME')).toBe(true)
+    expect(hasCode(r.violations, 0, 'KW_NAME_COMPOUND')).toBe(false)
+  })
+
+  it('상품명이 비면 복합어 판정도 발화하지 않는다', () => {
+    const r = validateKeywords({ keywords: ['노와이어브라'], productName: '', rules })
+    expect(hasCode(r.violations, 0, 'KW_NAME_COMPOUND')).toBe(false)
+  })
+})
