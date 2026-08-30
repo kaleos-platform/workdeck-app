@@ -26,6 +26,10 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const listingId = searchParams.get('listingId')?.trim() || null
   const productId = searchParams.get('productId')?.trim() || null
+  // 화면이 편집 중인 채널 검색용 상품명. 없으면 기존 폴백을 그대로 탄다.
+  // 이걸 안 받으면 추천은 공식 상품명 기준으로 거르고 편집기는 채널 검색명 기준으로 검증해서,
+  // 추천 칩을 누르는 순간 경고가 뜨는 모순이 생긴다(§10 복합어 판정 이후 특히 눈에 띈다).
+  const searchNameParam = searchParams.get('searchName')?.trim() || null
   if (!listingId && !productId) {
     return errorResponse('listingId 또는 productId 가 필요합니다', 400)
   }
@@ -89,7 +93,7 @@ export async function GET(req: NextRequest) {
       },
     })
     if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
-    productName = product.name || productDisplayName(product)
+    productName = searchNameParam || product.name || productDisplayName(product)
     // 상품 단위에는 keywords 컬럼이 없다 — 이미 연결된 키워드를 '등록됨'으로 본다.
     const linked = await prisma.keywordMasterLink.findMany({
       where: { productId, keyword: { spaceId: resolved.space.id } },

@@ -159,3 +159,28 @@ describe('suggestKeywords', () => {
     expect(suggestKeywords(input)).toEqual(suggestKeywords(input))
   })
 })
+
+describe('suggestKeywords — §10 한국어 복합어 (검증기와 같은 판정을 쓴다)', () => {
+  // 추천과 편집기 검증이 갈리면 추천 칩을 누르는 순간 경고가 뜨는 모순이 생긴다.
+  const braName = '에이엠엘 쿨 메쉬 심리스 커버 브라 노와이어 후크없이 편안한 중년 여성 속옷'
+
+  it('상품명 단어를 붙여 만든 후보는 추천에서 빠진다', () => {
+    const result = suggestKeywords({
+      productName: braName,
+      existing: [],
+      masterPool: [item({ keyword: '심리스브라' }), item({ keyword: '노와이어브라' })],
+      rules,
+    })
+    expect(result).toEqual([])
+  })
+
+  it('상품명에 없는 단어가 섞인 후보는 남는다', () => {
+    const result = suggestKeywords({
+      productName: braName,
+      existing: [],
+      masterPool: [item({ keyword: '갱년기여성속옷' }), item({ keyword: '티셔츠브라' })],
+      rules,
+    })
+    expect(result).toEqual(expect.arrayContaining(['갱년기여성속옷', '티셔츠브라']))
+  })
+})

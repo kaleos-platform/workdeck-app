@@ -165,6 +165,31 @@ describe('NameDraftDialog 등록 검색어 진단', () => {
     expect(onRemoveKeyword).toHaveBeenCalledWith('이미담긴')
   })
 
+  it('AI 가 KEEP 인데 규칙이 잡은 경우 배지에 "유지" 대신 "규칙 위반" 을 쓴다', () => {
+    renderDialog({
+      mode: 'keyword',
+      reviews: [
+        review('이미담긴', {
+          label: 'KEEP',
+          labelText: '유지',
+          recommendRemove: true,
+          violations: [
+            {
+              code: 'KW_NAME_COMPOUND',
+              severity: 'WARN',
+              keywordIndex: 0,
+              message: '상품명 단어 조합',
+            },
+          ],
+        }),
+      ],
+      onRemoveKeyword: jest.fn(),
+    })
+
+    expect(screen.getByText('규칙 위반')).toBeInTheDocument()
+    expect(screen.queryByText('유지')).not.toBeInTheDocument()
+  })
+
   it('onRemoveKeyword 가 없으면 제거 버튼을 그리지 않는다', () => {
     renderDialog({ mode: 'keyword', reviews: [flagged] })
 

@@ -306,6 +306,10 @@ export function NameDraftDialog({
                         const review = shownReviews[i]
                         const flagged = review?.recommendRemove ?? false
                         const moveToOption = review?.label === 'MOVE_TO_OPTION'
+                        // AI 는 KEEP 인데 결정적 규칙이 잡은 경우가 있다(상품명 단어 조합 등).
+                        // 그대로 '유지' 라고 쓰면 빨간 배지에 "유지" 가 붙어 앞뒤가 안 맞는다.
+                        const badgeLabel =
+                          review && review.label === 'KEEP' ? '규칙 위반' : review?.labelText
                         const summary = review
                           ? [
                               review.label === 'KEEP' ? '' : review.labelText,
@@ -327,9 +331,7 @@ export function NameDraftDialog({
                             )}
                           >
                             {k}
-                            {flagged && (
-                              <span className="text-xs opacity-80">{review?.labelText}</span>
-                            )}
+                            {flagged && <span className="text-xs opacity-80">{badgeLabel}</span>}
                             {flagged && onRemoveKeyword && (
                               <button
                                 type="button"
