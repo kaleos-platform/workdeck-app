@@ -288,12 +288,26 @@ export async function launchStealthPersistentContext(
   // 회차의 leak 잔류이지 진행 중 형제가 아니다.
   preflightCleanupProfile(opts.userDataDir)
 
-  const launchOptions: LaunchOptions & { args?: string[]; channel?: string } = {
+  // 실행 바이너리 선택 — 우선순위: CHROME_EXECUTABLE_PATH > CHROME_CHANNEL > 'chrome'
+  //
+  // 시스템 Chrome Stable 을 쓰는 이유는 Akamai TLS/HTTP2 fingerprint 우회력이
+  // Playwright 번들 Chromium 보다 높기 때문이다(번들 Chromium 은 실측상 Wing 로그인에서
+  // 막힌다 — 2026-08-29 확인: 로그인 페이지에서 12분 무활동 hang).
+  //
+  // 다만 시스템 Chrome 은 자동 업데이트로 버전이 바뀌고, 그 버전이 크래시하면 수집이
+  // 통째로 멈춘다(2026-08-29: Chrome 152.0.7977.64 가 다운로드 처리 중 SIGSEGV/SIGBUS
+  // 로 2회 연속 사망). 그래서 Chrome for Testing 같은 고정 버전 바이너리를
+  // CHROME_EXECUTABLE_PATH 로 지정할 수 있게 한다 — 진짜 Chrome 빌드라 fingerprint 는
+  // 그대로면서 자동 업데이트에 휘둘리지 않는다.
+  const executablePath = process.env.CHROME_EXECUTABLE_PATH
+  const launchOptions: LaunchOptions & {
+    args?: string[]
+    channel?: string
+    executablePath?: string
+  } = {
     headless: opts.headless,
-    // 시스템 Chrome Stable 사용 — Akamai TLS/HTTP2 fingerprint가
-    // Playwright 번들 Chromium 보다 우회력 ↑.
-    // 미설치 환경(CI 등)에서는 CHROME_CHANNEL=chromium 으로 우회 가능.
-    channel: process.env.CHROME_CHANNEL || 'chrome',
+    // executablePath 를 주면 channel 은 지정하지 않는다(동시 지정 시 Playwright 가 거부).
+    ...(executablePath ? { executablePath } : { channel: process.env.CHROME_CHANNEL || 'chrome' }),
     args: [
       '--disable-blink-features=AutomationControlled',
       '--no-sandbox',
