@@ -484,6 +484,19 @@ export function GroupDetailView({ channelProductId }: Props) {
     scheduleAutoSave(800)
   }
 
+  // 제안대로 하나만 바꾼다. 저장은 게이트를 거친다 — runAutoSave 는 사유가 없으면 keywords 를
+  // body 에 담지 않으므로 여기서 바로 persist 되지 않는다.
+  function handleReplaceKeywordFromDraft(keyword: string, next: string) {
+    const target = normalizeKeyword(keyword)
+    const replacement = normalizeKeyword(next)
+    setKeywords((prev: string[]) => {
+      const others = prev.filter((k) => normalizeKeyword(k) !== target)
+      if (others.some((k) => normalizeKeyword(k) === replacement)) return others
+      return prev.map((k) => (normalizeKeyword(k) === target ? next : k))
+    })
+    scheduleAutoSave(800)
+  }
+
   async function handleCopyKeywords() {
     const clipboardText = keywords
       .map((keyword: string) => keyword.trim())
@@ -1571,6 +1584,7 @@ export function GroupDetailView({ channelProductId }: Props) {
         onApplyName={(v) => handleBaseChange('searchName', v)}
         onAddKeyword={handleAddKeywordFromDraft}
         onRemoveKeyword={handleRemoveKeywordFromDraft}
+        onReplaceKeyword={handleReplaceKeywordFromDraft}
       />
       <NameDraftDialog
         open={keywordDraftOpen}
@@ -1585,6 +1599,7 @@ export function GroupDetailView({ channelProductId }: Props) {
         onApplyName={(v) => handleBaseChange('searchName', v)}
         onAddKeyword={handleAddKeywordFromDraft}
         onRemoveKeyword={handleRemoveKeywordFromDraft}
+        onReplaceKeyword={handleReplaceKeywordFromDraft}
       />
 
       {/* 삭제 확인 다이얼로그 */}

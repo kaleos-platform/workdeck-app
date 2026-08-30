@@ -174,13 +174,24 @@ describe('suggestKeywords — §10 한국어 복합어 (검증기와 같은 판�
     expect(result).toEqual([])
   })
 
-  it('상품명에 없는 단어가 섞인 후보는 남는다', () => {
+  it('상품명 단어가 섞인 후보도 추천에서 빠진다', () => {
+    // 편집기가 '티셔츠' 로 고치라고 제안할 후보를 추천 목록에 다시 올리면 앞뒤가 안 맞는다.
     const result = suggestKeywords({
       productName: braName,
       existing: [],
       masterPool: [item({ keyword: '갱년기여성속옷' }), item({ keyword: '티셔츠브라' })],
       rules,
     })
-    expect(result).toEqual(expect.arrayContaining(['갱년기여성속옷', '티셔츠브라']))
+    expect(result).toEqual([])
+  })
+
+  it('상품명 단어가 전혀 없는 후보는 남는다', () => {
+    const result = suggestKeywords({
+      productName: braName,
+      existing: [],
+      masterPool: [item({ keyword: '갱년기' }), item({ keyword: '티셔츠' })],
+      rules,
+    })
+    expect(result).toEqual(expect.arrayContaining(['갱년기', '티셔츠']))
   })
 })

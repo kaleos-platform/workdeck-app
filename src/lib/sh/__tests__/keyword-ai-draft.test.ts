@@ -129,13 +129,12 @@ describe('buildUserPrompt — 근거 섹션은 값이 있을 때만 넣는다', 
 })
 
 describe('buildSystemPrompt — 복합어 금지', () => {
-  it('붙여 쓴 복합어 금지와 긍정 예시를 함께 담는다', () => {
+  it('상품명 단어를 붙이지 말라는 지시와 좋은/나쁜 예시를 함께 담는다', () => {
     const p = buildSystemPrompt(baseInput)
-    expect(p).toContain('붙여 만든 복합어')
-    expect(p).toContain('노와이어브라')
-    // 부정 예시만 주면 모델이 과억제되어 해당 계열을 통째로 회피한다.
-    expect(p).toContain('갱년기여성속옷')
-    expect(p).toContain('티셔츠브라')
+    expect(p).toContain('검색어에 붙이지 않습니다')
+    expect(p).toContain('여름브라') // 나쁜 예
+    // 좋은 예를 함께 주지 않으면 모델이 과억제되어 해당 계열을 통째로 회피한다.
+    expect(p).toContain('군살보정')
   })
 
   it('과생성 개수를 프롬프트에 그대로 쓴다', () => {
