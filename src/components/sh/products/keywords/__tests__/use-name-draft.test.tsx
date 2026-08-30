@@ -255,7 +255,8 @@ describe('useNameDraft — 키워드가 바뀌면 재조회', () => {
     act(() => result.current.load({ keywords: ['가'], searchName: '검색용 상품명' }))
     await waitFor(() => expect(result.current.status).toBe('success'))
 
-    const body = JSON.parse((mock.mock.calls[0][1] as RequestInit).body as string)
+    const init = (mock.mock.calls as unknown as [string, RequestInit][])[0][1]
+    const body = JSON.parse(init.body as string)
     expect(body).toEqual({ channelId: 'c1', searchName: '검색용 상품명', keywords: ['가'] })
   })
 })
