@@ -1,12 +1,16 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Lock, Sparkles } from 'lucide-react'
 
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { resolveKeywordRules, rulesForNameField, withChannelDefaults } from '@/lib/sh/keyword-rules'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { rulesForNameField, type KeywordRuleSet } from '@/lib/sh/keyword-rules'
 
 import { NameCounter } from './name-counter'
 import { NameValidationPanel } from './name-validation-panel'
@@ -15,6 +19,9 @@ const MAX_NAME_LENGTH = 200
 
 type Props = {
   channelName: string
+  /** 채널 기준 규칙셋 — 부모(group-detail-view)가 한 번만 계산해 내려준다. 이 카드가 다시
+   * 계산하면 externalSource 반영을 두 곳에서 따로 고쳐야 해 재발한다. */
+  rules: KeywordRuleSet
   baseSearchName: string
   baseDisplayName: string
   baseManagementName: string
@@ -27,6 +34,11 @@ type Props = {
   onBaseInternalCodeChange: (v: string) => void
   onMemoChange: (v: string) => void
   disabled?: boolean
+  /** 연동 채널(externalSource != null)이면 true — 상품명(검색용·노출용) 입력·검증 패널·
+   * AI 상품명 버튼을 잠근다. `disabled`(옵션 CRUD 중)와는 뜻이 다르다 — 섞지 않는다. */
+  namesReadOnly?: boolean
+  /** AI 상품명 버튼. 연동 채널(namesReadOnly)이면 아예 렌더하지 않는다(부모가 undefined 로 전달). */
+  aiNameButton?: { disabled: boolean; tooltip?: string; onClick: () => void }
 }
 
 /**
@@ -36,6 +48,7 @@ type Props = {
  */
 export function GroupBaseInfoCard({
   channelName,
+  rules,
   baseSearchName,
   baseDisplayName,
   baseManagementName,
@@ -48,29 +61,31 @@ export function GroupBaseInfoCard({
   onBaseInternalCodeChange,
   onMemoChange,
   disabled,
+  namesReadOnly,
+  aiNameButton,
 }: Props) {
-  // 채널 기준 규칙셋. DB 오버라이드(ChannelKeywordRule)는 아직 서버에서 폼으로 내려오는
-  // 경로가 없어 resolveKeywordRules(null) 로 기본값만 쓴다 — 규칙 편집 UI 를 붙일 때 여기서 연결한다.
-  const rules = useMemo(
-    () =>
-      withChannelDefaults(
-        resolveKeywordRules(null),
-        // 상한 조회는 채널명만 쓴다. 그룹 상세 API 가 externalSource 를 내려주지 않아 null 로 둔다.
-        channelName ? { name: channelName, externalSource: null } : null
-      ),
-    [channelName]
-  )
   const searchNameRules = useMemo(() => rulesForNameField(rules, 'searchName'), [rules])
   const displayNameRules = useMemo(() => rulesForNameField(rules, 'displayName'), [rules])
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">기본 정보</CardTitle>
-        <CardDescription>
-          이 채널 상품의 모든 판매 옵션에 공통으로 적용되는 값. 각 판매 옵션의 옵션 코드(예:
-          &lsquo;S 누드&rsquo;)는 그대로 유지되고 앞부분만 일괄 재작성됩니다.
-        </CardDescription>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <CardTitle className="flex items-center gap-1.5 text-lg">
+              기본 정보
+              {namesReadOnly && (
+                <Lock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              )}
+            </CardTitle>
+            <CardDescription>
+              이 채널 상품의 모든 판매 옵션에 공통으로 적용되는 값. 각 판매 옵션의 옵션 코드(예:
+              &lsquo;S 누드&rsquo;)는 그대로 유지되고 앞부분만 일괄 재작성됩니다.
+              {namesReadOnly && ' 연동 채널이라 상품명(검색용·노출용)은 여기서 수정할 수 없습니다.'}
+            </CardDescription>
+          </div>
+          {namesReadOnly && <Badge variant="outline">연동 채널 (읽기전용)</Badge>}
+        </div>
       </CardHeader>
       <CardContent className="space-y-5">
         {inconsistentBases.length > 0 && (
@@ -98,7 +113,33 @@ export function GroupBaseInfoCard({
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label htmlFor="group-search">상품명 (검색용)</Label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="group-search">상품명 (검색용)</Label>
+              {aiNameButton && (
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-6 gap-1 px-2 text-xs"
+                          disabled={aiNameButton.disabled}
+                          onClick={aiNameButton.onClick}
+                        >
+                          <Sparkles className="h-3 w-3" aria-hidden="true" />
+                          AI 상품명
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {aiNameButton.tooltip && (
+                      <TooltipContent side="top">{aiNameButton.tooltip}</TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
             <NameCounter value={baseSearchName} limit={searchNameRules.nameHardMax} guide />
           </div>
           <Input
@@ -108,15 +149,16 @@ export function GroupBaseInfoCard({
             placeholder="예: 프리미엄 머드팬티"
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
+            readOnly={namesReadOnly}
           />
           {/* 변경 작업 중(disabled)에는 원클릭 수정을 막는다 — 자동저장 타이머가 걸려
-              진행 중인 작업의 재적재와 경합한다. */}
+              진행 중인 작업의 재적재와 경합한다. namesReadOnly(연동 채널)도 같은 이유로 잠근다. */}
           <NameValidationPanel
             value={baseSearchName}
             onChange={onBaseSearchNameChange}
             field="searchName"
             rules={rules}
-            readOnly={disabled}
+            readOnly={disabled || namesReadOnly}
           />
         </div>
         <div className="space-y-1.5">
@@ -131,6 +173,7 @@ export function GroupBaseInfoCard({
             placeholder="비우면 검색용 상품명을 그대로 사용합니다"
             maxLength={MAX_NAME_LENGTH - 30}
             disabled={disabled}
+            readOnly={namesReadOnly}
           />
           {/* 빈 값은 "검색용을 그대로 쓴다"는 뜻이라 폴백값을 넣지 않는다 — 패널이 알아서 숨는다. */}
           <NameValidationPanel
@@ -138,7 +181,7 @@ export function GroupBaseInfoCard({
             onChange={onBaseDisplayNameChange}
             field="displayName"
             rules={rules}
-            readOnly={disabled}
+            readOnly={disabled || namesReadOnly}
           />
         </div>
         <div className="space-y-1.5">

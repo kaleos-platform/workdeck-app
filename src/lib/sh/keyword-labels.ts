@@ -70,3 +70,51 @@ export const KEYWORD_LINK_ROLE_LABELS: Record<KeywordLinkRole, string> = {
   SUB: '서브',
   DENY: '사용 안 함',
 }
+
+// ─── AI 초안(name-draft) 전용 라벨 ─────────────────────────────────────────────
+// Prisma enum 이 아니라 AI 응답 스키마의 문자열 유니온이다. 서버(keyword-ai-draft /
+// keyword-draft-filter)와 클라이언트(name-draft-dialog)가 같은 값을 써야 하므로 여기 둔다.
+
+/** 검색어 생성 축 — §13 분류 체계를 "무엇을 뽑을지" 관점으로 재구성한 것. */
+export type KeywordIntent =
+  | 'PURPOSE' // 용도
+  | 'TARGET' // 대상
+  | 'SITUATION' // 상황
+  | 'ATTRIBUTE' // 속성
+  | 'PROBLEM' // 문제해결
+  | 'LONGTAIL' // 롱테일
+
+export const KEYWORD_INTENT_LABELS: Record<KeywordIntent, string> = {
+  PURPOSE: '용도',
+  TARGET: '대상',
+  SITUATION: '상황',
+  ATTRIBUTE: '속성',
+  PROBLEM: '문제해결',
+  LONGTAIL: '롱테일',
+}
+
+/**
+ * 등록된 검색어에 대한 AI 판정.
+ *
+ * 여기 있는 값은 **결정적 검증기(keyword-validate)가 잡을 수 없는 것들만** 이다 —
+ * 중복·금지어·길이는 규칙으로 잡아 후보 단계에서 버리고, 사람 판단이 필요한 항목만
+ * 라벨로 남겨 사용자에게 보여준다(오판이 무음 삭제로 이어지지 않도록).
+ */
+export type KeywordReviewLabel =
+  | 'KEEP' // 문제 없음
+  | 'LOW_RELEVANCE' // 상품과 관련성 약함
+  | 'COMPETITOR_BRAND' // 경쟁 브랜드
+  | 'FALSE_CLAIM' // 없는 기능·효능
+  | 'CATEGORY_STUFFING' // 카테고리명 나열
+  | 'LOW_INTENT' // 구매 의도 낮음
+  | 'MOVE_TO_OPTION' // §20 검색옵션으로 관리할 값
+
+export const KEYWORD_REVIEW_LABELS: Record<KeywordReviewLabel, string> = {
+  KEEP: '유지',
+  LOW_RELEVANCE: '관련성 낮음',
+  COMPETITOR_BRAND: '경쟁 브랜드',
+  FALSE_CLAIM: '없는 기능',
+  CATEGORY_STUFFING: '카테고리 나열',
+  LOW_INTENT: '구매의도 낮음',
+  MOVE_TO_OPTION: '검색옵션으로',
+}

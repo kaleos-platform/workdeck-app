@@ -29,3 +29,13 @@ if (typeof Element !== 'undefined') {
     Element.prototype.scrollIntoView = () => {}
   }
 }
+
+// Radix Tooltip(@radix-ui/react-use-size) 이 마운트 시 ResizeObserver 를 참조한다. jsdom 에는
+// 없으므로 no-op 스텁을 둔다 — 크기 측정 결과를 검증하는 테스트는 없다.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof globalThis.ResizeObserver
+}
