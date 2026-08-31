@@ -117,12 +117,19 @@ export async function GET(req: NextRequest) {
     take: 500,
   })
 
+  // 브랜드명은 상품명 단어로 치지 않는다 — 자사 브랜드 검색은 정당한 유입이다.
+  const brands = await prisma.brand.findMany({
+    where: { spaceId: resolved.space.id },
+    select: { name: true },
+  })
+
   const suggestions = suggestKeywords({
     productName,
     existing,
     masterPool: pool as SuggestPoolItem[],
     rules,
     productContext,
+    brandNames: brands.map((b) => b.name),
   })
 
   const contextUsed = Boolean(

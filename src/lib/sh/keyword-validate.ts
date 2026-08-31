@@ -124,16 +124,39 @@ function findTerms(text: TextKeys, terms: string[]): string[] {
  * "아무 토큰이나 겹치면" 으로 잡으면 §9 의 올바른 예 '페이스 타월'(타월이 상품명에 있음)까지
  * 걸려서, 가이드가 권장한 검색어를 위반으로 만든다.
  */
-export function overlapsProductName(keyword: string, productName: string): boolean {
-  const nameTokens = tokenizeProductName(productName ?? '', Number.POSITIVE_INFINITY)
+export function overlapsProductName(
+  keyword: string,
+  productName: string,
+  brandNames: string[] = []
+): boolean {
+  const brandSet = new Set(brandNames.map((b) => despaceKeyword(b)).filter(Boolean))
+  const allTokens = tokenizeProductName(productName ?? '', Number.POSITIVE_INFINITY)
+  const nameTokens = allTokens.filter((t) => !brandSet.has(despaceKeyword(t)))
+  const segments = splitNameSegments(allTokens, brandSet)
   return (
     overlapsNameTokens(
       keyword,
       new Set(nameTokens.map((t) => t.toLowerCase())),
-      despaceKeyword(productName ?? ''),
+      (d) => d.length > 0 && segments.some((seg) => seg.includes(d)),
       nameTokens
     ) !== null
   )
+}
+
+/** 브랜드 토큰을 경계로 상품명을 끊어 despaced 구간 배열로 만든다. */
+function splitNameSegments(allTokens: string[], brandSet: Set<string>): string[] {
+  const segments: string[] = []
+  let current: string[] = []
+  for (const token of allTokens) {
+    if (brandSet.has(despaceKeyword(token))) {
+      if (current.length > 0) segments.push(despaceKeyword(current.join('')))
+      current = []
+      continue
+    }
+    current.push(token)
+  }
+  if (current.length > 0) segments.push(despaceKeyword(current.join('')))
+  return segments.filter(Boolean)
 }
 
 /**
@@ -164,19 +187,22 @@ type NameOverlap =
 function overlapsNameTokens(
   keyword: string,
   nameTokenSet: Set<string>,
-  nameDespaced: string,
+  /** despaced 조각이 상품명(브랜드 제외 구간) 안에 연속으로 들어 있는가 */
+  inNameSegment: (despaced: string) => boolean,
   nameTokens: string[],
   /**
    * 이 조각이 상품명이나 **이미 등록된 다른 검색어**에 있는가. 남은 조각이 이미 등록돼 있으면
    * 그걸 제안해봐야 중복만 만든다 — 고칠 수 없으니 지우라고 해야 한다.
    */
-  isKnownTerm: (term: string) => boolean = () => false
+  isKnownTerm: (term: string) => boolean = () => false,
+  /** 남은 조각이 브랜드명뿐이면 지적하지 않는다 — 브랜드 검색은 정당한 유입이다. */
+  isBrand: (term: string) => boolean = () => false
 ): NameOverlap | null {
   const kwTokens = splitTokens(keyword).map((t) => t.toLowerCase())
   const despaced = despaceKeyword(keyword)
   if (kwTokens.length > 0 && kwTokens.every((t) => nameTokenSet.has(t)))
     return { kind: 'all-tokens' }
-  if (despaced.length > 0 && nameDespaced.includes(despaced)) return { kind: 'substring' }
+  if (inNameSegment(despaced)) return { kind: 'substring' }
 
   // §10 한국어 복합어·부분 포함 — `노와이어브라`·`여름브라` 처럼 상품명 단어를 붙여 쓴 검색어.
   // 앞의 두 게이트는 구조적으로 못 잡는다(토큰 1개라 완전 일치 불가, 어순이 달라 부분문자열도 불가).
@@ -189,6 +215,9 @@ function overlapsNameTokens(
   const strip = stripNameTokens(keyword, nameTokens)
   if (!strip) return null
   const rest = despaceKeyword(strip.stripped)
+  // '크림드선패드' 에서 선·패드를 빼면 브랜드 '크림드' 만 남는다. 브랜드로 바꾸라고 제안할
+  // 이유가 없으니 통과시킨다.
+  if (isBrand(rest)) return null
 
   // 고칠 수 있으려면 남은 조각이 **쓸 수 있는 새 단어**여야 한다. 아니면 지우는 수밖에 없다.
   if (rest.length === 0) {
@@ -362,6 +391,11 @@ export type ValidateKeywordsInput = {
   categoryNames?: string[]
   /** 구매 옵션 (§22 STEP08) */
   optionNames?: string[]
+  /**
+   * 워크스페이스에 등록된 브랜드명. **상품명 단어로 치지 않는다** — 브랜드 검색은 정당한
+   * 유입이라 '크림드' 를 상품명 중복으로 지적하면 안 된다.
+   */
+  brandNames?: string[]
   rules: KeywordRuleSet
 }
 
@@ -379,9 +413,14 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
 
   // §10 Rule 1 — 상품명 토큰. 12개 상한을 적용하면 40~70자 한국어 상품명의 13번째 이후
   // 단어와 겹치는 검색어가 검증을 통과해버리므로 전체 토큰을 받는다.
-  const nameTokens = tokenizeProductName(input.productName ?? '', Number.POSITIVE_INFINITY)
+  // 브랜드명은 상품명 단어에서 뺀다. 사전에서도, 부분문자열 검사에서도 빠져야 한다.
+  const brandSet = new Set((input.brandNames ?? []).map((b) => despaceKeyword(b)).filter(Boolean))
+  const allNameTokens = tokenizeProductName(input.productName ?? '', Number.POSITIVE_INFINITY)
+  const nameTokens = allNameTokens.filter((t) => !brandSet.has(despaceKeyword(t)))
   const nameTokenSet = new Set(nameTokens.map((t) => t.toLowerCase()))
-  const nameDespaced = despaceKeyword(input.productName ?? '')
+  // 브랜드를 경계로 끊은 구간들. 통째로 이어붙인 뒤 브랜드만 지우면 앞뒤가 붙어(seam)
+  // 실제로는 떨어져 있는 두 단어의 조합이 "상품명에 있다"고 잡힌다.
+  const nameSegments = splitNameSegments(allNameTokens, brandSet)
 
   const categoryTokenSet = lowerTokenSet(input.categoryNames ?? [])
   const optionTokenSet = lowerTokenSet(input.optionNames ?? [])
@@ -406,6 +445,9 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
     if (list) list.push(e.index)
     else termIndexByDespaced.set(e.keys.despaced, [e.index])
   }
+  const inNameSegment = (despaced: string): boolean =>
+    despaced.length > 0 && nameSegments.some((seg) => seg.includes(despaced))
+
   const isRegisteredTerm = (term: string, selfIndex: number): boolean =>
     (termIndexByDespaced.get(term) ?? []).some((i) => i !== selfIndex)
 
@@ -486,8 +528,13 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
 
     // ─── §10 Rule 1 상품명 중복 ──────────────────────────────────────────
     // 판정은 overlapsNameTokens 한 곳에서만 한다(suggest 와 규칙이 갈리지 않도록).
-    const overlap = overlapsNameTokens(raw, nameTokenSet, nameDespaced, nameTokens, (term) =>
-      isRegisteredTerm(term, index)
+    const overlap = overlapsNameTokens(
+      raw,
+      nameTokenSet,
+      inNameSegment,
+      nameTokens,
+      (term) => isRegisteredTerm(term, index),
+      (term) => brandSet.has(term)
     )
     if (overlap?.kind === 'partial') {
       // 지울 것이 아니라 고칠 것이다 — push 가 아니라 pushUnflagged 로 넣어 cleaned 에 남긴다.
