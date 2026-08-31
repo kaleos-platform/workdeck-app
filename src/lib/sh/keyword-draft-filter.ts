@@ -23,6 +23,7 @@ const DRAFT_DROP_CODES: ReadonlySet<ViolationCode> = new Set<ViolationCode>([
   'KW_DUP_PERMUTATION', // §12 단어 순서만 다른 조합
   'KW_DUP_WITH_NAME', // §10 Rule 1 — 가이드가 "가장 중요"라 한 규칙
   'KW_NAME_COMPOUND', // §10 — 상품명 단어를 붙여 만든 복합어(한국어는 이쪽이 대부분이다)
+  'KW_NAME_PARTIAL', // §10 — 상품명 단어가 섞인 조합. 후보는 아예 안 내보낸다
   'KW_DUP_WITH_CATEGORY', // §22 카테고리·구매옵션 재사용
   'KW_SHIPPING_TERM', // §19 배송 표현
   'KW_EFFICACY_TERM', // §19 효능 표현
@@ -35,6 +36,15 @@ const DRAFT_DROP_CODES: ReadonlySet<ViolationCode> = new Set<ViolationCode>([
 // 후보에 붙여 내려보내는 violations 에서도 지운다 — 안 그러면 다이얼로그가 후보 전부에
 // 경고 아이콘을 그린다. 반대로 등록분에 붙은 KW_OVER_LIMIT 은 진짜 진단이라 그대로 둔다.
 const CANDIDATE_HIDDEN_CODES: ReadonlySet<ViolationCode> = new Set<ViolationCode>(['KW_OVER_LIMIT'])
+
+/**
+ * 등록된 검색어에 붙었을 때 **제거를 권하는** 코드. 후보 드롭 목록과 일부러 다르다 —
+ * KW_NAME_PARTIAL 은 "이 부분만 빼면 쓸 수 있다"는 제안이라 지울 대상이 아니다.
+ * 새 후보로 만들지 않는 것과, 이미 등록된 것을 지우라고 하는 것은 다른 판단이다.
+ */
+const REVIEW_REMOVE_CODES: ReadonlySet<ViolationCode> = new Set<ViolationCode>(
+  [...DRAFT_DROP_CODES].filter((c) => c !== 'KW_NAME_PARTIAL')
+)
 
 /** AI 가 만든 검색어 후보 1건. */
 export type DraftKeywordCandidate = { keyword: string; intent: KeywordIntent; reason: string }
@@ -60,6 +70,8 @@ export type KeywordReview = {
   /** 결정적 검증기가 이 등록 검색어에 대해 잡은 위반(KW_OVER_LIMIT 포함). */
   violations: Violation[]
   recommendRemove: boolean
+  /** 상품명 단어를 뺀 대안. 있으면 UI 가 원클릭 교체를 제공한다(지우는 게 아니라 고친다). */
+  suggestion?: string
 }
 
 export type FilterDraftInput = {
@@ -109,13 +121,18 @@ export function filterDraftKeywords(input: FilterDraftInput): FilterDraftResult 
     const violations = byIndex.get(index) ?? []
     const verdict = verdictByKey.get(normalizeKeyword(keyword))
     const label: KeywordReviewLabel = verdict?.label ?? 'KEEP'
+    const suggestion = violations.find((v) => v.suggestion)?.suggestion
     return {
       keyword,
       label,
       labelText: KEYWORD_REVIEW_LABELS[label],
       reason: verdict?.reason ?? '',
       violations,
-      recommendRemove: label !== 'KEEP' || violations.some((v) => DRAFT_DROP_CODES.has(v.code)),
+      // 제안이 있으면 지우라고 하지 않는다 — 사용자가 고칠 수 있는 것을 삭제로 몰지 않는다.
+      recommendRemove:
+        !suggestion &&
+        (label !== 'KEEP' || violations.some((v) => REVIEW_REMOVE_CODES.has(v.code))),
+      suggestion,
     }
   })
 

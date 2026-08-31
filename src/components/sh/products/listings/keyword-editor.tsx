@@ -234,7 +234,10 @@ export function KeywordEditor({
               </span>
             </>
           )}
-          {violationCount > 0 && !readOnly && (
+          {/* 지울 게 있을 때만 보여준다 — 제안(KW_NAME_PARTIAL)은 cleaned 에 남으므로
+              위반은 있는데 삭제 대상이 0인 경우가 생긴다. 그때 버튼을 띄우면 눌러도
+              아무 일이 없다. */}
+          {removeCount > 0 && !readOnly && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

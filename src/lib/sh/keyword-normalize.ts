@@ -128,3 +128,62 @@ export function coverByNameTokens(keyword: string, nameTokens: string[]): NameCo
   pieces.reverse()
   return { pieces }
 }
+
+/**
+ * 검색어에서 상품명 단어를 걷어낸 나머지 — §10 Rule 1 의 "이 부분만 빼면 쓸 수 있다" 제안.
+ *
+ * `50대여성브라` 는 상품명 단어(`여성`·`브라`)를 빼면 `50대` 가 남는다. 쿠팡은 상품명 단어를
+ * 이미 색인하므로 붙여 넣어봐야 새 유입이 없고, 남은 조각이 진짜 새 진입로다.
+ *
+ * 토큰 단위로 먼저 처리한 뒤 토큰 **안쪽**의 부분문자열을 걷어낸다 — despaced 문자열에 바로
+ * 손대면 `통기성 좋은 브라` 가 `통기성좋은` 으로 붙어버려 사용자가 쓰던 띄어쓰기를 잃는다.
+ *
+ * 상품명 단어를 하나도 못 찾으면 null(제안할 것이 없다). 긴 토큰부터 지우는 이유는 상품명에
+ * `브라` 와 `브라탑` 이 함께 있을 때 짧은 쪽이 먼저 먹어 `탑` 이 남는 것을 막기 위해서다.
+ */
+export type NameStripResult = {
+  /** 상품명 단어를 걷어낸 나머지. 전부 걷히면 빈 문자열 */
+  stripped: string
+  /** 걷어낸 상품명 단어들(원문 표기) */
+  removed: string[]
+}
+
+export function stripNameTokens(keyword: string, nameTokens: string[]): NameStripResult | null {
+  const raw = String(keyword ?? '').trim()
+  if (!raw) return null
+
+  // despaced → 원문 표기. 긴 것부터 지운다.
+  const dict = new Map<string, string>()
+  for (const token of nameTokens) {
+    const key = despaceKeyword(token)
+    if (key) if (!dict.has(key)) dict.set(key, token)
+  }
+  const keys = [...dict.keys()].sort((a, b) => b.length - a.length)
+  if (keys.length === 0) return null
+
+  const removed: string[] = []
+  const keptTokens: string[] = []
+
+  for (const token of splitTokens(raw)) {
+    let rest = despaceKeyword(token)
+    let touched = false
+    for (const key of keys) {
+      if (!rest.includes(key)) continue
+      // 같은 단어가 두 번 들어간 검색어도 있으므로 전부 지운다.
+      while (rest.includes(key)) {
+        rest = rest.replace(key, '')
+        removed.push(dict.get(key) as string)
+      }
+      touched = true
+      if (!rest) break
+    }
+    if (!touched) {
+      keptTokens.push(token)
+      continue
+    }
+    if (rest) keptTokens.push(rest)
+  }
+
+  if (removed.length === 0) return null
+  return { stripped: keptTokens.join(' ').trim(), removed: [...new Set(removed)] }
+}

@@ -128,6 +128,18 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
     setKeywords((prev) => prev.filter((k) => normalizeKeyword(k) !== target))
   }
 
+  // 제안대로 하나만 바꾼다. 제거와 마찬가지로 로컬 state 만 건드리고 저장은 기존 경로가 맡는다.
+  // 이미 같은 값이 있으면 중복이 되므로 교체 대신 원본만 뺀다.
+  function handleReplaceKeyword(keyword: string, next: string) {
+    const target = normalizeKeyword(keyword)
+    const replacement = normalizeKeyword(next)
+    setKeywords((prev) => {
+      const others = prev.filter((k) => normalizeKeyword(k) !== target)
+      if (others.some((k) => normalizeKeyword(k) === replacement)) return others
+      return prev.map((k) => (normalizeKeyword(k) === target ? next : k))
+    })
+  }
+
   async function handleSave(changeMeta?: KeywordChangeMeta) {
     if (gateRequired && !changeMeta) {
       setGateOpen(true)
@@ -365,6 +377,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             onApplyName={setSearchName}
             onAddKeyword={handleAddKeyword}
             onRemoveKeyword={handleRemoveKeyword}
+            onReplaceKeyword={handleReplaceKeyword}
           />
           <NameDraftDialog
             open={keywordDraftOpen}
@@ -379,6 +392,7 @@ export function ProductKeywordCard({ card, productId, suggestions, onSaved }: Pr
             onApplyName={setSearchName}
             onAddKeyword={handleAddKeyword}
             onRemoveKeyword={handleRemoveKeyword}
+            onReplaceKeyword={handleReplaceKeyword}
           />
         </>
       )}

@@ -87,6 +87,8 @@ type Props = {
   onAddKeyword: (keyword: string) => void
   /** 없으면 제거 버튼을 렌더하지 않는다(읽기 전용 카드). */
   onRemoveKeyword?: (keyword: string) => void
+  /** 상품명 단어를 뺀 대안으로 바꾼다. 없으면 교체 버튼을 렌더하지 않는다. */
+  onReplaceKeyword?: (keyword: string, next: string) => void
 }
 
 export function NameDraftDialog({
@@ -102,6 +104,7 @@ export function NameDraftDialog({
   onApplyName,
   onAddKeyword,
   onRemoveKeyword,
+  onReplaceKeyword,
 }: Props) {
   const loading = status === 'idle' || status === 'loading'
   const unavailable = status === 'unavailable'
@@ -135,6 +138,7 @@ export function NameDraftDialog({
   const reviewByKey = new Map(reviews.map((r) => [normalizeKeyword(r.keyword), r]))
   const shownReviews = existingKeywords.map((k) => reviewByKey.get(normalizeKeyword(k)) ?? null)
   const removeCount = shownReviews.filter((r) => r?.recommendRemove).length
+  const suggestCount = shownReviews.filter((r) => r?.suggestion).length
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -297,6 +301,11 @@ export function NameDraftDialog({
                     {removeCount > 0 && (
                       <span className="ml-1 text-destructive">· 정리 권장 {removeCount}</span>
                     )}
+                    {suggestCount > 0 && (
+                      <span className="ml-1 text-amber-600 dark:text-amber-400">
+                        · 수정 제안 {suggestCount}
+                      </span>
+                    )}
                   </p>
                   {existingKeywords.length === 0 ? (
                     <p className="text-xs text-muted-foreground">아직 없습니다.</p>
@@ -305,6 +314,7 @@ export function NameDraftDialog({
                       {existingKeywords.map((k, i) => {
                         const review = shownReviews[i]
                         const flagged = review?.recommendRemove ?? false
+                        const suggestion = review?.suggestion
                         const moveToOption = review?.label === 'MOVE_TO_OPTION'
                         // AI 는 KEEP 인데 결정적 규칙이 잡은 경우가 있다(상품명 단어 조합 등).
                         // 그대로 '유지' 라고 쓰면 빨간 배지에 "유지" 가 붙어 앞뒤가 안 맞는다.
@@ -321,17 +331,37 @@ export function NameDraftDialog({
                           : ''
                         const badge = (
                           <Badge
-                            variant={flagged ? 'outline' : 'secondary'}
+                            variant={flagged || suggestion ? 'outline' : 'secondary'}
                             className={cn(
                               'cursor-default gap-1 text-sm font-normal',
                               // 검색옵션 이관은 "잘못된 키워드"가 아니라 "여기 있을 값이 아니다" 라
                               // 경고색과 구분한다.
                               moveToOption && 'border-sky-500/60 text-sky-700 dark:text-sky-400',
-                              flagged && !moveToOption && 'border-destructive/60 text-destructive'
+                              flagged && !moveToOption && 'border-destructive/60 text-destructive',
+                              // 제안은 "지울 것"이 아니라 "고칠 것" 이라 경고색과 다른 색을 쓴다.
+                              suggestion && 'border-amber-500/60 text-amber-700 dark:text-amber-400'
                             )}
                           >
                             {k}
                             {flagged && <span className="text-xs opacity-80">{badgeLabel}</span>}
+                            {/* 제안은 결과를 그대로 보여준다 — 무엇으로 바뀌는지 모르고 누르게
+                              하지 않는다. 적용은 사용자가 이 칩 하나에 대해서만 누른다. */}
+                            {suggestion && onReplaceKeyword && (
+                              <button
+                                type="button"
+                                aria-label={`${k}를 ${suggestion}로 교체`}
+                                className="ml-0.5 rounded-sm font-medium underline-offset-2 hover:underline"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onReplaceKeyword(k, suggestion)
+                                }}
+                              >
+                                → {suggestion}
+                              </button>
+                            )}
+                            {suggestion && !onReplaceKeyword && (
+                              <span className="text-xs opacity-80">→ {suggestion}</span>
+                            )}
                             {flagged && onRemoveKeyword && (
                               <button
                                 type="button"

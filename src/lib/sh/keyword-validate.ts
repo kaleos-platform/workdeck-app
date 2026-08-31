@@ -5,6 +5,7 @@ import { tokenizeProductName } from '@/lib/inv/search-tokens'
 import {
   coverByNameTokens,
   despaceKeyword,
+  stripNameTokens,
   keywordKeys,
   normalizeKeyword,
   splitTokens,
@@ -28,6 +29,7 @@ export type ViolationCode =
   | 'KW_OVER_LIMIT'
   | 'KW_DUP_WITH_NAME'
   | 'KW_NAME_COMPOUND'
+  | 'KW_NAME_PARTIAL'
   | 'KW_DUP_SPACING_VARIANT'
   | 'KW_DUP_PERMUTATION'
   | 'KW_DUP_EXACT'
@@ -46,6 +48,11 @@ export type Violation = {
   message: string
   /** 충돌 상대 토큰/키워드 (하이라이트용) */
   conflictWith?: string
+  /**
+   * 이렇게 고치면 된다는 제안 (KW_NAME_PARTIAL). UI 가 원클릭 교체에 그대로 쓴다.
+   * 제안이 있는 위반은 "지울 것"이 아니라 "고칠 것"이라 cleaned 에서 빼지 않는다.
+   */
+  suggestion?: string
 }
 
 // KeywordRuleSet 에는 하한 필드가 없다(가이드 §7 이 목표 40자만 규정).
@@ -55,6 +62,10 @@ const NAME_MIN_LENGTH = 10
 // 검색어 1건의 길이 상한. 쿠팡이 명시한 값은 아니고, §12 "의미 단위로 관리" 취지에서
 // 문장 수준으로 길어진 검색어를 잡기 위한 내부 기준.
 const KEYWORD_MAX_LENGTH = 25
+
+// 상품명 단어를 걷어낸 나머지가 이보다 짧으면 검색어로 쓸 수 없다고 본다 —
+// '브라탑' → '탑', '노와이어브라' → '' 처럼 고칠 대상이 아니라 지울 대상이다.
+const MIN_STRIPPED_LENGTH = 2
 
 // 소프트 임계로만 세는 일반 특수문자(§8.4 — 괄호·느낌표 등은 정상 상품명에도 쓰인다).
 const SOFT_SPECIAL_CHARS = /[[\]()<>{}!~@#$%^&*"'?]/g
@@ -109,6 +120,7 @@ type NameOverlap =
   | { kind: 'all-tokens' }
   | { kind: 'substring' }
   | { kind: 'compound'; pieces: string[] }
+  | { kind: 'partial'; suggestion: string; removed: string[] }
 
 /**
  * 게이트 순서는 **all-tokens → substring → compound** 이고, compound 는 앞의 둘이 모두
@@ -129,12 +141,22 @@ function overlapsNameTokens(
     return { kind: 'all-tokens' }
   if (despaced.length > 0 && nameDespaced.includes(despaced)) return { kind: 'substring' }
 
-  // §10 한국어 복합어 — `노와이어브라` 처럼 상품명 단어를 붙여 만든 조합. 앞의 두 게이트는
-  // 구조적으로 못 잡는다(토큰 1개라 완전 일치 불가, 상품명 어순이 달라 부분문자열도 불가).
-  const cover = coverByNameTokens(keyword, nameTokens)
-  // 조각 1개는 상품명 토큰과 같다는 뜻이라 이미 all-tokens 게이트가 소유한다.
-  if (cover && cover.pieces.length >= 2) return { kind: 'compound', pieces: cover.pieces }
-  return null
+  // §10 한국어 복합어·부분 포함 — `노와이어브라`·`여름브라` 처럼 상품명 단어를 붙여 쓴 검색어.
+  // 앞의 두 게이트는 구조적으로 못 잡는다(토큰 1개라 완전 일치 불가, 어순이 달라 부분문자열도 불가).
+  // 띄어 쓴 조합은 건드리지 않는다 — 가이드 §9 가 '페이스 타월'(타월이 상품명에 있다)을
+  // 올바른 예로 명시한다. 문제로 보는 건 '여름브라' 처럼 한 덩어리로 붙여 쓴 쪽이다.
+  if (kwTokens.length !== 1) return null
+
+  const strip = stripNameTokens(keyword, nameTokens)
+  if (!strip) return null
+  const rest = despaceKeyword(strip.stripped)
+  // 상품명 단어를 빼고 나면 남는 게 없거나 한 글자뿐 — 검색어로 쓸 수 없으니 제거를 권한다.
+  if (rest.length < MIN_STRIPPED_LENGTH) {
+    const cover = coverByNameTokens(keyword, nameTokens)
+    return { kind: 'compound', pieces: cover?.pieces ?? strip.removed }
+  }
+  // 남은 조각이 진짜 새 진입로다. 지우는 게 아니라 이렇게 고치자고 제안한다.
+  return { kind: 'partial', suggestion: strip.stripped, removed: strip.removed }
 }
 
 export type NameValidationResult = {
@@ -326,6 +348,11 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
     violations.push(v)
     if (v.keywordIndex !== null) flagged.add(v.keywordIndex)
   }
+  // 고칠 제안이 붙은 위반은 cleaned 에서 빼지 않는다 — "규칙 위반 정리"가 지워버리면
+  // 사용자가 제안대로 고칠 기회를 잃는다. 표시는 하되 삭제 대상은 아니다.
+  const pushUnflagged = (v: Violation) => {
+    violations.push(v)
+  }
 
   entries.forEach((entry, position) => {
     const { index, raw, keys } = entry
@@ -394,7 +421,18 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
     // ─── §10 Rule 1 상품명 중복 ──────────────────────────────────────────
     // 판정은 overlapsNameTokens 한 곳에서만 한다(suggest 와 규칙이 갈리지 않도록).
     const overlap = overlapsNameTokens(raw, nameTokenSet, nameDespaced, nameTokens)
-    if (overlap?.kind === 'compound') {
+    if (overlap?.kind === 'partial') {
+      // 지울 것이 아니라 고칠 것이다 — push 가 아니라 pushUnflagged 로 넣어 cleaned 에 남긴다.
+      // (일괄 삭제 버튼이 이걸 지우면 사용자가 고칠 기회를 잃는다)
+      pushUnflagged({
+        code: 'KW_NAME_PARTIAL',
+        severity: 'WARN',
+        keywordIndex: index,
+        message: `'${raw}'에는 상품명 단어(${overlap.removed.join(', ')})가 들어 있습니다. 상품명 단어는 이미 검색에 잡히니 '${overlap.suggestion}'처럼 남은 부분만 쓰는 편이 낫습니다.`,
+        conflictWith: overlap.removed.join(', '),
+        suggestion: overlap.suggestion,
+      })
+    } else if (overlap?.kind === 'compound') {
       // 상품명에 그 문자열이 통째로 들어있는 건 아니므로 "이미 있습니다"라고 하면 거짓말이다.
       // 어떻게 쪼개졌는지를 그대로 보여줘야 사용자가 판정을 납득한다.
       const pieces = overlap.pieces.join(' + ')
