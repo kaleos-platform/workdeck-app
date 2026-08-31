@@ -66,13 +66,28 @@ const KEYWORD_MAX_LENGTH = 25
 // '브라탑' → '탑', '노와이어브라' → '' 처럼 고칠 대상이 아니라 지울 대상이다.
 const MIN_STRIPPED_LENGTH = 2
 
-/** 받침 유무에 따라 은/는 을 고른다 — '클렌징폼는' 같은 문장이 그대로 사용자에게 나간다. */
-function topicParticle(word: string): string {
+/** 마지막 글자의 받침 코드. 한글 음절이 아니면 null. */
+function finalConsonant(word: string): number | null {
   const last = word.trim().slice(-1)
+  if (!last) return null
   const code = last.charCodeAt(0)
-  // 한글 음절이 아니면(숫자·영문 등) 보수적으로 '는'.
-  if (Number.isNaN(code) || code < 0xac00 || code > 0xd7a3) return '는'
-  return (code - 0xac00) % 28 === 0 ? '는' : '은'
+  if (code < 0xac00 || code > 0xd7a3) return null
+  return (code - 0xac00) % 28
+}
+
+/** 은/는 — '클렌징폼는' 같은 문장이 그대로 사용자에게 나간다. */
+export function topicParticle(word: string): string {
+  const jong = finalConsonant(word)
+  if (jong === null) return '는'
+  return jong === 0 ? '는' : '은'
+}
+
+/** 로/으로 — 'ㄹ' 받침은 '로' 를 쓴다('크림으로', '설로'가 아니라 '설로'). */
+export function directionParticle(word: string): string {
+  const jong = finalConsonant(word)
+  if (jong === null) return '로'
+  // 8 = 'ㄹ'. 받침이 없거나 ㄹ 이면 '로', 나머지는 '으로'.
+  return jong === 0 || jong === 8 ? '로' : '으로'
 }
 
 // 소프트 임계로만 세는 일반 특수문자(§8.4 — 괄호·느낌표 등은 정상 상품명에도 쓰인다).

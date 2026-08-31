@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { DEFAULT_KEYWORD_RULES, type KeywordRuleSet } from '@/lib/sh/keyword-rules'
 import {
+  directionParticle,
   validateKeywords,
   type Violation,
   type ViolationCode,
@@ -406,7 +407,7 @@ export function KeywordEditor({
                       onClick={() => replaceAt(row.idx, row.suggestion as string)}
                       className="h-6 px-2 text-xs"
                     >
-                      &apos;{row.suggestion}&apos;로 변경
+                      &apos;{row.suggestion}&apos;{directionParticle(row.suggestion as string)} 변경
                     </Button>
                   )}
                   {!readOnly && !row.suggestion && (

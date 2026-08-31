@@ -78,7 +78,8 @@ describe('KeywordEditor 위반 사유 상시 노출', () => {
     const user = userEvent.setup()
     const { onChange } = renderEditor(['여름브라', '레이스'])
 
-    await user.click(screen.getByRole('button', { name: /'여름'로 변경/ }))
+    // 조사는 받침에 따라 달라진다 — '여름' 은 받침 ㅁ 이라 '으로'.
+    await user.click(screen.getByRole('button', { name: /'여름'으로 변경/ }))
 
     expect(onChange).toHaveBeenCalledWith(['여름', '레이스'])
   })
