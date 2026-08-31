@@ -54,3 +54,42 @@ describe('KeywordEditor 위반 정리 버튼', () => {
     expect(onChange).toHaveBeenCalledWith(['티셔츠브라'])
   })
 })
+
+// 사용자가 "왜 걸렸는지 알 수 없다" 고 한 지점. 칩의 아이콘 툴팁만으로는 hover 하기 전까지
+// 이유가 보이지 않았다.
+describe('KeywordEditor 위반 사유 상시 노출', () => {
+  it('위반마다 이유를 문장으로 보여준다', () => {
+    renderEditor(['노와이어브라', '여름브라'])
+
+    expect(
+      screen.getByText(/'노와이어브라'는 상품명 단어\(노와이어 \+ 브라\)만으로/)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/'여름브라'에는 상품명 단어\(브라\)가 들어 있습니다/)
+    ).toBeInTheDocument()
+  })
+
+  it('위반이 없으면 목록도 없다', () => {
+    renderEditor(['레이스'])
+    expect(screen.queryByText(/상품명 단어/)).not.toBeInTheDocument()
+  })
+
+  it('제안이 있으면 그 자리에서 바로 고칠 수 있다', async () => {
+    const user = userEvent.setup()
+    const { onChange } = renderEditor(['여름브라', '레이스'])
+
+    // 조사는 받침에 따라 달라진다 — '여름' 은 받침 ㅁ 이라 '으로'.
+    await user.click(screen.getByRole('button', { name: /'여름'으로 변경/ }))
+
+    expect(onChange).toHaveBeenCalledWith(['여름', '레이스'])
+  })
+
+  it('제안이 없으면 제거 버튼을 준다', async () => {
+    const user = userEvent.setup()
+    const { onChange } = renderEditor(['노와이어브라', '레이스'])
+
+    await user.click(screen.getByRole('button', { name: '제거' }))
+
+    expect(onChange).toHaveBeenCalledWith(['레이스'])
+  })
+})

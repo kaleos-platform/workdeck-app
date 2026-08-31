@@ -2,6 +2,8 @@ import { tokenizeProductName } from '@/lib/inv/search-tokens'
 import { DEFAULT_KEYWORD_RULES, resolveKeywordRules } from '../keyword-rules'
 import {
   countNamingViolations,
+  directionParticle,
+  topicParticle,
   validateKeywords,
   validateListingNaming,
   validateProductName,
@@ -585,5 +587,26 @@ describe('validateKeywords — KW_NAME_PARTIAL 제안', () => {
     expect(v.message).toContain('브라')
     expect(v.message).toContain('풀컵')
     expect(v.conflictWith).toBe('브라')
+  })
+})
+
+// 사용자에게 그대로 나가는 문장이라 조사가 틀리면 눈에 띈다.
+describe('조사 선택', () => {
+  it('은/는 을 받침으로 고른다', () => {
+    expect(topicParticle('클렌징폼')).toBe('은')
+    expect(topicParticle('브라')).toBe('는')
+    expect(topicParticle('여름브라')).toBe('는')
+  })
+
+  it('로/으로 를 받침으로 고른다 (ㄹ 받침은 로)', () => {
+    expect(directionParticle('크림')).toBe('으로')
+    expect(directionParticle('여름')).toBe('으로')
+    expect(directionParticle('워터')).toBe('로')
+    expect(directionParticle('설')).toBe('로')
+  })
+
+  it('한글이 아니면 기본형', () => {
+    expect(topicParticle('cream')).toBe('는')
+    expect(directionParticle('cream')).toBe('로')
   })
 })

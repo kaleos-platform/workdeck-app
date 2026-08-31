@@ -185,5 +185,11 @@ export function stripNameTokens(keyword: string, nameTokens: string[]): NameStri
   }
 
   if (removed.length === 0) return null
-  return { stripped: keptTokens.join(' ').trim(), removed: [...new Set(removed)] }
+  // 지우는 순서는 긴 것부터지만, 보여줄 때는 **검색어 안에 나온 순서**여야 읽힌다 —
+  // '노와이어브라' 를 '(브라 + 노와이어)' 로 설명하면 사용자가 자기 검색어를 못 알아본다.
+  const source = despaceKeyword(raw)
+  const uniq = [...new Set(removed)].sort(
+    (a, b) => source.indexOf(despaceKeyword(a)) - source.indexOf(despaceKeyword(b))
+  )
+  return { stripped: keptTokens.join(' ').trim(), removed: uniq }
 }
