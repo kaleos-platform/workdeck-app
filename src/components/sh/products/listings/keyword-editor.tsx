@@ -51,6 +51,13 @@ const SEVERITY_ICON = {
   INFO: Info,
 } as const
 
+// 상시 노출 목록의 아이콘 색. 칩은 배경까지 칠하지만(SEVERITY_CHIP) 목록은 아이콘만 물들인다.
+const SEVERITY_CLASS: Record<ViolationSeverity, string> = {
+  ERROR: 'text-destructive',
+  WARN: 'text-amber-600 dark:text-amber-400',
+  INFO: 'text-muted-foreground',
+}
+
 const SEVERITY_LABEL: Record<ViolationSeverity, string> = {
   ERROR: '오류',
   WARN: '경고',
@@ -143,6 +150,27 @@ export function KeywordEditor({
     if (next.length !== value.length) {
       onChange(next)
     }
+  }
+
+  // 화면에 그대로 뿌릴 위반 목록. 칩 순서를 따라가고, 한 검색어에 여러 위반이 있으면 모두 낸다.
+  // INFO 는 제외한다 — 안내성 문구까지 상시로 깔면 진짜 문제가 묻힌다.
+  const violationRows = useMemo(
+    () =>
+      validation.violations
+        .filter((v) => v.keywordIndex !== null && v.severity !== 'INFO')
+        .map((v) => ({
+          idx: v.keywordIndex as number,
+          code: v.code,
+          severity: v.severity,
+          message: v.message,
+          suggestion: v.suggestion,
+        }))
+        .sort((a, b) => a.idx - b.idx),
+    [validation.violations]
+  )
+
+  function replaceAt(idx: number, next: string) {
+    onChange(value.map((v, i) => (i === idx ? next : v)))
   }
 
   function remove(idx: number) {
@@ -349,6 +377,54 @@ export function KeywordEditor({
           {value.length} / {MAX_KEYWORDS}
           {!readOnly && ' · Enter 또는 ,(쉼표)로 추가, Backspace로 마지막 삭제'}
         </p>
+
+        {/* 위반 사유는 상시 노출한다 — 칩의 아이콘 툴팁만 두면 hover 하기 전까지 왜 걸렸는지
+            알 수 없다. 상품명 검증 패널(name-validation-panel)과 같은 형식이라 두 영역이
+            같은 방식으로 읽힌다. 제안이 있는 것은 그 자리에서 바로 고칠 수 있게 한다. */}
+        {violationRows.length > 0 && (
+          <ul className="space-y-1" aria-live="polite">
+            {violationRows.map((row) => {
+              const Icon = SEVERITY_ICON[row.severity]
+              return (
+                <li
+                  key={`${row.idx}-${row.code}`}
+                  className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
+                >
+                  <span className="flex items-start gap-1.5">
+                    <Icon
+                      className={cn('mt-0.5 h-3.5 w-3.5 shrink-0', SEVERITY_CLASS[row.severity])}
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only">{SEVERITY_LABEL[row.severity]}</span>
+                    <span>{row.message}</span>
+                  </span>
+                  {!readOnly && row.suggestion && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => replaceAt(row.idx, row.suggestion as string)}
+                      className="h-6 px-2 text-xs"
+                    >
+                      &apos;{row.suggestion}&apos;로 변경
+                    </Button>
+                  )}
+                  {!readOnly && !row.suggestion && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => remove(row.idx)}
+                      className="h-6 px-2 text-xs"
+                    >
+                      제거
+                    </Button>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
         {freshSuggestions.length > 0 && !readOnly && (
           <div className="flex flex-wrap gap-1.5">
             <span className="text-xs text-muted-foreground">추천:</span>
