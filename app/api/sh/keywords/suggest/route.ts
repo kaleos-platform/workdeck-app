@@ -38,6 +38,8 @@ export async function GET(req: NextRequest) {
   let existing: string[] = []
   let channelId: string | null = null
   let productContext: ProductContext | undefined
+  // 이 화면이 다루는 상품들. 추천 풀에서 "다른 상품 전용 키워드" 를 걸러내는 데 쓴다.
+  let scopeProductIds: string[] = []
 
   if (listingId) {
     const listing = await prisma.productListing.findFirst({
@@ -54,7 +56,12 @@ export async function GET(req: NextRequest) {
             option: {
               select: {
                 product: {
-                  select: { description: true, features: true, certifications: true },
+                  select: {
+                    id: true,
+                    description: true,
+                    features: true,
+                    certifications: true,
+                  },
                 },
               },
             },
@@ -73,6 +80,7 @@ export async function GET(req: NextRequest) {
     for (const linkedItem of listing.items) {
       const p = linkedItem.option?.product
       if (!p) continue
+      scopeProductIds.push(p.id)
       if (p.description) descriptions.push(p.description)
       features.push(...toStringArray(p.features))
       certifications.push(...toStringArray(p.certifications))
@@ -93,6 +101,7 @@ export async function GET(req: NextRequest) {
       },
     })
     if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
+    scopeProductIds = [product.id]
     productName = searchNameParam || product.name || productDisplayName(product)
     // 상품 단위에는 keywords 컬럼이 없다 — 이미 연결된 키워드를 '등록됨'으로 본다.
     const linked = await prisma.keywordMasterLink.findMany({
@@ -110,8 +119,26 @@ export async function GET(req: NextRequest) {
   const rules = await loadKeywordRules(resolved.space.id, channelId)
 
   // BANNED/EXCLUDED 는 suggestKeywords 가 걸러내지만, 풀을 미리 줄여 전송·정렬 비용을 낮춘다.
+  //
+  // **다른 상품 전용 키워드는 제외한다.** 마스터는 space 단위 풀이라 그대로 쓰면 브라 상품에서
+  // 등록한 '50대여성브라' 가 선 클렌징 패드에도 추천된다. 상품에 연결된 이력이 있는 키워드는
+  // 그 상품의 것으로 보고, 어디에도 안 붙은 범용 키워드만 공용으로 쓴다.
+  const scope = [...new Set(scopeProductIds)]
   const pool = await prisma.keywordMaster.findMany({
-    where: { spaceId: resolved.space.id, status: { notIn: ['BANNED', 'EXCLUDED'] } },
+    where: {
+      spaceId: resolved.space.id,
+      status: { notIn: ['BANNED', 'EXCLUDED'] },
+      ...(scope.length > 0
+        ? {
+            OR: [
+              // 어떤 상품에도 연결되지 않은 범용 키워드
+              { links: { none: { productId: { not: null } } } },
+              // 이 화면의 상품에 연결된 키워드
+              { links: { some: { productId: { in: scope } } } },
+            ],
+          }
+        : {}),
+    },
     select: { keyword: true, type: true, score: true, status: true },
     orderBy: { score: 'desc' },
     take: 500,
