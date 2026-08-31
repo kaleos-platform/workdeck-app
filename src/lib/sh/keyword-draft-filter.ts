@@ -82,6 +82,8 @@ export type FilterDraftInput = {
   productName: string
   categoryNames?: string[]
   optionNames?: string[]
+  /** 워크스페이스 브랜드명 — 상품명 단어로 치지 않는다. */
+  brandNames?: string[]
   rules: KeywordRuleSet
   /** 최종적으로 남길 후보 수. */
   target: number
@@ -103,6 +105,7 @@ export function filterDraftKeywords(input: FilterDraftInput): FilterDraftResult 
       productName: input.productName,
       categoryNames: input.categoryNames ?? [],
       optionNames: input.optionNames ?? [],
+      brandNames: input.brandNames ?? [],
       rules: input.rules,
     })
     for (const v of result.violations) {

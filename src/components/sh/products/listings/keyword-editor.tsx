@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { AlertCircle, AlertTriangle, Info, Plus, Sparkles, X } from 'lucide-react'
 
+import { useBrandNames } from '@/hooks/use-brand-names'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -100,6 +101,9 @@ export function KeywordEditor({
 
   const normalized = useMemo(() => new Set(value.map((v) => v.toLowerCase())), [value])
 
+  // 브랜드명은 상품명 단어로 치지 않는다 — '크림드' 같은 자사 브랜드 검색은 정당한 유입이다.
+  const brandNames = useBrandNames()
+
   const validation = useMemo(
     () =>
       validateKeywords({
@@ -107,9 +111,10 @@ export function KeywordEditor({
         productName: productName ?? '',
         categoryNames,
         optionNames,
+        brandNames,
         rules: activeRules,
       }),
-    [value, productName, categoryNames, optionNames, activeRules]
+    [value, productName, categoryNames, optionNames, brandNames, activeRules]
   )
 
   // 상품명 길이·위반은 상품명 입력란 아래의 NameValidationPanel 이 담당한다.

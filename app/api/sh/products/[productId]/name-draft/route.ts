@@ -96,7 +96,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   // KeywordMaster 와는 **동기화되지 않는다**(schema.prisma 의 KeywordMaster 상단 주석). 이게
   // 빠지면 화면에 이미 있는 검색어를 AI 가 다시 추천하고(중복 필터가 새고), 진단 대상도 화면과
   // 어긋난다.
-  const [links, listings, channelProducts, pool, adTerms] = await Promise.all([
+  const [links, listings, channelProducts, pool, adTerms, brands] = await Promise.all([
     prisma.keywordMasterLink.findMany({
       where: { productId, keyword: { spaceId: resolved.space.id } },
       select: { keyword: { select: { keyword: true } } },
@@ -128,6 +128,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       take: KEYWORD_POOL_HINTS,
     }),
     loadAdTermsForProduct(resolved.space.id, productId, AD_TERM_HINTS),
+    // 브랜드명은 상품명 단어로 치지 않는다 — 자사 브랜드 검색은 정당한 유입이다.
+    prisma.brand.findMany({ where: { spaceId: resolved.space.id }, select: { name: true } }),
   ])
   // 카드 자신의 값(Json 배열)을 앞에 둔다 — 프롬프트용으로 자를 때 화면에 보이는 것부터 남는다.
   const allExistingKeywords = [
@@ -205,6 +207,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     productName,
     categoryNames: draftInput.categoryName ? [draftInput.categoryName] : [],
     optionNames: draftInput.optionSummary,
+    brandNames: brands.map((b) => b.name),
     rules,
     target: KEYWORD_TARGET,
   })
