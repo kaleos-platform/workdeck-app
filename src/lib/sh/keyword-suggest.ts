@@ -30,6 +30,8 @@ export type ProductContext = {
 
 export type SuggestKeywordsInput = {
   productName: string
+  /** 워크스페이스 브랜드명 — 상품명 단어로 치지 않는다(브랜드 검색은 정당한 유입). */
+  brandNames?: string[]
   existing: string[]
   masterPool: SuggestPoolItem[]
   rules: KeywordRuleSet
@@ -149,7 +151,7 @@ export function suggestKeywordsDetailed(input: SuggestKeywordsInput): SuggestKey
     if (item.status === 'BANNED' || item.status === 'EXCLUDED') continue
     const key = normalizeKeyword(keyword)
     if (taken.has(key) || seen.has(key)) continue
-    if (overlapsProductName(keyword, input.productName)) continue
+    if (overlapsProductName(keyword, input.productName, input.brandNames)) continue
     seen.add(key)
     const inContext = contextText.length > 0 && contextText.includes(key)
     picked.push({ ...item, keyword, boostedScore: item.score + (inContext ? CONTEXT_BOOST : 0) })
@@ -174,7 +176,7 @@ export function suggestKeywordsDetailed(input: SuggestKeywordsInput): SuggestKey
     if (mined.length + poolResult.length >= slots) break
     const key = normalizeKeyword(token)
     if (usedKeys.has(key)) continue
-    if (overlapsProductName(token, input.productName)) continue
+    if (overlapsProductName(token, input.productName, input.brandNames)) continue
     usedKeys.add(key)
     mined.push({ keyword: token, origin: 'context' })
   }

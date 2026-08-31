@@ -610,3 +610,53 @@ describe('조사 선택', () => {
     expect(directionParticle('cream')).toBe('로')
   })
 })
+
+// 브랜드명은 상품명에 들어 있지만 검색어로 쓰는 게 정당하다 — 자사 브랜드 검색 유입.
+describe('validateKeywords — 브랜드명 예외', () => {
+  const productName = '크림드 영유아 선 클렌징 패드 눈시림 없는 저자극 해양심층수 성분'
+  const brandNames = ['모던리빙', '미닝랩', '에이엠엘', '크림드']
+  const codes = (keyword: string, withBrand: boolean) =>
+    validateKeywords({
+      keywords: [keyword],
+      productName,
+      rules,
+      ...(withBrand ? { brandNames } : {}),
+    }).violations.map((v) => v.code)
+
+  it('브랜드명 단독 검색어를 지적하지 않는다', () => {
+    expect(codes('크림드', false)).toContain('KW_DUP_WITH_NAME')
+    expect(codes('크림드', true)).toEqual([])
+  })
+
+  it('빼고 남은 게 브랜드뿐이면 통과한다', () => {
+    expect(codes('크림드선패드', false)).toContain('KW_NAME_COMPOUND')
+    expect(codes('크림드선패드', true)).toEqual([])
+  })
+
+  it('브랜드 말고 다른 상품명 단어가 남으면 여전히 지적한다', () => {
+    const r = validateKeywords({
+      keywords: ['크림드워터패드'],
+      productName,
+      brandNames,
+      rules,
+    })
+    expect(r.violations[0].code).toBe('KW_NAME_PARTIAL')
+    expect(r.violations[0].suggestion).toBe('크림드워터')
+  })
+
+  it('브랜드를 경계로 끊어 부분문자열을 본다 — 브랜드만 지우면 앞뒤가 붙어 오탐이 난다', () => {
+    // '크림드' 를 지우고 이어붙이면 '…성분' + (없음) 이 되지만, 브랜드가 중간에 있는
+    // 상품명에서는 떨어진 두 단어가 붙어 실제로 없는 조합이 "상품명에 있다"고 잡힌다.
+    const r = validateKeywords({
+      keywords: ['영유아선'],
+      productName: '영유아 크림드 선 클렌징',
+      brandNames,
+      rules,
+    })
+    expect(r.violations.map((v) => v.code)).not.toContain('KW_DUP_WITH_NAME')
+  })
+
+  it('브랜드 목록이 없으면 기존과 동일하게 동작한다', () => {
+    expect(codes('선패드', true)).toContain('KW_NAME_COMPOUND')
+  })
+})
