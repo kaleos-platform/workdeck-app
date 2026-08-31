@@ -111,6 +111,16 @@ async function seed() {
   return { cleansingId: cleansing.id }
 }
 
+/** 라우트 반환 타입이 optional 이라 테스트에서 좁혀 쓴다. */
+async function suggestFor(productId: string): Promise<string[]> {
+  const req = new NextRequest(`http://localhost/api/sh/keywords/suggest?productId=${productId}`)
+  const res = await GET(req)
+  if (!res) throw new Error('라우트가 응답을 돌려주지 않았다')
+  expect(res.status).toBe(200)
+  const body = (await res.json()) as { suggestions: string[] }
+  return body.suggestions
+}
+
 d('GET /api/sh/keywords/suggest — 추천 풀 상품 스코프', () => {
   let cleansingId = ''
 
@@ -130,29 +140,22 @@ d('GET /api/sh/keywords/suggest — 추천 풀 상품 스코프', () => {
   }, 60_000)
 
   it('다른 상품 전용 키워드는 추천하지 않는다', async () => {
-    const req = new NextRequest(`http://localhost/api/sh/keywords/suggest?productId=${cleansingId}`)
-    const res = await GET(req)
-    const body = (await res.json()) as { suggestions: string[] }
+    const suggestions = await suggestFor(cleansingId)
 
-    expect(res.status).toBe(200)
-    expect(body.suggestions).not.toContain('50대여성브라')
+    expect(suggestions).not.toContain('50대여성브라')
   })
 
   it('어디에도 연결되지 않은 범용 키워드는 남는다', async () => {
-    const req = new NextRequest(`http://localhost/api/sh/keywords/suggest?productId=${cleansingId}`)
-    const res = await GET(req)
-    const body = (await res.json()) as { suggestions: string[] }
+    const suggestions = await suggestFor(cleansingId)
 
-    expect(body.suggestions).toContain('물놀이용')
+    expect(suggestions).toContain('물놀이용')
   })
 
   it('이 상품에 이미 연결된 키워드는 추천하지 않는다 — 등록된 것으로 본다', async () => {
     // productId 경로는 상품에 keywords 컬럼이 없어 KeywordMasterLink 를 '등록됨'으로 삼는다.
     // 스코프 필터는 이 키워드를 풀에 남기지만, existing 이라 추천에서는 빠진다.
-    const req = new NextRequest(`http://localhost/api/sh/keywords/suggest?productId=${cleansingId}`)
-    const res = await GET(req)
-    const body = (await res.json()) as { suggestions: string[] }
+    const suggestions = await suggestFor(cleansingId)
 
-    expect(body.suggestions).not.toContain('리무버')
+    expect(suggestions).not.toContain('리무버')
   })
 })
