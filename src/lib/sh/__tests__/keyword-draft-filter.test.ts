@@ -186,12 +186,24 @@ describe('filterDraftKeywords — 등록 검색어 진단', () => {
 describe('filterDraftKeywords — 상품명 복합어(§10 한국어)', () => {
   const productName = '에이엠엘 쿨 메쉬 심리스 커버 브라 노와이어 후크없이 편안한 중년 여성 속옷'
 
-  it('상품명 단어를 붙여 만든 후보는 드롭된다', () => {
+  it('상품명 단어가 섞인 후보는 전부 드롭된다 (새로 만들 때는 아예 안 쓴다)', () => {
     const r = run({
-      candidates: [cand('노와이어브라'), cand('중년여성브라'), cand('티셔츠브라')],
+      candidates: [cand('노와이어브라'), cand('중년여성브라'), cand('티셔츠브라'), cand('티셔츠')],
       productName,
     })
-    expect(r.keywords.map((k) => k.value)).toEqual(['티셔츠브라'])
+    expect(r.keywords.map((k) => k.value)).toEqual(['티셔츠'])
+  })
+
+  it('등록 검색어에 제안이 붙으면 제거 권장이 아니라 suggestion 을 준다', () => {
+    const r = run({ existing: ['여름브라'], candidates: [], productName })
+    expect(r.reviews[0].suggestion).toBe('여름')
+    expect(r.reviews[0].recommendRemove).toBe(false)
+  })
+
+  it('뺄 것이 없어 못 쓰는 검색어는 그대로 제거 권장', () => {
+    const r = run({ existing: ['노와이어브라'], candidates: [], productName })
+    expect(r.reviews[0].suggestion).toBeUndefined()
+    expect(r.reviews[0].recommendRemove).toBe(true)
   })
 
   it('등록 검색어에 붙으면 제거를 권한다', () => {
@@ -202,6 +214,8 @@ describe('filterDraftKeywords — 상품명 복합어(§10 한국어)', () => {
     })
     expect(r.reviews[0].recommendRemove).toBe(true)
     expect(r.reviews[0].violations.map((v) => v.code)).toContain('KW_NAME_COMPOUND')
+    // 티셔츠브라는 '티셔츠' 로 고칠 수 있으므로 제거가 아니라 제안이다.
     expect(r.reviews[1].recommendRemove).toBe(false)
+    expect(r.reviews[1].suggestion).toBe('티셔츠')
   })
 })

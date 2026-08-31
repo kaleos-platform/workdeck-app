@@ -229,3 +229,51 @@ describe('NameDraftDialog 등록 검색어 진단', () => {
     expect(screen.getByText('대상')).toBeInTheDocument()
   })
 })
+
+describe('NameDraftDialog 수정 제안', () => {
+  const suggested = review('이미담긴', {
+    suggestion: '이미',
+    violations: [
+      {
+        code: 'KW_NAME_PARTIAL',
+        severity: 'WARN',
+        keywordIndex: 0,
+        message: '상품명 단어가 들어 있습니다',
+        suggestion: '이미',
+      },
+    ],
+  })
+
+  it('제안이 있으면 대안을 그대로 보여주고 교체 버튼을 준다', () => {
+    renderDialog({ mode: 'keyword', reviews: [suggested], onReplaceKeyword: jest.fn() })
+
+    expect(screen.getByRole('button', { name: '이미담긴를 이미로 교체' })).toBeInTheDocument()
+    expect(screen.getByText(/→ 이미/)).toBeInTheDocument()
+    expect(screen.getByText(/수정 제안 1/)).toBeInTheDocument()
+  })
+
+  it('제안은 제거 권장으로 세지 않는다 (지울 게 아니라 고칠 것)', () => {
+    renderDialog({ mode: 'keyword', reviews: [suggested], onReplaceKeyword: jest.fn() })
+
+    expect(screen.queryByText(/정리 권장/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '이미담긴 제거' })).not.toBeInTheDocument()
+  })
+
+  it('교체를 누르면 원문과 대안을 함께 넘긴다', async () => {
+    const user = userEvent.setup()
+    const onReplaceKeyword = jest.fn()
+    renderDialog({ mode: 'keyword', reviews: [suggested], onReplaceKeyword })
+
+    await user.click(screen.getByRole('button', { name: '이미담긴를 이미로 교체' }))
+
+    expect(onReplaceKeyword).toHaveBeenCalledTimes(1)
+    expect(onReplaceKeyword).toHaveBeenCalledWith('이미담긴', '이미')
+  })
+
+  it('onReplaceKeyword 가 없으면 버튼 없이 제안만 보여준다', () => {
+    renderDialog({ mode: 'keyword', reviews: [suggested] })
+
+    expect(screen.getByText(/→ 이미/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /교체/ })).not.toBeInTheDocument()
+  })
+})

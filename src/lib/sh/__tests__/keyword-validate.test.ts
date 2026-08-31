@@ -508,8 +508,8 @@ describe('validateKeywords — §10 한국어 복합 검색어', () => {
     })
   })
 
-  it('상품명에 없는 단어가 하나라도 섞이면 통과', () => {
-    const keywords = ['티셔츠브라', '여름브라', '갱년기여성속옷', '브라탑']
+  it('상품명 단어가 전혀 없으면 통과', () => {
+    const keywords = ['레이스', '편한브래지어']
     const r = validateKeywords({ keywords, productName, rules })
     expect(r.violations).toEqual([])
     expect(r.cleaned).toEqual(keywords)
@@ -545,5 +545,45 @@ describe('validateKeywords — §10 한국어 복합 검색어', () => {
   it('상품명이 비면 복합어 판정도 발화하지 않는다', () => {
     const r = validateKeywords({ keywords: ['노와이어브라'], productName: '', rules })
     expect(hasCode(r.violations, 0, 'KW_NAME_COMPOUND')).toBe(false)
+  })
+})
+
+// 상품명 단어가 일부만 섞인 경우 — 지울 게 아니라 그 부분만 빼라고 제안한다.
+describe('validateKeywords — KW_NAME_PARTIAL 제안', () => {
+  const productName = '에이엠엘 쿨 메쉬 심리스 커버 브라 노와이어 후크없이 편안한 중년 여성 속옷'
+  const first = (keyword: string) =>
+    validateKeywords({ keywords: [keyword], productName, rules }).violations[0]
+
+  it('상품명 단어를 뺀 나머지를 suggestion 으로 준다', () => {
+    expect(first('여름브라')).toMatchObject({ code: 'KW_NAME_PARTIAL', suggestion: '여름' })
+    expect(first('운동용브라')).toMatchObject({ code: 'KW_NAME_PARTIAL', suggestion: '운동용' })
+    expect(first('갱년기브라')).toMatchObject({ code: 'KW_NAME_PARTIAL', suggestion: '갱년기' })
+  })
+
+  it('상품명 단어가 여러 개면 모두 뺀다', () => {
+    expect(first('50대여성브라')).toMatchObject({ suggestion: '50대' })
+  })
+
+  it('제안이 붙은 검색어는 cleaned 에 남는다 — 일괄 삭제가 지우면 고칠 기회를 잃는다', () => {
+    const r = validateKeywords({ keywords: ['여름브라', '노와이어브라'], productName, rules })
+    expect(r.cleaned).toEqual(['여름브라'])
+  })
+
+  it('빼고 남은 게 2글자 미만이면 제안이 아니라 제거 권장(KW_NAME_COMPOUND)', () => {
+    expect(first('브라탑').code).toBe('KW_NAME_COMPOUND') // '탑' 만 남는다
+    expect(first('브라자').code).toBe('KW_NAME_COMPOUND') // '자' 만 남는다
+    expect(first('노와이어브라').code).toBe('KW_NAME_COMPOUND') // 남는 게 없다
+  })
+
+  it('띄어 쓴 조합은 건드리지 않는다 (가이드 §9 가 허용한 형태)', () => {
+    const r = validateKeywords({ keywords: ['통기성 좋은 브라'], productName, rules })
+    expect(r.violations.map((v) => v.code)).not.toContain('KW_NAME_PARTIAL')
+  })
+
+  it('메시지에 무엇을 뺐는지와 대안을 함께 담는다', () => {
+    const v = first('풀컵브라')
+    expect(v.message).toContain('브라')
+    expect(v.message).toContain('풀컵')
+    expect(v.conflictWith).toBe('브라')
   })
 })
