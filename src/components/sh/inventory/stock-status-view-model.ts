@@ -6,10 +6,31 @@ export type StockStatusRowView = StockMatrixRow & {
 }
 
 export type StockStatusProductCard = StockProductSummary & {
+  /** 관리용 상품명 — 비어있으면 공식 상품명(productName)으로 fallback */
+  productInternalName: string | null
   brandId: string | null
   brandName: string | null
   groupId: string
   groupName: string
+  /** 상품 내 옵션 합계 — 정렬 기준 */
+  out30d: number
+  totalQty: number
+}
+
+/** 화면 표시명 — 관리용 상품명 우선, 없으면 공식 상품명 */
+export function stockStatusDisplayName(product: {
+  productName: string
+  productInternalName: string | null
+}): string {
+  const internal = product.productInternalName?.trim()
+  return internal ? internal : product.productName
+}
+
+/** 30일 출고량 desc → 총재고 desc → 표시명 오름차순 */
+function compareProductCards(a: StockStatusProductCard, b: StockStatusProductCard): number {
+  if (a.out30d !== b.out30d) return b.out30d - a.out30d
+  if (a.totalQty !== b.totalQty) return b.totalQty - a.totalQty
+  return stockStatusDisplayName(a).localeCompare(stockStatusDisplayName(b), 'ko')
 }
 
 export type StockStatusProductFilters = {
@@ -55,6 +76,7 @@ export function buildStockStatusProducts(
     const patch = {
       productId: row.productId,
       productName: row.productName,
+      productInternalName: row.productInternalName,
       brandId: row.brandId,
       brandName: row.brandName,
       groupId: row.groupId,
@@ -63,6 +85,8 @@ export function buildStockStatusProducts(
     if (!existing) {
       productMap.set(row.productId, {
         ...patch,
+        out30d: row.out30d,
+        totalQty: row.displayQty,
         optionCount: 1,
         okOptionCount: nextStatus === 'OK' ? 1 : 0,
         lowOptionCount: nextStatus === 'LOW' ? 1 : 0,
@@ -73,15 +97,15 @@ export function buildStockStatusProducts(
     }
 
     existing.optionCount += 1
+    existing.out30d += row.out30d
+    existing.totalQty += row.displayQty
     if (nextStatus === 'OK') existing.okOptionCount += 1
     else if (nextStatus === 'LOW') existing.lowOptionCount += 1
     else if (nextStatus === 'OUT') existing.outOptionCount += 1
     else existing.overOptionCount += 1
   }
 
-  return Array.from(productMap.values()).sort((a, b) =>
-    a.productName.localeCompare(b.productName, 'ko')
-  )
+  return Array.from(productMap.values()).sort(compareProductCards)
 }
 
 export function filterStockStatusProducts(
@@ -99,7 +123,12 @@ export function filterStockStatusProducts(
     }
     if (filters.groupId && product.groupId !== filters.groupId) return false
     if (!q) return true
-    return [product.productName, product.brandName ?? '', product.groupName]
+    return [
+      product.productName,
+      product.productInternalName ?? '',
+      product.brandName ?? '',
+      product.groupName,
+    ]
       .join(' ')
       .toLowerCase()
       .includes(q)
@@ -109,6 +138,6 @@ export function filterStockStatusProducts(
     const aPinned = pinned.has(a.productId)
     const bPinned = pinned.has(b.productId)
     if (aPinned !== bPinned) return aPinned ? -1 : 1
-    return a.productName.localeCompare(b.productName, 'ko')
+    return compareProductCards(a, b)
   })
 }
