@@ -213,6 +213,7 @@ export type SpaceWhereInput = {
   brands?: Prisma.BrandListRelationFilter
   productPricingSettings?: Prisma.XOR<Prisma.ProductPricingSettingsNullableScalarRelationFilter, Prisma.ProductPricingSettingsWhereInput> | null
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasListRelationFilter
+  atomicWords?: Prisma.SpaceAtomicWordListRelationFilter
   productListings?: Prisma.ProductListingListRelationFilter
   channelStockMovements?: Prisma.ChannelStockMovementListRelationFilter
   channelProducts?: Prisma.ChannelProductListRelationFilter
@@ -299,6 +300,7 @@ export type SpaceOrderByWithRelationInput = {
   brands?: Prisma.BrandOrderByRelationAggregateInput
   productPricingSettings?: Prisma.ProductPricingSettingsOrderByWithRelationInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasOrderByRelationAggregateInput
+  atomicWords?: Prisma.SpaceAtomicWordOrderByRelationAggregateInput
   productListings?: Prisma.ProductListingOrderByRelationAggregateInput
   channelStockMovements?: Prisma.ChannelStockMovementOrderByRelationAggregateInput
   channelProducts?: Prisma.ChannelProductOrderByRelationAggregateInput
@@ -388,6 +390,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   brands?: Prisma.BrandListRelationFilter
   productPricingSettings?: Prisma.XOR<Prisma.ProductPricingSettingsNullableScalarRelationFilter, Prisma.ProductPricingSettingsWhereInput> | null
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasListRelationFilter
+  atomicWords?: Prisma.SpaceAtomicWordListRelationFilter
   productListings?: Prisma.ProductListingListRelationFilter
   channelStockMovements?: Prisma.ChannelStockMovementListRelationFilter
   channelProducts?: Prisma.ChannelProductListRelationFilter
@@ -498,6 +501,7 @@ export type SpaceCreateInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -584,6 +588,7 @@ export type SpaceUncheckedCreateInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -670,6 +675,7 @@ export type SpaceUpdateInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -756,6 +762,7 @@ export type SpaceUncheckedUpdateInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1312,6 +1319,20 @@ export type SpaceUpdateOneRequiredWithoutOptionCodeAliasesNestedInput = {
   upsert?: Prisma.SpaceUpsertWithoutOptionCodeAliasesInput
   connect?: Prisma.SpaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutOptionCodeAliasesInput, Prisma.SpaceUpdateWithoutOptionCodeAliasesInput>, Prisma.SpaceUncheckedUpdateWithoutOptionCodeAliasesInput>
+}
+
+export type SpaceCreateNestedOneWithoutAtomicWordsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutAtomicWordsInput, Prisma.SpaceUncheckedCreateWithoutAtomicWordsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutAtomicWordsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutAtomicWordsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutAtomicWordsInput, Prisma.SpaceUncheckedCreateWithoutAtomicWordsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutAtomicWordsInput
+  upsert?: Prisma.SpaceUpsertWithoutAtomicWordsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutAtomicWordsInput, Prisma.SpaceUpdateWithoutAtomicWordsInput>, Prisma.SpaceUncheckedUpdateWithoutAtomicWordsInput>
 }
 
 export type SpaceCreateNestedOneWithoutProductListingsInput = {
@@ -1993,6 +2014,7 @@ export type SpaceCreateWithoutMembersInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -2078,6 +2100,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -2179,6 +2202,7 @@ export type SpaceUpdateWithoutMembersInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -2264,6 +2288,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2350,6 +2375,7 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -2435,6 +2461,7 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -2536,6 +2563,7 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -2621,6 +2649,7 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2706,6 +2735,7 @@ export type SpaceCreateWithoutAgentToggleInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -2791,6 +2821,7 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -2892,6 +2923,7 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -2977,6 +3009,7 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3062,6 +3095,7 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -3147,6 +3181,7 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -3248,6 +3283,7 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -3333,6 +3369,7 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3418,6 +3455,7 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -3503,6 +3541,7 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -3604,6 +3643,7 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -3689,6 +3729,7 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3773,6 +3814,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -3858,6 +3900,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -3959,6 +4002,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -4044,6 +4088,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4129,6 +4174,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -4214,6 +4260,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -4315,6 +4362,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -4400,6 +4448,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4485,6 +4534,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -4570,6 +4620,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -4671,6 +4722,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -4756,6 +4808,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4842,6 +4895,7 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -4927,6 +4981,7 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -5028,6 +5083,7 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -5113,6 +5169,7 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5198,6 +5255,7 @@ export type SpaceCreateWithoutProductExtractionJobsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -5283,6 +5341,7 @@ export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -5384,6 +5443,7 @@ export type SpaceUpdateWithoutProductExtractionJobsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -5469,6 +5529,7 @@ export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5553,6 +5614,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -5638,6 +5700,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -5739,6 +5802,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -5824,6 +5888,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5909,6 +5974,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -5994,6 +6060,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -6095,6 +6162,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -6180,6 +6248,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6265,6 +6334,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -6350,6 +6420,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -6451,6 +6522,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -6536,6 +6608,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6621,6 +6694,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -6706,6 +6780,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -6807,6 +6882,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -6892,6 +6968,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6977,6 +7054,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -7062,6 +7140,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -7163,6 +7242,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -7248,6 +7328,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7333,6 +7414,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -7418,6 +7500,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -7519,6 +7602,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -7604,6 +7688,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7689,6 +7774,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -7774,6 +7860,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -7875,6 +7962,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -7960,6 +8048,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8045,6 +8134,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -8130,6 +8220,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -8231,6 +8322,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -8316,6 +8408,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8401,6 +8494,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -8486,6 +8580,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -8587,6 +8682,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -8672,6 +8768,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8757,6 +8854,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -8842,6 +8940,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -8943,6 +9042,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -9028,6 +9128,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9113,6 +9214,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -9198,6 +9300,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -9299,6 +9402,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -9384,6 +9488,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9469,6 +9574,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -9554,6 +9660,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -9655,6 +9762,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -9740,6 +9848,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9825,6 +9934,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -9910,6 +10020,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -10011,6 +10122,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -10096,6 +10208,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10181,6 +10294,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -10266,6 +10380,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -10367,6 +10482,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -10452,6 +10568,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10537,6 +10654,7 @@ export type SpaceCreateWithoutBrandsInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -10622,6 +10740,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -10723,6 +10842,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -10808,6 +10928,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10893,6 +11014,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -10978,6 +11100,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -11079,6 +11202,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -11164,6 +11288,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11249,6 +11374,7 @@ export type SpaceCreateWithoutChannelsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -11334,6 +11460,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -11435,6 +11562,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -11520,6 +11648,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11606,6 +11735,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -11691,6 +11821,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -11792,6 +11923,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -11877,6 +12009,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11962,6 +12095,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -12047,6 +12181,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -12148,6 +12283,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -12233,6 +12369,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12317,6 +12454,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -12402,6 +12540,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -12503,6 +12642,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -12588,6 +12728,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12673,6 +12814,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -12758,6 +12900,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -12859,6 +13002,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -12944,6 +13088,367 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutAtomicWordsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutAtomicWordsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutAtomicWordsInput, Prisma.SpaceUncheckedCreateWithoutAtomicWordsInput>
+}
+
+export type SpaceUpsertWithoutAtomicWordsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutAtomicWordsInput, Prisma.SpaceUncheckedUpdateWithoutAtomicWordsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutAtomicWordsInput, Prisma.SpaceUncheckedCreateWithoutAtomicWordsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutAtomicWordsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutAtomicWordsInput, Prisma.SpaceUncheckedUpdateWithoutAtomicWordsInput>
+}
+
+export type SpaceUpdateWithoutAtomicWordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13030,6 +13535,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
@@ -13115,6 +13621,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
@@ -13216,6 +13723,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
@@ -13301,6 +13809,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13386,6 +13895,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
@@ -13471,6 +13981,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
@@ -13572,6 +14083,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
@@ -13657,6 +14169,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13742,6 +14255,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
@@ -13827,6 +14341,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
@@ -13928,6 +14443,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
@@ -14013,6 +14529,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14098,6 +14615,7 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -14183,6 +14701,7 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -14284,6 +14803,7 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -14369,6 +14889,7 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14454,6 +14975,7 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -14539,6 +15061,7 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -14640,6 +15163,7 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -14725,6 +15249,7 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14810,6 +15335,7 @@ export type SpaceCreateWithoutKeywordChangeLogsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -14895,6 +15421,7 @@ export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -14996,6 +15523,7 @@ export type SpaceUpdateWithoutKeywordChangeLogsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -15081,6 +15609,7 @@ export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15166,6 +15695,7 @@ export type SpaceCreateWithoutProductsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -15251,6 +15781,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -15352,6 +15883,7 @@ export type SpaceUpdateWithoutProductsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -15437,6 +15969,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15522,6 +16055,7 @@ export type SpaceCreateWithoutPersonasInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -15607,6 +16141,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -15708,6 +16243,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -15793,6 +16329,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15878,6 +16415,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -15963,6 +16501,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -16064,6 +16603,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -16149,6 +16689,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16234,6 +16775,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -16319,6 +16861,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -16420,6 +16963,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -16505,6 +17049,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16590,6 +17135,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -16675,6 +17221,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -16776,6 +17323,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -16861,6 +17409,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16946,6 +17495,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -17031,6 +17581,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -17132,6 +17683,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -17217,6 +17769,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17302,6 +17855,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -17387,6 +17941,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -17488,6 +18043,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -17573,6 +18129,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17658,6 +18215,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -17743,6 +18301,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -17844,6 +18403,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -17929,6 +18489,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18014,6 +18575,7 @@ export type SpaceCreateWithoutContentsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -18099,6 +18661,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -18200,6 +18763,7 @@ export type SpaceUpdateWithoutContentsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -18285,6 +18849,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18370,6 +18935,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -18455,6 +19021,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -18556,6 +19123,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -18641,6 +19209,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18726,6 +19295,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -18811,6 +19381,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -18912,6 +19483,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -18997,6 +19569,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19082,6 +19655,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -19167,6 +19741,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -19268,6 +19843,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -19353,6 +19929,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19438,6 +20015,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -19523,6 +20101,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -19624,6 +20203,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -19709,6 +20289,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19794,6 +20375,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -19879,6 +20461,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -19980,6 +20563,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -20065,6 +20649,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20150,6 +20735,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -20235,6 +20821,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -20336,6 +20923,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -20421,6 +21009,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20506,6 +21095,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -20591,6 +21181,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -20692,6 +21283,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -20777,6 +21369,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20862,6 +21455,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -20947,6 +21541,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -21048,6 +21643,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -21133,6 +21729,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21218,6 +21815,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -21303,6 +21901,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -21404,6 +22003,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -21489,6 +22089,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21574,6 +22175,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -21659,6 +22261,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -21760,6 +22363,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -21845,6 +22449,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21930,6 +22535,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -22015,6 +22621,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -22116,6 +22723,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -22201,6 +22809,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22286,6 +22895,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -22371,6 +22981,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -22472,6 +23083,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -22557,6 +23169,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22642,6 +23255,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -22727,6 +23341,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -22828,6 +23443,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -22913,6 +23529,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22998,6 +23615,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -23083,6 +23701,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -23184,6 +23803,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -23269,6 +23889,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23354,6 +23975,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -23439,6 +24061,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -23540,6 +24163,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -23625,6 +24249,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23710,6 +24335,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -23795,6 +24421,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -23896,6 +24523,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -23981,6 +24609,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24066,6 +24695,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -24151,6 +24781,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -24252,6 +24883,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -24337,6 +24969,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24422,6 +25055,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -24507,6 +25141,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -24608,6 +25243,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -24693,6 +25329,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24778,6 +25415,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -24863,6 +25501,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -24964,6 +25603,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -25049,6 +25689,7 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25134,6 +25775,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -25219,6 +25861,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -25320,6 +25963,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -25405,6 +26049,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25490,6 +26135,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -25575,6 +26221,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -25676,6 +26323,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -25761,6 +26409,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25846,6 +26495,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -25931,6 +26581,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -26032,6 +26683,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -26117,6 +26769,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26202,6 +26855,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -26287,6 +26941,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -26388,6 +27043,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -26473,6 +27129,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26558,6 +27215,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -26643,6 +27301,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -26744,6 +27403,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -26829,6 +27489,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26914,6 +27575,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -26999,6 +27661,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -27100,6 +27763,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -27185,6 +27849,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27270,6 +27935,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -27355,6 +28021,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -27456,6 +28123,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -27541,6 +28209,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27626,6 +28295,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -27711,6 +28381,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -27812,6 +28483,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -27897,6 +28569,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27982,6 +28655,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -28067,6 +28741,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -28168,6 +28843,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -28253,6 +28929,7 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28338,6 +29015,7 @@ export type SpaceCreateWithoutSubscriptionInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -28423,6 +29101,7 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -28524,6 +29203,7 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -28609,6 +29289,7 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28694,6 +29375,7 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -28779,6 +29461,7 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -28880,6 +29563,7 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -28965,6 +29649,7 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29050,6 +29735,7 @@ export type SpaceCreateWithoutBillingChargesInput = {
   brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
@@ -29135,6 +29821,7 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
@@ -29236,6 +29923,7 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
@@ -29321,6 +30009,7 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
   productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
   optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
   channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29403,6 +30092,7 @@ export type SpaceCountOutputType = {
   channelTypeDefs: number
   brands: number
   optionCodeAliases: number
+  atomicWords: number
   productListings: number
   channelStockMovements: number
   channelProducts: number
@@ -29477,6 +30167,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   channelTypeDefs?: boolean | SpaceCountOutputTypeCountChannelTypeDefsArgs
   brands?: boolean | SpaceCountOutputTypeCountBrandsArgs
   optionCodeAliases?: boolean | SpaceCountOutputTypeCountOptionCodeAliasesArgs
+  atomicWords?: boolean | SpaceCountOutputTypeCountAtomicWordsArgs
   productListings?: boolean | SpaceCountOutputTypeCountProductListingsArgs
   channelStockMovements?: boolean | SpaceCountOutputTypeCountChannelStockMovementsArgs
   channelProducts?: boolean | SpaceCountOutputTypeCountChannelProductsArgs
@@ -29684,6 +30375,13 @@ export type SpaceCountOutputTypeCountBrandsArgs<ExtArgs extends runtime.Types.Ex
  */
 export type SpaceCountOutputTypeCountOptionCodeAliasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SpaceOptionCodeAliasWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountAtomicWordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SpaceAtomicWordWhereInput
 }
 
 /**
@@ -30067,6 +30765,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   brands?: boolean | Prisma.Space$brandsArgs<ExtArgs>
   productPricingSettings?: boolean | Prisma.Space$productPricingSettingsArgs<ExtArgs>
   optionCodeAliases?: boolean | Prisma.Space$optionCodeAliasesArgs<ExtArgs>
+  atomicWords?: boolean | Prisma.Space$atomicWordsArgs<ExtArgs>
   productListings?: boolean | Prisma.Space$productListingsArgs<ExtArgs>
   channelStockMovements?: boolean | Prisma.Space$channelStockMovementsArgs<ExtArgs>
   channelProducts?: boolean | Prisma.Space$channelProductsArgs<ExtArgs>
@@ -30176,6 +30875,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   brands?: boolean | Prisma.Space$brandsArgs<ExtArgs>
   productPricingSettings?: boolean | Prisma.Space$productPricingSettingsArgs<ExtArgs>
   optionCodeAliases?: boolean | Prisma.Space$optionCodeAliasesArgs<ExtArgs>
+  atomicWords?: boolean | Prisma.Space$atomicWordsArgs<ExtArgs>
   productListings?: boolean | Prisma.Space$productListingsArgs<ExtArgs>
   channelStockMovements?: boolean | Prisma.Space$channelStockMovementsArgs<ExtArgs>
   channelProducts?: boolean | Prisma.Space$channelProductsArgs<ExtArgs>
@@ -30261,6 +30961,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     brands: Prisma.$BrandPayload<ExtArgs>[]
     productPricingSettings: Prisma.$ProductPricingSettingsPayload<ExtArgs> | null
     optionCodeAliases: Prisma.$SpaceOptionCodeAliasPayload<ExtArgs>[]
+    atomicWords: Prisma.$SpaceAtomicWordPayload<ExtArgs>[]
     productListings: Prisma.$ProductListingPayload<ExtArgs>[]
     channelStockMovements: Prisma.$ChannelStockMovementPayload<ExtArgs>[]
     channelProducts: Prisma.$ChannelProductPayload<ExtArgs>[]
@@ -30740,6 +31441,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   brands<T extends Prisma.Space$brandsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$brandsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productPricingSettings<T extends Prisma.Space$productPricingSettingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$productPricingSettingsArgs<ExtArgs>>): Prisma.Prisma__ProductPricingSettingsClient<runtime.Types.Result.GetResult<Prisma.$ProductPricingSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   optionCodeAliases<T extends Prisma.Space$optionCodeAliasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$optionCodeAliasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceOptionCodeAliasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  atomicWords<T extends Prisma.Space$atomicWordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$atomicWordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceAtomicWordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productListings<T extends Prisma.Space$productListingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$productListingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductListingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channelStockMovements<T extends Prisma.Space$channelStockMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$channelStockMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelStockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channelProducts<T extends Prisma.Space$channelProductsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$channelProductsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -31756,6 +32458,30 @@ export type Space$optionCodeAliasesArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.SpaceOptionCodeAliasScalarFieldEnum | Prisma.SpaceOptionCodeAliasScalarFieldEnum[]
+}
+
+/**
+ * Space.atomicWords
+ */
+export type Space$atomicWordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SpaceAtomicWord
+   */
+  select?: Prisma.SpaceAtomicWordSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SpaceAtomicWord
+   */
+  omit?: Prisma.SpaceAtomicWordOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SpaceAtomicWordInclude<ExtArgs> | null
+  where?: Prisma.SpaceAtomicWordWhereInput
+  orderBy?: Prisma.SpaceAtomicWordOrderByWithRelationInput | Prisma.SpaceAtomicWordOrderByWithRelationInput[]
+  cursor?: Prisma.SpaceAtomicWordWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SpaceAtomicWordScalarFieldEnum | Prisma.SpaceAtomicWordScalarFieldEnum[]
 }
 
 /**

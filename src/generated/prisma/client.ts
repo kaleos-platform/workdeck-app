@@ -405,6 +405,11 @@ export type ProductPricingSettings = Prisma.ProductPricingSettingsModel
  */
 export type SpaceOptionCodeAlias = Prisma.SpaceOptionCodeAliasModel
 /**
+ * Model SpaceAtomicWord
+ * 
+ */
+export type SpaceAtomicWord = Prisma.SpaceAtomicWordModel
+/**
  * Model ProductListing
  * 
  */
