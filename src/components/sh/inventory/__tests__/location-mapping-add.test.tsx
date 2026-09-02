@@ -48,6 +48,43 @@ describe('매핑 추가 UI', () => {
     }) as unknown as typeof fetch
   })
 
+  it('이미 있는 코드를 입력하면 교체 경고가 뜬다', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        mappings: [
+          {
+            id: 'map-1',
+            externalCode: '10104',
+            externalName: '크림드 선 클렌징 패드 (1매)',
+            externalOptionName: null,
+            items: [
+              {
+                id: 'item-1',
+                optionId: 'opt-1',
+                quantity: 1,
+                option: { id: 'opt-1', name: '1매', product: { id: 'p-1', name: '개별포장' } },
+              },
+            ],
+          },
+        ],
+      }),
+    }) as unknown as typeof fetch
+
+    render(
+      <TooltipProvider>
+        <LocationMappingTable locationId="loc-1" />
+      </TooltipProvider>
+    )
+
+    fireEvent.click(await screen.findByRole('button', { name: /매핑 추가/ }))
+    fireEvent.change(screen.getByLabelText('외부 코드'), { target: { value: '10104' } })
+
+    const warning = await screen.findByText(/이미 등록된 코드입니다/)
+    expect(warning).toHaveTextContent('개별포장 / 1매')
+    expect(screen.getByRole('button', { name: '기존 매핑 교체' })).toBeEnabled()
+  })
+
   it('매핑이 없어도 추가 버튼이 보이고, 코드 입력 전에는 다음 단계로 못 넘어간다', async () => {
     render(
       <TooltipProvider>

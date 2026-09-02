@@ -238,6 +238,9 @@ export function LocationMappingTable({ locationId }: Props) {
   )
 
   const draftCode = draft ? resolveDraftExternalCode(draft) : ''
+  // POST 는 (위치, 외부코드) 유니크로 upsert 하고 items 를 통째로 교체한다.
+  // 같은 코드가 이미 있으면 기존 연결이 조용히 갈아엎히므로 먼저 알린다.
+  const draftConflict = draftCode ? mappings.find((m) => m.externalCode === draftCode) : undefined
 
   return (
     <>
@@ -389,6 +392,16 @@ export function LocationMappingTable({ locationId }: Props) {
                 />
               </div>
 
+              {draftConflict && (
+                <p className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+                  이미 등록된 코드입니다. 계속하면 현재 연결(
+                  {draftConflict.items
+                    .map((i) => `${i.option.product.name} / ${i.option.name}`)
+                    .join(', ') || '없음'}
+                  )이 새로 선택한 옵션으로 교체됩니다.
+                </p>
+              )}
+
               {draft.codeMode === 'name' && (
                 <p className="text-xs text-muted-foreground">
                   코드가 없는 파일은 상품명·옵션명으로 키를 만듭니다. 파일에 적힌 값과 정확히 같아야
@@ -403,7 +416,7 @@ export function LocationMappingTable({ locationId }: Props) {
               취소
             </Button>
             <Button disabled={!draftCode} onClick={() => setDraftPickerOpen(true)}>
-              상품 옵션 선택
+              {draftConflict ? '기존 매핑 교체' : '상품 옵션 선택'}
             </Button>
           </DialogFooter>
         </DialogContent>
