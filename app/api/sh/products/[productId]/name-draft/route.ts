@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { loadAtomicWords } from '@/lib/sh/keyword-atomic-query'
 import { loadAdTermsForProduct } from '@/lib/sh/ad-terms-query'
 import {
   draftProductNames,
@@ -211,6 +212,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     categoryNames: draftInput.categoryName ? [draftInput.categoryName] : [],
     optionNames: draftInput.optionSummary,
     brandNames: brands.map((b) => b.name),
+    atomicWords: await loadAtomicWords(resolved.space.id),
     rules,
     target: KEYWORD_TARGET,
   })

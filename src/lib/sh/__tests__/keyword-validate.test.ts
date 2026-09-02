@@ -660,3 +660,117 @@ describe('validateKeywords — 브랜드명 예외', () => {
     expect(codes('선패드', true)).toContain('KW_NAME_COMPOUND')
   })
 })
+
+describe('validateKeywords — §12 공통 어절 반복 (KW_DUP_SHARED_AFFIX)', () => {
+  const productName = '에이엠엘 쿨 메쉬 심리스 편한 브라 노와이어 노후크 시원한 스포츠 브라'
+  const run = (keywords: string[], atomicWords?: string[]) =>
+    validateKeywords({ keywords, productName, rules, atomicWords })
+
+  const affixAt = (violations: Violation[], index: number) =>
+    violations.find((v) => v.keywordIndex === index && v.code === 'KW_DUP_SHARED_AFFIX')
+
+  it('앞머리를 공유하면 뒤에 온 것만 표시한다', () => {
+    const r = run(['군살보정', '군살커버'])
+    expect(affixAt(r.violations, 0)).toBeUndefined()
+    const hit = affixAt(r.violations, 1)
+    expect(hit?.conflictWith).toBe('군살보정')
+    expect(hit?.atomicCandidate).toBe('군살')
+    expect(hit?.message).toContain('군살')
+  })
+
+  it('꼬리를 공유해도 잡는다', () => {
+    const hit = affixAt(run(['부유방커버', '군살커버']).violations, 1)
+    expect(hit?.atomicCandidate).toBe('커버')
+    expect(hit?.conflictWith).toBe('부유방커버')
+  })
+
+  it('최대 공통 조각을 그대로 보고한다 (형태소 추정을 하지 않는다)', () => {
+    expect(affixAt(run(['50대여성', '60대여성']).violations, 1)?.atomicCandidate).toBe('대여성')
+  })
+
+  it('N개 가족이면 N-1건이다 (첫 매치에서 멈춘다)', () => {
+    const r = run(['군살보정', '군살커버', '군살압박'])
+    expect(r.violations.filter((v) => v.code === 'KW_DUP_SHARED_AFFIX')).toHaveLength(2)
+  })
+
+  it('cleaned 에서 빼지 않는다 — 어느 쪽을 남길지는 사람이 정한다', () => {
+    expect(run(['군살보정', '군살커버']).cleaned).toEqual(['군살보정', '군살커버'])
+  })
+
+  it('띄어 쓴 검색어는 건드리지 않는다 (§9·§12 의 올바른 예)', () => {
+    const r = validateKeywords({
+      keywords: ['세면 수건', '욕실 수건', '두꺼운 수건'],
+      productName: '모노홈 40수 코마사 호텔 타월 200g 5장',
+      rules,
+    })
+    expect(r.violations.filter((v) => v.code === 'KW_DUP_SHARED_AFFIX')).toEqual([])
+
+    const r2 = validateKeywords({
+      keywords: ['여성 속옷', '여성 모달 속옷'],
+      productName: '모노웨어 텐셀 미디 팬티 3매',
+      rules,
+    })
+    expect(r2.violations.filter((v) => v.code === 'KW_DUP_SHARED_AFFIX')).toEqual([])
+  })
+
+  it('한 글자만 겹치면 잡지 않는다', () => {
+    expect(
+      run(['아이스', '아메리카노']).violations.filter((v) => v.code === 'KW_DUP_SHARED_AFFIX')
+    ).toEqual([])
+  })
+
+  it('예외 단어를 반으로 가르는 경계는 채택하지 않는다', () => {
+    const codes = run(['부유방', '부유물'], ['부유방']).violations.map((v) => v.code)
+    expect(codes).not.toContain('KW_DUP_SHARED_AFFIX')
+  })
+})
+
+describe('validateKeywords — 예외 단어 사전', () => {
+  const productName = '에이엠엘 쿨 메쉬 심리스 편한 브라 노와이어 노후크 시원한 스포츠 브라'
+
+  it("'쿨링' 오탐이 사라진다", () => {
+    const before = validateKeywords({ keywords: ['쿨링'], productName, rules })
+    expect(hasCode(before.violations, 0, 'KW_NAME_COMPOUND')).toBe(true)
+
+    const after = validateKeywords({
+      keywords: ['쿨링'],
+      productName,
+      rules,
+      atomicWords: ['쿨링'],
+    })
+    expect(after.violations).toEqual([])
+    expect(after.cleaned).toEqual(['쿨링'])
+  })
+
+  it('예외 단어 밖의 상품명 단어는 여전히 지적하고 제안한다', () => {
+    const r = validateKeywords({
+      keywords: ['쿨링브라'],
+      productName,
+      rules,
+      atomicWords: ['쿨링'],
+    })
+    expect(hasCode(r.violations, 0, 'KW_NAME_PARTIAL')).toBe(true)
+    expect(r.violations[0].suggestion).toBe('쿨링')
+  })
+
+  it('매칭되지 않는 항목은 무동작이다', () => {
+    const withDict = validateKeywords({
+      keywords: ['쿨링'],
+      productName,
+      rules,
+      atomicWords: ['전혀무관'],
+    })
+    const without = validateKeywords({ keywords: ['쿨링'], productName, rules })
+    expect(withDict.violations.map((v) => v.code)).toEqual(without.violations.map((v) => v.code))
+  })
+
+  it('게이트 순서는 그대로다 — 상품명에 통째로 있으면 여전히 KW_DUP_WITH_NAME', () => {
+    const r = validateKeywords({
+      keywords: ['브라'],
+      productName,
+      rules,
+      atomicWords: ['브라'],
+    })
+    expect(hasCode(r.violations, 0, 'KW_DUP_WITH_NAME')).toBe(true)
+  })
+})

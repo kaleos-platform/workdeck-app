@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { loadAtomicWords } from '@/lib/sh/keyword-atomic-query'
 import {
   suggestKeywords,
   type ProductContext,
@@ -157,6 +158,7 @@ export async function GET(req: NextRequest) {
     rules,
     productContext,
     brandNames: brands.map((b) => b.name),
+    atomicWords: await loadAtomicWords(resolved.space.id),
   })
 
   const contextUsed = Boolean(

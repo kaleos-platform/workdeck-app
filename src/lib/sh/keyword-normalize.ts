@@ -130,6 +130,32 @@ export function coverByNameTokens(keyword: string, nameTokens: string[]): NameCo
 }
 
 /**
+ * 예외 단어(분해 금지 단어)가 차지하는 구간 — 상품명 단어를 걷어낼 때 이 구간을 **반으로 자르는**
+ * 삭제만 막는다. 사용자가 '쿨링' 을 등록하면 상품명 단어 '쿨' 이 그 안을 파고들지 못한다.
+ */
+export type AtomicSpan = { start: number; end: number }
+
+/** despaced 문자열 안에서 예외 단어가 등장하는 구간들. 한 글자 항목은 자를 수 없으므로 무시한다. */
+export function atomicSpans(despaced: string, atomicWords: string[]): AtomicSpan[] {
+  const spans: AtomicSpan[] = []
+  for (const word of atomicWords) {
+    const key = despaceKeyword(word)
+    if (key.length < 2) continue
+    for (let i = despaced.indexOf(key); i >= 0; i = despaced.indexOf(key, i + 1))
+      spans.push({ start: i, end: i + key.length })
+  }
+  return spans
+}
+
+/**
+ * [start, end) 구간을 지워도 되는가. 예외 단어와 겹치지 않거나(disjoint), 예외 단어를 통째로
+ * 포함하면(superset) 허용한다 — 상품명에 '쿨링' 이 그대로 있으면 그건 정상적인 중복이다.
+ */
+export function allowsRemoval(spans: AtomicSpan[], start: number, end: number): boolean {
+  return spans.every((s) => s.end <= start || s.start >= end || (start <= s.start && s.end <= end))
+}
+
+/**
  * 검색어에서 상품명 단어를 걷어낸 나머지 — §10 Rule 1 의 "이 부분만 빼면 쓸 수 있다" 제안.
  *
  * `50대여성브라` 는 상품명 단어(`여성`·`브라`)를 빼면 `50대` 가 남는다. 쿠팡은 상품명 단어를
@@ -148,7 +174,12 @@ export type NameStripResult = {
   removed: string[]
 }
 
-export function stripNameTokens(keyword: string, nameTokens: string[]): NameStripResult | null {
+export function stripNameTokens(
+  keyword: string,
+  nameTokens: string[],
+  /** 분해 금지 단어. 이 단어를 가로지르는 삭제는 채택하지 않는다. */
+  atomicWords: string[] = []
+): NameStripResult | null {
   const raw = String(keyword ?? '').trim()
   if (!raw) return null
 
@@ -169,6 +200,9 @@ export function stripNameTokens(keyword: string, nameTokens: string[]): NameStri
     // 문자열을 줄여가며 replace 하면 "이 구간은 건드리지 말라"를 표현할 수 없다(예외 단어 보호).
     // 삭제 위치를 마스크로 들고 있다가 마지막에 한 번에 걷어낸다.
     const gone = new Array<boolean>(d.length).fill(false)
+    // 구간은 **토큰별 despaced 문자열** 기준이어야 한다 — 검색어 전체를 despace 한 인덱스는
+    // 토큰 오프셋과 어긋난다.
+    const spans = atomicSpans(d, atomicWords)
     let touched = false
     for (const key of keys) {
       for (let i = d.indexOf(key); i >= 0; i = d.indexOf(key, i + 1)) {
@@ -180,6 +214,7 @@ export function stripNameTokens(keyword: string, nameTokens: string[]): NameStri
             break
           }
         if (!free) continue
+        if (!allowsRemoval(spans, i, j)) continue
         for (let k = i; k < j; k += 1) gone[k] = true
         // 같은 단어가 두 번 들어간 검색어도 있으므로 전부 지운다.
         removed.push(dict.get(key) as string)

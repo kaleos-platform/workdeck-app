@@ -430,6 +430,7 @@ model Space {
   brands                 Brand[]
   productPricingSettings ProductPricingSettings?
   optionCodeAliases      SpaceOptionCodeAlias[]
+  atomicWords            SpaceAtomicWord[]
   productListings        ProductListing[]
   channelStockMovements  ChannelStockMovement[]
   channelProducts        ChannelProduct[]
@@ -2023,6 +2024,24 @@ model SpaceOptionCodeAlias {
   updatedAt DateTime @updatedAt
 
   @@unique([spaceId, attributeName, value])
+  @@index([spaceId])
+}
+
+// Space별 "분해 금지" 단어 사전 — §10 복합어 판정이 단어 안쪽을 자르지 못하게 한다.
+// 예: '쿨링' 을 등록하면 상품명 단어 '쿨' 로 잘려 '링' 한 글자만 남는 오탐이 사라진다.
+// 검색어끼리의 공통 어절 판정(KW_DUP_SHARED_AFFIX)에서도 원자로 취급한다.
+model SpaceAtomicWord {
+  id         String @id @default(cuid())
+  spaceId    String
+  word       String // 사용자가 입력한 표기 ('쿨링')
+  normalized String // despaceKeyword(word) — 비교 전용 키. 정규화 규칙이 바뀌면 재계산이 필요하다.
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([spaceId, normalized])
   @@index([spaceId])
 }
 

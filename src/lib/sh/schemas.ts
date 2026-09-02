@@ -26,6 +26,12 @@ export const brandSchema = z.object({
 })
 export type BrandInput = z.infer<typeof brandSchema>
 
+// 검색어 검증에서 "쪼개지 않을 단어". 한 글자는 자를 수 없어 의미가 없으므로 두 글자 이상.
+export const atomicWordSchema = z.object({
+  word: z.string().trim().min(2, '두 글자 이상 입력하세요').max(30),
+})
+export type AtomicWordInput = z.infer<typeof atomicWordSchema>
+
 // ─── 상품 옵션 ──────────────────────────────────────────────────────────────
 
 export const productOptionSchema = z.object({

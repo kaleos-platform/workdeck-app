@@ -3,6 +3,9 @@
 
 import { tokenizeProductName } from '@/lib/inv/search-tokens'
 import {
+  allowsRemoval,
+  atomicSpans,
+  type AtomicSpan,
   despaceKeyword,
   stripNameTokens,
   keywordKeys,
@@ -32,6 +35,7 @@ export type ViolationCode =
   | 'KW_DUP_SPACING_VARIANT'
   | 'KW_DUP_PERMUTATION'
   | 'KW_DUP_EXACT'
+  | 'KW_DUP_SHARED_AFFIX'
   | 'KW_DUP_WITH_CATEGORY'
   | 'KW_SHIPPING_TERM'
   | 'KW_EFFICACY_TERM'
@@ -52,6 +56,12 @@ export type Violation = {
    * 제안이 있는 위반은 "지울 것"이 아니라 "고칠 것"이라 cleaned 에서 빼지 않는다.
    */
   suggestion?: string
+  /**
+   * "이건 한 단어다"라고 예외 등록할 후보. 경고 줄의 예외 등록 버튼이 이 값을 쓴다.
+   * 공통 어절 위반은 검색어 전체가 아니라 **공유된 조각**을 등록해야 하므로 따로 담는다
+   * (conflictWith 는 상대 검색어를 담고 있어 재사용할 수 없다).
+   */
+  atomicCandidate?: string
 }
 
 // KeywordRuleSet 에는 하한 필드가 없다(가이드 §7 이 목표 40자만 규정).
@@ -80,6 +90,13 @@ export function topicParticle(word: string): string {
   const jong = finalConsonant(word)
   if (jong === null) return '는'
   return jong === 0 ? '는' : '은'
+}
+
+/** 을/를 — 받침이 있으면 '을'. */
+export function objectParticle(word: string): string {
+  const jong = finalConsonant(word)
+  if (jong === null) return '를'
+  return jong === 0 ? '를' : '을'
 }
 
 /** 로/으로 — 'ㄹ' 받침은 '로' 를 쓴다('크림으로', '설로'가 아니라 '설로'). */
@@ -127,7 +144,8 @@ function findTerms(text: TextKeys, terms: string[]): string[] {
 export function overlapsProductName(
   keyword: string,
   productName: string,
-  brandNames: string[] = []
+  brandNames: string[] = [],
+  atomicWords: string[] = []
 ): boolean {
   const brandSet = new Set(brandNames.map((b) => despaceKeyword(b)).filter(Boolean))
   const allTokens = tokenizeProductName(productName ?? '', Number.POSITIVE_INFINITY)
@@ -138,7 +156,10 @@ export function overlapsProductName(
       keyword,
       new Set(nameTokens.map((t) => t.toLowerCase())),
       (d) => d.length > 0 && segments.some((seg) => seg.includes(d)),
-      nameTokens
+      nameTokens,
+      () => false,
+      () => false,
+      atomicWords
     ) !== null
   )
 }
@@ -196,7 +217,13 @@ function overlapsNameTokens(
    */
   isKnownTerm: (term: string) => boolean = () => false,
   /** 남은 조각이 브랜드명뿐이면 지적하지 않는다 — 브랜드 검색은 정당한 유입이다. */
-  isBrand: (term: string) => boolean = () => false
+  isBrand: (term: string) => boolean = () => false,
+  /**
+   * 분해 금지 단어. '쿨링' 을 등록해두면 상품명 단어 '쿨' 이 그 안을 파고들지 못해
+   * "'링' 한 글자만 남는다"는 오탐이 사라진다. 앞의 두 게이트(all-tokens·substring)는
+   * 건드리지 않는다 — 상품명에 그 문자열이 통째로 있으면 그건 진짜 중복이다.
+   */
+  atomicWords: string[] = []
 ): NameOverlap | null {
   const kwTokens = splitTokens(keyword).map((t) => t.toLowerCase())
   const despaced = despaceKeyword(keyword)
@@ -212,7 +239,7 @@ function overlapsNameTokens(
 
   // 잘라내는 것은 **상품명 단어로만** 한다. 등록 검색어까지 사전에 넣으면 상품명과 무관한
   // '아기물티슈' 가 등록된 '아기' 때문에 걸려 "상품명 단어가 들었다"는 거짓 메시지가 나간다.
-  const strip = stripNameTokens(keyword, nameTokens)
+  const strip = stripNameTokens(keyword, nameTokens, atomicWords)
   if (!strip) return null
   const rest = despaceKeyword(strip.stripped)
   // '크림드선패드' 에서 선·패드를 빼면 브랜드 '크림드' 만 남는다. 브랜드로 바꾸라고 제안할
@@ -241,6 +268,63 @@ function overlapsNameTokens(
   }
   // 남은 조각이 진짜 새 진입로다. 지우는 게 아니라 이렇게 고치자고 제안한다.
   return { kind: 'partial', suggestion: strip.stripped, removed: strip.removed }
+}
+
+/**
+ * §12 — 붙여 쓴 검색어끼리 공유하는 **앞머리 또는 꼬리** 어절.
+ *
+ * 중간에서 우연히 겹치는 것은 잡지 않는다(§12 는 "조합 반복"이지 "문자열 유사"가 아니다 —
+ * '원피스'/'피스톤' 을 같은 어절로 볼 수 없다). 예외 단어를 반으로 자르는 경계도 채택하지
+ * 않는다: 사용자가 '부유방' 을 한 단어로 등록했으면 '부유' 를 공유 어절이라 말하면 안 된다.
+ */
+const SHARED_AFFIX_MIN = 2
+
+/**
+ * 연속된 숫자 구간. 예외 단어와 같은 이유로 반으로 자르지 않는다 —
+ * '50대여성'/'60대여성' 의 최대 공통 꼬리는 '0대여성' 이지만 그건 어절이 아니다.
+ */
+function digitSpans(text: string): AtomicSpan[] {
+  const spans: AtomicSpan[] = []
+  for (const m of text.matchAll(/\d{2,}/g))
+    spans.push({ start: m.index, end: m.index + m[0].length })
+  return spans
+}
+
+function sharedAffix(a: string, b: string, atomicWords: string[]): string | null {
+  const spansA = [...atomicSpans(a, atomicWords), ...digitSpans(a)]
+  const spansB = [...atomicSpans(b, atomicWords), ...digitSpans(b)]
+  const limit = Math.min(a.length, b.length)
+
+  let prefix = 0
+  while (prefix < limit && a[prefix] === b[prefix]) prefix += 1
+  let suffix = 0
+  while (suffix < limit && a[a.length - 1 - suffix] === b[b.length - 1 - suffix]) suffix += 1
+
+  // 절단점이 예외 단어를 가르지 않는 최대 길이까지 줄여 본다.
+  const cutOk = (len: number, isPrefix: boolean): boolean =>
+    [
+      { text: a, spans: spansA },
+      { text: b, spans: spansB },
+    ].every(({ text, spans }) =>
+      allowsRemoval(spans, isPrefix ? 0 : text.length - len, isPrefix ? len : text.length)
+    )
+
+  let bestPrefix = 0
+  for (let len = prefix; len >= SHARED_AFFIX_MIN; len -= 1)
+    if (cutOk(len, true)) {
+      bestPrefix = len
+      break
+    }
+  let bestSuffix = 0
+  for (let len = suffix; len >= SHARED_AFFIX_MIN; len -= 1)
+    if (cutOk(len, false)) {
+      bestSuffix = len
+      break
+    }
+
+  if (bestPrefix === 0 && bestSuffix === 0) return null
+  // 더 긴 쪽을 보고한다. 동률이면 앞머리(읽는 순서상 먼저 눈에 들어온다).
+  return bestPrefix >= bestSuffix ? a.slice(0, bestPrefix) : a.slice(a.length - bestSuffix)
 }
 
 export type NameValidationResult = {
@@ -396,6 +480,11 @@ export type ValidateKeywordsInput = {
    * 유입이라 '크림드' 를 상품명 중복으로 지적하면 안 된다.
    */
   brandNames?: string[]
+  /**
+   * 분해 금지 단어(예외 단어 사전). 상품명 단어로 쪼개지 않고, 검색어끼리의 공통 어절
+   * 판정에서도 한 덩어리로 본다.
+   */
+  atomicWords?: string[]
   rules: KeywordRuleSet
 }
 
@@ -422,12 +511,16 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
   // 실제로는 떨어져 있는 두 단어의 조합이 "상품명에 있다"고 잡힌다.
   const nameSegments = splitNameSegments(allNameTokens, brandSet)
 
+  const atomicWords = (input.atomicWords ?? []).map((w) => w.trim()).filter(Boolean)
+
   const categoryTokenSet = lowerTokenSet(input.categoryNames ?? [])
   const optionTokenSet = lowerTokenSet(input.optionNames ?? [])
 
   const firstByNormalized = new Map<string, string>()
   const firstByDespaced = new Map<string, string>()
   const firstBySorted = new Map<string, string>()
+  // 공통 어절 판정 대상 — 붙여 쓴(단일 토큰) 검색어만 쌓는다.
+  const singleTokenSeen: { raw: string; despaced: string }[] = []
 
   const entries: { index: number; raw: string; keys: KeywordKeys }[] = []
 
@@ -521,7 +614,39 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
         message: `'${raw}'는 '${sortedFirst}'와 단어 순서만 다릅니다. 조합을 반복하지 않습니다.`,
         conflictWith: sortedFirst,
       })
+    } else if (kwTokens.length === 1) {
+      // §12 — 붙여 쓴 검색어끼리 앞머리/꼬리 어절이 겹치는 경우('군살보정' / '군살커버').
+      // 위 세 축은 토큰 다중집합이 같아야 성립하므로 단일 토큰 복합어를 구조적으로 못 잡는다.
+      //
+      // 띄어 쓴 검색어는 건드리지 않는다 — 가이드 §9 가 '세면 수건'·'욕실 수건'·'페이스 타월'
+      // 을, §12 가 '여성 속옷'·'여성 모달 속옷' 을 **올바른 예**로 명시한다. 여기까지 잡으면
+      // 가이드가 권장한 검색어가 위반이 된다.
+      //
+      // 앞선 것 중 첫 매치에서 멈춘다 — N개 가족이면 N-1건이지 N²건이 아니다.
+      let hit: { raw: string; despaced: string } | null = null
+      let segment: string | null = null
+      for (const prev of singleTokenSeen) {
+        const seg = sharedAffix(keys.despaced, prev.despaced, atomicWords)
+        if (seg) {
+          hit = prev
+          segment = seg
+          break
+        }
+      }
+      if (hit && segment) {
+        // 어느 쪽을 남길지는 사람이 정한다. push 로 넣어 cleaned 에서 빼면 '브라' 접미를
+        // 공유하는 정상 검색어 가족이 통째로 일괄 삭제 대상이 된다.
+        pushUnflagged({
+          code: 'KW_DUP_SHARED_AFFIX',
+          severity: 'WARN',
+          keywordIndex: index,
+          message: `'${raw}'${topicParticle(raw)} '${hit.raw}'와 '${segment}'${objectParticle(segment)} 공유합니다. 같은 어절을 여러 검색어에 반복해도 새 유입은 늘지 않습니다.`,
+          conflictWith: hit.raw,
+          atomicCandidate: segment,
+        })
+      }
     }
+    if (kwTokens.length === 1) singleTokenSeen.push({ raw, despaced: keys.despaced })
     if (exactFirst === undefined) firstByNormalized.set(keys.normalized, raw)
     if (despacedFirst === undefined) firstByDespaced.set(keys.despaced, raw)
     if (sortedFirst === undefined) firstBySorted.set(keys.sortedKey, raw)
@@ -534,7 +659,8 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
       inNameSegment,
       nameTokens,
       (term) => isRegisteredTerm(term, index),
-      (term) => brandSet.has(term)
+      (term) => brandSet.has(term),
+      atomicWords
     )
     if (overlap?.kind === 'partial') {
       // 지울 것이 아니라 고칠 것이다 — push 가 아니라 pushUnflagged 로 넣어 cleaned 에 남긴다.
@@ -651,6 +777,10 @@ export function validateListingNaming(input: {
   keywords: string[]
   categoryNames?: string[]
   optionNames?: string[]
+  /** 상품명 단어로 치지 않을 브랜드명 — 넘기지 않으면 서버 경고가 에디터와 갈린다. */
+  brandNames?: string[]
+  /** 분해 금지 단어 사전 */
+  atomicWords?: string[]
   rules: KeywordRuleSet
 }): ListingNamingResult {
   const searchName = validateProductName(
@@ -666,6 +796,8 @@ export function validateListingNaming(input: {
     productName: input.searchName,
     categoryNames: input.categoryNames,
     optionNames: input.optionNames,
+    brandNames: input.brandNames,
+    atomicWords: input.atomicWords,
     rules: input.rules,
   })
   const hasError =

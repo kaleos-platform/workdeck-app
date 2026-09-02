@@ -124,6 +124,7 @@ export const ModelName = {
   PricingScenarioItem: 'PricingScenarioItem',
   ProductPricingSettings: 'ProductPricingSettings',
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
+  SpaceAtomicWord: 'SpaceAtomicWord',
   ProductListing: 'ProductListing',
   ProductListingItem: 'ProductListingItem',
   ChannelStockMovement: 'ChannelStockMovement',
@@ -1386,6 +1387,18 @@ export const SpaceOptionCodeAliasScalarFieldEnum = {
 } as const
 
 export type SpaceOptionCodeAliasScalarFieldEnum = (typeof SpaceOptionCodeAliasScalarFieldEnum)[keyof typeof SpaceOptionCodeAliasScalarFieldEnum]
+
+
+export const SpaceAtomicWordScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  word: 'word',
+  normalized: 'normalized',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceAtomicWordScalarFieldEnum = (typeof SpaceAtomicWordScalarFieldEnum)[keyof typeof SpaceAtomicWordScalarFieldEnum]
 
 
 export const ProductListingScalarFieldEnum = {
