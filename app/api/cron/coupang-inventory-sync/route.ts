@@ -14,6 +14,8 @@ import {
 export const runtime = 'nodejs'
 
 const WORKER_SERVICE = 'coupang-inventory-sync'
+/** 자동 대조 파일명 접두 — 낡은 자동 PENDING 을 날짜 무관하게 식별하는 데 쓴다. */
+const AUTO_FILE_PREFIX = '쿠팡 로켓그로스 재고 (자동 '
 
 // 대량 변동 가드 — 하나라도 넘으면 그 Space 의 대조를 통째로 스킵한다.
 // 개별 20% 경고(movement-processor)와 달리 이건 차단이다.
@@ -122,7 +124,7 @@ async function runInventorySync() {
       // 안에서만 동작한다. 새 레코드로 다시 confirm 하면 referenceId 가 달라져 그 사이의
       // INBOUND/OUTBOUND 가 스냅샷 값으로 조용히 덮어써진다.
       const snapshotStr = parsed.snapshotDate.toISOString().slice(0, 10)
-      const autoFileName = `쿠팡 로켓그로스 재고 (자동 ${snapshotStr})`
+      const autoFileName = `${AUTO_FILE_PREFIX}${snapshotStr})`
 
       const alreadyHandled = await prisma.invReconciliation.findFirst({
         where: {
@@ -148,6 +150,32 @@ async function runInventorySync() {
             alreadyHandled.status === 'PENDING' ? 'skip:pending-review' : 'skip:already-applied',
         })
         continue
+      }
+
+      // 직전 회차들이 가드에 걸려 남긴 자동 PENDING 을 정리한다.
+      //
+      // skip 마커는 (spaceId, locationId, snapshotDate) 로 잡는데 스냅샷 날짜는 매일
+      // 바뀌므로, 가드에 계속 걸리면 PENDING 이 날짜별로 쌓인다. "사람이 확인할 1건만
+      // 남긴다"는 원래 의도와 달리 2026-08-24~09-02 사이 6건이 누적됐다.
+      //
+      // 낡은 PENDING 을 남겨두는 건 목록을 어지럽히는 것보다 나쁘다 — 며칠 지난 스냅샷을
+      // 그대로 확정하면 그 사이 입출고가 옛 실재고로 덮어써진다. 항상 최신 1건만 두고
+      // 나머지는 CANCELLED 로 내린다(사용자 삭제와 같은 처리 — 목록에서 숨기되 cron
+      // 스냅샷 마커로는 남는다).
+      const stalePending = await prisma.invReconciliation.updateMany({
+        where: {
+          spaceId,
+          locationId: resolved.locationId,
+          status: 'PENDING',
+          fileName: { startsWith: AUTO_FILE_PREFIX },
+          snapshotDate: { lt: parsed.snapshotDate },
+        },
+        data: { status: 'CANCELLED' },
+      })
+      if (stalePending.count > 0) {
+        console.log(
+          `[cron/${WORKER_SERVICE}] space ${spaceId}: 낡은 자동 PENDING ${stalePending.count}건 정리`
+        )
       }
 
       const core = await runReconciliationMatch({
