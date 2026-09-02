@@ -177,7 +177,8 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 
   const startedAt = Date.now()
-  const draft = await draftProductNames(draftInput)
+  const outcome = await draftProductNames(draftInput)
+  const draft = outcome.result
   const latencyMs = Date.now() - startedAt
 
   if (!draft) {
@@ -185,7 +186,9 @@ export async function POST(req: NextRequest, { params }: Params) {
       spaceId: resolved.space.id,
       userId: resolved.user.id,
       status: 'FAILED',
-      contentPreview: null,
+      // 실패 사유를 남긴다 — 예전엔 null 이라 로그만 보고는 키 문제인지 파싱 문제인지
+      // 알 수 없었다(진단에 prod DB 조회 + 직접 API 호출이 필요했다).
+      contentPreview: outcome.error ?? null,
       latencyMs,
     })
     return NextResponse.json({ names: [], keywords: [], reviews: [], unavailable: true })

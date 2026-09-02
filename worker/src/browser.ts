@@ -368,6 +368,16 @@ export async function launchStealthPersistentContext(
     ],
   }
 
+  // 어느 바이너리로 도는지 항상 남긴다. 2026-09-02 에 .env 의 CHROME_EXECUTABLE_PATH 가
+  // 주석 처리되면서 크래시 나는 시스템 Chrome 으로 조용히 폴백했고, 이틀치 수집이
+  // 날아간 뒤에야 크래시 리포트의 앱 이름("Google Chrome" vs "Google Chrome for Testing")
+  // 으로 알아챘다. 이 한 줄이면 로그만 보고 바로 안다.
+  console.log(
+    `[browser] 실행 바이너리: ${
+      executablePath ? `고정 경로 ${executablePath}` : `channel=${launchOptions.channel}`
+    }`
+  )
+
   // playwright-extra의 chromium은 launchPersistentContext도 그대로 노출
   let context: BrowserContext
   try {

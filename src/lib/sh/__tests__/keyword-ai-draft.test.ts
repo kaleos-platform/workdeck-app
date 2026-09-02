@@ -1,9 +1,16 @@
 // @google/genai 는 ESM 전용이라 Jest(CJS)가 파싱하지 못한다. 이 테스트는 프롬프트 조립과
 // 응답 파서만 보므로 SDK 를 통째로 스텁한다(네트워크 호출 경로는 여기서 다루지 않는다).
-jest.mock('@google/genai', () => ({ GoogleGenAI: class {} }))
+// 호출 결과를 테스트마다 바꾸기 위해 SDK 를 스텁한다. 실제 네트워크는 타지 않는다.
+const generateContent = jest.fn()
+jest.mock('@google/genai', () => ({
+  GoogleGenAI: class {
+    models = { generateContent: (...args: unknown[]) => generateContent(...args) }
+  },
+}))
 
 import {
   buildSystemPrompt,
+  draftProductNames,
   buildUserPrompt,
   KEYWORD_OVERGENERATE,
   parseDraft,
@@ -139,5 +146,81 @@ describe('buildSystemPrompt — 복합어 금지', () => {
 
   it('과생성 개수를 프롬프트에 그대로 쓴다', () => {
     expect(buildSystemPrompt(baseInput)).toContain(`정확히 ${KEYWORD_OVERGENERATE}개`)
+  })
+})
+
+describe('draftProductNames — 실패 사유를 삼키지 않는다', () => {
+  const OLD_ENV = process.env
+
+  beforeEach(() => {
+    generateContent.mockReset()
+    process.env = { ...OLD_ENV, GEMINI_API_KEY: 'test-key-1234' }
+  })
+
+  afterAll(() => {
+    process.env = OLD_ENV
+  })
+
+  it('키가 없으면 NO_API_KEY', async () => {
+    process.env = { ...OLD_ENV }
+    delete process.env.GEMINI_API_KEY
+    delete process.env.GOOGLE_AI_API_KEY
+
+    const out = await draftProductNames(baseInput)
+
+    expect(out.result).toBeNull()
+    expect(out.error).toContain('NO_API_KEY')
+  })
+
+  it('API 오류 메시지를 그대로 남긴다', async () => {
+    generateContent.mockRejectedValue(new Error('API key not valid. Please pass a valid API key.'))
+
+    const out = await draftProductNames(baseInput)
+
+    expect(out.result).toBeNull()
+    expect(out.error).toContain('API_ERROR')
+    expect(out.error).toContain('API key not valid')
+  })
+
+  it('에러 메시지에 API 키가 섞이면 지운다', async () => {
+    generateContent.mockRejectedValue(new Error('bad request for key=test-key-1234'))
+
+    const out = await draftProductNames(baseInput)
+
+    expect(out.error).not.toContain('test-key-1234')
+    expect(out.error).toContain('[REDACTED]')
+  })
+
+  it('파싱에 실패하면 응답 앞부분을 남긴다 (MAX_TOKENS 절단 진단용)', async () => {
+    generateContent.mockResolvedValue({ text: '{"names": ["이름"], "keywords": [{"keyword"' })
+
+    const out = await draftProductNames(baseInput)
+
+    expect(out.result).toBeNull()
+    expect(out.error).toContain('PARSE_FAILED')
+    expect(out.error).toContain('"names"')
+  })
+
+  it('빈 응답이면 EMPTY_RESPONSE', async () => {
+    generateContent.mockResolvedValue({ text: '   ' })
+
+    const out = await draftProductNames(baseInput)
+
+    expect(out.error).toContain('EMPTY_RESPONSE')
+  })
+
+  it('성공하면 error 가 없다', async () => {
+    generateContent.mockResolvedValue({
+      text: JSON.stringify({
+        names: ['이름'],
+        keywords: [{ keyword: '캠핑 조리', intent: 'PURPOSE', reason: '' }],
+        reviews: [],
+      }),
+    })
+
+    const out = await draftProductNames(baseInput)
+
+    expect(out.error).toBeUndefined()
+    expect(out.result?.names).toEqual(['이름'])
   })
 })

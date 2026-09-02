@@ -6,6 +6,8 @@ export const runtime = 'nodejs'
 
 const STALE_THRESHOLD_DAYS = 2
 const WORKER_HEARTBEAT_THRESHOLD_MIN = 10 // 10분 이상 ping 없으면 다운으로 간주
+/** stale 재알림 간격 — cron 이 24시간 주기라 하루 1회 발송이 된다. */
+const STALE_RENOTIFY_WINDOW_MS = 20 * 60 * 60 * 1000
 const WORKER_SERVICE = 'inventory-collector'
 
 function kstMidnight(d: Date): Date {
@@ -51,12 +53,26 @@ export const GET = withCronRun('/api/cron/inventory-stale-check', async () => {
 
     let notified = false
     if (stale) {
-      // dedupe — 같은 snapshotDate에 marker가 있으면 skip
+      // dedupe — 하루 1회만 알린다.
+      //
+      // 예전엔 (workspaceId, snapshotDate) 조합에 marker 가 하나라도 있으면 skip 했다.
+      // 그러면 데이터가 오래될수록 조용해진다 — 스냅샷이 안 바뀌니 첫 알림 이후로는
+      // 영원히 dedupe 에 걸린다. 2026-08-30 에 마커가 찍힌 뒤 08-31·09-01·09-02 실행이
+      // 전부 스킵돼, 재고 데이터가 6일 비어 있는 동안 알림이 한 번도 안 갔다.
+      // 오래된 데이터일수록 더 시끄러워야 하는데 정반대로 동작했다.
+      //
+      // 그래서 "이 스냅샷에 대해 최근 20시간 안에 이미 알렸는가"로 바꾼다. cron 이 24시간
+      // 간격이라 매 실행마다 정확히 1회 발송된다. KST 자정 기준이 아니라 롤링 윈도우인
+      // 이유는 위 kstMidnight 이 날짜 차이 계산용이라(양쪽 같은 변환이라 상쇄된다)
+      // timestamp 직접 비교에는 9시간 어긋나기 때문이다. 아래 heartbeat dedupe 도 같은
+      // 롤링 윈도우 방식이라 일관적이다.
+      const dedupeWindowStart = new Date(Date.now() - STALE_RENOTIFY_WINDOW_MS)
       const existing = await prisma.inventoryAnalysis.findFirst({
         where: {
           workspaceId: row.workspaceId,
           snapshotDate: row.snapshotDate,
           triggeredBy: 'stale-skip',
+          analysedAt: { gte: dedupeWindowStart },
         },
         select: { id: true },
       })
