@@ -119,6 +119,20 @@ export async function DELETE(
   })
   if (!existing) return errorResponse('옵션을 찾을 수 없습니다', 404)
 
+  // 재고가 남은 옵션은 삭제 금지 — soft-delete 경로로 빠지면 재고 현황·대조에서 옵션이
+  // 사라지면서 그 수량만 장부에 떠돌게 된다. 먼저 재고 조정으로 0을 만들게 한다.
+  const stock = await prisma.invStockLevel.aggregate({
+    where: { optionId },
+    _sum: { quantity: true },
+  })
+  const remaining = stock._sum.quantity ?? 0
+  if (remaining !== 0) {
+    return errorResponse(
+      `재고가 ${remaining.toLocaleString('ko-KR')}개 남아 있어 삭제할 수 없습니다. 재고 조정으로 0으로 맞춘 뒤 삭제하세요`,
+      409
+    )
+  }
+
   // 삭제 차단 테이블 존재 여부 병렬 확인 (Restrict FK 관계)
   // reorderAccuracy는 reorderItem 없이 잔존할 수 있으므로(plan CONSUMED 후 item 편집 등)
   // 별도로 확인해야 한다. 누락 시 하드삭제 경로로 빠져 FK Restrict 위반 → 500.

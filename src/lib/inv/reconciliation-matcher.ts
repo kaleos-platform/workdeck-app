@@ -66,6 +66,7 @@ async function findSuggestions(spaceId: string, row: ParsedRow): Promise<Suggest
 
   const options = await prisma.invProductOption.findMany({
     where: {
+      deletedAt: null, // 삭제된 옵션은 추천하지 않는다
       product: {
         spaceId,
         // 파일 상품명은 정식명(name)일 수도, 관리명(internalName)일 수도 있다.
@@ -97,6 +98,7 @@ async function findOptionByName(
   const options = await prisma.invProductOption.findMany({
     where: {
       name: { equals: optionName, mode: 'insensitive' },
+      deletedAt: null, // 삭제된 옵션에 파일 행이 다시 붙지 않도록 제외
       // 앱 재고현황 export는 상품명 칸에 관리명(internalName)을 쓴다 → 둘 다 본다.
       product: {
         spaceId,
@@ -129,7 +131,7 @@ async function findSingleOptionByProductName(
         { internalName: { equals: productName, mode: 'insensitive' } },
       ],
     },
-    include: { options: { select: { id: true, name: true } } },
+    include: { options: { where: { deletedAt: null }, select: { id: true, name: true } } },
     take: 2,
   })
   if (products.length !== 1) return null
