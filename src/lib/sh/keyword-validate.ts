@@ -56,12 +56,6 @@ export type Violation = {
    * 제안이 있는 위반은 "지울 것"이 아니라 "고칠 것"이라 cleaned 에서 빼지 않는다.
    */
   suggestion?: string
-  /**
-   * "이건 한 단어다"라고 예외 등록할 후보. 경고 줄의 예외 등록 버튼이 이 값을 쓴다.
-   * 공통 어절 위반은 검색어 전체가 아니라 **공유된 조각**을 등록해야 하므로 따로 담는다
-   * (conflictWith 는 상대 검색어를 담고 있어 재사용할 수 없다).
-   */
-  atomicCandidate?: string
 }
 
 // KeywordRuleSet 에는 하한 필드가 없다(가이드 §7 이 목표 40자만 규정).
@@ -97,6 +91,13 @@ export function objectParticle(word: string): string {
   const jong = finalConsonant(word)
   if (jong === null) return '를'
   return jong === 0 ? '를' : '을'
+}
+
+/** 와/과 — 받침이 있으면 '과'. */
+export function comitativeParticle(word: string): string {
+  const jong = finalConsonant(word)
+  if (jong === null) return '와'
+  return jong === 0 ? '와' : '과'
 }
 
 /** 로/으로 — 'ㄹ' 받침은 '로' 를 쓴다('크림으로', '설로'가 아니라 '설로'). */
@@ -627,7 +628,10 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
       let segment: string | null = null
       for (const prev of singleTokenSeen) {
         const seg = sharedAffix(keys.despaced, prev.despaced, atomicWords)
-        if (seg) {
+        // 공유 조각이 상품명 단어면 §10 Rule 1 이 이미 같은 사실을 말한다
+        // ('브라탑' 은 "상품명 단어(브라)를 빼면 '탑'만 남는다"를 이미 받는다).
+        // 한 줄을 두 번 쓰면 위반 개수만 부풀어 진짜 문제가 묻힌다.
+        if (seg && !nameTokenSet.has(seg)) {
           hit = prev
           segment = seg
           break
@@ -640,9 +644,8 @@ export function validateKeywords(input: ValidateKeywordsInput): KeywordValidatio
           code: 'KW_DUP_SHARED_AFFIX',
           severity: 'WARN',
           keywordIndex: index,
-          message: `'${raw}'${topicParticle(raw)} '${hit.raw}'와 '${segment}'${objectParticle(segment)} 공유합니다. 같은 어절을 여러 검색어에 반복해도 새 유입은 늘지 않습니다.`,
+          message: `'${raw}'${topicParticle(raw)} '${hit.raw}'${comitativeParticle(hit.raw)} '${segment}'${objectParticle(segment)} 공유합니다. 같은 어절을 여러 검색어에 반복해도 새 유입은 늘지 않습니다.`,
           conflictWith: hit.raw,
-          atomicCandidate: segment,
         })
       }
     }

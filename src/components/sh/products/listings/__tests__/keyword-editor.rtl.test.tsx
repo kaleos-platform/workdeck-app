@@ -108,9 +108,11 @@ describe('KeywordEditor 예외 단어 등록', () => {
     expect(screen.getByRole('button', { name: /'쿨링' 한 단어로 등록/ })).toBeInTheDocument()
   })
 
-  it('공통 어절 위반은 검색어 전체가 아니라 공유 조각을 등록한다', () => {
-    renderEditor(['군살보정', '군살커버'])
-    expect(screen.getByRole('button', { name: /'군살' 한 단어로 등록/ })).toBeInTheDocument()
+  it('공통 어절 위반에는 등록 버튼을 주지 않는다 (예외 등록으로 해소되지 않는다)', () => {
+    // '허리'는 상품명 단어가 아니므로 공통 어절 위반만 뜬다(상품명 판정이 섞이지 않는다).
+    renderEditor(['허리보정', '허리압박'])
+    expect(screen.getByText(/'허리'를 공유합니다/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /한 단어로 등록/ })).not.toBeInTheDocument()
   })
 
   it('등록을 누르면 사전 API 로 POST 한다', async () => {

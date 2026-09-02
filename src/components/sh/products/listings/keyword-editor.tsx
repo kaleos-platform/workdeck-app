@@ -43,13 +43,11 @@ const CLEANUP_GROUPS: { label: string; codes: ViolationCode[] }[] = [
   { label: '개수 초과', codes: ['KW_OVER_LIMIT'] },
 ]
 
-// "이건 원래 한 단어다"로 해소되는 위반들. 상품명 단어로 잘못 쪼개졌거나(COMPOUND/PARTIAL),
-// 공유 어절이 사실은 한 단어인 경우(SHARED_AFFIX)만 예외 등록이 답이 된다.
-const ATOMIC_FIXABLE: ViolationCode[] = [
-  'KW_NAME_COMPOUND',
-  'KW_NAME_PARTIAL',
-  'KW_DUP_SHARED_AFFIX',
-]
+// "이건 원래 한 단어다"로 해소되는 위반들 — 상품명 단어로 잘못 쪼개진 경우뿐이다.
+// KW_DUP_SHARED_AFFIX 는 여기 넣으면 안 된다: 공유 조각을 예외로 등록해도 경계가
+// 그 단어를 **가르지 않으므로**(통째로 포함 = 허용) 판정이 그대로 남아 버튼이 헛돈다.
+// 공통 어절의 해법은 둘 중 하나를 지우는 것이고, 그 줄엔 이미 제거 버튼이 있다.
+const ATOMIC_FIXABLE: ViolationCode[] = ['KW_NAME_COMPOUND', 'KW_NAME_PARTIAL']
 
 const SEVERITY_CHIP: Record<ViolationSeverity, string> = {
   ERROR: 'border-destructive/50 bg-destructive/10 text-destructive',
@@ -185,7 +183,6 @@ export function KeywordEditor({
           severity: v.severity,
           message: v.message,
           suggestion: v.suggestion,
-          atomicCandidate: v.atomicCandidate,
         }))
         .sort((a, b) => a.idx - b.idx),
     [validation.violations]
@@ -483,8 +480,7 @@ export function KeywordEditor({
                   {!readOnly &&
                     ATOMIC_FIXABLE.includes(row.code) &&
                     (() => {
-                      // 공통 어절 위반은 검색어 전체가 아니라 공유된 조각을 등록해야 한다.
-                      const word = (row.atomicCandidate ?? value[row.idx] ?? '').trim()
+                      const word = (value[row.idx] ?? '').trim()
                       if (word.length < 2) return null
                       return (
                         <Button

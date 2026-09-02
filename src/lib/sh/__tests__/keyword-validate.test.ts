@@ -674,18 +674,18 @@ describe('validateKeywords — §12 공통 어절 반복 (KW_DUP_SHARED_AFFIX)',
     expect(affixAt(r.violations, 0)).toBeUndefined()
     const hit = affixAt(r.violations, 1)
     expect(hit?.conflictWith).toBe('군살보정')
-    expect(hit?.atomicCandidate).toBe('군살')
-    expect(hit?.message).toContain('군살')
+    // 조사도 검증한다 — '군살보정'는 받침이 있어 '와'가 아니라 '과'다.
+    expect(hit?.message).toContain("'군살보정'과 '군살'을 공유합니다")
   })
 
   it('꼬리를 공유해도 잡는다', () => {
     const hit = affixAt(run(['부유방커버', '군살커버']).violations, 1)
-    expect(hit?.atomicCandidate).toBe('커버')
+    expect(hit?.message).toContain("'커버'를 공유합니다")
     expect(hit?.conflictWith).toBe('부유방커버')
   })
 
   it('최대 공통 조각을 그대로 보고한다 (형태소 추정을 하지 않는다)', () => {
-    expect(affixAt(run(['50대여성', '60대여성']).violations, 1)?.atomicCandidate).toBe('대여성')
+    expect(affixAt(run(['50대여성', '60대여성']).violations, 1)?.message).toContain("'대여성'을")
   })
 
   it('N개 가족이면 N-1건이다 (첫 매치에서 멈춘다)', () => {
@@ -711,6 +711,13 @@ describe('validateKeywords — §12 공통 어절 반복 (KW_DUP_SHARED_AFFIX)',
       rules,
     })
     expect(r2.violations.filter((v) => v.code === 'KW_DUP_SHARED_AFFIX')).toEqual([])
+  })
+
+  it('공유 조각이 상품명 단어면 §10 에 맡기고 중복 경고하지 않는다', () => {
+    // '브라탑' 은 이미 "상품명 단어(브라)를 빼면 '탑'만 남는다"를 받는다.
+    const r = run(['노와이어브라', '브라탑'])
+    expect(r.violations.filter((v) => v.code === 'KW_DUP_SHARED_AFFIX')).toEqual([])
+    expect(hasCode(r.violations, 1, 'KW_NAME_COMPOUND')).toBe(true)
   })
 
   it('한 글자만 겹치면 잡지 않는다', () => {
