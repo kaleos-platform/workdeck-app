@@ -165,22 +165,32 @@ export function stripNameTokens(keyword: string, nameTokens: string[]): NameStri
   const keptTokens: string[] = []
 
   for (const token of splitTokens(raw)) {
-    let rest = despaceKeyword(token)
+    const d = despaceKeyword(token)
+    // 문자열을 줄여가며 replace 하면 "이 구간은 건드리지 말라"를 표현할 수 없다(예외 단어 보호).
+    // 삭제 위치를 마스크로 들고 있다가 마지막에 한 번에 걷어낸다.
+    const gone = new Array<boolean>(d.length).fill(false)
     let touched = false
     for (const key of keys) {
-      if (!rest.includes(key)) continue
-      // 같은 단어가 두 번 들어간 검색어도 있으므로 전부 지운다.
-      while (rest.includes(key)) {
-        rest = rest.replace(key, '')
+      for (let i = d.indexOf(key); i >= 0; i = d.indexOf(key, i + 1)) {
+        const j = i + key.length
+        let free = true
+        for (let k = i; k < j; k += 1)
+          if (gone[k]) {
+            free = false
+            break
+          }
+        if (!free) continue
+        for (let k = i; k < j; k += 1) gone[k] = true
+        // 같은 단어가 두 번 들어간 검색어도 있으므로 전부 지운다.
         removed.push(dict.get(key) as string)
+        touched = true
       }
-      touched = true
-      if (!rest) break
     }
     if (!touched) {
       keptTokens.push(token)
       continue
     }
+    const rest = [...d].filter((_, k) => !gone[k]).join('')
     if (rest) keptTokens.push(rest)
   }
 
