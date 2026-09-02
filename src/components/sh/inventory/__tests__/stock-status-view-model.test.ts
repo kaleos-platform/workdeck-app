@@ -2,6 +2,7 @@ import {
   buildStockStatusProducts,
   filterStockStatusProducts,
   scopeStockStatusRows,
+  stockStatusDisplayName,
 } from '../stock-status-view-model'
 import type { StockMatrixRow } from '../stock-status.types'
 
@@ -65,6 +66,60 @@ describe('stock status view model', () => {
     expect(scoped).toHaveLength(1)
     expect(scoped[0].displayQty).toBe(10)
     expect(scoped[0].displayStatus).toBe('OK')
+  })
+
+  it('30일 출고량 내림차순 → 재고 내림차순으로 정렬한다', () => {
+    // 출고 0 · 재고 9999 상품을 추가 → 출고량 있는 상품보다 뒤로 밀려야 한다
+    const deadStock: StockMatrixRow = {
+      ...rows[0],
+      optionId: 'opt-c',
+      productId: 'prod-c',
+      productName: '감마',
+      currentQty: 9999,
+      totalQty: 9999,
+      byLocation: { 'loc-2': 9999 },
+      out30d: 0,
+      out90d: 0,
+    }
+    const products = buildStockStatusProducts([...rows, deadStock], null)
+
+    expect(products.map((p) => p.productId)).toEqual(['prod-a', 'prod-b', 'prod-c'])
+    expect(products.map((p) => p.out30d)).toEqual([4, 2, 0])
+  })
+
+  it('30일 출고량이 같으면 현재고 내림차순으로 정렬한다', () => {
+    const tie: StockMatrixRow = {
+      ...rows[1],
+      optionId: 'opt-d',
+      productId: 'prod-d',
+      productName: '델타',
+      out30d: 4,
+      currentQty: 50,
+      totalQty: 50,
+      byLocation: { 'loc-2': 50 },
+    }
+    const products = buildStockStatusProducts([...rows, tie], null)
+
+    // prod-a(out30d 4·현재고 10) < prod-d(out30d 4·현재고 50)
+    expect(products.map((p) => p.productId)).toEqual(['prod-d', 'prod-a', 'prod-b'])
+  })
+
+  it('관리용 상품명이 있으면 표시명·검색이 관리명을 따른다', () => {
+    const named: StockMatrixRow = {
+      ...rows[0],
+      productInternalName: '알파 벌크',
+    }
+    const products = buildStockStatusProducts([named], null)
+
+    expect(stockStatusDisplayName(products[0])).toBe('알파 벌크')
+    expect(
+      filterStockStatusProducts(products, {
+        brandId: null,
+        groupId: null,
+        pinnedProductIds: [],
+        query: '벌크',
+      })
+    ).toHaveLength(1)
   })
 
   it('고정 상품을 먼저 보여주고 이름순으로 정렬한다', () => {

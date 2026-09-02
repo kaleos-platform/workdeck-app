@@ -7,6 +7,9 @@ const products: StockStatusProductCard[] = [
   {
     productId: 'prod-b',
     productName: '베타',
+    productInternalName: null,
+    out30d: 0,
+    currentQty: 0,
     optionCount: 1,
     okOptionCount: 1,
     lowOptionCount: 0,
@@ -20,6 +23,9 @@ const products: StockStatusProductCard[] = [
   {
     productId: 'prod-a',
     productName: '알파',
+    productInternalName: null,
+    out30d: 0,
+    currentQty: 0,
     optionCount: 1,
     okOptionCount: 0,
     lowOptionCount: 1,
@@ -93,6 +99,9 @@ describe('stock status products panel', () => {
     const many: StockStatusProductCard[] = Array.from({ length: total }, (_, i) => ({
       productId: `p-${i}`,
       productName: `상품 ${String(i).padStart(2, '0')}`,
+      productInternalName: null,
+      out30d: 0,
+      currentQty: 0,
       optionCount: 1,
       okOptionCount: 1,
       lowOptionCount: 0,
