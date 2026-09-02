@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 type Band = {
   key: string
   label: string
-  /** 구간 상한(문자 수) */
+  /** 구간 상한(문자 수) — **이 값을 포함**한다. 40~70 목표면 target.to = 70. */
   to: number
   bar: string
   text: string
@@ -20,7 +20,9 @@ function buildBands(rules: KeywordRuleSet): Band[] {
     {
       key: 'below',
       label: '부족',
-      to: rules.nameTargetMin,
+      // 목표 구간이 40~70 이면 40 은 **목표**다. 여기 상한을 40 으로 두면 length<=to 매칭에서
+      // 40 이 '부족' 에 먼저 걸린다(경계가 두 구간에 겹친다).
+      to: Math.max(0, rules.nameTargetMin - 1),
       bar: 'bg-muted-foreground/25',
       text: 'text-muted-foreground',
     },
@@ -104,7 +106,8 @@ export function NameLengthGauge({ length, rules }: { length: number; rules: Keyw
 
       <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
         {bands.map((band, idx) => {
-          const from = idx === 0 ? 0 : bands[idx - 1].to
+          // 상한이 포함이므로 다음 구간은 그 다음 글자부터다 — 0~39 / 40~70 / 71~80 / 81~120.
+          const from = idx === 0 ? 0 : bands[idx - 1].to + 1
           return (
             <span key={band.key} className="inline-flex items-center gap-1">
               <span className={cn('h-2 w-2 rounded-sm', band.bar)} aria-hidden="true" />

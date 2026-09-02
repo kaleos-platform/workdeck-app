@@ -2,6 +2,8 @@ import { tokenizeProductName } from '@/lib/inv/search-tokens'
 import { DEFAULT_KEYWORD_RULES, resolveKeywordRules } from '../keyword-rules'
 import {
   countNamingViolations,
+  directionParticle,
+  topicParticle,
   validateKeywords,
   validateListingNaming,
   validateProductName,
@@ -492,5 +494,169 @@ describe('countNamingViolations', () => {
     const result = validateListingNaming({ searchName: clean, keywords: ['답례품'], rules })
     const n = countNamingViolations(result, { searchName: clean, displayName: '' })
     expect(n).toBe(0)
+  })
+})
+
+// §10 한국어 복합어 — prod 실제 사례(에이엠엘 쿨 메쉬 브라)에서 나온 회귀.
+// 기존 두 게이트는 이 형태를 구조적으로 못 잡아 사실상 아무것도 걸러지지 않고 있었다.
+describe('validateKeywords — §10 한국어 복합 검색어', () => {
+  const productName = '에이엠엘 쿨 메쉬 심리스 커버 브라 노와이어 후크없이 편안한 중년 여성 속옷'
+
+  it('상품명 단어를 붙여 만든 조합은 KW_NAME_COMPOUND', () => {
+    const keywords = ['노와이어브라', '심리스브라', '중년여성브라']
+    const r = validateKeywords({ keywords, productName, rules })
+    keywords.forEach((_, i) => {
+      expect(hasCode(r.violations, i, 'KW_NAME_COMPOUND')).toBe(true)
+    })
+  })
+
+  it('상품명 단어가 전혀 없으면 통과', () => {
+    const keywords = ['레이스', '편한브래지어']
+    const r = validateKeywords({ keywords, productName, rules })
+    expect(r.violations).toEqual([])
+    expect(r.cleaned).toEqual(keywords)
+  })
+
+  it('conflictWith 에 분해 조각을 담는다', () => {
+    const r = validateKeywords({ keywords: ['노와이어브라'], productName, rules })
+    expect(r.violations[0].conflictWith).toBe('노와이어 + 브라')
+    expect(r.violations[0].message).toContain('노와이어 + 브라')
+  })
+
+  it('cleaned 에서 빠진다', () => {
+    const r = validateKeywords({ keywords: ['노와이어브라', '티셔츠브라'], productName, rules })
+    expect(r.cleaned).toEqual(['티셔츠브라'])
+  })
+
+  // 게이트 순서 락 — 아래 셋은 전부 앞선 게이트가 소유해야 한다.
+  // compound 를 앞으로 옮기는 리팩터가 들어오면 여기서 죽는다.
+  it('단일 토큰은 여전히 KW_DUP_WITH_NAME (게이트 a)', () => {
+    const r = validateKeywords({ keywords: ['브라'], productName, rules })
+    expect(hasCode(r.violations, 0, 'KW_DUP_WITH_NAME')).toBe(true)
+    expect(hasCode(r.violations, 0, 'KW_NAME_COMPOUND')).toBe(false)
+  })
+
+  it('상품명에 인접한 단어 조합은 여전히 KW_DUP_WITH_NAME (게이트 b)', () => {
+    // 상품명이 `… 심리스 커버 브라 노와이어 …` 라 despaced 에 '커버브라' 가 연속으로 있다.
+    // 상품명 단어로 만든 복합어지만 부분문자열 게이트가 먼저 잡는 것이 맞다.
+    const r = validateKeywords({ keywords: ['커버브라'], productName, rules })
+    expect(hasCode(r.violations, 0, 'KW_DUP_WITH_NAME')).toBe(true)
+    expect(hasCode(r.violations, 0, 'KW_NAME_COMPOUND')).toBe(false)
+  })
+
+  it('상품명이 비면 복합어 판정도 발화하지 않는다', () => {
+    const r = validateKeywords({ keywords: ['노와이어브라'], productName: '', rules })
+    expect(hasCode(r.violations, 0, 'KW_NAME_COMPOUND')).toBe(false)
+  })
+})
+
+// 상품명 단어가 일부만 섞인 경우 — 지울 게 아니라 그 부분만 빼라고 제안한다.
+describe('validateKeywords — KW_NAME_PARTIAL 제안', () => {
+  const productName = '에이엠엘 쿨 메쉬 심리스 커버 브라 노와이어 후크없이 편안한 중년 여성 속옷'
+  const first = (keyword: string) =>
+    validateKeywords({ keywords: [keyword], productName, rules }).violations[0]
+
+  it('상품명 단어를 뺀 나머지를 suggestion 으로 준다', () => {
+    expect(first('여름브라')).toMatchObject({ code: 'KW_NAME_PARTIAL', suggestion: '여름' })
+    expect(first('운동용브라')).toMatchObject({ code: 'KW_NAME_PARTIAL', suggestion: '운동용' })
+    expect(first('갱년기브라')).toMatchObject({ code: 'KW_NAME_PARTIAL', suggestion: '갱년기' })
+  })
+
+  it('상품명 단어가 여러 개면 모두 뺀다', () => {
+    expect(first('50대여성브라')).toMatchObject({ suggestion: '50대' })
+  })
+
+  it('제안이 붙은 검색어는 cleaned 에 남는다 — 일괄 삭제가 지우면 고칠 기회를 잃는다', () => {
+    const r = validateKeywords({ keywords: ['여름브라', '노와이어브라'], productName, rules })
+    expect(r.cleaned).toEqual(['여름브라'])
+  })
+
+  it('빼고 남은 게 2글자 미만이면 제안이 아니라 제거 권장(KW_NAME_COMPOUND)', () => {
+    expect(first('브라탑').code).toBe('KW_NAME_COMPOUND') // '탑' 만 남는다
+    expect(first('브라자').code).toBe('KW_NAME_COMPOUND') // '자' 만 남는다
+    expect(first('노와이어브라').code).toBe('KW_NAME_COMPOUND') // 남는 게 없다
+  })
+
+  it('띄어 쓴 조합은 건드리지 않는다 (가이드 §9 가 허용한 형태)', () => {
+    const r = validateKeywords({ keywords: ['통기성 좋은 브라'], productName, rules })
+    expect(r.violations.map((v) => v.code)).not.toContain('KW_NAME_PARTIAL')
+  })
+
+  it('메시지에 무엇을 뺐는지와 대안을 함께 담는다', () => {
+    const v = first('풀컵브라')
+    expect(v.message).toContain('브라')
+    expect(v.message).toContain('풀컵')
+    expect(v.conflictWith).toBe('브라')
+  })
+})
+
+// 사용자에게 그대로 나가는 문장이라 조사가 틀리면 눈에 띈다.
+describe('조사 선택', () => {
+  it('은/는 을 받침으로 고른다', () => {
+    expect(topicParticle('클렌징폼')).toBe('은')
+    expect(topicParticle('브라')).toBe('는')
+    expect(topicParticle('여름브라')).toBe('는')
+  })
+
+  it('로/으로 를 받침으로 고른다 (ㄹ 받침은 로)', () => {
+    expect(directionParticle('크림')).toBe('으로')
+    expect(directionParticle('여름')).toBe('으로')
+    expect(directionParticle('워터')).toBe('로')
+    expect(directionParticle('설')).toBe('로')
+  })
+
+  it('한글이 아니면 기본형', () => {
+    expect(topicParticle('cream')).toBe('는')
+    expect(directionParticle('cream')).toBe('로')
+  })
+})
+
+// 브랜드명은 상품명에 들어 있지만 검색어로 쓰는 게 정당하다 — 자사 브랜드 검색 유입.
+describe('validateKeywords — 브랜드명 예외', () => {
+  const productName = '크림드 영유아 선 클렌징 패드 눈시림 없는 저자극 해양심층수 성분'
+  const brandNames = ['모던리빙', '미닝랩', '에이엠엘', '크림드']
+  const codes = (keyword: string, withBrand: boolean) =>
+    validateKeywords({
+      keywords: [keyword],
+      productName,
+      rules,
+      ...(withBrand ? { brandNames } : {}),
+    }).violations.map((v) => v.code)
+
+  it('브랜드명 단독 검색어를 지적하지 않는다', () => {
+    expect(codes('크림드', false)).toContain('KW_DUP_WITH_NAME')
+    expect(codes('크림드', true)).toEqual([])
+  })
+
+  it('빼고 남은 게 브랜드뿐이면 통과한다', () => {
+    expect(codes('크림드선패드', false)).toContain('KW_NAME_COMPOUND')
+    expect(codes('크림드선패드', true)).toEqual([])
+  })
+
+  it('브랜드 말고 다른 상품명 단어가 남으면 여전히 지적한다', () => {
+    const r = validateKeywords({
+      keywords: ['크림드워터패드'],
+      productName,
+      brandNames,
+      rules,
+    })
+    expect(r.violations[0].code).toBe('KW_NAME_PARTIAL')
+    expect(r.violations[0].suggestion).toBe('크림드워터')
+  })
+
+  it('브랜드를 경계로 끊어 부분문자열을 본다 — 브랜드만 지우면 앞뒤가 붙어 오탐이 난다', () => {
+    // '크림드' 를 지우고 이어붙이면 '…성분' + (없음) 이 되지만, 브랜드가 중간에 있는
+    // 상품명에서는 떨어진 두 단어가 붙어 실제로 없는 조합이 "상품명에 있다"고 잡힌다.
+    const r = validateKeywords({
+      keywords: ['영유아선'],
+      productName: '영유아 크림드 선 클렌징',
+      brandNames,
+      rules,
+    })
+    expect(r.violations.map((v) => v.code)).not.toContain('KW_DUP_WITH_NAME')
+  })
+
+  it('브랜드 목록이 없으면 기존과 동일하게 동작한다', () => {
+    expect(codes('선패드', true)).toContain('KW_NAME_COMPOUND')
   })
 })

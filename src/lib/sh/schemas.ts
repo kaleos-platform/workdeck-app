@@ -924,3 +924,16 @@ export type ProductExtractApplyInput = z.infer<typeof productExtractApplySchema>
 
 export const productExtractAppliedSchema = productExtractApplySchema
 export type ProductExtractAppliedInput = z.infer<typeof productExtractAppliedSchema>
+
+/**
+ * AI 초안(POST /api/sh/products/[productId]/name-draft) 요청 body.
+ *
+ * searchName·keywords 는 **화면에서 편집 중인 값**이다. 서버가 DB 만 읽으면 저장 전 편집분을
+ * 못 보므로(카드 경로는 자동저장이 없다) 중복 판정과 기준 상품명이 화면과 어긋난다.
+ */
+export const nameDraftRequestSchema = z.object({
+  channelId: z.string().trim().min(1),
+  // 상한은 channel-products PATCH 의 baseSearchName 과 맞춘다.
+  searchName: z.string().trim().max(400).optional(),
+  keywords: z.array(z.string().max(100)).max(60).optional(),
+})

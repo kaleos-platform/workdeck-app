@@ -3,6 +3,7 @@
 jest.mock('@google/genai', () => ({ GoogleGenAI: class {} }))
 
 import {
+  buildSystemPrompt,
   buildUserPrompt,
   KEYWORD_OVERGENERATE,
   parseDraft,
@@ -124,5 +125,19 @@ describe('buildUserPrompt — 근거 섹션은 값이 있을 때만 넣는다', 
     })
     expect(p).toContain('[이미 등록된 검색어 — 중복 제안 금지, 진단 대상] 밀프렙용기')
     expect(p).toContain('[우리 공간의 기존 검색어 풀 — 참고용] 자취살림')
+  })
+})
+
+describe('buildSystemPrompt — 복합어 금지', () => {
+  it('상품명 단어를 붙이지 말라는 지시와 좋은/나쁜 예시를 함께 담는다', () => {
+    const p = buildSystemPrompt(baseInput)
+    expect(p).toContain('검색어에 붙이지 않습니다')
+    expect(p).toContain('여름브라') // 나쁜 예
+    // 좋은 예를 함께 주지 않으면 모델이 과억제되어 해당 계열을 통째로 회피한다.
+    expect(p).toContain('군살보정')
+  })
+
+  it('과생성 개수를 프롬프트에 그대로 쓴다', () => {
+    expect(buildSystemPrompt(baseInput)).toContain(`정확히 ${KEYWORD_OVERGENERATE}개`)
   })
 })
