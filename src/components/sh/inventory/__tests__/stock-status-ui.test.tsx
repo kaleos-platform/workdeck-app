@@ -22,7 +22,7 @@ const products: StockStatusProductCard[] = [
     productName: '와펜',
     productInternalName: null,
     out30d: 0,
-    totalQty: 0,
+    currentQty: 0,
     optionCount: 2,
     okOptionCount: 1,
     lowOptionCount: 0,

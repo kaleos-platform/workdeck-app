@@ -87,6 +87,23 @@ describe('stock status view model', () => {
     expect(products.map((p) => p.out30d)).toEqual([4, 2, 0])
   })
 
+  it('30일 출고량이 같으면 현재고 내림차순으로 정렬한다', () => {
+    const tie: StockMatrixRow = {
+      ...rows[1],
+      optionId: 'opt-d',
+      productId: 'prod-d',
+      productName: '델타',
+      out30d: 4,
+      currentQty: 50,
+      totalQty: 50,
+      byLocation: { 'loc-2': 50 },
+    }
+    const products = buildStockStatusProducts([...rows, tie], null)
+
+    // prod-a(out30d 4·현재고 10) < prod-d(out30d 4·현재고 50)
+    expect(products.map((p) => p.productId)).toEqual(['prod-d', 'prod-a', 'prod-b'])
+  })
+
   it('관리용 상품명이 있으면 표시명·검색이 관리명을 따른다', () => {
     const named: StockMatrixRow = {
       ...rows[0],

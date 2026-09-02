@@ -12,9 +12,9 @@ export type StockStatusProductCard = StockProductSummary & {
   brandName: string | null
   groupId: string
   groupName: string
-  /** 상품 내 옵션 합계 — 정렬 기준 */
+  /** 상품 내 옵션 합계 — 정렬 기준 (currentQty = 입고예정 제외 현재고) */
   out30d: number
-  totalQty: number
+  currentQty: number
 }
 
 /** 화면 표시명 — 관리용 상품명 우선, 없으면 공식 상품명 */
@@ -26,10 +26,10 @@ export function stockStatusDisplayName(product: {
   return internal ? internal : product.productName
 }
 
-/** 30일 출고량 desc → 총재고 desc → 표시명 오름차순 */
+/** 30일 출고량 desc → 현재고 desc → 표시명 오름차순 */
 function compareProductCards(a: StockStatusProductCard, b: StockStatusProductCard): number {
   if (a.out30d !== b.out30d) return b.out30d - a.out30d
-  if (a.totalQty !== b.totalQty) return b.totalQty - a.totalQty
+  if (a.currentQty !== b.currentQty) return b.currentQty - a.currentQty
   return stockStatusDisplayName(a).localeCompare(stockStatusDisplayName(b), 'ko')
 }
 
@@ -86,7 +86,7 @@ export function buildStockStatusProducts(
       productMap.set(row.productId, {
         ...patch,
         out30d: row.out30d,
-        totalQty: row.displayQty,
+        currentQty: row.currentQty,
         optionCount: 1,
         okOptionCount: nextStatus === 'OK' ? 1 : 0,
         lowOptionCount: nextStatus === 'LOW' ? 1 : 0,
@@ -98,7 +98,7 @@ export function buildStockStatusProducts(
 
     existing.optionCount += 1
     existing.out30d += row.out30d
-    existing.totalQty += row.displayQty
+    existing.currentQty += row.currentQty
     if (nextStatus === 'OK') existing.okOptionCount += 1
     else if (nextStatus === 'LOW') existing.lowOptionCount += 1
     else if (nextStatus === 'OUT') existing.outOptionCount += 1
