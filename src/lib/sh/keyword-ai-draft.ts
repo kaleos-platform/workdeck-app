@@ -12,6 +12,10 @@
  * seller-hub 도 재무처럼 분리). 키 = GEMINI_API_KEY 우선, 없으면 GOOGLE_AI_API_KEY 폴백.
  * 모델 = AI_PRIMARY_MODEL(기본 gemini-2.5-flash). 키 미설정/오류/파싱 실패면 null. 결코 throw 안 함.
  *
+ * 실패 사유는 **삼켜서는 안 된다.** 예전엔 catch → null 이라 TextGenerationLog 에 아무 단서도
+ * 남지 않았고, "AI 초안을 사용할 수 없습니다" 만 보고 원인을 알 수 없어 진단에 prod DB 조회와
+ * 직접 API 호출이 필요했다(실제 사례: prod 키 무효 / 크레딧 소진).
+ *
  * 초안은 여기서 검증하지 않는다 — 후보를 그대로 반환하고, 호출부(API 라우트)가
  * keyword-draft-filter.ts 의 결정적 검증기로 위반 후보를 버리고 진단을 조립한다.
  *
@@ -188,17 +192,38 @@ function buildUserPrompt(input: NameDraftInput): string {
  * 상품 문맥을 바탕으로 상품명·검색어 초안과 등록 검색어 진단을 Gemini 로 생성한다.
  * 적합한 응답을 받지 못하면(키 미설정/API 오류/JSON 파싱 실패/빈 결과) null. 결코 throw 하지 않는다.
  */
-export async function draftProductNames(input: NameDraftInput): Promise<NameDraftResult | null> {
-  const content = await callGemini(buildSystemPrompt(input), buildUserPrompt(input))
-  if (!content) return null
-
-  return parseDraft(content)
+/** 초안 생성 결과. 실패해도 왜 실패했는지는 남긴다. */
+export type NameDraftOutcome = {
+  result: NameDraftResult | null
+  /** 실패 사유 요약. 성공이면 undefined. 로그에 그대로 들어가므로 키는 절대 담지 않는다. */
+  error?: string
 }
 
-/** Gemini API(@google/genai) 단발 호출 — seller-hub 초안 전용. 키 미설정/오류면 null. */
-async function callGemini(system: string, user: string): Promise<string | null> {
+export async function draftProductNames(input: NameDraftInput): Promise<NameDraftOutcome> {
+  const call = await callGemini(buildSystemPrompt(input), buildUserPrompt(input))
+  if (call.error) return { result: null, error: call.error }
+  if (!call.text) return { result: null, error: 'EMPTY_RESPONSE: 모델이 빈 응답을 돌려줬습니다' }
+
+  const parsed = parseDraft(call.text)
+  if (!parsed) {
+    // 잘린 JSON(MAX_TOKENS)·마크다운 래핑 등. 앞부분을 남겨야 어디서 깨졌는지 보인다.
+    return { result: null, error: `PARSE_FAILED: ${call.text.slice(0, 200)}` }
+  }
+  return { result: parsed }
+}
+
+/**
+ * Gemini API(@google/genai) 단발 호출 — seller-hub 초안 전용.
+ * 절대 throw 하지 않는다. 실패는 error 문자열로 돌려준다(사유를 삼키지 않기 위해).
+ */
+async function callGemini(
+  system: string,
+  user: string
+): Promise<{ text: string | null; error?: string }> {
   const apiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_AI_API_KEY
-  if (!apiKey) return null
+  if (!apiKey) {
+    return { text: null, error: 'NO_API_KEY: GEMINI_API_KEY 가 설정되지 않았습니다' }
+  }
   try {
     const ai = new GoogleGenAI({ apiKey })
     const res = await ai.models.generateContent({
@@ -217,10 +242,19 @@ async function callGemini(system: string, user: string): Promise<string | null> 
       },
     })
     const text = res.text
-    return text && text.trim() ? text : null
-  } catch {
-    return null
+    return { text: text && text.trim() ? text : null }
+  } catch (err) {
+    // SDK 에러 메시지에는 상태코드와 사유가 들어 있다(예: API key not valid / credits depleted).
+    // 혹시라도 키가 섞여 나가지 않게 마스킹한 뒤 길이를 자른다.
+    const raw = err instanceof Error ? err.message : String(err)
+    return { text: null, error: `API_ERROR: ${redactKey(raw, apiKey).slice(0, 300)}` }
   }
+}
+
+/** 로그·응답에 API 키가 섞여 나가지 않게 지운다. */
+function redactKey(text: string, apiKey: string): string {
+  if (!apiKey) return text
+  return text.split(apiKey).join('[REDACTED]')
 }
 
 /** Prisma Json? 필드와 동일한 방어 — 배열이 아니거나 원소가 문자열이 아니면 걸러낸다. */
