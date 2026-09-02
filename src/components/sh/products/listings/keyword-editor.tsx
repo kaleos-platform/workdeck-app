@@ -3,10 +3,12 @@
 import { useMemo, useState } from 'react'
 import { AlertCircle, AlertTriangle, Info, Plus, Sparkles, X } from 'lucide-react'
 
+import { useAtomicWords } from '@/hooks/use-atomic-words'
 import { useBrandNames } from '@/hooks/use-brand-names'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { DEFAULT_KEYWORD_RULES, type KeywordRuleSet } from '@/lib/sh/keyword-rules'
 import {
@@ -40,6 +42,12 @@ const CLEANUP_GROUPS: { label: string; codes: ViolationCode[] }[] = [
   { label: '길이 초과', codes: ['KW_TOO_LONG'] },
   { label: '개수 초과', codes: ['KW_OVER_LIMIT'] },
 ]
+
+// "이건 원래 한 단어다"로 해소되는 위반들 — 상품명 단어로 잘못 쪼개진 경우뿐이다.
+// KW_DUP_SHARED_AFFIX 는 여기 넣으면 안 된다: 공유 조각을 예외로 등록해도 경계가
+// 그 단어를 **가르지 않으므로**(통째로 포함 = 허용) 판정이 그대로 남아 버튼이 헛돈다.
+// 공통 어절의 해법은 둘 중 하나를 지우는 것이고, 그 줄엔 이미 제거 버튼이 있다.
+const ATOMIC_FIXABLE: ViolationCode[] = ['KW_NAME_COMPOUND', 'KW_NAME_PARTIAL']
 
 const SEVERITY_CHIP: Record<ViolationSeverity, string> = {
   ERROR: 'border-destructive/50 bg-destructive/10 text-destructive',
@@ -104,6 +112,10 @@ export function KeywordEditor({
   // 브랜드명은 상품명 단어로 치지 않는다 — '크림드' 같은 자사 브랜드 검색은 정당한 유입이다.
   const brandNames = useBrandNames()
 
+  // 예외 단어 사전 — 상품명 단어로 쪼개지 않을 단어들('쿨링' → '쿨' + '링' 금지).
+  const atomic = useAtomicWords()
+  const atomicNames = atomic.names
+
   const validation = useMemo(
     () =>
       validateKeywords({
@@ -112,9 +124,10 @@ export function KeywordEditor({
         categoryNames,
         optionNames,
         brandNames,
+        atomicWords: atomicNames,
         rules: activeRules,
       }),
-    [value, productName, categoryNames, optionNames, brandNames, activeRules]
+    [value, productName, categoryNames, optionNames, brandNames, atomicNames, activeRules]
   )
 
   // 상품명 길이·위반은 상품명 입력란 아래의 NameValidationPanel 이 담당한다.
@@ -266,6 +279,44 @@ export function KeywordEditor({
                 <AlertTriangle className="h-3 w-3" aria-hidden="true" />
                 위반 {violationCount}
               </span>
+            </>
+          )}
+          {atomic.words.length > 0 && (
+            <>
+              <span className="text-muted-foreground/50">·</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="text-muted-foreground underline-offset-2 hover:underline"
+                  >
+                    예외 단어 {atomic.words.length}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-64">
+                  <p className="text-xs font-medium">분해하지 않는 단어</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    상품명 단어로 쪼개지 않고 한 덩어리로 봅니다. 워크스페이스 전체에 적용됩니다.
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    {atomic.words.map((w) => (
+                      <li key={w.id} className="flex items-center justify-between gap-2 text-xs">
+                        <span className="truncate">{w.word}</span>
+                        {!readOnly && (
+                          <button
+                            type="button"
+                            onClick={() => void atomic.remove(w.id)}
+                            className="text-muted-foreground hover:text-destructive"
+                            aria-label={`${w.word} 예외 해제`}
+                          >
+                            <X className="h-3 w-3" aria-hidden="true" />
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </PopoverContent>
+              </Popover>
             </>
           )}
           {/* 지울 게 있을 때만 보여준다 — 제안(KW_NAME_PARTIAL)은 cleaned 에 남으므로
@@ -426,6 +477,23 @@ export function KeywordEditor({
                       제거
                     </Button>
                   )}
+                  {!readOnly &&
+                    ATOMIC_FIXABLE.includes(row.code) &&
+                    (() => {
+                      const word = (value[row.idx] ?? '').trim()
+                      if (word.length < 2) return null
+                      return (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => void atomic.add(word)}
+                          className="h-6 px-2 text-xs"
+                        >
+                          &apos;{word}&apos; 한 단어로 등록
+                        </Button>
+                      )
+                    })()}
                 </li>
               )
             })}
