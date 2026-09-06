@@ -309,6 +309,9 @@ export function ProductionRunFormDialog({
 
   // ── 단계별 상태/일자 (편집 모드 전용)
   const [status, setStatus] = useState<RunStatus>('PLANNED')
+  // 저장된 상태 — 입고 완료 전환을 이 폼에서 못 하게 막는 기준.
+  // 재고 INBOUND 는 /transition(위치·수량 분배)에서만 만들어진다.
+  const [savedStatus, setSavedStatus] = useState<RunStatus>('PLANNED')
   const [orderedConfirmedAt, setOrderedConfirmedAt] = useState('')
   const [stockedInAt, setStockedInAt] = useState('')
   const [createdAt, setCreatedAt] = useState('')
@@ -335,6 +338,7 @@ export function ProductionRunFormDialog({
     setRunNo('')
     setMemo('')
     setStatus('PLANNED')
+    setSavedStatus('PLANNED')
     setOrderedConfirmedAt('')
     setStockedInAt('')
     setCreatedAt('')
@@ -364,6 +368,7 @@ export function ProductionRunFormDialog({
           setRunNo(r.runNo)
           setMemo(r.memo ?? '')
           setStatus(r.status)
+          setSavedStatus(r.status)
           setOrderedConfirmedAt(r.orderedConfirmedAt ? toDateInput(r.orderedConfirmedAt) : '')
           setStockedInAt(r.stockedInAt ? toDateInput(r.stockedInAt) : '')
           setCreatedAt(r.createdAt ? toDateInput(r.createdAt) : '')
@@ -776,16 +781,30 @@ export function ProductionRunFormDialog({
                     <div className="grid grid-cols-3 gap-3">
                       <div className="space-y-1.5">
                         <Label htmlFor="status">상태</Label>
-                        <Select value={status} onValueChange={(v) => setStatus(v as RunStatus)}>
+                        <Select
+                          value={status}
+                          onValueChange={(v) => setStatus(v as RunStatus)}
+                          disabled={savedStatus === 'STOCKED_IN'}
+                        >
                           <SelectTrigger id="status">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="PLANNED">{STATUS_LABEL.PLANNED}</SelectItem>
                             <SelectItem value="ORDERED">{STATUS_LABEL.ORDERED}</SelectItem>
-                            <SelectItem value="STOCKED_IN">{STATUS_LABEL.STOCKED_IN}</SelectItem>
+                            {/* 입고 완료는 위치·수량 분배가 필요하므로 이 폼에서 고를 수 없다.
+                                이미 입고 완료된 차수를 열었을 때 값 표시용으로만 남긴다. */}
+                            {savedStatus === 'STOCKED_IN' && (
+                              <SelectItem value="STOCKED_IN">{STATUS_LABEL.STOCKED_IN}</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
+                        {savedStatus !== 'STOCKED_IN' && (
+                          <p className="text-xs text-muted-foreground">
+                            입고 완료는 차수 목록에서 상태 배지를 눌러 [입고완료로 변경]을 선택하면
+                            보관 위치와 수량을 지정해 처리할 수 있습니다.
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="orderedConfirmedAt">발주일</Label>
