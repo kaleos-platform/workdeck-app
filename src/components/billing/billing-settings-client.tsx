@@ -390,6 +390,8 @@ export function BillingSettingsClient({
 
   const { subscription, method, charges, entitlement } = data
   const trialDaysLeft = daysUntil(subscription?.trialEndsAt ?? null)
+  // 유료 전환된 업무가 하나도 없으면 구독 자체가 성립하지 않는다 (전 업무 무료 제공 중)
+  const hasSubscribableProduct = subscribableProducts.length > 0
   const needsSubscriptionStart =
     !subscription ||
     subscription.status === 'TRIALING' ||
@@ -433,7 +435,9 @@ export function BillingSettingsClient({
             {!subscription && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Info className="h-4 w-4" />
-                아직 구독을 시작하지 않았습니다.
+                {hasSubscribableProduct
+                  ? '아직 구독을 시작하지 않았습니다.'
+                  : '현재 모든 업무를 무료로 제공하고 있습니다. 유료 청구가 시작되기 전에 미리 안내드립니다.'}
               </div>
             )}
             {subscription?.status === 'TRIALING' && (
@@ -512,7 +516,8 @@ export function BillingSettingsClient({
           <CardHeader>
             <CardTitle>업무별 구독</CardTitle>
             <CardDescription>
-              사용 중인 업무와 요금을 확인하고 관리하세요. 표시 금액은 VAT가 포함된 실제 결제 금액입니다.
+              사용 중인 업무와 요금을 확인하고 관리하세요. 표시 금액은 VAT가 포함된 실제 결제
+              금액입니다.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -542,21 +547,27 @@ export function BillingSettingsClient({
                         <div className="truncate text-sm font-medium">
                           {meta?.name ?? product.name}
                         </div>
-                        {product.pricingMode === 'SUBSCRIPTION' && (
-                          <div className="text-xs text-muted-foreground">
-                            월 {formatWon(Math.round(product.monthlyPrice * 1.1))}
-                            <span className="ml-1">
-                              (VAT 포함 / 공급가 {formatWon(product.monthlyPrice)})
-                            </span>
-                          </div>
-                        )}
+                        <div className="text-xs text-muted-foreground">
+                          월 {formatWon(Math.round(product.monthlyPrice * 1.1))}
+                          <span className="ml-1">
+                            (VAT 포함 / 공급가 {formatWon(product.monthlyPrice)})
+                          </span>
+                        </div>
                       </div>
                     </div>
 
                     {product.pricingMode === 'FREE_BETA' ? (
-                      <Badge variant="secondary" className="w-fit">
-                        무료 베타
-                      </Badge>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary" className="w-fit">
+                            현재 무료 제공 중
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          정식 구독료는 월 {formatWon(Math.round(product.monthlyPrice * 1.1))}
+                          입니다. 유료 청구 시작 전에 미리 안내드립니다.
+                        </TooltipContent>
+                      </Tooltip>
                     ) : (
                       <div className="flex flex-wrap items-center gap-2">
                         {reasonBadge && (
@@ -631,7 +642,7 @@ export function BillingSettingsClient({
                           </Button>
                         )}
 
-                        {!item && needsSubscriptionStart && isOwner && (
+                        {!item && needsSubscriptionStart && isOwner && hasSubscribableProduct && (
                           <div className="ml-auto flex items-center gap-1.5">
                             <Checkbox
                               id={`deck-select-${product.id}`}
@@ -656,7 +667,7 @@ export function BillingSettingsClient({
         </Card>
 
         {/* 구독 시작 카드 */}
-        {needsSubscriptionStart && isOwner && (
+        {needsSubscriptionStart && isOwner && hasSubscribableProduct && (
           <Card>
             <CardHeader>
               <CardTitle>구독 시작</CardTitle>
