@@ -33,6 +33,22 @@ export type UpdateRunData = {
   status?: CollectionStatus
   error?: string | null
   uploadId?: string | null
+  /** API 연결 테스트(probe) 결과 — probeApi=true 인 run 에서만 채운다. */
+  probeResult?: ProbeResult
+}
+
+/**
+ * POST /api/collection/runs {probeApi:true} → runApiProbe() 결과.
+ * UI 가 이미 이 모양으로 구현돼 있어 필드명을 그대로 맞춘다(team-lead 확정 계약).
+ */
+export type ProbeResult = {
+  ok: boolean
+  /** 쿠팡이 IP allowlist 미등록으로 거부한 경우 true */
+  ipBlocked?: boolean
+  /** 워커 공인 IP (https://api.ipify.org 조회값) — 실패 케이스에도 채운다(Wing 등록 안내용) */
+  publicIp?: string
+  /** 사용자에게 보여줄 한국어 한 줄 안내 */
+  message?: string
 }
 
 /** 자격증명 응답 */
@@ -129,6 +145,8 @@ export async function getPendingRun(): Promise<{
   workspaceId: string
   collectAds: boolean
   collectInventory: boolean
+  /** true면 [연결 테스트] 트리거 — 전체 수집이 아니라 runApiProbe() 로 분기해야 한다. */
+  probeApi: boolean
 } | null> {
   const response = await workerFetch('/api/collection/runs/pending')
   const data = await response.json()
@@ -139,7 +157,73 @@ export async function getPendingRun(): Promise<{
     // 앱이 필드를 안 보내는 구버전 호환: 미정의는 전체 수집(true)로 폴백.
     collectAds: data.run.collectAds ?? true,
     collectInventory: data.run.collectInventory ?? true,
+    probeApi: data.run.probeApi ?? false,
   }
+}
+
+/**
+ * 쿠팡 API 자격증명 조회 (워커 전용)
+ * GET /api/collection/api-credentials
+ */
+export type ApiCredentialResponse = {
+  vendorId: string
+  accessKey: string
+  secretKey: string // 암호문 hex (encryptionIv==='none' 이면 평문)
+  encryptionIv: string
+  isActive: boolean
+} | null
+
+export async function getApiCredential(): Promise<ApiCredentialResponse> {
+  const response = await workerFetch('/api/collection/api-credentials')
+  const data = await response.json()
+  return data.credential ?? null
+}
+
+/**
+ * 데이터 종류별 수집 소스 설정 조회 (워커 전용)
+ * GET /api/collection/source-setting
+ */
+export type SourceSettingResponse = {
+  inventorySource: 'CRAWL' | 'API'
+  salesSource: 'CRAWL' | 'API'
+  settlementSource: 'CRAWL' | 'API'
+  productSource: 'CRAWL' | 'API'
+}
+
+export async function getSourceSetting(): Promise<SourceSettingResponse> {
+  const response = await workerFetch('/api/collection/source-setting')
+  const data = await response.json()
+  return data as SourceSettingResponse
+}
+
+/**
+ * 최신 크롤링(INVENTORY_HEALTH) 스냅샷 요약 조회 — Phase 0 대조 스크립트용 (워커 전용)
+ * GET /api/collection/api-verify-baseline
+ */
+export type ApiVerifyBaseline = {
+  snapshotDate: string | null
+  rowCount: number
+  optionIdCount: number
+  totalOrderableQuantity: number
+  skuIds: string[]
+}
+
+export async function getApiVerifyBaseline(): Promise<ApiVerifyBaseline> {
+  const response = await workerFetch('/api/collection/api-verify-baseline')
+  const data = await response.json()
+  return data as ApiVerifyBaseline
+}
+
+/**
+ * probe run 결과 기록 — PATCH /api/collection/runs/[runId] { probeResult } 의 얇은 래퍼.
+ * runApiProbe() 가 상태(COMPLETED/FAILED)와 probeResult 를 한 번에 넣을 때 사용.
+ */
+export async function reportProbeResult(
+  runId: string,
+  status: CollectionStatus,
+  probeResult: ProbeResult
+): Promise<CollectionRun> {
+  return updateCollectionRun(runId, { status, probeResult })
 }
 
 /**

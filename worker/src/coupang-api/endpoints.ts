@@ -1,0 +1,214 @@
+/**
+ * 쿠팡 Open API 엔드포인트 래퍼
+ *
+ * path/파라미터는 developers.coupang.com/ko/api 문서를 확인해 넣었다(추측 금지).
+ * 확인한 4종의 근거는 이 파일 각 함수 주석 및 팀 보고 참조.
+ */
+import { CoupangApiClient } from './client.js'
+
+// ─── 로켓창고 재고 요약 (확인됨 — 계획서 §2-3에 명시된 path) ─────────────────────
+
+export interface InventorySummaryItem {
+  vendorId: string
+  vendorItemId: number
+  externalSkuId: string | null
+  totalOrderableQuantity: number
+  SALES_COUNT_LAST_THIRTY_DAYS?: number
+}
+
+interface InventorySummaryResponse {
+  code: number
+  message: string
+  nextToken?: string
+  data: InventorySummaryItem[]
+}
+
+/**
+ * 로켓창고 재고 요약 전량 조회.
+ * GET /v2/providers/rg_open_api/apis/api/v1/vendors/{vendorId}/rg/inventory/summaries
+ */
+export async function fetchInventorySummaries(
+  client: CoupangApiClient,
+  vendorId: string
+): Promise<InventorySummaryItem[]> {
+  const path = `/v2/providers/rg_open_api/apis/api/v1/vendors/${vendorId}/rg/inventory/summaries`
+  return client.paginate<InventorySummaryItem, InventorySummaryResponse>(
+    path,
+    undefined,
+    (res) => ({
+      items: res.data ?? [],
+      nextToken: res.nextToken,
+    })
+  )
+}
+
+// ─── 로켓그로스 주문 목록 (WebFetch 로 문서 확인 — 아래 참조) ─────────────────────
+// https://developers.coupang.com/ko/api/rocket-growth/rg-order-apilist-query
+// GET /v2/providers/rg_open_api/apis/api/v1/vendors/{vendorId}/rg/orders
+// 필수: vendorId, paidDateFrom(yyyymmdd), paidDateTo(yyyymmdd, 최대 30일 범위) / 선택: nextToken
+// 분당 50회 제한.
+
+export interface RgOrderItem {
+  vendorItemId: number
+  productName: string
+  salesQuantity: number
+  unitSalesPrice: number
+  currency: string
+}
+
+export interface RgOrder {
+  orderId: number
+  vendorId: string
+  paidAt: string
+  orderItems: RgOrderItem[]
+}
+
+interface RgOrderListResponse {
+  code: number
+  message: string
+  data: RgOrder[]
+  nextToken?: string
+}
+
+/**
+ * 로켓그로스 주문 목록 조회(최대 30일 범위, paidDateFrom/To 는 yyyymmdd).
+ */
+export async function fetchRgOrders(
+  client: CoupangApiClient,
+  vendorId: string,
+  paidDateFrom: string,
+  paidDateTo: string
+): Promise<RgOrder[]> {
+  const path = `/v2/providers/rg_open_api/apis/api/v1/vendors/${vendorId}/rg/orders`
+  return client.paginate<RgOrder, RgOrderListResponse>(
+    path,
+    { vendorId, paidDateFrom, paidDateTo },
+    (res) => ({ items: res.data ?? [], nextToken: res.nextToken })
+  )
+}
+
+// ─── 정산: 매출내역(revenue-history) (WebFetch 로 문서 확인) ─────────────────────
+// https://developers.coupang.com/ko/api/settlement/sales-detail-query
+// GET /v2/providers/openapi/apis/api/v1/revenue-history
+// 필수: vendorId, recognitionDateFrom/To(YYYY-MM-dd, 최대 31일), token(첫 페이지는 빈 문자열)
+// 선택: maxPerPage(기본 50, 1~50)
+
+export interface RevenueHistoryItem {
+  orderId: number
+  saleType: string
+  saleDate: string
+  recognitionDate: string
+  settlementDate: string
+  finalSettlementDate: string
+  items: Array<{
+    taxType: string
+    productId: number
+    productName: string
+    vendorItemId: number
+    vendorItemName: string
+    salePrice: number
+    quantity: number
+    serviceFee: number
+    settlementAmount: number
+  }>
+}
+
+interface RevenueHistoryResponse {
+  code: number
+  message: string
+  data: RevenueHistoryItem[]
+  hasNext?: boolean
+  nextToken?: string
+}
+
+/** 정산 매출내역 조회(최대 31일 범위). */
+export async function fetchRevenueHistory(
+  client: CoupangApiClient,
+  vendorId: string,
+  recognitionDateFrom: string,
+  recognitionDateTo: string
+): Promise<RevenueHistoryItem[]> {
+  const path = '/v2/providers/openapi/apis/api/v1/revenue-history'
+  return client.paginate<RevenueHistoryItem, RevenueHistoryResponse>(
+    path,
+    { vendorId, recognitionDateFrom, recognitionDateTo, token: '' },
+    (res) => ({ items: res.data ?? [], nextToken: res.nextToken })
+  )
+}
+
+// ─── 정산: 지급내역(settlement-histories) (WebFetch 로 문서 확인) ────────────────
+// https://developers.coupang.com/ko/api/settlement/settlement-detail-query
+// GET /v2/providers/marketplace_openapi/apis/api/v1/settlement-histories
+// 필수: revenueRecognitionYearMonth(YYYY-MM). 페이징 파라미터 없음(월 단위 단건 조회로 보임).
+
+export interface SettlementHistoryItem {
+  settlementType: string
+  settlementDate: string
+  revenueRecognitionYearMonth: string
+  totalSale: number
+  serviceFee: number
+  settlementTargetAmount: number
+  settlementAmount: number
+  finalAmount: number
+  status: string
+  [key: string]: unknown
+}
+
+interface SettlementHistoryResponse {
+  code: number
+  message: string
+  data: SettlementHistoryItem[]
+}
+
+/** 정산 지급내역 조회(YYYY-MM 단위, nextToken 페이징 없음). */
+export async function fetchSettlementHistories(
+  client: CoupangApiClient,
+  revenueRecognitionYearMonth: string
+): Promise<SettlementHistoryItem[]> {
+  const path = '/v2/providers/marketplace_openapi/apis/api/v1/settlement-histories'
+  const res = await client.get<SettlementHistoryResponse>(path, { revenueRecognitionYearMonth })
+  return res.data ?? []
+}
+
+// ─── 상품 목록 페이징 조회 (WebFetch 로 문서 확인) ────────────────────────────────
+// https://developers.coupang.com/ko/api/rocket-growth/product-list-paging-query-rocket-growth-rocket-growthmarketplace-hybrid-products
+// GET /v2/providers/seller_api/apis/api/v1/marketplace/seller-products
+// 필수: vendorId / 선택: nextToken, maxPerPage(기본10,최대100), sellerProductId, sellerProductName,
+//       status, manufacture, createdAt, businessTypes('rocketGrowth'로 로켓그로스만 필터)
+
+export interface SellerProductItem {
+  sellerProductId: number
+  sellerProductName: string
+  displayCategoryCode: string
+  categoryId: number
+  productId: number
+  vendorId: string
+  saleStartedAt: string
+  saleEndedAt: string
+  brand: string
+  statusName: string
+  createdAt: string
+  registrationType: string
+  items: Array<{ itemName: string; marketPlaceItem?: unknown; rocketGrowthItem?: unknown }>
+}
+
+interface SellerProductListResponse {
+  code: string
+  message: string
+  nextToken?: string
+  data: SellerProductItem[]
+}
+
+/** 상품 목록 페이징 조회. businessTypes='rocketGrowth' 로 넘기면 로켓그로스 상품만 필터된다. */
+export async function fetchSellerProducts(
+  client: CoupangApiClient,
+  vendorId: string,
+  opts: { businessTypes?: string; maxPerPage?: number } = {}
+): Promise<SellerProductItem[]> {
+  const path = '/v2/providers/seller_api/apis/api/v1/marketplace/seller-products'
+  return client.paginate<SellerProductItem, SellerProductListResponse>(
+    path,
+    { vendorId, businessTypes: opts.businessTypes, maxPerPage: opts.maxPerPage },
+    (res) => ({ items: res.data ?? [], nextToken: res.nextToken })
+  )
+}

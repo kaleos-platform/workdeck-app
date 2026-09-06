@@ -185,6 +185,14 @@ export const InvProductStatus = {
 export type InvProductStatus = (typeof InvProductStatus)[keyof typeof InvProductStatus]
 
 
+export const CoupangDataSource = {
+  CRAWL: 'CRAWL',
+  API: 'API'
+} as const
+
+export type CoupangDataSource = (typeof CoupangDataSource)[keyof typeof CoupangDataSource]
+
+
 export const CoupangBackfillStatus = {
   PENDING: 'PENDING',
   RUNNING: 'RUNNING',

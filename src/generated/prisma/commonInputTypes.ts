@@ -470,6 +470,23 @@ export type EnumAgentActionStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumAgentActionStatusFilter<$PrismaModel>
 }
 
+export type EnumCoupangDataSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangDataSource | Prisma.EnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangDataSource[] | Prisma.ListEnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangDataSource[] | Prisma.ListEnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangDataSourceFilter<$PrismaModel> | $Enums.CoupangDataSource
+}
+
+export type EnumCoupangDataSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangDataSource | Prisma.EnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangDataSource[] | Prisma.ListEnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangDataSource[] | Prisma.ListEnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangDataSourceWithAggregatesFilter<$PrismaModel> | $Enums.CoupangDataSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCoupangDataSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCoupangDataSourceFilter<$PrismaModel>
+}
+
 export type EnumCoupangBackfillStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.CoupangBackfillStatus | Prisma.EnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
   in?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
@@ -2075,6 +2092,23 @@ export type NestedEnumAgentActionStatusWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAgentActionStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAgentActionStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumCoupangDataSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangDataSource | Prisma.EnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangDataSource[] | Prisma.ListEnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangDataSource[] | Prisma.ListEnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangDataSourceFilter<$PrismaModel> | $Enums.CoupangDataSource
+}
+
+export type NestedEnumCoupangDataSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangDataSource | Prisma.EnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangDataSource[] | Prisma.ListEnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangDataSource[] | Prisma.ListEnumCoupangDataSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangDataSourceWithAggregatesFilter<$PrismaModel> | $Enums.CoupangDataSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCoupangDataSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCoupangDataSourceFilter<$PrismaModel>
 }
 
 export type NestedEnumCoupangBackfillStatusFilter<$PrismaModel = never> = {

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { parseInventoryExcel } from '@/lib/inventory-parser'
 import type { InventoryFileType } from '@/lib/inventory-parser'
+import type { CoupangDataSource } from '@/generated/prisma/client'
 
 export type InventoryUploadResult = {
   success: true
@@ -22,8 +23,9 @@ export async function processInventoryUpload(params: {
   fileName: string
   buffer: ArrayBuffer
   snapshotDate: Date
+  source?: CoupangDataSource
 }): Promise<InventoryUploadResult | InventoryUploadError> {
-  const { workspaceId, fileName, buffer, snapshotDate } = params
+  const { workspaceId, fileName, buffer, snapshotDate, source = 'CRAWL' } = params
 
   // 1. 파싱
   let parsed
@@ -48,8 +50,11 @@ export async function processInventoryUpload(params: {
   // 이미 적재된 부분 export(예: 2행)를 정상 baseline 으로 신뢰해 임계가 무력화되기 때문.
   // MAX 는 corruption 1건이 섞여도 정상 규모를 유지한다.
   if (parsed.fileType === 'INVENTORY_HEALTH') {
+    // baseline은 source별로 분리 조회한다 — 크롤링 HEALTH 행과 API 요약 행은 모집단
+    // 자체가 달라서, baseline을 공유하면 첫 API 수집이 영구히 가드에 걸리거나(행이
+    // 적을 때) 반대로 그냥 통과해 덮어쓴다(행이 많을 때).
     const recent = await prisma.inventoryUpload.findMany({
-      where: { workspaceId, fileType: 'INVENTORY_HEALTH', insertedRows: { gt: 0 } },
+      where: { workspaceId, fileType: 'INVENTORY_HEALTH', source, insertedRows: { gt: 0 } },
       orderBy: { uploadedAt: 'desc' },
       take: 10,
       select: { insertedRows: true },
@@ -78,6 +83,7 @@ export async function processInventoryUpload(params: {
             fileType: parsed.fileType,
             snapshotDate,
             totalRows: parsed.rows.length,
+            source,
           },
         })
 
@@ -102,6 +108,7 @@ export async function processInventoryUpload(params: {
               workspaceId,
               snapshotDate,
               fileType: parsed.fileType,
+              source,
               uploadId: upload.id,
               productId: row.productId,
               optionId: row.optionId,

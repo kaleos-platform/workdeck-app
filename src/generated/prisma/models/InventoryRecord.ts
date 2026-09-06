@@ -87,6 +87,7 @@ export type InventoryRecordMinAggregateOutputType = {
   workspaceId: string | null
   snapshotDate: Date | null
   fileType: string | null
+  source: $Enums.CoupangDataSource | null
   productId: string | null
   optionId: string | null
   skuId: string | null
@@ -131,6 +132,7 @@ export type InventoryRecordMaxAggregateOutputType = {
   workspaceId: string | null
   snapshotDate: Date | null
   fileType: string | null
+  source: $Enums.CoupangDataSource | null
   productId: string | null
   optionId: string | null
   skuId: string | null
@@ -175,6 +177,7 @@ export type InventoryRecordCountAggregateOutputType = {
   workspaceId: number
   snapshotDate: number
   fileType: number
+  source: number
   productId: number
   optionId: number
   skuId: number
@@ -277,6 +280,7 @@ export type InventoryRecordMinAggregateInputType = {
   workspaceId?: true
   snapshotDate?: true
   fileType?: true
+  source?: true
   productId?: true
   optionId?: true
   skuId?: true
@@ -321,6 +325,7 @@ export type InventoryRecordMaxAggregateInputType = {
   workspaceId?: true
   snapshotDate?: true
   fileType?: true
+  source?: true
   productId?: true
   optionId?: true
   skuId?: true
@@ -365,6 +370,7 @@ export type InventoryRecordCountAggregateInputType = {
   workspaceId?: true
   snapshotDate?: true
   fileType?: true
+  source?: true
   productId?: true
   optionId?: true
   skuId?: true
@@ -496,6 +502,7 @@ export type InventoryRecordGroupByOutputType = {
   workspaceId: string
   snapshotDate: Date
   fileType: string
+  source: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId: string | null
@@ -563,6 +570,7 @@ export type InventoryRecordWhereInput = {
   workspaceId?: Prisma.StringFilter<"InventoryRecord"> | string
   snapshotDate?: Prisma.DateTimeFilter<"InventoryRecord"> | Date | string
   fileType?: Prisma.StringFilter<"InventoryRecord"> | string
+  source?: Prisma.EnumCoupangDataSourceFilter<"InventoryRecord"> | $Enums.CoupangDataSource
   productId?: Prisma.StringFilter<"InventoryRecord"> | string
   optionId?: Prisma.StringFilter<"InventoryRecord"> | string
   skuId?: Prisma.StringNullableFilter<"InventoryRecord"> | string | null
@@ -609,6 +617,7 @@ export type InventoryRecordOrderByWithRelationInput = {
   workspaceId?: Prisma.SortOrder
   snapshotDate?: Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   skuId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -659,6 +668,7 @@ export type InventoryRecordWhereUniqueInput = Prisma.AtLeast<{
   workspaceId?: Prisma.StringFilter<"InventoryRecord"> | string
   snapshotDate?: Prisma.DateTimeFilter<"InventoryRecord"> | Date | string
   fileType?: Prisma.StringFilter<"InventoryRecord"> | string
+  source?: Prisma.EnumCoupangDataSourceFilter<"InventoryRecord"> | $Enums.CoupangDataSource
   productId?: Prisma.StringFilter<"InventoryRecord"> | string
   optionId?: Prisma.StringFilter<"InventoryRecord"> | string
   skuId?: Prisma.StringNullableFilter<"InventoryRecord"> | string | null
@@ -705,6 +715,7 @@ export type InventoryRecordOrderByWithAggregationInput = {
   workspaceId?: Prisma.SortOrder
   snapshotDate?: Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   skuId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -757,6 +768,7 @@ export type InventoryRecordScalarWhereWithAggregatesInput = {
   workspaceId?: Prisma.StringWithAggregatesFilter<"InventoryRecord"> | string
   snapshotDate?: Prisma.DateTimeWithAggregatesFilter<"InventoryRecord"> | Date | string
   fileType?: Prisma.StringWithAggregatesFilter<"InventoryRecord"> | string
+  source?: Prisma.EnumCoupangDataSourceWithAggregatesFilter<"InventoryRecord"> | $Enums.CoupangDataSource
   productId?: Prisma.StringWithAggregatesFilter<"InventoryRecord"> | string
   optionId?: Prisma.StringWithAggregatesFilter<"InventoryRecord"> | string
   skuId?: Prisma.StringNullableWithAggregatesFilter<"InventoryRecord"> | string | null
@@ -800,6 +812,7 @@ export type InventoryRecordCreateInput = {
   id?: string
   snapshotDate: Date | string
   fileType: string
+  source?: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId?: string | null
@@ -845,6 +858,7 @@ export type InventoryRecordUncheckedCreateInput = {
   workspaceId: string
   snapshotDate: Date | string
   fileType: string
+  source?: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId?: string | null
@@ -888,6 +902,7 @@ export type InventoryRecordUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -933,6 +948,7 @@ export type InventoryRecordUncheckedUpdateInput = {
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -977,6 +993,7 @@ export type InventoryRecordCreateManyInput = {
   workspaceId: string
   snapshotDate: Date | string
   fileType: string
+  source?: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId?: string | null
@@ -1020,6 +1037,7 @@ export type InventoryRecordUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1063,6 +1081,7 @@ export type InventoryRecordUncheckedUpdateManyInput = {
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1125,6 +1144,7 @@ export type InventoryRecordCountOrderByAggregateInput = {
   workspaceId?: Prisma.SortOrder
   snapshotDate?: Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   skuId?: Prisma.SortOrder
@@ -1197,6 +1217,7 @@ export type InventoryRecordMaxOrderByAggregateInput = {
   workspaceId?: Prisma.SortOrder
   snapshotDate?: Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   skuId?: Prisma.SortOrder
@@ -1241,6 +1262,7 @@ export type InventoryRecordMinOrderByAggregateInput = {
   workspaceId?: Prisma.SortOrder
   snapshotDate?: Prisma.SortOrder
   fileType?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   optionId?: Prisma.SortOrder
   skuId?: Prisma.SortOrder
@@ -1400,6 +1422,7 @@ export type InventoryRecordCreateWithoutWorkspaceInput = {
   id?: string
   snapshotDate: Date | string
   fileType: string
+  source?: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId?: string | null
@@ -1443,6 +1466,7 @@ export type InventoryRecordUncheckedCreateWithoutWorkspaceInput = {
   id?: string
   snapshotDate: Date | string
   fileType: string
+  source?: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId?: string | null
@@ -1516,6 +1540,7 @@ export type InventoryRecordScalarWhereInput = {
   workspaceId?: Prisma.StringFilter<"InventoryRecord"> | string
   snapshotDate?: Prisma.DateTimeFilter<"InventoryRecord"> | Date | string
   fileType?: Prisma.StringFilter<"InventoryRecord"> | string
+  source?: Prisma.EnumCoupangDataSourceFilter<"InventoryRecord"> | $Enums.CoupangDataSource
   productId?: Prisma.StringFilter<"InventoryRecord"> | string
   optionId?: Prisma.StringFilter<"InventoryRecord"> | string
   skuId?: Prisma.StringNullableFilter<"InventoryRecord"> | string | null
@@ -1559,6 +1584,7 @@ export type InventoryRecordCreateWithoutUploadInput = {
   id?: string
   snapshotDate: Date | string
   fileType: string
+  source?: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId?: string | null
@@ -1603,6 +1629,7 @@ export type InventoryRecordUncheckedCreateWithoutUploadInput = {
   workspaceId: string
   snapshotDate: Date | string
   fileType: string
+  source?: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId?: string | null
@@ -1671,6 +1698,7 @@ export type InventoryRecordCreateManyWorkspaceInput = {
   id?: string
   snapshotDate: Date | string
   fileType: string
+  source?: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId?: string | null
@@ -1714,6 +1742,7 @@ export type InventoryRecordUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1757,6 +1786,7 @@ export type InventoryRecordUncheckedUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1800,6 +1830,7 @@ export type InventoryRecordUncheckedUpdateManyWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1844,6 +1875,7 @@ export type InventoryRecordCreateManyUploadInput = {
   workspaceId: string
   snapshotDate: Date | string
   fileType: string
+  source?: $Enums.CoupangDataSource
   productId: string
   optionId: string
   skuId?: string | null
@@ -1886,6 +1918,7 @@ export type InventoryRecordUpdateWithoutUploadInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1930,6 +1963,7 @@ export type InventoryRecordUncheckedUpdateWithoutUploadInput = {
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1973,6 +2007,7 @@ export type InventoryRecordUncheckedUpdateManyWithoutUploadInput = {
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileType?: Prisma.StringFieldUpdateOperationsInput | string
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   optionId?: Prisma.StringFieldUpdateOperationsInput | string
   skuId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2018,6 +2053,7 @@ export type InventoryRecordSelect<ExtArgs extends runtime.Types.Extensions.Inter
   workspaceId?: boolean
   snapshotDate?: boolean
   fileType?: boolean
+  source?: boolean
   productId?: boolean
   optionId?: boolean
   skuId?: boolean
@@ -2064,6 +2100,7 @@ export type InventoryRecordSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   workspaceId?: boolean
   snapshotDate?: boolean
   fileType?: boolean
+  source?: boolean
   productId?: boolean
   optionId?: boolean
   skuId?: boolean
@@ -2110,6 +2147,7 @@ export type InventoryRecordSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   workspaceId?: boolean
   snapshotDate?: boolean
   fileType?: boolean
+  source?: boolean
   productId?: boolean
   optionId?: boolean
   skuId?: boolean
@@ -2156,6 +2194,7 @@ export type InventoryRecordSelectScalar = {
   workspaceId?: boolean
   snapshotDate?: boolean
   fileType?: boolean
+  source?: boolean
   productId?: boolean
   optionId?: boolean
   skuId?: boolean
@@ -2195,7 +2234,7 @@ export type InventoryRecordSelectScalar = {
   uploadId?: boolean
 }
 
-export type InventoryRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "snapshotDate" | "fileType" | "productId" | "optionId" | "skuId" | "productName" | "optionName" | "category" | "availableStock" | "inboundStock" | "productGrade" | "restockQty" | "restockDate" | "estimatedDepletion" | "storageFee" | "isItemWinner" | "returns30d" | "revenue7d" | "revenue30d" | "salesQty7d" | "salesQty30d" | "orderCount" | "fulfillmentType" | "visitors" | "views" | "cartAdds" | "conversionRate" | "itemWinnerRate" | "totalRevenue" | "totalSales" | "totalCancelAmt" | "totalCancelled" | "stock1to30d" | "stock31to45d" | "stock46to60d" | "stock61to120d" | "stock121to180d" | "stock181plusD" | "uploadId", ExtArgs["result"]["inventoryRecord"]>
+export type InventoryRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "snapshotDate" | "fileType" | "source" | "productId" | "optionId" | "skuId" | "productName" | "optionName" | "category" | "availableStock" | "inboundStock" | "productGrade" | "restockQty" | "restockDate" | "estimatedDepletion" | "storageFee" | "isItemWinner" | "returns30d" | "revenue7d" | "revenue30d" | "salesQty7d" | "salesQty30d" | "orderCount" | "fulfillmentType" | "visitors" | "views" | "cartAdds" | "conversionRate" | "itemWinnerRate" | "totalRevenue" | "totalSales" | "totalCancelAmt" | "totalCancelled" | "stock1to30d" | "stock31to45d" | "stock46to60d" | "stock61to120d" | "stock121to180d" | "stock181plusD" | "uploadId", ExtArgs["result"]["inventoryRecord"]>
 export type InventoryRecordInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   upload?: boolean | Prisma.InventoryUploadDefaultArgs<ExtArgs>
@@ -2220,6 +2259,7 @@ export type $InventoryRecordPayload<ExtArgs extends runtime.Types.Extensions.Int
     workspaceId: string
     snapshotDate: Date
     fileType: string
+    source: $Enums.CoupangDataSource
     productId: string
     optionId: string
     skuId: string | null
@@ -2686,6 +2726,7 @@ export interface InventoryRecordFieldRefs {
   readonly workspaceId: Prisma.FieldRef<"InventoryRecord", 'String'>
   readonly snapshotDate: Prisma.FieldRef<"InventoryRecord", 'DateTime'>
   readonly fileType: Prisma.FieldRef<"InventoryRecord", 'String'>
+  readonly source: Prisma.FieldRef<"InventoryRecord", 'CoupangDataSource'>
   readonly productId: Prisma.FieldRef<"InventoryRecord", 'String'>
   readonly optionId: Prisma.FieldRef<"InventoryRecord", 'String'>
   readonly skuId: Prisma.FieldRef<"InventoryRecord", 'String'>

@@ -17,7 +17,7 @@ export function startManualPoller(): void {
       if (!run) return
 
       console.log(
-        `\n[manual-poller] PENDING 수집 발견: ${run.id} (광고=${run.collectAds}, 재고=${run.collectInventory})`
+        `\n[manual-poller] PENDING 수집 발견: ${run.id} (광고=${run.collectAds}, 재고=${run.collectInventory}, probeApi=${run.probeApi})`
       )
       isProcessing = true
 
@@ -25,6 +25,7 @@ export function startManualPoller(): void {
         await runCollectionForRun(run.id, {
           collectAds: run.collectAds,
           collectInventory: run.collectInventory,
+          probeApi: run.probeApi,
         })
         console.log(`[manual-poller] 수집 완료: ${run.id}`)
       } catch (err) {

@@ -3,6 +3,7 @@
  * API 호출, 자격증명 복호화, Playwright 수집, 업로드까지 전체 파이프라인을 관리한다.
  */
 import fs from 'node:fs'
+import path from 'node:path'
 import * as XLSX from 'xlsx'
 import {
   createCollectionRun,
@@ -10,6 +11,10 @@ import {
   getCredentials,
   uploadReport,
   uploadInventory,
+  getApiCredential,
+  getSourceSetting,
+  reportProbeResult,
+  type ProbeResult,
 } from './api-client.js'
 import { decrypt } from './encryption.js'
 import { collectCoupangReport } from './collector.js'
@@ -29,6 +34,10 @@ import {
   getLoginCooldown,
   shouldAlertLoginFailure,
 } from './login-guard.js'
+import { CoupangApiClient, CoupangApiError } from './coupang-api/client.js'
+import { fetchInventorySummaries } from './coupang-api/endpoints.js'
+import type { CoupangApiConfig } from './coupang-api/client.js'
+import type { InventoryApiRow } from './sources/types.js'
 
 /**
  * 수집 파이프라인 컨텍스트 — 실패 시 알림에 workspaceId를 실어 Deck 토글 게이트가 적용되도록 한다.
@@ -115,8 +124,16 @@ function verifyDownloadedFile(buffer: Buffer, fileName: string, dateTo: string):
  */
 export async function runCollectionForRun(
   runId: string,
-  scope?: { collectAds?: boolean; collectInventory?: boolean }
+  scope?: { collectAds?: boolean; collectInventory?: boolean; probeApi?: boolean }
 ): Promise<void> {
+  // probe run(API 연결 테스트)은 Playwright 크롤링과 무관하다 — 스코프 폴백(전체 수집)에
+  // 도달하기 전에 여기서 분기해야 한다. 여기서 분기 안 하면 [연결 테스트] 버튼이
+  // 전체 크롤링을 돌린다. Akamai 봇차단 쿨다운도 API 호출과 무관하므로 우회한다.
+  if (scope?.probeApi) {
+    await runApiProbe(runId)
+    return
+  }
+
   // 봇차단(BOT_BLOCKED) 쿨다운 중이면 수동 재시도도 실행하지 않는다 — 재로그인은 Akamai
   // 차단을 풀지 못하고 오히려 악화시키므로(2026-07-03: 사용자 수동 재시도 연타가 격상 연료였음).
   // 단 CREDENTIAL_INVALID 쿨다운은 우회 허용 — 사용자가 비번을 고친 뒤 즉시 재시도하는 정상 흐름.
@@ -166,6 +183,85 @@ export async function runCollectionForRun(
       } catch (cleanupError) {
         console.error('임시 파일 삭제 실패:', cleanupError)
       }
+    }
+  }
+}
+
+/**
+ * API 연결 테스트(probe) — [연결 테스트] 버튼이 트리거하는 전용 경로.
+ * 자격 조회 → 재고 API 1페이지 호출 → 워커 공인 IP 조회 → CollectionRun 에 probeResult 기록.
+ * Playwright 크롤링을 전혀 거치지 않는다.
+ */
+async function runApiProbe(runId: string): Promise<void> {
+  // 워커 공인 IP — 실패 케이스에도 반드시 채운다(운영자가 이 값을 Wing에 등록해야 한다).
+  // 그래서 자격/호출 성공 여부와 무관하게 가장 먼저 조회한다.
+  let publicIp: string | undefined
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=text')
+    publicIp = (await ipRes.text()).trim()
+  } catch (err) {
+    console.warn('[probe] 공인 IP 조회 실패:', err)
+  }
+
+  try {
+    await updateCollectionRun(runId, { status: 'RUNNING' })
+
+    const cred = await getApiCredential()
+    if (!cred || !cred.isActive) {
+      const result: ProbeResult = {
+        ok: false,
+        publicIp,
+        message: '쿠팡 API 자격증명이 등록되지 않았거나 비활성 상태입니다.',
+      }
+      await reportProbeResult(runId, 'FAILED', result)
+      return
+    }
+
+    const secretKey =
+      cred.encryptionIv === 'none' ? cred.secretKey : decrypt(cred.secretKey, cred.encryptionIv)
+    const apiCfg: CoupangApiConfig = {
+      vendorId: cred.vendorId,
+      accessKey: cred.accessKey,
+      secretKey,
+    }
+    const client = new CoupangApiClient(apiCfg)
+
+    try {
+      // 재고 API 1페이지만 호출 — paginate() 대신 raw get() 으로 nextToken 순회를 하지 않는다.
+      await client.get(
+        `/v2/providers/rg_open_api/apis/api/v1/vendors/${cred.vendorId}/rg/inventory/summaries`
+      )
+      const result: ProbeResult = {
+        ok: true,
+        publicIp,
+        ipBlocked: false,
+        message: '쿠팡 API 호출 성공',
+      }
+      await reportProbeResult(runId, 'COMPLETED', result)
+    } catch (err) {
+      const ipBlocked = err instanceof CoupangApiError && err.reason === 'IP_REJECTED'
+      const message = ipBlocked
+        ? `쿠팡 Wing 에 워커 IP ${publicIp ?? '(조회 실패)'} 를 등록해 주세요`
+        : err instanceof Error
+          ? err.message
+          : String(err)
+      const result: ProbeResult = { ok: false, publicIp, ipBlocked, message }
+      await reportProbeResult(runId, 'FAILED', result)
+    }
+  } catch (error) {
+    console.error('[probe] 연결 테스트 실패:', error)
+    try {
+      await updateCollectionRun(runId, {
+        status: 'FAILED',
+        error: error instanceof Error ? error.message.slice(0, 500) : String(error),
+        probeResult: {
+          ok: false,
+          publicIp,
+          message: error instanceof Error ? error.message : String(error),
+        },
+      })
+    } catch (updateError) {
+      console.error('[probe] 상태 업데이트 실패:', updateError)
     }
   }
 }
@@ -624,11 +720,23 @@ async function collectAndUploadInventory(credential: {
   errors: string[]
   failedVendorDates?: string[]
   vendorErrors?: string[]
+  ipBlocked?: boolean
+  publicIp?: string
 }> {
   const password =
     credential.passwordIv === 'none'
       ? credential.encryptedPassword
       : decrypt(credential.encryptedPassword, credential.passwordIv)
+
+  // 재고(inventory) 수집 소스 결정 — 실패해도 CRAWL(기존 동작)로 폴백해 조회 실패가
+  // 크롤링까지 막지 않게 한다. API 로 명시 전환된 경우에만 아래 API 분기를 탄다.
+  let inventorySource: 'CRAWL' | 'API' = 'CRAWL'
+  try {
+    const setting = await getSourceSetting()
+    inventorySource = setting.inventorySource
+  } catch (err) {
+    console.warn('[inventory] source-setting 조회 실패 — CRAWL로 진행:', err)
+  }
 
   // 어제 KST 날짜 계산 — 판매분석 수집 대상일 및 snapshotDate 기준
   // kstDayRange(date) 패턴과 동일하게: UTC 기준 +9h 적용 후 YYYY-MM-DD 추출
@@ -657,9 +765,61 @@ async function collectAndUploadInventory(credential: {
   // VENDOR 실패 집계 — run 말미에 실패 일자를 모아 Slack 알림 1건으로 발송.
   let mainVendorFailed = false
   const vendorErrors: string[] = []
+  // client.ts classifyApiFailure() 분류를 collectAndUploadInventory 실패 Slack 알림에도 재사용
+  // (runApiProbe() 와 동일한 ipBlocked/publicIp 계약, team-lead 확정).
+  let ipBlocked = false
+  let apiPublicIp: string | undefined
 
-  // 재고 건강성 업로드
-  if (inventoryData.inventoryHealth) {
+  // 재고 건강성 — CRAWL(기존 동작, source='CRAWL' 기본값이라 불변) / API(이번 턴엔 적재 없이 JSON 덤프까지만, 계획서 §2-6)
+  if (inventorySource === 'API') {
+    try {
+      const cred = await getApiCredential()
+      if (!cred || !cred.isActive) {
+        throw new Error('쿠팡 API 자격증명이 없거나 비활성 상태입니다')
+      }
+      const secretKey =
+        cred.encryptionIv === 'none' ? cred.secretKey : decrypt(cred.secretKey, cred.encryptionIv)
+      const apiCfg: CoupangApiConfig = {
+        vendorId: cred.vendorId,
+        accessKey: cred.accessKey,
+        secretKey,
+      }
+      const client = new CoupangApiClient(apiCfg)
+      const summaries = await fetchInventorySummaries(client, cred.vendorId)
+      const rows: InventoryApiRow[] = summaries.map((item) => ({
+        vendorItemId: String(item.vendorItemId),
+        externalSkuId: item.externalSkuId ?? null,
+        orderableQuantity: item.totalOrderableQuantity ?? null,
+        salesQty30d: item.SALES_COUNT_LAST_THIRTY_DAYS ?? null,
+      }))
+
+      // 적재하지 않고 JSON 덤프까지만 — InventoryRecord unique 키에 productId/optionId 가
+      // 없어 그대로 적재하면 행이 무한 누적된다(계획서 §2-6). 매핑 규칙은 Phase 0 대조 후 설계.
+      const dumpDir = path.resolve('tmp/inventory-api')
+      if (!fs.existsSync(dumpDir)) fs.mkdirSync(dumpDir, { recursive: true })
+      const dumpPath = path.join(dumpDir, `${credential.workspaceId}-${yesterdayKst}.json`)
+      fs.writeFileSync(dumpPath, JSON.stringify({ snapshotDate: yesterdayKst, rows }, null, 2))
+      console.log(`[inventory] API 재고 요약 ${rows.length}건 덤프: ${dumpPath} (적재 안 함)`)
+      healthRows = 0
+    } catch (err) {
+      ipBlocked = err instanceof CoupangApiError && err.reason === 'IP_REJECTED'
+      if (ipBlocked) {
+        try {
+          const ipRes = await fetch('https://api.ipify.org?format=text')
+          apiPublicIp = (await ipRes.text()).trim()
+        } catch (ipErr) {
+          console.warn('[inventory] 공인 IP 조회 실패:', ipErr)
+        }
+      }
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[inventory] API 재고 조회 실패: ${msg}`)
+      // 폴백 없이(크롤링으로 자동 전환하지 않고) 실패를 그대로 노출 — 알림 문구에 소스(API)와
+      // IP거부 여부를 반드시 포함해 운영자가 "코드 버그"로 오인해 헤매지 않게 한다.
+      errors.push(
+        `재고 API 조회 실패 [소스=API, IP거부=${ipBlocked ? '예' : '아니오'}${apiPublicIp ? `, 워커IP=${apiPublicIp}` : ''}]: ${msg}`
+      )
+    }
+  } else if (inventoryData.inventoryHealth) {
     try {
       const buffer = fs.readFileSync(inventoryData.inventoryHealth.filePath)
       const result = await uploadInventory(
@@ -781,7 +941,16 @@ async function collectAndUploadInventory(credential: {
     ])
   )
 
-  return { healthRows, vendorRows, gapVendorRows, errors, failedVendorDates, vendorErrors }
+  return {
+    healthRows,
+    vendorRows,
+    gapVendorRows,
+    errors,
+    failedVendorDates,
+    vendorErrors,
+    ipBlocked,
+    publicIp: apiPublicIp,
+  }
 }
 
 /** 재고 분석 트리거 — 재고 수집 완료 후 항상 실행, Slack 발송 포함 */
