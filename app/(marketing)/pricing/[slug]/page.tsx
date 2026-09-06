@@ -176,6 +176,10 @@ export default async function DeckProductPage({ params }: ProductPageProps) {
                 가능합니다.
               </li>
               <li>
+                • 다만 데이터 업로드·분석 실행·콘텐츠 생성 등 서비스의 핵심 기능을 실질적으로 이용한
+                경우에는 「전자상거래법」 제17조 제2항에 따라 청약철회가 제한될 수 있습니다.
+              </li>
+              <li>
                 • 구독 해지를 신청하면 이미 결제한 이용 기간의 마지막 날까지 이용할 수 있으며, 다음
                 주기부터 결제되지 않습니다.
               </li>
