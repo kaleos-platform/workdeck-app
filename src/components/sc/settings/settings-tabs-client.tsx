@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ChevronDown, PackagePlus, PencilLine } from 'lucide-react'
+import { ChevronDown, Link2, PackagePlus, PencilLine } from 'lucide-react'
 import { PersonaList } from '@/components/sc/settings/persona-list'
 import { BrandProfileForm } from '@/components/sc/settings/brand-profile-form'
 import { ChannelForm } from '@/components/sc/channels/channel-form'
@@ -405,6 +405,10 @@ function AddProductMenu({
             세일즈 운영에서 가져오기
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem onSelect={() => onSelectMode('link')}>
+          <Link2 className="h-4 w-4" />
+          상품 링크에서 가져오기
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

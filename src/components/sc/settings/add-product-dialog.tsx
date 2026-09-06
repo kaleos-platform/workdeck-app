@@ -13,11 +13,12 @@ import {
 import { ProductForm, type ProductFormState } from './product-form'
 import { SellerOpsProductPicker } from './seller-ops-product-picker'
 import { invProductToDraft } from '@/lib/sc/product-import/map-inv-product'
+import { ProductLinkInput } from './product-link-input'
 
 // 상품 추가 보조 경로의 공유 셸. 두 경로가 다른 건 입력 스텝과 draft 생성 방법뿐이고,
 // 검토·저장은 기존 ProductForm 을 그대로 재사용한다(스키마·에디터 이중 관리 방지).
 
-export type AddProductMode = 'seller-ops'
+export type AddProductMode = 'seller-ops' | 'link'
 
 type Step = 'input' | 'loading' | 'review'
 
@@ -30,6 +31,10 @@ const TITLES: Record<AddProductMode, { title: string; description: string }> = {
   'seller-ops': {
     title: '세일즈 운영에서 상품 가져오기',
     description: '가져올 상품을 고르면 내용을 확인·수정한 뒤 저장합니다.',
+  },
+  link: {
+    title: '상품 링크에서 가져오기',
+    description: '상품 페이지 주소를 넣으면 AI가 정보를 정리합니다. 저장 전에 확인·수정할 수 있습니다.',
   },
 }
 
@@ -69,6 +74,16 @@ export function AddProductDialog({ mode, onClose }: Props) {
               setDraft(invProductToDraft(product))
               setStep('review')
             }}
+          />
+        )}
+
+        {step === 'input' && mode === 'link' && (
+          <ProductLinkInput
+            onExtracted={(d) => {
+              setDraft(d)
+              setStep('review')
+            }}
+            onLoadingChange={() => {}}
           />
         )}
 
