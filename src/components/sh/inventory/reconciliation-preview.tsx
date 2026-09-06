@@ -130,6 +130,8 @@ type UnifiedEntry = {
   targetQty: number | null
   delta: number | null
   isManualMatched?: boolean
+  /** 수동 매칭 행의 선택 옵션 전체 — 표에서 접지 않고 모두 보여준다. */
+  sysItems?: PickedOptionWithQty[]
   optionId?: string
   suggestions?: SuggestionOption[]
   row?: ParsedRow
@@ -342,6 +344,7 @@ export function ReconciliationPreview({
         targetQty: target,
         delta,
         isManualMatched: isMapped,
+        sysItems: isMapped ? items : undefined,
         suggestions: e.suggestions,
         row: e.row,
       })
@@ -710,6 +713,12 @@ export function ReconciliationPreview({
               {filteredEntries.map((entry, index) => {
                 const applied = isApplied(entry)
                 const isMapped = (manualMap[entry.fileCode]?.length ?? 0) > 0
+                // 수동 매칭 행은 옵션 전체를 펼쳐 보여준다(라벨 접기 대신).
+                const sysItems = entry.sysItems && entry.sysItems.length > 0 ? entry.sysItems : null
+                const sysProductNames = sysItems
+                  ? Array.from(new Set(sysItems.map((i) => i.productName)))
+                  : null
+                const sysProductTitle = sysProductNames ? sysProductNames.join(', ') : null
                 // 1:N 매핑으로 한 파일 행이 여러 entry 로 쪼개진 경우 — 파일 셀은 중복 표기다.
                 const repeatsFileRow =
                   index > 0 && filteredEntries[index - 1].fileCode === entry.fileCode
@@ -753,19 +762,46 @@ export function ReconciliationPreview({
                         <span className="text-muted-foreground/50">—</span>
                       ) : (
                         <>
-                          <div className="truncate font-medium" title={entry.sysProductName}>
-                            {entry.sysProductName}
+                          <div
+                            className="truncate font-medium"
+                            title={sysProductTitle ?? entry.sysProductName}
+                          >
+                            {sysProductTitle ?? entry.sysProductName}
                           </div>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <span className="truncate">
-                              {entry.sysOptionName}
-                              {/* 세트 수량 비율이 1 초과면 목표 수량이 파일 수량과 다르다 */}
-                              {entry.mapItemQuantity !== undefined && entry.mapItemQuantity > 1 && (
-                                <span className="ml-1 opacity-70">
-                                  × {entry.mapItemQuantity} = {entry.targetQty}
-                                </span>
-                              )}
-                            </span>
+                          <div
+                            className={`gap-1 text-xs text-muted-foreground ${
+                              // 옵션이 여러 줄이면 버튼을 아래로 내려 옵션 표기가 잘리지 않게 한다.
+                              sysItems && sysItems.length > 1
+                                ? 'flex flex-col items-start'
+                                : 'flex items-start'
+                            }`}
+                          >
+                            {sysItems ? (
+                              // 수동 매칭은 옵션 여러 개를 한 행에 담으므로 접지 않고 모두 나열한다.
+                              <span className="w-full min-w-0">
+                                {sysItems.map((it) => (
+                                  <span key={it.optionId} className="block truncate">
+                                    {it.optionName}
+                                    {it.quantity > 1 && (
+                                      <span className="ml-1 opacity-70">
+                                        × {it.quantity} = {entry.fileRowQty * it.quantity}
+                                      </span>
+                                    )}
+                                  </span>
+                                ))}
+                              </span>
+                            ) : (
+                              <span className="truncate">
+                                {entry.sysOptionName}
+                                {/* 세트 수량 비율이 1 초과면 목표 수량이 파일 수량과 다르다 */}
+                                {entry.mapItemQuantity !== undefined &&
+                                  entry.mapItemQuantity > 1 && (
+                                    <span className="ml-1 opacity-70">
+                                      × {entry.mapItemQuantity} = {entry.targetQty}
+                                    </span>
+                                  )}
+                              </span>
+                            )}
                             {canEdit && isMapped && (
                               <span className="flex shrink-0 items-center gap-0.5">
                                 <Button
