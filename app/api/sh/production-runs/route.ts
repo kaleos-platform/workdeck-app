@@ -11,6 +11,12 @@ import {
   type ProductionRunStatus,
 } from '@/lib/sh/production-runs-query'
 
+// 입고 완료(STOCKED_IN)는 옵션×위치 분배로 INBOUND 를 만들어야 성립한다.
+// 이 라우트로 상태만 바꾸면 재고가 늘지 않은 채 "입고완료"로 보여, 장부가 조용히 어긋난다
+// (2026-07 이후 차수 9건 14,910개가 이 경로로 재고 없이 STOCKED_IN 이 됐다).
+const STOCK_IN_VIA_TRANSITION_MSG =
+  '입고 완료는 차수 목록에서 상태 배지를 눌러 [입고완료로 변경]을 선택하면 보관 위치와 수량을 지정해 처리할 수 있습니다'
+
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
@@ -208,6 +214,10 @@ export async function POST(req: NextRequest) {
     return errorResponse(first?.message ?? '입력값이 올바르지 않습니다', 400)
   }
   const input = parsed.data
+
+  if (input.status === 'STOCKED_IN') {
+    return errorResponse(STOCK_IN_VIA_TRANSITION_MSG, 400)
+  }
 
   // 옵션 소속 검증 — 모두 같은 spaceId에 속해야 함, brandId 자동 추정을 위해 product.brandId 포함
   const optionIds = input.items.map((it) => it.optionId)
