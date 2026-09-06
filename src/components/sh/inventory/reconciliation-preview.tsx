@@ -169,6 +169,14 @@ function manualItemsToProductLabel(items: PickedOptionWithQty[]): string {
   return `${items[0].productName} 외 ${items.length - 1}개`
 }
 
+/** 매핑에 포함된 모든 옵션을 한 줄씩 나열 — 엔트리는 옵션 단위로 쪼개지므로 매핑 전체를 봐야 한다. */
+function mappingItemsToLabel(items: MappingItem[]): string {
+  if (items.length === 0) return '-'
+  return items
+    .map((i) => `${i.productName} / ${i.optionName}${i.quantity > 1 ? ` × ${i.quantity}` : ''}`)
+    .join('\n')
+}
+
 function manualItemsToOptionLabel(items: PickedOptionWithQty[]): string {
   if (items.length === 0) return '-'
   const first = `${items[0].optionName}${items[0].quantity > 1 ? ` × ${items[0].quantity}` : ''}`
@@ -871,7 +879,19 @@ export function ReconciliationPreview({
         contextLabel="현재 매칭"
         contextValue={
           editMatcherEntry
-            ? `${editMatcherEntry.sysProductName ?? ''} / ${editMatcherEntry.sysOptionName ?? ''}`
+            ? editMatcherEntry.mappingItems && editMatcherEntry.mappingItems.length > 0
+              ? mappingItemsToLabel(editMatcherEntry.mappingItems)
+              : `${editMatcherEntry.sysProductName ?? ''} / ${editMatcherEntry.sysOptionName ?? ''}`
+            : ''
+        }
+        secondaryContextLabel="매칭된 파일 상품명"
+        secondaryContextValue={
+          editMatcherEntry
+            ? `${editMatcherEntry.fileProductName}${
+                editMatcherEntry.fileOptionName && editMatcherEntry.fileOptionName !== '-'
+                  ? ` / ${editMatcherEntry.fileOptionName}`
+                  : ''
+              }${editMatcherEntry.fileCode ? ` (${editMatcherEntry.fileCode})` : ''}`
             : ''
         }
         initialItems={
