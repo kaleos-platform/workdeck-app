@@ -457,6 +457,7 @@ export const ModelName = {
   PricingScenarioItem: 'PricingScenarioItem',
   ProductPricingSettings: 'ProductPricingSettings',
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
+  SpaceAtomicWord: 'SpaceAtomicWord',
   ProductListing: 'ProductListing',
   ProductListingItem: 'ProductListingItem',
   ChannelStockMovement: 'ChannelStockMovement',
@@ -535,7 +536,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5938,6 +5939,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SpaceOptionCodeAliasCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SpaceOptionCodeAliasCountAggregateOutputType> | number
+        }
+      }
+    }
+    SpaceAtomicWord: {
+      payload: Prisma.$SpaceAtomicWordPayload<ExtArgs>
+      fields: Prisma.SpaceAtomicWordFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SpaceAtomicWordFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SpaceAtomicWordFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload>
+        }
+        findFirst: {
+          args: Prisma.SpaceAtomicWordFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SpaceAtomicWordFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload>
+        }
+        findMany: {
+          args: Prisma.SpaceAtomicWordFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload>[]
+        }
+        create: {
+          args: Prisma.SpaceAtomicWordCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload>
+        }
+        createMany: {
+          args: Prisma.SpaceAtomicWordCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SpaceAtomicWordCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload>[]
+        }
+        delete: {
+          args: Prisma.SpaceAtomicWordDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload>
+        }
+        update: {
+          args: Prisma.SpaceAtomicWordUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload>
+        }
+        deleteMany: {
+          args: Prisma.SpaceAtomicWordDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SpaceAtomicWordUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SpaceAtomicWordUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload>[]
+        }
+        upsert: {
+          args: Prisma.SpaceAtomicWordUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAtomicWordPayload>
+        }
+        aggregate: {
+          args: Prisma.SpaceAtomicWordAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpaceAtomicWord>
+        }
+        groupBy: {
+          args: Prisma.SpaceAtomicWordGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceAtomicWordGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SpaceAtomicWordCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceAtomicWordCountAggregateOutputType> | number
         }
       }
     }
@@ -11825,6 +11900,18 @@ export const SpaceOptionCodeAliasScalarFieldEnum = {
 export type SpaceOptionCodeAliasScalarFieldEnum = (typeof SpaceOptionCodeAliasScalarFieldEnum)[keyof typeof SpaceOptionCodeAliasScalarFieldEnum]
 
 
+export const SpaceAtomicWordScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  word: 'word',
+  normalized: 'normalized',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceAtomicWordScalarFieldEnum = (typeof SpaceAtomicWordScalarFieldEnum)[keyof typeof SpaceAtomicWordScalarFieldEnum]
+
+
 export const ProductListingScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -14272,6 +14359,7 @@ export type GlobalOmitConfig = {
   pricingScenarioItem?: Prisma.PricingScenarioItemOmit
   productPricingSettings?: Prisma.ProductPricingSettingsOmit
   spaceOptionCodeAlias?: Prisma.SpaceOptionCodeAliasOmit
+  spaceAtomicWord?: Prisma.SpaceAtomicWordOmit
   productListing?: Prisma.ProductListingOmit
   productListingItem?: Prisma.ProductListingItemOmit
   channelStockMovement?: Prisma.ChannelStockMovementOmit

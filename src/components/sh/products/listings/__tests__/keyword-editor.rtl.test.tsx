@@ -4,7 +4,7 @@
 // 숫자만 커지고 이유가 없으면 사용자는 버그로 읽고, 모르고 누르면 멀쩡한 키워드가 사라진다.
 
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { KeywordEditor } from '../keyword-editor'
@@ -91,5 +91,43 @@ describe('KeywordEditor 위반 사유 상시 노출', () => {
     await user.click(screen.getByRole('button', { name: '제거' }))
 
     expect(onChange).toHaveBeenCalledWith(['레이스'])
+  })
+})
+
+describe('KeywordEditor 예외 단어 등록', () => {
+  const originalFetch = global.fetch
+
+  afterEach(() => {
+    global.fetch = originalFetch
+    jest.restoreAllMocks()
+  })
+
+  it('상품명 단어로 쪼개진 검색어에 등록 버튼이 뜬다', () => {
+    // '쿨링' → 상품명 단어 '쿨' 을 빼면 '링' 한 글자만 남는다(KW_NAME_COMPOUND).
+    renderEditor(['쿨링'])
+    expect(screen.getByRole('button', { name: /'쿨링' 한 단어로 등록/ })).toBeInTheDocument()
+  })
+
+  it('공통 어절 위반에는 등록 버튼을 주지 않는다 (예외 등록으로 해소되지 않는다)', () => {
+    // '허리'는 상품명 단어가 아니므로 공통 어절 위반만 뜬다(상품명 판정이 섞이지 않는다).
+    renderEditor(['허리보정', '허리압박'])
+    expect(screen.getByText(/'허리'를 공유합니다/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /한 단어로 등록/ })).not.toBeInTheDocument()
+  })
+
+  it('등록을 누르면 사전 API 로 POST 한다', async () => {
+    const user = userEvent.setup()
+    const fetchMock = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ words: [] }) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    renderEditor(['쿨링'])
+    await user.click(screen.getByRole('button', { name: /'쿨링' 한 단어로 등록/ }))
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/sh/keyword-atomic-words',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ word: '쿨링' }) })
+    )
+    // 등록 후 사전을 다시 읽어 다른 에디터까지 재검증시킨다(구독자 방송).
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
   })
 })

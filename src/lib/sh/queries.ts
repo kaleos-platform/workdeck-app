@@ -394,7 +394,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
       id: true,
       name: true,
       products: {
-        where: { spaceId },
+        // 미사용(INACTIVE) 상품은 재고 현황·KPI·브랜드 트리 전반에서 제외
+        where: { spaceId, status: 'ACTIVE' },
         select: {
           id: true,
           name: true,
@@ -402,6 +403,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           code: true,
           brand: { select: { id: true, name: true, logoUrl: true } },
           options: {
+            // 삭제된 옵션(생산 차수 등 참조가 있어 soft-delete 된 건)은 제외
+            where: { deletedAt: null },
             select: {
               id: true,
               name: true,

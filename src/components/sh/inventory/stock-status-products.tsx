@@ -16,7 +16,11 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import type { StockBrand } from './stock-status.types'
-import { STOCK_STATUS_BRAND_NONE, type StockStatusProductCard } from './stock-status-view-model'
+import {
+  STOCK_STATUS_BRAND_NONE,
+  stockStatusDisplayName,
+  type StockStatusProductCard,
+} from './stock-status-view-model'
 
 type Props = {
   products: StockStatusProductCard[]
@@ -349,7 +353,7 @@ function ProductButton({
           className="min-w-0 flex-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <div className="space-y-0.5">
-            <div className="truncate text-sm font-medium">{product.productName}</div>
+            <div className="truncate text-sm font-medium">{stockStatusDisplayName(product)}</div>
             <div className="truncate text-[11px] text-muted-foreground">
               {product.brandName ?? '브랜드 없음'} · {product.groupName}
             </div>

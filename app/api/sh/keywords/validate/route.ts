@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { prisma } from '@/lib/prisma'
+import { loadAtomicWords } from '@/lib/sh/keyword-atomic-query'
 import { validateListingNaming } from '@/lib/sh/keyword-validate'
 import { keywordValidateSchema } from '@/lib/sh/schemas'
 import { loadKeywordRules, serializeKeywordRules } from '@/lib/sh/keyword-rules-query'
@@ -22,7 +24,11 @@ export async function POST(req: NextRequest) {
   }
   const input = parsed.data
 
-  const rules = await loadKeywordRules(resolved.space.id, input.channelId)
+  const [rules, atomicWords, brands] = await Promise.all([
+    loadKeywordRules(resolved.space.id, input.channelId),
+    loadAtomicWords(resolved.space.id),
+    prisma.brand.findMany({ where: { spaceId: resolved.space.id }, select: { name: true } }),
+  ])
 
   const result = validateListingNaming({
     searchName: input.searchName,
@@ -30,6 +36,8 @@ export async function POST(req: NextRequest) {
     keywords: input.keywords,
     categoryNames: input.categoryNames,
     optionNames: input.optionNames,
+    brandNames: brands.map((b) => b.name),
+    atomicWords,
     rules,
   })
 

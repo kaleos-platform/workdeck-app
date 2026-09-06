@@ -203,3 +203,30 @@ describe('stripNameTokens — 상품명 단어를 걷어낸 나머지', () => {
     expect(stripNameTokens('여름브라', [])).toBeNull()
   })
 })
+
+describe('stripNameTokens — 예외 단어(분해 금지)', () => {
+  const nameTokens = ['쿨', '메쉬', '심리스', '편한', '브라', '노와이어', '스포츠']
+
+  it("'쿨링' 은 '쿨' 로 잘리지 않는다 (지울 것이 없어 null)", () => {
+    expect(stripNameTokens('쿨링', nameTokens)?.stripped).toBe('링')
+    expect(stripNameTokens('쿨링', nameTokens, ['쿨링'])).toBeNull()
+  })
+
+  it('예외 단어 밖의 상품명 단어는 그대로 걷어낸다', () => {
+    const r = stripNameTokens('쿨링브라', nameTokens, ['쿨링'])
+    expect(r?.stripped).toBe('쿨링')
+    expect(r?.removed).toEqual(['브라'])
+  })
+
+  it('예외 단어를 통째로 포함하는 상품명 단어는 여전히 지운다 (superset)', () => {
+    expect(stripNameTokens('노와이어브라', nameTokens, ['와이'])?.stripped).toBe('')
+  })
+
+  it('한 글자 예외 항목은 무시한다 (자를 수 없으므로 의미가 없다)', () => {
+    expect(stripNameTokens('쿨링', nameTokens, ['쿨'])?.stripped).toBe('링')
+  })
+
+  it('매칭되지 않는 예외 항목은 아무 영향이 없다', () => {
+    expect(stripNameTokens('여름브라', nameTokens, ['전혀무관'])?.stripped).toBe('여름')
+  })
+})

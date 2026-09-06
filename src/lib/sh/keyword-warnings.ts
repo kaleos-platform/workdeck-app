@@ -4,7 +4,9 @@
 // 이미 끝난 저장에 영향을 주면 안 된다. 그래서 항상 저장 **성공 이후**에 호출하고,
 // 실패는 null 로 접어 응답에서 필드를 생략한다.
 
+import { prisma } from '@/lib/prisma'
 import { validateListingNaming, type ListingNamingResult } from './keyword-validate'
+import { loadAtomicWords } from './keyword-atomic-query'
 import { loadKeywordRules } from './keyword-rules-query'
 
 export async function buildNamingWarnings(
@@ -18,7 +20,13 @@ export async function buildNamingWarnings(
   }
 ): Promise<ListingNamingResult | null> {
   try {
-    const rules = await loadKeywordRules(spaceId, channelId)
+    // 브랜드명·예외 단어를 넘기지 않으면 저장 경고가 에디터 판정과 갈린다
+    // (에디터는 둘 다 반영한다 — 같은 검색어를 놓고 서로 다른 말을 하게 된다).
+    const [rules, atomicWords, brands] = await Promise.all([
+      loadKeywordRules(spaceId, channelId),
+      loadAtomicWords(spaceId),
+      prisma.brand.findMany({ where: { spaceId }, select: { name: true } }),
+    ])
     const keywords = Array.isArray(input.keywords)
       ? input.keywords.filter((k): k is string => typeof k === 'string')
       : []
@@ -27,6 +35,8 @@ export async function buildNamingWarnings(
       displayName: input.displayName ?? undefined,
       keywords,
       optionNames: input.optionNames,
+      brandNames: brands.map((b) => b.name),
+      atomicWords,
       rules,
     })
   } catch (e) {
