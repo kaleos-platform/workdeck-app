@@ -11,7 +11,9 @@ export type CrawlErrorCode = 'INVALID_URL' | 'BLOCKED_HOST' | 'FETCH_FAILED' | '
 export class CrawlError extends Error {
   constructor(
     public readonly code: CrawlErrorCode,
-    message: string
+    message: string,
+    // HTTP 응답 상태. 봇 차단(403/429/503)과 그 외 실패를 호출부가 구분할 때 쓴다.
+    public readonly status?: number
   ) {
     super(message)
     this.name = 'CrawlError'
@@ -194,6 +196,8 @@ function stripHtml(html: string): string {
 
 const FETCH_TIMEOUT_MS = 10_000
 const MAX_TEXT_CHARS = 20_000
+// HTML 원문 상한 — 텍스트화 전 단계라 텍스트 상한보다 넉넉히 잡는다.
+const MAX_HTML_CHARS = 500_000
 const MAX_REDIRECTS = 5
 
 const USER_AGENT =
@@ -201,6 +205,12 @@ const USER_AGENT =
 
 export type CrawlResult = {
   text: string
+  fetchedAt: Date
+}
+
+export type FetchedPage = {
+  html: string
+  status: number
   fetchedAt: Date
 }
 
@@ -275,7 +285,8 @@ async function fetchWithSsrfGuard(
   return res
 }
 
-export async function crawlHomepage(url: string): Promise<CrawlResult> {
+/** SSRF 가드를 거쳐 HTML 원문을 그대로 반환. 빈 셸 판정은 호출부 몫이다. */
+export async function fetchPageHtml(url: string): Promise<FetchedPage> {
   // 1. URL 유효성 검사 (scheme 먼저)
   let parsed: URL
   try {
@@ -292,25 +303,32 @@ export async function crawlHomepage(url: string): Promise<CrawlResult> {
   const res = await fetchWithSsrfGuard(url, MAX_REDIRECTS)
 
   if (!res.ok) {
-    throw new CrawlError('FETCH_FAILED', `HTTP ${res.status} 응답`)
+    throw new CrawlError('FETCH_FAILED', `HTTP ${res.status} 응답`, res.status)
   }
 
-  // 3. 본문 처리
+  // 3. 본문 읽기 — 텍스트화는 하지 않는다
   let html: string
   try {
     html = await res.text()
   } catch (err) {
     throw new CrawlError(
       'FETCH_FAILED',
-      `응답 읽기 실패: ${err instanceof Error ? err.message : String(err)}`
+      `응답 읽기 실패: ${err instanceof Error ? err.message : String(err)}`,
+      res.status
     )
   }
 
-  const text = stripHtml(html).slice(0, MAX_TEXT_CHARS)
+  return { html: html.slice(0, MAX_HTML_CHARS), status: res.status, fetchedAt: new Date() }
+}
+
+export async function crawlHomepage(url: string): Promise<CrawlResult> {
+  const page = await fetchPageHtml(url)
+
+  const text = stripHtml(page.html).slice(0, MAX_TEXT_CHARS)
 
   if (!text.trim()) {
     throw new CrawlError('EMPTY_CONTENT', '페이지에서 텍스트를 추출하지 못했습니다')
   }
 
-  return { text, fetchedAt: new Date() }
+  return { text, fetchedAt: page.fetchedAt }
 }
