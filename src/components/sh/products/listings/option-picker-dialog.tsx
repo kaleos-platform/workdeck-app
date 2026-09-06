@@ -77,6 +77,9 @@ type Props = {
   mode?: 'flat' | 'two-step' | 'multi-with-qty' | 'product-with-all-options'
   contextLabel?: string
   contextValue?: string
+  // 비교용 보조 정보(예: 매칭된 파일 상품명). contextValue 아래에 함께 표시된다.
+  secondaryContextLabel?: string
+  secondaryContextValue?: string
   // multi-with-qty 수정 시 기존 선택 복원
   initialItems?: PickedOptionWithQty[]
   // 파일 상품명 등 원본 문자열. 넘기면 단어별 키워드 칩 UI를 띄우고 앞 N개 토큰으로 검색을 시작한다.
@@ -98,6 +101,8 @@ export function OptionPickerDialog({
   mode = 'flat',
   contextLabel,
   contextValue,
+  secondaryContextLabel,
+  secondaryContextValue,
   initialItems,
   keywordSource,
   initialTokenCount = 2,
@@ -336,10 +341,26 @@ export function OptionPickerDialog({
           <DialogDescription>{descText}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
-          {contextValue && (
-            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm">
-              <span className="text-xs text-amber-700">{contextLabel ?? '매칭 대상'}</span>
-              <p className="mt-0.5 font-medium text-amber-900">{contextValue}</p>
+          {(contextValue || secondaryContextValue) && (
+            <div className="space-y-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm">
+              {contextValue && (
+                <div>
+                  <span className="text-xs text-amber-700">{contextLabel ?? '매칭 대상'}</span>
+                  <p className="mt-0.5 font-medium whitespace-pre-line text-amber-900">
+                    {contextValue}
+                  </p>
+                </div>
+              )}
+              {secondaryContextValue && (
+                <div className="border-t border-amber-200 pt-2">
+                  <span className="text-xs text-amber-700">
+                    {secondaryContextLabel ?? '파일 상품명'}
+                  </span>
+                  <p className="mt-0.5 font-medium whitespace-pre-line text-amber-900">
+                    {secondaryContextValue}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
