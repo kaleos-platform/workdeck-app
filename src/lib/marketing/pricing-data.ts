@@ -17,8 +17,8 @@ export interface DeckPricingRow {
 /**
  * 마케팅 pricing 페이지용 deck 가격 목록.
  * 값 자체는 DECK_CATALOG_DEFAULTS(=BillingDeckProduct 시드)에서 파생 —
- * 예정가를 두 곳에서 따로 관리하지 않는다. 현재 전 deck FREE_BETA(무료)이며
- * 여기 표시되는 금액은 정식 전환 시 예정가다.
+ * 가격을 두 곳에서 따로 관리하지 않는다. 마케팅 사이트 표시 금액과
+ * 실제 청구 금액이 어긋나지 않도록 이 파생 관계를 유지한다.
  */
 export const DECK_PRICING_ROWS: DeckPricingRow[] = DECK_CATALOG_DEFAULTS.map((deck) => {
   const slug = deck.id as MarketingDeckSlug
@@ -31,3 +31,13 @@ export const DECK_PRICING_ROWS: DeckPricingRow[] = DECK_CATALOG_DEFAULTS.map((de
     summary: DECK_LANDINGS[slug].hero.subcopy,
   }
 })
+
+/** slug → 가격 행 조회용 맵 */
+export const DECK_PRICING_BY_SLUG: Record<MarketingDeckSlug, DeckPricingRow> =
+  DECK_PRICING_ROWS.reduce(
+    (acc, row) => {
+      acc[row.slug] = row
+      return acc
+    },
+    {} as Record<MarketingDeckSlug, DeckPricingRow>
+  )

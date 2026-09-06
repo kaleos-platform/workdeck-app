@@ -21,7 +21,7 @@ export const recruitingLanding: DeckLandingContent = {
     highlight: '한 흐름으로',
     subcopy:
       '디자인 블록으로 채용 공고를 직접 꾸미고, 접수된 지원자를 관리하고, 블랙리스트까지 함께 관리할 수 있습니다.',
-    primaryCta: { label: '무료로 시작하기', href: '/signup' },
+    primaryCta: { label: '시작하기', href: '/signup' },
     secondaryCta: { label: '로그인', href: '/d/recruiting/login' },
   },
   painPoints: [
@@ -109,8 +109,9 @@ export const recruitingLanding: DeckLandingContent = {
       answer: '문제가 있었던 지원자 정보를 기록해 두면 재지원 시 빠르게 확인할 수 있습니다.',
     },
     {
-      question: '무료로 사용할 수 있나요?',
-      answer: '현재 베타 기간 동안 모든 기능을 무료로 이용할 수 있습니다.',
+      question: '이용 요금은 어떻게 되나요?',
+      answer:
+        '모집 관리은 월 22,000원(부가세 포함)의 구독 상품입니다. 필요한 업무만 골라 구독할 수 있고, 언제든 해지할 수 있습니다.',
     },
   ],
   finalCta: {

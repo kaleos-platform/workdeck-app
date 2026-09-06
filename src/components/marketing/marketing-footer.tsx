@@ -11,6 +11,7 @@ const companyLinks = [
   { label: '문의', href: '/contact' },
   { label: '이용약관', href: '/terms' },
   { label: '개인정보처리방침', href: '/privacy' },
+  { label: '취소·환불 규정', href: '/refund' },
 ]
 
 export function MarketingFooter() {
@@ -72,10 +73,16 @@ export function MarketingFooter() {
 
         <div className="space-y-1 text-xs break-keep text-muted-foreground">
           <p>
-            {COMPANY.name} | 대표: {COMPANY.ceo} | 사업자등록번호: {COMPANY.registrationNumber}
+            {COMPANY.name} | 대표: {COMPANY.ceo} | 사업자등록번호: {COMPANY.registrationNumber} |
+            통신판매업신고번호: {COMPANY.mailOrderNumber}
           </p>
+          <p>주소: {COMPANY.address}</p>
           <p>
-            주소: {COMPANY.address} | 문의:{' '}
+            고객센터:{' '}
+            <a href={`tel:${COMPANY.phone}`} className="transition-colors hover:text-foreground">
+              {COMPANY.phone}
+            </a>{' '}
+            | 이메일:{' '}
             <a href={`mailto:${CONTACT_EMAIL}`} className="transition-colors hover:text-foreground">
               {CONTACT_EMAIL}
             </a>

@@ -102,7 +102,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             <div className="mt-16 rounded-lg border bg-muted/30 p-8 text-center">
               <h2 className="text-xl font-bold break-keep">{deckMeta.name} 더 알아보기</h2>
               <p className="mt-2 break-keep text-muted-foreground">
-                베타 기간 동안 모든 기능을 무료로 사용해 보세요.
+                업무 모듈 단위로 구독해 바로 사용할 수 있습니다.
               </p>
               <Button asChild className="mt-4">
                 <Link href={`/${post.deck}`}>

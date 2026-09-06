@@ -22,6 +22,7 @@ export type MarketingDeckSlugString = (typeof MARKETING_DECK_SLUGS)[number]
 export const MARKETING_ONLY_PATHS: readonly string[] = [
   ...MARKETING_DECK_SLUGS.map((slug) => `/${slug}`),
   '/pricing',
+  '/refund',
   '/blog',
   '/about',
   '/contact',
