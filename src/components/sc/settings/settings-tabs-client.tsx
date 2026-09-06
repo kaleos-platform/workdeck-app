@@ -2,11 +2,22 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import type { RuleStatus, RuleScope, RuleSource } from '@/generated/prisma/enums'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductList } from '@/components/sc/settings/product-list'
+import {
+  AddProductDialog,
+  type AddProductMode,
+} from '@/components/sc/settings/add-product-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { ChevronDown, PackagePlus, PencilLine } from 'lucide-react'
 import { PersonaList } from '@/components/sc/settings/persona-list'
 import { BrandProfileForm } from '@/components/sc/settings/brand-profile-form'
 import { ChannelForm } from '@/components/sc/channels/channel-form'
@@ -72,6 +83,7 @@ type Rule = {
 }
 
 type Props = {
+  sellerHubActive?: boolean
   products: Product[]
   personas: Persona[]
   brandProfileInitial: BrandProfileInitial
@@ -97,16 +109,19 @@ const PLATFORM_LABEL: Record<string, string> = {
 // ─── 세일즈 정보 서브섹션 ─────────────────────────────────────────────────────
 
 function SalesInfoTab({
+  sellerHubActive,
   products,
   personas,
   brandProfileInitial,
 }: {
+  sellerHubActive: boolean
   products: Product[]
   personas: Persona[]
   brandProfileInitial: BrandProfileInitial
 }) {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const [addProductMode, setAddProductMode] = useState<AddProductMode | null>(null)
   const section = searchParams.get('section') ?? 'products'
 
   const setSection = useCallback(
@@ -156,11 +171,24 @@ function SalesInfoTab({
                 아이데이션·콘텐츠 생성의 기반이 되는 B2B·B2G 판매 상품 정보를 관리합니다.
               </p>
             </div>
-            <Button asChild size="sm">
-              <Link href={`${SALES_CONTENT_PRODUCTS_PATH}/new`}>상품 추가</Link>
-            </Button>
+            <AddProductMenu
+              sellerHubActive={sellerHubActive}
+              onSelectMode={setAddProductMode}
+              size="sm"
+            />
           </div>
-          <ProductList products={products} />
+          <ProductList
+            products={products}
+            emptyAction={
+              <div className="mt-4 flex justify-center">
+                <AddProductMenu
+                  sellerHubActive={sellerHubActive}
+                  onSelectMode={setAddProductMode}
+                />
+              </div>
+            }
+          />
+          <AddProductDialog mode={addProductMode} onClose={() => setAddProductMode(null)} />
         </div>
       )}
 
@@ -283,6 +311,7 @@ function RulesTab({ rules }: { rules: Rule[] }) {
 // ─── 메인 탭 컴포넌트 ─────────────────────────────────────────────────────────
 
 export function SettingsTabsClient({
+  sellerHubActive = false,
   products,
   personas,
   brandProfileInitial,
@@ -326,6 +355,7 @@ export function SettingsTabsClient({
 
         <TabsContent value="sales-info">
           <SalesInfoTab
+            sellerHubActive={sellerHubActive}
             products={products}
             personas={personas}
             brandProfileInitial={brandProfileInitial}
@@ -341,5 +371,41 @@ export function SettingsTabsClient({
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+// 상품 추가 진입 — 직접 입력(기존 페이지) + 보조 경로들.
+// seller-ops 항목은 그 카드가 활성일 때만 보인다(API 게이트는 서버가 따로 한다).
+function AddProductMenu({
+  sellerHubActive,
+  onSelectMode,
+  size,
+}: {
+  sellerHubActive: boolean
+  onSelectMode: (mode: AddProductMode) => void
+  size?: 'sm'
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size={size}>
+          상품 추가 <ChevronDown className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuItem asChild>
+          <Link href={`${SALES_CONTENT_PRODUCTS_PATH}/new`}>
+            <PencilLine className="h-4 w-4" />
+            직접 입력
+          </Link>
+        </DropdownMenuItem>
+        {sellerHubActive && (
+          <DropdownMenuItem onSelect={() => onSelectMode('seller-ops')}>
+            <PackagePlus className="h-4 w-4" />
+            세일즈 운영에서 가져오기
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
