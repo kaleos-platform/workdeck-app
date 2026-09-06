@@ -719,6 +719,18 @@ export function ReconciliationPreview({
                   ? Array.from(new Set(sysItems.map((i) => i.productName)))
                   : null
                 const sysProductTitle = sysProductNames ? sysProductNames.join(', ') : null
+                // 1:N 매핑은 옵션당 한 행이라, 행 하나만 보면 같은 파일 행이 어디에 더 걸렸는지 알 수 없다.
+                // 색(흐림)만으로 구분하지 않도록 "함께 매칭" 레이블을 붙여 명시한다.
+                const siblingItems = (entry.mappingItems ?? []).filter(
+                  (i) => i.optionId !== entry.optionId
+                )
+                const siblingLabels = siblingItems.map(
+                  (i) => `${i.optionName}${i.quantity > 1 ? ` × ${i.quantity}` : ''}`
+                )
+                const siblingText =
+                  siblingLabels.length > 3
+                    ? `${siblingLabels.slice(0, 3).join(', ')} 외 ${siblingLabels.length - 3}개`
+                    : siblingLabels.join(', ')
                 // 1:N 매핑으로 한 파일 행이 여러 entry 로 쪼개진 경우 — 파일 셀은 중복 표기다.
                 const repeatsFileRow =
                   index > 0 && filteredEntries[index - 1].fileCode === entry.fileCode
@@ -824,6 +836,14 @@ export function ReconciliationPreview({
                               </span>
                             )}
                           </div>
+                          {siblingLabels.length > 0 && (
+                            <div
+                              className="truncate text-xs text-muted-foreground"
+                              title={`함께 매칭: ${siblingLabels.join(', ')}`}
+                            >
+                              함께 매칭: {siblingText}
+                            </div>
+                          )}
                         </>
                       )}
                     </TableCell>
