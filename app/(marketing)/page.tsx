@@ -20,7 +20,7 @@ export function generateMetadata(): Metadata {
 }
 
 const trustPoints = [
-  '베타 기간 동안 모든 업무를 무료로 이용 가능',
+  '업무 모듈 단위 월 구독 — 쓰는 만큼만 결제',
   '필요한 업무만 골라서 사용 — 강제 번들 없음',
   '실제 셀러·운영팀 워크플로우를 기반으로 설계',
 ]
@@ -47,7 +47,7 @@ export default function HomePage() {
           <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
             <Link href={buildAppUrl('/signup')}>
               <Button size="lg" className="w-full gap-2 sm:w-auto">
-                무료로 시작하기
+                워크스페이스 만들기
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Button>
             </Link>
@@ -126,11 +126,11 @@ export default function HomePage() {
             지금 바로 워크스페이스를 만들어보세요
           </h2>
           <p className="text-lg break-keep text-white/90">
-            베타 기간 동안 모든 업무를 무료로 이용할 수 있습니다.
+            필요한 업무 모듈만 골라 월 단위로 구독하고, 언제든 해지할 수 있습니다.
           </p>
           <Link href={buildAppUrl('/signup')}>
             <Button size="lg" variant="secondary" className="gap-2">
-              무료로 시작하기
+              시작하기
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>
           </Link>

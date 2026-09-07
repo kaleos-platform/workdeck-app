@@ -473,6 +473,9 @@ export const ModelName = {
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
   BrandProfile: 'BrandProfile',
+  SalesContentOnboarding: 'SalesContentOnboarding',
+  ScOnboardingResource: 'ScOnboardingResource',
+  SpaceAiSetting: 'SpaceAiSetting',
   WorkspaceAiCredit: 'WorkspaceAiCredit',
   ImageGenerationLog: 'ImageGenerationLog',
   TextGenerationLog: 'TextGenerationLog',
@@ -538,7 +541,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -7128,6 +7131,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SalesContentOnboarding: {
+      payload: Prisma.$SalesContentOnboardingPayload<ExtArgs>
+      fields: Prisma.SalesContentOnboardingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SalesContentOnboardingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SalesContentOnboardingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload>
+        }
+        findFirst: {
+          args: Prisma.SalesContentOnboardingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SalesContentOnboardingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload>
+        }
+        findMany: {
+          args: Prisma.SalesContentOnboardingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload>[]
+        }
+        create: {
+          args: Prisma.SalesContentOnboardingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload>
+        }
+        createMany: {
+          args: Prisma.SalesContentOnboardingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SalesContentOnboardingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload>[]
+        }
+        delete: {
+          args: Prisma.SalesContentOnboardingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload>
+        }
+        update: {
+          args: Prisma.SalesContentOnboardingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload>
+        }
+        deleteMany: {
+          args: Prisma.SalesContentOnboardingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SalesContentOnboardingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SalesContentOnboardingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload>[]
+        }
+        upsert: {
+          args: Prisma.SalesContentOnboardingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesContentOnboardingPayload>
+        }
+        aggregate: {
+          args: Prisma.SalesContentOnboardingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSalesContentOnboarding>
+        }
+        groupBy: {
+          args: Prisma.SalesContentOnboardingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SalesContentOnboardingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SalesContentOnboardingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SalesContentOnboardingCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScOnboardingResource: {
+      payload: Prisma.$ScOnboardingResourcePayload<ExtArgs>
+      fields: Prisma.ScOnboardingResourceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScOnboardingResourceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScOnboardingResourceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload>
+        }
+        findFirst: {
+          args: Prisma.ScOnboardingResourceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScOnboardingResourceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload>
+        }
+        findMany: {
+          args: Prisma.ScOnboardingResourceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload>[]
+        }
+        create: {
+          args: Prisma.ScOnboardingResourceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload>
+        }
+        createMany: {
+          args: Prisma.ScOnboardingResourceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScOnboardingResourceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload>[]
+        }
+        delete: {
+          args: Prisma.ScOnboardingResourceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload>
+        }
+        update: {
+          args: Prisma.ScOnboardingResourceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload>
+        }
+        deleteMany: {
+          args: Prisma.ScOnboardingResourceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScOnboardingResourceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScOnboardingResourceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload>[]
+        }
+        upsert: {
+          args: Prisma.ScOnboardingResourceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScOnboardingResourcePayload>
+        }
+        aggregate: {
+          args: Prisma.ScOnboardingResourceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScOnboardingResource>
+        }
+        groupBy: {
+          args: Prisma.ScOnboardingResourceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScOnboardingResourceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScOnboardingResourceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScOnboardingResourceCountAggregateOutputType> | number
+        }
+      }
+    }
+    SpaceAiSetting: {
+      payload: Prisma.$SpaceAiSettingPayload<ExtArgs>
+      fields: Prisma.SpaceAiSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SpaceAiSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SpaceAiSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.SpaceAiSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SpaceAiSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload>
+        }
+        findMany: {
+          args: Prisma.SpaceAiSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload>[]
+        }
+        create: {
+          args: Prisma.SpaceAiSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload>
+        }
+        createMany: {
+          args: Prisma.SpaceAiSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SpaceAiSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.SpaceAiSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload>
+        }
+        update: {
+          args: Prisma.SpaceAiSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.SpaceAiSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SpaceAiSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SpaceAiSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.SpaceAiSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAiSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.SpaceAiSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpaceAiSetting>
+        }
+        groupBy: {
+          args: Prisma.SpaceAiSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceAiSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SpaceAiSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceAiSettingCountAggregateOutputType> | number
+        }
+      }
+    }
     WorkspaceAiCredit: {
       payload: Prisma.$WorkspaceAiCreditPayload<ExtArgs>
       fields: Prisma.WorkspaceAiCreditFieldRefs
@@ -12289,11 +12514,60 @@ export const BrandProfileScalarFieldEnum = {
   shortDescription: 'shortDescription',
   toneOfVoice: 'toneOfVoice',
   customFields: 'customFields',
+  logoUrl: 'logoUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type BrandProfileScalarFieldEnum = (typeof BrandProfileScalarFieldEnum)[keyof typeof BrandProfileScalarFieldEnum]
+
+
+export const SalesContentOnboardingScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  draft: 'draft',
+  draftStatus: 'draftStatus',
+  completedAt: 'completedAt',
+  dismissedAt: 'dismissedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SalesContentOnboardingScalarFieldEnum = (typeof SalesContentOnboardingScalarFieldEnum)[keyof typeof SalesContentOnboardingScalarFieldEnum]
+
+
+export const ScOnboardingResourceScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  kind: 'kind',
+  sourceUrl: 'sourceUrl',
+  storagePath: 'storagePath',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  extractedText: 'extractedText',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt'
+} as const
+
+export type ScOnboardingResourceScalarFieldEnum = (typeof ScOnboardingResourceScalarFieldEnum)[keyof typeof ScOnboardingResourceScalarFieldEnum]
+
+
+export const SpaceAiSettingScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  mode: 'mode',
+  provider: 'provider',
+  model: 'model',
+  encryptedApiKey: 'encryptedApiKey',
+  apiKeyIv: 'apiKeyIv',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceAiSettingScalarFieldEnum = (typeof SpaceAiSettingScalarFieldEnum)[keyof typeof SpaceAiSettingScalarFieldEnum]
 
 
 export const WorkspaceAiCreditScalarFieldEnum = {
@@ -12304,6 +12578,8 @@ export const WorkspaceAiCreditScalarFieldEnum = {
   imageQuota: 'imageQuota',
   textUsed: 'textUsed',
   textQuota: 'textQuota',
+  textTokensUsed: 'textTokensUsed',
+  textTokenQuota: 'textTokenQuota',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -13777,6 +14053,62 @@ export type ListEnumKeywordChangeReasonFieldRefInput<$PrismaModel> = FieldRefInp
 
 
 /**
+ * Reference to a field of type 'ScResourceKind'
+ */
+export type EnumScResourceKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScResourceKind'>
+    
+
+
+/**
+ * Reference to a field of type 'ScResourceKind[]'
+ */
+export type ListEnumScResourceKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScResourceKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ScResourceStatus'
+ */
+export type EnumScResourceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScResourceStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ScResourceStatus[]'
+ */
+export type ListEnumScResourceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScResourceStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SpaceAiMode'
+ */
+export type EnumSpaceAiModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SpaceAiMode'>
+    
+
+
+/**
+ * Reference to a field of type 'SpaceAiMode[]'
+ */
+export type ListEnumSpaceAiModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SpaceAiMode[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SpaceAiProvider'
+ */
+export type EnumSpaceAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SpaceAiProvider'>
+    
+
+
+/**
+ * Reference to a field of type 'SpaceAiProvider[]'
+ */
+export type ListEnumSpaceAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SpaceAiProvider[]'>
+    
+
+
+/**
  * Reference to a field of type 'AiGenerationStatus'
  */
 export type EnumAiGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiGenerationStatus'>
@@ -14575,6 +14907,9 @@ export type GlobalOmitConfig = {
   productPersona?: Prisma.ProductPersonaOmit
   persona?: Prisma.PersonaOmit
   brandProfile?: Prisma.BrandProfileOmit
+  salesContentOnboarding?: Prisma.SalesContentOnboardingOmit
+  scOnboardingResource?: Prisma.ScOnboardingResourceOmit
+  spaceAiSetting?: Prisma.SpaceAiSettingOmit
   workspaceAiCredit?: Prisma.WorkspaceAiCreditOmit
   imageGenerationLog?: Prisma.ImageGenerationLogOmit
   textGenerationLog?: Prisma.TextGenerationLogOmit

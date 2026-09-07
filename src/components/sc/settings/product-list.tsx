@@ -14,9 +14,12 @@ type ProductRow = {
 
 type Props = {
   products: ProductRow[]
+  // 빈 상태 버튼. 이 파일은 서버 컴포넌트라 다이얼로그 상태를 가질 수 없어
+  // 트리거를 부모(클라이언트)에서 만들어 내려받는다.
+  emptyAction?: React.ReactNode
 }
 
-export function ProductList({ products }: Props) {
+export function ProductList({ products, emptyAction }: Props) {
   if (products.length === 0) {
     return (
       <Card>
@@ -24,9 +27,11 @@ export function ProductList({ products }: Props) {
           <p className="text-sm text-muted-foreground">
             아직 등록된 판매 상품이 없습니다. 첫 상품을 등록해 아이데이션을 시작하세요.
           </p>
-          <Button asChild className="mt-4">
-            <Link href={`${SALES_CONTENT_PRODUCTS_PATH}/new`}>상품 추가</Link>
-          </Button>
+          {emptyAction ?? (
+            <Button asChild className="mt-4">
+              <Link href={`${SALES_CONTENT_PRODUCTS_PATH}/new`}>상품 추가</Link>
+            </Button>
+          )}
         </CardContent>
       </Card>
     )

@@ -187,3 +187,103 @@ export async function refreshMatchedQuantities(
     }
   })
 }
+
+/**
+ * 같은 (locationId, optionId) 를 가리키는 matched-* 엔트리를 **옵션 단위로 합산**한다.
+ *
+ * 하나의 내부 옵션을 여러 외부 SKU 가 가리킬 수 있다(1장 / 3장 세트 / 5장 세트 / 혼합 2색
+ * 세트 …). 매처는 파일 행 × 매핑 아이템 단위로 엔트리를 만들고 각 엔트리가 독립적인
+ * fileQuantity(= row.quantity × mapItemQuantity)를 갖는데, ADJUSTMENT 는 **절대량 set** 이라
+ * 이 값들을 순차 적용하면 마지막(또는 처음) 하나만 남고 나머지는 통째로 버려진다.
+ * 그래서 확정해도 재고가 안 맞고, 재대조하면 같은 차이가 다시 뜬다.
+ *
+ * 옵션의 실제 시스템 목표 재고 = Σ(모든 멤버의 fileQuantity) 다.
+ * 예) 1장 3개 + 3장세트 0개(×3) + 5장세트 0개(×5) → 목표 3, 차이는 한 건.
+ *
+ * 왜 매칭 시점이 아니라 여기서 파생하는가:
+ *  - resolveFileOnlyEntries 가 매칭 당시 없던 matched 엔트리를 사후에 만든다. 매처에서
+ *    합계를 동결하면 나중에 생긴 형제 엔트리가 합계에서 빠진다.
+ *  - PATCH .../mappings 로 mapItemQuantity 자체가 바뀌므로 동결값은 즉시 stale 이 된다.
+ *  - matchResults JSON 스키마를 안 건드리므로 기존 저장 세션 호환 분기가 필요 없다.
+ *
+ * 호출 순서 고정: resolveFileOnlyEntries → refreshMatchedQuantities → aggregateMatchedByOption.
+ * aggregate 를 refresh 앞에 두면 재계산 전 systemQuantity 로 그룹을 판정하게 된다.
+ *
+ * 불변식: 같은 (locationId, optionId) 의 모든 matched-* 엔트리는 동일한 systemQuantity 를
+ * 갖는다(matcher/resolve/refresh 모두 옵션당 한 번만 재고를 조회한다). 이게 깨지면
+ * groupDelta = groupFileQuantity - systemQuantity 가 무의미해진다.
+ */
+export type GroupedMatchEntry = MatchEntry & {
+  /** `${locationId}|${optionId}` — 같은 값이면 같은 내부 옵션을 가리키는 형제 행 */
+  groupKey?: string
+  /** Σ(멤버 fileQuantity) = 이 옵션에 set 할 절대 목표 수량 */
+  groupFileQuantity?: number
+  groupMemberCount?: number
+  groupDelta?: number
+  /** 그룹 내 첫 엔트리 — 조정/카운트의 대표 행 */
+  isGroupPrimary?: boolean
+  driftedSinceMatch?: boolean
+}
+
+export function aggregateMatchedByOption(
+  entries: (MatchEntry & { driftedSinceMatch?: boolean })[],
+  reconLocationId: string
+): GroupedMatchEntry[] {
+  const keyOf = (e: Extract<MatchEntry, { status: 'matched-diff' | 'matched-equal' }>) =>
+    `${e.locationId ?? reconLocationId}|${e.optionId}`
+
+  const sum = new Map<string, number>()
+  const memberCount = new Map<string, number>()
+  const anyDrift = new Map<string, boolean>()
+
+  for (const e of entries) {
+    if (e.status !== 'matched-diff' && e.status !== 'matched-equal') continue
+    const key = keyOf(e)
+    sum.set(key, (sum.get(key) ?? 0) + e.fileQuantity)
+    memberCount.set(key, (memberCount.get(key) ?? 0) + 1)
+    // OR 집계 — driftedSinceMatch 는 "원래 equal 이었다가 diff 가 된" 엔트리에만 붙으므로
+    // AND 로 모으면 멤버가 섞인 그룹에서 실제 drift 가 false 로 사라진다.
+    if (e.driftedSinceMatch) anyDrift.set(key, true)
+  }
+
+  const seen = new Set<string>()
+  return entries.map((e): GroupedMatchEntry => {
+    if (e.status !== 'matched-diff' && e.status !== 'matched-equal') return e
+    const key = keyOf(e)
+    const groupFileQuantity = sum.get(key) ?? e.fileQuantity
+    const groupDelta = groupFileQuantity - e.systemQuantity
+    const isGroupPrimary = !seen.has(key)
+    seen.add(key)
+
+    const groupFields = {
+      groupKey: key,
+      groupFileQuantity,
+      groupMemberCount: memberCount.get(key) ?? 1,
+      groupDelta,
+      isGroupPrimary,
+    }
+
+    // 개별 행은 diff 여도 그룹 합계가 시스템 재고와 같으면 조정할 것이 없다.
+    if (groupDelta === 0) {
+      // delta/driftedSinceMatch 는 키 자체를 지운다 — undefined 로 두면 matched-equal
+      // 타입에 없는 프로퍼티가 남아 JSON 직렬화와 타입이 어긋난다.
+      const {
+        delta: _delta,
+        driftedSinceMatch: _drift,
+        ...rest
+      } = e as typeof e & {
+        delta?: number
+        driftedSinceMatch?: boolean
+      }
+      return { ...rest, status: 'matched-equal' as const, ...groupFields }
+    }
+    return {
+      ...e,
+      status: 'matched-diff' as const,
+      // 행 단위 delta 는 더 이상 의미가 없다 — delta 를 읽는 기존 UI/집계가 그룹 값을 보게 한다.
+      delta: groupDelta,
+      driftedSinceMatch: anyDrift.get(key) ? true : undefined,
+      ...groupFields,
+    }
+  })
+}

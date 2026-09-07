@@ -925,6 +925,74 @@ export type EnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel = never> = 
   _max?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
 }
 
+export type EnumScResourceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceKind | Prisma.EnumScResourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel> | $Enums.ScResourceKind
+}
+
+export type EnumScResourceStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceStatus | Prisma.EnumScResourceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel> | $Enums.ScResourceStatus
+}
+
+export type EnumScResourceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceKind | Prisma.EnumScResourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceKindWithAggregatesFilter<$PrismaModel> | $Enums.ScResourceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel>
+}
+
+export type EnumScResourceStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceStatus | Prisma.EnumScResourceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceStatusWithAggregatesFilter<$PrismaModel> | $Enums.ScResourceStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel>
+}
+
+export type EnumSpaceAiModeFilter<$PrismaModel = never> = {
+  equals?: $Enums.SpaceAiMode | Prisma.EnumSpaceAiModeFieldRefInput<$PrismaModel>
+  in?: $Enums.SpaceAiMode[] | Prisma.ListEnumSpaceAiModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SpaceAiMode[] | Prisma.ListEnumSpaceAiModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSpaceAiModeFilter<$PrismaModel> | $Enums.SpaceAiMode
+}
+
+export type EnumSpaceAiProviderNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.SpaceAiProvider | Prisma.EnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SpaceAiProvider[] | Prisma.ListEnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SpaceAiProvider[] | Prisma.ListEnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSpaceAiProviderNullableFilter<$PrismaModel> | $Enums.SpaceAiProvider | null
+}
+
+export type EnumSpaceAiModeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SpaceAiMode | Prisma.EnumSpaceAiModeFieldRefInput<$PrismaModel>
+  in?: $Enums.SpaceAiMode[] | Prisma.ListEnumSpaceAiModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SpaceAiMode[] | Prisma.ListEnumSpaceAiModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSpaceAiModeWithAggregatesFilter<$PrismaModel> | $Enums.SpaceAiMode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSpaceAiModeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSpaceAiModeFilter<$PrismaModel>
+}
+
+export type EnumSpaceAiProviderNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SpaceAiProvider | Prisma.EnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SpaceAiProvider[] | Prisma.ListEnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SpaceAiProvider[] | Prisma.ListEnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSpaceAiProviderNullableWithAggregatesFilter<$PrismaModel> | $Enums.SpaceAiProvider | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSpaceAiProviderNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSpaceAiProviderNullableFilter<$PrismaModel>
+}
+
 export type EnumAiGenerationStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.AiGenerationStatus | Prisma.EnumAiGenerationStatusFieldRefInput<$PrismaModel>
   in?: $Enums.AiGenerationStatus[] | Prisma.ListEnumAiGenerationStatusFieldRefInput<$PrismaModel>
@@ -2547,6 +2615,74 @@ export type NestedEnumKeywordChangeReasonWithAggregatesFilter<$PrismaModel = nev
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
   _max?: Prisma.NestedEnumKeywordChangeReasonFilter<$PrismaModel>
+}
+
+export type NestedEnumScResourceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceKind | Prisma.EnumScResourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel> | $Enums.ScResourceKind
+}
+
+export type NestedEnumScResourceStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceStatus | Prisma.EnumScResourceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel> | $Enums.ScResourceStatus
+}
+
+export type NestedEnumScResourceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceKind | Prisma.EnumScResourceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceKind[] | Prisma.ListEnumScResourceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceKindWithAggregatesFilter<$PrismaModel> | $Enums.ScResourceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScResourceKindFilter<$PrismaModel>
+}
+
+export type NestedEnumScResourceStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ScResourceStatus | Prisma.EnumScResourceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ScResourceStatus[] | Prisma.ListEnumScResourceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumScResourceStatusWithAggregatesFilter<$PrismaModel> | $Enums.ScResourceStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumScResourceStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumSpaceAiModeFilter<$PrismaModel = never> = {
+  equals?: $Enums.SpaceAiMode | Prisma.EnumSpaceAiModeFieldRefInput<$PrismaModel>
+  in?: $Enums.SpaceAiMode[] | Prisma.ListEnumSpaceAiModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SpaceAiMode[] | Prisma.ListEnumSpaceAiModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSpaceAiModeFilter<$PrismaModel> | $Enums.SpaceAiMode
+}
+
+export type NestedEnumSpaceAiProviderNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.SpaceAiProvider | Prisma.EnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SpaceAiProvider[] | Prisma.ListEnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SpaceAiProvider[] | Prisma.ListEnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSpaceAiProviderNullableFilter<$PrismaModel> | $Enums.SpaceAiProvider | null
+}
+
+export type NestedEnumSpaceAiModeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SpaceAiMode | Prisma.EnumSpaceAiModeFieldRefInput<$PrismaModel>
+  in?: $Enums.SpaceAiMode[] | Prisma.ListEnumSpaceAiModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SpaceAiMode[] | Prisma.ListEnumSpaceAiModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSpaceAiModeWithAggregatesFilter<$PrismaModel> | $Enums.SpaceAiMode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSpaceAiModeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSpaceAiModeFilter<$PrismaModel>
+}
+
+export type NestedEnumSpaceAiProviderNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SpaceAiProvider | Prisma.EnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  in?: $Enums.SpaceAiProvider[] | Prisma.ListEnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.SpaceAiProvider[] | Prisma.ListEnumSpaceAiProviderFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumSpaceAiProviderNullableWithAggregatesFilter<$PrismaModel> | $Enums.SpaceAiProvider | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSpaceAiProviderNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSpaceAiProviderNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumAiGenerationStatusFilter<$PrismaModel = never> = {

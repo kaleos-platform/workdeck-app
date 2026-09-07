@@ -140,6 +140,9 @@ export const ModelName = {
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
   BrandProfile: 'BrandProfile',
+  SalesContentOnboarding: 'SalesContentOnboarding',
+  ScOnboardingResource: 'ScOnboardingResource',
+  SpaceAiSetting: 'SpaceAiSetting',
   WorkspaceAiCredit: 'WorkspaceAiCredit',
   ImageGenerationLog: 'ImageGenerationLog',
   TextGenerationLog: 'TextGenerationLog',
@@ -1630,11 +1633,60 @@ export const BrandProfileScalarFieldEnum = {
   shortDescription: 'shortDescription',
   toneOfVoice: 'toneOfVoice',
   customFields: 'customFields',
+  logoUrl: 'logoUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type BrandProfileScalarFieldEnum = (typeof BrandProfileScalarFieldEnum)[keyof typeof BrandProfileScalarFieldEnum]
+
+
+export const SalesContentOnboardingScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  draft: 'draft',
+  draftStatus: 'draftStatus',
+  completedAt: 'completedAt',
+  dismissedAt: 'dismissedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SalesContentOnboardingScalarFieldEnum = (typeof SalesContentOnboardingScalarFieldEnum)[keyof typeof SalesContentOnboardingScalarFieldEnum]
+
+
+export const ScOnboardingResourceScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  kind: 'kind',
+  sourceUrl: 'sourceUrl',
+  storagePath: 'storagePath',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  extractedText: 'extractedText',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt'
+} as const
+
+export type ScOnboardingResourceScalarFieldEnum = (typeof ScOnboardingResourceScalarFieldEnum)[keyof typeof ScOnboardingResourceScalarFieldEnum]
+
+
+export const SpaceAiSettingScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  mode: 'mode',
+  provider: 'provider',
+  model: 'model',
+  encryptedApiKey: 'encryptedApiKey',
+  apiKeyIv: 'apiKeyIv',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceAiSettingScalarFieldEnum = (typeof SpaceAiSettingScalarFieldEnum)[keyof typeof SpaceAiSettingScalarFieldEnum]
 
 
 export const WorkspaceAiCreditScalarFieldEnum = {
@@ -1645,6 +1697,8 @@ export const WorkspaceAiCreditScalarFieldEnum = {
   imageQuota: 'imageQuota',
   textUsed: 'textUsed',
   textQuota: 'textQuota',
+  textTokensUsed: 'textTokensUsed',
+  textTokenQuota: 'textTokenQuota',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

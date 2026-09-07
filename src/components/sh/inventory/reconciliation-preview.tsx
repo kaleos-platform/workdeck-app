@@ -64,6 +64,10 @@ type MatchEntry =
       mappingItems?: MappingItem[]
       /** 대조 당시엔 일치했으나 이후 재고가 변동돼 차이가 생긴 행 */
       driftedSinceMatch?: boolean
+      /** 서버 합산 파생 — 같은 내부 옵션을 가리키는 형제 행 묶음 (aggregateMatchedByOption) */
+      groupKey?: string
+      groupFileQuantity?: number
+      isGroupPrimary?: boolean
     }
   | {
       status: 'matched-equal'
@@ -76,6 +80,9 @@ type MatchEntry =
       fileQuantity: number
       mappingId?: string
       mappingItems?: MappingItem[]
+      groupKey?: string
+      groupFileQuantity?: number
+      isGroupPrimary?: boolean
     }
   | {
       status: 'file-only'
@@ -114,6 +121,27 @@ type Props = {
   onChanged?: () => void
 }
 
+/**
+ * 병합 행을 구성하는 파일 쪽 멤버(외부 SKU 1개).
+ *
+ * 축이 둘이라 혼동하기 쉽다:
+ *  - 축 A('함께 매칭'): 외부코드 1 → 옵션 N. 행이 optionId 로 쪼개진다. mappingItems 가 그것.
+ *  - 축 B(이 members): 외부코드 N → 옵션 1. 여러 파일 행이 한 옵션을 가리켜 행을 합친다.
+ * mappingId 는 외부코드 단위이므로 [매칭 수정]은 반드시 멤버별로 열어야 한다.
+ */
+type MatchedMember = {
+  fileCode: string
+  fileProductName: string
+  fileOptionName: string
+  fileRowQty: number
+  mapItemQuantity: number
+  /** 이 멤버의 기여분 = fileRowQty × mapItemQuantity */
+  targetQty: number
+  mappingId?: string
+  mappingItems?: MappingItem[]
+  row: ParsedRow
+}
+
 type UnifiedEntry = {
   key: string
   status: 'matched-diff' | 'matched-equal' | 'file-only'
@@ -130,6 +158,8 @@ type UnifiedEntry = {
   targetQty: number | null
   delta: number | null
   isManualMatched?: boolean
+  /** 수동 매칭 행의 선택 옵션 전체 — 표에서 접지 않고 모두 보여준다. */
+  sysItems?: PickedOptionWithQty[]
   optionId?: string
   suggestions?: SuggestionOption[]
   row?: ParsedRow
@@ -138,6 +168,8 @@ type UnifiedEntry = {
   mapItemQuantity?: number
   /** 대조 당시엔 일치했으나 이후 재고가 변동된 행 — 확정 범위가 늘어나는 부분 */
   driftedSinceMatch?: boolean
+  /** matched 행에서 같은 옵션을 가리키는 파일 행들. 1개면 기존과 동일한 단일 행. */
+  members?: MatchedMember[]
 }
 
 type TabValue = 'all' | 'matched' | 'file-only'
@@ -167,6 +199,14 @@ function manualItemsToProductLabel(items: PickedOptionWithQty[]): string {
   if (items.length === 0) return '-'
   if (items.length === 1) return items[0].productName
   return `${items[0].productName} 외 ${items.length - 1}개`
+}
+
+/** 매핑에 포함된 모든 옵션을 한 줄씩 나열 — 엔트리는 옵션 단위로 쪼개지므로 매핑 전체를 봐야 한다. */
+function mappingItemsToLabel(items: MappingItem[]): string {
+  if (items.length === 0) return '-'
+  return items
+    .map((i) => `${i.productName} / ${i.optionName}${i.quantity > 1 ? ` × ${i.quantity}` : ''}`)
+    .join('\n')
 }
 
 function manualItemsToOptionLabel(items: PickedOptionWithQty[]): string {
@@ -247,60 +287,54 @@ export function ReconciliationPreview({
     [entries]
   )
 
-  // system-only 는 이 표의 대상이 아니다 — 방향이 반대라 [재고 데이터 없는 상품]이 담당한다.
-  const counts = {
-    all: diffEntries.length + equalEntries.length + fileOnlyEntries.length,
-    matched: diffEntries.length + equalEntries.length,
-    'matched-diff': diffEntries.length,
-    'matched-equal': equalEntries.length,
-    'file-only': fileOnlyEntries.length,
-  }
-
   const unifiedEntries = useMemo<UnifiedEntry[]>(() => {
     const result: UnifiedEntry[] = []
 
-    for (const e of diffEntries) {
-      result.push({
-        key: `diff-${e.optionId}-${e.row.externalCode}`,
-        status: 'matched-diff',
+    // matched-* 는 옵션 단위로 병합한다. 서버(aggregateMatchedByOption)가 이미 목표 수량과
+    // 차이를 그룹 기준으로 계산해 두었으므로, 여기서는 표현만 합친다 — 화면 숫자와 확정
+    // 결과가 같은 함수에서 나와야 한다. groupKey 가 없는 응답(구버전)은 optionId 로 폴백.
+    const groups = new Map<string, UnifiedEntry>()
+    for (const e of [...diffEntries, ...equalEntries]) {
+      const key = e.groupKey ?? `${e.optionId}`
+      const member: MatchedMember = {
         fileCode: e.row.externalCode,
         fileProductName: e.row.externalName ?? e.row.externalCode,
         fileOptionName: e.row.externalOptionName ?? '-',
         fileRowQty: e.row.quantity,
+        mapItemQuantity: e.mapItemQuantity,
+        targetQty: e.fileQuantity,
+        mappingId: e.mappingId,
+        mappingItems: e.mappingItems,
+        row: e.row,
+      }
+      const existing = groups.get(key)
+      if (existing) {
+        existing.members!.push(member)
+        continue
+      }
+      groups.set(key, {
+        key: `grp-${key}`,
+        status: e.status,
+        fileCode: member.fileCode,
+        fileProductName: member.fileProductName,
+        fileOptionName: member.fileOptionName,
+        fileRowQty: member.fileRowQty,
         sysProductName: e.productName,
         sysOptionName: e.optionName,
         systemQty: e.systemQuantity,
-        targetQty: e.fileQuantity,
-        delta: e.delta,
+        // 그룹 목표 = Σ 멤버 기여분. 서버가 준 groupFileQuantity 를 우선 신뢰한다.
+        targetQty: e.groupFileQuantity ?? e.fileQuantity,
+        delta: e.status === 'matched-diff' ? e.delta : 0,
         optionId: e.optionId,
         row: e.row,
         mappingId: e.mappingId,
         mappingItems: e.mappingItems,
         mapItemQuantity: e.mapItemQuantity,
-        driftedSinceMatch: e.driftedSinceMatch,
+        driftedSinceMatch: e.status === 'matched-diff' ? e.driftedSinceMatch : undefined,
+        members: [member],
       })
     }
-
-    for (const e of equalEntries) {
-      result.push({
-        key: `equal-${e.optionId}-${e.row.externalCode}`,
-        status: 'matched-equal',
-        fileCode: e.row.externalCode,
-        fileProductName: e.row.externalName ?? e.row.externalCode,
-        fileOptionName: e.row.externalOptionName ?? '-',
-        fileRowQty: e.row.quantity,
-        sysProductName: e.productName,
-        sysOptionName: e.optionName,
-        systemQty: e.systemQuantity,
-        targetQty: e.fileQuantity,
-        delta: 0,
-        optionId: e.optionId,
-        row: e.row,
-        mappingId: e.mappingId,
-        mappingItems: e.mappingItems,
-        mapItemQuantity: e.mapItemQuantity,
-      })
-    }
+    result.push(...groups.values())
 
     fileOnlyEntries.forEach((e, i) => {
       const code = e.row.externalCode
@@ -334,6 +368,7 @@ export function ReconciliationPreview({
         targetQty: target,
         delta,
         isManualMatched: isMapped,
+        sysItems: isMapped ? items : undefined,
         suggestions: e.suggestions,
         row: e.row,
       })
@@ -341,6 +376,24 @@ export function ReconciliationPreview({
 
     return result
   }, [diffEntries, equalEntries, fileOnlyEntries, manualMap, manualStock])
+
+  // system-only 는 이 표의 대상이 아니다 — 방향이 반대라 [재고 데이터 없는 상품]이 담당한다.
+  //
+  // 단위 주의: 이 카운트는 **표에 실제로 그려지는 행 수**다. matched 는 옵션 단위로 병합돼
+  // 있으므로 "상품 옵션 개수"이고, 헤더의 `총 N건 · 자동매칭 M건`(DB totalItems/matchedItems)은
+  // **파일 행 수**다. 둘이 다른 건 버그가 아니다 — 한쪽에 맞춰 "고치면" 안 된다.
+  const counts = useMemo(() => {
+    const matchedDiff = unifiedEntries.filter((e) => e.status === 'matched-diff').length
+    const matchedEqual = unifiedEntries.filter((e) => e.status === 'matched-equal').length
+    const fileOnly = unifiedEntries.filter((e) => e.status === 'file-only').length
+    return {
+      all: matchedDiff + matchedEqual + fileOnly,
+      matched: matchedDiff + matchedEqual,
+      'matched-diff': matchedDiff,
+      'matched-equal': matchedEqual,
+      'file-only': fileOnly,
+    }
+  }, [unifiedEntries])
 
   const filteredEntries = useMemo(() => {
     if (tab === 'all') return unifiedEntries
@@ -423,6 +476,25 @@ export function ReconciliationPreview({
       })
     } catch {
       // 조회 실패는 무시(표시만 미보강)
+    }
+  }
+
+  /**
+   * 병합 행에서 [매칭 수정]을 열 때 쓰는 멤버 시점 엔트리.
+   * mappingId·mappingItems·row 는 외부코드 단위라 그룹 대표값을 쓰면 다른 SKU 의 매핑이 열린다.
+   */
+  function memberEntry(entry: UnifiedEntry, m: MatchedMember): UnifiedEntry {
+    return {
+      ...entry,
+      fileCode: m.fileCode,
+      fileProductName: m.fileProductName,
+      fileOptionName: m.fileOptionName,
+      fileRowQty: m.fileRowQty,
+      mapItemQuantity: m.mapItemQuantity,
+      targetQty: m.targetQty,
+      mappingId: m.mappingId,
+      mappingItems: m.mappingItems,
+      row: m.row,
     }
   }
 
@@ -699,15 +771,37 @@ export function ReconciliationPreview({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEntries.map((entry, index) => {
+              {filteredEntries.map((entry) => {
                 const applied = isApplied(entry)
                 const isMapped = (manualMap[entry.fileCode]?.length ?? 0) > 0
-                // 1:N 매핑으로 한 파일 행이 여러 entry 로 쪼개진 경우 — 파일 셀은 중복 표기다.
-                const repeatsFileRow =
-                  index > 0 && filteredEntries[index - 1].fileCode === entry.fileCode
-                const fileCellClass = repeatsFileRow
-                  ? 'bg-muted/40 text-muted-foreground/60'
-                  : 'bg-muted/40'
+                // 수동 매칭 행은 옵션 전체를 펼쳐 보여준다(라벨 접기 대신).
+                const sysItems = entry.sysItems && entry.sysItems.length > 0 ? entry.sysItems : null
+                const sysProductNames = sysItems
+                  ? Array.from(new Set(sysItems.map((i) => i.productName)))
+                  : null
+                const sysProductTitle = sysProductNames ? sysProductNames.join(', ') : null
+                // 1:N 매핑은 옵션당 한 행이라, 행 하나만 보면 같은 파일 행이 어디에 더 걸렸는지 알 수 없다.
+                // 색(흐림)만으로 구분하지 않도록 "함께 매칭" 레이블을 붙여 명시한다.
+                const siblingItems = (
+                  entry.members
+                    ? entry.members.flatMap((m) => m.mappingItems ?? [])
+                    : (entry.mappingItems ?? [])
+                ).filter(
+                  (i, idx, arr) =>
+                    i.optionId !== entry.optionId &&
+                    arr.findIndex((x) => x.optionId === i.optionId) === idx
+                )
+                const siblingLabels = siblingItems.map(
+                  (i) => `${i.optionName}${i.quantity > 1 ? ` × ${i.quantity}` : ''}`
+                )
+                const siblingText =
+                  siblingLabels.length > 3
+                    ? `${siblingLabels.slice(0, 3).join(', ')} 외 ${siblingLabels.length - 3}개`
+                    : siblingLabels.join(', ')
+                // 축 B 병합 — 같은 옵션을 가리키는 파일 행들. 1개면 기존 단일 행 표기 그대로.
+                const members = entry.members ?? []
+                const isMerged = members.length > 1
+                const fileCellClass = 'bg-muted/40'
 
                 return (
                   <TableRow key={entry.key} className={applied ? 'bg-green-50/30' : undefined}>
@@ -725,18 +819,72 @@ export function ReconciliationPreview({
 
                     {/* ── 파일 데이터 ── 상품명(1행) / 옵션명 · SKU(2행) */}
                     <TableCell className={`border-l ${fileCellClass}`}>
-                      <div className="truncate font-medium" title={entry.fileProductName}>
-                        {entry.fileProductName}
-                      </div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {entry.fileOptionName}
-                        {!isSyntheticExternalCode(entry.fileCode) && (
-                          <span className="ml-1.5 font-mono opacity-70">{entry.fileCode}</span>
-                        )}
-                      </div>
+                      {isMerged ? (
+                        <div className="space-y-1">
+                          {members.map((m, mi) => (
+                            <div key={`${m.fileCode}-${mi}`}>
+                              <div className="truncate font-medium" title={m.fileProductName}>
+                                {m.fileProductName}
+                              </div>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <span className="truncate">
+                                  {m.fileOptionName}
+                                  {!isSyntheticExternalCode(m.fileCode) && (
+                                    <span className="ml-1.5 font-mono opacity-70">
+                                      {m.fileCode}
+                                    </span>
+                                  )}
+                                </span>
+                                {/* 병합 행의 [매칭 수정]은 멤버 줄에 붙인다 — mappingId 는 외부코드
+                                    단위라 어느 SKU 를 고치는지가 위치로 자명해야 한다. 동작 컬럼에
+                                    버튼 N 개를 쌓으면 좁은 셀에서 뭉개진다. */}
+                                {canEdit && m.mappingId && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 shrink-0 px-1 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
+                                    onClick={() => openEditMatcher(memberEntry(entry, m))}
+                                  >
+                                    수정
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          <div className="truncate font-medium" title={entry.fileProductName}>
+                            {entry.fileProductName}
+                          </div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {entry.fileOptionName}
+                            {!isSyntheticExternalCode(entry.fileCode) && (
+                              <span className="ml-1.5 font-mono opacity-70">{entry.fileCode}</span>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </TableCell>
-                    <TableCell className={`text-right font-semibold tabular-nums ${fileCellClass}`}>
-                      {entry.fileRowQty}
+                    <TableCell className={`text-right tabular-nums ${fileCellClass}`}>
+                      {isMerged ? (
+                        <div className="space-y-1">
+                          {members.map((m, mi) => (
+                            <div key={`${m.fileCode}-${mi}`}>
+                              <div className="font-medium">{m.fileRowQty}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {m.mapItemQuantity > 1
+                                  ? `× ${m.mapItemQuantity} = ${m.targetQty}`
+                                  : '\u00a0'}
+                              </div>
+                            </div>
+                          ))}
+                          {/* 합계 = 이 옵션에 set 할 목표 수량. 확정이 실제로 쓰는 값이다. */}
+                          <div className="border-t pt-1 font-semibold">합계 {entry.targetQty}</div>
+                        </div>
+                      ) : (
+                        <span className="font-semibold">{entry.fileRowQty}</span>
+                      )}
                     </TableCell>
 
                     {/* ── 시스템 상품 ── */}
@@ -745,19 +893,47 @@ export function ReconciliationPreview({
                         <span className="text-muted-foreground/50">—</span>
                       ) : (
                         <>
-                          <div className="truncate font-medium" title={entry.sysProductName}>
-                            {entry.sysProductName}
+                          <div
+                            className="truncate font-medium"
+                            title={sysProductTitle ?? entry.sysProductName}
+                          >
+                            {sysProductTitle ?? entry.sysProductName}
                           </div>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <span className="truncate">
-                              {entry.sysOptionName}
-                              {/* 세트 수량 비율이 1 초과면 목표 수량이 파일 수량과 다르다 */}
-                              {entry.mapItemQuantity !== undefined && entry.mapItemQuantity > 1 && (
-                                <span className="ml-1 opacity-70">
-                                  × {entry.mapItemQuantity} = {entry.targetQty}
-                                </span>
-                              )}
-                            </span>
+                          <div
+                            className={`gap-1 text-xs text-muted-foreground ${
+                              // 옵션이 여러 줄이면 버튼을 아래로 내려 옵션 표기가 잘리지 않게 한다.
+                              sysItems && sysItems.length > 1
+                                ? 'flex flex-col items-start'
+                                : 'flex items-start'
+                            }`}
+                          >
+                            {sysItems ? (
+                              // 수동 매칭은 옵션 여러 개를 한 행에 담으므로 접지 않고 모두 나열한다.
+                              <span className="w-full min-w-0">
+                                {sysItems.map((it) => (
+                                  <span key={it.optionId} className="block truncate">
+                                    {it.optionName}
+                                    {it.quantity > 1 && (
+                                      <span className="ml-1 opacity-70">
+                                        × {it.quantity} = {entry.fileRowQty * it.quantity}
+                                      </span>
+                                    )}
+                                  </span>
+                                ))}
+                              </span>
+                            ) : (
+                              <span className="truncate">
+                                {entry.sysOptionName}
+                                {/* 세트 수량 비율이 1 초과면 목표 수량이 파일 수량과 다르다 */}
+                                {!isMerged &&
+                                  entry.mapItemQuantity !== undefined &&
+                                  entry.mapItemQuantity > 1 && (
+                                    <span className="ml-1 opacity-70">
+                                      × {entry.mapItemQuantity} = {entry.targetQty}
+                                    </span>
+                                  )}
+                              </span>
+                            )}
                             {canEdit && isMapped && (
                               <span className="flex shrink-0 items-center gap-0.5">
                                 <Button
@@ -780,6 +956,14 @@ export function ReconciliationPreview({
                               </span>
                             )}
                           </div>
+                          {siblingLabels.length > 0 && (
+                            <div
+                              className="truncate text-xs text-muted-foreground"
+                              title={`함께 매칭: ${siblingLabels.join(', ')}`}
+                            >
+                              함께 매칭: {siblingText}
+                            </div>
+                          )}
                         </>
                       )}
                     </TableCell>
@@ -803,16 +987,20 @@ export function ReconciliationPreview({
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {canEdit &&
-                        (entry.status === 'matched-equal' || entry.status === 'matched-diff') &&
-                        entry.mappingId && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => openEditMatcher(entry)}
-                          >
-                            매칭 수정
-                          </Button>
+                        (entry.status === 'matched-equal' || entry.status === 'matched-diff') && (
+                          <>
+                            {/* 병합 행은 멤버 줄마다 [수정]이 붙어 있으므로 여기선 비운다. */}
+                            {!isMerged && entry.mappingId && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => openEditMatcher(entry)}
+                              >
+                                매칭 수정
+                              </Button>
+                            )}
+                          </>
                         )}
                       {canEdit && entry.status === 'file-only' && (
                         <Button
@@ -871,7 +1059,19 @@ export function ReconciliationPreview({
         contextLabel="현재 매칭"
         contextValue={
           editMatcherEntry
-            ? `${editMatcherEntry.sysProductName ?? ''} / ${editMatcherEntry.sysOptionName ?? ''}`
+            ? editMatcherEntry.mappingItems && editMatcherEntry.mappingItems.length > 0
+              ? mappingItemsToLabel(editMatcherEntry.mappingItems)
+              : `${editMatcherEntry.sysProductName ?? ''} / ${editMatcherEntry.sysOptionName ?? ''}`
+            : ''
+        }
+        secondaryContextLabel="매칭된 파일 상품명"
+        secondaryContextValue={
+          editMatcherEntry
+            ? `${editMatcherEntry.fileProductName}${
+                editMatcherEntry.fileOptionName && editMatcherEntry.fileOptionName !== '-'
+                  ? ` / ${editMatcherEntry.fileOptionName}`
+                  : ''
+              }${editMatcherEntry.fileCode ? ` (${editMatcherEntry.fileCode})` : ''}`
             : ''
         }
         initialItems={

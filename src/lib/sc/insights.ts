@@ -5,7 +5,8 @@
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
-import { generateTextWithFallback, type TextMessage } from '@/lib/ai/providers'
+import type { TextMessage } from '@/lib/ai/providers'
+import { generateTextForSpace } from '@/lib/ai/resolve'
 import { computePromptTraceHash } from './prompts'
 
 // ─── 집계 ────────────────────────────────────────────────────────────────────
@@ -303,7 +304,7 @@ export async function runInsightGeneration(input: RunInsightInput): Promise<RunI
 
   const prompt = buildInsightPrompt({ buckets, activeRules, maxProposals })
 
-  const { result, providerName } = await generateTextWithFallback({
+  const { result, providerName } = await generateTextForSpace(input.spaceId, {
     system: prompt.system,
     messages: prompt.messages,
     responseFormat: 'json',
