@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
           triggeredBy: run.triggeredBy,
           collectAds: run.collectAds,
           collectInventory: run.collectInventory,
+          probeApi: run.probeApi,
         },
       })
     }

@@ -119,12 +119,7 @@ async function postMessage(
     return false
   }
 
-  return await sendToChannel(
-    resolved.channel.token,
-    resolved.channel.channelId,
-    blocks,
-    text
-  )
+  return await sendToChannel(resolved.channel.token, resolved.channel.channelId, blocks, text)
 }
 
 // ─── Block Kit 헬퍼 ─────────────────────────────────────────────────────────
@@ -272,6 +267,10 @@ export async function notifyInventoryDone(params: {
   healthRows?: number
   errors: string[]
   workspaceId?: string
+  /** 재고 소스가 API 였고 IP allowlist 미등록으로 거부됐는지 — client.ts classifyApiFailure() 분류를 재사용. */
+  ipBlocked?: boolean
+  /** ipBlocked=true 일 때 안내에 노출할 워커 공인 IP. */
+  publicIp?: string
 }): Promise<void> {
   const hasData = (params.healthRows ?? 0) > 0
   const hasErrors = params.errors.length > 0
@@ -292,6 +291,15 @@ export async function notifyInventoryDone(params: {
       `*재고현황*\n${params.healthRows != null ? `${params.healthRows.toLocaleString()}건` : '미수집'}`
     ),
   ]
+
+  // IP 거부는 코드 버그가 아니라 Wing allowlist 문제 — 원인을 바로 알 수 있게 별도 블록으로 구분.
+  if (params.ipBlocked) {
+    blocks.push(
+      section(
+        `*원인*\n쿠팡 API IP allowlist 미등록${params.publicIp ? ` — 워커 IP \`${params.publicIp}\` 를 Wing에 등록해 주세요` : ''}`
+      )
+    )
+  }
 
   if (hasErrors) {
     blocks.push(section(`*오류*\n${params.errors.join('\n').slice(0, 200)}`))

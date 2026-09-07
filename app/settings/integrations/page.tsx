@@ -4,6 +4,7 @@ import { SETTINGS_INTEGRATIONS_PATH } from '@/lib/deck-routes'
 import { SlackConnectCard } from '@/components/integrations/slack-connect-card'
 import { AgentToggleCard } from '@/components/integrations/agent-toggle-card'
 import { McpGuideCard } from '@/components/integrations/mcp-guide-card'
+import { CoupangApiCard } from '@/components/integrations/coupang-api-card'
 
 // 에이전트 연동 설정 — Slack 연결, workdeck 에이전트 토글, 내 MCP 클라이언트 연결 가이드.
 export default async function IntegrationsSettingsPage({
@@ -29,6 +30,7 @@ export default async function IntegrationsSettingsPage({
 
       <div className="grid gap-6">
         <SlackConnectCard slackStatus={slack ?? null} />
+        <CoupangApiCard />
         <AgentToggleCard />
         <McpGuideCard />
       </div>
