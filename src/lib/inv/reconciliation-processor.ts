@@ -2,7 +2,11 @@
 import { prisma } from '@/lib/prisma'
 import { processMovement, MovementError } from './movement-processor'
 import type { MatchEntry } from './reconciliation-matcher'
-import { refreshMatchedQuantities, resolveFileOnlyEntries } from './reconciliation-resolve'
+import {
+  aggregateMatchedByOption,
+  refreshMatchedQuantities,
+  resolveFileOnlyEntries,
+} from './reconciliation-resolve'
 
 export type ManualMappingItem = {
   optionId: string
@@ -84,22 +88,33 @@ async function calcApplicableCount(
   reconLocationId: string,
   includeSystemOnly = false
 ): Promise<number> {
-  // matched-diff 항목 수
-  const matchedDiffCount = entries.filter((e) => e.status === 'matched-diff').length
+  // 분자(cumulativeApplied)는 적용된 movement 의 distinct `${locationId}|${optionId}` 개수다.
+  // 분모도 반드시 같은 단위여야 한다 — 행 단위로 세면 하나의 옵션을 여러 외부 SKU 가
+  // 가리킬 때 분모가 분자보다 항상 커서 APPLIED 판정이 영영 성립하지 않고, 세션이 영구
+  // PARTIAL 로 굳어 cron 이 그 스냅샷을 계속 skip 한다.
+  const keys = new Set<string>()
+
+  for (const e of entries) {
+    if (e.status !== 'matched-diff') continue
+    keys.add(`${e.locationId ?? reconLocationId}|${e.optionId}`)
+  }
 
   // system-only 0 반영을 켰으면 그 건수도 분모에 포함 — 빠뜨리면 APPLIED/PARTIAL 판정이
   // 틀린 총계로 계산돼 이미 다 적용된 대조가 영영 PARTIAL 로 남는다.
   // 매핑 없는 건은 적용되지 않지만 분모에는 남긴다(file-only 미매핑과 동일) — PARTIAL 로
   // 유지돼 "매핑 필요"가 목록에서 표면화된다.
-  const systemOnlyCount = includeSystemOnly
-    ? entries.filter((e) => e.status === 'system-only').length
-    : 0
+  if (includeSystemOnly) {
+    for (const e of entries) {
+      if (e.status !== 'system-only') continue
+      keys.add(`${e.locationId ?? reconLocationId}|${e.optionId}`)
+    }
+  }
 
   // file-only 전체 + 매핑 여부 분류 — 위치별 그룹핑(멀티 location 대응)
   const fileOnlyEntries = entries.filter(
     (e): e is Extract<MatchEntry, { status: 'file-only' }> => e.status === 'file-only'
   )
-  if (fileOnlyEntries.length === 0) return matchedDiffCount + systemOnlyCount
+  if (fileOnlyEntries.length === 0) return keys.size
 
   // locationId별로 externalCode 그룹핑
   const codesByLocId = new Map<string, string[]>()
@@ -112,16 +127,16 @@ async function calcApplicableCount(
     codesByLocId.set(locId, arr)
   }
 
-  let mappedFileOnlyCount = 0
   const mappedKeys = new Set<string>() // `${locId}|${code}`
   for (const [locId, codes] of codesByLocId) {
     if (codes.length === 0) continue
     const mappings = await prisma.invLocationProductMap.findMany({
       where: { locationId: locId, externalCode: { in: codes } },
-      include: { items: { select: { id: true } } },
+      include: { items: { select: { optionId: true } } },
     })
     for (const m of mappings) {
-      mappedFileOnlyCount += m.items.length
+      // 옵션 단위로 합류시킨다 — 같은 옵션을 가리키는 매핑이 여럿이면 자동으로 1건.
+      for (const i of m.items) keys.add(`${locId}|${i.optionId}`)
       mappedKeys.add(`${locId}|${m.externalCode}`)
     }
   }
@@ -133,7 +148,7 @@ async function calcApplicableCount(
     return !mappedKeys.has(`${locId}|${code}`)
   }).length
 
-  return matchedDiffCount + systemOnlyCount + mappedFileOnlyCount + unmappedFileOnlyCount
+  return keys.size + unmappedFileOnlyCount
 }
 
 export async function confirmReconciliation(
@@ -175,19 +190,26 @@ export async function confirmReconciliation(
   //   1) 저장 이후 생긴 매핑으로 file-only 를 풀고
   //   2) matched-* 의 현재 재고를 반영해 재분류한다(목표=fileQuantity 대비 현재 재고 비교).
   // cron(부분 적용) 경로는 둘 다 타지 않는다 — 기존 계약 그대로.
-  const entries = finalize
-    ? await refreshMatchedQuantities(
-        await resolveFileOnlyEntries(rawEntries, reconLocationId),
-        reconLocationId
-      )
-    : rawEntries
+  //   3) 같은 옵션을 가리키는 여러 외부 SKU 를 옵션 단위로 합산한다(아래 참조).
+  // cron(부분 적용) 경로는 1)2) 를 타지 않는다 — 기존 계약 그대로. 3) 은 DB 접근이 없는
+  // 순수 파생이라 양쪽 모두 적용한다(합산 없이는 조정이 서로 덮어써 재고가 틀어진다).
+  const entries = aggregateMatchedByOption(
+    finalize
+      ? await refreshMatchedQuantities(
+          await resolveFileOnlyEntries(rawEntries, reconLocationId),
+          reconLocationId
+        )
+      : rawEntries,
+    reconLocationId
+  )
 
   // 1) 수동 매핑 upsert + 해당 file-only 항목을 adjustment 후보로 변환
-  const extraAdjustments: {
-    optionId: string
-    locationId: string
-    fileQuantity: number
-  }[] = []
+  //    같은 (locationId, optionId) 에 여러 외부 SKU 를 수동 매칭할 수 있으므로 키별로 누적한다.
+  //    (ADJUSTMENT 는 절대량 set 이라 마지막 값만 남기면 나머지가 통째로 사라진다)
+  const extraByKey = new Map<
+    string,
+    { optionId: string; locationId: string; fileQuantity: number }
+  >()
 
   for (const mm of options.manualMappings) {
     if (!mm.externalCode || !mm.items?.length) continue
@@ -267,10 +289,13 @@ export async function confirmReconciliation(
       finalize || itemOptionIds.some((oid) => options.selectedOptionIds.includes(oid))
     if (anySelected) {
       for (const item of validItems) {
-        extraAdjustments.push({
+        const key = `${entryLocationId}|${item.optionId}`
+        const add = entry.row.quantity * (item.quantity ?? 1)
+        const cur = extraByKey.get(key)
+        extraByKey.set(key, {
           optionId: item.optionId,
           locationId: entryLocationId,
-          fileQuantity: entry.row.quantity * (item.quantity ?? 1),
+          fileQuantity: (cur?.fileQuantity ?? 0) + add,
         })
       }
     }
@@ -282,11 +307,13 @@ export async function confirmReconciliation(
   const diffAdjustments: { optionId: string; locationId: string; fileQuantity: number }[] = []
   for (const e of entries) {
     if (e.status !== 'matched-diff') continue
+    // 그룹 대표 행만 — 같은 옵션의 형제 행은 groupFileQuantity 에 이미 합산돼 있다.
+    if (e.isGroupPrimary === false) continue
     if (!finalize && !selected.has(e.optionId)) continue
     diffAdjustments.push({
       optionId: e.optionId,
       locationId: e.locationId ?? reconLocationId,
-      fileQuantity: e.fileQuantity,
+      fileQuantity: e.groupFileQuantity ?? e.fileQuantity,
     })
   }
 
@@ -298,9 +325,10 @@ export async function confirmReconciliation(
   if (includeSystemOnly) {
     // 같은 (location, option) 이 앞 단계에서 이미 수량 조정 대상이면 0 으로 덮지 않는다.
     // (사후 수동 매핑으로 file-only 가 system-only 와 같은 옵션을 가리키게 된 경우)
-    const alreadyTargeted = new Set(
-      [...diffAdjustments, ...extraAdjustments].map((a) => `${a.locationId}|${a.optionId}`)
-    )
+    const alreadyTargeted = new Set([
+      ...diffAdjustments.map((a) => `${a.locationId}|${a.optionId}`),
+      ...extraByKey.keys(),
+    ])
     // 매핑 있는 것만 0 처리 — 매핑 없는 건 소진인지 미연동인지 알 수 없다.
     const mappedKeys = await findMappedSystemOnlyKeys(entries, reconLocationId)
     for (const e of entries) {
@@ -316,24 +344,26 @@ export async function confirmReconciliation(
     }
   }
 
-  const candidates = [...diffAdjustments, ...extraAdjustments, ...systemOnlyAdjustments]
-
-  // 확정 경로만 (locationId, optionId) 중복을 제거한다.
-  // 서로 다른 외부 SKU 가 같은 옵션을 가리키면 목표 수량이 서로 다를 수 있는데(파일 수량 ×
-  // 세트 비율), ADJUSTMENT 는 절대량 set 이라 순차 적용하면 마지막 값만 남는 임의 결과가 된다.
-  // 확정은 "먼저 온 것"으로 고정해 UI 의 반영 건수(옵션 단위)와 실제 movement 수를 일치시킨다.
-  // 부분 적용(cron) 경로는 기존 동작을 그대로 둔다 — 이 함수의 cron 계약은 불변이다.
-  let all = candidates
-  if (finalize) {
-    const seenAdjKeys = new Set<string>()
-    all = candidates.filter((adj) => {
-      const key = `${adj.locationId}|${adj.optionId}`
-      if (seenAdjKeys.has(key)) return false
-      seenAdjKeys.add(key)
-      return true
-    })
+  // (locationId, optionId) 당 정확히 1건의 목표만 남긴다.
+  // ADJUSTMENT 는 절대량 set 이라 같은 키에 여러 번 적용하면 마지막 값만 살아남고
+  // 나머지는 통째로 버려진다("먼저 온 것만 남기고 버리기"도 같은 문제다).
+  // matched 그룹 목표에 수동 매핑 수량을 **더하고**, system-only 0 은 이미 목표가 있는
+  // 키를 덮지 않는다(기존 alreadyTargeted 규칙과 동일 의미).
+  const targets = new Map<string, { optionId: string; locationId: string; fileQuantity: number }>()
+  for (const a of diffAdjustments) targets.set(`${a.locationId}|${a.optionId}`, a)
+  for (const [key, a] of extraByKey) {
+    const cur = targets.get(key)
+    targets.set(key, cur ? { ...cur, fileQuantity: cur.fileQuantity + a.fileQuantity } : a)
   }
-  const systemOnlyKeys = new Set(systemOnlyAdjustments.map((a) => `${a.locationId}|${a.optionId}`))
+  // reason 문구 분기용 — 실제로 0 처리 대상으로 살아남은 키만 담는다.
+  const systemOnlyKeys = new Set<string>()
+  for (const a of systemOnlyAdjustments) {
+    const key = `${a.locationId}|${a.optionId}`
+    if (targets.has(key)) continue
+    targets.set(key, a)
+    systemOnlyKeys.add(key)
+  }
+  const all = Array.from(targets.values())
   const movementDate = snapshotDate.toISOString()
   const snapshotStr = snapshotDate.toISOString().slice(0, 10)
 

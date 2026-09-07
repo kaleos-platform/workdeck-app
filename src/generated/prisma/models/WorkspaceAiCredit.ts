@@ -31,6 +31,8 @@ export type WorkspaceAiCreditAvgAggregateOutputType = {
   imageQuota: number | null
   textUsed: number | null
   textQuota: number | null
+  textTokensUsed: number | null
+  textTokenQuota: number | null
 }
 
 export type WorkspaceAiCreditSumAggregateOutputType = {
@@ -38,6 +40,8 @@ export type WorkspaceAiCreditSumAggregateOutputType = {
   imageQuota: number | null
   textUsed: number | null
   textQuota: number | null
+  textTokensUsed: number | null
+  textTokenQuota: number | null
 }
 
 export type WorkspaceAiCreditMinAggregateOutputType = {
@@ -48,6 +52,8 @@ export type WorkspaceAiCreditMinAggregateOutputType = {
   imageQuota: number | null
   textUsed: number | null
   textQuota: number | null
+  textTokensUsed: number | null
+  textTokenQuota: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +66,8 @@ export type WorkspaceAiCreditMaxAggregateOutputType = {
   imageQuota: number | null
   textUsed: number | null
   textQuota: number | null
+  textTokensUsed: number | null
+  textTokenQuota: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -72,6 +80,8 @@ export type WorkspaceAiCreditCountAggregateOutputType = {
   imageQuota: number
   textUsed: number
   textQuota: number
+  textTokensUsed: number
+  textTokenQuota: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -83,6 +93,8 @@ export type WorkspaceAiCreditAvgAggregateInputType = {
   imageQuota?: true
   textUsed?: true
   textQuota?: true
+  textTokensUsed?: true
+  textTokenQuota?: true
 }
 
 export type WorkspaceAiCreditSumAggregateInputType = {
@@ -90,6 +102,8 @@ export type WorkspaceAiCreditSumAggregateInputType = {
   imageQuota?: true
   textUsed?: true
   textQuota?: true
+  textTokensUsed?: true
+  textTokenQuota?: true
 }
 
 export type WorkspaceAiCreditMinAggregateInputType = {
@@ -100,6 +114,8 @@ export type WorkspaceAiCreditMinAggregateInputType = {
   imageQuota?: true
   textUsed?: true
   textQuota?: true
+  textTokensUsed?: true
+  textTokenQuota?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -112,6 +128,8 @@ export type WorkspaceAiCreditMaxAggregateInputType = {
   imageQuota?: true
   textUsed?: true
   textQuota?: true
+  textTokensUsed?: true
+  textTokenQuota?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -124,6 +142,8 @@ export type WorkspaceAiCreditCountAggregateInputType = {
   imageQuota?: true
   textUsed?: true
   textQuota?: true
+  textTokensUsed?: true
+  textTokenQuota?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -223,6 +243,8 @@ export type WorkspaceAiCreditGroupByOutputType = {
   imageQuota: number
   textUsed: number
   textQuota: number
+  textTokensUsed: number
+  textTokenQuota: number
   createdAt: Date
   updatedAt: Date
   _count: WorkspaceAiCreditCountAggregateOutputType | null
@@ -258,6 +280,8 @@ export type WorkspaceAiCreditWhereInput = {
   imageQuota?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
   textUsed?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
   textQuota?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
+  textTokensUsed?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
+  textTokenQuota?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
   createdAt?: Prisma.DateTimeFilter<"WorkspaceAiCredit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkspaceAiCredit"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -271,6 +295,8 @@ export type WorkspaceAiCreditOrderByWithRelationInput = {
   imageQuota?: Prisma.SortOrder
   textUsed?: Prisma.SortOrder
   textQuota?: Prisma.SortOrder
+  textTokensUsed?: Prisma.SortOrder
+  textTokenQuota?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -288,6 +314,8 @@ export type WorkspaceAiCreditWhereUniqueInput = Prisma.AtLeast<{
   imageQuota?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
   textUsed?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
   textQuota?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
+  textTokensUsed?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
+  textTokenQuota?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
   createdAt?: Prisma.DateTimeFilter<"WorkspaceAiCredit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkspaceAiCredit"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -301,6 +329,8 @@ export type WorkspaceAiCreditOrderByWithAggregationInput = {
   imageQuota?: Prisma.SortOrder
   textUsed?: Prisma.SortOrder
   textQuota?: Prisma.SortOrder
+  textTokensUsed?: Prisma.SortOrder
+  textTokenQuota?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.WorkspaceAiCreditCountOrderByAggregateInput
@@ -321,6 +351,8 @@ export type WorkspaceAiCreditScalarWhereWithAggregatesInput = {
   imageQuota?: Prisma.IntWithAggregatesFilter<"WorkspaceAiCredit"> | number
   textUsed?: Prisma.IntWithAggregatesFilter<"WorkspaceAiCredit"> | number
   textQuota?: Prisma.IntWithAggregatesFilter<"WorkspaceAiCredit"> | number
+  textTokensUsed?: Prisma.IntWithAggregatesFilter<"WorkspaceAiCredit"> | number
+  textTokenQuota?: Prisma.IntWithAggregatesFilter<"WorkspaceAiCredit"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"WorkspaceAiCredit"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"WorkspaceAiCredit"> | Date | string
 }
@@ -332,6 +364,8 @@ export type WorkspaceAiCreditCreateInput = {
   imageQuota?: number
   textUsed?: number
   textQuota?: number
+  textTokensUsed?: number
+  textTokenQuota?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutWorkspaceAiCreditsInput
@@ -345,6 +379,8 @@ export type WorkspaceAiCreditUncheckedCreateInput = {
   imageQuota?: number
   textUsed?: number
   textQuota?: number
+  textTokensUsed?: number
+  textTokenQuota?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -356,6 +392,8 @@ export type WorkspaceAiCreditUpdateInput = {
   imageQuota?: Prisma.IntFieldUpdateOperationsInput | number
   textUsed?: Prisma.IntFieldUpdateOperationsInput | number
   textQuota?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokensUsed?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokenQuota?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutWorkspaceAiCreditsNestedInput
@@ -369,6 +407,8 @@ export type WorkspaceAiCreditUncheckedUpdateInput = {
   imageQuota?: Prisma.IntFieldUpdateOperationsInput | number
   textUsed?: Prisma.IntFieldUpdateOperationsInput | number
   textQuota?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokensUsed?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokenQuota?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -381,6 +421,8 @@ export type WorkspaceAiCreditCreateManyInput = {
   imageQuota?: number
   textUsed?: number
   textQuota?: number
+  textTokensUsed?: number
+  textTokenQuota?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -392,6 +434,8 @@ export type WorkspaceAiCreditUpdateManyMutationInput = {
   imageQuota?: Prisma.IntFieldUpdateOperationsInput | number
   textUsed?: Prisma.IntFieldUpdateOperationsInput | number
   textQuota?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokensUsed?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokenQuota?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -404,6 +448,8 @@ export type WorkspaceAiCreditUncheckedUpdateManyInput = {
   imageQuota?: Prisma.IntFieldUpdateOperationsInput | number
   textUsed?: Prisma.IntFieldUpdateOperationsInput | number
   textQuota?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokensUsed?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokenQuota?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -431,6 +477,8 @@ export type WorkspaceAiCreditCountOrderByAggregateInput = {
   imageQuota?: Prisma.SortOrder
   textUsed?: Prisma.SortOrder
   textQuota?: Prisma.SortOrder
+  textTokensUsed?: Prisma.SortOrder
+  textTokenQuota?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -440,6 +488,8 @@ export type WorkspaceAiCreditAvgOrderByAggregateInput = {
   imageQuota?: Prisma.SortOrder
   textUsed?: Prisma.SortOrder
   textQuota?: Prisma.SortOrder
+  textTokensUsed?: Prisma.SortOrder
+  textTokenQuota?: Prisma.SortOrder
 }
 
 export type WorkspaceAiCreditMaxOrderByAggregateInput = {
@@ -450,6 +500,8 @@ export type WorkspaceAiCreditMaxOrderByAggregateInput = {
   imageQuota?: Prisma.SortOrder
   textUsed?: Prisma.SortOrder
   textQuota?: Prisma.SortOrder
+  textTokensUsed?: Prisma.SortOrder
+  textTokenQuota?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -462,6 +514,8 @@ export type WorkspaceAiCreditMinOrderByAggregateInput = {
   imageQuota?: Prisma.SortOrder
   textUsed?: Prisma.SortOrder
   textQuota?: Prisma.SortOrder
+  textTokensUsed?: Prisma.SortOrder
+  textTokenQuota?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -471,6 +525,8 @@ export type WorkspaceAiCreditSumOrderByAggregateInput = {
   imageQuota?: Prisma.SortOrder
   textUsed?: Prisma.SortOrder
   textQuota?: Prisma.SortOrder
+  textTokensUsed?: Prisma.SortOrder
+  textTokenQuota?: Prisma.SortOrder
 }
 
 export type WorkspaceAiCreditCreateNestedManyWithoutSpaceInput = {
@@ -522,6 +578,8 @@ export type WorkspaceAiCreditCreateWithoutSpaceInput = {
   imageQuota?: number
   textUsed?: number
   textQuota?: number
+  textTokensUsed?: number
+  textTokenQuota?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -533,6 +591,8 @@ export type WorkspaceAiCreditUncheckedCreateWithoutSpaceInput = {
   imageQuota?: number
   textUsed?: number
   textQuota?: number
+  textTokensUsed?: number
+  textTokenQuota?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -574,6 +634,8 @@ export type WorkspaceAiCreditScalarWhereInput = {
   imageQuota?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
   textUsed?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
   textQuota?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
+  textTokensUsed?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
+  textTokenQuota?: Prisma.IntFilter<"WorkspaceAiCredit"> | number
   createdAt?: Prisma.DateTimeFilter<"WorkspaceAiCredit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkspaceAiCredit"> | Date | string
 }
@@ -585,6 +647,8 @@ export type WorkspaceAiCreditCreateManySpaceInput = {
   imageQuota?: number
   textUsed?: number
   textQuota?: number
+  textTokensUsed?: number
+  textTokenQuota?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -596,6 +660,8 @@ export type WorkspaceAiCreditUpdateWithoutSpaceInput = {
   imageQuota?: Prisma.IntFieldUpdateOperationsInput | number
   textUsed?: Prisma.IntFieldUpdateOperationsInput | number
   textQuota?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokensUsed?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokenQuota?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -607,6 +673,8 @@ export type WorkspaceAiCreditUncheckedUpdateWithoutSpaceInput = {
   imageQuota?: Prisma.IntFieldUpdateOperationsInput | number
   textUsed?: Prisma.IntFieldUpdateOperationsInput | number
   textQuota?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokensUsed?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokenQuota?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -618,6 +686,8 @@ export type WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceInput = {
   imageQuota?: Prisma.IntFieldUpdateOperationsInput | number
   textUsed?: Prisma.IntFieldUpdateOperationsInput | number
   textQuota?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokensUsed?: Prisma.IntFieldUpdateOperationsInput | number
+  textTokenQuota?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -632,6 +702,8 @@ export type WorkspaceAiCreditSelect<ExtArgs extends runtime.Types.Extensions.Int
   imageQuota?: boolean
   textUsed?: boolean
   textQuota?: boolean
+  textTokensUsed?: boolean
+  textTokenQuota?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -645,6 +717,8 @@ export type WorkspaceAiCreditSelectCreateManyAndReturn<ExtArgs extends runtime.T
   imageQuota?: boolean
   textUsed?: boolean
   textQuota?: boolean
+  textTokensUsed?: boolean
+  textTokenQuota?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -658,6 +732,8 @@ export type WorkspaceAiCreditSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   imageQuota?: boolean
   textUsed?: boolean
   textQuota?: boolean
+  textTokensUsed?: boolean
+  textTokenQuota?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -671,11 +747,13 @@ export type WorkspaceAiCreditSelectScalar = {
   imageQuota?: boolean
   textUsed?: boolean
   textQuota?: boolean
+  textTokensUsed?: boolean
+  textTokenQuota?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WorkspaceAiCreditOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "yearMonth" | "imageUsed" | "imageQuota" | "textUsed" | "textQuota" | "createdAt" | "updatedAt", ExtArgs["result"]["workspaceAiCredit"]>
+export type WorkspaceAiCreditOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "yearMonth" | "imageUsed" | "imageQuota" | "textUsed" | "textQuota" | "textTokensUsed" | "textTokenQuota" | "createdAt" | "updatedAt", ExtArgs["result"]["workspaceAiCredit"]>
 export type WorkspaceAiCreditInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
 }
@@ -699,6 +777,8 @@ export type $WorkspaceAiCreditPayload<ExtArgs extends runtime.Types.Extensions.I
     imageQuota: number
     textUsed: number
     textQuota: number
+    textTokensUsed: number
+    textTokenQuota: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["workspaceAiCredit"]>
@@ -1132,6 +1212,8 @@ export interface WorkspaceAiCreditFieldRefs {
   readonly imageQuota: Prisma.FieldRef<"WorkspaceAiCredit", 'Int'>
   readonly textUsed: Prisma.FieldRef<"WorkspaceAiCredit", 'Int'>
   readonly textQuota: Prisma.FieldRef<"WorkspaceAiCredit", 'Int'>
+  readonly textTokensUsed: Prisma.FieldRef<"WorkspaceAiCredit", 'Int'>
+  readonly textTokenQuota: Prisma.FieldRef<"WorkspaceAiCredit", 'Int'>
   readonly createdAt: Prisma.FieldRef<"WorkspaceAiCredit", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"WorkspaceAiCredit", 'DateTime'>
 }

@@ -453,6 +453,21 @@ export type Persona = Prisma.PersonaModel
  */
 export type BrandProfile = Prisma.BrandProfileModel
 /**
+ * Model SalesContentOnboarding
+ * 
+ */
+export type SalesContentOnboarding = Prisma.SalesContentOnboardingModel
+/**
+ * Model ScOnboardingResource
+ * 
+ */
+export type ScOnboardingResource = Prisma.ScOnboardingResourceModel
+/**
+ * Model SpaceAiSetting
+ * 
+ */
+export type SpaceAiSetting = Prisma.SpaceAiSettingModel
+/**
  * Model WorkspaceAiCredit
  * 
  */

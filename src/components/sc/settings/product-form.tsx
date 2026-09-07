@@ -12,7 +12,7 @@ import { SALES_CONTENT_PRODUCTS_PATH } from '@/lib/deck-routes'
 
 type Mode = 'create' | 'edit'
 
-type ProductFormState = {
+export type ProductFormState = {
   name: string
   oneLinerPitch: string
   customFields: CustomField[]
@@ -23,6 +23,9 @@ type Props = {
   mode: Mode
   productId?: string
   initial?: Partial<ProductFormState>
+  // 다이얼로그 안에서 쓸 때 주입한다. 미전달이면 종전대로 목록 페이지로 이동한다.
+  onSaved?: (product: { id: string }) => void
+  onCancel?: () => void
 }
 
 const EMPTY: ProductFormState = {
@@ -32,7 +35,7 @@ const EMPTY: ProductFormState = {
   isActive: true,
 }
 
-export function ProductForm({ mode, productId, initial }: Props) {
+export function ProductForm({ mode, productId, initial, onSaved, onCancel }: Props) {
   const router = useRouter()
   const [state, setState] = useState<ProductFormState>({ ...EMPTY, ...initial })
   const [submitting, setSubmitting] = useState(false)
@@ -40,6 +43,16 @@ export function ProductForm({ mode, productId, initial }: Props) {
 
   function update<K extends keyof ProductFormState>(key: K, value: ProductFormState[K]) {
     setState((prev) => ({ ...prev, [key]: value }))
+  }
+
+  // 저장·삭제 후 화면 전환. 다이얼로그 모드면 콜백에 맡기고 페이지 이동을 하지 않는다.
+  function leave(id?: string) {
+    if (onSaved) {
+      onSaved({ id: id ?? '' })
+      return
+    }
+    router.push(SALES_CONTENT_PRODUCTS_PATH)
+    router.refresh()
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -66,8 +79,8 @@ export function ProductForm({ mode, productId, initial }: Props) {
         const json = await res.json().catch(() => ({ message: '저장 실패' }))
         throw new Error(json.message || '저장 실패')
       }
-      router.push(SALES_CONTENT_PRODUCTS_PATH)
-      router.refresh()
+      const saved = (await res.json().catch(() => null)) as { product?: { id: string } } | null
+      leave(saved?.product?.id ?? productId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -82,8 +95,7 @@ export function ProductForm({ mode, productId, initial }: Props) {
     try {
       const res = await fetch(`/api/sc/products/${productId}`, { method: 'DELETE' })
       if (!res.ok && res.status !== 204) throw new Error('삭제 실패')
-      router.push(SALES_CONTENT_PRODUCTS_PATH)
-      router.refresh()
+      leave(productId)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
       setSubmitting(false)
@@ -162,7 +174,7 @@ export function ProductForm({ mode, productId, initial }: Props) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push(SALES_CONTENT_PRODUCTS_PATH)}
+            onClick={() => (onCancel ? onCancel() : router.push(SALES_CONTENT_PRODUCTS_PATH))}
             disabled={submitting}
           >
             취소

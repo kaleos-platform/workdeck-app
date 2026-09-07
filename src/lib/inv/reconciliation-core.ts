@@ -6,6 +6,7 @@
 // 반환: { reconciliationId, matchResult, primaryLocationId, snapshotDate }
 
 import { prisma } from '@/lib/prisma'
+import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from './external-sources'
 import type { ParseResult, ParsedRow } from '@/lib/inv/reconciliation-parser'
 import {
   matchReconciliation,
@@ -183,6 +184,14 @@ export async function runReconciliationMatch(params: {
     },
   })
 
+  // 로켓그로스 연동 위치는 열린 대조를 최신 1건만 유지한다(아래 함수 주석 참조).
+  await cancelSupersededRocketGrowthReconciliations({
+    spaceId,
+    locationId: primaryLocationId,
+    keepId: created.id,
+    keepSnapshotDate: created.snapshotDate,
+  })
+
   return {
     reconciliationId: created.id,
     matchResult,
@@ -190,4 +199,60 @@ export async function runReconciliationMatch(params: {
     snapshotDate: created.snapshotDate,
     format: parsed.format,
   }
+}
+
+/**
+ * 쿠팡 로켓그로스 연동 위치에서, 최신 스냅샷보다 오래된 **미확정** 대조를 CANCELLED 로 내린다.
+ *
+ * 왜 필요한가: 대조 확정은 절대량 set 이다. 며칠 지난 스냅샷을 뒤늦게 확정하면 그 사이의
+ * 입출고가 옛 실재고로 조용히 덮어써진다. 낡은 미확정 대조를 목록에 남겨두는 건 어지러운
+ * 정도의 문제가 아니라 재고 손상 경로다. 항상 최신 1건만 열어 둔다.
+ *
+ * 왜 hard delete 가 아니라 CANCELLED 인가: cron 의 멱등 skip 마커가 CANCELLED 도 인정한다.
+ * 행을 지우면 같은 스냅샷으로 새 대조가 만들어지고, referenceId 가 달라 재적용 가드
+ * (confirmReconciliation 의 preApplied)가 무력화된다. 사용자 삭제(DELETE 라우트)도 적용
+ * 이력이 있으면 같은 처리를 한다.
+ *
+ * strict `<` 인 이유: 파일명으로 자동/수동을 가르지 않고 스냅샷 날짜로 자른다. 며칠치
+ * 누적은 전부 정리되면서, **같은 날짜의 수동 업로드 세션은 그날 죽지 않는다**. 그리고
+ * keepSnapshotDate 보다 나중 스냅샷은 조건상 절대 취소되지 않으므로 "최신 마커를
+ * 취소하면 안 된다"는 가드가 조건식 자체로 보장된다.
+ *
+ * keepId/keepSnapshotDate 를 호출측이 명시한다 — 함수가 스스로 "최신"을 찾으면 cron 의
+ * skip 분기(정렬 없는 findFirst)와 판단이 갈린다.
+ */
+export async function cancelSupersededRocketGrowthReconciliations(params: {
+  spaceId: string
+  locationId: string
+  keepId: string
+  keepSnapshotDate: Date
+}): Promise<number> {
+  const loc = await prisma.invStorageLocation.findFirst({
+    where: {
+      id: params.locationId,
+      spaceId: params.spaceId,
+      externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
+    },
+    select: { id: true },
+  })
+  // 로켓그로스 연동 위치가 아니면 아무것도 하지 않는다 — 일반 위치의 대조 이력은 사용자 자산이다.
+  if (!loc) return 0
+
+  const result = await prisma.invReconciliation.updateMany({
+    where: {
+      spaceId: params.spaceId,
+      locationId: params.locationId,
+      status: { in: ['PENDING', 'PARTIAL'] },
+      id: { not: params.keepId },
+      snapshotDate: { lt: params.keepSnapshotDate },
+    },
+    data: { status: 'CANCELLED' },
+  })
+  if (result.count > 0) {
+    console.log(
+      `[reconciliation] space ${params.spaceId} / location ${params.locationId}: ` +
+        `낡은 로켓그로스 미확정 대조 ${result.count}건 정리`
+    )
+  }
+  return result.count
 }

@@ -475,6 +475,11 @@ model Space {
   salesContentJobs     SalesContentJob[]
   deploymentMetrics    DeploymentMetric[]
   improvementRules     ImprovementRule[]
+  salesContentOnboarding SalesContentOnboarding?
+  scOnboardingResources  ScOnboardingResource[]
+
+  // ─── AI 공급자 선택 ───
+  aiSetting SpaceAiSetting?
 
   // ─── 재무 관리 Deck (Finance) ───
   finAccounts         FinAccount[]
@@ -2453,6 +2458,91 @@ model BrandProfile {
   shortDescription String?
   toneOfVoice      Json? // string[] (최대 3개)
   customFields     Json    @default("[]") // [{ key: string, value: string }]
+  logoUrl          String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Sales Content Deck 온보딩 ────────────────────────────────────────────────
+
+// 온보딩 상태 + AI 초안. spaceId당 1개.
+// dismiss는 Space.onboardingDismissedAt(seller-hub 점유)와 격리해 deck-scope로 저장.
+model SalesContentOnboarding {
+  id          String    @id @default(cuid())
+  spaceId     String    @unique
+  draft       Json? // { brandProfile, products[], personas[] } — AI 생성 초안
+  draftStatus String? // GENERATING | READY | FAILED
+  completedAt DateTime? // 위저드 완료(또는 전체 스킵) 시각
+  dismissedAt DateTime? // 홈 체크리스트 닫기
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ScResourceKind {
+  URL
+  FILE
+}
+
+enum ScResourceStatus {
+  PENDING
+  DONE
+  FAILED
+}
+
+// 온보딩에서 받은 사용자 리소스(워크스페이스 레벨).
+// ContentAsset은 contentId 필수라 워크스페이스 자료 보관에 못 씀.
+model ScOnboardingResource {
+  id            String           @id @default(cuid())
+  spaceId       String
+  kind          ScResourceKind
+  sourceUrl     String? // kind=URL 원본 주소
+  storagePath   String? // kind=FILE — private 버킷(sales-content-files) 경로
+  fileName      String?
+  mimeType      String?
+  extractedText String?          @db.Text
+  status        ScResourceStatus @default(PENDING)
+  errorMessage  String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([spaceId])
+}
+
+// ─── AI 공급자 선택 (BYOK / 워크덱 제공) ─────────────────────────────────────
+
+enum SpaceAiMode {
+  WORKDECK // 워크덱 명의 키 + 무료 쿼터
+  BYOK // 사용자 보유 API 키
+}
+
+enum SpaceAiProvider {
+  OPENAI
+  ANTHROPIC
+  GEMINI
+}
+
+// 워크스페이스 전역 AI 설정. 레코드가 없으면 WORKDECK 으로 취급한다
+// (SpaceAgent 의 "레코드 없으면 기본 활성" 관행과 동일).
+// apiKey 는 ChannelCredential 과 같은 AES-256-CBC(ENCRYPTION_KEY) 로 저장하며
+// 어떤 API 응답에도 원문·암호문·IV 를 내보내지 않는다.
+model SpaceAiSetting {
+  id              String           @id @default(cuid())
+  spaceId         String           @unique
+  mode            SpaceAiMode      @default(WORKDECK)
+  provider        SpaceAiProvider? // BYOK 일 때만
+  model           String? // 'gpt-4.1-mini' / 'claude-sonnet-4' / 'gemini-2.5-flash' 등
+  encryptedApiKey String?
+  apiKeyIv        String?
+  lastVerifiedAt  DateTime?
+  lastError       String?
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 
@@ -2479,6 +2569,11 @@ model WorkspaceAiCredit {
   imageQuota Int    @default(50)
   textUsed   Int    @default(0)
   textQuota  Int    @default(200)
+
+  // 텍스트는 호출 전 토큰 수를 모르므로 사후 정산 — 잔량 확인 후 호출, 실제 usage 로 누적.
+  // WORKDECK 모드(워크덱 명의 키)에서만 차감하고 BYOK 는 차감하지 않는다.
+  textTokensUsed Int @default(0)
+  textTokenQuota Int @default(300000)
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 
