@@ -5,7 +5,10 @@ import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-source
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
 import { getCoupangInventoryRows } from '@/lib/inv/reconciliation-sources'
 import { aggregateMatchedByOption } from '@/lib/inv/reconciliation-resolve'
-import { runReconciliationMatch } from '@/lib/inv/reconciliation-core'
+import {
+  cancelSupersededRocketGrowthReconciliations,
+  runReconciliationMatch,
+} from '@/lib/inv/reconciliation-core'
 import { confirmReconciliation } from '@/lib/inv/reconciliation-processor'
 import {
   notifyAutoReconciliation,
@@ -145,6 +148,15 @@ async function runInventorySync() {
         select: { id: true, status: true },
       })
       if (alreadyHandled) {
+        // skip 하더라도 낡은 미확정 정리는 반드시 돈다.
+        // 이 continue 가 아래 정리 로직 앞에 있어서, 스냅샷이 이미 처리된 날에는 정리가
+        // 아예 실행되지 않았다 — 2026-08-24~09-06 미확정 누적의 직접 원인.
+        await cancelSupersededRocketGrowthReconciliations({
+          spaceId,
+          locationId: resolved.locationId,
+          keepId: alreadyHandled.id,
+          keepSnapshotDate: parsed.snapshotDate,
+        })
         summary.push({
           spaceId,
           status:
@@ -153,31 +165,10 @@ async function runInventorySync() {
         continue
       }
 
-      // 직전 회차들이 가드에 걸려 남긴 자동 PENDING 을 정리한다.
-      //
-      // skip 마커는 (spaceId, locationId, snapshotDate) 로 잡는데 스냅샷 날짜는 매일
-      // 바뀌므로, 가드에 계속 걸리면 PENDING 이 날짜별로 쌓인다. "사람이 확인할 1건만
-      // 남긴다"는 원래 의도와 달리 2026-08-24~09-02 사이 6건이 누적됐다.
-      //
-      // 낡은 PENDING 을 남겨두는 건 목록을 어지럽히는 것보다 나쁘다 — 며칠 지난 스냅샷을
-      // 그대로 확정하면 그 사이 입출고가 옛 실재고로 덮어써진다. 항상 최신 1건만 두고
-      // 나머지는 CANCELLED 로 내린다(사용자 삭제와 같은 처리 — 목록에서 숨기되 cron
-      // 스냅샷 마커로는 남는다).
-      const stalePending = await prisma.invReconciliation.updateMany({
-        where: {
-          spaceId,
-          locationId: resolved.locationId,
-          status: 'PENDING',
-          fileName: { startsWith: AUTO_FILE_PREFIX },
-          snapshotDate: { lt: parsed.snapshotDate },
-        },
-        data: { status: 'CANCELLED' },
-      })
-      if (stalePending.count > 0) {
-        console.log(
-          `[cron/${WORKER_SERVICE}] space ${spaceId}: 낡은 자동 PENDING ${stalePending.count}건 정리`
-        )
-      }
+      // 낡은 미확정 대조 정리는 runReconciliationMatch 안에서
+      // cancelSupersededRocketGrowthReconciliations 가 처리한다(자동/수동 구분 없이
+      // 스냅샷 날짜 기준). 여기서 파일명 접두사로 거르던 옛 로직은 수동 연동 세션을
+      // 놓쳐서 누적을 못 막았다.
 
       const core = await runReconciliationMatch({
         spaceId,
