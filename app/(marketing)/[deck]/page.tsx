@@ -4,6 +4,7 @@ import { DeckLanding } from '@/components/marketing/landing/deck-landing'
 import { JsonLd } from '@/components/marketing/json-ld'
 import { MARKETING_DECK_SLUGS, type MarketingDeckSlugString } from '@/lib/marketing/routes'
 import { DECK_LANDINGS } from '@/lib/marketing/decks'
+import { DECK_PRICING_BY_SLUG } from '@/lib/marketing/pricing-data'
 import { buildMarketingMetadata, faqJsonLd, softwareAppJsonLd } from '@/lib/marketing/seo'
 
 interface DeckPageProps {
@@ -39,7 +40,7 @@ export default async function DeckLandingPage({ params }: DeckPageProps) {
 
   return (
     <>
-      <JsonLd data={softwareAppJsonLd(content)} />
+      <JsonLd data={softwareAppJsonLd(content, DECK_PRICING_BY_SLUG[deck].totalPrice)} />
       <JsonLd data={faqJsonLd(content.faq)} />
       <DeckLanding content={content} />
     </>

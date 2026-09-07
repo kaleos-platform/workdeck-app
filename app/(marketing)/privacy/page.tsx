@@ -2,8 +2,6 @@ import type { Metadata } from 'next'
 import { COMPANY, CONTACT_EMAIL } from '@/lib/marketing/company'
 import { buildMarketingMetadata } from '@/lib/marketing/seo'
 
-// 실값 확정 후 교체 필요: COMPANY(상호·대표자·사업자등록번호·주소·개인정보보호책임자) — src/lib/marketing/company.ts
-
 export function generateMetadata(): Metadata {
   return buildMarketingMetadata({
     title: '개인정보처리방침 — Workdeck',
@@ -56,7 +54,7 @@ const sections = [
   },
   {
     title: '9. 개인정보보호책임자',
-    body: `- 성명: ${COMPANY.privacyOfficer}\n- 이메일: ${COMPANY.privacyOfficerEmail}\n\n개인정보 처리와 관련한 문의, 불만 처리, 피해 구제 등에 관한 사항은 위 개인정보보호책임자에게 문의하실 수 있습니다.`,
+    body: `- 성명: ${COMPANY.privacyOfficer}\n- 전화: ${COMPANY.phone}\n- 이메일: ${COMPANY.privacyOfficerEmail}\n\n개인정보 처리와 관련한 문의, 불만 처리, 피해 구제 등에 관한 사항은 위 개인정보보호책임자에게 문의하실 수 있습니다.`,
   },
   {
     title: '부칙',
@@ -90,7 +88,9 @@ export default function PrivacyPage() {
           <p className="font-semibold text-foreground">{COMPANY.name}</p>
           <p>대표자: {COMPANY.ceo}</p>
           <p>사업자등록번호: {COMPANY.registrationNumber}</p>
+          <p>통신판매업신고번호: {COMPANY.mailOrderNumber}</p>
           <p>주소: {COMPANY.address}</p>
+          <p>고객센터: {COMPANY.phone}</p>
         </div>
       </div>
     </div>

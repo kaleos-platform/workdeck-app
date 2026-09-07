@@ -21,7 +21,7 @@ export const coupangAdsLanding: DeckLandingContent = {
     highlight: 'ROAS 대시보드로',
     subcopy:
       '쿠팡에서 다운로드한 광고 리포트 Excel을 그대로 업로드하면 캠페인별 ROAS·광고비·클릭 시계열이 자동으로 정리됩니다. 비효율 키워드를 바로 찾아 운영 액션으로 옮기세요.',
-    primaryCta: { label: '무료로 시작하기', href: '/signup' },
+    primaryCta: { label: '시작하기', href: '/signup' },
     secondaryCta: { label: '로그인', href: '/d/coupang-ads/login' },
   },
   painPoints: [
@@ -110,8 +110,9 @@ export const coupangAdsLanding: DeckLandingContent = {
         '캠페인별 상세 페이지에서 대시보드·광고 데이터·키워드 분석 탭을 통해 성과를 비교하고 추이를 확인할 수 있습니다.',
     },
     {
-      question: '무료로 사용할 수 있나요?',
-      answer: '현재 베타 기간 동안 모든 기능을 무료로 이용할 수 있습니다.',
+      question: '이용 요금은 어떻게 되나요?',
+      answer:
+        '쿠팡 광고 관리은 월 33,000원(부가세 포함)의 구독 상품입니다. 필요한 업무만 골라 구독할 수 있고, 언제든 해지할 수 있습니다.',
     },
   ],
   finalCta: {

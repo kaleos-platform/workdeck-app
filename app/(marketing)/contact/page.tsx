@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { Mail, Clock } from 'lucide-react'
-import { CONTACT_EMAIL } from '@/lib/marketing/company'
+import { Mail, Clock, Phone } from 'lucide-react'
+import { COMPANY, CONTACT_EMAIL } from '@/lib/marketing/company'
 import { buildMarketingMetadata } from '@/lib/marketing/seo'
 
 export function generateMetadata(): Metadata {
@@ -20,7 +20,8 @@ export default function ContactPage() {
           <div className="space-y-4">
             <h1 className="text-4xl font-bold tracking-tight break-keep sm:text-5xl">문의</h1>
             <p className="mx-auto max-w-xl text-lg break-keep text-muted-foreground">
-              서비스 이용 중 궁금한 점, 오류 제보, 제휴 문의 모두 아래 이메일로 보내주세요.
+              서비스 이용 중 궁금한 점, 결제·환불 문의, 오류 제보, 제휴 문의 모두 아래 연락처로
+              보내주세요.
             </p>
           </div>
 
@@ -31,10 +32,24 @@ export default function ContactPage() {
                 {CONTACT_EMAIL}
               </a>
             </div>
+            <div className="flex items-center justify-center gap-3">
+              <Phone className="h-5 w-5 text-muted-foreground" aria-hidden />
+              <a href={`tel:${COMPANY.phone}`} className="text-lg font-semibold hover:underline">
+                {COMPANY.phone}
+              </a>
+            </div>
             <div className="flex items-center justify-center gap-2 text-sm break-keep text-muted-foreground">
               <Clock className="h-4 w-4 shrink-0" aria-hidden />
               영업일 기준 1~2일 이내 답변드립니다.
             </div>
+          </div>
+
+          <div className="mx-auto max-w-md space-y-1 rounded-xl border bg-muted/30 p-6 text-left text-sm break-keep text-muted-foreground">
+            <p className="font-semibold text-foreground">{COMPANY.name}</p>
+            <p>대표자: {COMPANY.ceo}</p>
+            <p>사업자등록번호: {COMPANY.registrationNumber}</p>
+            <p>통신판매업신고번호: {COMPANY.mailOrderNumber}</p>
+            <p>주소: {COMPANY.address}</p>
           </div>
         </div>
       </section>

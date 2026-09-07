@@ -15,7 +15,7 @@ export function generateMetadata(): Metadata {
   return buildMarketingMetadata({
     title: '요금제 — Workdeck',
     description:
-      'Workdeck은 현재 모든 업무가 베타 기간 동안 무료입니다. 업무별 정식 전환 예정가와 이용 조건을 확인하세요.',
+      '필요한 업무 모듈만 골라 월 단위로 구독하세요. 업무별 구독료와 이용 조건을 확인할 수 있습니다.',
     path: '/pricing',
     keywords: ['Workdeck 요금제', 'Workdeck 가격', '업무별 구독료'],
   })
@@ -23,24 +23,24 @@ export function generateMetadata(): Metadata {
 
 const faq: DeckLandingFaqItem[] = [
   {
-    question: '베타 기간은 언제까지인가요?',
+    question: '결제는 어떻게 이루어지나요?',
     answer:
-      '현재 모든 업무가 베타 기간으로 무료입니다. 정식 유료 전환 일정은 확정되는 대로 서비스 내 공지와 이메일로 사전 안내드립니다.',
-  },
-  {
-    question: '유료로 전환되면 지금까지 쌓은 데이터는 어떻게 되나요?',
-    answer:
-      '업로드하신 광고·재무·재고 등 데이터는 이용자 소유이며 유료 전환과 무관하게 그대로 유지됩니다. 전환 시점에도 기존 데이터 접근에는 영향이 없습니다.',
+      '워크스페이스에 카드를 등록하면 구독한 업무 모듈의 합계 금액이 매월 자동으로 결제됩니다. 결제는 토스페이먼츠를 통해 처리되며 카드 정보는 회사 서버에 저장되지 않습니다.',
   },
   {
     question: '여러 업무를 한 번에 구독해야 하나요?',
     answer:
-      '아니요. 필요한 업무만 골라 구독하는 방식입니다. 정식 전환 이후에도 사용하지 않는 업무까지 강제로 결제되지 않습니다.',
+      '아니요. 필요한 업무만 골라 구독하는 방식이며, 사용하지 않는 업무는 결제되지 않습니다. 이용 기간 중 업무를 추가하면 남은 기간만큼 일할 계산된 금액이 결제됩니다.',
   },
   {
-    question: '해지는 어떻게 하나요?',
+    question: '해지하면 언제까지 이용할 수 있나요?',
     answer:
-      '정식 유료 전환 이후 워크스페이스 설정에서 업무별로 언제든 해지할 수 있으며, 이미 결제한 기간까지는 정상적으로 이용할 수 있습니다.',
+      '워크스페이스 설정에서 언제든 해지할 수 있습니다. 이미 결제한 이용 기간의 마지막 날까지는 그대로 이용할 수 있고, 다음 주기부터 결제되지 않습니다. 자세한 기준은 취소·환불 규정을 확인해 주세요.',
+  },
+  {
+    question: '표시된 금액에 부가세가 포함되어 있나요?',
+    answer:
+      '네. 표시 금액은 부가세가 포함된 실제 결제 금액이며, 괄호 안 금액은 세금계산서 기준 공급가입니다.',
   },
 ]
 
@@ -54,12 +54,12 @@ export default function PricingPage() {
         <div className="mx-auto max-w-3xl space-y-6 text-center">
           <Badge variant="secondary" className="gap-1.5 py-1.5">
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
-            지금은 모든 업무 무료 베타 기간
+            필요한 업무만 골라 월 단위 구독
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight break-keep sm:text-5xl">요금제</h1>
           <p className="mx-auto max-w-2xl text-lg break-keep text-muted-foreground">
-            Workdeck의 모든 업무는 베타 기간 동안 무료로 이용할 수 있습니다. 아래는 정식 전환 시
-            적용될 예정가이며, 전환 전 서비스 내 공지를 통해 미리 안내드립니다.
+            업무 모듈별로 월 구독료가 책정되어 있습니다. 필요한 업무만 선택해 구독하고, 언제든지
+            해지할 수 있습니다.
           </p>
         </div>
       </section>
@@ -80,28 +80,35 @@ export default function PricingPage() {
                       <Icon className="h-5 w-5 text-white" aria-hidden />
                     </div>
                     <Badge variant="outline" className="text-emerald-600">
-                      베타 기간 무료
+                      판매 중
                     </Badge>
                   </div>
                   <div className="space-y-1.5">
                     <h3 className="font-semibold break-keep">{meta.name}</h3>
                     <p className="text-sm break-keep text-muted-foreground">{row.summary}</p>
                   </div>
-                  <div className="mt-auto space-y-1 border-t pt-4">
+                  <div className="mt-auto space-y-2 border-t pt-4">
                     <p className="text-sm text-muted-foreground">
-                      정식 전환 예정가{' '}
-                      <span className="font-semibold text-foreground">
+                      <span className="text-lg font-semibold text-foreground">
                         월 {row.totalPrice.toLocaleString('ko-KR')}원
                       </span>{' '}
                       (VAT 포함 / 공급가 {row.supplyPrice.toLocaleString('ko-KR')}원)
                     </p>
-                    <Link
-                      href={`/${row.slug}`}
-                      className="inline-flex items-center gap-1 text-sm font-medium text-foreground/80 hover:gap-1.5"
-                    >
-                      자세히 보기
-                      <ArrowRight className="h-3.5 w-3.5 transition-transform" aria-hidden />
-                    </Link>
+                    <div className="flex items-center gap-4">
+                      <Link
+                        href={`/pricing/${row.slug}`}
+                        className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:gap-1.5"
+                      >
+                        상품 상세·구매
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform" aria-hidden />
+                      </Link>
+                      <Link
+                        href={`/${row.slug}`}
+                        className="text-sm text-muted-foreground hover:text-foreground"
+                      >
+                        기능 소개
+                      </Link>
+                    </div>
                   </div>
                 </div>
               )
@@ -109,8 +116,8 @@ export default function PricingPage() {
           </div>
 
           <p className="mx-auto mt-10 max-w-2xl text-center text-sm break-keep text-muted-foreground">
-            표시된 금액은 VAT가 포함된 실제 결제 예정 금액이며, 괄호 안은 세금계산서 기준 공급가입니다.
-            필요한 업무만 선택해 구독할 수 있으며, 정식 전환 일정과 조건은 사전 공지됩니다.
+            표시된 금액은 VAT가 포함된 실제 결제 금액이며, 괄호 안은 세금계산서 기준 공급가입니다.
+            결제는 카드 자동결제로 매월 청구되며, 취소·환불 기준은 취소·환불 규정을 따릅니다.
           </p>
         </div>
       </section>
@@ -121,14 +128,14 @@ export default function PricingPage() {
       <section className="bg-gradient-to-br from-blue-600 to-cyan-500 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-3xl space-y-6 text-center">
           <h2 className="text-2xl font-bold break-keep sm:text-3xl">
-            베타 기간, 지금 시작하면 무료입니다
+            필요한 업무만 골라 시작하세요
           </h2>
           <p className="text-lg break-keep text-white/90">
-            필요한 업무만 골라 워크스페이스를 만들어보세요.
+            워크스페이스를 만들고 원하는 업무 모듈을 구독하면 바로 이용할 수 있습니다.
           </p>
           <Link href={buildAppUrl('/signup')}>
             <Button size="lg" variant="secondary" className="gap-2">
-              무료로 시작하기
+              시작하기
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>
           </Link>
