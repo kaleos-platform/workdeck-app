@@ -4,6 +4,7 @@ import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
 import { getCoupangInventoryRows } from '@/lib/inv/reconciliation-sources'
+import { aggregateMatchedByOption } from '@/lib/inv/reconciliation-resolve'
 import { runReconciliationMatch } from '@/lib/inv/reconciliation-core'
 import { confirmReconciliation } from '@/lib/inv/reconciliation-processor'
 import {
@@ -185,18 +186,24 @@ async function runInventorySync() {
         fileName: autoFileName,
       })
 
-      const entries = core.matchResult.entries
-      const matchedDiffOptionIds = entries
-        .filter((e) => e.status === 'matched-diff')
-        .map((e) => e.optionId)
+      // 옵션 단위 합산 후의 엔트리로 판단한다 — 같은 옵션을 여러 외부 SKU 가 가리키면
+      // 행 단위로는 차이여도 합계는 일치할 수 있고(그 경우 조정 불필요), 변동률 가드의
+      // 분모/분자도 행 수로 세면 같은 옵션을 여러 번 세어 과대계상된다.
+      const entries = aggregateMatchedByOption(core.matchResult.entries, resolved.locationId)
+      const matchedDiffOptionIds = Array.from(
+        new Set(entries.filter((e) => e.status === 'matched-diff').map((e) => e.optionId))
+      )
       const fileOnlyCount = entries.filter((e) => e.status === 'file-only').length
       const systemOnlyCount = entries.filter((e) => e.status === 'system-only').length
 
       // 가드 2: 대량 변동 — 분모는 시스템 재고와 대응되는 항목 수(matched-* + system-only).
       //         file-only 는 아직 시스템에 없는 SKU 라 변동률 분모로 부적절하다.
       const systemSideCount =
-        entries.filter((e) => e.status === 'matched-diff' || e.status === 'matched-equal').length +
-        systemOnlyCount
+        new Set(
+          entries
+            .filter((e) => e.status === 'matched-diff' || e.status === 'matched-equal')
+            .map((e) => e.groupKey ?? `${e.locationId ?? resolved.locationId}|${e.optionId}`)
+        ).size + systemOnlyCount
       const changedRatio = systemSideCount > 0 ? matchedDiffOptionIds.length / systemSideCount : 0
       const systemOnlyRatio = systemSideCount > 0 ? systemOnlyCount / systemSideCount : 0
 

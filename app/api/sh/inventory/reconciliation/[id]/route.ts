@@ -4,7 +4,11 @@ import { prisma } from '@/lib/prisma'
 import { confirmReconciliation, findMappedSystemOnlyKeys } from '@/lib/inv/reconciliation-processor'
 import { MovementError } from '@/lib/inv/movement-processor'
 import type { MatchEntry } from '@/lib/inv/reconciliation-matcher'
-import { refreshMatchedQuantities, resolveFileOnlyEntries } from '@/lib/inv/reconciliation-resolve'
+import {
+  aggregateMatchedByOption,
+  refreshMatchedQuantities,
+  resolveFileOnlyEntries,
+} from '@/lib/inv/reconciliation-resolve'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -40,8 +44,13 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
   const isOpen = !['CONFIRMED', 'CANCELLED'].includes(recon.status)
   const refreshed = isOpen ? await refreshMatchedQuantities(resolved2, recon.locationId) : resolved2
 
+  // 같은 옵션을 가리키는 여러 외부 SKU(1장/3장 세트/5장 세트 …)를 옵션 단위로 합산한다.
+  // 확정 경로(confirmReconciliation)와 같은 함수를 써야 화면의 차이와 실제 반영이 일치한다.
+  // 닫힌 기록에도 적용한다 — DB 를 바꾸지 않고 이미 동결된 숫자를 묶어 보여주는 것뿐이다.
+  const grouped = aggregateMatchedByOption(refreshed, recon.locationId)
+
   // matched-equal/matched-diff 항목에 mappingId + mapping.items 첨부
-  const withMapping = await attachMappingInfo(refreshed, recon.locationId)
+  const withMapping = await attachMappingInfo(grouped, recon.locationId)
 
   // system-only 항목에 매핑 보유 여부 첨부 — 매핑 없는 건은 자동 0 처리 대상이 아니며
   // UI 가 "매핑 필요"로 표면화해 사용자가 쿠팡 SKU 를 연결하도록 안내한다.
