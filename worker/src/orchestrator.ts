@@ -11,10 +11,12 @@ import {
   getCredentials,
   uploadReport,
   uploadInventory,
+  uploadInventoryRows,
   getApiCredential,
   getSourceSetting,
   reportProbeResult,
   type ProbeResult,
+  type InventoryApiRowPayload,
 } from './api-client.js'
 import { decrypt } from './encryption.js'
 import { collectCoupangReport } from './collector.js'
@@ -36,6 +38,7 @@ import {
 } from './login-guard.js'
 import { CoupangApiClient, CoupangApiError } from './coupang-api/client.js'
 import { fetchInventorySummaries } from './coupang-api/endpoints.js'
+import { buildApiProductMap } from './coupang-api/product-map.js'
 import type { CoupangApiConfig } from './coupang-api/client.js'
 import type { InventoryApiRow } from './sources/types.js'
 
@@ -770,7 +773,8 @@ async function collectAndUploadInventory(credential: {
   let ipBlocked = false
   let apiPublicIp: string | undefined
 
-  // 재고 건강성 — CRAWL(기존 동작, source='CRAWL' 기본값이라 불변) / API(이번 턴엔 적재 없이 JSON 덤프까지만, 계획서 §2-6)
+  // 재고 건강성 — CRAWL(기존 동작, source='CRAWL' 기본값이라 불변) / API(Phase0 실측 게이트 통과 —
+  // 실제 InventoryRecord 적재 경로. 계획서 §D/§E/§F, 실측 리포트 부록 확정 규칙)
   if (inventorySource === 'API') {
     try {
       const cred = await getApiCredential()
@@ -786,21 +790,65 @@ async function collectAndUploadInventory(credential: {
       }
       const client = new CoupangApiClient(apiCfg)
       const summaries = await fetchInventorySummaries(client, cred.vendorId)
+      // vendorItemId/externalSkuId 는 API 응답에서 숫자로 온다 — text 컬럼(optionId/skuId)과
+      // 비교하려면 문자열 정규화가 필수(Phase0 실측 §4).
       const rows: InventoryApiRow[] = summaries.map((item) => ({
-        vendorItemId: String(item.vendorItemId),
-        externalSkuId: item.externalSkuId ?? null,
+        optionId: String(item.vendorItemId),
+        skuId: item.externalSkuId != null ? String(item.externalSkuId) : null,
         orderableQuantity: item.totalOrderableQuantity ?? null,
         salesQty30d: item.SALES_COUNT_LAST_THIRTY_DAYS ?? null,
       }))
 
-      // 적재하지 않고 JSON 덤프까지만 — InventoryRecord unique 키에 productId/optionId 가
-      // 없어 그대로 적재하면 행이 무한 누적된다(계획서 §2-6). 매핑 규칙은 Phase 0 대조 후 설계.
+      // 진단용 원본 덤프는 유지 — 적재 실패 시에도 원인 조사에 쓸 수 있게.
       const dumpDir = path.resolve('tmp/inventory-api')
       if (!fs.existsSync(dumpDir)) fs.mkdirSync(dumpDir, { recursive: true })
       const dumpPath = path.join(dumpDir, `${credential.workspaceId}-${yesterdayKst}.json`)
       fs.writeFileSync(dumpPath, JSON.stringify({ snapshotDate: yesterdayKst, rows }, null, 2))
-      console.log(`[inventory] API 재고 요약 ${rows.length}건 덤프: ${dumpPath} (적재 안 함)`)
-      healthRows = 0
+
+      // InventoryApiRow 는 이미 InventoryApiRowPayload 와 같은 모양(optionId/skuId/
+      // orderableQuantity/salesQty30d) — 별도 변환 없이 그대로 보낸다.
+      const rowPayload: InventoryApiRowPayload[] = rows
+
+      // snapshotDate 미지정 — 크롤링 HEALTH 경로(uploadInventory 아래 else-if)와 동일하게
+      // 서버가 "지금"으로 채운다. HEALTH 는 VENDOR(어제 KST 자정 판매분석)와 달리 실시간 스냅샷.
+      let result = await uploadInventoryRows({
+        workspaceId: credential.workspaceId,
+        fileType: 'INVENTORY_HEALTH',
+        rows: rowPayload,
+      })
+
+      // 이력으로 못 채운 옵션이 남으면 — 상품 API(목록→단건 순회, 55건×1.3s 스로틀)로
+      // 보강 맵을 만들어 1회만 재시도한다. 정상 상태(신규 옵션 없음)에서는 이 분기를 안 탄다.
+      if (result.success && result.unresolvedOptionIds.length > 0) {
+        console.log(
+          `[inventory] productId/productName 미해결 ${result.unresolvedOptionIds.length}건 — 상품 API 로 보강 시도`
+        )
+        const apiProductMap = await buildApiProductMap(client, cred.vendorId)
+        result = await uploadInventoryRows({
+          workspaceId: credential.workspaceId,
+          fileType: 'INVENTORY_HEALTH',
+          rows: rowPayload,
+          apiProductMap,
+        })
+      }
+
+      if (!result.success) {
+        throw new Error(result.error ?? '재고 API 적재 실패(원인 미상)')
+      }
+
+      healthRows = result.insertedRows
+      console.log(
+        `[inventory] API 재고 적재: ${result.insertedRows}건 (덤프: ${dumpPath}` +
+          (result.skippedUnresolved > 0
+            ? `, productId/productName 미해결 스킵 ${result.skippedUnresolved}건`
+            : '') +
+          ')'
+      )
+      if (result.skippedUnresolved > 0) {
+        errors.push(
+          `재고 API: productId/productName 미해결로 ${result.skippedUnresolved}건 스킵 — ${result.unresolvedOptionIds.slice(0, 10).join(', ')}`
+        )
+      }
     } catch (err) {
       ipBlocked = err instanceof CoupangApiError && err.reason === 'IP_REJECTED'
       if (ipBlocked) {

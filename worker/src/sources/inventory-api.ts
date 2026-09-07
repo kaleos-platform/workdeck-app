@@ -1,7 +1,9 @@
 /**
  * API 재고 어댑터 — 로켓창고 재고 요약 전량 조회 후 InventoryApiRow[] 로 변환.
- * 이번 턴엔 적재 경로가 없어 CollectPayload.kind='rows' 로만 반환하고,
- * 호출자(orchestrator)가 InventoryRecord 에 쓰지 않고 JSON 덤프만 한다(계획서 §2-5/§2-6).
+ *
+ * productId 는 여기서 채우지 않는다 — 워커는 Prisma 의존이 없어(worker/package.json)
+ * optionId->productId 이력 역산을 못 한다. 앱(src/lib/collection/resolve-product-id.ts)이
+ * 채운다(계획서 §D/§E, Phase0 실측 부록 확정 규칙).
  */
 import { CoupangApiClient } from '../coupang-api/client.js'
 import { fetchInventorySummaries } from '../coupang-api/endpoints.js'
@@ -24,9 +26,11 @@ export class InventoryApiAdapter implements InventorySourceAdapter {
     const client = new CoupangApiClient(ctx.apiCredential)
     const summaries = await fetchInventorySummaries(client, ctx.apiCredential.vendorId)
 
+    // vendorItemId/externalSkuId 는 API 응답에서 숫자로 온다 — text 컬럼(optionId/skuId)과
+    // 비교하려면 문자열 정규화가 필수다(Phase0 실측 §4).
     const rows: InventoryApiRow[] = summaries.map((item) => ({
-      vendorItemId: String(item.vendorItemId),
-      externalSkuId: item.externalSkuId ?? null,
+      optionId: String(item.vendorItemId),
+      skuId: item.externalSkuId != null ? String(item.externalSkuId) : null,
       orderableQuantity: item.totalOrderableQuantity ?? null,
       salesQty30d: item.SALES_COUNT_LAST_THIRTY_DAYS ?? null,
     }))

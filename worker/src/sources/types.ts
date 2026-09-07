@@ -12,9 +12,12 @@ export type CollectPayload =
   | { kind: 'file'; buffer: Buffer; filename: string }
   | { kind: 'rows'; rows: InventoryApiRow[] }
 
+// 필드명은 DB(InventoryRecord)/앱 업로드 JSON 계약과 맞춘다(optionId=vendorItemId,
+// skuId=externalSkuId 문자열 정규화 — 계획서 §C, Phase0 실측 §4). productId 는 여기 없다:
+// 워커는 Prisma 의존이 없어 이력 역산을 못 하고, 앱이 resolveProductIds() 로 채운다.
 export interface InventoryApiRow {
-  vendorItemId: string
-  externalSkuId: string | null
+  optionId: string
+  skuId: string | null
   orderableQuantity: number | null
   salesQty30d: number | null
 }

@@ -74,8 +74,12 @@ async function main(): Promise<void> {
     console.log(`  → ${summaries.length}건, 덤프: ${file}`)
 
     if (baseline) {
+      // externalSkuId 는 API 응답에서 숫자로 온다 — 크롤링 baseline(skuIds: string[])과
+      // 비교하려면 문자열 정규화가 필수(Phase0 실측 §4).
       const apiSkuIds = new Set(
-        summaries.map((s) => s.externalSkuId).filter((v): v is string => !!v)
+        summaries
+          .map((s) => (s.externalSkuId != null ? String(s.externalSkuId) : null))
+          .filter((v): v is string => !!v)
       )
       const baselineSkuIds = new Set(baseline.skuIds)
       const matched = [...apiSkuIds].filter((id) => baselineSkuIds.has(id))

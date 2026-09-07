@@ -2,6 +2,7 @@
  * Workdeck API 클라이언트
  * 워커에서 메인 Next.js 앱 API를 호출하기 위한 래퍼
  */
+import type { ApiOptionIdentity } from './coupang-api/product-map.js'
 
 // ─── 타입 정의 ─────────────────────────────────────────────────────────────────
 
@@ -333,6 +334,66 @@ export async function uploadInventory(
       'x-worker-api-key': getWorkerApiKey(),
     },
     body: formData,
+  })
+
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(`API 요청 실패 [${response.status}]: /api/inventory/upload-worker — ${body}`)
+  }
+
+  return response.json()
+}
+
+/** 쿠팡 재고 API 로 수집한 행 하나. productId/productName/optionName 은 없다 — 앱이 이력 역산으로 채운다. */
+export type InventoryApiRowPayload = {
+  optionId: string
+  skuId: string | null
+  orderableQuantity: number | null
+  salesQty30d: number | null
+}
+
+export type UploadInventoryRowsResult = {
+  success: boolean
+  fileType: string
+  totalRows: number
+  insertedRows: number
+  skippedUnresolved: number
+  unresolvedOptionIds: string[]
+  error?: string
+}
+
+/**
+ * 쿠팡 재고 API rows 업로드 (application/json)
+ * POST /api/inventory/upload-worker
+ *
+ * 워커는 Prisma 의존이 없어 productId/productName/optionName 을 못 채운다
+ * (worker/package.json 참조) — 앱이 resolveOptionIdentity() 로 채운다. apiProductMap 은
+ * 이력으로 못 채운 옵션이 남았을 때만(buildApiProductMap() 호출 후) 동봉한다.
+ */
+export async function uploadInventoryRows(params: {
+  workspaceId: string
+  fileType: string
+  snapshotDate?: string
+  rows: InventoryApiRowPayload[]
+  apiProductMap?: Record<string, ApiOptionIdentity>
+  truncated?: boolean
+}): Promise<UploadInventoryRowsResult> {
+  const url = `${getBaseUrl()}/api/inventory/upload-worker`
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-worker-api-key': getWorkerApiKey(),
+    },
+    body: JSON.stringify({
+      workspaceId: params.workspaceId,
+      fileType: params.fileType,
+      source: 'API',
+      snapshotDate: params.snapshotDate,
+      rows: params.rows,
+      apiProductMap: params.apiProductMap,
+      truncated: params.truncated,
+    }),
   })
 
   if (!response.ok) {

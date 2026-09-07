@@ -11,7 +11,9 @@ import { CoupangApiClient } from './client.js'
 export interface InventorySummaryItem {
   vendorId: string
   vendorItemId: number
-  externalSkuId: string | null
+  // 실측(Phase0) 결과 문자열이 아니라 숫자로 온다. DB text 컬럼과 비교하려면
+  // 호출부에서 String() 정규화가 필수(worker/src/sources/inventory-api.ts 참조).
+  externalSkuId: number | null
   totalOrderableQuantity: number
   SALES_COUNT_LAST_THIRTY_DAYS?: number
 }
@@ -199,7 +201,11 @@ interface SellerProductListResponse {
   data: SellerProductItem[]
 }
 
-/** 상품 목록 페이징 조회. businessTypes='rocketGrowth' 로 넘기면 로켓그로스 상품만 필터된다. */
+/**
+ * 상품 목록 페이징 조회. businessTypes 기본값 'rocketGrowth' — 생략하면 마켓플레이스
+ * 상품 68건만 오고 그 sellerProductId 는 재고 API 옵션과 거의 안 붙는다(Phase0 실측 부록).
+ * rocketGrowth 로 넘기면 55건이 나오고 이게 DB productId 축과 맞는다.
+ */
 export async function fetchSellerProducts(
   client: CoupangApiClient,
   vendorId: string,
@@ -208,7 +214,95 @@ export async function fetchSellerProducts(
   const path = '/v2/providers/seller_api/apis/api/v1/marketplace/seller-products'
   return client.paginate<SellerProductItem, SellerProductListResponse>(
     path,
-    { vendorId, businessTypes: opts.businessTypes, maxPerPage: opts.maxPerPage },
+    {
+      vendorId,
+      businessTypes: opts.businessTypes ?? 'rocketGrowth',
+      maxPerPage: opts.maxPerPage,
+    },
     (res) => ({ items: res.data ?? [], nextToken: res.nextToken })
   )
+}
+
+// ─── 상품 단건 조회 (WebFetch 로 문서 확인 — 계획서 §B) ────────────────────────────
+// GET /v2/providers/seller_api/apis/api/v1/marketplace/seller-products/{sellerProductId}
+//
+// ⚠️ 로켓그로스 상품의 vendorItemId 는 평면 items[].vendorItemId 가 아니라
+// items[].rocketGrowthItemData.vendorItemId 에 중첩돼 있다. 동시운영 상품은
+// items[].marketplaceItemData.vendorItemId 도 별도로 가진다. 평면 필드만 읽으면
+// 에러 없이 조용히 0건이 나온다(실측에서 실제로 재현됨) — extractVendorItemIds() 가
+// 세 자리를 모두 본다.
+
+export interface SellerProductDetailItem {
+  vendorItemId?: number
+  // 옵션명 — 아이템 단위(=vendorItemId 단위) 속성. 위치와 무관하게 아이템 하나에 하나.
+  itemName?: string
+  rocketGrowthItemData?: { vendorItemId?: number } | null
+  marketplaceItemData?: { vendorItemId?: number } | null
+  [key: string]: unknown
+}
+
+export interface SellerProductDetail {
+  sellerProductId: number
+  // 상품명(=productId 단위 속성). team-lead 반려 후 productName 이력 역산 보강용으로 사용.
+  sellerProductName?: string
+  items: SellerProductDetailItem[]
+  [key: string]: unknown
+}
+
+interface SellerProductDetailResponse {
+  code: number | string
+  message: string
+  data: SellerProductDetail
+}
+
+/** 상품 단건 조회 — items[] 에 vendorItemId 가 (평면/로켓그로스/마켓플레이스) 세 자리로 나뉘어 있다. */
+export async function fetchSellerProduct(
+  client: CoupangApiClient,
+  sellerProductId: number | string
+): Promise<SellerProductDetail> {
+  const path = `/v2/providers/seller_api/apis/api/v1/marketplace/seller-products/${sellerProductId}`
+  const res = await client.get<SellerProductDetailResponse>(path)
+  return res.data
+}
+
+/** optionId(=vendorItemId) 와 그 아이템의 옵션명(itemName). */
+export interface OptionIdentity {
+  optionId: string
+  optionName: string | null
+}
+
+/**
+ * 상품 단건 조회 응답에서 optionId(=vendorItemId)·optionName(=itemName) 을 모두 뽑는다.
+ * 평면(items[].vendorItemId) / 로켓그로스(items[].rocketGrowthItemData.vendorItemId) /
+ * 마켓플레이스(items[].marketplaceItemData.vendorItemId) 세 자리를 전부 본다 —
+ * 하나라도 빠지면 로켓그로스 전용 상품에서 조용히 0건이 나온다. itemName 은 그 아이템(=item
+ * 객체 하나) 소속이라 위치와 무관하게 같은 값을 쓴다.
+ */
+export function extractOptionIdentities(productDetail: SellerProductDetail): OptionIdentity[] {
+  const results: OptionIdentity[] = []
+  const seen = new Set<string>()
+  for (const item of productDetail.items ?? []) {
+    const optionName = typeof item.itemName === 'string' ? item.itemName : null
+    const ids = [
+      item.vendorItemId,
+      item.rocketGrowthItemData?.vendorItemId,
+      item.marketplaceItemData?.vendorItemId,
+    ]
+    for (const id of ids) {
+      if (id == null) continue
+      const optionId = String(id)
+      if (seen.has(optionId)) continue
+      seen.add(optionId)
+      results.push({ optionId, optionName })
+    }
+  }
+  return results
+}
+
+/**
+ * 상품 단건 조회 응답에서 vendorItemId(=optionId) 만 뽑는다. extractOptionIdentities() 의
+ * id-only 래퍼 — 이름이 필요 없는 호출부(단위테스트 등)용으로 남겨둔다.
+ */
+export function extractVendorItemIds(productDetail: SellerProductDetail): string[] {
+  return extractOptionIdentities(productDetail).map((r) => r.optionId)
 }
