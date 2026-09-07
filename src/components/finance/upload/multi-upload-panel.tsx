@@ -19,6 +19,7 @@ import { FINANCE_IMPORTS_PATH, FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-rout
 
 import { FileItemCard } from './file-item-card'
 import {
+  defaultPresetName,
   findOverlappingFileIds,
   resolveInitialSelection,
   resolveReadiness,
@@ -50,6 +51,9 @@ export function MultiUploadPanel() {
   // 커밋 루프에서 최신 items를 읽기 위한 미러
   const itemsRef = useRef<UploadFileItem[]>(items)
   itemsRef.current = items
+  // patchItem(useCallback []) 에서 최신 계좌 목록을 읽기 위한 미러
+  const accountsRef = useRef<Account[]>(accounts)
+  accountsRef.current = accounts
 
   // ─── 상태 갱신 헬퍼 ──────────────────────────────────────────────────────
 
@@ -58,6 +62,25 @@ export function MultiUploadPanel() {
       prev.map((it) => {
         if (it.id !== id) return it
         const next = { ...it, ...patch }
+        // 신규 형식(기억된 규칙 없음)에서 계좌/종류를 바꾸면 기본 규칙 이름을 계좌 기준으로
+        // 다시 만든다. 사용자가 직접 입력한 이름은 건드리지 않는다.
+        if (('accountId' in patch || 'kind' in patch) && !next.preview?.matchedPreset) {
+          const accountsPool = accountsRef.current.length
+            ? accountsRef.current
+            : (next.preview?.accounts ?? [])
+          const prevDefault = defaultPresetName(
+            accountsPool.find((a) => a.id === it.accountId) ?? null,
+            it.kind,
+            it.preview?.institution
+          )
+          if (!it.presetName || it.presetName === prevDefault) {
+            next.presetName = defaultPresetName(
+              accountsPool.find((a) => a.id === next.accountId) ?? null,
+              next.kind,
+              next.preview?.institution
+            )
+          }
+        }
         // 편집 가능한 상태에서 kind/accountId/mapping이 바뀌면 준비 상태 재판정
         if (
           (next.status === 'matched' || next.status === 'needs_review') &&
@@ -144,6 +167,10 @@ export function MultiUploadPanel() {
             accountId: initial.accountId,
             mapping: initial.mapping,
             presetName: initial.presetName,
+            // 이미 기억된 규칙이 있으면 갱신 경로가 기본 — 매핑을 고쳐도 저장되지 않아
+            // 다음 업로드에 옛 매핑(적요 등)이 되살아나던 문제 방지. 갱신은 멱등이라
+            // 규칙이 늘어나지 않는다. 신규 형식은 기존대로 사용자가 켤 때만 저장.
+            savePreset: data.matchedPreset ? true : it.savePreset,
           }
           next.status = resolveReadiness(next)
           return next
@@ -204,7 +231,16 @@ export function MultiUploadPanel() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '가져오기 실패')
 
-      const { importId, counts } = data as { importId: string; counts: CommitCounts }
+      const { importId, counts, presetSaved } = data as {
+        importId: string
+        counts: CommitCounts
+        presetSaved?: boolean
+      }
+      // 적재는 성공했지만 규칙 저장만 실패한 경우 — 조용히 넘기면 다음 업로드에 옛 매핑이
+      // 다시 적용돼 "수정했는데 되살아난다"로 보인다.
+      if (item.savePreset && presetSaved === false) {
+        toast.warning(`${item.file.name} — 데이터는 등록했지만 매핑 규칙 저장에 실패했습니다`)
+      }
       setItems((prev) =>
         prev.map((it) =>
           it.id === id ? { ...it, status: 'done', result: { importId, counts } } : it

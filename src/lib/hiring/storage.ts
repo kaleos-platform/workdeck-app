@@ -84,6 +84,27 @@ export function getPostingAssetPublicUrl(path: string): string {
   return data.publicUrl
 }
 
+/**
+ * 운영 어드민 샘플 템플릿 자산 업로드. 경로: samples/{templateId}/{uuid}.{ext}
+ * (space 경로 `{spaceId}/postings/...` 와 분리 — 샘플은 spaceId=null 이라 space 경로에 넣을 수 없음)
+ */
+export async function uploadSampleTemplateAsset(params: {
+  templateId: string
+  data: Buffer | Uint8Array
+  mimeType: string
+}): Promise<{ path: string; publicUrl: string }> {
+  const { templateId, data, mimeType } = params
+  if (data.byteLength > MAX_ASSET_BYTES) throw new Error('파일이 용량 제한을 초과했습니다')
+  const path = `samples/${templateId}/${randomUUID()}.${extFromMime(mimeType)}`
+  const sb = serviceClient()
+  const { error } = await sb.storage
+    .from(HIRING_ASSETS_BUCKET)
+    .upload(path, data, { contentType: mimeType, upsert: false })
+  if (error) throw new Error(`샘플 자산 업로드 실패: ${error.message}`)
+  const { data: pub } = sb.storage.from(HIRING_ASSETS_BUCKET).getPublicUrl(path)
+  return { path, publicUrl: pub.publicUrl }
+}
+
 // ─── hiring-files (지원자 첨부 — private) ────────────────────────────────────
 
 /** 지원자 첨부 업로드(서버 경유). 경로: {spaceId}/applications/{applicationId}/{uuid}.{ext} */

@@ -5,7 +5,9 @@ import {
   resolveMapping,
   matchesAccountNumber,
   extractCardNumberColumn,
+  findBestPreset,
   type MappingPair,
+  type PresetLike,
 } from '../automap'
 
 // 프론트가 보내는 와이어 포맷({headerName, field}[])이 파서가 쓰는 인덱스 매핑으로
@@ -88,5 +90,129 @@ describe('extractCardNumberColumn — 카드번호 행 컬럼 추출', () => {
 
   test('카드번호 컬럼 없음 → undefined', () => {
     expect(extractCardNumberColumn(['이용일자', '가맹점명'], [['2026-07-01', 'X']])).toBeUndefined()
+  })
+})
+
+// 프리셋 식별은 파일명이 아니라 파일 형식(헤더)이다. 같은 파일을 올릴 때마다 다른 프리셋이
+// 적용되던 원인(동점 시 입력 순서 의존)과, 다중 적요 컬럼 프리셋이 분모 팽창으로 불리해지던
+// 문제를 회귀 방어한다.
+describe('findBestPreset — 형식(헤더) 기준 매칭', () => {
+  const preset = (
+    id: string,
+    pairs: MappingPair[],
+    updatedAt?: string,
+    name = id
+  ): PresetLike => ({
+    id,
+    name,
+    institution: '테스트은행',
+    kind: 'BANK',
+    mapping: pairs,
+    updatedAt,
+  })
+
+  const headers = ['거래일시', '적요', '내용', '입금액', '출금액', '거래후잔액']
+
+  test('다중 적요 컬럼 프리셋도 분모 팽창 없이 만점 매칭', () => {
+    const multi = preset('multi', [
+      { headerName: '거래일시', field: 'txnDate' },
+      { headerName: '적요', field: 'description' },
+      { headerName: '내용', field: 'description' },
+      { headerName: '입금액', field: 'deposit' },
+      { headerName: '출금액', field: 'withdrawal' },
+    ])
+    expect(findBestPreset([multi], headers)?.id).toBe('multi')
+  })
+
+  test('동점이면 최근 갱신이 이긴다 — 입력 순서와 무관(결정적)', () => {
+    const pairs: MappingPair[] = [
+      { headerName: '거래일시', field: 'txnDate' },
+      { headerName: '적요', field: 'description' },
+      { headerName: '입금액', field: 'deposit' },
+    ]
+    const older = preset('a', pairs, '2026-01-01T00:00:00.000Z')
+    const newer = preset('b', pairs, '2026-08-01T00:00:00.000Z')
+    expect(findBestPreset([older, newer], headers)?.id).toBe('b')
+    expect(findBestPreset([newer, older], headers)?.id).toBe('b')
+  })
+
+  // prod 실태(2026-08-08): 같은 은행 형식의 프리셋 2개가 부분집합 관계로 공존했다
+  // ("우리은행" 6헤더 ⊂ "우리은행 거래내역" 7헤더, 둘 다 커버리지 1.00).
+  // 이때는 파일을 더 많이 커버하는 쪽(매칭 헤더 수)이 이겨야 컬럼 유실이 없다.
+  // updatedAt을 matched보다 앞에 두면 최근 갱신된 '단순' 프리셋이 '상세' 파일을 가로채
+  // 컬럼이 조용히 사라진다 — 순서를 바꾸지 말 것.
+  test('부분집합 프리셋보다 파일을 더 많이 커버하는 쪽이 이긴다(둘 다 1.00)', () => {
+    const subset = preset(
+      'subset',
+      [
+        { headerName: '거래일시', field: 'txnDate' },
+        { headerName: '내용', field: 'description' },
+        { headerName: '입금액', field: 'deposit' },
+      ],
+      '2026-08-01T00:00:00.000Z' // 더 최근
+    )
+    const superset = preset(
+      'superset',
+      [
+        { headerName: '거래일시', field: 'txnDate' },
+        { headerName: '적요', field: 'description' },
+        { headerName: '내용', field: 'description' },
+        { headerName: '입금액', field: 'deposit' },
+        { headerName: '출금액', field: 'withdrawal' },
+      ],
+      '2026-06-26T00:00:00.000Z' // 더 오래됨
+    )
+    expect(findBestPreset([subset, superset], headers)?.id).toBe('superset')
+    expect(findBestPreset([superset, subset], headers)?.id).toBe('superset')
+  })
+
+  test('동점 + updatedAt 동일 → id 사전순으로 결정적', () => {
+    const pairs: MappingPair[] = [{ headerName: '거래일시', field: 'txnDate' }]
+    const a = preset('a', pairs, '2026-08-01T00:00:00.000Z')
+    const b = preset('b', pairs, '2026-08-01T00:00:00.000Z')
+    expect(findBestPreset([b, a], headers)?.id).toBe('a')
+    expect(findBestPreset([a, b], headers)?.id).toBe('a')
+  })
+
+  test('커버리지 높은 프리셋이 이긴다', () => {
+    const partial = preset('partial', [
+      { headerName: '거래일시', field: 'txnDate' },
+      { headerName: '없는컬럼', field: 'memo' },
+    ]) // 0.5 → 임계 미만
+    const full = preset('full', [
+      { headerName: '거래일시', field: 'txnDate' },
+      { headerName: '적요', field: 'description' },
+    ])
+    expect(findBestPreset([partial, full], headers)?.id).toBe('full')
+  })
+
+  // 후보를 kind로 좁히지 않으므로(=preview/저장 경로 대칭), 헤더 서명만으로 은행/카드가
+  // 갈리는지 확인한다.
+  test('카드 헤더에 은행 프리셋이 끼어들지 않는다(헤더 서명으로 구분)', () => {
+    const bank = preset('bank', [
+      { headerName: '거래일시', field: 'txnDate' },
+      { headerName: '적요', field: 'description' },
+      { headerName: '입금액', field: 'deposit' },
+    ])
+    const card: PresetLike = {
+      ...preset('card', [
+        { headerName: '이용일', field: 'txnDate' },
+        { headerName: '가맹점명', field: 'description' },
+        { headerName: '이용금액', field: 'amount' },
+      ]),
+      kind: 'CARD',
+    }
+    const cardHeaders = ['이용일', '가맹점명', '이용금액', '할부']
+    expect(findBestPreset([bank, card], cardHeaders)?.id).toBe('card')
+    expect(findBestPreset([card, bank], headers)?.id).toBe('bank')
+  })
+
+  test('임계(0.6) 미만이면 매칭 없음 — 자동 매핑으로 폴백', () => {
+    const other = preset('other', [
+      { headerName: '이용일자', field: 'txnDate' },
+      { headerName: '가맹점명', field: 'description' },
+      { headerName: '승인번호', field: 'approvalNo' },
+    ])
+    expect(findBestPreset([other], headers)).toBeNull()
   })
 })

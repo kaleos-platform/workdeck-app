@@ -82,6 +82,7 @@ export const ModelName = {
   BusinessAgent: 'BusinessAgent',
   AgentLog: 'AgentLog',
   WorkerHeartbeat: 'WorkerHeartbeat',
+  CronRun: 'CronRun',
   InventoryUpload: 'InventoryUpload',
   InventoryRecord: 'InventoryRecord',
   InventoryExcludedProduct: 'InventoryExcludedProduct',
@@ -89,6 +90,8 @@ export const ModelName = {
   InvProductGroup: 'InvProductGroup',
   InvProduct: 'InvProduct',
   AdCampaignProductMap: 'AdCampaignProductMap',
+  ProductExtractionJob: 'ProductExtractionJob',
+  ProductExtractionSource: 'ProductExtractionSource',
   InvProductOption: 'InvProductOption',
   InvStorageLocation: 'InvStorageLocation',
   InvMovement: 'InvMovement',
@@ -121,11 +124,16 @@ export const ModelName = {
   PricingScenarioItem: 'PricingScenarioItem',
   ProductPricingSettings: 'ProductPricingSettings',
   SpaceOptionCodeAlias: 'SpaceOptionCodeAlias',
+  SpaceAtomicWord: 'SpaceAtomicWord',
   ProductListing: 'ProductListing',
   ProductListingItem: 'ProductListingItem',
   ChannelStockMovement: 'ChannelStockMovement',
   DelOrderItemFulfillment: 'DelOrderItemFulfillment',
   ChannelProduct: 'ChannelProduct',
+  KeywordMaster: 'KeywordMaster',
+  KeywordMasterLink: 'KeywordMasterLink',
+  ChannelKeywordRule: 'ChannelKeywordRule',
+  KeywordChangeLog: 'KeywordChangeLog',
   Product: 'Product',
   ProductPersona: 'ProductPersona',
   Persona: 'Persona',
@@ -177,21 +185,12 @@ export const ModelName = {
   HiringApplicationNotification: 'HiringApplicationNotification',
   HiringBlacklist: 'HiringBlacklist',
   HiringMessageTemplate: 'HiringMessageTemplate',
-  BoProduct: 'BoProduct',
-  BoIdeation: 'BoIdeation',
-  BoMaterial: 'BoMaterial',
-  BoPost: 'BoPost',
-  BoPostVersion: 'BoPostVersion',
-  BoChannel: 'BoChannel',
-  BoPostVariant: 'BoPostVariant',
-  BoDeployment: 'BoDeployment',
-  BoJob: 'BoJob',
-  BoChannelCredential: 'BoChannelCredential',
   BillingDeckProduct: 'BillingDeckProduct',
   SpaceSubscription: 'SpaceSubscription',
   SubscriptionItem: 'SubscriptionItem',
   BillingMethod: 'BillingMethod',
-  BillingCharge: 'BillingCharge'
+  BillingCharge: 'BillingCharge',
+  AdminAuditLog: 'AdminAuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -215,6 +214,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   avatarUrl: 'avatarUrl',
+  platformRole: 'platformRole',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -687,6 +687,20 @@ export const WorkerHeartbeatScalarFieldEnum = {
 export type WorkerHeartbeatScalarFieldEnum = (typeof WorkerHeartbeatScalarFieldEnum)[keyof typeof WorkerHeartbeatScalarFieldEnum]
 
 
+export const CronRunScalarFieldEnum = {
+  id: 'id',
+  path: 'path',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  durationMs: 'durationMs',
+  ok: 'ok',
+  detail: 'detail',
+  error: 'error'
+} as const
+
+export type CronRunScalarFieldEnum = (typeof CronRunScalarFieldEnum)[keyof typeof CronRunScalarFieldEnum]
+
+
 export const InventoryUploadScalarFieldEnum = {
   id: 'id',
   fileName: 'fileName',
@@ -825,6 +839,53 @@ export const AdCampaignProductMapScalarFieldEnum = {
 } as const
 
 export type AdCampaignProductMapScalarFieldEnum = (typeof AdCampaignProductMapScalarFieldEnum)[keyof typeof AdCampaignProductMapScalarFieldEnum]
+
+
+export const ProductExtractionJobScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  productId: 'productId',
+  status: 'status',
+  provider: 'provider',
+  model: 'model',
+  promptVersion: 'promptVersion',
+  result: 'result',
+  rawResponse: 'rawResponse',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  latencyMs: 'latencyMs',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  textLogId: 'textLogId',
+  creditMonth: 'creditMonth',
+  appliedAt: 'appliedAt',
+  appliedFields: 'appliedFields',
+  appliedBefore: 'appliedBefore',
+  rolledBackAt: 'rolledBackAt',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductExtractionJobScalarFieldEnum = (typeof ProductExtractionJobScalarFieldEnum)[keyof typeof ProductExtractionJobScalarFieldEnum]
+
+
+export const ProductExtractionSourceScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  spaceId: 'spaceId',
+  kind: 'kind',
+  url: 'url',
+  finalUrl: 'finalUrl',
+  storagePath: 'storagePath',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  byteSize: 'byteSize',
+  textContent: 'textContent',
+  createdAt: 'createdAt'
+} as const
+
+export type ProductExtractionSourceScalarFieldEnum = (typeof ProductExtractionSourceScalarFieldEnum)[keyof typeof ProductExtractionSourceScalarFieldEnum]
 
 
 export const InvProductOptionScalarFieldEnum = {
@@ -1331,6 +1392,18 @@ export const SpaceOptionCodeAliasScalarFieldEnum = {
 export type SpaceOptionCodeAliasScalarFieldEnum = (typeof SpaceOptionCodeAliasScalarFieldEnum)[keyof typeof SpaceOptionCodeAliasScalarFieldEnum]
 
 
+export const SpaceAtomicWordScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  word: 'word',
+  normalized: 'normalized',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceAtomicWordScalarFieldEnum = (typeof SpaceAtomicWordScalarFieldEnum)[keyof typeof SpaceAtomicWordScalarFieldEnum]
+
+
 export const ProductListingScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -1401,6 +1474,80 @@ export const ChannelProductScalarFieldEnum = {
 } as const
 
 export type ChannelProductScalarFieldEnum = (typeof ChannelProductScalarFieldEnum)[keyof typeof ChannelProductScalarFieldEnum]
+
+
+export const KeywordMasterScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  keyword: 'keyword',
+  normalized: 'normalized',
+  despaced: 'despaced',
+  sortedKey: 'sortedKey',
+  category: 'category',
+  type: 'type',
+  source: 'source',
+  status: 'status',
+  score: 'score',
+  scoreInputs: 'scoreInputs',
+  researchedAt: 'researchedAt',
+  memo: 'memo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KeywordMasterScalarFieldEnum = (typeof KeywordMasterScalarFieldEnum)[keyof typeof KeywordMasterScalarFieldEnum]
+
+
+export const KeywordMasterLinkScalarFieldEnum = {
+  id: 'id',
+  keywordId: 'keywordId',
+  productId: 'productId',
+  listingId: 'listingId',
+  role: 'role',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KeywordMasterLinkScalarFieldEnum = (typeof KeywordMasterLinkScalarFieldEnum)[keyof typeof KeywordMasterLinkScalarFieldEnum]
+
+
+export const ChannelKeywordRuleScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  channelId: 'channelId',
+  maxKeywords: 'maxKeywords',
+  nameTargetMin: 'nameTargetMin',
+  nameTargetMax: 'nameTargetMax',
+  nameSoftMax: 'nameSoftMax',
+  nameHardMax: 'nameHardMax',
+  bannedTerms: 'bannedTerms',
+  replaceDefaultTerms: 'replaceDefaultTerms',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelKeywordRuleScalarFieldEnum = (typeof ChannelKeywordRuleScalarFieldEnum)[keyof typeof ChannelKeywordRuleScalarFieldEnum]
+
+
+export const KeywordChangeLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  listingId: 'listingId',
+  productId: 'productId',
+  beforeName: 'beforeName',
+  afterName: 'afterName',
+  beforeKeywords: 'beforeKeywords',
+  afterKeywords: 'afterKeywords',
+  reason: 'reason',
+  reasonNote: 'reasonNote',
+  observeMetric: 'observeMetric',
+  multiChange: 'multiChange',
+  actorUserId: 'actorUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type KeywordChangeLogScalarFieldEnum = (typeof KeywordChangeLogScalarFieldEnum)[keyof typeof KeywordChangeLogScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {
@@ -1510,6 +1657,8 @@ export const WorkspaceAiCreditScalarFieldEnum = {
   yearMonth: 'yearMonth',
   imageUsed: 'imageUsed',
   imageQuota: 'imageQuota',
+  textUsed: 'textUsed',
+  textQuota: 'textQuota',
   textTokensUsed: 'textTokensUsed',
   textTokenQuota: 'textTokenQuota',
   createdAt: 'createdAt',
@@ -1554,6 +1703,7 @@ export const TextGenerationLogScalarFieldEnum = {
   latencyMs: 'latencyMs',
   errorCode: 'errorCode',
   errorMessage: 'errorMessage',
+  creditMonth: 'creditMonth',
   createdAt: 'createdAt'
 } as const
 
@@ -2310,194 +2460,6 @@ export const HiringMessageTemplateScalarFieldEnum = {
 export type HiringMessageTemplateScalarFieldEnum = (typeof HiringMessageTemplateScalarFieldEnum)[keyof typeof HiringMessageTemplateScalarFieldEnum]
 
 
-export const BoProductScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  name: 'name',
-  category: 'category',
-  oneLinerPitch: 'oneLinerPitch',
-  homepageUrl: 'homepageUrl',
-  crawledText: 'crawledText',
-  crawledAt: 'crawledAt',
-  crawlStatus: 'crawlStatus',
-  targetCustomer: 'targetCustomer',
-  features: 'features',
-  ctaUrl: 'ctaUrl',
-  customFields: 'customFields',
-  isActive: 'isActive',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type BoProductScalarFieldEnum = (typeof BoProductScalarFieldEnum)[keyof typeof BoProductScalarFieldEnum]
-
-
-export const BoIdeationScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  userId: 'userId',
-  productId: 'productId',
-  userPromptInput: 'userPromptInput',
-  appealPoints: 'appealPoints',
-  providerName: 'providerName',
-  providerModel: 'providerModel',
-  latencyMs: 'latencyMs',
-  promptTraceHash: 'promptTraceHash',
-  createdAt: 'createdAt'
-} as const
-
-export type BoIdeationScalarFieldEnum = (typeof BoIdeationScalarFieldEnum)[keyof typeof BoIdeationScalarFieldEnum]
-
-
-export const BoMaterialScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  productId: 'productId',
-  ideationId: 'ideationId',
-  title: 'title',
-  appealPoint: 'appealPoint',
-  angle: 'angle',
-  outline: 'outline',
-  targetKeyword: 'targetKeyword',
-  status: 'status',
-  approvedByUserId: 'approvedByUserId',
-  approvedAt: 'approvedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type BoMaterialScalarFieldEnum = (typeof BoMaterialScalarFieldEnum)[keyof typeof BoMaterialScalarFieldEnum]
-
-
-export const BoPostScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  userId: 'userId',
-  materialId: 'materialId',
-  title: 'title',
-  doc: 'doc',
-  bodyMarkdown: 'bodyMarkdown',
-  status: 'status',
-  targetKeyword: 'targetKeyword',
-  relatedKeywords: 'relatedKeywords',
-  ctaUrl: 'ctaUrl',
-  publishApprovedByUserId: 'publishApprovedByUserId',
-  publishApprovedAt: 'publishApprovedAt',
-  generationTraceHash: 'generationTraceHash',
-  errorMessage: 'errorMessage',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type BoPostScalarFieldEnum = (typeof BoPostScalarFieldEnum)[keyof typeof BoPostScalarFieldEnum]
-
-
-export const BoPostVersionScalarFieldEnum = {
-  id: 'id',
-  postId: 'postId',
-  spaceId: 'spaceId',
-  versionNumber: 'versionNumber',
-  title: 'title',
-  doc: 'doc',
-  note: 'note',
-  createdByUserId: 'createdByUserId',
-  createdAt: 'createdAt'
-} as const
-
-export type BoPostVersionScalarFieldEnum = (typeof BoPostVersionScalarFieldEnum)[keyof typeof BoPostVersionScalarFieldEnum]
-
-
-export const BoChannelScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  platform: 'platform',
-  name: 'name',
-  formatProfile: 'formatProfile',
-  publisherMode: 'publisherMode',
-  config: 'config',
-  isActive: 'isActive',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type BoChannelScalarFieldEnum = (typeof BoChannelScalarFieldEnum)[keyof typeof BoChannelScalarFieldEnum]
-
-
-export const BoPostVariantScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  postId: 'postId',
-  channelId: 'channelId',
-  title: 'title',
-  doc: 'doc',
-  exportedMarkdown: 'exportedMarkdown',
-  exportedHtml: 'exportedHtml',
-  status: 'status',
-  errorMessage: 'errorMessage',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type BoPostVariantScalarFieldEnum = (typeof BoPostVariantScalarFieldEnum)[keyof typeof BoPostVariantScalarFieldEnum]
-
-
-export const BoDeploymentScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  postId: 'postId',
-  variantId: 'variantId',
-  channelId: 'channelId',
-  status: 'status',
-  platformUrl: 'platformUrl',
-  errorCode: 'errorCode',
-  errorMessage: 'errorMessage',
-  publishedAt: 'publishedAt',
-  scheduledAt: 'scheduledAt',
-  deletedAt: 'deletedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type BoDeploymentScalarFieldEnum = (typeof BoDeploymentScalarFieldEnum)[keyof typeof BoDeploymentScalarFieldEnum]
-
-
-export const BoJobScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  kind: 'kind',
-  status: 'status',
-  targetId: 'targetId',
-  payload: 'payload',
-  scheduledAt: 'scheduledAt',
-  claimedAt: 'claimedAt',
-  claimedBy: 'claimedBy',
-  completedAt: 'completedAt',
-  attempts: 'attempts',
-  errorMessage: 'errorMessage',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type BoJobScalarFieldEnum = (typeof BoJobScalarFieldEnum)[keyof typeof BoJobScalarFieldEnum]
-
-
-export const BoChannelCredentialScalarFieldEnum = {
-  id: 'id',
-  spaceId: 'spaceId',
-  channelId: 'channelId',
-  kind: 'kind',
-  encryptedPayload: 'encryptedPayload',
-  iv: 'iv',
-  expiresAt: 'expiresAt',
-  lastVerifiedAt: 'lastVerifiedAt',
-  lastError: 'lastError',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type BoChannelCredentialScalarFieldEnum = (typeof BoChannelCredentialScalarFieldEnum)[keyof typeof BoChannelCredentialScalarFieldEnum]
-
-
 export const BillingDeckProductScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -2577,6 +2539,19 @@ export const BillingChargeScalarFieldEnum = {
 } as const
 
 export type BillingChargeScalarFieldEnum = (typeof BillingChargeScalarFieldEnum)[keyof typeof BillingChargeScalarFieldEnum]
+
+
+export const AdminAuditLogScalarFieldEnum = {
+  id: 'id',
+  actorUserId: 'actorUserId',
+  action: 'action',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  meta: 'meta',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -300,19 +300,19 @@ export function BillingSettingsClient({
         })
         const json = await res.json()
         if (!res.ok) {
-          setBanner({ type: 'error', message: json?.error ?? 'deck 추가에 실패했습니다' })
+          setBanner({ type: 'error', message: json?.error ?? '업무 추가에 실패했습니다' })
           return
         }
         const { prorated, amount } = json as { prorated: boolean; amount: number }
         setBanner({
           type: 'success',
           message: prorated
-            ? `deck이 추가되었습니다 (일할 결제 ${formatWon(amount)})`
-            : 'deck 구독이 재개되었습니다',
+            ? `추가되었습니다 (일할 결제 ${formatWon(amount)})`
+            : '구독이 재개되었습니다',
         })
         await load()
       } catch {
-        setBanner({ type: 'error', message: 'deck 추가에 실패했습니다' })
+        setBanner({ type: 'error', message: '업무 추가에 실패했습니다' })
       } finally {
         setDeckBusyId(null)
       }
@@ -332,7 +332,7 @@ export function BillingSettingsClient({
         })
         const json = await res.json()
         if (!res.ok) {
-          setBanner({ type: 'error', message: json?.error ?? 'deck 해제에 실패했습니다' })
+          setBanner({ type: 'error', message: json?.error ?? '해제에 실패했습니다' })
           return
         }
         const { effectiveAt } = json as { effectiveAt: string | null }
@@ -342,7 +342,7 @@ export function BillingSettingsClient({
         })
         await load()
       } catch {
-        setBanner({ type: 'error', message: 'deck 해제에 실패했습니다' })
+        setBanner({ type: 'error', message: '해제에 실패했습니다' })
       } finally {
         setDeckBusyId(null)
       }
@@ -390,6 +390,8 @@ export function BillingSettingsClient({
 
   const { subscription, method, charges, entitlement } = data
   const trialDaysLeft = daysUntil(subscription?.trialEndsAt ?? null)
+  // 유료 전환된 업무가 하나도 없으면 구독 자체가 성립하지 않는다 (전 업무 무료 제공 중)
+  const hasSubscribableProduct = subscribableProducts.length > 0
   const needsSubscriptionStart =
     !subscription ||
     subscription.status === 'TRIALING' ||
@@ -425,7 +427,7 @@ export function BillingSettingsClient({
           <CardHeader className="flex flex-row items-start justify-between gap-4">
             <div>
               <CardTitle>구독 상태</CardTitle>
-              <CardDescription>워크덱 deck 이용 현황을 확인하세요.</CardDescription>
+              <CardDescription>워크덱 업무 이용 현황을 확인하세요.</CardDescription>
             </div>
             {data.subscription?.exemptFlag && <Badge variant="secondary">무료 이용 중</Badge>}
           </CardHeader>
@@ -433,7 +435,9 @@ export function BillingSettingsClient({
             {!subscription && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Info className="h-4 w-4" />
-                아직 구독을 시작하지 않았습니다.
+                {hasSubscribableProduct
+                  ? '아직 구독을 시작하지 않았습니다.'
+                  : '현재 모든 업무를 무료로 제공하고 있습니다. 유료 청구가 시작되기 전에 미리 안내드립니다.'}
               </div>
             )}
             {subscription?.status === 'TRIALING' && (
@@ -507,12 +511,13 @@ export function BillingSettingsClient({
           )}
         </Card>
 
-        {/* deck 목록 카드 그리드 */}
+        {/* 업무 목록 카드 그리드 */}
         <Card>
           <CardHeader>
-            <CardTitle>Deck별 구독</CardTitle>
+            <CardTitle>업무별 구독</CardTitle>
             <CardDescription>
-              사용 중인 deck과 요금을 확인하고 관리하세요. 표시 금액은 공급가이며 VAT는 별도입니다.
+              사용 중인 업무와 요금을 확인하고 관리하세요. 표시 금액은 VAT가 포함된 실제 결제
+              금액입니다.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -532,7 +537,7 @@ export function BillingSettingsClient({
                         <div
                           className={cn(
                             'flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-gradient-to-br text-white',
-                            meta.gradient
+                            meta?.gradient ?? 'from-slate-400 to-slate-600'
                           )}
                         >
                           <Icon className="h-4 w-4" />
@@ -542,19 +547,27 @@ export function BillingSettingsClient({
                         <div className="truncate text-sm font-medium">
                           {meta?.name ?? product.name}
                         </div>
-                        {product.pricingMode === 'SUBSCRIPTION' && (
-                          <div className="text-xs text-muted-foreground">
-                            월 {formatWon(product.monthlyPrice)}
-                            <span className="ml-1">(VAT 별도)</span>
-                          </div>
-                        )}
+                        <div className="text-xs text-muted-foreground">
+                          월 {formatWon(Math.round(product.monthlyPrice * 1.1))}
+                          <span className="ml-1">
+                            (VAT 포함 / 공급가 {formatWon(product.monthlyPrice)})
+                          </span>
+                        </div>
                       </div>
                     </div>
 
                     {product.pricingMode === 'FREE_BETA' ? (
-                      <Badge variant="secondary" className="w-fit">
-                        무료 베타
-                      </Badge>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary" className="w-fit">
+                            현재 무료 제공 중
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          정식 구독료는 월 {formatWon(Math.round(product.monthlyPrice * 1.1))}
+                          입니다. 유료 청구 시작 전에 미리 안내드립니다.
+                        </TooltipContent>
+                      </Tooltip>
                     ) : (
                       <div className="flex flex-wrap items-center gap-2">
                         {reasonBadge && (
@@ -629,7 +642,7 @@ export function BillingSettingsClient({
                           </Button>
                         )}
 
-                        {!item && needsSubscriptionStart && isOwner && (
+                        {!item && needsSubscriptionStart && isOwner && hasSubscribableProduct && (
                           <div className="ml-auto flex items-center gap-1.5">
                             <Checkbox
                               id={`deck-select-${product.id}`}
@@ -654,11 +667,11 @@ export function BillingSettingsClient({
         </Card>
 
         {/* 구독 시작 카드 */}
-        {needsSubscriptionStart && isOwner && (
+        {needsSubscriptionStart && isOwner && hasSubscribableProduct && (
           <Card>
             <CardHeader>
               <CardTitle>구독 시작</CardTitle>
-              <CardDescription>이용할 deck을 선택하고 구독을 시작하세요.</CardDescription>
+              <CardDescription>이용할 업무를 선택하고 구독을 시작하세요.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {selectedDecks.length > 0 && (

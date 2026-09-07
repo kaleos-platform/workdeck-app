@@ -34,6 +34,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
+    // 업무별 판매 상품 상세
+    ...MARKETING_DECK_SLUGS.map((slug) => ({
+      url: buildMarketingUrl(`/pricing/${slug}`),
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
   ]
 
   const about: MetadataRoute.Sitemap = [
@@ -60,6 +67,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: buildMarketingUrl('/privacy'),
+      lastModified: now,
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: buildMarketingUrl('/refund'),
       lastModified: now,
       changeFrequency: 'yearly',
       priority: 0.3,

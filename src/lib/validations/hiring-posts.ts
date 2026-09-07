@@ -165,6 +165,15 @@ export const createContentSchema = z.object({
 })
 export type CreateContentInput = z.infer<typeof createContentSchema>
 
+// 운영 어드민 샘플 템플릿 블록 — 'positions'(직무 정보)는 실제 공고(HiringPostingPosition)에
+// 종속된 블록이라 postingId 없는 샘플 템플릿에는 추가할 수 없다.
+export const adminContentTypeEnum = z.enum(['image', 'text', 'button', 'design'])
+export const createSampleContentSchema = z.object({
+  contentType: adminContentTypeEnum,
+  sortOrder: z.number().int().optional(),
+})
+export type CreateSampleContentInput = z.infer<typeof createSampleContentSchema>
+
 export const updateContentSchema = z.object({
   // 블록 제목 — 빈 문자열/공백은 null 로 정규화(리스트에서 "카드 N" 폴백). trim 후 최대 100자.
   title: z
@@ -228,6 +237,12 @@ export const createTemplateSchema = z.object({
   templateId: idLike.optional(),
 })
 export type CreateTemplateInput = z.infer<typeof createTemplateSchema>
+
+// 운영 어드민 — 빈 글로벌 샘플 템플릿 생성 (spaceId=null, isSample=true)
+export const createSampleTemplateSchema = z.object({
+  name: z.string().min(1, '템플릿 이름을 입력하세요').max(200),
+})
+export type CreateSampleTemplateInput = z.infer<typeof createSampleTemplateSchema>
 
 // "템플릿 불러오기" — 템플릿 블록으로 공고 상세 블록 전체 교체
 export const applyTemplateSchema = z.object({

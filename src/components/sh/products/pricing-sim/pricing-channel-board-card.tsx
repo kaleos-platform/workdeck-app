@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { AlertTriangle, ChevronDown, ChevronUp, Plus, Settings2 } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronUp, Plus, Settings2, X } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -246,6 +246,10 @@ export function PricingChannelBoardCard({
   // (기존엔 headline NONE 셀을 써서 프로모션이 배지·하한판정에 반영되지 않는 버그가 있었음)
   // cell 은 위 가드에서 non-null 로 좁혀진 상태.
   const displayCell = hasPromo && promoCell != null ? promoCell : cell
+  // 프로모션이 실제로 가격을 낮췄는지 (조건 미충족·값 0이면 false)
+  const promoApplied = hasPromo && promoCell != null && promoCell.finalPrice !== cell.finalPrice
+  // 값 0인 프로모션(금액만 비운 상태)은 배지·현재 할인에서 숨김
+  const hasPromoValue = hasPromo && promotionValue.value > 0
 
   return (
     <div className="rounded-xl border border-[var(--ps-border)] bg-[var(--ps-card)] p-5 shadow-sm">
@@ -269,8 +273,16 @@ export function PricingChannelBoardCard({
             {isManual ? '판매가 (수동)' : `권장 판매가${exceedsRetail ? ' (소비자가 상한)' : ''}`}
           </p>
           {/* 항목1: 판매가 우측 소비자가 대비 할인율 — 배경 없는 텍스트(마진 배지와 스타일 구분) */}
-          <div className="flex items-center justify-end gap-2">
-            <p className="text-2xl font-bold tabular-nums">₩{fmt(cell.finalPrice)}</p>
+          <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5">
+            {/* 프로모션 적용 시: 원 판매가 취소선 → 실제 판매가 */}
+            {promoApplied && promoCell != null && (
+              <span className="text-sm text-muted-foreground tabular-nums line-through">
+                ₩{fmt(cell.finalPrice)}
+              </span>
+            )}
+            <p className="text-2xl font-bold tabular-nums">
+              ₩{fmt(promoApplied && promoCell != null ? promoCell.finalPrice : cell.finalPrice)}
+            </p>
             {retailCap != null && cell.finalPrice > 0 && (
               <span
                 className="text-xs font-semibold text-emerald-600 tabular-nums"
@@ -413,16 +425,38 @@ export function PricingChannelBoardCard({
       {/* 프로모션 — 채널별 설정(강조 버튼+툴팁) + 현재 할인·여력 정보 통합 */}
       <div className="mt-4 rounded-lg border border-[var(--ps-border)] bg-[var(--ps-muted)] px-4 py-3">
         {/* 헤더: 제목 + 설정 버튼 */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-sm font-semibold">프로모션</span>
-            {hasPromo && promoLabelText && (
+            {hasPromoValue && promoLabelText && (
               <Badge
                 variant="outline"
                 className="border-violet-300 bg-violet-50 px-1.5 py-0 text-[11px] font-medium text-violet-700"
               >
                 {promoLabelText}
               </Badge>
+            )}
+            {/* 항목5: 현재 할인 — 별도 행 대신 프로모션 금액 배지 우측에 인라인 배치 */}
+            {hasPromoValue && (
+              <span className="text-xs text-muted-foreground">
+                현재 할인{' '}
+                <span className="font-semibold text-foreground tabular-nums">
+                  {(currentDiscount * 100).toFixed(0)}%
+                </span>
+              </span>
+            )}
+            {hasPromo && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                title="프로모션 해제"
+                aria-label="프로모션 해제"
+                className="h-5 w-5 text-muted-foreground hover:text-foreground"
+                onClick={() => onPromotionChange({ type: 'NONE', value: 0 })}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
             )}
             {promoConditionUnmet && (
               <Badge
@@ -454,6 +488,7 @@ export function PricingChannelBoardCard({
                   <PricingPromotionCard
                     value={promotionValue}
                     onChange={onPromotionChange}
+                    onReset={() => onPromotionChange({ type: 'NONE', value: 0 })}
                     embedded
                   />
                 </PopoverContent>
@@ -466,28 +501,8 @@ export function PricingChannelBoardCard({
           </TooltipProvider>
         </div>
 
-        {/* 현재 할인 · 하한 한계 요약 */}
-        <div className="mt-2.5 flex items-baseline justify-between text-[13px]">
-          <span className="text-muted-foreground">
-            현재 할인{' '}
-            <span className="font-semibold text-foreground tabular-nums">
-              {(currentDiscount * 100).toFixed(0)}%
-            </span>
-          </span>
-          {maxDiscount != null ? (
-            <span className="text-muted-foreground">
-              하한 한계{' '}
-              <span className="font-semibold text-destructive tabular-nums">
-                −{(maxDiscount * 100).toFixed(0)}%
-              </span>
-            </span>
-          ) : (
-            <span className="font-semibold text-destructive">여력 없음</span>
-          )}
-        </div>
-
-        {/* 여력 상세 (하단 통합) */}
-        <p className="mt-1.5 text-[13px] leading-snug">
+        {/* 여력 상세 — 하한 정보는 이 문장에 모두 포함(항목6: 별도 '하한 한계' 표시 제거) */}
+        <p className="mt-2 text-[13px] leading-snug">
           {maxDiscount == null ? (
             <span className="text-destructive">
               0% 할인에서도 마진 하한 {(floorPct * 100).toFixed(0)}% 미달

@@ -16,7 +16,6 @@ const DECK_OG_GRADIENTS: Record<MarketingDeckSlugString, [string, string]> = {
   'sales-content': ['#d946ef', '#4f46e5'],
   finance: ['#10b981', '#0d9488'],
   recruiting: ['#0ea5e9', '#1d4ed8'],
-  'blog-ops': ['#0ea5e9', '#0891b2'],
 }
 
 interface Props {

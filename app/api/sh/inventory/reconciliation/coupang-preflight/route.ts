@@ -39,7 +39,9 @@ export async function GET() {
 
   const lastReconciliation = mappedLocation
     ? await prisma.invReconciliation.findFirst({
-        where: { spaceId, locationId: mappedLocation.id },
+        // CANCELLED 는 사용자가 삭제한 대조 — 자동 대조 cron 의 스냅샷 마커로만 남아 있으므로
+        // "최근 대조" 표시에서는 제외한다(지운 것이 최근 대조로 보이면 안 된다).
+        where: { spaceId, locationId: mappedLocation.id, status: { not: 'CANCELLED' } },
         orderBy: { snapshotDate: 'desc' },
         select: { id: true, snapshotDate: true, createdAt: true, status: true },
       })

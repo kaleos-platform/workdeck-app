@@ -9,7 +9,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,6 +19,7 @@ import {
   bucketValueFor,
   formatKRW,
   resolveDisplayChannels,
+  type DisplayChannel,
   type RevenueBucket,
 } from '@/lib/sh/sales-analytics'
 
@@ -42,6 +42,78 @@ const ordKey = (id: string) => `${ORD_PREFIX}${id}`
 
 type Metric = '매출' | '주문' | '매출+주문'
 const METRICS: Metric[] = ['매출', '주문', '매출+주문']
+
+const formatOrders = (n: number) => `${n.toLocaleString('ko-KR')}건`
+
+/**
+ * 채널당 1행 툴팁.
+ * - 값이 0인 채널은 숨긴다 (채널 수만큼 ₩0 행이 쌓여 차트 밖까지 넘치던 문제)
+ * - 합계는 "선택된 채널" 기준 → 화면 스택 높이·하단 피벗 테이블 합계와 일치
+ */
+function ChannelTooltip({
+  active,
+  payload,
+  label,
+  visibleChannels,
+  metric,
+}: {
+  active?: boolean
+  payload?: { payload: ChartRow }[]
+  label?: string
+  visibleChannels: DisplayChannel[]
+  metric: Metric
+}) {
+  if (!active || !payload?.length) return null
+  const row = payload[0].payload
+  const showRev = metric === '매출' || metric === '매출+주문'
+  const showOrd = metric === '주문' || metric === '매출+주문'
+
+  const rows = visibleChannels.map((dc) => ({
+    dc,
+    revenue: Number(row[dc.id] ?? 0),
+    orderCount: Number(row[ordKey(dc.id)] ?? 0),
+  }))
+  // 합계는 필터 전 전체 선택 채널 기준
+  const total = rows.reduce(
+    (acc, r) => ({ revenue: acc.revenue + r.revenue, orderCount: acc.orderCount + r.orderCount }),
+    { revenue: 0, orderCount: 0 }
+  )
+  const visibleRows = rows.filter((r) =>
+    metric === '매출' ? r.revenue !== 0 : metric === '주문' ? r.orderCount !== 0 : r.revenue !== 0 || r.orderCount !== 0
+  )
+
+  const valueText = (v: { revenue: number; orderCount: number }) =>
+    showRev && showOrd
+      ? `${formatKRW(v.revenue)} / ${formatOrders(v.orderCount)}`
+      : showRev
+        ? formatKRW(v.revenue)
+        : formatOrders(v.orderCount)
+
+  return (
+    <div className="min-w-[180px] space-y-1 rounded-md border bg-popover px-3 py-2 text-xs shadow-md">
+      <p className="font-medium text-muted-foreground">{label}</p>
+      {/* 채널 행만 스크롤 — 합계는 항상 보이도록 스크롤 영역 밖에 둔다 */}
+      <div className="max-h-[168px] space-y-0.5 overflow-y-auto tabular-nums">
+        {visibleRows.map((r) => (
+          <p key={r.dc.id} className="flex justify-between gap-3">
+            <span className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-2 w-2 shrink-0 rounded-[2px]"
+                style={{ backgroundColor: r.dc.color }}
+              />
+              <span className="text-muted-foreground">{r.dc.name}</span>
+            </span>
+            <span>{valueText(r)}</span>
+          </p>
+        ))}
+      </div>
+      <p className="flex justify-between gap-3 border-t pt-1 tabular-nums">
+        <span className="text-muted-foreground">합계</span>
+        <span className="font-semibold">{valueText(total)}</span>
+      </p>
+    </div>
+  )
+}
 
 export function ChannelRevenueStackedChart({
   buckets,
@@ -78,15 +150,6 @@ export function ChannelRevenueStackedChart({
       return row
     })
   }, [buckets, visibleChannels])
-
-  const nameById = useMemo(() => {
-    const m = new Map<string, string>()
-    displayChannels.forEach((dc) => {
-      m.set(dc.id, dc.name)
-      m.set(ordKey(dc.id), `${dc.name} 주문`)
-    })
-    return m
-  }, [displayChannels])
 
   const allSelected =
     typedChannels.length > 0 && typedChannels.every((c) => selectedChannelIds.has(c.id))
@@ -174,19 +237,12 @@ export function ChannelRevenueStackedChart({
                 tickFormatter={(v) => v.toLocaleString('ko-KR')}
               />
               <Tooltip
-                formatter={
-                  ((value: number | string | undefined, name: string | number | undefined) => {
-                    const num = typeof value === 'number' ? value : Number(value ?? 0)
-                    const key = String(name ?? '')
-                    const display = nameById.get(key) ?? key
-                    if (key.startsWith(ORD_PREFIX)) {
-                      return [`${num.toLocaleString('ko-KR')}건`, display] as [string, string]
-                    }
-                    return [formatKRW(num), display] as [string, string]
-                  }) as never
+                allowEscapeViewBox={{ x: false, y: false }}
+                wrapperStyle={{ zIndex: 50 }}
+                content={
+                  (<ChannelTooltip visibleChannels={visibleChannels} metric={metric} />) as never
                 }
               />
-              <Legend formatter={(value) => nameById.get(String(value)) ?? String(value)} />
               {showBars &&
                 visibleChannels.map((dc) => (
                   <Bar key={dc.id} yAxisId="left" dataKey={dc.id} stackId="rev" fill={dc.color} />

@@ -16,15 +16,22 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(searchParams.get('page') ?? 1))
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') ?? 20)))
 
+  // CANCELLED 는 사용자가 삭제한 대조 — 자동 대조 cron 의 스냅샷 마커로만 남겨두고
+  // 목록에서는 숨긴다(삭제한 것처럼 보여야 한다).
+  const listWhere = {
+    spaceId: resolved.space.id,
+    status: { not: 'CANCELLED' as const },
+  }
+
   const [data, total] = await Promise.all([
     prisma.invReconciliation.findMany({
-      where: { spaceId: resolved.space.id },
+      where: listWhere,
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: { location: { select: { id: true, name: true } } },
     }),
-    prisma.invReconciliation.count({ where: { spaceId: resolved.space.id } }),
+    prisma.invReconciliation.count({ where: listWhere }),
   ])
 
   // matchResults 는 목록에서는 제외 (용량 큼)
@@ -96,7 +103,7 @@ export async function POST(req: NextRequest) {
       })
       if (!workspace) {
         return errorResponse(
-          '쿠팡 광고 관리자에 연결된 워크스페이스가 없습니다. 쿠팡 광고 관리자 Deck에서 크레덴셜을 등록한 뒤 다시 시도해 주세요.',
+          '쿠팡 광고 관리에 연결된 워크스페이스가 없습니다. 쿠팡 광고 관리에서 크레덴셜을 등록한 뒤 다시 시도해 주세요.',
           404
         )
       }
@@ -137,7 +144,7 @@ export async function POST(req: NextRequest) {
       if (parsed.rows.length === 0) {
         const hint = snapshotDateOverride
           ? `${snapshotDateOverride.toISOString().slice(0, 10)} 자에 수집된 스냅샷이 없습니다. 다른 기준일을 선택하거나, 기준일을 비워 가장 최근 스냅샷을 사용하세요.`
-          : '쿠팡 광고 관리자 Deck에서 재고 수집이 한 번 이상 실행됐는지 확인해 주세요.'
+          : '쿠팡 광고 관리에서 재고 수집이 한 번 이상 실행됐는지 확인해 주세요.'
         return errorResponse(`연동할 쿠팡 재고 스냅샷이 없습니다. ${hint}`, 400)
       }
 
@@ -191,7 +198,10 @@ export async function POST(req: NextRequest) {
       snapshotDateOverride,
     })
   } catch (err) {
-    if (err instanceof ReconciliationCoreError) return errorResponse(err.message, err.status)
+    if (err instanceof ReconciliationCoreError) {
+      // code/details 를 그대로 내려 클라이언트가 문자열 파싱 없이 분기·안내할 수 있게 한다.
+      return errorResponse(err.message, err.status, { code: err.code, details: err.details })
+    }
     console.error('[reconciliation POST] match 실패', err)
     return errorResponse('매칭 처리에 실패했습니다', 500)
   }

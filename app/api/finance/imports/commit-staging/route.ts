@@ -54,6 +54,91 @@ function parseMappingPairs(raw: unknown): MappingPair[] | null {
   return pairs.length > 0 ? pairs : null
 }
 
+/** Prisma unique 제약 위반 여부. */
+function isUniqueViolation(e: unknown): boolean {
+  return !!e && typeof e === 'object' && (e as { code?: string }).code === 'P2002'
+}
+
+/**
+ * 매핑 프리셋 저장 — 식별 기준은 파일명/이름이 아니라 **파일 형식(헤더 서명)**.
+ * 같은 형식의 프리셋이 있으면 갱신(이름 변경도 반영), 없으면 신규 생성한다.
+ * 매칭은 적용(preview) 경로와 동일한 후보 집합·정렬을 써서 "이 형식으로 저장→이 형식에 적용"을 보장.
+ * 반환값 = 실제로 저장/갱신했는지.
+ */
+async function savePresetForFormat(args: {
+  spaceId: string
+  kind: FinKind
+  headers: string[]
+  pairs: MappingPair[]
+  presetName: string
+  institution: string
+  accountId: string
+}): Promise<boolean> {
+  const { spaceId, kind, headers, pairs, presetName, institution, accountId } = args
+
+  // kind로 좁히지 않는다 — 적용(preview) 경로와 후보 집합을 완전히 일치시킨다.
+  // (preview의 kind는 헤더 휴리스틱, 여기는 사용자가 고른 계좌 종류라 서로 다를 수 있고,
+  //  좁히면 저장한 프리셋이 다시는 매칭되지 않거나 중복 생성된다.)
+  const existing = await prisma.finMappingPreset.findMany({
+    where: { spaceId },
+    orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+    select: {
+      id: true,
+      name: true,
+      institution: true,
+      kind: true,
+      mapping: true,
+      defaultAccountId: true,
+      updatedAt: true,
+    },
+  })
+  const match = findBestPreset(existing as PresetLike[], headers)
+  // 이름 유니크는 [spaceId, name] 전역 — kind가 달라도 충돌한다(후보가 이미 전역이라 그대로 사용).
+  const allNames = existing
+
+  if (match) {
+    // 같은 형식의 기존 프리셋 갱신. 이름을 바꿨으면 반영하되, 충돌하면 이름만 유지하고 매핑은 갱신.
+    const nameTaken = allNames.some((p) => p.name === presetName && p.id !== match.id)
+    const data = {
+      institution,
+      kind,
+      mapping: pairs,
+      defaultAccountId: accountId,
+      ...(presetName !== match.name && !nameTaken ? { name: presetName } : {}),
+    }
+    try {
+      await prisma.finMappingPreset.update({ where: { id: match.id }, data })
+    } catch (e) {
+      if (!isUniqueViolation(e)) throw e
+      // 경합으로 이름이 선점된 경우 — 이름 없이 매핑만 갱신
+      const { name: _drop, ...rest } = data as typeof data & { name?: string }
+      void _drop
+      await prisma.finMappingPreset.update({ where: { id: match.id }, data: rest })
+    }
+    return true
+  }
+
+  // 신규 — 이름 충돌은 접미사로 회피(경합으로 P2002가 나면 1회 재시도).
+  const taken = new Set(allNames.map((p) => p.name))
+  const nextName = (base: string, start: number) => {
+    let name = start === 1 ? base : `${base} (${start})`
+    for (let i = start; taken.has(name); i++) name = `${base} (${i + 1})`
+    return name
+  }
+  const create = (name: string) =>
+    prisma.finMappingPreset.create({
+      data: { spaceId, name, institution, kind, mapping: pairs, defaultAccountId: accountId },
+    })
+  try {
+    await create(nextName(presetName, 1))
+  } catch (e) {
+    if (!isUniqueViolation(e)) throw e
+    taken.add(presetName)
+    await create(nextName(presetName, 2))
+  }
+  return true
+}
+
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('finance')
   if ('error' in resolved) return resolved.error
@@ -242,36 +327,24 @@ export async function POST(req: NextRequest) {
     // 매핑 프리셋 저장(선택) — 파일 형식(헤더) 기준 식별. 파일명/이름과 무관하게
     // 같은 형식이면 기존 프리셋을 갱신(중복/clobber 방지). 매칭은 적용(preview) 경로와
     // 동일한 findBestPreset(파일 헤더)를 사용해 "이 형식으로 저장→이 형식에 적용"을 보장한다.
+    let presetSaved = false
     if (form.get('savePreset') === 'true') {
       const presetName = String(form.get('presetName') ?? '').trim()
       const institution = String(form.get('institution') ?? '').trim() || '미지정'
       if (presetName) {
-        const existing = await prisma.finMappingPreset.findMany({
-          where: { spaceId, kind },
-          select: {
-            id: true,
-            name: true,
-            institution: true,
-            kind: true,
-            mapping: true,
-            defaultAccountId: true,
-          },
-        })
-        const match = findBestPreset(existing as PresetLike[], headers)
-        if (match) {
-          // 같은 형식의 기존 프리셋 갱신(이름은 유지 — 식별은 형식 서명).
-          await prisma.finMappingPreset.update({
-            where: { id: match.id },
-            data: { institution, kind, mapping: pairs, defaultAccountId: accountId },
+        // 프리셋 저장 실패는 적재(이미 커밋됨)를 뒤집지 않는다 — presetSaved 로만 보고.
+        try {
+          presetSaved = await savePresetForFormat({
+            spaceId,
+            kind,
+            headers,
+            pairs,
+            presetName,
+            institution,
+            accountId,
           })
-        } else {
-          // 신규 — 이름 충돌(@@unique([spaceId, name]))은 접미사로 회피.
-          const taken = new Set(existing.map((p) => p.name))
-          let name = presetName
-          for (let i = 2; taken.has(name); i++) name = `${presetName} (${i})`
-          await prisma.finMappingPreset.create({
-            data: { spaceId, name, institution, kind, mapping: pairs, defaultAccountId: accountId },
-          })
+        } catch (e) {
+          console.error('[finance/commit-staging] 프리셋 저장 실패(적재는 성공)', e)
         }
       }
     }
@@ -279,6 +352,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         importId: importRow.id,
+        presetSaved,
         counts: {
           total: parsed.rows.length,
           new: cNew,

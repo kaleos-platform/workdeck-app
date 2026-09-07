@@ -4,7 +4,6 @@ import {
   ShoppingBag,
   Sparkles,
   Landmark,
-  PenSquare,
   Briefcase,
   type LucideIcon,
 } from 'lucide-react'
@@ -14,7 +13,6 @@ import {
   SALES_CONTENT_BASE_PATH,
   FINANCE_DASHBOARD_PATH,
   RECRUITING_HOME_PATH,
-  BLOG_OPS_HOME_PATH,
 } from './deck-routes'
 
 export type DeckVariant =
@@ -24,7 +22,6 @@ export type DeckVariant =
   | 'sales-content'
   | 'finance'
   | 'recruiting'
-  | 'blog-ops'
 
 export type DeckMeta = {
   name: string
@@ -40,7 +37,7 @@ export type DeckMeta = {
  */
 export const DECK_META: Record<DeckVariant, DeckMeta> = {
   'coupang-ads': {
-    name: '쿠팡 광고 관리자',
+    name: '쿠팡 광고 관리',
     href: COUPANG_ADS_BASE_PATH,
     icon: BarChart2,
     gradient: 'from-orange-500 to-red-600',
@@ -68,12 +65,6 @@ export const DECK_META: Record<DeckVariant, DeckMeta> = {
     href: RECRUITING_HOME_PATH,
     icon: Briefcase,
     gradient: 'from-sky-500 to-blue-700',
-  },
-  'blog-ops': {
-    name: '블로그 운영',
-    href: BLOG_OPS_HOME_PATH,
-    icon: PenSquare,
-    gradient: 'from-sky-500 to-cyan-600',
   },
   workdeck: {
     name: 'Workdeck',

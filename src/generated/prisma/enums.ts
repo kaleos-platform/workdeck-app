@@ -81,6 +81,13 @@ export const SpaceMemberRole = {
 export type SpaceMemberRole = (typeof SpaceMemberRole)[keyof typeof SpaceMemberRole]
 
 
+export const PlatformRole = {
+  OPERATOR: 'OPERATOR'
+} as const
+
+export type PlatformRole = (typeof PlatformRole)[keyof typeof PlatformRole]
+
+
 export const AgentActionStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
@@ -220,6 +227,26 @@ export const InvStorageLocationType = {
 export type InvStorageLocationType = (typeof InvStorageLocationType)[keyof typeof InvStorageLocationType]
 
 
+export const ProductExtractionStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED'
+} as const
+
+export type ProductExtractionStatus = (typeof ProductExtractionStatus)[keyof typeof ProductExtractionStatus]
+
+
+export const ProductExtractionSourceKind = {
+  URL: 'URL',
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  PDF: 'PDF'
+} as const
+
+export type ProductExtractionSourceKind = (typeof ProductExtractionSourceKind)[keyof typeof ProductExtractionSourceKind]
+
+
 export const DelBatchStatus = {
   DRAFT: 'DRAFT',
   COMPLETED: 'COMPLETED'
@@ -270,6 +297,70 @@ export const ProductionCostCategory = {
 } as const
 
 export type ProductionCostCategory = (typeof ProductionCostCategory)[keyof typeof ProductionCostCategory]
+
+
+export const KeywordMasterStatus = {
+  PRODUCT_NAME: 'PRODUCT_NAME',
+  SEARCH_TERM: 'SEARCH_TERM',
+  SEARCH_OPTION: 'SEARCH_OPTION',
+  CANDIDATE: 'CANDIDATE',
+  EXCLUDED: 'EXCLUDED',
+  BANNED: 'BANNED'
+} as const
+
+export type KeywordMasterStatus = (typeof KeywordMasterStatus)[keyof typeof KeywordMasterStatus]
+
+
+export const KeywordMasterSource = {
+  COUPANG_AUTOCOMPLETE: 'COUPANG_AUTOCOMPLETE',
+  COUPANG_RELATED: 'COUPANG_RELATED',
+  COUPANG_TOP_PRODUCT: 'COUPANG_TOP_PRODUCT',
+  COUPANG_REVIEW: 'COUPANG_REVIEW',
+  AD_KEYWORD: 'AD_KEYWORD',
+  CUSTOMER_INQUIRY: 'CUSTOMER_INQUIRY',
+  INTERNAL: 'INTERNAL'
+} as const
+
+export type KeywordMasterSource = (typeof KeywordMasterSource)[keyof typeof KeywordMasterSource]
+
+
+export const KeywordMasterType = {
+  SYNONYM: 'SYNONYM',
+  PARENT_CATEGORY: 'PARENT_CATEGORY',
+  MATERIAL: 'MATERIAL',
+  SHAPE: 'SHAPE',
+  PURPOSE: 'PURPOSE',
+  FEATURE: 'FEATURE',
+  ALIAS: 'ALIAS',
+  COMPETITOR: 'COMPETITOR',
+  UNCLASSIFIED: 'UNCLASSIFIED'
+} as const
+
+export type KeywordMasterType = (typeof KeywordMasterType)[keyof typeof KeywordMasterType]
+
+
+export const KeywordLinkRole = {
+  MAIN: 'MAIN',
+  SUB: 'SUB',
+  DENY: 'DENY'
+} as const
+
+export type KeywordLinkRole = (typeof KeywordLinkRole)[keyof typeof KeywordLinkRole]
+
+
+export const KeywordChangeReason = {
+  WRONG_MAIN_KEYWORD: 'WRONG_MAIN_KEYWORD',
+  UNCLEAR_NAME: 'UNCLEAR_NAME',
+  POLICY_RISK: 'POLICY_RISK',
+  NEW_SEARCH_DATA: 'NEW_SEARCH_DATA',
+  SPEC_CHANGE: 'SPEC_CHANGE',
+  BRAND_MODEL_CHANGE: 'BRAND_MODEL_CHANGE',
+  INITIAL_REGISTRATION: 'INITIAL_REGISTRATION',
+  TYPO_FIX: 'TYPO_FIX',
+  OTHER: 'OTHER'
+} as const
+
+export type KeywordChangeReason = (typeof KeywordChangeReason)[keyof typeof KeywordChangeReason]
 
 
 export const ScResourceKind = {
@@ -631,110 +722,6 @@ export const HiringNotificationType = {
 } as const
 
 export type HiringNotificationType = (typeof HiringNotificationType)[keyof typeof HiringNotificationType]
-
-
-export const BoCrawlStatus = {
-  NONE: 'NONE',
-  PENDING: 'PENDING',
-  DONE: 'DONE',
-  FAILED: 'FAILED'
-} as const
-
-export type BoCrawlStatus = (typeof BoCrawlStatus)[keyof typeof BoCrawlStatus]
-
-
-export const BoMaterialStatus = {
-  PROPOSED: 'PROPOSED',
-  APPROVED: 'APPROVED',
-  REJECTED: 'REJECTED',
-  ARCHIVED: 'ARCHIVED'
-} as const
-
-export type BoMaterialStatus = (typeof BoMaterialStatus)[keyof typeof BoMaterialStatus]
-
-
-export const BoPostStatus = {
-  GENERATING: 'GENERATING',
-  DRAFT: 'DRAFT',
-  IN_REVIEW: 'IN_REVIEW',
-  PUBLISH_APPROVED: 'PUBLISH_APPROVED',
-  PUBLISHED: 'PUBLISHED',
-  FAILED: 'FAILED',
-  ARCHIVED: 'ARCHIVED'
-} as const
-
-export type BoPostStatus = (typeof BoPostStatus)[keyof typeof BoPostStatus]
-
-
-export const BoPlatform = {
-  NAVER_BLOG: 'NAVER_BLOG',
-  TISTORY: 'TISTORY',
-  OWN_HOMEPAGE: 'OWN_HOMEPAGE'
-} as const
-
-export type BoPlatform = (typeof BoPlatform)[keyof typeof BoPlatform]
-
-
-export const BoPublisherMode = {
-  MANUAL: 'MANUAL',
-  BROWSER: 'BROWSER'
-} as const
-
-export type BoPublisherMode = (typeof BoPublisherMode)[keyof typeof BoPublisherMode]
-
-
-export const BoVariantStatus = {
-  GENERATING: 'GENERATING',
-  READY: 'READY',
-  EDITED: 'EDITED',
-  FAILED: 'FAILED'
-} as const
-
-export type BoVariantStatus = (typeof BoVariantStatus)[keyof typeof BoVariantStatus]
-
-
-export const BoDeploymentStatus = {
-  PENDING: 'PENDING',
-  PUBLISHING: 'PUBLISHING',
-  PUBLISHED: 'PUBLISHED',
-  FAILED: 'FAILED',
-  CANCELED: 'CANCELED',
-  EXPORTED: 'EXPORTED',
-  DELETING: 'DELETING',
-  DELETED: 'DELETED'
-} as const
-
-export type BoDeploymentStatus = (typeof BoDeploymentStatus)[keyof typeof BoDeploymentStatus]
-
-
-export const BoJobKind = {
-  CRAWL_HOMEPAGE: 'CRAWL_HOMEPAGE',
-  GENERATE_DRAFT: 'GENERATE_DRAFT',
-  GENERATE_VARIANT: 'GENERATE_VARIANT',
-  PUBLISH: 'PUBLISH',
-  DELETE_POST: 'DELETE_POST'
-} as const
-
-export type BoJobKind = (typeof BoJobKind)[keyof typeof BoJobKind]
-
-
-export const BoJobStatus = {
-  PENDING: 'PENDING',
-  CLAIMED: 'CLAIMED',
-  COMPLETED: 'COMPLETED',
-  FAILED: 'FAILED'
-} as const
-
-export type BoJobStatus = (typeof BoJobStatus)[keyof typeof BoJobStatus]
-
-
-export const BoCredentialKind = {
-  COOKIE: 'COOKIE',
-  OAUTH: 'OAUTH',
-  API_KEY: 'API_KEY'
-} as const
-
-export type BoCredentialKind = (typeof BoCredentialKind)[keyof typeof BoCredentialKind]
 
 
 export const DeckPricingMode = {

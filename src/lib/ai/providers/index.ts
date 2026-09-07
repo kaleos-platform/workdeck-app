@@ -1,10 +1,20 @@
 // AI 공급자 레이어. TextProvider / ImageProvider 인터페이스 + factory.
 //
 // 로컬 체인(generateTextWithFallback): codex CLI(1순위) → gemini CLI(2순위) → Ollama 맥미니(최종).
-// 셋 다 로컬/self-host exec 이라 Vercel 서버리스에서는 동작하지 않는다.
+// child_process.execFile 인자 배열로 실행하는 로컬/self-host 전용이라 Vercel 서버리스에서는
+// 셋 다 동작하지 않는다 — 개발 환경 경로로 남긴다.
 //
-// 배포 환경에서는 워크스페이스 AI 설정에 따라 SaaS 어댑터(OpenAI/Anthropic/Gemini)를 쓴다 —
-// 진입점은 src/lib/ai/resolve.ts 의 generateTextForSpace. 아래 로컬 체인은 개발 환경 경로로 남긴다.
+// 배포 환경에서는 워크스페이스 AI 설정(BYOK / 워크덱 제공)에 따라 SaaS 어댑터를 쓴다.
+// 진입점은 src/lib/ai/resolve.ts 의 generateTextForSpace.
+//
+// "외부 LLM SaaS 금지"는 sales-content PoC 단계의 제약이었고(docs/plans/2026-04-24-001-*.md R2,
+// 같은 문서가 어댑터 확장 경로를 명시), rules/ADR 로 승격된 적은 없다. 이미 아래가 이 체인을
+// 우회해 외부 API 를 직접 호출한다:
+// - src/lib/finance/ai-suggest.ts (미분류 거래 계정 제안, 2026-08-25 승인)
+// - src/lib/sh/keyword-ai-draft.ts (상품명·검색어 초안, 2026-08-25 승인)
+// - src/lib/agent/llm/agent-loop.ts (Slack 에이전트, Anthropic SDK)
+// resolve.ts 의 SaaS 어댑터는 이 분기들을 하나의 인터페이스로 수렴시킨 것이며,
+// 사용자가 자기 키를 쓰거나(BYOK) 워크덱 키를 쿼터 안에서 쓰도록 선택하게 한다.
 
 import { CodexCliProvider } from './text-codex'
 import { GeminiCliProvider } from './text-gemini'

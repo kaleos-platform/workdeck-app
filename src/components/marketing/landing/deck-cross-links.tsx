@@ -10,7 +10,7 @@ export function DeckCrossLinks({ relatedDecks }: { relatedDecks: MarketingDeckSl
     <section className="border-t px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <h2 className="mb-8 text-center text-2xl font-bold break-keep sm:text-3xl">
-          함께 사용하면 좋은 덱
+          함께 쓰면 좋은 업무
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {relatedDecks.map((slug) => {

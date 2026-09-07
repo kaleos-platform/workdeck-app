@@ -323,6 +323,7 @@ async function maybeNotifyAnalysisDone(
     suggestionCount: number
     campaignCount: number
     workspaceId?: string
+    topSuggestions?: Array<{ type: string; priority: string; target: string; reason: string }>
   }
 ): Promise<void> {
   if (!enabled) {
@@ -411,6 +412,12 @@ export function startAnalysisPoller(): void {
             suggestionCount: result.suggestions.length,
             campaignCount: campaigns.length,
             workspaceId,
+            topSuggestions: result.suggestions.map((s) => ({
+              type: String(s.type),
+              priority: String(s.priority),
+              target: String(s.target),
+              reason: String(s.reason ?? ''),
+            })),
           })
         } else {
           const body = await completeRes.text().catch(() => '')

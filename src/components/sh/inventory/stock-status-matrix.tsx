@@ -20,7 +20,10 @@ type Props = {
   locations: StockLocation[]
   loading: boolean
   selectedLocationId?: string | null
+  /** 관리용 상품명(없으면 공식명) */
   selectedProductName?: string | null
+  /** 공식 상품명 — 관리명과 다를 때만 병기 */
+  selectedProductOfficialName?: string | null
   toolbar?: ReactNode
 }
 
@@ -40,6 +43,7 @@ export function StockStatusMatrix({
   loading,
   selectedLocationId,
   selectedProductName,
+  selectedProductOfficialName,
   toolbar,
 }: Props) {
   const capped = rows.length > ROW_CAP
@@ -51,7 +55,16 @@ export function StockStatusMatrix({
   return (
     <Card className="flex h-full min-h-0 flex-col overflow-hidden">
       <CardHeader className="gap-3">
-        <CardTitle className="text-sm">{selectedProductName ?? '상품 없음'}</CardTitle>
+        <CardTitle className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm">
+          <span>{selectedProductName ?? '상품 없음'}</span>
+          {selectedProductName &&
+            selectedProductOfficialName &&
+            selectedProductOfficialName !== selectedProductName && (
+              <span className="text-xs font-normal text-muted-foreground">
+                {selectedProductOfficialName}
+              </span>
+            )}
+        </CardTitle>
         <div className="flex flex-wrap items-center justify-between gap-2">
           {toolbar}
           <div className="flex items-center gap-3">
@@ -130,7 +143,7 @@ export function StockStatusMatrix({
                         <div className="text-sm font-medium">{row.optionName}</div>
                         <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
                           {row.productInternalName && row.productInternalName !== row.productName
-                            ? `${row.productName} · ${row.productInternalName}`
+                            ? `${row.productInternalName} · ${row.productName}`
                             : row.productName}
                         </div>
                       </td>

@@ -22,16 +22,23 @@ type ProductData = {
   name: string
   internalName: string | null
   nameEn: string | null
-  code: string | null
   description: string | null
   manufacturer: string | null
   manufactureCountry: string | null
   manufactureDate: string | null
-  msrp: number | string | null
   features: string[] | null
   certifications: string[] | null
   brandId: string | null
   groupId: string | null
+}
+
+/** AI 추출 패널이 폼 상태에 직접 주입할 수 있는 필드 — 서버가 직접 쓰면 autosave가 덮어쓴다 */
+export type ProductApplyPatch = {
+  description?: string | null
+  features?: string[]
+  certifications?: string[]
+  manufacturer?: string | null
+  manufactureCountry?: string | null
 }
 
 type Props = {
@@ -45,6 +52,12 @@ type Props = {
   onError?: (msg: string | null) => void
   /** 자동 저장 재시도 트리거를 상위에서 호출할 수 있게 노출 */
   onRetryRefAvailable?: (retry: () => void) => void
+  /**
+   * 상위(AI 추출 패널)가 폼 상태에 직접 값을 주입할 수 있게 노출한다.
+   * 반환된 Promise는 이 주입으로 촉발된 autosave가 성공하면 resolve, 실패하면 reject된다 —
+   * 호출자는 이 Promise가 끝난 뒤에만 "적용됨"으로 확정해야 한다.
+   */
+  onApplyRefAvailable?: (apply: (patch: ProductApplyPatch) => Promise<void>) => void
 }
 
 export function ProductBasicForm({
@@ -54,12 +67,15 @@ export function ProductBasicForm({
   onSavingChange,
   onError,
   onRetryRefAvailable,
+  onApplyRefAvailable,
 }: Props) {
   const [data, setData] = useState<ProductData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeSavePromiseRef = useRef<Promise<void> | null>(null)
+  // onApplyRefAvailable로 주입된 값이 저장 완료(성공/실패)될 때까지 기다리는 호출자들
+  const applyResolversRef = useRef<Array<{ resolve: () => void; reject: (err: Error) => void }>>([])
 
   const [brands, setBrands] = useState<Brand[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -68,16 +84,39 @@ export function ProductBasicForm({
   const [name, setName] = useState('') // 공식 상품명
   const [internalName, setInternalName] = useState('') // 관리 상품명
   const [nameEn, setNameEn] = useState('')
-  const [code, setCode] = useState('')
   const [description, setDescription] = useState('')
   const [manufacturer, setManufacturer] = useState('')
   const [manufactureCountry, setManufactureCountry] = useState('')
   const [manufactureDate, setManufactureDate] = useState('')
-  const [msrp, setMsrp] = useState('')
   const [brandId, setBrandId] = useState('')
   const [groupId, setGroupId] = useState('')
   const [features, setFeatures] = useState<string[]>([])
   const [certifications, setCertifications] = useState<string[]>([])
+
+  // '추가' 직후 새 입력칸으로 포커스·스크롤을 옮긴다. 항목이 많으면 새 행이
+  // 화면 밖에 붙어 버튼이 안 먹은 것처럼 보인다.
+  const featureInputsRef = useRef<Array<HTMLInputElement | null>>([])
+  const certInputsRef = useRef<Array<HTMLInputElement | null>>([])
+  const pendingFocusRef = useRef<{ list: 'features' | 'certifications'; idx: number } | null>(null)
+
+  useEffect(() => {
+    // 삭제로 배열이 줄면 ref에 분리된 노드가 남는다 — 길이를 맞춰 잘라낸다.
+    featureInputsRef.current.length = features.length
+    certInputsRef.current.length = certifications.length
+
+    const pending = pendingFocusRef.current
+    if (!pending) return
+    pendingFocusRef.current = null
+    const list = pending.list === 'features' ? features : certifications
+    // 저장 응답으로 배열이 다시 동기화되면 인덱스가 어긋날 수 있다 — 범위를 벗어나면 포기.
+    if (pending.idx >= list.length) return
+    const el =
+      pending.list === 'features'
+        ? featureInputsRef.current[pending.idx]
+        : certInputsRef.current[pending.idx]
+    el?.focus()
+    el?.scrollIntoView({ block: 'nearest' })
+  }, [features, certifications])
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -95,13 +134,10 @@ export function ProductBasicForm({
       setName(prod.name)
       setInternalName(prod.internalName ?? '')
       setNameEn(prod.nameEn ?? '')
-      setCode(prod.code ?? '')
       setDescription(prod.description ?? '')
       setManufacturer(prod.manufacturer ?? '')
       setManufactureCountry(prod.manufactureCountry ?? '')
       setManufactureDate(prod.manufactureDate ? prod.manufactureDate.slice(0, 7) : '')
-      // msrp는 Prisma Decimal이라 string/number 둘 다 올 수 있음
-      setMsrp(prod.msrp != null ? String(prod.msrp) : '')
       setBrandId(prod.brandId ?? '')
       setFeatures(Array.isArray(prod.features) ? prod.features : [])
       setCertifications(Array.isArray(prod.certifications) ? prod.certifications : [])
@@ -134,16 +170,15 @@ export function ProductBasicForm({
       name !== data.name ||
       internalName !== (data.internalName ?? '') ||
       nameEn !== (data.nameEn ?? '') ||
-      code !== (data.code ?? '') ||
       description !== (data.description ?? '') ||
       manufacturer !== (data.manufacturer ?? '') ||
       manufactureCountry !== (data.manufactureCountry ?? '') ||
       manufactureDate !== ymdToYm(data.manufactureDate) ||
-      msrp !== (data.msrp != null ? String(data.msrp) : '') ||
       brandId !== (data.brandId ?? '') ||
       groupId !== (data.groupId ?? '') ||
-      JSON.stringify(features) !== JSON.stringify(data.features ?? []) ||
-      JSON.stringify(certifications) !== JSON.stringify(data.certifications ?? [])
+      JSON.stringify(features.filter((f) => f.trim())) !== JSON.stringify(data.features ?? []) ||
+      JSON.stringify(certifications.filter((c) => c.trim())) !==
+        JSON.stringify(data.certifications ?? [])
     )
   })()
 
@@ -172,12 +207,10 @@ export function ProductBasicForm({
             name: name.trim(),
             internalName: internalName.trim() || null,
             nameEn: nameEn.trim() || null,
-            code: code.trim() || null,
             description: description.trim() || null,
             manufacturer: manufacturer.trim() || null,
             manufactureCountry: manufactureCountry.trim() || null,
             manufactureDate: manufactureDate ? `${manufactureDate}-01` : null,
-            msrp: msrp ? parseFloat(msrp) : null,
             brandId: brandId || null,
             groupId: groupId || null,
             features: features.filter((f) => f.trim()),
@@ -199,8 +232,11 @@ export function ProductBasicForm({
         const savedProd: ProductData = resData.product ?? resData
         setData(savedProd)
         onSaved?.()
+        applyResolversRef.current.splice(0).forEach((r) => r.resolve())
       } catch (err) {
-        onError?.(err instanceof Error ? err.message : '저장 실패')
+        const message = err instanceof Error ? err.message : '저장 실패'
+        onError?.(message)
+        applyResolversRef.current.splice(0).forEach((r) => r.reject(new Error(message)))
       } finally {
         setSaving(false)
         activeSavePromiseRef.current = null
@@ -213,12 +249,10 @@ export function ProductBasicForm({
     name,
     internalName,
     nameEn,
-    code,
     description,
     manufacturer,
     manufactureCountry,
     manufactureDate,
-    msrp,
     brandId,
     groupId,
     features,
@@ -248,12 +282,10 @@ export function ProductBasicForm({
     name,
     internalName,
     nameEn,
-    code,
     description,
     manufacturer,
     manufactureCountry,
     manufactureDate,
-    msrp,
     brandId,
     groupId,
     features,
@@ -270,6 +302,24 @@ export function ProductBasicForm({
       })
     }
   }, [onRetryRefAvailable, onError])
+
+  // AI 추출 패널 등 상위가 폼 상태에 직접 값을 주입할 수 있는 핸들 노출.
+  // 서버가 직접 DB에 쓰면 사용자가 다른 필드를 편집하는 순간 autosave가 덮어쓰므로,
+  // 반드시 이 함수로 로컬 state를 갱신해 기존 dirty/autosave 경로를 태워야 한다.
+  useEffect(() => {
+    if (!onApplyRefAvailable) return
+    onApplyRefAvailable((patch: ProductApplyPatch) => {
+      if (patch.description !== undefined) setDescription(patch.description ?? '')
+      if (patch.features !== undefined) setFeatures(patch.features)
+      if (patch.certifications !== undefined) setCertifications(patch.certifications)
+      if (patch.manufacturer !== undefined) setManufacturer(patch.manufacturer ?? '')
+      if (patch.manufactureCountry !== undefined)
+        setManufactureCountry(patch.manufactureCountry ?? '')
+      return new Promise<void>((resolve, reject) => {
+        applyResolversRef.current.push({ resolve, reject })
+      })
+    })
+  }, [onApplyRefAvailable])
 
   // 언마운트 정리
   useEffect(() => {
@@ -333,30 +383,6 @@ export function ProductBasicForm({
             value={nameEn}
             onChange={(e) => setNameEn(e.target.value)}
             placeholder="Product Name (선택)"
-          />
-        </div>
-      </div>
-
-      {/* 제품코드 / 소비자가 */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="bf-code">제품코드</Label>
-          <Input
-            id="bf-code"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="(없음)"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="bf-msrp">소비자가 (원)</Label>
-          <Input
-            id="bf-msrp"
-            type="number"
-            min="0"
-            value={msrp}
-            onChange={(e) => setMsrp(e.target.value)}
-            placeholder="0"
           />
         </div>
       </div>
@@ -460,7 +486,10 @@ export function ProductBasicForm({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => setFeatures((prev) => [...prev, ''])}
+            onClick={() => {
+              pendingFocusRef.current = { list: 'features', idx: features.length }
+              setFeatures((prev) => [...prev, ''])
+            }}
           >
             <Plus className="mr-1 h-3 w-3" />
             추가
@@ -470,6 +499,9 @@ export function ProductBasicForm({
           {features.map((f, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <Input
+                ref={(el) => {
+                  featureInputsRef.current[idx] = el
+                }}
                 value={f}
                 onChange={(e) =>
                   setFeatures((prev) => prev.map((x, i) => (i === idx ? e.target.value : x)))
@@ -501,7 +533,10 @@ export function ProductBasicForm({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => setCertifications((prev) => [...prev, ''])}
+            onClick={() => {
+              pendingFocusRef.current = { list: 'certifications', idx: certifications.length }
+              setCertifications((prev) => [...prev, ''])
+            }}
           >
             <Plus className="mr-1 h-3 w-3" />
             추가
@@ -511,6 +546,9 @@ export function ProductBasicForm({
           {certifications.map((c, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <Input
+                ref={(el) => {
+                  certInputsRef.current[idx] = el
+                }}
                 value={c}
                 onChange={(e) =>
                   setCertifications((prev) => prev.map((x, i) => (i === idx ? e.target.value : x)))

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { fetchPageHtml, CrawlError } from '@/lib/bo/crawler'
+import { safeFetchHtml, SafeFetchError } from '@/lib/net/safe-fetch'
 import { htmlToText, HTML_TEXT_MAX_CHARS } from '@/lib/sh/html-to-text'
 import { generateTextForSpace, AiNotConfiguredError, ByokKeyError } from '@/lib/ai/resolve'
 import { TextQuotaExceededError } from '@/lib/ai/credit'
@@ -28,7 +28,11 @@ export const maxDuration = 120
 // 실측: 스마트스토어는 로그인 페이지로 보내는데 그 폼 텍스트가 390자였다 —
 // 길이 문턱만으로는 못 거르므로 아래 추출 결과 공백 판정과 2중으로 막는다.
 const MIN_USABLE_TEXT = 600
-const BLOCKED_STATUSES = new Set([401, 403, 405, 406, 429, 503])
+
+// 입력 자체가 잘못된 경우(사용자가 고칠 수 있음)와 사이트 사정으로 못 읽는 경우를 가른다.
+// 후자는 전부 붙여넣기로 유도한다.
+const BAD_INPUT_CODES = new Set(['INVALID_URL', 'SCHEME_NOT_ALLOWED', 'USERINFO_NOT_ALLOWED', 'PORT_NOT_ALLOWED'])
+const BLOCKED_HOST_CODES = new Set(['PRIVATE_ADDRESS', 'DNS_FAILED'])
 
 function parseDraftJson(content: string) {
   const stripped = content
@@ -71,8 +75,8 @@ export async function POST(req: NextRequest) {
     sourceLabel = url ?? '붙여넣은 상세 내용'
   } else if (url) {
     try {
-      const page = await fetchPageHtml(url)
-      const extracted = htmlToText(page.html, HTML_TEXT_MAX_CHARS, { baseUrl: url })
+      const page = await safeFetchHtml(url)
+      const extracted = htmlToText(page.html, HTML_TEXT_MAX_CHARS, { baseUrl: page.finalUrl })
       if (extracted.text.trim().length < MIN_USABLE_TEXT) {
         return errorResponse(
           '이 페이지에서는 상품 정보를 읽지 못했습니다. 브라우저에서 상세 내용을 복사해 붙여넣어 주세요',
@@ -83,18 +87,19 @@ export async function POST(req: NextRequest) {
       sourceText = extracted.title ? `${extracted.title}\n\n${extracted.text}` : extracted.text
       sourceLabel = url
     } catch (err) {
-      if (err instanceof CrawlError) {
-        if (err.code === 'INVALID_URL') return errorResponse('올바른 상품 URL을 입력하세요', 400)
-        if (err.code === 'BLOCKED_HOST') return errorResponse('접근할 수 없는 주소입니다', 400)
-        if (err.status && BLOCKED_STATUSES.has(err.status)) {
-          return errorResponse(
-            '이 사이트는 자동 수집을 차단합니다. 브라우저에서 상세 내용을 복사해 붙여넣어 주세요',
-            422,
-            { recovery: 'paste' }
-          )
+      if (err instanceof SafeFetchError) {
+        if (BAD_INPUT_CODES.has(err.code)) {
+          return errorResponse('올바른 상품 URL을 입력하세요', 400)
         }
+        if (BLOCKED_HOST_CODES.has(err.code)) {
+          return errorResponse('접근할 수 없는 주소입니다', 400)
+        }
+        // HTTP_ERROR(봇 차단 403 등)·TIMEOUT·CONTENT_TYPE_NOT_ALLOWED·TOO_LARGE 등은
+        // 사용자가 URL 을 고쳐서 해결할 수 없다 — 붙여넣기로 넘긴다.
         return errorResponse(
-          '페이지를 가져오지 못했습니다. 상세 내용을 붙여넣어 주세요',
+          err.code === 'HTTP_ERROR'
+            ? '이 사이트는 자동 수집을 차단합니다. 브라우저에서 상세 내용을 복사해 붙여넣어 주세요'
+            : '페이지를 가져오지 못했습니다. 상세 내용을 붙여넣어 주세요',
           422,
           { recovery: 'paste' }
         )

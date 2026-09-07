@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productSchema } from '@/lib/sh/schemas'
+import { productSearchFilter } from '@/lib/sh/product-search'
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -25,25 +26,21 @@ export async function GET(req: NextRequest) {
   if (groupId === 'none') where.groupId = null
   else if (groupId) where.groupId = groupId
 
-  // includeName=1이면 공식명(name)도 검색 대상에 포함(재고조정 추천 등 상품명 기반 매칭용).
-  const includeName = searchParams.get('includeName') === '1'
-  if (search) {
-    // 기본 검색은 관리 상품명(internalName) 기준 — 공식명(name)은 opt-in 시에만, 브랜드명 포함
-    where.OR = [
-      ...(includeName ? [{ name: { contains: search, mode: 'insensitive' as const } }] : []),
-      { internalName: { contains: search, mode: 'insensitive' } },
-      { nameEn: { contains: search, mode: 'insensitive' } },
-      { code: { contains: search, mode: 'insensitive' } },
-      { brand: { name: { contains: search, mode: 'insensitive' } } },
-      { options: { some: { name: { contains: search, mode: 'insensitive' } } } },
-      { options: { some: { sku: { contains: search, mode: 'insensitive' } } } },
-    ]
+  // tokenized=1이면 파일 상품명 등 검증된 규칙(tokenizeProductName)으로 토큰을 쪼갠다.
+  // 기본은 공백 분리 — 'BLK-S' 같은 정확 검색어가 과분리되지 않도록.
+  const tokenized = searchParams.get('tokenized') === '1'
+
+  const searchFilter = productSearchFilter(search, { aggressive: tokenized })
+  if (searchFilter) {
+    Object.assign(where, searchFilter)
   }
 
   const [products, total] = await Promise.all([
     prisma.invProduct.findMany({
       where,
-      orderBy: { name: 'asc' },
+      // 화면 표시명(productDisplayName)은 관리명(internalName) 우선이므로 정렬도 동일 기준으로 맞춘다.
+      // id 타이브레이크는 페이지네이션 중복/누락 방지용.
+      orderBy: [{ internalName: { sort: 'asc', nulls: 'last' } }, { name: 'asc' }, { id: 'asc' }],
       skip: (page - 1) * pageSize,
       take: pageSize,
       include: {

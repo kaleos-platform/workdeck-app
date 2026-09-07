@@ -143,7 +143,11 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
           layered: boolean
           rocketLocation: { id: string; name: string } | null
           options: { optionId: string; baselineQty: number; additionalQty: number }[]
-          sets?: { listingName: string; setQty: number; items: { optionName: string; perSet: number }[] }[]
+          sets?: {
+            listingName: string
+            setQty: number
+            items: { optionName: string; perSet: number }[]
+          }[]
         }
         let split: Split | null = null
         try {
@@ -457,29 +461,29 @@ export function ProductionRunTransitionDialog({ open, onOpenChange, target, run,
               {layeredSplit && (
                 <div className="space-y-2 rounded-md border border-indigo-200 bg-indigo-50/50 px-3 py-2 text-xs text-indigo-700">
                   <p>
-                    연동 위치 발주(레이어드) — baseline 분은 연동 위치로, 추가분은 사용자 위치로 자동
-                    분배했습니다. 실입고에 맞게 위치·수량을 조정하세요.
+                    연동 위치 기본 입고분은 연동 위치로, 추가분은 사용자 위치로 자동 분배했습니다.
+                    실입고에 맞게 위치·수량을 조정하세요.
                   </p>
                   {baselineSets.length > 0 && (
                     <div className="space-y-1 border-t border-indigo-200/70 pt-1.5">
                       <p className="font-medium">묶음 상품(세트) 기준 확인 · 연동 위치 baseline</p>
                       <ul className="space-y-0.5">
                         {baselineSets.map((s, i) => (
-                          <li key={`${s.listingName}-${i}`} className="flex flex-wrap items-baseline gap-x-2">
+                          <li
+                            key={`${s.listingName}-${i}`}
+                            className="flex flex-wrap items-baseline gap-x-2"
+                          >
                             <span className="font-medium text-foreground">{s.listingName}</span>
                             <span className="tabular-nums">{s.setQty}세트</span>
                             <span className="text-indigo-600/80">
-                              (
-                              {s.items
-                                .map((it) => `${it.optionName}×${it.perSet}`)
-                                .join(' + ')}
-                              )
+                              ({s.items.map((it) => `${it.optionName}×${it.perSet}`).join(' + ')})
                             </span>
                           </li>
                         ))}
                       </ul>
                       <p className="text-[10px] text-indigo-600/70">
-                        구성 옵션이 겹치는 세트는 각각 대안 환산입니다(합산 아님). 실제 입고는 옵션 단위.
+                        구성 옵션이 겹치는 세트는 각각 대안 환산입니다(합산 아님). 실제 입고는 옵션
+                        단위.
                       </p>
                     </div>
                   )}

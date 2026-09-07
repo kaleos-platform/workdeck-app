@@ -27,7 +27,7 @@ import { EXTERNAL_SOURCES, EXTERNAL_SOURCE_LABEL } from '@/lib/inv/external-sour
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
-type ChannelTypeDef = {
+export type ChannelTypeDef = {
   id: string
   name: string
   isSalesChannel: boolean
@@ -41,7 +41,7 @@ type FeeRateRow = {
   ratePercent: string // 폼 입력 — UI는 % (0~100)
 }
 
-type Channel = {
+export type Channel = {
   id: string
   name: string
   channelTypeDefId: string | null

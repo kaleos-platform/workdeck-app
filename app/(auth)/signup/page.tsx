@@ -23,7 +23,7 @@ export default async function SignupPage({
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Workdeck 회원가입</CardTitle>
-        <CardDescription>가입 후 필요한 Deck을 추가해서 업무를 시작하세요</CardDescription>
+        <CardDescription>가입 후 필요한 업무를 골라 시작하세요</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <SignupForm redirectTo={safeRedirectTo} />

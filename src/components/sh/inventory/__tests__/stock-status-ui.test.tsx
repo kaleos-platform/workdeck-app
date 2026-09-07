@@ -20,6 +20,9 @@ const products: StockStatusProductCard[] = [
   {
     productId: 'product-1',
     productName: '와펜',
+    productInternalName: null,
+    out30d: 0,
+    currentQty: 0,
     optionCount: 2,
     okOptionCount: 1,
     lowOptionCount: 0,
@@ -80,7 +83,9 @@ describe('stock status UI', () => {
   it('상품 패널에서 전체 항목 없이 상품을 선택할 수 있다', () => {
     const onSelectProduct = jest.fn()
 
-    render(
+    // StockStatusProducts는 내부에서 Tooltip을 쓴다(앱은 app/layout.tsx 루트 Provider로 충족).
+    // raw render로는 `Tooltip must be used within TooltipProvider`로 깨진다.
+    renderWithTooltip(
       <StockStatusProducts
         products={products}
         brands={brands}

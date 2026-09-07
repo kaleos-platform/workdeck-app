@@ -6,6 +6,26 @@ import type { ParseResult } from '@/lib/inv/reconciliation-parser'
 export type ReconciliationSource = 'coupang'
 
 /**
+ * 스냅샷 완전성 판정 — 부분 export(Wing 그리드 미완전 로드 상태 다운로드) 탐지.
+ *
+ * 업로드 단계(inventory-upload-processor.ts)에도 같은 가드가 있지만, 그 가드 도입
+ * 이전에 적재된 부분 스냅샷은 DB 에 그대로 남아 있다. 자동 대조는 사람 검토를
+ * 거치지 않으므로 소스 단계에서 한 번 더 판정한다.
+ *
+ * 판정만 하고 throw 하지 않는다 — 수동 대조는 사람이 미리보기로 확인하므로 기존대로
+ * 통과시키고, cron 만 이 값을 보고 스킵한다.
+ */
+export type SnapshotCompleteness = {
+  ok: boolean
+  rowCount: number
+  /** 최근 10건 INVENTORY_HEALTH 업로드의 insertedRows MAX. 이력이 없으면 0(판정 불가 → ok) */
+  baseline: number
+}
+
+/** 업로드 단계 가드와 동일 임계 — 최근 최대 행수의 50% 미만이면 부분 export 의심 */
+const COMPLETENESS_RATIO = 0.5
+
+/**
  * 쿠팡 광고 Deck의 로켓그로스 재고(InventoryRecord)를 ParsedRow[] 로 변환한다.
  *
  * - Workspace ↔ Space 직접 연결이 없으므로, 호출자는 "현재 유저가 소유한
@@ -18,7 +38,7 @@ export type ReconciliationSource = 'coupang'
 export async function getCoupangInventoryRows(
   workspaceId: string,
   opts: { snapshotDate?: Date } = {}
-): Promise<ParseResult> {
+): Promise<ParseResult & { completeness: SnapshotCompleteness }> {
   // 1. 사용할 스냅샷 결정 — 지정값 우선, 없으면 최신 INVENTORY_HEALTH 업로드
   // InventoryUpload.snapshotDate 는 워커 업로드 시점의 정확한 timestamp(예: 2026-05-22T14:58:01.626Z).
   // 클라이언트가 보낸 snapshotDate 는 사용자가 고른 KST 자정 (예: 2026-05-23T00:00:00Z) 이라 timestamp 가 완전히 다르다.
@@ -48,7 +68,12 @@ export async function getCoupangInventoryRows(
   }
 
   if (!targetDate) {
-    return { format: 'coupang_health', rows: [], snapshotDate: undefined }
+    return {
+      format: 'coupang_health',
+      rows: [],
+      snapshotDate: undefined,
+      completeness: { ok: false, rowCount: 0, baseline: 0 },
+    }
   }
 
   // 2. 해당 스냅샷의 재고 레코드 조회
@@ -79,5 +104,20 @@ export async function getCoupangInventoryRows(
     ]
   })
 
-  return { format: 'coupang_health', rows, snapshotDate: targetDate }
+  // 4. 완전성 판정 — 최근 10건 업로드의 insertedRows MAX 를 앵커로.
+  //    (직전 1건만 보면 이미 적재된 부분 export 를 정상 baseline 으로 신뢰해 무력화된다)
+  const recent = await prisma.inventoryUpload.findMany({
+    where: { workspaceId, fileType: 'INVENTORY_HEALTH', insertedRows: { gt: 0 } },
+    orderBy: { uploadedAt: 'desc' },
+    take: 10,
+    select: { insertedRows: true },
+  })
+  const baseline = recent.reduce((max, u) => Math.max(max, u.insertedRows ?? 0), 0)
+  const completeness: SnapshotCompleteness = {
+    ok: baseline === 0 || rows.length >= baseline * COMPLETENESS_RATIO,
+    rowCount: rows.length,
+    baseline,
+  }
+
+  return { format: 'coupang_health', rows, snapshotDate: targetDate, completeness }
 }

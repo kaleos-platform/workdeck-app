@@ -22,7 +22,7 @@ export const sellerHubLanding: DeckLandingContent = {
     highlight: '브랜드 운영 전체를 한 곳에서',
     subcopy:
       '여러 판매 채널의 재고와 발주를 따로 관리하다 생기는 누락과 오차를 줄이고, 가격 시뮬레이션으로 채널별 마진까지 미리 계산하세요.',
-    primaryCta: { label: '무료로 시작하기', href: '/signup' },
+    primaryCta: { label: '시작하기', href: '/signup' },
     secondaryCta: { label: '로그인', href: '/d/seller-ops/login' },
   },
   painPoints: [
@@ -107,8 +107,9 @@ export const sellerHubLanding: DeckLandingContent = {
       answer: '출고 추이와 재고 현황을 기반으로 발주가 필요한 시점과 수량 판단을 지원합니다.',
     },
     {
-      question: '무료로 사용할 수 있나요?',
-      answer: '현재 베타 기간 동안 모든 기능을 무료로 이용할 수 있습니다.',
+      question: '이용 요금은 어떻게 되나요?',
+      answer:
+        '브랜드 운영은 월 55,000원(부가세 포함)의 구독 상품입니다. 필요한 업무만 골라 구독할 수 있고, 언제든 해지할 수 있습니다.',
     },
   ],
   finalCta: {

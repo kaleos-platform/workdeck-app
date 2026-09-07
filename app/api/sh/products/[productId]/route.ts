@@ -162,14 +162,22 @@ export async function PATCH(
     return NextResponse.json({ product })
   } catch (err: unknown) {
     const code = (err as { code?: string })?.code
-    const target = (err as { meta?: { target?: string[] } })?.meta?.target
+    // pg 어댑터는 meta.target 을 배열이 아니라 제약 이름 문자열
+    // (예: 'InvProduct_spaceId_code_key')로 주기도 한다.
+    const rawTarget = (err as { meta?: { target?: string[] | string } })?.meta?.target
+    const target = Array.isArray(rawTarget) ? rawTarget : rawTarget ? [rawTarget] : []
     const detail = err instanceof Error ? err.message : String(err)
     console.error('[products PATCH] update failed', { productId, code, target, detail })
     if (code === 'P2002') {
-      const targets = Array.isArray(target) ? target : []
+      // pg 어댑터에서는 meta.target 이 비어있고 필드명이 에러 메시지에만 담긴다
+      // ('Unique constraint failed on the fields: (`spaceId`, `code`)').
+      const targets = target.length > 0 ? target : [detail]
+      // InvProduct 의 유일 제약은 (spaceId, code) 하나뿐이라 code 를 먼저 판정한다.
+      const hit = (field: string) =>
+        targets.some((t) => t === field || t.includes(`_${field}_`) || t.includes(`\`${field}\``))
       let message = '이미 동일한 값이 존재합니다'
-      if (targets.includes('name')) message = '이미 같은 상품명이 존재합니다'
-      else if (targets.includes('code')) message = '이미 같은 상품 코드가 존재합니다'
+      if (hit('code')) message = '이미 같은 제품코드가 존재합니다'
+      else if (hit('name')) message = '이미 같은 상품명이 존재합니다'
       return errorResponse(message, 409, { detail, target: targets })
     }
     if (code === 'P2003') {

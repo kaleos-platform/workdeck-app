@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useId, useState } from 'react'
-import { Info } from 'lucide-react'
+import { Info, RotateCcw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -29,6 +30,8 @@ type Props = {
   onChange: (v: PromotionValue) => void
   /** true이면 Card wrap 없이 fragment로 렌더 (시나리오 카드 내부에 임베드할 때 사용) */
   embedded?: boolean
+  /** 지정 시 embedded 모드 하단에 '초기화' 버튼 노출 (프로모션 해제) */
+  onReset?: () => void
 }
 
 // ─── 누적 규칙 안내 텍스트 ─────────────────────────────────────────────────────
@@ -113,6 +116,12 @@ function PromotionContent({
 
   function handleValueChange(raw: string) {
     setRawVal(raw)
+    // 빈값이면 0으로 반영 — 이전엔 parseFloat('')=NaN이라 onChange를 건너뛰어
+    // 입력을 비워도 부모 상태에 이전 금액이 남아 있었다(금액 제거 불가 버그).
+    if (raw.trim() === '') {
+      onChange({ ...value, value: 0 })
+      return
+    }
     const num = parseFloat(raw)
     if (!isNaN(num)) {
       onChange({ ...value, value: num })
@@ -210,7 +219,7 @@ function PromotionContent({
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
 
-export function PricingPromotionCard({ value, onChange, embedded = false }: Props) {
+export function PricingPromotionCard({ value, onChange, embedded = false, onReset }: Props) {
   // ── embedded 모드: Card wrap 없이 헤딩 + 콘텐츠만 ──
   if (embedded) {
     return (
@@ -230,6 +239,20 @@ export function PricingPromotionCard({ value, onChange, embedded = false }: Prop
             </Tooltip>
           </div>
           <PromotionContent value={value} onChange={onChange} />
+          {/* 채널별 초기화 — 유형·금액을 한 번에 해제 */}
+          {onReset && value.type !== 'NONE' && (
+            <div className="mt-3 flex justify-end border-t border-border/60 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={onReset}
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> 초기화
+              </Button>
+            </div>
+          )}
         </div>
       </TooltipProvider>
     )

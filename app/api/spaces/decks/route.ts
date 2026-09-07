@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     select: { id: true, name: true, description: true, isActive: true },
   })
   if (!deckApp || !deckApp.isActive) {
-    return errorResponse('사용 가능한 Deck이 아닙니다', 404)
+    return errorResponse('사용 가능한 업무가 아닙니다', 404)
   }
 
   // 유료 deck 첫 사용 시도 → Trial lazy-start (평생 1회, 이력 있으면 no-op)
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
   // entitlement 게이트: 무료 베타·면제·구독·Trial·유예 전부 아니면 402
   if (!(await canUseDeck(resolved.space.id, deckAppId))) {
-    return errorResponse('구독이 필요한 Deck입니다', 402)
+    return errorResponse('구독이 필요한 업무입니다', 402)
   }
 
   const existing = await prisma.deckInstance.findUnique({
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   if (existing?.isActive) {
     // 이미 활성이어도 계정과목이 비었으면(이전 시드 실패) 재추가 시 복구
     if (deckAppId === 'finance') await ensureFinanceSeeded(resolved.space.id)
-    return errorResponse('이미 사용 중인 Deck입니다', 409)
+    return errorResponse('이미 사용 중인 업무입니다', 409)
   }
 
   if (existing) {

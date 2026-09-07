@@ -22,7 +22,7 @@ export const financeLanding: DeckLandingContent = {
     highlight: '현금흐름은 한눈에',
     subcopy:
       '은행·카드 거래내역을 업로드하면 학습된 규칙으로 자동 분류되고, 현금흐름 손익 관점 대시보드에서 자금 흐름을 바로 확인할 수 있습니다.',
-    primaryCta: { label: '무료로 시작하기', href: '/signup' },
+    primaryCta: { label: '시작하기', href: '/signup' },
     secondaryCta: { label: '로그인', href: '/d/finance/login' },
   },
   painPoints: [
@@ -111,8 +111,9 @@ export const financeLanding: DeckLandingContent = {
       answer: '연결된 계좌에서 상환 거래가 감지되면 부채 잔액에 원클릭으로 반영할 수 있습니다.',
     },
     {
-      question: '무료로 사용할 수 있나요?',
-      answer: '현재 베타 기간 동안 모든 기능을 무료로 이용할 수 있습니다.',
+      question: '이용 요금은 어떻게 되나요?',
+      answer:
+        '재무 관리은 월 44,000원(부가세 포함)의 구독 상품입니다. 필요한 업무만 골라 구독할 수 있고, 언제든 해지할 수 있습니다.',
     },
   ],
   finalCta: {

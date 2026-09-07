@@ -13,6 +13,7 @@ import {
   buildStockStatusProducts,
   filterStockStatusProducts,
   scopeStockStatusRows,
+  stockStatusDisplayName,
 } from './stock-status-view-model'
 
 const PINNED_PRODUCTS_STORAGE_KEY = 'workdeck.stock-status.pinned-products'
@@ -185,10 +186,12 @@ export function StockStatusBoard() {
     })
   }, [onlyLow, effectiveProductId, q, scopedRows])
 
-  const selectedProductName = useMemo(
-    () => products.find((product) => product.productId === effectiveProductId)?.productName ?? null,
+  const selectedProduct = useMemo(
+    () => products.find((product) => product.productId === effectiveProductId) ?? null,
     [effectiveProductId, products]
   )
+  const selectedProductName = selectedProduct ? stockStatusDisplayName(selectedProduct) : null
+  const selectedProductOfficialName = selectedProduct?.productName ?? null
 
   return (
     <div className="space-y-5">
@@ -235,6 +238,7 @@ export function StockStatusBoard() {
               loading={loading && !data}
               selectedLocationId={locationId}
               selectedProductName={selectedProductName}
+              selectedProductOfficialName={selectedProductOfficialName}
               toolbar={
                 <StockStatusToolbar
                   q={q}

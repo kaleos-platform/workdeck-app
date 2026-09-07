@@ -33,7 +33,7 @@ export function MarketingHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-                덱
+                업무
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
@@ -75,7 +75,7 @@ export function MarketingHeader() {
             <Button variant="ghost">로그인</Button>
           </Link>
           <Link href={buildAppUrl('/signup')}>
-            <Button>무료 시작</Button>
+            <Button>시작하기</Button>
           </Link>
         </div>
 
@@ -132,7 +132,7 @@ export function MarketingHeader() {
               </Button>
             </Link>
             <Link href={buildAppUrl('/signup')}>
-              <Button className="w-full">무료 시작</Button>
+              <Button className="w-full">시작하기</Button>
             </Link>
           </div>
         </nav>

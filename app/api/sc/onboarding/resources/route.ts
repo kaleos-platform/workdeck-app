@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { crawlHomepage, CrawlError } from '@/lib/bo/crawler'
+import { safeFetchHtml, SafeFetchError } from '@/lib/net/safe-fetch'
+import { htmlToText, HTML_TEXT_MAX_CHARS } from '@/lib/sh/html-to-text'
 import { addUrlResourceSchema } from '@/lib/sc/onboarding/schemas'
 import { extractTextFromFile, isExtractableMime } from '@/lib/sc/onboarding/extract'
 import {
@@ -124,7 +125,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { text } = await crawlHomepage(parsed.data.url)
+    const page = await safeFetchHtml(parsed.data.url)
+    const { text } = htmlToText(page.html, HTML_TEXT_MAX_CHARS, { baseUrl: page.finalUrl })
+    if (!text.trim()) {
+      throw new SafeFetchError('FETCH_FAILED', '페이지에서 텍스트를 추출하지 못했습니다')
+    }
     const resource = await prisma.scOnboardingResource.create({
       data: {
         spaceId,
@@ -137,7 +142,7 @@ export async function POST(req: NextRequest) {
     })
     return NextResponse.json({ resource }, { status: 201 })
   } catch (err) {
-    if (err instanceof CrawlError) {
+    if (err instanceof SafeFetchError) {
       // 실패도 기록해 사용자가 상태를 보고 삭제/재시도할 수 있게 한다
       const resource = await prisma.scOnboardingResource.create({
         data: {

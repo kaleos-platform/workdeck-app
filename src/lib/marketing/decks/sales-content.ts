@@ -21,7 +21,7 @@ export const salesContentLanding: DeckLandingContent = {
     highlight: '하나의 흐름으로',
     subcopy:
       '상품과 타겟 페르소나를 등록하면 콘텐츠 아이디어 기획, 제작, 채널 배포, 성과 분석이 하나의 흐름으로 이어집니다.',
-    primaryCta: { label: '무료로 시작하기', href: '/signup' },
+    primaryCta: { label: '시작하기', href: '/signup' },
     secondaryCta: { label: '로그인', href: '/d/sales-content/login' },
   },
   painPoints: [
@@ -104,13 +104,14 @@ export const salesContentLanding: DeckLandingContent = {
       answer: '배포별 성과 분석 화면에서 채널별 결과를 모아 확인할 수 있습니다.',
     },
     {
-      question: '무료로 사용할 수 있나요?',
-      answer: '현재 베타 기간 동안 모든 기능을 무료로 이용할 수 있습니다.',
+      question: '이용 요금은 어떻게 되나요?',
+      answer:
+        '세일즈 콘텐츠은 월 22,000원(부가세 포함)의 구독 상품입니다. 필요한 업무만 골라 구독할 수 있고, 언제든 해지할 수 있습니다.',
     },
   ],
   finalCta: {
     headline: '콘텐츠 기획부터 성과 분석까지, 한 곳에서',
     subcopy: '가입 후 상품과 페르소나를 등록하고 첫 콘텐츠를 기획해 보세요.',
   },
-  relatedDecks: ['blog-ops'],
+  relatedDecks: ['seller-hub'],
 }

@@ -4,7 +4,6 @@ import { sellerHubLanding } from './seller-hub'
 import { salesContentLanding } from './sales-content'
 import { financeLanding } from './finance'
 import { recruitingLanding } from './recruiting'
-import { blogOpsLanding } from './blog-ops'
 
 export const DECK_LANDINGS: Record<MarketingDeckSlug, DeckLandingContent> = {
   'coupang-ads': coupangAdsLanding,
@@ -12,5 +11,4 @@ export const DECK_LANDINGS: Record<MarketingDeckSlug, DeckLandingContent> = {
   'sales-content': salesContentLanding,
   finance: financeLanding,
   recruiting: recruitingLanding,
-  'blog-ops': blogOpsLanding,
 }

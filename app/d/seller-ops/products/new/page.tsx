@@ -41,7 +41,6 @@ export default function ProductNewPage() {
   const [manufacturer, setManufacturer] = useState('')
   const [manufactureCountry, setManufactureCountry] = useState('')
   const [manufactureDate, setManufactureDate] = useState('')
-  const [msrp, setMsrp] = useState('')
   const [description, setDescription] = useState('')
   const [features, setFeatures] = useState<string[]>([])
   const [certifications, setCertifications] = useState<string[]>([])
@@ -61,6 +60,10 @@ export default function ProductNewPage() {
   // 옵션 속성 + 조합
   const [attributes, setAttributes] = useState<OptionAttribute[]>([])
   const [combinations, setCombinations] = useState<CombinationRow[]>([])
+
+  // 속성 미사용 시 생성되는 '기본' 옵션의 가격 (가격은 옵션 단위로만 관리한다)
+  const [defaultCostPrice, setDefaultCostPrice] = useState('')
+  const [defaultRetailPrice, setDefaultRetailPrice] = useState('')
 
   // 단순 옵션 모드 (속성 미사용 시)
   const useAttributeMode = attributes.length > 0
@@ -155,7 +158,13 @@ export default function ProductNewPage() {
                 .map((a, i) => [a.name, row.combination[i] ?? ''])
             ),
           }))
-      : [{ name: '기본' }]
+      : [
+          {
+            name: '기본',
+            costPrice: defaultCostPrice ? parseFloat(defaultCostPrice) : undefined,
+            retailPrice: defaultRetailPrice ? parseFloat(defaultRetailPrice) : undefined,
+          },
+        ]
 
     if (useAttributeMode && optionsPayload.length === 0) {
       toast.error('속성 값을 입력하면 조합이 자동 생성됩니다')
@@ -180,7 +189,6 @@ export default function ProductNewPage() {
           manufacturer: manufacturer.trim() || undefined,
           manufactureCountry: manufactureCountry.trim() || undefined,
           manufactureDate: manufactureDate ? `${manufactureDate}-01` : undefined,
-          msrp: msrp ? parseFloat(msrp) : undefined,
           description: description.trim() || undefined,
           features: trimmedFeatures.length > 0 ? trimmedFeatures : undefined,
           certifications: trimmedCerts.length > 0 ? trimmedCerts : undefined,
@@ -426,30 +434,6 @@ export default function ProductNewPage() {
                 </div>
               </div>
 
-              {/* 제품코드 / 소비자가 */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="new-code">제품코드</Label>
-                  <Input
-                    id="new-code"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder="예: SKU-001"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-msrp">소비자가 (원)</Label>
-                  <Input
-                    id="new-msrp"
-                    type="number"
-                    min="0"
-                    value={msrp}
-                    onChange={(e) => setMsrp(e.target.value)}
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-
               {/* 제조사 / 제조국 / 제조년월 */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
@@ -585,12 +569,26 @@ export default function ProductNewPage() {
             </CardContent>
           </Card>
 
-          {/* 옵션 속성 카드 */}
+          {/* 옵션 카드 */}
           <Card>
             <CardHeader>
-              <CardTitle>옵션 속성</CardTitle>
+              <CardTitle>옵션</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-code">제품코드</Label>
+                <Input
+                  id="new-code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="예: SKU-001"
+                  className="max-w-xs"
+                />
+                <p className="text-xs text-muted-foreground">
+                  관리코드(SKU) 접두어이자 엑셀 재고 입출고 임포트의 상품 매칭 키로 사용됩니다.
+                </p>
+              </div>
+
               <ProductOptionAttributesEditor
                 attributes={attributes}
                 combinations={combinations}
@@ -598,10 +596,38 @@ export default function ProductNewPage() {
                 onCombinationsChange={setCombinations}
                 productCode={code}
               />
+
               {!useAttributeMode && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  속성을 추가하지 않으면 &quot;기본&quot; 옵션 1개가 자동 생성됩니다.
-                </p>
+                <div className="space-y-3 rounded-md border p-4">
+                  <p className="text-xs text-muted-foreground">
+                    속성을 추가하지 않으면 &quot;기본&quot; 옵션 1개가 생성됩니다. 가격은 아래에
+                    입력하세요.
+                  </p>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="new-default-cost">공급원가 (원)</Label>
+                      <Input
+                        id="new-default-cost"
+                        type="number"
+                        min="0"
+                        value={defaultCostPrice}
+                        onChange={(e) => setDefaultCostPrice(e.target.value)}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-default-retail">소비자가 (원)</Label>
+                      <Input
+                        id="new-default-retail"
+                        type="number"
+                        min="0"
+                        value={defaultRetailPrice}
+                        onChange={(e) => setDefaultRetailPrice(e.target.value)}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

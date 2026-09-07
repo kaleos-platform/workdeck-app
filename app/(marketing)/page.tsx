@@ -13,14 +13,14 @@ export function generateMetadata(): Metadata {
   return buildMarketingMetadata({
     title: 'Workdeck — 여러 비즈니스 업무를 하나의 워크스페이스로',
     description:
-      '쿠팡 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영까지 — 필요한 업무만 골라 쓰는 올인원 비즈니스 워크스페이스, Workdeck.',
+      '쿠팡 광고 관리, 브랜드 운영, 재무 관리, 모집 관리, 세일즈 콘텐츠까지 — 필요한 업무만 골라 쓰는 올인원 비즈니스 워크스페이스, Workdeck.',
     path: '/',
     keywords: ['Workdeck', '비즈니스 워크스페이스', '이커머스 운영 툴', '쿠팡 광고 분석'],
   })
 }
 
 const trustPoints = [
-  '베타 기간 동안 모든 업무를 무료로 이용 가능',
+  '업무 모듈 단위 월 구독 — 쓰는 만큼만 결제',
   '필요한 업무만 골라서 사용 — 강제 번들 없음',
   '실제 셀러·운영팀 워크플로우를 기반으로 설계',
 ]
@@ -41,13 +41,13 @@ export default function HomePage() {
             </span>
           </h1>
           <p className="mx-auto max-w-2xl text-lg break-keep text-muted-foreground sm:text-xl">
-            Workdeck은 광고 분석, 재고·배송 운영, 재무 관리, 채용, 세일즈 콘텐츠, 블로그 운영 같은
+            Workdeck은 쿠팡 광고 관리, 브랜드 운영, 재무 관리, 모집 관리, 세일즈 콘텐츠 같은
             비즈니스 업무를 필요한 것만 골라 쓰며 목표를 달성하는 워크스페이스입니다.
           </p>
           <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
             <Link href={buildAppUrl('/signup')}>
               <Button size="lg" className="w-full gap-2 sm:w-auto">
-                무료로 시작하기
+                워크스페이스 만들기
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Button>
             </Link>
@@ -60,7 +60,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 덱 그리드 */}
+      {/* 업무 그리드 */}
       <section className="border-t bg-muted/30 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10 space-y-3 text-center">
@@ -126,11 +126,11 @@ export default function HomePage() {
             지금 바로 워크스페이스를 만들어보세요
           </h2>
           <p className="text-lg break-keep text-white/90">
-            베타 기간 동안 모든 업무를 무료로 이용할 수 있습니다.
+            필요한 업무 모듈만 골라 월 단위로 구독하고, 언제든 해지할 수 있습니다.
           </p>
           <Link href={buildAppUrl('/signup')}>
             <Button size="lg" variant="secondary" className="gap-2">
-              무료로 시작하기
+              시작하기
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>
           </Link>

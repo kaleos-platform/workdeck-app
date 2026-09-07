@@ -48,7 +48,6 @@ const ALL_DECK_IDS = [
   'sales-content',
   'finance',
   'recruiting',
-  'blog-ops',
 ]
 
 // ─── 유틸 ───────────────────────────────────────────────────────────────────
@@ -701,44 +700,6 @@ async function seedSalesContent(spaceId: string) {
   return { products: 1, personas: 1, contents: contentCount }
 }
 
-// ─── 7. blog-ops: 상품 + 소재 + 포스트 최소 데이터 ─────────────────────────
-
-async function seedBlogOps(spaceId: string) {
-  const product = await prisma.boProduct.create({
-    data: {
-      spaceId,
-      name: '모던리빙 북유럽 거실러그',
-      category: 'B2C',
-      oneLinerPitch: '먼지 걱정 없는 극세사 원단, 자취방을 카페처럼',
-      targetCustomer: '자취 3년차 직장인 여성',
-    },
-  })
-  const material = await prisma.boMaterial.create({
-    data: {
-      spaceId,
-      productId: product.id,
-      title: '거실러그로 완성하는 북유럽 인테리어',
-      appealPoint: '먼지·소음 걱정 없는 프리미엄 극세사',
-      angle: '인테리어 팁',
-      outline: [{ section: '도입', description: '자취방 분위기 고민' }],
-      status: 'APPROVED',
-    },
-  })
-  await prisma.boPost.create({
-    data: {
-      spaceId,
-      materialId: material.id,
-      title: '거실러그로 완성하는 북유럽 인테리어',
-      doc: { type: 'doc', content: [] },
-      bodyMarkdown: '# 거실러그로 완성하는 북유럽 인테리어\n\n모던리빙 데모 포스트 본문입니다.',
-      status: 'DRAFT',
-      targetKeyword: '거실러그 추천',
-    },
-  })
-
-  return { products: 1, materials: 1, posts: 1 }
-}
-
 // ─── main ───────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -788,21 +749,17 @@ async function main() {
   console.log('▸ sales-content 시드 중...')
   const salesContent = await seedSalesContent(spaceId)
 
-  console.log('▸ blog-ops 시드 중...')
-  const blogOps = await seedBlogOps(spaceId)
-
   console.log('\n✅ 시드 완료\n')
   console.log(`계정: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`)
   console.log(`User id: ${userId}`)
   console.log(`Workspace id (coupang-ads): ${workspaceId}`)
-  console.log(`Space id (그 외 5개 Deck): ${spaceId}`)
+  console.log(`Space id (그 외 4개 Deck): ${spaceId}`)
   console.log('\n건수:')
   console.log('  coupang-ads:', coupangAds)
   console.log('  seller-hub:', sellerHub)
   console.log('  finance:', finance)
   console.log('  recruiting:', recruiting)
   console.log('  sales-content:', salesContent)
-  console.log('  blog-ops:', blogOps)
 }
 
 main()

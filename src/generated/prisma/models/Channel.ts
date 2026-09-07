@@ -425,6 +425,7 @@ export type ChannelWhereInput = {
   channelProducts?: Prisma.ChannelProductListRelationFilter
   pricingScenarios?: Prisma.PricingScenarioListRelationFilter
   pricingScenarioChannels?: Prisma.PricingScenarioChannelListRelationFilter
+  keywordRule?: Prisma.XOR<Prisma.ChannelKeywordRuleNullableScalarRelationFilter, Prisma.ChannelKeywordRuleWhereInput> | null
 }
 
 export type ChannelOrderByWithRelationInput = {
@@ -468,6 +469,7 @@ export type ChannelOrderByWithRelationInput = {
   channelProducts?: Prisma.ChannelProductOrderByRelationAggregateInput
   pricingScenarios?: Prisma.PricingScenarioOrderByRelationAggregateInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelOrderByRelationAggregateInput
+  keywordRule?: Prisma.ChannelKeywordRuleOrderByWithRelationInput
 }
 
 export type ChannelWhereUniqueInput = Prisma.AtLeast<{
@@ -516,6 +518,7 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   channelProducts?: Prisma.ChannelProductListRelationFilter
   pricingScenarios?: Prisma.PricingScenarioListRelationFilter
   pricingScenarioChannels?: Prisma.PricingScenarioChannelListRelationFilter
+  keywordRule?: Prisma.XOR<Prisma.ChannelKeywordRuleNullableScalarRelationFilter, Prisma.ChannelKeywordRuleWhereInput> | null
 }, "id" | "spaceId_name" | "spaceId_externalSource">
 
 export type ChannelOrderByWithAggregationInput = {
@@ -624,6 +627,7 @@ export type ChannelCreateInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateInput = {
@@ -664,6 +668,7 @@ export type ChannelUncheckedCreateInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUpdateInput = {
@@ -704,6 +709,7 @@ export type ChannelUpdateInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateInput = {
@@ -744,6 +750,7 @@ export type ChannelUncheckedUpdateInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelCreateManyInput = {
@@ -1251,6 +1258,20 @@ export type ChannelUpdateOneRequiredWithoutChannelProductsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutChannelProductsInput, Prisma.ChannelUpdateWithoutChannelProductsInput>, Prisma.ChannelUncheckedUpdateWithoutChannelProductsInput>
 }
 
+export type ChannelCreateNestedOneWithoutKeywordRuleInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutKeywordRuleInput, Prisma.ChannelUncheckedCreateWithoutKeywordRuleInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutKeywordRuleInput
+  connect?: Prisma.ChannelWhereUniqueInput
+}
+
+export type ChannelUpdateOneRequiredWithoutKeywordRuleNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutKeywordRuleInput, Prisma.ChannelUncheckedCreateWithoutKeywordRuleInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutKeywordRuleInput
+  upsert?: Prisma.ChannelUpsertWithoutKeywordRuleInput
+  connect?: Prisma.ChannelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutKeywordRuleInput, Prisma.ChannelUpdateWithoutKeywordRuleInput>, Prisma.ChannelUncheckedUpdateWithoutKeywordRuleInput>
+}
+
 export type ChannelCreateWithoutSpaceInput = {
   id?: string
   name: string
@@ -1288,6 +1309,7 @@ export type ChannelCreateWithoutSpaceInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutSpaceInput = {
@@ -1327,6 +1349,7 @@ export type ChannelUncheckedCreateWithoutSpaceInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutSpaceInput = {
@@ -1425,6 +1448,7 @@ export type ChannelCreateWithoutInvMovementsInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutInvMovementsInput = {
@@ -1464,6 +1488,7 @@ export type ChannelUncheckedCreateWithoutInvMovementsInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutInvMovementsInput = {
@@ -1519,6 +1544,7 @@ export type ChannelUpdateWithoutInvMovementsInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
@@ -1558,6 +1584,7 @@ export type ChannelUncheckedUpdateWithoutInvMovementsInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutDelOrdersInput = {
@@ -1597,6 +1624,7 @@ export type ChannelCreateWithoutDelOrdersInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutDelOrdersInput = {
@@ -1636,6 +1664,7 @@ export type ChannelUncheckedCreateWithoutDelOrdersInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutDelOrdersInput = {
@@ -1691,6 +1720,7 @@ export type ChannelUpdateWithoutDelOrdersInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
@@ -1730,6 +1760,7 @@ export type ChannelUncheckedUpdateWithoutDelOrdersInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutProductAliasesInput = {
@@ -1769,6 +1800,7 @@ export type ChannelCreateWithoutProductAliasesInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutProductAliasesInput = {
@@ -1808,6 +1840,7 @@ export type ChannelUncheckedCreateWithoutProductAliasesInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutProductAliasesInput = {
@@ -1863,6 +1896,7 @@ export type ChannelUpdateWithoutProductAliasesInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
@@ -1902,6 +1936,7 @@ export type ChannelUncheckedUpdateWithoutProductAliasesInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutColumnMappingPresetsInput = {
@@ -1941,6 +1976,7 @@ export type ChannelCreateWithoutColumnMappingPresetsInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
@@ -1980,6 +2016,7 @@ export type ChannelUncheckedCreateWithoutColumnMappingPresetsInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutColumnMappingPresetsInput = {
@@ -2035,6 +2072,7 @@ export type ChannelUpdateWithoutColumnMappingPresetsInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
@@ -2074,6 +2112,7 @@ export type ChannelUncheckedUpdateWithoutColumnMappingPresetsInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutChannelTypeDefInput = {
@@ -2113,6 +2152,7 @@ export type ChannelCreateWithoutChannelTypeDefInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
@@ -2152,6 +2192,7 @@ export type ChannelUncheckedCreateWithoutChannelTypeDefInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutChannelTypeDefInput = {
@@ -2217,6 +2258,7 @@ export type ChannelCreateWithoutFulfillmentChannelsInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutFulfillmentChannelsInput = {
@@ -2256,6 +2298,7 @@ export type ChannelUncheckedCreateWithoutFulfillmentChannelsInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutFulfillmentChannelsInput = {
@@ -2300,6 +2343,7 @@ export type ChannelCreateWithoutRepresentativeChannelInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutRepresentativeChannelInput = {
@@ -2339,6 +2383,7 @@ export type ChannelUncheckedCreateWithoutRepresentativeChannelInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutRepresentativeChannelInput = {
@@ -2399,6 +2444,7 @@ export type ChannelUpdateWithoutFulfillmentChannelsInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutFulfillmentChannelsInput = {
@@ -2438,6 +2484,7 @@ export type ChannelUncheckedUpdateWithoutFulfillmentChannelsInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUpsertWithWhereUniqueWithoutRepresentativeChannelInput = {
@@ -2493,6 +2540,7 @@ export type ChannelCreateWithoutFeeRatesInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutFeeRatesInput = {
@@ -2532,6 +2580,7 @@ export type ChannelUncheckedCreateWithoutFeeRatesInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutFeeRatesInput = {
@@ -2587,6 +2636,7 @@ export type ChannelUpdateWithoutFeeRatesInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
@@ -2626,6 +2676,7 @@ export type ChannelUncheckedUpdateWithoutFeeRatesInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutPricingScenariosInput = {
@@ -2665,6 +2716,7 @@ export type ChannelCreateWithoutPricingScenariosInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
@@ -2704,6 +2756,7 @@ export type ChannelUncheckedCreateWithoutPricingScenariosInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutPricingScenariosInput = {
@@ -2759,6 +2812,7 @@ export type ChannelUpdateWithoutPricingScenariosInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
@@ -2798,6 +2852,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenariosInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutPricingScenarioChannelsInput = {
@@ -2837,6 +2892,7 @@ export type ChannelCreateWithoutPricingScenarioChannelsInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
@@ -2876,6 +2932,7 @@ export type ChannelUncheckedCreateWithoutPricingScenarioChannelsInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutPricingScenarioChannelsInput = {
@@ -2931,6 +2988,7 @@ export type ChannelUpdateWithoutPricingScenarioChannelsInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
@@ -2970,6 +3028,7 @@ export type ChannelUncheckedUpdateWithoutPricingScenarioChannelsInput = {
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutProductListingsInput = {
@@ -3009,6 +3068,7 @@ export type ChannelCreateWithoutProductListingsInput = {
   channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutProductListingsInput = {
@@ -3048,6 +3108,7 @@ export type ChannelUncheckedCreateWithoutProductListingsInput = {
   channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutProductListingsInput = {
@@ -3103,6 +3164,7 @@ export type ChannelUpdateWithoutProductListingsInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutProductListingsInput = {
@@ -3142,6 +3204,7 @@ export type ChannelUncheckedUpdateWithoutProductListingsInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelCreateWithoutChannelProductsInput = {
@@ -3181,6 +3244,7 @@ export type ChannelCreateWithoutChannelProductsInput = {
   productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutChannelProductsInput = {
@@ -3220,6 +3284,7 @@ export type ChannelUncheckedCreateWithoutChannelProductsInput = {
   productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedCreateNestedOneWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutChannelProductsInput = {
@@ -3275,6 +3340,7 @@ export type ChannelUpdateWithoutChannelProductsInput = {
   productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutChannelProductsInput = {
@@ -3312,6 +3378,183 @@ export type ChannelUncheckedUpdateWithoutChannelProductsInput = {
   columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
   productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
   productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
+}
+
+export type ChannelCreateWithoutKeywordRuleInput = {
+  id?: string
+  name: string
+  externalSource?: string | null
+  isActive?: boolean
+  useSimulation?: boolean
+  adminUrl?: string | null
+  freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: boolean
+  applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  shippingFeeType?: $Enums.ChannelShippingFeeType
+  shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
+  requireOrderNumber?: boolean
+  requirePayment?: boolean
+  requireProducts?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutChannelsInput
+  channelTypeDef?: Prisma.ChannelTypeDefCreateNestedOneWithoutChannelsInput
+  representativeChannel?: Prisma.ChannelCreateNestedOneWithoutFulfillmentChannelsInput
+  fulfillmentChannels?: Prisma.ChannelCreateNestedManyWithoutRepresentativeChannelInput
+  feeRates?: Prisma.ChannelFeeRateCreateNestedManyWithoutChannelInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutChannelInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutChannelInput
+  productAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutChannelInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutChannelInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelUncheckedCreateWithoutKeywordRuleInput = {
+  id?: string
+  spaceId: string
+  channelTypeDefId?: string | null
+  name: string
+  externalSource?: string | null
+  representativeChannelId?: string | null
+  isActive?: boolean
+  useSimulation?: boolean
+  adminUrl?: string | null
+  freeShipping?: boolean
+  freeShippingThreshold?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: boolean
+  applyAdCost?: boolean
+  adCostPct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  shippingFeeType?: $Enums.ChannelShippingFeeType
+  shippingFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  shippingFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: boolean
+  paymentFeeIncluded?: boolean
+  paymentFeePct?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: boolean
+  requireOrderNumber?: boolean
+  requirePayment?: boolean
+  requireProducts?: boolean
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedCreateNestedManyWithoutRepresentativeChannelInput
+  feeRates?: Prisma.ChannelFeeRateUncheckedCreateNestedManyWithoutChannelInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutChannelInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutChannelInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutChannelInput
+  productAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutChannelInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutChannelInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutChannelInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelCreateOrConnectWithoutKeywordRuleInput = {
+  where: Prisma.ChannelWhereUniqueInput
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutKeywordRuleInput, Prisma.ChannelUncheckedCreateWithoutKeywordRuleInput>
+}
+
+export type ChannelUpsertWithoutKeywordRuleInput = {
+  update: Prisma.XOR<Prisma.ChannelUpdateWithoutKeywordRuleInput, Prisma.ChannelUncheckedUpdateWithoutKeywordRuleInput>
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutKeywordRuleInput, Prisma.ChannelUncheckedCreateWithoutKeywordRuleInput>
+  where?: Prisma.ChannelWhereInput
+}
+
+export type ChannelUpdateToOneWithWhereWithoutKeywordRuleInput = {
+  where?: Prisma.ChannelWhereInput
+  data: Prisma.XOR<Prisma.ChannelUpdateWithoutKeywordRuleInput, Prisma.ChannelUncheckedUpdateWithoutKeywordRuleInput>
+}
+
+export type ChannelUpdateWithoutKeywordRuleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
+  shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutChannelsNestedInput
+  channelTypeDef?: Prisma.ChannelTypeDefUpdateOneWithoutChannelsNestedInput
+  representativeChannel?: Prisma.ChannelUpdateOneWithoutFulfillmentChannelsNestedInput
+  fulfillmentChannels?: Prisma.ChannelUpdateManyWithoutRepresentativeChannelNestedInput
+  feeRates?: Prisma.ChannelFeeRateUpdateManyWithoutChannelNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutChannelNestedInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutChannelNestedInput
+  productAliases?: Prisma.ChannelProductAliasUpdateManyWithoutChannelNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
+  pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelUncheckedUpdateWithoutKeywordRuleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelTypeDefId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  externalSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  representativeChannelId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  useSimulation?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  freeShipping?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  freeShippingThreshold?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  usesMarketingBudget?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  applyAdCost?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adCostPct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  shippingFeeType?: Prisma.EnumChannelShippingFeeTypeFieldUpdateOperationsInput | $Enums.ChannelShippingFeeType
+  shippingFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  shippingFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  vatIncludedInFee?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeeIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentFeePct?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  paymentFeeVatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireOrderNumber?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requirePayment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  requireProducts?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fulfillmentChannels?: Prisma.ChannelUncheckedUpdateManyWithoutRepresentativeChannelNestedInput
+  feeRates?: Prisma.ChannelFeeRateUncheckedUpdateManyWithoutChannelNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutChannelNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutChannelNestedInput
+  columnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutChannelNestedInput
+  productAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutChannelNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutChannelNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
 }
@@ -3382,6 +3625,7 @@ export type ChannelUpdateWithoutSpaceInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutSpaceInput = {
@@ -3421,6 +3665,7 @@ export type ChannelUncheckedUpdateWithoutSpaceInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateManyWithoutSpaceInput = {
@@ -3518,6 +3763,7 @@ export type ChannelUpdateWithoutChannelTypeDefInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
@@ -3557,6 +3803,7 @@ export type ChannelUncheckedUpdateWithoutChannelTypeDefInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateManyWithoutChannelTypeDefInput = {
@@ -3654,6 +3901,7 @@ export type ChannelUpdateWithoutRepresentativeChannelInput = {
   channelProducts?: Prisma.ChannelProductUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutRepresentativeChannelInput = {
@@ -3693,6 +3941,7 @@ export type ChannelUncheckedUpdateWithoutRepresentativeChannelInput = {
   channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutChannelNestedInput
   pricingScenarioChannels?: Prisma.PricingScenarioChannelUncheckedUpdateManyWithoutChannelNestedInput
+  keywordRule?: Prisma.ChannelKeywordRuleUncheckedUpdateOneWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateManyWithoutRepresentativeChannelInput = {
@@ -3877,6 +4126,7 @@ export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   channelProducts?: boolean | Prisma.Channel$channelProductsArgs<ExtArgs>
   pricingScenarios?: boolean | Prisma.Channel$pricingScenariosArgs<ExtArgs>
   pricingScenarioChannels?: boolean | Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs>
+  keywordRule?: boolean | Prisma.Channel$keywordRuleArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channel"]>
 
@@ -3991,6 +4241,7 @@ export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   channelProducts?: boolean | Prisma.Channel$channelProductsArgs<ExtArgs>
   pricingScenarios?: boolean | Prisma.Channel$pricingScenariosArgs<ExtArgs>
   pricingScenarioChannels?: boolean | Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs>
+  keywordRule?: boolean | Prisma.Channel$keywordRuleArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ChannelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4020,6 +4271,7 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     channelProducts: Prisma.$ChannelProductPayload<ExtArgs>[]
     pricingScenarios: Prisma.$PricingScenarioPayload<ExtArgs>[]
     pricingScenarioChannels: Prisma.$PricingScenarioChannelPayload<ExtArgs>[]
+    keywordRule: Prisma.$ChannelKeywordRulePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -4456,6 +4708,7 @@ export interface Prisma__ChannelClient<T, Null = never, ExtArgs extends runtime.
   channelProducts<T extends Prisma.Channel$channelProductsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$channelProductsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pricingScenarios<T extends Prisma.Channel$pricingScenariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$pricingScenariosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PricingScenarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pricingScenarioChannels<T extends Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$pricingScenarioChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PricingScenarioChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  keywordRule<T extends Prisma.Channel$keywordRuleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$keywordRuleArgs<ExtArgs>>): Prisma.Prisma__ChannelKeywordRuleClient<runtime.Types.Result.GetResult<Prisma.$ChannelKeywordRulePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5183,6 +5436,25 @@ export type Channel$pricingScenarioChannelsArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.PricingScenarioChannelScalarFieldEnum | Prisma.PricingScenarioChannelScalarFieldEnum[]
+}
+
+/**
+ * Channel.keywordRule
+ */
+export type Channel$keywordRuleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChannelKeywordRule
+   */
+  select?: Prisma.ChannelKeywordRuleSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChannelKeywordRule
+   */
+  omit?: Prisma.ChannelKeywordRuleOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelKeywordRuleInclude<ExtArgs> | null
+  where?: Prisma.ChannelKeywordRuleWhereInput
 }
 
 /**

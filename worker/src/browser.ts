@@ -10,7 +10,7 @@
  */
 import { chromium as chromiumExtra } from 'playwright-extra'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
-import type { BrowserContext, LaunchOptions } from 'playwright'
+import type { BrowserContext, LaunchOptions, Page } from 'playwright'
 import { execSync } from 'node:child_process'
 import {
   existsSync,
@@ -275,6 +275,51 @@ function preflightCleanupProfile(userDataDir: string): void {
  * persistent context를 stealth 적용해서 띄운다.
  * 기존 `chromium.launchPersistentContext(...)`의 drop-in 대체.
  */
+/** CfT 브랜드 위장에 쓸 버전 — 설치된 Chrome for Testing 과 맞춘다. */
+const CFT_BRAND_VERSION = process.env.CHROME_BRAND_VERSION || '151.0.7922.138'
+
+/**
+ * CfT 바이너리의 Sec-CH-UA 에 "Google Chrome" 브랜드를 채워 정품 Chrome 처럼 보이게 한다.
+ *
+ * 페이지마다 CDP 세션을 붙여야 하므로 기존 페이지 + 이후 생성되는 페이지 모두에 적용한다.
+ * 실패해도 수집 자체는 진행한다(로그인에서 걸리면 그때 드러난다).
+ */
+async function applyChromeBrandOverride(context: BrowserContext): Promise<void> {
+  const version = CFT_BRAND_VERSION
+  const major = version.split('.')[0]
+  const metadata = {
+    brands: [
+      { brand: 'Chromium', version: major },
+      { brand: 'Not?A_Brand', version: '24' },
+      { brand: 'Google Chrome', version: major },
+    ],
+    fullVersionList: [
+      { brand: 'Chromium', version },
+      { brand: 'Not?A_Brand', version: '24.0.0.0' },
+      { brand: 'Google Chrome', version },
+    ],
+    fullVersion: version,
+    platform: 'macOS',
+    platformVersion: '15.0.0',
+    architecture: 'arm',
+    model: '',
+    mobile: false,
+  }
+  const userAgent =
+    `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ` +
+    `(KHTML, like Gecko) Chrome/${major}.0.0.0 Safari/537.36`
+
+  const applyTo = async (page: Page): Promise<void> => {
+    const cdp = await context.newCDPSession(page)
+    await cdp.send('Emulation.setUserAgentOverride', { userAgent, userAgentMetadata: metadata })
+  }
+
+  for (const page of context.pages()) await applyTo(page)
+  context.on('page', (page) => {
+    void applyTo(page).catch(() => {})
+  })
+}
+
 export async function launchStealthPersistentContext(
   opts: LaunchPersistentOptions
 ): Promise<BrowserContext> {
@@ -288,12 +333,26 @@ export async function launchStealthPersistentContext(
   // 회차의 leak 잔류이지 진행 중 형제가 아니다.
   preflightCleanupProfile(opts.userDataDir)
 
-  const launchOptions: LaunchOptions & { args?: string[]; channel?: string } = {
+  // 실행 바이너리 선택 — 우선순위: CHROME_EXECUTABLE_PATH > CHROME_CHANNEL > 'chrome'
+  //
+  // 시스템 Chrome Stable 을 쓰는 이유는 Akamai TLS/HTTP2 fingerprint 우회력이
+  // Playwright 번들 Chromium 보다 높기 때문이다(번들 Chromium 은 실측상 Wing 로그인에서
+  // 막힌다 — 2026-08-29 확인: 로그인 페이지에서 12분 무활동 hang).
+  //
+  // 다만 시스템 Chrome 은 자동 업데이트로 버전이 바뀌고, 그 버전이 크래시하면 수집이
+  // 통째로 멈춘다(2026-08-29: Chrome 152.0.7977.64 가 다운로드 처리 중 SIGSEGV/SIGBUS
+  // 로 2회 연속 사망). 그래서 Chrome for Testing 같은 고정 버전 바이너리를
+  // CHROME_EXECUTABLE_PATH 로 지정할 수 있게 한다 — 진짜 Chrome 빌드라 fingerprint 는
+  // 그대로면서 자동 업데이트에 휘둘리지 않는다.
+  const executablePath = process.env.CHROME_EXECUTABLE_PATH
+  const launchOptions: LaunchOptions & {
+    args?: string[]
+    channel?: string
+    executablePath?: string
+  } = {
     headless: opts.headless,
-    // 시스템 Chrome Stable 사용 — Akamai TLS/HTTP2 fingerprint가
-    // Playwright 번들 Chromium 보다 우회력 ↑.
-    // 미설치 환경(CI 등)에서는 CHROME_CHANNEL=chromium 으로 우회 가능.
-    channel: process.env.CHROME_CHANNEL || 'chrome',
+    // executablePath 를 주면 channel 은 지정하지 않는다(동시 지정 시 Playwright 가 거부).
+    ...(executablePath ? { executablePath } : { channel: process.env.CHROME_CHANNEL || 'chrome' }),
     args: [
       '--disable-blink-features=AutomationControlled',
       '--no-sandbox',
@@ -309,6 +368,16 @@ export async function launchStealthPersistentContext(
     ],
   }
 
+  // 어느 바이너리로 도는지 항상 남긴다. 2026-09-02 에 .env 의 CHROME_EXECUTABLE_PATH 가
+  // 주석 처리되면서 크래시 나는 시스템 Chrome 으로 조용히 폴백했고, 이틀치 수집이
+  // 날아간 뒤에야 크래시 리포트의 앱 이름("Google Chrome" vs "Google Chrome for Testing")
+  // 으로 알아챘다. 이 한 줄이면 로그만 보고 바로 안다.
+  console.log(
+    `[browser] 실행 바이너리: ${
+      executablePath ? `고정 경로 ${executablePath}` : `channel=${launchOptions.channel}`
+    }`
+  )
+
   // playwright-extra의 chromium은 launchPersistentContext도 그대로 노출
   let context: BrowserContext
   try {
@@ -323,6 +392,26 @@ export async function launchStealthPersistentContext(
   } catch (err) {
     lock.release() // launch 실패 시에도 mutex 반드시 해제 (안 하면 워커 영구 데드락)
     throw err
+  }
+
+  // ── Chrome for Testing 브랜드 위장 ────────────────────────────────────────
+  // CfT 바이너리는 Sec-CH-UA(navigator.userAgentData.brands)에 "Google Chrome" 브랜드가
+  // 없고 "Chromium" 만 노출한다. UA 문자열은 정품 Chrome 과 동일한데도 이 클라이언트
+  // 힌트 차이 때문에 Wing 의 Akamai 가 비정품 브라우저로 보고 로그인을 차단한다
+  // (2026-09-02 실측: 같은 날 같은 IP·프로파일·계정에서 시스템 Chrome 은 로그인 성공,
+  //  CfT 는 Access Denied. 두 바이너리의 유일한 차이가 brands 였다).
+  //
+  //   시스템 Chrome : Chromium/152 | Not?A_Brand/24 | Google Chrome/152
+  //   CfT           : Chromium/151 | Not=A?Brand/99
+  //
+  // CDP Emulation.setUserAgentOverride 로 userAgentMetadata 를 덮어 brands 를 채운다.
+  // addInitScript 로는 JS 객체만 바뀌고 Sec-CH-UA **헤더**는 그대로라 소용이 없다.
+  if (executablePath) {
+    await applyChromeBrandOverride(context).catch((err) =>
+      console.warn(
+        `[browser] 브랜드 위장 실패(계속 진행): ${err instanceof Error ? err.message : String(err)}`
+      )
+    )
   }
 
   // 장시간 op(백필)가 진행 중임을 알려 idle 타임아웃을 갱신하도록 renew 노출.

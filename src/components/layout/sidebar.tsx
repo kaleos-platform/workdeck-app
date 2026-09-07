@@ -25,6 +25,7 @@ import {
   ListChecks,
   History,
   FolderTree,
+  SlidersHorizontal,
   Landmark,
   PanelLeftClose,
   PanelLeftOpen,
@@ -34,10 +35,6 @@ import {
   Users,
   UserX,
   MessageSquare,
-  PenSquare,
-  Layers,
-  Globe,
-  Send,
   ShieldCheck,
   Plug,
   Sparkles,
@@ -65,6 +62,7 @@ import {
   SELLER_HUB_BRANDS_PATH,
   SELLER_HUB_PRICING_SIM_PATH,
   SELLER_HUB_LISTINGS_PATH,
+  SELLER_HUB_KEYWORDS_PATH,
   SELLER_HUB_PRODUCTION_PATH,
   SELLER_HUB_STOCK_STATUS_PATH,
   SELLER_HUB_MOVEMENTS_PATH,
@@ -89,6 +87,7 @@ import {
   FINANCE_TRANSACTIONS_PATH,
   FINANCE_UPLOAD_PATH,
   FINANCE_IMPORTS_PATH,
+  FINANCE_MAPPING_RULES_PATH,
   FINANCE_ACCOUNTS_PATH,
   FINANCE_BALANCES_PATH,
   RECRUITING_HOME_PATH,
@@ -99,13 +98,6 @@ import {
   RECRUITING_DETAIL_TEMPLATES_PATH,
   RECRUITING_STORES_PATH,
   RECRUITING_POSITIONS_PATH,
-  BLOG_OPS_HOME_PATH,
-  BLOG_OPS_PRODUCTS_PATH,
-  BLOG_OPS_IDEATION_PATH,
-  BLOG_OPS_MATERIALS_PATH,
-  BLOG_OPS_POSTS_PATH,
-  BLOG_OPS_CHANNELS_PATH,
-  BLOG_OPS_DEPLOYMENTS_PATH,
   APPROVALS_PATH,
   SETTINGS_INTEGRATIONS_PATH,
   SETTINGS_AI_PATH,
@@ -140,6 +132,7 @@ const SELLER_HUB_PRODUCTS_ITEMS: SidebarItem[] = [
   { label: '상품 목록', href: SELLER_HUB_PRODUCTS_LIST_PATH },
   { label: '가격 시뮬레이션', href: SELLER_HUB_PRICING_SIM_PATH },
   { label: '판매채널 상품', href: SELLER_HUB_LISTINGS_PATH },
+  { label: '키워드 관리', href: SELLER_HUB_KEYWORDS_PATH },
   { label: '생산 관리', href: SELLER_HUB_PRODUCTION_PATH },
 ]
 
@@ -176,17 +169,6 @@ const SALES_CONTENT_FLAT_ROUTES = [
   { label: '설정', icon: Settings, href: SALES_CONTENT_SETTINGS_PATH },
 ]
 
-// ─── 블로그 운영 평탄 메뉴 데이터 (도메인 탭 금지) ───────────────────────────────
-const BLOG_OPS_FLAT_ROUTES = [
-  { label: '홈', icon: Home, href: BLOG_OPS_HOME_PATH },
-  { label: '제품 관리', icon: Package, href: BLOG_OPS_PRODUCTS_PATH },
-  { label: '소구점 발굴', icon: Lightbulb, href: BLOG_OPS_IDEATION_PATH },
-  { label: '소재 관리', icon: Layers, href: BLOG_OPS_MATERIALS_PATH },
-  { label: '포스트', icon: PenSquare, href: BLOG_OPS_POSTS_PATH },
-  { label: '채널', icon: Globe, href: BLOG_OPS_CHANNELS_PATH },
-  { label: '배포 이력', icon: Send, href: BLOG_OPS_DEPLOYMENTS_PATH },
-]
-
 // ─── 재무 관리 평탄 메뉴 데이터 (5섹션 + 도메인 탭 금지) ───────────────────────
 const FINANCE_FLAT_ROUTES = [
   { label: '요약 대시보드', icon: LayoutDashboard, href: FINANCE_DASHBOARD_PATH },
@@ -194,6 +176,7 @@ const FINANCE_FLAT_ROUTES = [
   { label: '거래 내역', icon: ListChecks, href: FINANCE_TRANSACTIONS_PATH },
   { label: '데이터 등록', icon: UploadCloud, href: FINANCE_UPLOAD_PATH },
   { label: '등록 이력', icon: History, href: FINANCE_IMPORTS_PATH },
+  { label: '매핑 규칙 관리', icon: SlidersHorizontal, href: FINANCE_MAPPING_RULES_PATH },
   { label: '계정과목 관리', icon: FolderTree, href: FINANCE_ACCOUNTS_PATH },
   { label: '자산·부채 관리', icon: Landmark, href: FINANCE_BALANCES_PATH },
 ]
@@ -337,7 +320,6 @@ export function Sidebar({
   const isSalesContentSidebar = variant === 'sales-content'
   const isFinanceSidebar = variant === 'finance'
   const isRecruitingSidebar = variant === 'recruiting'
-  const isBlogOpsSidebar = variant === 'blog-ops'
   const isMyDeckMode = mode === 'my-deck'
   const meta = DECK_META[variant]
   const BrandIcon = meta.icon
@@ -425,7 +407,7 @@ export function Sidebar({
     return `${basePath}?${query.toString()}`
   }
 
-  const expandedWidth = isSalesContentSidebar || isBlogOpsSidebar ? 'w-56' : 'w-64'
+  const expandedWidth = isSalesContentSidebar ? 'w-56' : 'w-64'
 
   return (
     <div
@@ -497,7 +479,7 @@ export function Sidebar({
               <RailLink
                 href="/my-deck"
                 icon={Home}
-                label="My Deck 홈"
+                label="내 워크덱 홈"
                 isActive={pathname === '/my-deck'}
                 collapsed={collapsed}
               />
@@ -536,7 +518,7 @@ export function Sidebar({
                     <p className="text-xs font-semibold tracking-wide text-zinc-200 uppercase">
                       {workspaceName}
                     </p>
-                    <p className="mt-1 text-[11px] text-zinc-500">사용 중인 Deck 빠른 진입</p>
+                    <p className="mt-1 text-[11px] text-zinc-500">사용 중인 업무 빠른 진입</p>
                   </div>
                   {isMyDeckMode && activeDecks.length > 0 ? (
                     <div className="space-y-1">
@@ -561,7 +543,7 @@ export function Sidebar({
                     </div>
                   ) : (
                     <p className="rounded-md px-1 py-2 text-xs text-zinc-500">
-                      사용 중인 Deck이 없습니다
+                      사용 중인 업무가 없습니다
                     </p>
                   )}
                 </section>
@@ -650,28 +632,6 @@ export function Sidebar({
           <div className="space-y-0.5">
             {FINANCE_FLAT_ROUTES.map((route) => {
               const isHomeRoute = route.href === FINANCE_DASHBOARD_PATH
-              const isActive = isHomeRoute
-                ? pathname === route.href
-                : pathname === route.href || pathname.startsWith(`${route.href}/`)
-              return (
-                <RailLink
-                  key={route.href}
-                  href={route.href}
-                  icon={route.icon}
-                  label={route.label}
-                  isActive={isActive}
-                  collapsed={collapsed}
-                  size="sm"
-                />
-              )
-            })}
-          </div>
-        )}
-
-        {isBlogOpsSidebar && (
-          <div className="space-y-0.5">
-            {BLOG_OPS_FLAT_ROUTES.map((route) => {
-              const isHomeRoute = route.href === BLOG_OPS_HOME_PATH
               const isActive = isHomeRoute
                 ? pathname === route.href
                 : pathname === route.href || pathname.startsWith(`${route.href}/`)

@@ -65,14 +65,14 @@ export function MyDeckClient({ spaceName, activeDecks, availableDecks }: MyDeckC
 
       if (!response.ok) {
         const error = (await response.json().catch(() => null)) as { message?: string } | null
-        throw new Error(error?.message ?? 'Deck 추가에 실패했습니다')
+        throw new Error(error?.message ?? '추가에 실패했습니다')
       }
 
-      toast.success(`${selectedDeck.name} Deck이 추가되었습니다`)
+      toast.success(`추가되었습니다: ${selectedDeck.name}`)
       setSelectedDeck(null)
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Deck 추가 중 오류가 발생했습니다')
+      toast.error(error instanceof Error ? error.message : '추가 중 오류가 발생했습니다')
     } finally {
       setIsSubmitting(false)
     }
@@ -81,14 +81,16 @@ export function MyDeckClient({ spaceName, activeDecks, availableDecks }: MyDeckC
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">My Deck</h1>
-        <p className="text-sm text-muted-foreground">{spaceName} 계정의 Deck을 관리하세요.</p>
+        <h1 className="text-3xl font-bold tracking-tight">내 워크덱</h1>
+        <p className="text-sm text-muted-foreground">
+          {spaceName} 계정에서 사용할 업무를 관리하세요.
+        </p>
       </header>
 
       <section aria-labelledby="active-decks-heading" className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 id="active-decks-heading" className="text-xl font-semibold">
-            사용 중인 Deck
+            사용 중인 업무
           </h2>
           <Badge variant="secondary">{activeDecks.length}개</Badge>
         </div>
@@ -97,7 +99,7 @@ export function MyDeckClient({ spaceName, activeDecks, availableDecks }: MyDeckC
           <Card className="border-dashed">
             <CardContent className="py-8">
               <p className="text-sm text-muted-foreground">
-                현재 사용 중인 Deck이 없습니다. 아래의 사용 가능한 Deck에서 추가해주세요.
+                현재 사용 중인 업무가 없습니다. 아래에서 추가해주세요.
               </p>
             </CardContent>
           </Card>
@@ -113,7 +115,7 @@ export function MyDeckClient({ spaceName, activeDecks, availableDecks }: MyDeckC
                     </Badge>
                   </div>
                   <CardDescription className="min-h-10">
-                    {deck.description ?? '이 Deck의 상세 설명이 아직 등록되지 않았습니다.'}
+                    {deck.description ?? '상세 설명이 아직 등록되지 않았습니다.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -133,7 +135,7 @@ export function MyDeckClient({ spaceName, activeDecks, availableDecks }: MyDeckC
       <section aria-labelledby="available-decks-heading" className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 id="available-decks-heading" className="text-xl font-semibold">
-            사용 가능한 Deck
+            추가할 수 있는 업무
           </h2>
           <Badge variant="outline">{availableDecks.length}개</Badge>
         </div>
@@ -141,7 +143,7 @@ export function MyDeckClient({ spaceName, activeDecks, availableDecks }: MyDeckC
         {!hasAvailableDecks ? (
           <Card className="border-dashed">
             <CardContent className="py-8">
-              <p className="text-sm text-muted-foreground">추가 가능한 Deck이 없습니다.</p>
+              <p className="text-sm text-muted-foreground">추가할 수 있는 업무가 없습니다.</p>
             </CardContent>
           </Card>
         ) : (
@@ -154,7 +156,7 @@ export function MyDeckClient({ spaceName, activeDecks, availableDecks }: MyDeckC
                     <Badge variant="outline">미사용</Badge>
                   </div>
                   <CardDescription className="min-h-10">
-                    {deck.description ?? '이 Deck의 상세 설명이 아직 등록되지 않았습니다.'}
+                    {deck.description ?? '상세 설명이 아직 등록되지 않았습니다.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -162,10 +164,10 @@ export function MyDeckClient({ spaceName, activeDecks, availableDecks }: MyDeckC
                     variant="outline"
                     className="w-full"
                     onClick={() => setSelectedDeck(deck)}
-                    aria-label={`${deck.name} Deck 추가 확인 열기`}
+                    aria-label={`${deck.name} 추가 확인 열기`}
                   >
                     <PlusCircle className="h-4 w-4" />
-                    Deck 추가
+                    추가하기
                   </Button>
                 </CardContent>
               </Card>
@@ -177,11 +179,9 @@ export function MyDeckClient({ spaceName, activeDecks, availableDecks }: MyDeckC
       <Dialog open={Boolean(selectedDeck)} onOpenChange={(open) => !open && setSelectedDeck(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Deck 추가 확인</DialogTitle>
+            <DialogTitle>추가 확인</DialogTitle>
             <DialogDescription>
-              {selectedDeck
-                ? `${selectedDeck.name} Deck을 현재 계정에 추가하시겠습니까?`
-                : '추가할 Deck을 확인해주세요.'}
+              {selectedDeck ? `추가할 업무: ${selectedDeck.name}` : '추가할 업무를 확인해주세요.'}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

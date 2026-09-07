@@ -10,6 +10,7 @@ import {
   GripVertical,
   History,
   Info,
+  Pencil,
   Plus,
   RotateCcw,
   Save,
@@ -61,6 +62,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import {
+  ChannelEditDialog,
+  type Channel as ChannelEditTarget,
+  type ChannelTypeDef,
+} from '@/components/sh/channels/channel-edit-dialog'
+import {
   PRICING_DRAFT_KEY,
   isMeaningfulSnapshot,
   parseSnapshot,
@@ -95,11 +101,22 @@ import { mapPricingSettings } from '@/lib/sh/pricing-settings'
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
 
 // /api/channels 응답 형태
+// (GET /api/channels 는 include 조회라 Channel 스칼라 전체를 반환한다 —
+//  채널 수정 다이얼로그 재사용을 위해 편집 폼이 요구하는 필드까지 모두 선언)
 type ApiCh = {
   id: string
   name: string
+  channelTypeDefId: string | null
   channelTypeDef: { id: string; name: string; isSalesChannel: boolean } | null
   useSimulation: boolean
+  adminUrl: string | null
+  isActive: boolean
+  usesMarketingBudget: boolean
+  requireOrderNumber: boolean
+  requirePayment: boolean
+  requireProducts: boolean
+  externalSource?: string | null
+  representativeChannelId?: string | null
   feeRates: { categoryName: string; ratePercent: string | number }[]
   shippingFeeType: 'FIXED' | 'PERCENT'
   shippingFee: string | number | null
@@ -166,6 +183,54 @@ type ChOverride = {
 const FALLBACK_SHIPPING_COST = 3000 // 배송비 (원)
 // 광고 미설정 채널에서 사용자가 광고를 켤 때 채울 기본 광고비율(rate) = 1/ROAS. ROAS 300% 기준.
 const DEFAULT_AD_ROAS_RATE = 1 / 3
+
+/**
+ * 시뮬 대상 후보 채널 필터 — 활성 + 판매채널 유형.
+ * (기존 `/api/channels?isActive=true&isSalesChannel=true` 서버 필터와 동일 조건.
+ *  수정 다이얼로그가 전체 채널 목록을 요구하므로 전체를 받아 클라이언트에서 좁힌다.)
+ */
+function isSimCandidateChannel(c: ApiCh): boolean {
+  return c.isActive !== false && c.channelTypeDef?.isSalesChannel === true
+}
+
+/**
+ * ApiCh → 채널 수정 다이얼로그가 받는 Channel 형상.
+ * API는 Decimal을 문자열로 직렬화하므로 숫자 필드를 Number로 정규화한다.
+ */
+function toEditChannel(c: ApiCh): ChannelEditTarget {
+  const num = (v: string | number | null | undefined): number | null =>
+    v == null || v === '' ? null : Number(v)
+  return {
+    id: c.id,
+    name: c.name,
+    channelTypeDefId: c.channelTypeDefId ?? c.channelTypeDef?.id ?? null,
+    channelTypeDef: c.channelTypeDef,
+    useSimulation: c.useSimulation,
+    adminUrl: c.adminUrl ?? null,
+    freeShipping: c.freeShipping,
+    freeShippingThreshold: num(c.freeShippingThreshold),
+    feeRates: c.feeRates.map((f) => ({
+      categoryName: f.categoryName,
+      ratePercent: Number(f.ratePercent),
+    })),
+    usesMarketingBudget: c.usesMarketingBudget ?? false,
+    applyAdCost: c.applyAdCost,
+    adCostPct: num(c.adCostPct),
+    shippingFeeType: c.shippingFeeType ?? 'FIXED',
+    shippingFee: num(c.shippingFee),
+    shippingFeePct: num(c.shippingFeePct),
+    vatIncludedInFee: c.vatIncludedInFee,
+    paymentFeeIncluded: c.paymentFeeIncluded,
+    paymentFeePct: num(c.paymentFeePct),
+    paymentFeeVatIncluded: c.paymentFeeVatIncluded,
+    isActive: c.isActive ?? true,
+    requireOrderNumber: c.requireOrderNumber ?? false,
+    requirePayment: c.requirePayment ?? false,
+    requireProducts: c.requireProducts ?? false,
+    externalSource: c.externalSource ?? null,
+    representativeChannelId: c.representativeChannelId ?? null,
+  }
+}
 
 /**
  * 채널 DB 값에서 ChOverride 초기값 생성.
@@ -422,16 +487,44 @@ export function PricingQuickFlow({
   }, [])
 
   // ── 채널 목록 ─────────────────────────────────────────────────────────────
+  // rawChannels = 스페이스의 전체 채널 (수정 다이얼로그의 대표채널·연동소스 중복 판정에 필요),
+  // allChannels = 시뮬 대상 후보(활성 + 판매채널). 한 번의 조회로 둘 다 만든다.
+  const [rawChannels, setRawChannels] = useState<ApiCh[]>([])
   const [allChannels, setAllChannels] = useState<ApiCh[]>([])
+  // 채널 수정 다이얼로그용 채널 유형 목록
+  const [channelTypes, setChannelTypes] = useState<ChannelTypeDef[]>([])
+
+  const loadChannelTypes = useCallback(async () => {
+    try {
+      const res = await fetch('/api/channel-types')
+      if (!res.ok) return
+      const d: { types?: ChannelTypeDef[] } = await res.json()
+      setChannelTypes(d.types ?? [])
+    } catch {
+      // 유형 목록 없이도 기존 채널 수정은 가능 — 무시
+    }
+  }, [])
+
+  const fetchChannels = useCallback(async (): Promise<ApiCh[] | null> => {
+    try {
+      const res = await fetch('/api/channels')
+      if (!res.ok) return null
+      const d: { channels?: ApiCh[] } = await res.json()
+      return d.channels ?? []
+    } catch {
+      return null
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadChannelTypes()
+  }, [loadChannelTypes])
 
   useEffect(() => {
     let cancelled = false
     const load = async () => {
       try {
-        const [stRes, chRes] = await Promise.all([
-          fetch('/api/sh/settings'),
-          fetch('/api/channels?isActive=true&isSalesChannel=true'),
-        ])
+        const [stRes, chList] = await Promise.all([fetch('/api/sh/settings'), fetchChannels()])
         if (stRes.ok) {
           const d: { settings: SettingsRaw } = await stRes.json()
           if (!cancelled) {
@@ -439,9 +532,9 @@ export function PricingQuickFlow({
             setSettingsLoaded(true) // 실제 서버값 로드 완료 → 기본값 설정 열기 허용
           }
         }
-        if (chRes.ok) {
-          const d: { channels?: ApiCh[] } = await chRes.json()
-          if (!cancelled) setAllChannels(d.channels ?? [])
+        if (chList && !cancelled) {
+          setRawChannels(chList)
+          setAllChannels(chList.filter(isSimCandidateChannel))
         }
       } catch {
         // 기본값 유지
@@ -454,7 +547,7 @@ export function PricingQuickFlow({
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [fetchChannels])
 
   // ── 번들 행 상태 ──────────────────────────────────────────────────────────
   const [rows, setRows] = useState<RowEntry[]>(() => [{ id: nextRowId(), resolved: null }])
@@ -645,6 +738,51 @@ export function PricingQuickFlow({
     })
   }
 
+  // ── 채널 정보 수정 (마스터 편집) ───────────────────────────────────────────
+  // 시뮬 안에서 채널 관리 팝업을 직접 열고, 저장 즉시 해당 채널을 최신 마스터값으로 재시드한다.
+  const [editingChannelId, setEditingChannelId] = useState<string | null>(null)
+  const editingChannel = editingChannelId
+    ? (rawChannels.find((c) => c.id === editingChannelId) ?? null)
+    : null
+
+  const handleChannelSaved = async () => {
+    const id = editingChannelId
+    setEditingChannelId(null)
+    const next = await fetchChannels()
+    if (!next) {
+      toast.error('채널 정보를 다시 불러오지 못했습니다')
+      return
+    }
+    setRawChannels(next)
+    const candidates = next.filter(isSimCandidateChannel)
+    setAllChannels(candidates)
+    if (!id) return
+
+    const fresh = candidates.find((c) => c.id === id)
+    // 비활성화·판매채널 해제·시뮬레이션 미사용으로 바뀌면 시뮬 대상에서 제외
+    if (!fresh || fresh.useSimulation === false) {
+      if (selectedChannelIds.includes(id)) {
+        removeChannel(id)
+        toast.info('시뮬레이션 대상에서 제외되어 채널 목록에서 빠졌습니다')
+      }
+      return
+    }
+
+    setChOverrides((prev) => {
+      const cur = prev[id]
+      // 선택했던 수수료 카테고리가 남아있으면 유지, 없어졌으면 '기본'으로 폴백
+      const keepCategory =
+        cur && fresh.feeRates.some((f) => f.categoryName === cur.feeCategory)
+          ? cur.feeCategory
+          : '기본'
+      const seeded = seedOverride(fresh, settings, keepCategory)
+      // applyAdCost는 채널 마스터가 아니라 시뮬 전용 토글(seedOverride가 항상 false) —
+      // 사용자가 켜둔 상태를 재시드로 꺼버리지 않는다.
+      return { ...prev, [id]: { ...seeded, applyAdCost: cur?.applyAdCost ?? seeded.applyAdCost } }
+    })
+    toast.success('채널 정보를 반영했습니다. 시뮬레이션 조정값은 채널 기준값으로 초기화됩니다')
+  }
+
   // 가격 시뮬레이션 사용(useSimulation) 채널만 대상
   const simChannels = useMemo(
     () => allChannels.filter((c) => c.useSimulation !== false),
@@ -763,6 +901,69 @@ export function PricingQuickFlow({
     } finally {
       setCreatingChannelId(null)
       setConfirmTarget(null)
+    }
+  }
+
+  // ── 소비자가를 상품에 반영 ─────────────────────────────────────────────────
+  // 시뮬의 소비자가 조정(retailOverride)은 시나리오 전용이라 상품은 그대로다.
+  // 명시적 확인을 거쳐, 불러온 가격 그룹의 모든 옵션 retailPrice를 실제로 갱신한다.
+  const [retailApplyOpen, setRetailApplyOpen] = useState(false)
+  const [applyingRetail, setApplyingRetail] = useState(false)
+
+  // 총액을 구성품에 배분하는 규칙이 정의되지 않아 단일 구성 상품만 지원
+  // optionIds는 구 스냅샷에 없을 수 있어 옵셔널 접근
+  const canApplyRetail =
+    mode === 'existing' &&
+    confirmedRows.length === 1 &&
+    (confirmedRows[0].optionIds?.length ?? 0) > 0
+  const retailApplyTarget = useMemo(() => {
+    if (!canApplyRetail || effectiveRetail == null) return null
+    const row = confirmedRows[0]
+    const optionIds = row.optionIds ?? []
+    const unit = Math.round(effectiveRetail / Math.max(1, row.quantity))
+    if (!(unit > 0)) return null
+    return { row, optionIds, unit }
+  }, [canApplyRetail, confirmedRows, effectiveRetail])
+
+  const applyRetailToProduct = async () => {
+    if (!retailApplyTarget) return
+    const { row, optionIds, unit } = retailApplyTarget
+    setApplyingRetail(true)
+    try {
+      const results = await Promise.all(
+        optionIds.map(async (optionId) => {
+          const res = await fetch(`/api/sh/products/${row.productId}/options/${optionId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ retailPrice: unit }),
+          })
+          return res.ok
+        })
+      )
+      const failed = results.filter((ok) => !ok).length
+      if (failed > 0) {
+        // 부분 실패 — override를 유지해 재시도 가능하게 둔다.
+        // 일부만 반영되면 같은 가격 그룹의 옵션들이 서로 다른 소비자가를 갖게 된다.
+        toast.error(
+          `옵션 ${failed}개 반영에 실패했습니다. 일부만 반영되어 가격 그룹이 분리될 수 있습니다`
+        )
+        return
+      }
+      // 상품 기준가가 갱신됐으므로 override를 해제(새 값이 곧 기본값)
+      setRows((prev) =>
+        prev.map((r) =>
+          r.resolved && r.resolved.optionId === row.optionId
+            ? { ...r, resolved: { ...r.resolved, retailPrice: unit } }
+            : r
+        )
+      )
+      setRetailOverride(null)
+      toast.success(`옵션 ${optionIds.length}개의 소비자가를 반영했습니다`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '반영 실패')
+    } finally {
+      setApplyingRetail(false)
+      setRetailApplyOpen(false)
     }
   }
 
@@ -1125,19 +1326,109 @@ export function PricingQuickFlow({
   const [saveName, setSaveName] = useState('')
   const [saveMemo, setSaveMemo] = useState('')
   const [saving, setSaving] = useState(false)
+  // 같은 이름 시나리오 발견 시 덮어쓰기 확인 단계 (다이얼로그 중첩 대신 같은 다이얼로그 2단계)
+  const [duplicateTarget, setDuplicateTarget] = useState<{ id: string; name: string } | null>(null)
+
+  // ── 상단 제목(시나리오 이름) 인라인 편집 ──────────────────────────────────
+  const [titleEditing, setTitleEditing] = useState(false)
+  const [titleDraft, setTitleDraft] = useState('')
+  const [titleSaving, setTitleSaving] = useState(false)
+
+  const startTitleEdit = () => {
+    setTitleDraft(loadedName)
+    setTitleEditing(true)
+  }
+
+  // 확정: 저장된 시나리오면 name만 PATCH(스냅샷 미포함), 미저장이면 로컬 보관 후 첫 저장 때 사용
+  const commitTitle = async () => {
+    const next = titleDraft.trim().slice(0, 100)
+    setTitleEditing(false)
+    if (!next || next === loadedName) return
+    const prev = loadedName
+    setLoadedName(next)
+    if (!editingScenarioId) return
+    setTitleSaving(true)
+    try {
+      const res = await fetch(`/api/sh/pricing-scenarios/${editingScenarioId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: next }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? data?.error ?? '이름 변경 실패')
+      toast.success('시나리오 이름을 변경했습니다')
+    } catch (err) {
+      setLoadedName(prev)
+      toast.error(err instanceof Error ? err.message : '이름 변경 실패')
+    } finally {
+      setTitleSaving(false)
+    }
+  }
 
   const openSaveDialog = () => {
     if (confirmedRows.length === 0) {
       toast.error('저장할 상품을 먼저 선택해 주세요')
       return
     }
-    setSaveName(editingScenarioId ? loadedName : bundleName)
+    setSaveName(loadedName || bundleName)
     setSaveMemo(editingScenarioId ? loadedMemo : '')
+    setDuplicateTarget(null)
     setSaveOpen(true)
   }
 
-  // asNew=true면 편집 중이어도 새 시나리오로 저장(POST)
-  const handleSaveScenario = async (asNew = false) => {
+  const savePayload = (name: string) => ({
+    name,
+    memo: saveMemo.trim() || undefined,
+    productIds: scenarioProductIds,
+    inputSnapshot: buildSnapshot(),
+  })
+
+  // 지정 시나리오 덮어쓰기 — 대상이 현재 편집 중인 시나리오가 아니면 그쪽으로 이동
+  const overwriteScenario = async (id: string, name: string) => {
+    const res = await fetch(`/api/sh/pricing-scenarios/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(savePayload(name)),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
+    toast.success('시나리오를 저장했습니다')
+    setLoadedName(name)
+    setLoadedMemo(saveMemo.trim())
+    setSaveOpen(false)
+    setDuplicateTarget(null)
+    if (id !== editingScenarioId) {
+      clearDraft()
+      setRestorable(null)
+      setEditingScenarioId(id)
+      router.replace(getSellerHubPricingScenarioPath(id))
+    }
+  }
+
+  const createScenario = async (name: string) => {
+    const res = await fetch('/api/sh/pricing-scenarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(savePayload(name)),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
+    toast.success('시나리오를 저장했습니다')
+    setLoadedName(name)
+    setLoadedMemo(saveMemo.trim())
+    clearDraft()
+    setRestorable(null)
+    setSaveOpen(false)
+    setDuplicateTarget(null)
+    // 저장된 시나리오 상세(편집 모드)로 이동
+    if (data.id) {
+      setEditingScenarioId(data.id)
+      router.replace(getSellerHubPricingScenarioPath(data.id))
+    }
+  }
+
+  // 이름 기준 저장 — 같은 이름이 있으면 확인 후 그 시나리오를 덮어쓴다.
+  const handleSaveScenario = async () => {
     const name = saveName.trim()
     if (!name) {
       toast.error('시나리오 이름을 입력해 주세요')
@@ -1145,45 +1436,37 @@ export function PricingQuickFlow({
     }
     setSaving(true)
     try {
-      const payload = {
-        name,
-        memo: saveMemo.trim() || undefined,
-        productIds: scenarioProductIds,
-        inputSnapshot: buildSnapshot(),
+      // 이미 중복 확인을 마친 상태 → 그 시나리오 덮어쓰기
+      if (duplicateTarget) {
+        await overwriteScenario(duplicateTarget.id, name)
+        return
       }
-      const headers = { 'Content-Type': 'application/json' }
-      if (editingScenarioId && !asNew) {
-        // 덮어쓰기
-        const res = await fetch(`/api/sh/pricing-scenarios/${editingScenarioId}`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify(payload),
-        })
-        const data = await res.json().catch(() => ({}))
-        if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
-        toast.success('시나리오를 저장했습니다')
-        setLoadedName(name)
-        setLoadedMemo(saveMemo.trim())
-        setSaveOpen(false)
-      } else {
-        // 신규 생성
-        const res = await fetch('/api/sh/pricing-scenarios', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-        })
-        const data = await res.json().catch(() => ({}))
-        if (!res.ok) throw new Error(data?.message ?? data?.error ?? '저장 실패')
-        toast.success('시나리오를 저장했습니다')
-        clearDraft()
-        setRestorable(null)
-        setSaveOpen(false)
-        // 저장된 시나리오 상세(편집 모드)로 이동
-        if (data.id) {
-          setEditingScenarioId(data.id)
-          router.replace(getSellerHubPricingScenarioPath(data.id))
-        }
+      // 동일 이름 조회 (기존 검색 엔드포인트 재사용, 정확 일치만 채택)
+      let dup: { id: string; name: string } | null = null
+      let lookupFailed = false
+      try {
+        const res = await fetch(
+          `/api/sh/pricing-scenarios?search=${encodeURIComponent(name)}&pageSize=100`
+        )
+        if (!res.ok) throw new Error()
+        const list: { data?: { id: string; name: string }[] } = await res.json()
+        const key = name.toLowerCase()
+        dup =
+          (list.data ?? []).find(
+            (r) => r.name.trim().toLowerCase() === key && r.id !== editingScenarioId
+          ) ?? null
+      } catch {
+        lookupFailed = true
       }
+      if (dup) {
+        setDuplicateTarget(dup)
+        return
+      }
+      if (lookupFailed) {
+        toast.warning('같은 이름 확인에 실패했습니다 — 현재 시나리오 기준으로 저장합니다')
+      }
+      if (editingScenarioId) await overwriteScenario(editingScenarioId, name)
+      else await createScenario(name)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
     } finally {
@@ -1252,7 +1535,48 @@ export function PricingQuickFlow({
 
       {/* ── 헤더 ── */}
       <div className="mb-6 flex items-start justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">가격 시뮬레이션</h1>
+        {/* 제목 = 시나리오 이름 (인라인 편집) */}
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-muted-foreground">가격 시뮬레이션</p>
+          {titleEditing ? (
+            <Input
+              autoFocus
+              value={titleDraft}
+              maxLength={100}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={() => void commitTitle()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  void commitTitle()
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  setTitleEditing(false)
+                }
+              }}
+              placeholder={bundleName || '시나리오 이름'}
+              className="mt-0.5 h-9 max-w-md text-2xl font-bold tracking-tight md:text-2xl"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={startTitleEdit}
+              disabled={titleSaving}
+              title="클릭하여 시나리오 이름 수정"
+              className="group mt-0.5 flex max-w-full items-center gap-2 text-left"
+            >
+              <h1
+                className={cn(
+                  'truncate text-2xl font-bold tracking-tight',
+                  !loadedName && 'text-muted-foreground'
+                )}
+              >
+                {loadedName || bundleName || '제목 없음'}
+              </h1>
+              <Pencil className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+            </button>
+          )}
+        </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button
             type="button"
@@ -1334,6 +1658,8 @@ export function PricingQuickFlow({
           override={retailOverride}
           editable={mode === 'existing' && baseRetail != null}
           onChange={setRetailOverride}
+          canApply={retailApplyTarget != null}
+          onApply={() => setRetailApplyOpen(true)}
         />
         <KpiCell
           label="판매가"
@@ -1575,6 +1901,18 @@ export function PricingQuickFlow({
                                     : ''}
                                 </span>
                               </div>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setEditingChannelId(bc.api.id)
+                                }}
+                                className="text-muted-foreground hover:text-foreground"
+                                aria-label={`${bc.api.name} 채널 정보 수정`}
+                                title="채널 정보 수정"
+                              >
+                                <Settings2 className="h-4 w-4" />
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => toggleExpanded(bc.api.id)}
@@ -1894,6 +2232,65 @@ export function PricingQuickFlow({
         </div>
       </div>
 
+      {/* 소비자가 상품 반영 확인 다이얼로그 */}
+      <Dialog
+        open={retailApplyOpen}
+        onOpenChange={(v) => {
+          if (!v && !applyingRetail) setRetailApplyOpen(false)
+        }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>소비자가 상품 반영</DialogTitle>
+            <DialogDescription>
+              {retailApplyTarget ? (
+                <>
+                  상품 「{retailApplyTarget.row.productName}」의 가격 그룹 옵션{' '}
+                  {retailApplyTarget.optionIds.length}개의 소비자가를 ₩{fmt(retailApplyTarget.unit)}
+                  (으)로 변경합니다.
+                  {retailApplyTarget.row.quantity > 1
+                    ? ` (수량 ${retailApplyTarget.row.quantity} 기준 옵션 단가)`
+                    : ''}{' '}
+                  계속할까요?
+                </>
+              ) : (
+                '반영할 소비자가가 없습니다.'
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRetailApplyOpen(false)}
+              disabled={applyingRetail}
+            >
+              취소
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => void applyRetailToProduct()}
+              disabled={applyingRetail || !retailApplyTarget}
+            >
+              {applyingRetail ? '반영 중...' : '반영'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 채널 정보 수정 (채널 관리와 동일한 팝업 재사용) */}
+      <ChannelEditDialog
+        open={editingChannel != null}
+        onOpenChange={(o) => {
+          if (!o) setEditingChannelId(null)
+        }}
+        channel={editingChannel ? toEditChannel(editingChannel) : null}
+        channels={rawChannels.map(toEditChannel)}
+        channelTypes={channelTypes}
+        onSaved={() => void handleChannelSaved()}
+        onTypesChanged={() => void loadChannelTypes()}
+      />
+
       {/* 채널별 생성 확인 다이얼로그 */}
       <Dialog
         open={!!confirmTarget}
@@ -1935,14 +2332,10 @@ export function PricingQuickFlow({
       <Dialog open={saveOpen} onOpenChange={(v) => !saving && setSaveOpen(v)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>
-              {editingScenarioId ? '시나리오 저장 (덮어쓰기)' : '시나리오 저장'}
-            </DialogTitle>
+            <DialogTitle>시나리오 저장</DialogTitle>
             <DialogDescription>
-              현재 시뮬레이션 구성(상품·채널·마진·프로모션)을 저장합니다.
-              {editingScenarioId
-                ? ' 기존 시나리오를 덮어쓰거나 새 시나리오로 저장할 수 있습니다.'
-                : ' 저장된 시나리오는 목록과 상품 상세에서 다시 불러올 수 있습니다.'}
+              현재 시뮬레이션 구성(상품·채널·마진·프로모션)을 시나리오 이름 기준으로 저장합니다.
+              같은 이름 시나리오가 있으면 덮어쓸지 확인합니다.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -1953,12 +2346,21 @@ export function PricingQuickFlow({
               <Input
                 id="scenario-name"
                 value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
+                onChange={(e) => {
+                  setSaveName(e.target.value)
+                  setDuplicateTarget(null)
+                }}
                 placeholder={bundleName || '예: 여름 프로모션 기준'}
                 className="h-9"
                 autoFocus
               />
             </div>
+            {duplicateTarget && (
+              <p className="rounded-md bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+                「{duplicateTarget.name}」 시나리오가 이미 있습니다. 덮어쓰면 기존 시나리오가 현재
+                구성으로 바뀌고, 편집 화면도 그 시나리오로 이동합니다.
+              </p>
+            )}
             <div className="space-y-1">
               <Label htmlFor="scenario-memo" className="text-xs">
                 메모 (선택)
@@ -1973,26 +2375,27 @@ export function PricingQuickFlow({
             </div>
           </div>
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSaveOpen(false)}
-              disabled={saving}
-            >
-              취소
-            </Button>
-            {editingScenarioId && (
+            {duplicateTarget ? (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleSaveScenario(true)}
+                onClick={() => setDuplicateTarget(null)}
                 disabled={saving}
               >
-                새 시나리오로 저장
+                이름 변경
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSaveOpen(false)}
+                disabled={saving}
+              >
+                취소
               </Button>
             )}
-            <Button size="sm" onClick={() => handleSaveScenario()} disabled={saving}>
-              {saving ? '저장 중...' : editingScenarioId ? '덮어쓰기' : '저장'}
+            <Button size="sm" onClick={() => void handleSaveScenario()} disabled={saving}>
+              {saving ? '저장 중...' : duplicateTarget ? '덮어쓰기' : '저장'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2064,6 +2467,8 @@ function RetailKpiCell({
   override,
   editable,
   onChange,
+  canApply,
+  onApply,
 }: {
   /** 상품 기본 소비자가 (Σ 컴포넌트). null=미입력 */
   base: number | null
@@ -2074,6 +2479,9 @@ function RetailKpiCell({
   /** 편집 가능 여부 (기존 모드 + 기본값 존재) */
   editable: boolean
   onChange: (v: number | null) => void
+  /** 조정한 소비자가를 상품에 되쓸 수 있는지 (단일 구성 상품만) */
+  canApply: boolean
+  onApply: () => void
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
@@ -2095,14 +2503,31 @@ function RetailKpiCell({
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] text-muted-foreground">소비자가</p>
         {override != null && (
-          <button
-            type="button"
-            className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
-            onClick={() => onChange(null)}
-          >
-            <RotateCcw className="h-3 w-3" />
-            기본값
-          </button>
+          <div className="flex items-center gap-2">
+            {editable && (
+              <button
+                type="button"
+                className="text-[10px] text-emerald-700 underline underline-offset-2 hover:text-emerald-800 disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
+                onClick={onApply}
+                disabled={!canApply}
+                title={
+                  canApply
+                    ? '조정한 소비자가를 상품 옵션에 저장'
+                    : '구성 상품이 1개일 때만 반영할 수 있습니다'
+                }
+              >
+                상품에 반영
+              </button>
+            )}
+            <button
+              type="button"
+              className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              onClick={() => onChange(null)}
+            >
+              <RotateCcw className="h-3 w-3" />
+              기본값
+            </button>
+          </div>
         )}
       </div>
       {editing ? (
