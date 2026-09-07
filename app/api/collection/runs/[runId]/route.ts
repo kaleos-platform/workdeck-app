@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
-import { CollectionStatus } from '@/generated/prisma/client'
+import { CollectionStatus, Prisma } from '@/generated/prisma/client'
 
-// GET /api/collection/runs/[runId] — 수집 실행 상세 조회
+// probeResult(Json) 스키마 — probeApi=true 인 CollectionRun 에만 기록된다.
+// runApiProbe()(worker/src/orchestrator.ts)가 PATCH 로 이 형태로 저장하고,
+// UI 는 GET /api/collection/runs/[runId] 폴링으로 이 형태를 읽는다.
+//   { ok: boolean; ipBlocked?: boolean; publicIp?: string; message?: string }
+// ok=false && ipBlocked=true 면 쿠팡 Wing IP allowlist 미등록 — publicIp 를 등록 안내에 쓴다.
+
+// GET /api/collection/runs/[runId] — 수집 실행 상세 조회 (probeApi/probeResult 포함)
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ runId: string }> }
@@ -23,6 +29,14 @@ export async function GET(
   }
 
   return NextResponse.json({ run })
+}
+
+// probeResult 페이로드 타입 — 스키마는 위 주석 참조
+type ProbeResultPayload = {
+  ok: boolean
+  ipBlocked?: boolean
+  publicIp?: string
+  message?: string
 }
 
 // 유효한 상태 값 목록
@@ -50,6 +64,7 @@ export async function PATCH(
     status?: string
     error?: string | null
     uploadId?: string | null
+    probeResult?: ProbeResultPayload
   }
   try {
     body = await request.json()
@@ -83,6 +98,9 @@ export async function PATCH(
         startedAt: now,
         ...(body.error !== undefined && { error: body.error }),
         ...(body.uploadId !== undefined && { uploadId: body.uploadId }),
+        ...(body.probeResult !== undefined && {
+          probeResult: body.probeResult as Prisma.InputJsonValue,
+        }),
       },
     })
     if (claimed.count !== 1) {
@@ -99,6 +117,9 @@ export async function PATCH(
       ...(body.status && { status: body.status as CollectionStatus }),
       ...(body.error !== undefined && { error: body.error }),
       ...(body.uploadId !== undefined && { uploadId: body.uploadId }),
+      ...(body.probeResult !== undefined && {
+        probeResult: body.probeResult as Prisma.InputJsonValue,
+      }),
       ...(isCompleting && { completedAt: now }),
     },
   })

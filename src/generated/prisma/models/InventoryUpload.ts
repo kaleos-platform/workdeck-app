@@ -44,6 +44,7 @@ export type InventoryUploadMinAggregateOutputType = {
   snapshotDate: Date | null
   totalRows: number | null
   insertedRows: number | null
+  source: $Enums.CoupangDataSource | null
   workspaceId: string | null
 }
 
@@ -55,6 +56,7 @@ export type InventoryUploadMaxAggregateOutputType = {
   snapshotDate: Date | null
   totalRows: number | null
   insertedRows: number | null
+  source: $Enums.CoupangDataSource | null
   workspaceId: string | null
 }
 
@@ -66,6 +68,7 @@ export type InventoryUploadCountAggregateOutputType = {
   snapshotDate: number
   totalRows: number
   insertedRows: number
+  source: number
   workspaceId: number
   _all: number
 }
@@ -89,6 +92,7 @@ export type InventoryUploadMinAggregateInputType = {
   snapshotDate?: true
   totalRows?: true
   insertedRows?: true
+  source?: true
   workspaceId?: true
 }
 
@@ -100,6 +104,7 @@ export type InventoryUploadMaxAggregateInputType = {
   snapshotDate?: true
   totalRows?: true
   insertedRows?: true
+  source?: true
   workspaceId?: true
 }
 
@@ -111,6 +116,7 @@ export type InventoryUploadCountAggregateInputType = {
   snapshotDate?: true
   totalRows?: true
   insertedRows?: true
+  source?: true
   workspaceId?: true
   _all?: true
 }
@@ -209,6 +215,7 @@ export type InventoryUploadGroupByOutputType = {
   snapshotDate: Date
   totalRows: number | null
   insertedRows: number | null
+  source: $Enums.CoupangDataSource
   workspaceId: string
   _count: InventoryUploadCountAggregateOutputType | null
   _avg: InventoryUploadAvgAggregateOutputType | null
@@ -243,6 +250,7 @@ export type InventoryUploadWhereInput = {
   snapshotDate?: Prisma.DateTimeFilter<"InventoryUpload"> | Date | string
   totalRows?: Prisma.IntNullableFilter<"InventoryUpload"> | number | null
   insertedRows?: Prisma.IntNullableFilter<"InventoryUpload"> | number | null
+  source?: Prisma.EnumCoupangDataSourceFilter<"InventoryUpload"> | $Enums.CoupangDataSource
   workspaceId?: Prisma.StringFilter<"InventoryUpload"> | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
   inventoryRecords?: Prisma.InventoryRecordListRelationFilter
@@ -256,6 +264,7 @@ export type InventoryUploadOrderByWithRelationInput = {
   snapshotDate?: Prisma.SortOrder
   totalRows?: Prisma.SortOrderInput | Prisma.SortOrder
   insertedRows?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   workspace?: Prisma.WorkspaceOrderByWithRelationInput
   inventoryRecords?: Prisma.InventoryRecordOrderByRelationAggregateInput
@@ -272,6 +281,7 @@ export type InventoryUploadWhereUniqueInput = Prisma.AtLeast<{
   snapshotDate?: Prisma.DateTimeFilter<"InventoryUpload"> | Date | string
   totalRows?: Prisma.IntNullableFilter<"InventoryUpload"> | number | null
   insertedRows?: Prisma.IntNullableFilter<"InventoryUpload"> | number | null
+  source?: Prisma.EnumCoupangDataSourceFilter<"InventoryUpload"> | $Enums.CoupangDataSource
   workspaceId?: Prisma.StringFilter<"InventoryUpload"> | string
   workspace?: Prisma.XOR<Prisma.WorkspaceScalarRelationFilter, Prisma.WorkspaceWhereInput>
   inventoryRecords?: Prisma.InventoryRecordListRelationFilter
@@ -285,6 +295,7 @@ export type InventoryUploadOrderByWithAggregationInput = {
   snapshotDate?: Prisma.SortOrder
   totalRows?: Prisma.SortOrderInput | Prisma.SortOrder
   insertedRows?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
   _count?: Prisma.InventoryUploadCountOrderByAggregateInput
   _avg?: Prisma.InventoryUploadAvgOrderByAggregateInput
@@ -304,6 +315,7 @@ export type InventoryUploadScalarWhereWithAggregatesInput = {
   snapshotDate?: Prisma.DateTimeWithAggregatesFilter<"InventoryUpload"> | Date | string
   totalRows?: Prisma.IntNullableWithAggregatesFilter<"InventoryUpload"> | number | null
   insertedRows?: Prisma.IntNullableWithAggregatesFilter<"InventoryUpload"> | number | null
+  source?: Prisma.EnumCoupangDataSourceWithAggregatesFilter<"InventoryUpload"> | $Enums.CoupangDataSource
   workspaceId?: Prisma.StringWithAggregatesFilter<"InventoryUpload"> | string
 }
 
@@ -315,6 +327,7 @@ export type InventoryUploadCreateInput = {
   snapshotDate: Date | string
   totalRows?: number | null
   insertedRows?: number | null
+  source?: $Enums.CoupangDataSource
   workspace: Prisma.WorkspaceCreateNestedOneWithoutInventoryUploadsInput
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutUploadInput
 }
@@ -327,6 +340,7 @@ export type InventoryUploadUncheckedCreateInput = {
   snapshotDate: Date | string
   totalRows?: number | null
   insertedRows?: number | null
+  source?: $Enums.CoupangDataSource
   workspaceId: string
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutUploadInput
 }
@@ -339,6 +353,7 @@ export type InventoryUploadUpdateInput = {
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   insertedRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutInventoryUploadsNestedInput
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutUploadNestedInput
 }
@@ -351,6 +366,7 @@ export type InventoryUploadUncheckedUpdateInput = {
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   insertedRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutUploadNestedInput
 }
@@ -363,6 +379,7 @@ export type InventoryUploadCreateManyInput = {
   snapshotDate: Date | string
   totalRows?: number | null
   insertedRows?: number | null
+  source?: $Enums.CoupangDataSource
   workspaceId: string
 }
 
@@ -374,6 +391,7 @@ export type InventoryUploadUpdateManyMutationInput = {
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   insertedRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
 }
 
 export type InventoryUploadUncheckedUpdateManyInput = {
@@ -384,6 +402,7 @@ export type InventoryUploadUncheckedUpdateManyInput = {
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   insertedRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -405,6 +424,7 @@ export type InventoryUploadCountOrderByAggregateInput = {
   snapshotDate?: Prisma.SortOrder
   totalRows?: Prisma.SortOrder
   insertedRows?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
 }
 
@@ -421,6 +441,7 @@ export type InventoryUploadMaxOrderByAggregateInput = {
   snapshotDate?: Prisma.SortOrder
   totalRows?: Prisma.SortOrder
   insertedRows?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
 }
 
@@ -432,6 +453,7 @@ export type InventoryUploadMinOrderByAggregateInput = {
   snapshotDate?: Prisma.SortOrder
   totalRows?: Prisma.SortOrder
   insertedRows?: Prisma.SortOrder
+  source?: Prisma.SortOrder
   workspaceId?: Prisma.SortOrder
 }
 
@@ -509,6 +531,7 @@ export type InventoryUploadCreateWithoutWorkspaceInput = {
   snapshotDate: Date | string
   totalRows?: number | null
   insertedRows?: number | null
+  source?: $Enums.CoupangDataSource
   inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutUploadInput
 }
 
@@ -520,6 +543,7 @@ export type InventoryUploadUncheckedCreateWithoutWorkspaceInput = {
   snapshotDate: Date | string
   totalRows?: number | null
   insertedRows?: number | null
+  source?: $Enums.CoupangDataSource
   inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutUploadInput
 }
 
@@ -560,6 +584,7 @@ export type InventoryUploadScalarWhereInput = {
   snapshotDate?: Prisma.DateTimeFilter<"InventoryUpload"> | Date | string
   totalRows?: Prisma.IntNullableFilter<"InventoryUpload"> | number | null
   insertedRows?: Prisma.IntNullableFilter<"InventoryUpload"> | number | null
+  source?: Prisma.EnumCoupangDataSourceFilter<"InventoryUpload"> | $Enums.CoupangDataSource
   workspaceId?: Prisma.StringFilter<"InventoryUpload"> | string
 }
 
@@ -571,6 +596,7 @@ export type InventoryUploadCreateWithoutInventoryRecordsInput = {
   snapshotDate: Date | string
   totalRows?: number | null
   insertedRows?: number | null
+  source?: $Enums.CoupangDataSource
   workspace: Prisma.WorkspaceCreateNestedOneWithoutInventoryUploadsInput
 }
 
@@ -582,6 +608,7 @@ export type InventoryUploadUncheckedCreateWithoutInventoryRecordsInput = {
   snapshotDate: Date | string
   totalRows?: number | null
   insertedRows?: number | null
+  source?: $Enums.CoupangDataSource
   workspaceId: string
 }
 
@@ -609,6 +636,7 @@ export type InventoryUploadUpdateWithoutInventoryRecordsInput = {
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   insertedRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   workspace?: Prisma.WorkspaceUpdateOneRequiredWithoutInventoryUploadsNestedInput
 }
 
@@ -620,6 +648,7 @@ export type InventoryUploadUncheckedUpdateWithoutInventoryRecordsInput = {
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   insertedRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -631,6 +660,7 @@ export type InventoryUploadCreateManyWorkspaceInput = {
   snapshotDate: Date | string
   totalRows?: number | null
   insertedRows?: number | null
+  source?: $Enums.CoupangDataSource
 }
 
 export type InventoryUploadUpdateWithoutWorkspaceInput = {
@@ -641,6 +671,7 @@ export type InventoryUploadUpdateWithoutWorkspaceInput = {
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   insertedRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutUploadNestedInput
 }
 
@@ -652,6 +683,7 @@ export type InventoryUploadUncheckedUpdateWithoutWorkspaceInput = {
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   insertedRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
   inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutUploadNestedInput
 }
 
@@ -663,6 +695,7 @@ export type InventoryUploadUncheckedUpdateManyWithoutWorkspaceInput = {
   snapshotDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   insertedRows?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  source?: Prisma.EnumCoupangDataSourceFieldUpdateOperationsInput | $Enums.CoupangDataSource
 }
 
 
@@ -704,6 +737,7 @@ export type InventoryUploadSelect<ExtArgs extends runtime.Types.Extensions.Inter
   snapshotDate?: boolean
   totalRows?: boolean
   insertedRows?: boolean
+  source?: boolean
   workspaceId?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   inventoryRecords?: boolean | Prisma.InventoryUpload$inventoryRecordsArgs<ExtArgs>
@@ -718,6 +752,7 @@ export type InventoryUploadSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   snapshotDate?: boolean
   totalRows?: boolean
   insertedRows?: boolean
+  source?: boolean
   workspaceId?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["inventoryUpload"]>
@@ -730,6 +765,7 @@ export type InventoryUploadSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   snapshotDate?: boolean
   totalRows?: boolean
   insertedRows?: boolean
+  source?: boolean
   workspaceId?: boolean
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["inventoryUpload"]>
@@ -742,10 +778,11 @@ export type InventoryUploadSelectScalar = {
   snapshotDate?: boolean
   totalRows?: boolean
   insertedRows?: boolean
+  source?: boolean
   workspaceId?: boolean
 }
 
-export type InventoryUploadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "fileType" | "uploadedAt" | "snapshotDate" | "totalRows" | "insertedRows" | "workspaceId", ExtArgs["result"]["inventoryUpload"]>
+export type InventoryUploadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "fileType" | "uploadedAt" | "snapshotDate" | "totalRows" | "insertedRows" | "source" | "workspaceId", ExtArgs["result"]["inventoryUpload"]>
 export type InventoryUploadInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
   inventoryRecords?: boolean | Prisma.InventoryUpload$inventoryRecordsArgs<ExtArgs>
@@ -772,6 +809,7 @@ export type $InventoryUploadPayload<ExtArgs extends runtime.Types.Extensions.Int
     snapshotDate: Date
     totalRows: number | null
     insertedRows: number | null
+    source: $Enums.CoupangDataSource
     workspaceId: string
   }, ExtArgs["result"]["inventoryUpload"]>
   composites: {}
@@ -1205,6 +1243,7 @@ export interface InventoryUploadFieldRefs {
   readonly snapshotDate: Prisma.FieldRef<"InventoryUpload", 'DateTime'>
   readonly totalRows: Prisma.FieldRef<"InventoryUpload", 'Int'>
   readonly insertedRows: Prisma.FieldRef<"InventoryUpload", 'Int'>
+  readonly source: Prisma.FieldRef<"InventoryUpload", 'CoupangDataSource'>
   readonly workspaceId: Prisma.FieldRef<"InventoryUpload", 'String'>
 }
     

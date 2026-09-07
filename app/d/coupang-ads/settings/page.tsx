@@ -11,6 +11,7 @@ import { AgentConfig } from '@/components/settings/agent-config'
 import { AgentScheduledMessages } from '@/components/settings/agent-scheduled-messages'
 import { AgentActivityLog } from '@/components/settings/agent-activity-log'
 import { DeckSlackNotifyCard } from '@/components/settings/deck-slack-notify-card'
+import { CoupangSourceCard } from '@/components/settings/coupang-source-card'
 import { cn } from '@/lib/utils'
 
 function StatusDot({ active }: { active: boolean | null }) {
@@ -98,8 +99,9 @@ export default function CoupangAdsSettingsPage() {
           <AnalysisSchedule />
         </TabsContent>
 
-        <TabsContent value="integration">
+        <TabsContent value="integration" className="space-y-6">
           <CredentialForm />
+          <CoupangSourceCard deckKey="coupang-ads" />
         </TabsContent>
       </Tabs>
     </div>

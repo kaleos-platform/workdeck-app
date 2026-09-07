@@ -44,6 +44,10 @@ export async function getCoupangInventoryRows(
   // 클라이언트가 보낸 snapshotDate 는 사용자가 고른 KST 자정 (예: 2026-05-23T00:00:00Z) 이라 timestamp 가 완전히 다르다.
   // 따라서 지정값이 있으면 "해당 KST 일자에 수집된 가장 최근 업로드"를 찾아 그 정확한 timestamp 를 record 조회 키로 사용한다.
   let targetDate: Date | undefined
+  // 완전성 baseline 은 이 스냅샷을 만든 업로드의 source 를 따라간다 — 크롤링 HEALTH 행과
+  // API 요약 행은 모집단 자체가 다르므로(478 vs 494, Phase0 실측), source 를 안 가리면
+  // baseline 을 공유해 첫 API 수집이 영구히 가드에 걸리거나 반대로 그냥 통과해 덮어쓴다.
+  let targetSource: 'CRAWL' | 'API' = 'CRAWL'
   if (opts.snapshotDate) {
     // KST 일자 [00:00, 24:00) 범위 = UTC [전날 15:00, 당일 15:00)
     const startUtc = new Date(opts.snapshotDate.getTime() - 9 * 3600 * 1000)
@@ -55,16 +59,18 @@ export async function getCoupangInventoryRows(
         snapshotDate: { gte: startUtc, lt: endUtc },
       },
       orderBy: { snapshotDate: 'desc' },
-      select: { snapshotDate: true },
+      select: { snapshotDate: true, source: true },
     })
     targetDate = onDay?.snapshotDate
+    if (onDay?.source) targetSource = onDay.source
   } else {
     const latest = await prisma.inventoryUpload.findFirst({
       where: { workspaceId, fileType: 'INVENTORY_HEALTH' },
       orderBy: { snapshotDate: 'desc' },
-      select: { snapshotDate: true },
+      select: { snapshotDate: true, source: true },
     })
     targetDate = latest?.snapshotDate
+    if (latest?.source) targetSource = latest.source
   }
 
   if (!targetDate) {
@@ -106,8 +112,14 @@ export async function getCoupangInventoryRows(
 
   // 4. 완전성 판정 — 최근 10건 업로드의 insertedRows MAX 를 앵커로.
   //    (직전 1건만 보면 이미 적재된 부분 export 를 정상 baseline 으로 신뢰해 무력화된다)
+  //    source 로 분리 조회 — inventory-upload-processor.ts 의 완전성 가드와 동일 원칙(위 주석 참조).
   const recent = await prisma.inventoryUpload.findMany({
-    where: { workspaceId, fileType: 'INVENTORY_HEALTH', insertedRows: { gt: 0 } },
+    where: {
+      workspaceId,
+      fileType: 'INVENTORY_HEALTH',
+      source: targetSource,
+      insertedRows: { gt: 0 },
+    },
     orderBy: { uploadedAt: 'desc' },
     take: 10,
     select: { insertedRows: true },

@@ -71,6 +71,8 @@ export const ModelName = {
   DeckApp: 'DeckApp',
   DeckInstance: 'DeckInstance',
   CoupangCredential: 'CoupangCredential',
+  CoupangApiCredential: 'CoupangApiCredential',
+  CoupangSourceSetting: 'CoupangSourceSetting',
   CollectionSchedule: 'CollectionSchedule',
   CoupangBackfillJob: 'CoupangBackfillJob',
   CollectionRun: 'CollectionRun',
@@ -511,6 +513,37 @@ export const CoupangCredentialScalarFieldEnum = {
 export type CoupangCredentialScalarFieldEnum = (typeof CoupangCredentialScalarFieldEnum)[keyof typeof CoupangCredentialScalarFieldEnum]
 
 
+export const CoupangApiCredentialScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  vendorId: 'vendorId',
+  accessKey: 'accessKey',
+  secretKey: 'secretKey',
+  encryptionIv: 'encryptionIv',
+  isActive: 'isActive',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CoupangApiCredentialScalarFieldEnum = (typeof CoupangApiCredentialScalarFieldEnum)[keyof typeof CoupangApiCredentialScalarFieldEnum]
+
+
+export const CoupangSourceSettingScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  inventorySource: 'inventorySource',
+  salesSource: 'salesSource',
+  settlementSource: 'settlementSource',
+  productSource: 'productSource',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CoupangSourceSettingScalarFieldEnum = (typeof CoupangSourceSettingScalarFieldEnum)[keyof typeof CoupangSourceSettingScalarFieldEnum]
+
+
 export const CollectionScheduleScalarFieldEnum = {
   id: 'id',
   workspaceId: 'workspaceId',
@@ -561,6 +594,9 @@ export const CollectionRunScalarFieldEnum = {
   uploadId: 'uploadId',
   collectAds: 'collectAds',
   collectInventory: 'collectInventory',
+  source: 'source',
+  probeApi: 'probeApi',
+  probeResult: 'probeResult',
   createdAt: 'createdAt'
 } as const
 
@@ -709,6 +745,7 @@ export const InventoryUploadScalarFieldEnum = {
   snapshotDate: 'snapshotDate',
   totalRows: 'totalRows',
   insertedRows: 'insertedRows',
+  source: 'source',
   workspaceId: 'workspaceId'
 } as const
 
@@ -720,6 +757,7 @@ export const InventoryRecordScalarFieldEnum = {
   workspaceId: 'workspaceId',
   snapshotDate: 'snapshotDate',
   fileType: 'fileType',
+  source: 'source',
   productId: 'productId',
   optionId: 'optionId',
   skuId: 'skuId',

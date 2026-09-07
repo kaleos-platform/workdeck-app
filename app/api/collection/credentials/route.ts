@@ -3,25 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { getUser } from '@/hooks/use-user'
 import { ensureWorkspaceForUser } from '@/lib/workspace'
-import crypto from 'crypto'
-
-// 간단한 AES-256 암호화 (ENCRYPTION_KEY 환경변수 사용)
-function encryptPassword(password: string): { encrypted: string; iv: string } {
-  const key = process.env.ENCRYPTION_KEY
-  if (!key) {
-    if (process.env.VERCEL_ENV === 'production') {
-      throw new Error('ENCRYPTION_KEY가 설정되지 않아 자격증명을 저장할 수 없습니다')
-    }
-    // 비운영 환경: 평문 저장 (개발/preview 전용)
-    console.warn('[credentials] ENCRYPTION_KEY 미설정 — 평문 저장 (비운영 환경 전용)')
-    return { encrypted: password, iv: 'none' }
-  }
-  const iv = crypto.randomBytes(16)
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv)
-  let encrypted = cipher.update(password, 'utf8', 'hex')
-  encrypted += cipher.final('hex')
-  return { encrypted, iv: iv.toString('hex') }
-}
+import { encryptSecret } from '@/lib/collection/secret-crypto'
 
 // GET /api/collection/credentials — 쿠팡 자격증명 조회
 // 사용자 인증 또는 Worker 인증 모두 지원
@@ -142,7 +124,7 @@ export async function PUT(request: NextRequest) {
     // 폼에서 평문 전달 → 암호화
     let encrypted: { encrypted: string; iv: string }
     try {
-      encrypted = encryptPassword(rawPassword)
+      encrypted = encryptSecret(rawPassword)
     } catch (e) {
       const msg = e instanceof Error ? e.message : '자격증명 암호화에 실패했습니다'
       return errorResponse(msg, 500)

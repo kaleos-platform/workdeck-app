@@ -140,6 +140,18 @@ export type DeckInstance = Prisma.DeckInstanceModel
  */
 export type CoupangCredential = Prisma.CoupangCredentialModel
 /**
+ * Model CoupangApiCredential
+ * 쿠팡 Open API 자격증명 (워크스페이스당 1개). 크롤링 자격(CoupangCredential)과 별도 모델 —
+ * 수명·검증 방식이 다르고 한쪽만 등록된 상태가 정상이다.
+ */
+export type CoupangApiCredential = Prisma.CoupangApiCredentialModel
+/**
+ * Model CoupangSourceSetting
+ * 데이터 종류별 수집 소스 선택 (워크스페이스당 1개). 광고는 API 계열이 없어 CRAWL 고정 —
+ * 그래서 광고용 컬럼이 없다.
+ */
+export type CoupangSourceSetting = Prisma.CoupangSourceSettingModel
+/**
  * Model CollectionSchedule
  * 
  */
