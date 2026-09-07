@@ -67,8 +67,8 @@ export function websiteJsonLd() {
   }
 }
 
-/** SoftwareApplication JSON-LD — deck 랜딩 페이지에 사용 (현재 베타 무료) */
-export function softwareAppJsonLd(content: DeckLandingContent) {
+/** SoftwareApplication JSON-LD — deck 랜딩 페이지에 사용 */
+export function softwareAppJsonLd(content: DeckLandingContent, monthlyPrice: number) {
   return {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -79,8 +79,37 @@ export function softwareAppJsonLd(content: DeckLandingContent) {
     url: buildMarketingUrl(`/${content.slug}`),
     offers: {
       '@type': 'Offer',
-      price: '0',
+      price: String(monthlyPrice),
       priceCurrency: 'KRW',
+      availability: 'https://schema.org/InStock',
+    },
+  }
+}
+
+/** Product JSON-LD — 판매 상품(업무별 구독) 상세 페이지에 사용 */
+export function productJsonLd(input: {
+  slug: string
+  name: string
+  description: string
+  /** VAT 포함 월 결제액 KRW */
+  price: number
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: input.name,
+    description: input.description,
+    brand: {
+      '@type': 'Brand',
+      name: SITE_NAME,
+    },
+    url: buildMarketingUrl(`/pricing/${input.slug}`),
+    offers: {
+      '@type': 'Offer',
+      price: String(input.price),
+      priceCurrency: 'KRW',
+      availability: 'https://schema.org/InStock',
+      url: buildMarketingUrl(`/pricing/${input.slug}`),
     },
   }
 }

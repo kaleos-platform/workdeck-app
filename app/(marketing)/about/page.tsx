@@ -50,8 +50,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold break-keep">앞으로의 방향</h2>
             <p className="leading-relaxed break-keep text-muted-foreground">
               지금은 쿠팡 광고 관리·브랜드 운영·재무 관리·모집 관리·세일즈 콘텐츠 5개 업무를
-              베타로 운영하고 있으며, 사용자 워크플로우에 맞춰 새로운 업무를 계속 추가해 나갈
-              계획입니다.
+              제공하고 있으며, 사용자 워크플로우에 맞춰 새로운 업무를 계속 추가해 나갈 계획입니다.
             </p>
           </div>
         </div>
@@ -91,11 +90,11 @@ export default function AboutPage() {
         <div className="mx-auto max-w-3xl space-y-6 text-center">
           <h2 className="text-2xl font-bold break-keep sm:text-3xl">함께 만들어가요</h2>
           <p className="text-lg break-keep text-white/90">
-            베타 기간 동안 모든 업무를 무료로 이용하며 의견을 들려주세요.
+            필요한 업무를 구독해 사용해 보시고 의견을 들려주세요.
           </p>
           <Link href={buildAppUrl('/signup')}>
             <Button size="lg" variant="secondary" className="gap-2">
-              무료로 시작하기
+              시작하기
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Button>
           </Link>
