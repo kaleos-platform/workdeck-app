@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { SettingsTabsClient } from '@/components/sc/settings/settings-tabs-client'
+import { SELLER_HUB_DECK_ID } from '@/lib/deck-routes'
 
 // 서버 컴포넌트 — 모든 데이터를 병렬로 fetch 후 클라이언트 탭 컴포넌트에 전달
 export default async function SettingsPage() {
@@ -11,7 +12,7 @@ export default async function SettingsPage() {
 
   const spaceId = resolved.space.id
 
-  const [products, personas, brandProfile, channels, rules] = await Promise.all([
+  const [products, personas, brandProfile, channels, rules, sellerHubInstance] = await Promise.all([
     prisma.product.findMany({
       where: { spaceId },
       orderBy: { updatedAt: 'desc' },
@@ -56,6 +57,12 @@ export default async function SettingsPage() {
         updatedAt: true,
       },
     }),
+    // seller-ops 상품 가져오기 메뉴 노출 여부. API 게이트는 resolveDeckContext 가 이미 하므로
+    // 여기서는 순수하게 버튼을 보일지만 정한다.
+    prisma.deckInstance.findUnique({
+      where: { spaceId_deckAppId: { spaceId, deckAppId: SELLER_HUB_DECK_ID } },
+      select: { isActive: true },
+    }),
   ])
 
   // 브랜드 프로필 초기값 변환
@@ -71,6 +78,7 @@ export default async function SettingsPage() {
   return (
     <Suspense>
       <SettingsTabsClient
+        sellerHubActive={Boolean(sellerHubInstance?.isActive)}
         products={products}
         personas={personas}
         brandProfileInitial={brandProfileInitial}

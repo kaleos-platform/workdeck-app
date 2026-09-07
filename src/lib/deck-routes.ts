@@ -78,6 +78,7 @@ export const SELLER_HUB_CHANNELS_PATH = `${SELLER_HUB_BASE_PATH}/channels`
 export const SALES_CONTENT_DECK_ID = 'sales-content'
 export const SALES_CONTENT_BASE_PATH = '/d/sales-content'
 export const SALES_CONTENT_HOME_PATH = `${SALES_CONTENT_BASE_PATH}/home`
+export const SALES_CONTENT_ONBOARDING_PATH = `${SALES_CONTENT_BASE_PATH}/onboarding`
 
 // 정보 세팅 섹션
 export const SALES_CONTENT_PRODUCTS_PATH = `${SALES_CONTENT_BASE_PATH}/settings/products`
@@ -218,3 +219,4 @@ export const APPROVALS_PATH = '/approvals'
 // ─── 설정 (전역, deck-scope 아님) ─────────────────────────────────────────────
 export const SETTINGS_INTEGRATIONS_PATH = '/settings/integrations'
 export const SETTINGS_BILLING_PATH = '/settings/billing'
+export const SETTINGS_AI_PATH = '/settings/ai'

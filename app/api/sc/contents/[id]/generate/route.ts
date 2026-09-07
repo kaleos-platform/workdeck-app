@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { contentGenerateSectionSchema } from '@/lib/sc/schemas'
-import { generateTextWithFallback } from '@/lib/ai/providers'
+import { generateTextForSpace } from '@/lib/ai/resolve'
 import { buildSectionFillPrompt } from '@/lib/sc/section-prompts'
 import type { IdeaItem } from '@/lib/sc/ideation'
 
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
 
   try {
-    const { result, providerName } = await generateTextWithFallback({
+    const { result, providerName } = await generateTextForSpace(resolved.space.id, {
       system: built.system,
       messages: built.messages,
       responseFormat: 'text',

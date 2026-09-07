@@ -363,6 +363,40 @@ export const KeywordChangeReason = {
 export type KeywordChangeReason = (typeof KeywordChangeReason)[keyof typeof KeywordChangeReason]
 
 
+export const ScResourceKind = {
+  URL: 'URL',
+  FILE: 'FILE'
+} as const
+
+export type ScResourceKind = (typeof ScResourceKind)[keyof typeof ScResourceKind]
+
+
+export const ScResourceStatus = {
+  PENDING: 'PENDING',
+  DONE: 'DONE',
+  FAILED: 'FAILED'
+} as const
+
+export type ScResourceStatus = (typeof ScResourceStatus)[keyof typeof ScResourceStatus]
+
+
+export const SpaceAiMode = {
+  WORKDECK: 'WORKDECK',
+  BYOK: 'BYOK'
+} as const
+
+export type SpaceAiMode = (typeof SpaceAiMode)[keyof typeof SpaceAiMode]
+
+
+export const SpaceAiProvider = {
+  OPENAI: 'OPENAI',
+  ANTHROPIC: 'ANTHROPIC',
+  GEMINI: 'GEMINI'
+} as const
+
+export type SpaceAiProvider = (typeof SpaceAiProvider)[keyof typeof SpaceAiProvider]
+
+
 export const AiGenerationStatus = {
   PENDING: 'PENDING',
   SUCCEEDED: 'SUCCEEDED',
