@@ -33,10 +33,14 @@ import {
   type PickedOptionWithQty,
 } from '@/components/sh/products/listings/option-picker-dialog'
 import { isSyntheticExternalCode } from '@/lib/inv/reconciliation-external-code'
+import { isReturnGrade } from '@/lib/inv/product-grade'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { reconStatusBadge, type ReconStatus } from './recon-status-display'
 import { ReconciliationUnmatchedOptionsDialog } from './reconciliation-unmatched-options-dialog'
 
 type ParsedRow = {
+  /** 쿠팡 상품등급(반품 구분). 구버전 matchResults 에는 없다 */
+  externalGrade?: string
   externalCode: string
   externalName?: string
   externalOptionName?: string
@@ -146,6 +150,8 @@ type MatchedMember = {
   targetQty: number
   mappingId?: string
   mappingItems?: MappingItem[]
+  /** 이 SKU 의 쿠팡 상품등급 — 반품 리스팅 구분용 */
+  grade?: string
   row: ParsedRow
 }
 
@@ -177,10 +183,59 @@ type UnifiedEntry = {
   driftedSinceMatch?: boolean
   /** matched 행에서 같은 옵션을 가리키는 파일 행들. 1개면 기존과 동일한 단일 행. */
   members?: MatchedMember[]
+  /** 단일 행일 때의 쿠팡 상품등급 */
+  externalGrade?: string
+  /** 그룹 안의 반품 등급 재고 합계(세트 환산 후). 표시 전용 — Σ 에는 포함돼 있다. */
+  groupReturnQuantity?: number
 }
 
 type TabValue = 'all' | 'matched' | 'file-only'
 type MatchedSub = 'all' | 'matched-diff' | 'matched-equal'
+
+/**
+ * 파일 쪽 외부코드 표시. 로켓그로스 연동에서 이 값은 **쿠팡 SKU ID** 다
+ * (Wing 재고현황 엑셀의 'SKU ID' 열 = Open API 의 externalSkuId).
+ * 라벨 없이 숫자만 띄우면 무슨 번호인지 알 수 없어 라벨+설명을 붙인다.
+ * 합성 코드(코드 컬럼 없는 파일용 내부 키)는 사용자에게 보여줄 값이 아니라 숨긴다.
+ */
+function ExternalCodeChip({ code }: { code: string }) {
+  if (isSyntheticExternalCode(code)) return null
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="ml-1.5 cursor-help font-mono opacity-70">
+          <span className="mr-0.5 opacity-60">SKU</span>
+          {code}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs">
+        쿠팡 SKU ID — 상품 등록별로 발급됩니다. 같은 상품을 여러 번 등록하면(예: 반품 상품 재등록)
+        SKU 가 나뉘어 같은 옵션이 여러 줄로 보입니다.
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+/** 쿠팡 상품등급 배지. 반품 등급만 표시한다(NEW 는 기본값이라 노이즈). */
+function GradeBadge({ grade }: { grade?: string }) {
+  if (!isReturnGrade(grade)) return null
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge
+          variant="outline"
+          className="ml-1.5 cursor-help border-amber-200 bg-amber-50 px-1 py-0 text-[10px] font-normal text-amber-700"
+        >
+          {grade}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs">
+        쿠팡이 고객 반품품을 등급 매겨 별도 상품으로 재등록한 재고입니다. 재고 현황에는 포함되지만
+        발주 계획에서는 제외됩니다.
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 function entryStatusBadge(status: string) {
   switch (status) {
@@ -315,6 +370,7 @@ export function ReconciliationPreview({
         targetQty: e.fileQuantity,
         mappingId: e.mappingId,
         mappingItems: e.mappingItems,
+        grade: e.row.externalGrade,
         row: e.row,
       }
       const existing = groups.get(key)
@@ -341,8 +397,18 @@ export function ReconciliationPreview({
         mappingItems: e.mappingItems,
         mapItemQuantity: e.mapItemQuantity,
         driftedSinceMatch: e.status === 'matched-diff' ? e.driftedSinceMatch : undefined,
+        externalGrade: e.row.externalGrade,
         members: [member],
       })
+    }
+    // 그룹 안의 반품 등급 기여분 — 표시 전용. Σ(targetQty)에는 포함돼 있다
+    // (재고 현황은 반품 포함이 정책이고, 발주만 제외한다).
+    for (const g of groups.values()) {
+      const ret = (g.members ?? []).reduce(
+        (sum, m) => (isReturnGrade(m.grade) ? sum + m.targetQty : sum),
+        0
+      )
+      if (ret > 0) g.groupReturnQuantity = ret
     }
     result.push(...groups.values())
 
@@ -993,11 +1059,8 @@ export function ReconciliationPreview({
                             </div>
                             <div className="truncate text-xs text-muted-foreground">
                               {entry.fileOptionName}
-                              {!isSyntheticExternalCode(entry.fileCode) && (
-                                <span className="ml-1.5 font-mono opacity-70">
-                                  {entry.fileCode}
-                                </span>
-                              )}
+                              <ExternalCodeChip code={entry.fileCode} />
+                              <GradeBadge grade={entry.externalGrade} />
                             </div>
                           </>
                         )}
@@ -1007,6 +1070,11 @@ export function ReconciliationPreview({
                       >
                         {/* 병합 행의 수량은 옵션 목표 수량(Σ 멤버 기여분) — 확정이 실제로 쓰는 값 */}
                         {isMerged ? entry.targetQty : entry.fileRowQty}
+                        {entry.groupReturnQuantity ? (
+                          <div className="text-[11px] font-normal text-muted-foreground/70">
+                            반품등급 {entry.groupReturnQuantity} 포함
+                          </div>
+                        ) : null}
                       </TableCell>
 
                       <TableCell className="border-l">{statusCell}</TableCell>
@@ -1069,11 +1137,10 @@ export function ReconciliationPreview({
                             <div className="truncate text-sm" title={m.fileProductName}>
                               {m.fileProductName}
                             </div>
-                            <div className="truncate text-xs text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                               {m.fileOptionName}
-                              {!isSyntheticExternalCode(m.fileCode) && (
-                                <span className="ml-1.5 font-mono opacity-70">{m.fileCode}</span>
-                              )}
+                              <ExternalCodeChip code={m.fileCode} />
+                              <GradeBadge grade={m.grade} />
                             </div>
                           </TableCell>
                           <TableCell className={`text-right tabular-nums ${fileCellClass}`}>
