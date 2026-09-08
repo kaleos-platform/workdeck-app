@@ -11,6 +11,11 @@ export type ParsedRow = {
   externalOptionName?: string
   externalBrandName?: string
   externalLocationName?: string
+  /**
+   * 외부 채널 상품등급(쿠팡 로켓그로스 '상품등급' 컬럼). 반품 등급 구분에 쓴다.
+   * 구버전 matchResults JSON 에는 없다 — undefined = 정상(비반품)으로 취급한다.
+   */
+  externalGrade?: string
   quantity: number
 }
 
@@ -88,6 +93,11 @@ function rowToRecord(headers: string[], arr: unknown[]): Record<string, unknown>
 
 // ─── 포맷별 파서 ───────────────────────────────────────────
 
+/** 2행 헤더 병합으로 '재고정보 상품등급' 처럼 접두가 붙은 경우를 위한 폴백. */
+function findGradeKey(rec: Record<string, unknown>): string | undefined {
+  return Object.keys(rec).find((k) => k.endsWith('상품등급'))
+}
+
 function parseCoupangHealth(rawData: unknown[][]): ParsedRow[] {
   const row0 = (rawData[0] as unknown[]) ?? []
   const row1 = (rawData[1] as unknown[]) ?? []
@@ -113,6 +123,10 @@ function parseCoupangHealth(rawData: unknown[][]): ParsedRow[] {
       externalCode,
       externalName: parseStr(rec['등록상품명']),
       externalOptionName: parseStr(rec['옵션명']),
+      // 반품 등급 구분 — inventory-parser.ts 의 productGrade 와 같은 컬럼이어야
+      // 파일 업로드와 Deck 연동(getCoupangInventoryRows)이 같은 결과를 낸다.
+      // 2행 헤더 병합에서 접두가 붙는 변형 대비로 endsWith 폴백을 둔다.
+      externalGrade: parseStr(rec['상품등급']) ?? parseStr(rec[findGradeKey(rec) ?? '']),
       quantity: qty,
     })
   }

@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { getCoupangGradeByExternalCode } from '@/lib/inv/coupang-return-stock'
 
 type RouteContext = { params: Promise<{ locationId: string }> }
 
 async function assertLocation(spaceId: string, locationId: string) {
   return prisma.invStorageLocation.findFirst({
     where: { id: locationId, spaceId },
-    select: { id: true },
+    select: { id: true, externalSource: true },
   })
 }
 
@@ -35,6 +37,21 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
       },
     },
   })
+
+  // 로켓그로스 위치만 상품등급을 붙인다 — 다른 위치는 등급 개념이 없다.
+  // 쿠팡이 반품품을 별도 상품으로 재등록해 같은 상품·옵션의 매핑이 여러 개
+  // 생기는데, 등급 없이는 목록에서 구분할 수 없다.
+  if (location.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH) {
+    const gradeByCode = await getCoupangGradeByExternalCode(resolved.space.id)
+    if (gradeByCode.size > 0) {
+      return NextResponse.json({
+        mappings: mappings.map((m) => ({
+          ...m,
+          externalGrade: gradeByCode.get(m.externalCode) ?? null,
+        })),
+      })
+    }
+  }
 
   return NextResponse.json({ mappings })
 }

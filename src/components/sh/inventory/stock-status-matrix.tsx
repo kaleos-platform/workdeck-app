@@ -163,6 +163,7 @@ export function StockStatusMatrix({
                       </td>
                       {visibleLocations.map((l) => {
                         const qty = row.byLocation[l.id]
+                        const returnQty = row.returnQtyByLocation?.[l.id] ?? 0
                         // 셀 단위 출고량 데이터가 없어 위치별 부족 판정 불가.
                         // 상태(부족/과잉)는 합계 컬럼의 배지로만 표시하고, 셀은 결품(0)만 강조.
                         return (
@@ -178,6 +179,14 @@ export function StockStatusMatrix({
                             )}
                           >
                             {qty === undefined ? '—' : KRW.format(qty)}
+                            {returnQty > 0 && (
+                              <div
+                                className="text-[10px] font-normal text-muted-foreground/70"
+                                title="쿠팡 반품 등급 재고 — 위 수량에 포함돼 있습니다. 발주 계획에서는 제외됩니다."
+                              >
+                                반품 {KRW.format(returnQty)}
+                              </div>
+                            )}
                           </td>
                         )
                       })}
