@@ -9,6 +9,7 @@ const DEFAULT_MODEL = 'gpt-4.1-mini'
 
 export class OpenAiProvider implements TextProvider {
   readonly name = 'openai'
+  readonly supportsImages = true
   private readonly apiKey: string
   private readonly model: string
   private readonly endpoint: string
@@ -42,9 +43,32 @@ export class OpenAiProvider implements TextProvider {
     if (!this.isConfigured()) throw new Error('OpenAI API 키가 설정되지 않았습니다')
     const started = Date.now()
 
-    const messages: { role: string; content: string }[] = []
+    const messages: {
+      role: string
+      content:
+        | string
+        | (
+            | { type: 'text'; text: string }
+            | { type: 'image_url'; image_url: { url: string; detail: 'high' } }
+          )[]
+    }[] = []
     if (req.system) messages.push({ role: 'system', content: req.system })
-    for (const m of req.messages) messages.push({ role: m.role, content: m.content })
+    for (const m of req.messages)
+      messages.push({
+        role: m.role,
+        content: m.images?.length
+          ? [
+              { type: 'text', text: m.content },
+              ...m.images.map((image) => ({
+                type: 'image_url' as const,
+                image_url: {
+                  url: `data:${image.mimeType};base64,${image.data}`,
+                  detail: 'high' as const,
+                },
+              })),
+            ]
+          : m.content,
+      })
 
     const res = await withTimeout(
       (signal) =>

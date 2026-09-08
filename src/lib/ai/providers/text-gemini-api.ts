@@ -9,6 +9,7 @@ const DEFAULT_MODEL = 'gemini-2.5-flash'
 
 export class GeminiApiProvider implements TextProvider {
   readonly name = 'gemini-api'
+  readonly supportsImages = true
   private readonly apiKey: string
   private readonly model: string
   private readonly timeoutMs: number
@@ -39,14 +40,22 @@ export class GeminiApiProvider implements TextProvider {
     const client = new GoogleGenAI({ apiKey: this.apiKey })
 
     // Gemini 는 system 이 systemInstruction 으로 분리되고, 대화는 role: 'user' | 'model'.
-    const system = [req.system, ...req.messages.filter((m) => m.role === 'system').map((m) => m.content)]
+    const system = [
+      req.system,
+      ...req.messages.filter((m) => m.role === 'system').map((m) => m.content),
+    ]
       .filter(Boolean)
       .join('\n\n')
     const contents = req.messages
       .filter((m) => m.role !== 'system')
       .map((m) => ({
         role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }],
+        parts: [
+          { text: m.content },
+          ...(m.images ?? []).map((image) => ({
+            inlineData: { mimeType: image.mimeType, data: image.data },
+          })),
+        ],
       }))
     if (contents.length === 0) throw new Error('Gemini 요청에 user 메시지가 필요합니다')
 

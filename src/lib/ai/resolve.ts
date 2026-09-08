@@ -111,6 +111,12 @@ export async function generateTextForSpace(
 ): Promise<{ result: TextGenerateResult; providerName: string; mode: ResolvedAiMode }> {
   const resolution = await resolveSpaceAiProvider(spaceId)
 
+  if (req.messages.some((m) => m.images?.length) && !resolution.provider.supportsImages) {
+    throw new Error(
+      '선택된 AI 공급자는 이미지 분석을 지원하지 않습니다. AI 설정에서 이미지 입력을 지원하는 공급자·모델을 선택해주세요'
+    )
+  }
+
   if (resolution.meterQuota) await checkTextQuota(spaceId)
 
   try {
