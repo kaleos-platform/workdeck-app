@@ -193,8 +193,11 @@ export type SourceSettingResponse = {
 
 export async function getSourceSetting(): Promise<SourceSettingResponse> {
   const response = await workerFetch('/api/collection/source-setting')
+  // 라우트는 { setting } 래퍼로 응답한다. 본문을 그대로 반환하면 inventorySource 가
+  // undefined 가 되어 타입 에러 없이 조용히 CRAWL 분기로 떨어진다 — 소스를 API 로
+  // 전환해도 크롤링이 계속 도는 무음 실패가 된다(실제로 겪음).
   const data = await response.json()
-  return data as SourceSettingResponse
+  return (data?.setting ?? data) as SourceSettingResponse
 }
 
 /**
@@ -205,14 +208,16 @@ export type ApiVerifyBaseline = {
   snapshotDate: string | null
   rowCount: number
   optionIdCount: number
+  skuIdCount: number
   totalOrderableQuantity: number
   skuIds: string[]
-}
+} | null
 
 export async function getApiVerifyBaseline(): Promise<ApiVerifyBaseline> {
   const response = await workerFetch('/api/collection/api-verify-baseline')
+  // { baseline } 래퍼 — 스냅샷이 없으면 baseline: null 이 온다.
   const data = await response.json()
-  return data as ApiVerifyBaseline
+  return (data?.baseline ?? null) as ApiVerifyBaseline
 }
 
 /**
