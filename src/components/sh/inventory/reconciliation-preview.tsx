@@ -10,7 +10,14 @@
 // (부분 적용 + PARTIAL/APPLIED 상태 머신은 자동 대조 cron 전용)
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { ChevronRight, Loader2, PackageSearch, Search } from 'lucide-react'
+import {
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Loader2,
+  PackageSearch,
+  Search,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -240,9 +247,9 @@ export function ReconciliationPreview({
   // matched-* 행 매칭 수정용 picker 상태
   const [editMatcherOpen, setEditMatcherOpen] = useState(false)
   const [editMatcherEntry, setEditMatcherEntry] = useState<UnifiedEntry | null>(null)
-  // 병합 행 펼침 상태. 기본 접힘 — 86행을 스캔하는 게 주 작업이라
-  // 구성 SKU 는 필요할 때만 연다(progressive disclosure).
-  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
+  // 병합 행 접힘 상태. **접힌 키만** 담는다 — 기본값이 펼침이라 빈 Set = 전부 펼침.
+  // 펼침 키를 담으면 새로 로드된 행이 기본 접힘이 돼 기본값 계약이 깨진다.
+  const [collapsedKeys, setCollapsedKeys] = useState<Set<string>>(new Set())
 
   // 시스템 쪽 미등장 옵션 다이얼로그
   const [unmatchedOpen, setUnmatchedOpen] = useState(false)
@@ -483,10 +490,29 @@ export function ReconciliationPreview({
   }
 
   function toggleExpanded(key: string) {
-    setExpandedKeys((prev) => {
+    setCollapsedKeys((prev) => {
       const next = new Set(prev)
       if (next.has(key)) next.delete(key)
       else next.add(key)
+      return next
+    })
+  }
+
+  // 현재 필터에 보이는 병합 행 키. 일괄 토글은 화면에 보이는 것만 대상으로 한다
+  // — 필터로 감춘 행까지 건드리면 탭을 바꿨을 때 상태가 설명되지 않는다.
+  const mergedKeys = useMemo(
+    () => filteredEntries.filter((e) => (e.members?.length ?? 0) > 1).map((e) => e.key),
+    [filteredEntries]
+  )
+  const expandedCount = mergedKeys.filter((k) => !collapsedKeys.has(k)).length
+  const allExpanded = mergedKeys.length > 0 && expandedCount === mergedKeys.length
+
+  function toggleAll() {
+    setCollapsedKeys((prev) => {
+      const next = new Set(prev)
+      // 하나라도 펼쳐져 있으면 전부 접는다(= 정리), 전부 접혀 있으면 전부 펼친다.
+      if (expandedCount > 0) for (const k of mergedKeys) next.add(k)
+      else for (const k of mergedKeys) next.delete(k)
       return next
     })
   }
@@ -731,6 +757,33 @@ export function ReconciliationPreview({
             ))}
           </div>
         )}
+
+        {/* 일괄 펼치기/접기 — 병합 행이 있을 때만. 기본은 전부 펼침이라
+            처음엔 '모두 접기'로 보인다. */}
+        {mergedKeys.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+            onClick={toggleAll}
+            aria-expanded={allExpanded}
+          >
+            {expandedCount > 0 ? (
+              <>
+                <ChevronsDownUp className="mr-1 h-3.5 w-3.5" />
+                모두 접기
+              </>
+            ) : (
+              <>
+                <ChevronsUpDown className="mr-1 h-3.5 w-3.5" />
+                모두 펼치기
+              </>
+            )}
+            <span className="ml-1 opacity-60">
+              {expandedCount}/{mergedKeys.length}
+            </span>
+          </Button>
+        )}
       </div>
 
       {filteredEntries.length === 0 ? (
@@ -818,7 +871,7 @@ export function ReconciliationPreview({
                 // 축 B 병합 — 같은 옵션을 가리키는 파일 행들. 1개면 기존 단일 행 표기 그대로.
                 const members = entry.members ?? []
                 const isMerged = members.length > 1
-                const expanded = expandedKeys.has(entry.key)
+                const expanded = !collapsedKeys.has(entry.key)
                 const fileCellClass = 'bg-muted/40'
 
                 const statusCell = applied ? (
