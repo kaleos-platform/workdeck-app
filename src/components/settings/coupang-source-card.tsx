@@ -57,8 +57,11 @@ export function CoupangSourceCard({ deckKey }: { deckKey: DeckKey }) {
       fetch('/api/collection/api-credentials').then((r) => (r.ok ? r.json() : null)),
     ])
       .then(([sourceData, credData]) => {
-        setData(sourceData)
-        setCredentialActive(Boolean(credData?.isActive))
+        // 두 라우트 모두 래퍼로 응답한다: { setting } / { credential, isConnected }.
+        // 본문을 그대로 쓰면 소스 값이 전부 undefined 가 되고(토글이 아무것도 선택 안 된 상태),
+        // 자격 활성 여부도 항상 false 라 API 쪽이 영구 disabled 로 남는다.
+        setData(sourceData?.setting ?? sourceData ?? null)
+        setCredentialActive(Boolean(credData?.credential?.isActive ?? credData?.isConnected))
       })
       .catch(() => {
         setData(null)

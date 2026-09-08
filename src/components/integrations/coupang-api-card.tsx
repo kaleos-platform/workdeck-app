@@ -63,6 +63,9 @@ export function CoupangApiCard() {
   const [isSaving, setIsSaving] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  /** 조회/저장 실패 사유 — 토스트는 놓치기 쉬워 카드 안에도 남긴다. */
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const [vendorId, setVendorId] = useState('')
   const [accessKey, setAccessKey] = useState('')
@@ -76,14 +79,28 @@ export function CoupangApiCard() {
 
   const load = useCallback(async () => {
     setLoading(true)
+    setLoadError(null)
     try {
       const res = await fetch('/api/collection/api-credentials')
-      const json: ApiCredentialResponse = res.ok ? await res.json() : null
-      setData(json)
-      if (json) {
-        setVendorId(json.vendorId)
+      if (!res.ok) {
+        // 401/403/409 를 조용히 삼키면 "저장했는데 아무 일도 안 일어난다"로 보인다.
+        // 서버가 내려준 사유를 그대로 화면에 남긴다.
+        const body = await res.json().catch(() => ({}))
+        setLoadError(
+          (body as { message?: string }).message ?? `자격증명을 불러오지 못했습니다 (${res.status})`
+        )
+        setData(null)
+        return
+      }
+      // 라우트는 { credential, isConnected } 래퍼로 응답한다 — 본문 전체를 자격 객체로
+      // 취급하면 저장에 성공해도 vendorId 가 undefined 라 화면이 계속 "미등록"으로 남는다.
+      const json = (await res.json()) as { credential: ApiCredentialResponse }
+      setData(json.credential ?? null)
+      if (json.credential) {
+        setVendorId(json.credential.vendorId)
       }
     } catch {
+      setLoadError('자격증명을 불러오는 중 오류가 발생했습니다')
       setData(null)
     } finally {
       setLoading(false)
@@ -108,11 +125,14 @@ export function CoupangApiCard() {
   }
 
   async function handleSave() {
+    setSaveError(null)
     if (!vendorId.trim() || !accessKey.trim()) {
+      setSaveError('업체코드와 Access Key를 입력해주세요')
       toast.error('업체코드와 Access Key를 입력해주세요')
       return
     }
     if (!data && !secretKey.trim()) {
+      setSaveError('Secret Key를 입력해주세요')
       toast.error('Secret Key를 입력해주세요')
       return
     }
@@ -129,9 +149,13 @@ export function CoupangApiCard() {
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        toast.error((body as { message?: string }).message ?? '저장에 실패했습니다')
+        const msg =
+          (body as { message?: string }).message ?? `저장에 실패했습니다 (HTTP ${res.status})`
+        setSaveError(msg)
+        toast.error(msg)
         return
       }
+      setSaveError(null)
       toast.success('API 자격증명이 저장되었습니다')
       setIsEditing(false)
       setSecretKey('')
@@ -139,6 +163,7 @@ export function CoupangApiCard() {
       setProbeResult(null)
       await load()
     } catch {
+      setSaveError('저장 중 오류가 발생했습니다 (네트워크 또는 서버 응답 이상)')
       toast.error('저장 중 오류가 발생했습니다')
     } finally {
       setIsSaving(false)
@@ -185,7 +210,10 @@ export function CoupangApiCard() {
       try {
         const res = await fetch(`/api/collection/runs/${runId}`)
         if (res.ok) {
-          const run = await res.json()
+          // 라우트는 { run } 래퍼로 응답한다 — 본문을 그대로 run 으로 취급하면
+          // probeResult 가 영원히 undefined 라 폴링이 타임아웃까지 돌고 실패로 끝난다.
+          const body = await res.json()
+          const run = body?.run ?? body
           if (run?.probeResult) {
             stopPolling()
             const result: NonNullable<ProbeResult> = run.probeResult
@@ -226,8 +254,9 @@ export function CoupangApiCard() {
         setProbeStatus('failed')
         return
       }
+      // POST /api/collection/runs 도 { run } 래퍼로 응답한다(runId 평면 필드가 아니다).
       const body = await res.json()
-      const runId = body?.runId
+      const runId = body?.run?.id ?? body?.runId
       if (!runId) {
         setProbeStatus('failed')
         setProbeResult({ ok: false, message: '작업 ID를 받지 못했습니다' })
@@ -294,6 +323,23 @@ export function CoupangApiCard() {
             테스트]를 실행하면 현재 워커의 공인 IP를 확인할 수 있습니다.
           </AlertDescription>
         </Alert>
+
+        {/* 조회/저장 실패는 토스트만으로는 놓치기 쉬워(자동으로 사라진다) 카드 안에도 남긴다.
+            "저장을 눌렀는데 아무 일도 일어나지 않는다"로 보이던 문제의 대응이다. */}
+        {loadError && (
+          <Alert variant="destructive">
+            <XCircle className="h-4 w-4" />
+            <AlertTitle>자격증명을 불러오지 못했습니다</AlertTitle>
+            <AlertDescription>{loadError}</AlertDescription>
+          </Alert>
+        )}
+        {saveError && (
+          <Alert variant="destructive">
+            <XCircle className="h-4 w-4" />
+            <AlertTitle>저장 실패</AlertTitle>
+            <AlertDescription>{saveError}</AlertDescription>
+          </Alert>
+        )}
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
