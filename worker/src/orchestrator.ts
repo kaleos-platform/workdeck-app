@@ -20,6 +20,7 @@ import {
 } from './api-client.js'
 import { decrypt } from './encryption.js'
 import { collectCoupangReport } from './collector.js'
+import type { InventoryCollectorResult } from './inventory-collector.js'
 import { collectInventoryData } from './inventory-collector.js'
 import {
   notifyCollectionDone,
@@ -37,7 +38,7 @@ import {
   shouldAlertLoginFailure,
 } from './login-guard.js'
 import { CoupangApiClient, CoupangApiError } from './coupang-api/client.js'
-import { fetchInventorySummaries } from './coupang-api/endpoints.js'
+import { extractInventoryQuantities, fetchInventorySummaries } from './coupang-api/endpoints.js'
 import { buildApiProductMap } from './coupang-api/product-map.js'
 import type { CoupangApiConfig } from './coupang-api/client.js'
 import type { InventoryApiRow } from './sources/types.js'
@@ -432,9 +433,11 @@ async function executeCollectionPipeline(
     )
 
     // ── Step 7: 상태 → COMPLETED ──
+    // error: null — 위 (재고만) 분기와 같은 이유로 stale 워치독 문구를 정리한다.
     await updateCollectionRun(runId, {
       status: 'COMPLETED',
       uploadId: uploadResult.uploadId,
+      error: null,
     })
     console.log('상태: COMPLETED')
 
@@ -455,6 +458,9 @@ async function executeCollectionPipeline(
 
   // 재고 수집이 통째로 실패했는지(재고-only 수집의 최종 상태 판정용).
   let inventoryFailed = false
+  // Step 10.1 이 재고 부분 실패 문구를 error 에 남겼는지 — 최종 COMPLETED 처리에서
+  // stale 워치독 문구만 지우고 진짜 오류는 보존하기 위한 플래그.
+  let inventoryErrorRecorded = false
 
   // ── 재고 데이터 수집 (Step 9~10.5 + seller-ops) — collectInventory scope ──
   if (collectInventory) {
@@ -508,6 +514,7 @@ async function executeCollectionPipeline(
     // 상태는 COMPLETED 유지(광고 수집은 성공)하되, 재고 단계 오류를 error 필드에 남겨
     // 이력 UI에서 "완료"인데 재고가 비는 무음 실패를 사용자가 인지할 수 있게 한다.
     if (inventoryResult.errors.length > 0) {
+      inventoryErrorRecorded = true
       const inventoryError = `재고 수집 일부 실패: ${inventoryResult.errors.join(' / ')}`
       await updateCollectionRun(runId, { error: inventoryError.slice(0, 500) }).catch((err) =>
         console.error('[orchestrator] 재고 실패 가시화 업데이트 실패:', err)
@@ -581,9 +588,16 @@ async function executeCollectionPipeline(
       )
       console.log('상태: FAILED (재고만·수집 실패)')
     } else {
-      await updateCollectionRun(runId, { status: 'COMPLETED' }).catch((err) =>
-        console.error('[orchestrator] 상태 COMPLETED 업데이트 실패:', err)
-      )
+      // 10분을 넘긴 run 은 목록 조회(queryCollectionRuns)의 stale 정리가 진행 중에
+      // '타임아웃: 10분 이상 응답 없음' 을 찍어 둔다. 그 뒤 정상 완료해도 문구가 남아
+      // 성공한 수집이 실패로 보인다(실제로 그렇게 보였다) — 그래서 비운다.
+      //
+      // 단, Step 10.1 이 남긴 재고 부분 실패 문구는 지우면 안 된다(그게 유일한 가시화
+      // 경로다). 이번 run 에서 실제 오류가 있었을 때만 error 를 보존한다.
+      await updateCollectionRun(runId, {
+        status: 'COMPLETED',
+        ...(inventoryErrorRecorded ? {} : { error: null }),
+      }).catch((err) => console.error('[orchestrator] 상태 COMPLETED 업데이트 실패:', err))
       console.log('상태: COMPLETED (재고만)')
     }
   }
@@ -754,10 +768,29 @@ async function collectAndUploadInventory(credential: {
   // collectVendorSales=false면 VENDOR 수집 생략 — targetDateKst를 넘기지 않아 판매분석 건너뜀
   const shouldCollectVendor = credential.collectVendorSales !== false
   const gapDates = shouldCollectVendor ? (credential.gapDates ?? []) : []
-  const inventoryData = await collectInventoryData(
-    { loginId: credential.loginId, password },
-    shouldCollectVendor ? { targetDateKst: yesterdayKst, gapDates } : {}
-  )
+
+  // 재고 소스가 API 면 HEALTH 엑셀은 쓰이지 않고 버려진다 — Wing 그리드 로드 + 다운로드에
+  // 수 분이 걸려 수집 전체가 10분 워치독(queryCollectionRuns 의 stale 정리)에 걸렸다.
+  // 판매분석(VENDOR)은 아직 크롤링이라 그 경우 세션은 그대로 필요하다.
+  const skipHealthCrawl = inventorySource === 'API'
+
+  // 크롤링으로 가져올 게 하나도 없으면(HEALTH=API + VENDOR 생략) 브라우저를 아예 띄우지
+  // 않는다. Wing 로그인 자체가 Akamai 노출이라 불필요한 로그인은 줄이는 편이 안전하다.
+  const needsCrawlSession = !skipHealthCrawl || shouldCollectVendor
+  // 세션을 안 띄우는 경우에도 null 이 아니라 빈 결과를 쓴다 — 아래 다운스트림 분기가
+  // inventoryHealth/salesVendor 의 null 여부로만 판단하도록 두어 변경 범위를 좁힌다.
+  const inventoryData: InventoryCollectorResult = needsCrawlSession
+    ? await collectInventoryData(
+        { loginId: credential.loginId, password },
+        {
+          ...(shouldCollectVendor ? { targetDateKst: yesterdayKst, gapDates } : {}),
+          skipHealth: skipHealthCrawl,
+        }
+      )
+    : { inventoryHealth: null, salesVendor: null, gapVendors: [] }
+  if (!needsCrawlSession) {
+    console.log('[inventory] 크롤링 대상 없음(재고=API, 판매분석 생략) — Wing 세션 미실행')
+  }
   if (!shouldCollectVendor) {
     console.log('[inventory] collectVendorSales=false — 판매분석(VENDOR) 수집 건너뜀')
   }
@@ -795,8 +828,7 @@ async function collectAndUploadInventory(credential: {
       const rows: InventoryApiRow[] = summaries.map((item) => ({
         optionId: String(item.vendorItemId),
         skuId: item.externalSkuId != null ? String(item.externalSkuId) : null,
-        orderableQuantity: item.totalOrderableQuantity ?? null,
-        salesQty30d: item.SALES_COUNT_LAST_THIRTY_DAYS ?? null,
+        ...extractInventoryQuantities(item),
       }))
 
       // 진단용 원본 덤프는 유지 — 적재 실패 시에도 원인 조사에 쓸 수 있게.
