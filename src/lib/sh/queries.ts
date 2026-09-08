@@ -11,6 +11,7 @@
  *    → tool 호출 시에도 route와 동일하게 매 호출 최신 스냅샷을 반환한다.
  */
 import { Prisma } from '@/generated/prisma/client'
+import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
 import { prisma } from '@/lib/prisma'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { loadRocketDailyRevenue, sumRocketDaily } from '@/lib/sh/rocket-revenue'
@@ -282,6 +283,13 @@ export interface QueryStockStatusOptions {
   productId?: string | null
   q?: string | null
   onlyLow?: boolean
+  /**
+   * 쿠팡 반품 등급 보유량을 함께 내려줄지. 기본 false.
+   * 이 함수는 MCP 툴과 공유되므로 조인 비용을 에이전트 경로에 얹지 않는다 —
+   * 화면(route)만 켠다. 반품 재고는 합계(totalQty)에 **포함**돼 있고,
+   * 이 값은 "그중 얼마가 반품인가"를 보조 표기하기 위한 파생값이다.
+   */
+  includeReturnStock?: boolean
 }
 
 /**
@@ -479,9 +487,15 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     out30d: number
     out90d: number
     byLocation: Record<string, number>
+    /** 위치별 반품 등급 보유량. includeReturnStock 일 때만, 쿠팡 위치만 채워진다 */
+    returnQtyByLocation?: Record<string, number>
     externalCodeByLocation: Record<string, string>
     status: StatusLabel
   }
+
+  // 반품 등급 보유량(파생) — 원장이 아니라 최신 쿠팡 스냅샷 기준이다.
+  // 응답의 returnStock.snapshotDate 와 함께 읽어야 한다.
+  const returnStock = opts.includeReturnStock ? await getCoupangReturnStockByOption(spaceId) : null
 
   const allRows: MatrixRow[] = []
   for (const g of groups) {
@@ -493,6 +507,9 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           byLocation[sl.locationId] = sl.quantity
           currentQty += sl.quantity
         }
+        const returnQty = returnStock?.byOption.get(o.id) ?? 0
+        const returnQtyByLocation =
+          returnQty > 0 && returnStock ? { [returnStock.locationId]: returnQty } : undefined
         const incomingQty = incomingByOption.get(o.id) ?? 0
         const totalQty = plannedStockQty({ onHandQty: currentQty, incomingQty })
         const costPrice = decimalToNumber(o.costPrice)
@@ -526,6 +543,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           out30d,
           out90d,
           byLocation,
+          ...(returnQtyByLocation ? { returnQtyByLocation } : {}),
           externalCodeByLocation,
           status: statusForSku(totalQty, out30d, out90d),
         })
@@ -750,6 +768,15 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
   // ───────────────────────────────────────────────────────────────────
   return {
     snapshotAt: new Date().toISOString(),
+    // 반품 재고 출처 메타 — 파생값이므로 화면이 시점을 밝힐 수 있게 한다
+    ...(returnStock
+      ? {
+          returnStock: {
+            locationId: returnStock.locationId,
+            snapshotDate: returnStock.snapshotDate.toISOString(),
+          },
+        }
+      : {}),
     kpis: {
       totalSkus: allRows.length,
       totalQty,
