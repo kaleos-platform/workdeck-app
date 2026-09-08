@@ -82,6 +82,11 @@ export type StockMatrixRow = {
   totalQty: number
   totalValue: number
   byLocation: Record<string, number>
+  /**
+   * 위치별 쿠팡 반품 등급 보유량. byLocation 합계에 **포함**돼 있고,
+   * "그중 얼마가 반품인가"를 보조 표기하기 위한 파생값이다(발주에서는 제외됨).
+   */
+  returnQtyByLocation?: Record<string, number>
   externalCodeByLocation: Record<string, string>
   incomingQty: number
   out30d: number

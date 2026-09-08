@@ -92,3 +92,40 @@ export async function getCoupangReturnStockByOption(
 
   return { locationId: resolved.locationId, snapshotDate, byOption }
 }
+
+/**
+ * externalCode → 쿠팡 상품등급 인덱스. 위치 관리 매핑 목록에서 반품 리스팅을
+ * 구분해 보여줄 때 쓴다. 로켓그로스 위치가 아니면 호출하지 말 것.
+ *
+ * 인덱싱 규칙은 getCoupangReturnStockByOption 과 동일하다 —
+ * skuId/optionId/productId 3키, 충돌 시 첫 값 유지.
+ */
+export async function getCoupangGradeByExternalCode(spaceId: string): Promise<Map<string, string>> {
+  const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
+  if (!resolved) return new Map()
+
+  const stocked = await prisma.inventoryRecord.aggregate({
+    where: {
+      workspaceId: resolved.workspaceId,
+      fileType: 'INVENTORY_HEALTH',
+      availableStock: { not: null },
+    },
+    _max: { snapshotDate: true },
+  })
+  const snapshotDate = stocked._max.snapshotDate
+  if (!snapshotDate) return new Map()
+
+  const records = await prisma.inventoryRecord.findMany({
+    where: { workspaceId: resolved.workspaceId, snapshotDate, fileType: 'INVENTORY_HEALTH' },
+    select: { productId: true, optionId: true, skuId: true, productGrade: true },
+  })
+
+  const gradeByCode = new Map<string, string>()
+  for (const r of records) {
+    if (!r.productGrade) continue
+    for (const id of [r.skuId, r.optionId, r.productId]) {
+      if (id && !gradeByCode.has(id)) gradeByCode.set(id, r.productGrade)
+    }
+  }
+  return gradeByCode
+}

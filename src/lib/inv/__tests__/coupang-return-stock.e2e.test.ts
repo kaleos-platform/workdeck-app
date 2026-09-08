@@ -22,6 +22,7 @@ config({ path: path.resolve(process.cwd(), '.env.local') })
 import { prisma } from '@/lib/prisma'
 import { getCoupangReturnStockByOption } from '../coupang-return-stock'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '../external-sources'
+import { queryStockStatus } from '@/lib/sh/queries'
 
 const SPACE_ID = 'e2e00000-0000-4000-8000-0000000000e1'
 const USER_ID = 'e2e00000-0000-4000-8000-0000000000e2'
@@ -237,5 +238,44 @@ d('반품 등급 재고 파생 (dev DB)', () => {
 
   it('5) 쿠팡 미연동 space 는 null', async () => {
     expect(await getCoupangReturnStockByOption(BARE_SPACE_ID)).toBeNull()
+  })
+
+  it('6) queryStockStatus 는 opt-in 일 때만 반품을 내려준다 (MCP 경로 회귀)', async () => {
+    // 이 쿼리는 MCP 툴과 공유된다 — 기본값으로 조인 비용이 얹히면 안 된다.
+    const off = (await queryStockStatus(SPACE_ID)) as { returnStock?: unknown }
+    expect(off.returnStock).toBeUndefined()
+
+    const on = (await queryStockStatus(SPACE_ID, { includeReturnStock: true })) as {
+      returnStock?: { locationId: string; snapshotDate: string }
+    }
+    expect(on.returnStock?.locationId).toBe(locationId)
+    expect(on.returnStock?.snapshotDate).toBe(NEW_SNAP.toISOString())
+  })
+
+  it('7) matrix row 에 위치별 반품량이 실리고 합계에는 포함된 채로 남는다', async () => {
+    // 재고 현황 정책: 반품 **포함**. returnQtyByLocation 은 "그중 얼마"를 알리는 보조값.
+    await prisma.invStockLevel.upsert({
+      where: { optionId_locationId: { optionId: optSingle, locationId } },
+      create: { spaceId: SPACE_ID, optionId: optSingle, locationId, quantity: 20 },
+      update: { quantity: 20 },
+    })
+    const res = (await queryStockStatus(SPACE_ID, { includeReturnStock: true })) as {
+      matrix: {
+        rows: {
+          optionId: string
+          byLocation: Record<string, number>
+          returnQtyByLocation?: Record<string, number>
+        }[]
+      }
+    }
+    const row = res.matrix.rows.find((r) => r.optionId === optSingle)
+    expect(row).toBeDefined()
+    // 합계는 원장 그대로 — 반품이 빠지지 않는다
+    expect(row!.byLocation[locationId]).toBe(20)
+    // 그중 반품 7
+    expect(row!.returnQtyByLocation?.[locationId]).toBe(7)
+
+    const clean = res.matrix.rows.find((r) => r.optionId === optSet)
+    expect(clean?.returnQtyByLocation?.[locationId] ?? 0).toBe(6)
   })
 })
