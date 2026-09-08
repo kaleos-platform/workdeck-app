@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { generateTextWithFallback } from '@/lib/ai/providers'
+import { generateTextForSpace } from '@/lib/ai/resolve'
 
 const messageSchema = z.object({
   role: z.enum(['system', 'user', 'assistant']),
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { result, providerName } = await generateTextWithFallback({
+    const { result, providerName } = await generateTextForSpace(resolved.space.id, {
       system: parsed.data.system,
       messages: parsed.data.messages,
       responseFormat: parsed.data.responseFormat,
