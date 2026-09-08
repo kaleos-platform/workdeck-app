@@ -1,20 +1,20 @@
 # 세일즈 콘텐츠 온보딩 — 리소스 기반 AI 정보 세팅
 
-사용자가 이미 보유한 자료(홈페이지 URL·문서 파일)를 받아 AI가 브랜드 프로필·상품·페르소나 초안을 만들고,
-사용자가 검토·수정해 저장하는 온보딩 플로우.
+사용자가 홈페이지·블로그 URL과 PDF·Markdown을 전달하면 브랜드 프로필·상품·고객 초안을 생성한다.
+주요 고객은 한 칸으로 지정할 수 있으며 기업 ESG 담당자가 기본값이다. 사용자는 출처와 상세 정보를 검토한 뒤 한 번에 저장한다.
 
 ## 진입점
 
-- 위저드: `/d/sales-content/onboarding` (5스텝)
+- 위저드: `/d/sales-content/onboarding` (자료 등록 → 자료 분석 → 검토·저장)
 - 홈 진행률 카드: `/d/sales-content/home` 상단 — 미완료·미dismiss일 때만 표시
 
 ## 데이터 모델
 
-| 모델 | 용도 |
-|---|---|
-| `SalesContentOnboarding` (spaceId unique) | `draft`(AI 초안 JSON), `draftStatus`(GENERATING/READY/FAILED), `completedAt`, `dismissedAt` |
-| `ScOnboardingResource` | 사용자 리소스. `kind`(URL/FILE), `sourceUrl`/`storagePath`, `extractedText`, `status`(PENDING/DONE/FAILED) |
-| `BrandProfile.logoUrl` | 회사 로고 1장 |
+| 모델                                      | 용도                                                                                                       |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `SalesContentOnboarding` (spaceId unique) | `draft`(AI 초안 JSON), `draftStatus`(GENERATING/READY/FAILED), `completedAt`, `dismissedAt`                |
+| `ScOnboardingResource`                    | 사용자 리소스. `kind`(URL/FILE), `sourceUrl`/`storagePath`, `extractedText`, `status`(PENDING/DONE/FAILED) |
+| `BrandProfile.logoUrl`                    | 회사 로고 1장                                                                                              |
 
 마이그레이션: `prisma/migrations/20260808000000_sc_onboarding`
 
@@ -36,35 +36,35 @@
 
 ## API
 
-| 엔드포인트 | 설명 |
-|---|---|
-| `GET/POST /api/sc/onboarding/resources` | 목록 / URL 크롤(JSON `{kind:'URL',url}`) · 파일 업로드(multipart `file`). 최대 10개 |
-| `DELETE /api/sc/onboarding/resources/[id]` | 삭제 (스토리지 파일 best-effort 정리) |
-| `POST /api/sc/onboarding/generate` | 리소스 텍스트 → LLM JSON 초안. zod 검증 실패 시 1회 재시도 |
-| `GET/PATCH /api/sc/onboarding/status` | 진행률 counts + completed/dismissed / `{dismissed:true}`·`{completed:true}` |
-| `POST /api/sc/onboarding/logo` | 로고 업로드 → `BrandProfile.logoUrl` |
+| 엔드포인트                                 | 설명                                                                                                    |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `GET/POST /api/sc/onboarding/resources`    | 목록 / URL 대기열 등록(JSON `{kind:'URL',url}`) · 파일 업로드(multipart `file`). 안전 상한 1,000건      |
+| `POST /api/sc/onboarding/collect`          | `{}`로 URL 한 건 수집·연결된 상품/카테고리/소개 페이지 발견. `{resourceId}`로 실패한 URL 재시도         |
+| `DELETE /api/sc/onboarding/resources/[id]` | 삭제 (스토리지 파일 best-effort 정리)                                                                   |
+| `POST /api/sc/onboarding/generate`         | `{audience}`. 상품 한 건씩 분석·캐시 후 브랜드/고객 초안 생성. `done:false` 동안 다음 요청으로 이어간다 |
+| `POST /api/sc/onboarding/save`             | 검토한 브랜드·선택한 상품/고객 저장, 완료 처리. transaction과 URL/이름 중복 검사로 재시도 안전성 확보   |
+| `GET/PATCH /api/sc/onboarding/status`      | 진행률 counts + completed/dismissed / `{dismissed:true}`·`{completed:true}`                             |
+| `POST /api/sc/onboarding/logo`             | 로고 업로드 → `BrandProfile.logoUrl`                                                                    |
 
-초안 저장은 전용 API 없이 기존 CRUD를 재사용한다 — `PUT /api/sc/brand-profile`, `POST /api/sc/products`,
-`POST /api/sc/personas`.
+기존 개별 설정 CRUD도 그대로 사용할 수 있다. 온보딩은 `/save`로 전체를 한 transaction에 저장한다.
+이미 존재하는 상품·고객은 유지하며 생성 수와 건너뛴 수를 반환한다.
 
 ## 파이프라인
 
-1. **URL** — `src/lib/bo/crawler.ts`의 `crawlHomepage` 재사용(SSRF 방어: DNS 핀 고정 + 리다이렉트 hop별 재검증).
-   크롤 실패도 FAILED 리소스로 기록해 사용자가 원인을 보고 삭제·재시도할 수 있게 한다.
-2. **FILE** — 업로드 후 `unpdf`로 텍스트 추출(`src/lib/sc/onboarding/extract.ts`). v1은 PDF·txt만 추출하고
-   docx/ppt/hwp는 파일만 보관(FAILED + 안내 메시지). 스캔 이미지형 PDF는 텍스트가 0이라 FAILED 처리된다.
-3. **생성** — `extractedText` 결합(최대 24,000자) → `generateTextWithFallback({responseFormat:'json'})` →
-   `onboardingDraftSchema`(products ≤5, personas ≤3) 검증. 호출은 `TextGenerationLog`에 감사 기록된다.
+1. **URL** — `safeFetchHtml`의 DNS·리다이렉트 SSRF 방어를 재사용한다. 같은 사이트의 상품·카테고리·페이지 이동·소개 링크를 탐색한다. Cafe24 상품 URL의 category/display 변형을 정규화해 중복을 막는다. 네이버 모바일 목록은 공개 RSS로 대표 글 최대 20건을 발견하고 본문을 수집한다.
+2. **FILE** — PDF는 `unpdf`, Markdown·txt는 UTF-8 텍스트로 추출한다. `.md`의 빈 MIME·text/plain도 처리한다. 텍스트를 읽을 수 없는 스캔형 PDF는 실패 안내를 표시한다. 문서 20,000자 초과 시 미분석 구간을 명시하고 분할 등록을 안내한다.
+3. **상품 분석** — `extractedText`에 version 1 JSON envelope(페이지 유형·텍스트·이미지 URL·출처)를 보관한다. 상품별 `analysis: {audience,draft}`를 저장해 중지·재접속 시 재사용한다. 상세 이미지는 SSRF 방어 다운로드 → sharp 분할 → 워크스페이스 AI 공급자 입력을 거친다. SKU/상품을 5개로 제한하지 않는다.
+4. **브랜드·고객** — 자료별 입력 예산을 나눠 뒤쪽 블로그가 통째로 잘리지 않게 한다. 브랜드 차별점·사례·문의 경로와 고객의 구매 목적·고민·의사결정 기준을 customFields에 보존한다. 고객 추론은 AI 제안으로 표시하고 인증·탄소저감 수치는 근거 없이 만들지 않도록 지시한다.
+5. **저장** — 검토한 customFields를 포함해 한 번에 저장한다. 기존 브랜드는 기존 값으로 채우고 AI 제안은 사용자가 적용한다. 기존 상품·고객의 자동 덮어쓰기는 없다.
 
-전 구간 동기 처리다. `SalesContentJob` 큐는 쓰지 않는다 — generate는 `maxDuration = 120`, resources는 60.
-타임아웃이 잦아지면 `SalesContentJobKind`에 항목을 추가해 큐로 옮길 수 있다(모델 구조는 그대로 호환).
+개별 요청은 동기 처리하며 브라우저가 collect/generate를 반복한다. 탭을 닫으면 새 요청은 멈추고, 재접속 후 계속할 수 있다. generate는 `maxDuration = 180`, resources/collect는 60이다. 별도 worker·DB migration은 없다.
 
-## 위저드 스텝
+## 범위와 한계
 
-1. 자료 등록 — URL·문서·로고 업로드, 리소스 목록/상태
-2. AI 초안 생성 — 추출 완료 리소스 0개면 비활성, 재생성 가능
-3. 브랜드 프로필 — 기존 값 우선 프리필, 초안이 다르면 "AI 제안" 배지로 병기(클릭 시 적용) → PUT
-4. 상품·페르소나 — 초안 체크박스 선택 + 인라인 수정 → 선택분만 POST(기존 데이터를 덮어쓰지 않고 추가)
-5. 배포 채널 — 채널 관리 링크 + 온보딩 완료
+- 공개 페이지에서 연결된 전체 상품을 탐색한다. 로그인·봇 차단·JS 전용 상품 목록은 수집을 보장하지 않으며 실패와 한도 도달을 표시한다.
+- 이미지 분석은 원본 최대 100개 후보, 64개 분할 이미지, 30MB 다운로드/12MB 모델 입력 및 다운로드 시간 상한을 적용한다. 누락/실패는 검토 화면에서 표시한다.
+- 이미지는 정보 분석에만 사용하고 콘텐츠용 공개 에셋으로 자동 복사하지 않는다.
+- 배포 채널과 로고는 선택 사항이다. 기존 상세 설정 페이지에서 이후 정보를 보완할 수 있다.
+- 실제 공급자에 이미지 입력이 필요하다. SaaS 3종과 Codex CLI는 지원하며 다른 텍스트 전용 공급자는 명시적 오류로 안내한다.
 
-모든 스텝에 건너뛰기가 있다. 이미 정보를 세팅한 워크스페이스도 진입해 원하는 스텝만 쓸 수 있다.
+수동 실서비스 분석 검증: `node scripts/verify-sales-content-import.cjs [URL]`. 환경의 Gemini 키를 사용해 공개 상품 한 건을 분석하며 DB를 변경하지 않는다.

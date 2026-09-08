@@ -96,6 +96,7 @@ function spawnWithStdin(
 
 export class CodexCliProvider implements TextProvider {
   readonly name = 'codex'
+  readonly supportsImages = true
   private readonly binPath: string
   private readonly timeoutMs: number
 
@@ -147,8 +148,18 @@ export class CodexCliProvider implements TextProvider {
     ]
 
     const prompt = flattenPrompt(req)
+    const imageFiles: string[] = []
 
     try {
+      for (const image of req.messages.flatMap((m) => m.images ?? [])) {
+        const file = path.join(
+          os.tmpdir(),
+          `codex-image-${randomUUID()}.${image.mimeType.split('/')[1]}`
+        )
+        fs.writeFileSync(file, Buffer.from(image.data, 'base64'), { mode: 0o600 })
+        imageFiles.push(file)
+        args.splice(args.length - 1, 0, '--image', file)
+      }
       const { code, stderr } = await spawnWithStdin(
         this.binPath,
         args,
@@ -179,6 +190,13 @@ export class CodexCliProvider implements TextProvider {
         latencyMs: Date.now() - started,
       }
     } finally {
+      for (const file of imageFiles) {
+        try {
+          fs.unlinkSync(file)
+        } catch {
+          /* 정리 실패는 응답을 덮어쓰지 않는다 */
+        }
+      }
       // 임시 파일 정리 — 파일이 없어도 예외 무시
       try {
         fs.unlinkSync(tmpFile)

@@ -3,14 +3,12 @@
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export type OnboardingStepKey = 'resources' | 'generate' | 'brand' | 'catalog' | 'channels'
+export type OnboardingStepKey = 'resources' | 'generate' | 'review'
 
 export const ONBOARDING_STEPS: Array<{ key: OnboardingStepKey; label: string }> = [
   { key: 'resources', label: '자료 등록' },
-  { key: 'generate', label: 'AI 초안 생성' },
-  { key: 'brand', label: '브랜드 프로필' },
-  { key: 'catalog', label: '상품·페르소나' },
-  { key: 'channels', label: '배포 채널' },
+  { key: 'generate', label: '자료 분석' },
+  { key: 'review', label: '검토·저장' },
 ]
 
 type Props = {
@@ -18,7 +16,7 @@ type Props = {
   onSelect: (key: OnboardingStepKey) => void
 }
 
-// 원형 번호 배지 스텝퍼 (5단계). 완료 단계는 체크, 현재 단계는 primary 채움.
+// 현재 단계까지의 진행 위치를 표시한다.
 export function WizardStepper({ current, onSelect }: Props) {
   const currentIndex = ONBOARDING_STEPS.findIndex((s) => s.key === current)
 

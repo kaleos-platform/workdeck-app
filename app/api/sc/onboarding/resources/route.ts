@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { safeFetchHtml, SafeFetchError } from '@/lib/net/safe-fetch'
-import { htmlToText, HTML_TEXT_MAX_CHARS } from '@/lib/sh/html-to-text'
+import {
+  MAX_COLLECTION_RESOURCES,
+  normalizeResourceUrl,
+  resourceSelect,
+} from '@/lib/sc/onboarding/crawl'
 import { addUrlResourceSchema } from '@/lib/sc/onboarding/schemas'
-import { extractTextFromFile, isExtractableMime } from '@/lib/sc/onboarding/extract'
+import {
+  extractTextFromFile,
+  isExtractableMime,
+  resourceMimeType,
+  EXTRACT_TRUNCATION_MARKER,
+} from '@/lib/sc/onboarding/extract'
 import {
   uploadOnboardingFile,
   ALLOWED_RESOURCE_MIME,
@@ -13,7 +21,7 @@ import {
 
 export const maxDuration = 60
 
-const MAX_RESOURCES = 10
+const MAX_RESOURCES = MAX_COLLECTION_RESOURCES
 
 export async function GET() {
   const resolved = await resolveDeckContext('sales-content')
@@ -22,16 +30,7 @@ export async function GET() {
   const resources = await prisma.scOnboardingResource.findMany({
     where: { spaceId: resolved.space.id },
     orderBy: { createdAt: 'asc' },
-    select: {
-      id: true,
-      kind: true,
-      sourceUrl: true,
-      fileName: true,
-      mimeType: true,
-      status: true,
-      errorMessage: true,
-      createdAt: true,
-    },
+    select: resourceSelect,
   })
 
   return NextResponse.json({ resources })
@@ -42,15 +41,13 @@ export async function POST(req: NextRequest) {
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
-  const count = await prisma.scOnboardingResource.count({ where: { spaceId } })
-  if (count >= MAX_RESOURCES) {
-    return errorResponse(`리소스는 최대 ${MAX_RESOURCES}개까지 등록할 수 있습니다`, 400)
-  }
-
   const contentType = req.headers.get('content-type') ?? ''
 
   // ── multipart: 파일 업로드 ──
   if (contentType.includes('multipart/form-data')) {
+    const count = await prisma.scOnboardingResource.count({ where: { spaceId } })
+    if (count >= MAX_RESOURCES)
+      return errorResponse(`리소스는 최대 ${MAX_RESOURCES}개까지 등록할 수 있습니다`, 400)
     let form: FormData
     try {
       form = await req.formData()
@@ -59,7 +56,8 @@ export async function POST(req: NextRequest) {
     }
     const file = form.get('file')
     if (!(file instanceof File)) return errorResponse('file 필드가 필요합니다', 400)
-    if (!ALLOWED_RESOURCE_MIME.has(file.type)) {
+    const mimeType = resourceMimeType(file.type, file.name)
+    if (!ALLOWED_RESOURCE_MIME.has(mimeType)) {
       return errorResponse('허용되지 않는 파일 형식입니다 (PDF·문서 파일만 가능)', 400)
     }
     if (file.size > MAX_RESOURCE_FILE_BYTES) {
@@ -70,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     let storagePath: string
     try {
-      const uploaded = await uploadOnboardingFile({ spaceId, data: bytes, mimeType: file.type })
+      const uploaded = await uploadOnboardingFile({ spaceId, data: bytes, mimeType })
       storagePath = uploaded.path
     } catch (err) {
       return errorResponse(err instanceof Error ? err.message : '파일 업로드에 실패했습니다', 500)
@@ -80,9 +78,12 @@ export async function POST(req: NextRequest) {
     let extractedText: string | null = null
     let status: 'DONE' | 'FAILED' = 'DONE'
     let errorMessage: string | null = null
-    if (isExtractableMime(file.type)) {
+    if (isExtractableMime(mimeType)) {
       try {
-        extractedText = await extractTextFromFile(bytes, file.type)
+        extractedText = await extractTextFromFile(bytes, mimeType)
+        if (extractedText?.endsWith(EXTRACT_TRUNCATION_MARKER))
+          errorMessage =
+            '문서가 길어 앞 20,000자만 분석합니다. 이후 내용은 별도 자료로 나누어 추가해 주세요.'
         if (!extractedText) {
           status = 'FAILED'
           errorMessage = '텍스트를 추출하지 못했습니다 (스캔 이미지형 PDF일 수 있습니다)'
@@ -102,17 +103,25 @@ export async function POST(req: NextRequest) {
         kind: 'FILE',
         storagePath,
         fileName: file.name.slice(0, 300),
-        mimeType: file.type,
-        extractedText,
+        mimeType,
+        extractedText: extractedText
+          ? JSON.stringify({
+              version: 1,
+              kind: 'document',
+              title: file.name,
+              text: extractedText,
+              imageUrls: [],
+            })
+          : null,
         status,
         errorMessage,
       },
-      select: { id: true, kind: true, fileName: true, status: true, errorMessage: true },
+      select: resourceSelect,
     })
     return NextResponse.json({ resource }, { status: 201 })
   }
 
-  // ── JSON: URL 크롤 ──
+  // ── JSON: URL 등록 — 실제 수집은 collect에서 한 건씩 재개한다. ──
   let body: unknown
   try {
     body = await req.json()
@@ -125,37 +134,29 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const page = await safeFetchHtml(parsed.data.url)
-    const { text } = htmlToText(page.html, HTML_TEXT_MAX_CHARS, { baseUrl: page.finalUrl })
-    if (!text.trim()) {
-      throw new SafeFetchError('FETCH_FAILED', '페이지에서 텍스트를 추출하지 못했습니다')
-    }
-    const resource = await prisma.scOnboardingResource.create({
-      data: {
-        spaceId,
-        kind: 'URL',
-        sourceUrl: parsed.data.url,
-        extractedText: text,
-        status: 'DONE',
-      },
-      select: { id: true, kind: true, sourceUrl: true, status: true, errorMessage: true },
+    const sourceUrl = normalizeResourceUrl(parsed.data.url)
+    const resource = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtext(${spaceId}))`
+      const existing = await tx.scOnboardingResource.findFirst({
+        where: { spaceId, sourceUrl },
+        select: resourceSelect,
+      })
+      if (existing?.status === 'FAILED')
+        return tx.scOnboardingResource.update({
+          where: { id: existing.id },
+          data: { status: 'PENDING', errorMessage: null },
+          select: resourceSelect,
+        })
+      if (existing) return existing
+      if ((await tx.scOnboardingResource.count({ where: { spaceId } })) >= MAX_RESOURCES)
+        throw new Error(`수집 안전 한도 ${MAX_RESOURCES}건에 도달했습니다`)
+      return tx.scOnboardingResource.create({
+        data: { spaceId, kind: 'URL', sourceUrl, status: 'PENDING' },
+        select: resourceSelect,
+      })
     })
     return NextResponse.json({ resource }, { status: 201 })
   } catch (err) {
-    if (err instanceof SafeFetchError) {
-      // 실패도 기록해 사용자가 상태를 보고 삭제/재시도할 수 있게 한다
-      const resource = await prisma.scOnboardingResource.create({
-        data: {
-          spaceId,
-          kind: 'URL',
-          sourceUrl: parsed.data.url,
-          status: 'FAILED',
-          errorMessage: err.message,
-        },
-        select: { id: true, kind: true, sourceUrl: true, status: true, errorMessage: true },
-      })
-      return NextResponse.json({ resource }, { status: 201 })
-    }
-    return errorResponse('URL 수집에 실패했습니다', 500)
+    return errorResponse(err instanceof Error ? err.message : 'URL 등록에 실패했습니다', 400)
   }
 }
