@@ -39,38 +39,46 @@ export async function getCoupangInventoryRows(
   workspaceId: string,
   opts: { snapshotDate?: Date } = {}
 ): Promise<ParseResult & { completeness: SnapshotCompleteness }> {
-  // 1. 사용할 스냅샷 결정 — 지정값 우선, 없으면 최신 INVENTORY_HEALTH 업로드
+  // 1. 사용할 스냅샷 결정 — 지정 일자(KST) 우선, 없으면 최신. 단 재고가 채워진 것만.
   // InventoryUpload.snapshotDate 는 워커 업로드 시점의 정확한 timestamp(예: 2026-05-22T14:58:01.626Z).
   // 클라이언트가 보낸 snapshotDate 는 사용자가 고른 KST 자정 (예: 2026-05-23T00:00:00Z) 이라 timestamp 가 완전히 다르다.
   // 따라서 지정값이 있으면 "해당 KST 일자에 수집된 가장 최근 업로드"를 찾아 그 정확한 timestamp 를 record 조회 키로 사용한다.
-  let targetDate: Date | undefined
   // 완전성 baseline 은 이 스냅샷을 만든 업로드의 source 를 따라간다 — 크롤링 HEALTH 행과
   // API 요약 행은 모집단 자체가 다르므로(478 vs 494, Phase0 실측), source 를 안 가리면
   // baseline 을 공유해 첫 API 수집이 영구히 가드에 걸리거나 반대로 그냥 통과해 덮어쓴다.
   let targetSource: 'CRAWL' | 'API' = 'CRAWL'
-  if (opts.snapshotDate) {
-    // KST 일자 [00:00, 24:00) 범위 = UTC [전날 15:00, 당일 15:00)
-    const startUtc = new Date(opts.snapshotDate.getTime() - 9 * 3600 * 1000)
-    const endUtc = new Date(startUtc.getTime() + 24 * 3600 * 1000)
-    const onDay = await prisma.inventoryUpload.findFirst({
-      where: {
-        workspaceId,
-        fileType: 'INVENTORY_HEALTH',
-        snapshotDate: { gte: startUtc, lt: endUtc },
-      },
-      orderBy: { snapshotDate: 'desc' },
-      select: { snapshotDate: true, source: true },
+
+  // 후보는 **재고가 실제로 채워진** 스냅샷으로 한정한다.
+  // API 수집분은 식별자·상품명만 채우고 availableStock 을 안 실어 오는 경우가 있다
+  // (2026-09-08 prod 실측: 494행 전부 null). 그런 스냅샷이 최신이면 아래 3단계에서
+  // 전 행이 skip 되어 rows 0건 → 완전성 가드 → skip:incomplete-snapshot 으로
+  // 자동 대조가 영구히 만들어지지 않는다. 업로드 테이블에는 재고 유무 정보가 없으므로
+  // InventoryRecord 를 기준으로 고른다.
+  const stockedRange = opts.snapshotDate
+    ? (() => {
+        // KST 일자 [00:00, 24:00) 범위 = UTC [전날 15:00, 당일 15:00)
+        const startUtc = new Date(opts.snapshotDate.getTime() - 9 * 3600 * 1000)
+        return { gte: startUtc, lt: new Date(startUtc.getTime() + 24 * 3600 * 1000) }
+      })()
+    : undefined
+  const stocked = await prisma.inventoryRecord.aggregate({
+    where: {
+      workspaceId,
+      fileType: 'INVENTORY_HEALTH',
+      availableStock: { not: null },
+      ...(stockedRange ? { snapshotDate: stockedRange } : {}),
+    },
+    _max: { snapshotDate: true },
+  })
+  const targetDate = stocked._max.snapshotDate ?? undefined
+
+  // baseline 은 이 스냅샷을 만든 업로드의 source 를 따라간다.
+  if (targetDate) {
+    const upload = await prisma.inventoryUpload.findFirst({
+      where: { workspaceId, fileType: 'INVENTORY_HEALTH', snapshotDate: targetDate },
+      select: { source: true },
     })
-    targetDate = onDay?.snapshotDate
-    if (onDay?.source) targetSource = onDay.source
-  } else {
-    const latest = await prisma.inventoryUpload.findFirst({
-      where: { workspaceId, fileType: 'INVENTORY_HEALTH' },
-      orderBy: { snapshotDate: 'desc' },
-      select: { snapshotDate: true, source: true },
-    })
-    targetDate = latest?.snapshotDate
-    if (latest?.source) targetSource = latest.source
+    if (upload?.source) targetSource = upload.source
   }
 
   if (!targetDate) {
@@ -92,6 +100,8 @@ export async function getCoupangInventoryRows(
       productName: true,
       optionName: true,
       availableStock: true,
+      // 반품 등급 구분용 — 파일 파서(parseCoupangHealth)의 '상품등급' 과 같은 값이어야 한다.
+      productGrade: true,
     },
   })
 
@@ -105,6 +115,7 @@ export async function getCoupangInventoryRows(
         externalCode,
         externalName: r.productName ?? undefined,
         externalOptionName: r.optionName ?? undefined,
+        externalGrade: r.productGrade ?? undefined,
         quantity: r.availableStock,
       },
     ]
