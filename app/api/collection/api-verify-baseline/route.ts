@@ -51,13 +51,16 @@ export async function GET(request: NextRequest) {
   const uniqueSkuIds = new Set(records.map((r) => r.skuId).filter((v): v is string => v != null))
   const totalAvailableStock = records.reduce((sum, r) => sum + (r.availableStock ?? 0), 0)
 
+  // 필드명은 워커 verify.ts 의 대조 리포트가 그대로 쓰는 계약이다 — 바꾸면 리포트가 깨진다.
+  // skuIds 는 개수가 아니라 배열이어야 한다(API externalSkuId 와 교집합을 내야 매칭률이 나온다).
   return NextResponse.json({
     baseline: {
       snapshotDate: latestUpload.snapshotDate,
       rowCount: records.length,
-      uniqueOptionIdCount: uniqueOptionIds.size,
-      uniqueSkuIdCount: uniqueSkuIds.size,
-      totalAvailableStock,
+      optionIdCount: uniqueOptionIds.size,
+      skuIdCount: uniqueSkuIds.size,
+      skuIds: [...uniqueSkuIds],
+      totalOrderableQuantity: totalAvailableStock,
     },
   })
 }
