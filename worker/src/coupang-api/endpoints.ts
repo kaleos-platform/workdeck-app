@@ -14,8 +14,30 @@ export interface InventorySummaryItem {
   // 실측(Phase0) 결과 문자열이 아니라 숫자로 온다. DB text 컬럼과 비교하려면
   // 호출부에서 String() 정규화가 필수(worker/src/sources/inventory-api.ts 참조).
   externalSkuId: number | null
-  totalOrderableQuantity: number
-  SALES_COUNT_LAST_THIRTY_DAYS?: number
+  /**
+   * 수량은 평면 필드가 아니라 **중첩**으로 온다(Phase0 실측 §4):
+   *   { "inventoryDetails": { "totalOrderableQuantity": 1 },
+   *     "salesCountMap": { "SALES_COUNT_LAST_THIRTY_DAYS": 0 } }
+   * 평면으로 선언하면 타입 에러 없이 undefined 가 되어 재고 수량이 통째로 null 로
+   * 적재된다(실제로 그렇게 나가 대조가 skip:no-snapshot 으로 죽었다).
+   * 직접 읽지 말고 아래 extractInventoryQuantities() 를 쓸 것.
+   */
+  inventoryDetails?: { totalOrderableQuantity?: number | null } | null
+  salesCountMap?: { SALES_COUNT_LAST_THIRTY_DAYS?: number | null } | null
+}
+
+/**
+ * 재고 요약 1건에서 수량을 뽑는다. 중첩 구조를 호출부마다 따로 풀면 한 곳만 놓쳐도
+ * 무음으로 null 이 되므로 단일 진입점으로 둔다.
+ */
+export function extractInventoryQuantities(item: InventorySummaryItem): {
+  orderableQuantity: number | null
+  salesQty30d: number | null
+} {
+  return {
+    orderableQuantity: item.inventoryDetails?.totalOrderableQuantity ?? null,
+    salesQty30d: item.salesCountMap?.SALES_COUNT_LAST_THIRTY_DAYS ?? null,
+  }
 }
 
 interface InventorySummaryResponse {

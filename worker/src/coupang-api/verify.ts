@@ -17,6 +17,7 @@ import { getApiCredential, getApiVerifyBaseline } from '../api-client.js'
 import { decrypt } from '../encryption.js'
 import { CoupangApiClient, CoupangApiError } from './client.js'
 import {
+  extractInventoryQuantities,
   fetchInventorySummaries,
   fetchRgOrders,
   fetchRevenueHistory,
@@ -83,7 +84,10 @@ async function main(): Promise<void> {
       )
       const baselineSkuIds = new Set(baseline.skuIds)
       const matched = [...apiSkuIds].filter((id) => baselineSkuIds.has(id))
-      const apiQtySum = summaries.reduce((sum, s) => sum + (s.totalOrderableQuantity ?? 0), 0)
+      const apiQtySum = summaries.reduce(
+        (sum, s) => sum + (extractInventoryQuantities(s).orderableQuantity ?? 0),
+        0
+      )
 
       console.log('\n  ── 재고 대조표 ──')
       console.log(`  행 수:            API ${summaries.length}건 vs 크롤링 ${baseline.rowCount}건`)

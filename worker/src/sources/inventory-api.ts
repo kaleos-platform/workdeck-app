@@ -6,7 +6,7 @@
  * 채운다(계획서 §D/§E, Phase0 실측 부록 확정 규칙).
  */
 import { CoupangApiClient } from '../coupang-api/client.js'
-import { fetchInventorySummaries } from '../coupang-api/endpoints.js'
+import { extractInventoryQuantities, fetchInventorySummaries } from '../coupang-api/endpoints.js'
 import type {
   CollectContext,
   CollectPayload,
@@ -31,8 +31,7 @@ export class InventoryApiAdapter implements InventorySourceAdapter {
     const rows: InventoryApiRow[] = summaries.map((item) => ({
       optionId: String(item.vendorItemId),
       skuId: item.externalSkuId != null ? String(item.externalSkuId) : null,
-      orderableQuantity: item.totalOrderableQuantity ?? null,
-      salesQty30d: item.SALES_COUNT_LAST_THIRTY_DAYS ?? null,
+      ...extractInventoryQuantities(item),
     }))
 
     return { kind: 'rows', rows }

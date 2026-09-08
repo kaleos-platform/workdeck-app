@@ -1,6 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { extractVendorItemIds, extractOptionIdentities } from '../endpoints.js'
+import {
+  extractVendorItemIds,
+  extractOptionIdentities,
+  extractInventoryQuantities,
+} from '../endpoints.js'
 import type { SellerProductDetail } from '../endpoints.js'
 
 // 회귀 목적: 로켓그로스 상품의 vendorItemId 는 평면 items[].vendorItemId 가 아니라
@@ -117,4 +121,45 @@ test('extractOptionIdentities — 동시운영(평면+로켓그로스+마켓플�
       { optionId: '4002', optionName: '공용 옵션' },
     ]
   )
+})
+
+// ─── extractInventoryQuantities ────────────────────────────────────────────────
+// 재고 API 응답의 수량은 평면이 아니라 중첩으로 온다. 평면으로 읽으면 타입 에러 없이
+// undefined 가 되어 availableStock 이 통째로 null 로 적재되고, 대조가 스냅샷을 못 봐
+// skip:no-snapshot 으로 죽는다 — 실제로 prod 에서 그렇게 나갔다.
+test('extractInventoryQuantities — 실측 응답 형태(중첩)에서 수량을 뽑는다', () => {
+  const item = {
+    vendorId: 'A00788443',
+    vendorItemId: 93737337450,
+    externalSkuId: 65430501,
+    salesCountMap: { SALES_COUNT_LAST_THIRTY_DAYS: 24 },
+    inventoryDetails: { totalOrderableQuantity: 27 },
+  }
+  assert.deepEqual(extractInventoryQuantities(item), {
+    orderableQuantity: 27,
+    salesQty30d: 24,
+  })
+})
+
+test('extractInventoryQuantities — 중첩 객체가 없으면 null (0 으로 뭉개지 않는다)', () => {
+  assert.deepEqual(
+    extractInventoryQuantities({
+      vendorId: 'A',
+      vendorItemId: 1,
+      externalSkuId: null,
+    }),
+    { orderableQuantity: null, salesQty30d: null }
+  )
+})
+
+test('extractInventoryQuantities — 재고 0 은 null 이 아니라 0 으로 보존된다', () => {
+  const r = extractInventoryQuantities({
+    vendorId: 'A',
+    vendorItemId: 1,
+    externalSkuId: null,
+    inventoryDetails: { totalOrderableQuantity: 0 },
+    salesCountMap: { SALES_COUNT_LAST_THIRTY_DAYS: 0 },
+  })
+  assert.equal(r.orderableQuantity, 0)
+  assert.equal(r.salesQty30d, 0)
 })
