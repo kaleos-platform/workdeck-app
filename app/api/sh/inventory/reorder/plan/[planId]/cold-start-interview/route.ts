@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { generateTextWithFallback } from '@/lib/ai/providers'
+import { generateTextForSpace } from '@/lib/ai/resolve'
 import { forecastBayesian } from '@/lib/inv/forecast/bayesian'
 import { roundUp } from '@/lib/inv/round'
 
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pla
 
     let questions: string
     try {
-      const { result } = await generateTextWithFallback({
+      const { result } = await generateTextForSpace(spaceId, {
         system:
           '당신은 재고 관리 전문가입니다. 신규 상품의 초기 발주 수량을 결정하기 위해 필요한 정보를 질문하세요.',
         messages: [

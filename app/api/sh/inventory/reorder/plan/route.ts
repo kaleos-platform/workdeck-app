@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { forecastOption, buildDailySeries, computeBiasAdjust } from '@/lib/inv/forecast'
-import { generateTextWithFallback } from '@/lib/ai/providers'
+import { generateTextForSpace } from '@/lib/ai/resolve'
 import { roundUp } from '@/lib/inv/round'
 import { mapWithConcurrency } from '@/lib/concurrency'
 import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
@@ -34,6 +34,7 @@ const LLM_CONCURRENCY = 5
 // ─── LLM rationale 생성 ────────────────────────────────────────────────────────
 
 async function generateRationale(params: {
+  spaceId: string
   model: string
   dailyAvg: number
   leadTime: number
@@ -41,13 +42,13 @@ async function generateRationale(params: {
   currentStock: number
   profile: string
 }): Promise<string> {
-  const { model, dailyAvg, leadTime, safetyStock, currentStock, profile } = params
+  const { spaceId, model, dailyAvg, leadTime, safetyStock, currentStock, profile } = params
 
   // 결정론적 폴백 텍스트 (LLM 호출 전 기본값)
   const fallback = `${model} 모델(${profile}) 기반 일평균 ${dailyAvg.toFixed(2)}개 예측, 리드타임 ${leadTime}일 + 안전재고 ${safetyStock}개 적용 (현재재고 ${currentStock}개).`
 
   try {
-    const { result } = await generateTextWithFallback({
+    const { result } = await generateTextForSpace(spaceId, {
       system:
         '당신은 재고 관리 전문가입니다. 발주 수량 근거를 한국어로 간결하게 1~2문장으로 작성하세요.',
       messages: [
@@ -763,6 +764,7 @@ export async function POST(req: NextRequest) {
   // 옵션 수가 많을 때 LLM 동시 호출이 rate limit을 유발하므로 5건씩 제한
   const rationaleResults = await mapWithConcurrency(itemInputs, LLM_CONCURRENCY, (item) =>
     generateRationale({
+      spaceId,
       model: item.forecastResult.model,
       dailyAvg: item.forecastResult.dailyAvg,
       leadTime: item.leadTimeDays,
