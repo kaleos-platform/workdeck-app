@@ -1097,6 +1097,12 @@ export async function collectInventoryData(
     targetDateKst?: string
     /** self-heal: 같은 세션에서 추가로 수집할 누락 일자(KST). 추가 Wing 로그인 없음. */
     gapDates?: string[]
+    /**
+     * 재고현황(HEALTH) 엑셀 다운로드 생략. 재고 소스가 API 인 경우 이 파일은 쓰이지 않고
+     * 버려지는데, Wing 그리드 로드 + 다운로드에만 수 분이 걸려 수집 전체가 10분 워치독에
+     * 걸린다(실제로 걸렸다). 판매분석(VENDOR)은 여전히 크롤링이라 세션 자체는 필요하다.
+     */
+    skipHealth?: boolean
   } = {}
 ): Promise<InventoryCollectorResult> {
   const {
@@ -1105,6 +1111,7 @@ export async function collectInventoryData(
     headless = process.env.HEADLESS !== 'false',
     targetDateKst,
     gapDates = [],
+    skipHealth = false,
   } = options
 
   if (!fs.existsSync(downloadDir)) fs.mkdirSync(downloadDir, { recursive: true })
@@ -1135,14 +1142,18 @@ export async function collectInventoryData(
     let inventoryHealth: { filePath: string; fileName: string } | null = null
     let inventoryHealthError: string | undefined
 
-    // 재고현황 다운로드
-    try {
-      inventoryHealth = await downloadInventoryHealth(page, downloadDir)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      console.error('[inventory] 재고현황 다운로드 실패:', msg)
-      await saveScreenshot(page, 'inventory-health-error')
-      inventoryHealthError = msg
+    // 재고현황 다운로드 — 소스가 API 면 이 파일을 쓰지 않으므로 생략한다.
+    if (skipHealth) {
+      console.log('[inventory] 재고현황 다운로드 생략 (소스=API)')
+    } else {
+      try {
+        inventoryHealth = await downloadInventoryHealth(page, downloadDir)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[inventory] 재고현황 다운로드 실패:', msg)
+        await saveScreenshot(page, 'inventory-health-error')
+        inventoryHealthError = msg
+      }
     }
 
     let salesVendor: { filePath: string; fileName: string } | null = null
