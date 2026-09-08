@@ -19,6 +19,7 @@ import { mapWithConcurrency } from '@/lib/concurrency'
 import { settleEligiblePlans } from '@/lib/inv/forecast/settle-accuracy'
 import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
+import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 import { computeSetAvailable, computeLayeredRoundedSplit } from '@/lib/sh/set-plan-calc'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
@@ -369,6 +370,29 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // ── 2-1) 반품 등급 재고 차감 ────────────────────────────────────────────────
+  // 쿠팡이 고객 반품품을 별도 상품으로 재등록한 재고는 반품 전용 리스팅에서만 팔려
+  // 정상 상품 수요를 메우지 못한다. 재고 현황에는 실물이므로 **포함**하되, 발주
+  // 계산에서는 가용재고로 세지 않는다(세면 발주가 과소 산출된다).
+  //
+  // 여기서 한 번만 빼면 아래의 계획재고·발주량·예상소진일이 모두 따라온다.
+  // stockByOption(전체 위치 합)과 rocketStockByOption(연동 위치) 둘 다 적용해야
+  // 세트 라인과 옵션 라인이 어긋나지 않는다 — 반품은 로켓그로스 위치에만 존재한다.
+  const returnStock = await getCoupangReturnStockByOption(spaceId)
+  const returnQtyByOption = new Map<string, number>()
+  if (returnStock && returnStock.byOption.size > 0) {
+    for (const optionId of optionIds) {
+      const returnQty = returnStock.byOption.get(optionId) ?? 0
+      if (returnQty <= 0) continue
+      returnQtyByOption.set(optionId, returnQty)
+      // 스냅샷 시점 차이로 반품량이 현재고를 넘을 수 있다. 음수 재고를 새로 만들지 않는다.
+      const total = stockByOption.get(optionId)
+      if (total != null) stockByOption.set(optionId, Math.max(0, total - returnQty))
+      const rocket = rocketStockByOption.get(optionId)
+      if (rocket != null) rocketStockByOption.set(optionId, Math.max(0, rocket - returnQty))
+    }
+  }
+
   const pendingRuns = await prisma.productionRun.findMany({
     where: {
       spaceId,
@@ -492,6 +516,8 @@ export async function POST(req: NextRequest) {
     safetyStockQty: number
     currentStock: number
     onHandStock: number
+    /** 발주 계산에서 제외된 반품 등급 재고(표시용). 0이면 필드 없음 */
+    returnQty?: number
     incomingQty: number
     roundUnit: number
     forecastResult: ReturnType<typeof forecastOption>
@@ -534,6 +560,7 @@ export async function POST(req: NextRequest) {
         safetyStockQty,
         currentStock,
         onHandStock,
+        returnQty: returnQtyByOption.get(o.id),
         incomingQty,
         roundUnit,
         forecastResult,
@@ -717,6 +744,7 @@ export async function POST(req: NextRequest) {
           costPrice: m?.costPrice != null ? Number(m.costPrice) : null,
           currentStock: it.currentStock,
           onHandStock: it.onHandStock,
+          returnQty: it.returnQty,
           incomingQty: it.incomingQty,
           safetyStockQty: it.safetyStockQty,
           dailyAvgForecast: it.forecastResult.dailyAvg,
