@@ -21,11 +21,11 @@ export type MatrixChannel = {
   channelType: string | null // 'SELF_MALL' | 'OPEN_MARKET' | ... | null
   /** 카테고리별 수수료율 배열 — 항상 '기본' 1건 이상 포함 */
   feeRates: FeeRateInput[]
-  /** 판매(카테고리) 수수료율에 VAT 포함 여부. false=VAT 별도 → 카테고리 수수료를 (1+vatRate)배 gross-up. 미지정=false. */
+  /** 판매(카테고리) 수수료율에 VAT 포함 여부. true=VAT 포함 → ÷(1+vatRate)로 VAT 제외, false/미지정=VAT 별도 → 그대로(×1) 반영. */
   vatIncludedInFee?: boolean
   paymentFeeIncluded: boolean
   paymentFeePct: number // 0~1 (paymentFeeIncluded=false 일 때 사용)
-  /** 결제 수수료율에 VAT 포함 여부(판매 수수료와 독립). false=VAT 별도 → 결제 수수료를 (1+vatRate)배 gross-up. 미지정=false. */
+  /** 결제 수수료율에 VAT 포함 여부(판매 수수료와 독립). true=VAT 포함 → ÷(1+vatRate)로 VAT 제외, false/미지정=VAT 별도 → 그대로(×1) 반영. */
   paymentFeeVatIncluded?: boolean
   applyAdCost: boolean
   /** 배송비 산정 방식: 'FIXED'=정액(shippingFee 원), 'PERCENT'=판매가 대비 비율(shippingFeePct). 미지정 시 FIXED */
@@ -212,6 +212,21 @@ function feeVatExcludeMult(included: boolean | undefined, globals: MatrixGlobals
   return included === true && globals.includeVat ? 1 / (1 + n(globals.vatRate)) : 1
 }
 
+/**
+ * 조건부 프로모션(FLAT/PERCENT + minThreshold) 충족 여부.
+ * 조건 비교 기준 가격은 컬럼 할인 적용 후 가격. 미설정/0이면 무조건 충족.
+ * COUPON/MIN_PRICE/NONE은 조건 개념이 없어 항상 true.
+ * UI(보드 카드 등)의 "조건 미충족" 표시도 반드시 이 함수를 쓸 것 — 규칙 이중 구현 금지.
+ */
+export function isPromotionConditionMet(
+  promotion: Pick<MatrixPromotion, 'type' | 'minThreshold'>,
+  price: number
+): boolean {
+  if (promotion.type !== 'FLAT' && promotion.type !== 'PERCENT') return true
+  const minThreshold = n(promotion.minThreshold)
+  return minThreshold <= 0 || price >= minThreshold
+}
+
 /** 단일 셀 계산 */
 function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   const { bundle, channel, promotion, globals, thresholds } = inputs
@@ -221,9 +236,7 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
 
   // 2. 시나리오 프로모션 누적 적용 (컬럼 할인 → 프로모션 순서)
   //    FLAT/PERCENT는 최소 금액 조건(minThreshold) 충족 시에만 차감 (조건부 할인).
-  //    조건 비교 기준 = 컬럼 할인 적용 후 가격 p. 미설정/0이면 무조건 적용.
-  const minThreshold = n(promotion.minThreshold)
-  const conditionMet = minThreshold <= 0 || p >= minThreshold
+  const conditionMet = isPromotionConditionMet(promotion, p)
   if (promotion.type === 'PERCENT') {
     if (conditionMet) p = p * (1 - n(promotion.value))
   } else if (promotion.type === 'FLAT') {

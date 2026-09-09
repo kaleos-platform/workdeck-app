@@ -634,12 +634,12 @@ describe('수수료 VAT 포함 여부 (판매·결제 독립)', () => {
 // ─── PRD 수용 기준: 마진율 실결제(gross) 통일 + 프로모 반영 ───────────────────
 // 실제 프로덕션 시나리오(쿠팡) 회귀 벡터. 마진율 분모 = 실결제(finalPrice, VAT 포함).
 describe('PRD TC — 실결제 기준 마진율 + 프로모 반영', () => {
-  // 판매가 45,200 / 원가 13,781 / 수수료 11.6%(vatIncludedInFee=true → gross-up 없음)
+  // 판매가 45,200 / 원가 13,781 / 수수료 11.6%(vatIncludedInFee=true → ÷1.1로 VAT 제외)
   // 광고 ROAS 350%(adCostPct=1/3.5) / 물류 3,850(FIXED 항상 부과) / PG·반품·포장 0 / VAT 10%
   const prdChannel: MatrixChannel = {
     channelType: 'OPEN_MARKET',
     feeRates: [{ categoryName: '기본', ratePercent: 11.6 }],
-    vatIncludedInFee: true, // 쿠팡 실측: VAT 포함 플래그 → mult=1 (그대로 11.6%)
+    vatIncludedInFee: true, // 쿠팡 실측: VAT 포함 플래그 → ÷1.1 (11.6% → 10.5455%)
     paymentFeeIncluded: true, // PG 0
     paymentFeePct: 0,
     applyAdCost: true,
