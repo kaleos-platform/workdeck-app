@@ -86,7 +86,7 @@ export function optionToBundle(option: MatrixOption): MatrixBundle {
 /** 프로모션 입력 */
 export type MatrixPromotion = {
   type: 'NONE' | 'FLAT' | 'PERCENT' | 'COUPON' | 'MIN_PRICE'
-  value: number // PERCENT: 0~1, FLAT/COUPON: 원, MIN_PRICE: 최소 판매가 ceiling (원)
+  value: number // PERCENT: 0~1, FLAT/COUPON: 원, MIN_PRICE: 프로모션 목표가 지정 — 판매가 상한(ceiling, 원)
   /**
    * 최소 금액 조건 (원, FLAT/PERCENT 전용, 선택).
    * 컬럼 할인 적용 후 가격(p)이 이 값 이상일 때만 프로모션 차감 적용.
