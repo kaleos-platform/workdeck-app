@@ -22,16 +22,34 @@ type SourceSetting = {
 
 type SourceField = keyof SourceSetting
 
-const SCOPE_ROWS: { field: SourceField; label: string; description: string }[] = [
+const SCOPE_ROWS: {
+  field: SourceField
+  label: string
+  description: string
+  /** 지정 시 해당 행은 크롤링 고정으로 잠긴다(배지 문구). */
+  lockedBadge?: string
+}[] = [
   {
     field: 'inventorySource',
     label: '재고',
-    description: '로켓창고 재고 현황 데이터',
+    // 재고 API(로켓창고 요약)는 주문가능수량과 30일 판매량만 준다. 재고건전성 엑셀이 주는
+    // 반품 등급·입고예정·보관일수·소진예상·보관료·아이템위너 등 12개 컬럼이 전부 빠져
+    // 재고현황 화면·재고 분석·발주 판단이 동시에 눈이 먼다(prod 실측: 반품 등급 옵션 106개,
+    // 재고 117개가 정상품과 구분 불가). 총량만 맞고 성격이 사라지므로 크롤링으로 고정한다.
+    description:
+      '로켓창고 재고 현황 데이터. API는 반품 등급·입고예정·보관일수를 제공하지 않아 재고 파악이 부정확해집니다.',
+    lockedBadge: '크롤링 (API 정보 부족)',
   },
   {
     field: 'salesSource',
     label: '판매·주문',
-    description: '판매·출고 데이터',
+    // 로켓그로스 주문 API 는 주문/수량/단가만 준다. 판매분석(VENDOR) 크롤링이 주는
+    // totalCancelled(취소)·orderCount 가 없어 취소를 반영할 수 없다(prod 실측: VENDOR 는
+    // 726/726 행 전건 채워짐). 게다가 현재 판매 lineage 는 OUTBOUND 장부인데 주문 API 는
+    // 주문수요 축이라 발주 실적 모니터링(OUTBOUND 기준)과 어긋난다.
+    description:
+      '판매·출고 데이터. API는 취소 정보를 제공하지 않고 집계 축(주문수요)이 달라 출고 장부와 어긋납니다.',
+    lockedBadge: '크롤링 (API 정보 부족)',
   },
   {
     field: 'settlementSource',
@@ -138,10 +156,14 @@ export function CoupangSourceCard({ deckKey }: { deckKey: DeckKey }) {
             id={`${deckKey}-source-${row.field}`}
             label={row.label}
             description={row.description}
-            value={data?.[row.field] ?? 'CRAWL'}
-            disabled={loading || saving}
+            value={row.lockedBadge ? 'CRAWL' : (data?.[row.field] ?? 'CRAWL')}
+            disabled={Boolean(row.lockedBadge) || loading || saving}
             apiDisabled={!credentialActive}
-            onChange={(v) => handleChange(row.field, v)}
+            fixedBadgeLabel={row.lockedBadge}
+            onChange={(v) => {
+              if (row.lockedBadge) return
+              handleChange(row.field, v)
+            }}
           />
         ))}
       </CardContent>
