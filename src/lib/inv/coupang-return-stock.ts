@@ -14,6 +14,43 @@ import { prisma } from '@/lib/prisma'
 import { isReturnGrade } from './product-grade'
 import { resolveCoupangWorkspaceForSpace } from './resolve-coupang-workspace'
 
+/**
+ * externalCode → 상품등급 인덱스.
+ *
+ * **등급이 있는 최신 스냅샷**에서 만든다 — 수집 경로에 따라 등급 유무가 갈리기
+ * 때문이다. Open API(rg/inventory/summaries)는 재고는 주지만 상품등급을 안 준다.
+ * 재고 스냅샷과 같은 스냅샷을 쓰면 API 수집이 최신일 때 반품 구분이 통째로
+ * 사라진다(2026-09-08 prod 실측으로 실제 발생).
+ *
+ * 등급은 "이 SKU 가 반품 리스팅인가"라는 거의 불변 속성이라 재고보다 오래된
+ * 스냅샷에서 가져와도 안전하다.
+ *
+ * 인덱스는 skuId/optionId/productId 3키를 모두 넣되 충돌 시 **첫 값 유지** —
+ * 매핑의 `skuId ?? optionId ?? productId` 우선순위를 재현한다. 과거에 다른
+ * 우선순위로 저장된 매핑도 해석돼야 한다.
+ */
+export async function getCoupangGradeIndex(workspaceId: string): Promise<Map<string, string>> {
+  const graded = await prisma.inventoryRecord.aggregate({
+    where: { workspaceId, fileType: 'INVENTORY_HEALTH', productGrade: { not: null } },
+    _max: { snapshotDate: true },
+  })
+  const gradeSnapshot = graded._max.snapshotDate
+  if (!gradeSnapshot) return new Map()
+
+  const records = await prisma.inventoryRecord.findMany({
+    where: { workspaceId, snapshotDate: gradeSnapshot, fileType: 'INVENTORY_HEALTH' },
+    select: { productId: true, optionId: true, skuId: true, productGrade: true },
+  })
+  const gradeByCode = new Map<string, string>()
+  for (const r of records) {
+    if (!r.productGrade) continue
+    for (const id of [r.skuId, r.optionId, r.productId]) {
+      if (id && !gradeByCode.has(id)) gradeByCode.set(id, r.productGrade)
+    }
+  }
+  return gradeByCode
+}
+
 export type CoupangReturnStock = {
   locationId: string
   snapshotDate: Date
@@ -36,7 +73,6 @@ export async function getCoupangReturnStockByOption(
   if (!resolved) return null
 
   // 재고가 채워진 최신 스냅샷 — getCoupangInventoryRows 와 같은 기준.
-  // (API 수집분은 availableStock 이 비어 있을 수 있다)
   const stocked = await prisma.inventoryRecord.aggregate({
     where: {
       workspaceId: resolved.workspaceId,
@@ -48,24 +84,29 @@ export async function getCoupangReturnStockByOption(
   const snapshotDate = stocked._max.snapshotDate
   if (!snapshotDate) return null
 
+  // 등급은 별도 스냅샷에서 — 위 getCoupangGradeIndex 주석 참조.
+  const gradeByCode = await getCoupangGradeIndex(resolved.workspaceId)
+  if (gradeByCode.size === 0) {
+    return { locationId: resolved.locationId, snapshotDate, byOption: new Map() }
+  }
+
   const records = await prisma.inventoryRecord.findMany({
     where: { workspaceId: resolved.workspaceId, snapshotDate, fileType: 'INVENTORY_HEALTH' },
     select: {
       productId: true,
       optionId: true,
       skuId: true,
-      productGrade: true,
       availableStock: true,
     },
   })
 
-  // externalCode → 반품 수량. 매핑은 skuId ?? optionId ?? productId 우선순위로
-  // 만들어지지만 과거에 다른 우선순위로 저장된 매핑도 해석돼야 하므로 3키를 모두
-  // 인덱싱한다. 충돌 시 **첫 값 유지** — 위 우선순위를 그대로 재현한다.
+  // 재고 스냅샷의 행을 code 로 인덱싱한 뒤 등급 인덱스로 반품 여부를 판정한다.
   const returnByCode = new Map<string, number>()
   for (const r of records) {
-    if (!isReturnGrade(r.productGrade)) continue
     if (!r.availableStock) continue
+    const code = r.skuId ?? r.optionId ?? r.productId
+    if (!code) continue
+    if (!isReturnGrade(gradeByCode.get(code))) continue
     for (const id of [r.skuId, r.optionId, r.productId]) {
       if (id && !returnByCode.has(id)) returnByCode.set(id, r.availableStock)
     }
@@ -93,39 +134,8 @@ export async function getCoupangReturnStockByOption(
   return { locationId: resolved.locationId, snapshotDate, byOption }
 }
 
-/**
- * externalCode → 쿠팡 상품등급 인덱스. 위치 관리 매핑 목록에서 반품 리스팅을
- * 구분해 보여줄 때 쓴다. 로켓그로스 위치가 아니면 호출하지 말 것.
- *
- * 인덱싱 규칙은 getCoupangReturnStockByOption 과 동일하다 —
- * skuId/optionId/productId 3키, 충돌 시 첫 값 유지.
- */
 export async function getCoupangGradeByExternalCode(spaceId: string): Promise<Map<string, string>> {
   const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
   if (!resolved) return new Map()
-
-  const stocked = await prisma.inventoryRecord.aggregate({
-    where: {
-      workspaceId: resolved.workspaceId,
-      fileType: 'INVENTORY_HEALTH',
-      availableStock: { not: null },
-    },
-    _max: { snapshotDate: true },
-  })
-  const snapshotDate = stocked._max.snapshotDate
-  if (!snapshotDate) return new Map()
-
-  const records = await prisma.inventoryRecord.findMany({
-    where: { workspaceId: resolved.workspaceId, snapshotDate, fileType: 'INVENTORY_HEALTH' },
-    select: { productId: true, optionId: true, skuId: true, productGrade: true },
-  })
-
-  const gradeByCode = new Map<string, string>()
-  for (const r of records) {
-    if (!r.productGrade) continue
-    for (const id of [r.skuId, r.optionId, r.productId]) {
-      if (id && !gradeByCode.has(id)) gradeByCode.set(id, r.productGrade)
-    }
-  }
-  return gradeByCode
+  return getCoupangGradeIndex(resolved.workspaceId)
 }
