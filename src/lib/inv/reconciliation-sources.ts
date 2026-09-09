@@ -1,6 +1,7 @@
 // 재고 대조 데이터 소스 어댑터 — 파일 업로드 외 다른 Deck/외부 데이터를
 // ParsedRow[] 로 변환하여 기존 대조 파이프라인(matcher/processor)에 투입한다.
 import { prisma } from '@/lib/prisma'
+import { getCoupangGradeIndex } from '@/lib/inv/coupang-return-stock'
 import type { ParseResult } from '@/lib/inv/reconciliation-parser'
 
 export type ReconciliationSource = 'coupang'
@@ -105,6 +106,12 @@ export async function getCoupangInventoryRows(
     },
   })
 
+  // 2-1. 등급 보완 — 선택된 스냅샷에 상품등급이 없으면 등급이 있는 최신 스냅샷에서 가져온다.
+  // Open API 수집분은 재고는 주지만 상품등급을 안 준다. 그대로 두면 수집 경로가
+  // API 로 바뀌는 순간 반품 구분이 화면에서 통째로 사라진다(2026-09-08 실측).
+  const hasGrade = records.some((r) => r.productGrade != null)
+  const gradeByCode = hasGrade ? null : await getCoupangGradeIndex(workspaceId)
+
   // 3. ParsedRow 매핑 — 파일 파서와 동일 규칙
   const rows = records.flatMap((r) => {
     const externalCode = r.skuId ?? r.optionId ?? r.productId
@@ -115,7 +122,7 @@ export async function getCoupangInventoryRows(
         externalCode,
         externalName: r.productName ?? undefined,
         externalOptionName: r.optionName ?? undefined,
-        externalGrade: r.productGrade ?? undefined,
+        externalGrade: r.productGrade ?? gradeByCode?.get(externalCode) ?? undefined,
         quantity: r.availableStock,
       },
     ]
