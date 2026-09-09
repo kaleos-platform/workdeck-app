@@ -10,7 +10,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { calculateMatrix, type MatrixChannel } from '@/lib/sh/pricing-matrix-calc'
+import {
+  calculateMatrix,
+  isPromotionConditionMet,
+  type MatrixChannel,
+} from '@/lib/sh/pricing-matrix-calc'
 import type { MatrixBundle, MatrixPromotion, MatrixGlobals } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
 import { snapPrice } from '@/lib/sh/price-snap'
@@ -180,14 +184,8 @@ export function PricingChannelBoardCard({
   const hasPromo = promotion.type !== 'NONE'
   const promoLabelText = promoLabel(promotionValue)
   // 조건부 프로모션(FLAT/PERCENT + minThreshold) 중 현재 판매가가 조건 미만 → 미적용
-  // (엔진도 p >= minThreshold일 때만 FLAT/PERCENT 적용)
   const promoConditionUnmet =
-    hasPromo &&
-    (promotionValue.type === 'FLAT' || promotionValue.type === 'PERCENT') &&
-    promotionValue.minThreshold != null &&
-    promotionValue.minThreshold > 0 &&
-    effectivePrice != null &&
-    effectivePrice < promotionValue.minThreshold
+    hasPromo && effectivePrice != null && !isPromotionConditionMet(promotionValue, effectivePrice)
   const promoMatrix = useMemo(() => {
     if (effectivePrice == null || !hasPromo) return null
     return calculateMatrix({
