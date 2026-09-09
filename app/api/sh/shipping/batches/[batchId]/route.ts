@@ -3,6 +3,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { deleteBatchWithMovements } from '@/lib/sh/batch-delete'
 import { getTodayStrKst } from '@/lib/date-range'
+import { applyBatchOutboundForBatch } from '@/lib/sh/batch-outbound'
 
 type Params = { params: Promise<{ batchId: string }> }
 
@@ -53,8 +54,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
     // 자동 라벨 생성 — KST 기준 날짜·오전오후
     const now = new Date()
-    const kstDateStr = getTodayStrKst()                                               // KST YYYY-MM-DD
-    const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours()      // KST 시각(0~23)
+    const kstDateStr = getTodayStrKst() // KST YYYY-MM-DD
+    const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours() // KST 시각(0~23)
     const ampm = kstHour < 12 ? '오전' : '오후'
     const autoLabel = `${kstDateStr} ${ampm}`
     const label =
@@ -125,6 +126,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
             }
           }
         }
+
+        // 위치 재고 차감 — 출고 위치가 설정된 배송 방식(예: 3PL)의 주문만. 상세는 batch-outbound.ts.
+        await applyBatchOutboundForBatch(tx, spaceId, batchId, now)
       }
 
       return b
