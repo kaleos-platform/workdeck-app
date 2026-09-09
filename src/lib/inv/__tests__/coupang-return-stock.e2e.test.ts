@@ -252,6 +252,56 @@ d('반품 등급 재고 파생 (dev DB)', () => {
     expect(on.returnStock?.snapshotDate).toBe(NEW_SNAP.toISOString())
   })
 
+  it('8) 등급 없는 API 스냅샷이 최신이어도 반품 차감이 살아있다 (회귀)', async () => {
+    // Open API 수집분은 재고는 주지만 상품등급을 안 준다. 등급과 재고를 같은
+    // 스냅샷에서 읽으면 API 가 최신인 순간 반품 구분이 통째로 사라진다
+    // (2026-09-08 prod 실측으로 실제 발생). 등급은 별도 스냅샷에서 가져온다.
+    const apiSnap = new Date('2026-07-05T00:00:00.000Z')
+    const upId = await ensureUpload(apiSnap, 'API')
+    await prisma.inventoryRecord.createMany({
+      data: [
+        // 등급 없이, 재고만. CRAWL 스냅샷과 같은 SKU 들이다.
+        {
+          workspaceId: WS_ID,
+          uploadId: upId,
+          snapshotDate: apiSnap,
+          fileType: 'INVENTORY_HEALTH',
+          productId: 'P2',
+          optionId: 'O2',
+          skuId: 'SKU-RET',
+          productName: 'x',
+          availableStock: 7,
+        },
+        {
+          workspaceId: WS_ID,
+          uploadId: upId,
+          snapshotDate: apiSnap,
+          fileType: 'INVENTORY_HEALTH',
+          productId: 'P1',
+          optionId: 'O1',
+          skuId: 'SKU-NEW',
+          productName: 'x',
+          availableStock: 100,
+        },
+      ],
+    })
+    try {
+      const res = await getCoupangReturnStockByOption(SPACE_ID)
+      // 재고는 최신(API) 스냅샷 기준
+      expect(res!.snapshotDate.getTime()).toBe(apiSnap.getTime())
+      // 등급은 CRAWL 스냅샷에서 와서 반품 판정이 유지된다
+      expect(res!.byOption.get(optSingle)).toBe(7)
+    } finally {
+      await prisma.inventoryRecord.deleteMany({
+        where: { workspaceId: WS_ID, snapshotDate: apiSnap },
+      })
+      await prisma.inventoryUpload.deleteMany({
+        where: { workspaceId: WS_ID, snapshotDate: apiSnap },
+      })
+      uploadIdBySnap.delete(apiSnap.getTime())
+    }
+  })
+
   it('7) matrix row 에 위치별 반품량이 실리고 합계에는 포함된 채로 남는다', async () => {
     // 재고 현황 정책: 반품 **포함**. returnQtyByLocation 은 "그중 얼마"를 알리는 보조값.
     await prisma.invStockLevel.upsert({
