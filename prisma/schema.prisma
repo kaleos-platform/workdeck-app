@@ -1341,6 +1341,7 @@ model InvStorageLocation {
   settingsDefault       InvSettings[]           @relation("DefaultLocation")
   productionRunStockIns ProductionRun[]         @relation("ProductionRunStockInLocation")
   reorderPlans          ReorderPlan[] // 연동위치 세트 발주 계획의 대상 위치
+  shippingMethods       DelShippingMethod[] // 이 위치를 출고 위치로 쓰는 배송 방식
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1530,8 +1531,10 @@ model DelShippingMethod {
   formatConfig     Json // DelFormatColumn[] — 배송 파일 컬럼 매핑
   labelColumns     Json    @default("[]") // string[] — 활성화된 DelFieldMapping 키 (max 3). 배송 파일 생성 시 이 컬럼만 옵션별 값으로 덮어씀.
   defaultSplitMode String  @default("order") // 'order' | 'option' — 배송 파일 생성 시 기본 분할 모드
+  locationId       String? // 출고 재고 위치 (예: 3PL 창고). 설정 시 배치 완료에 이 방식 주문의 OUTBOUND 재고 차감.
 
   space         Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  location      InvStorageLocation?      @relation(fields: [locationId], references: [id], onDelete: SetNull)
   orders        DelOrder[]
   productLabels DelShippingMethodLabel[]
 
@@ -1540,6 +1543,7 @@ model DelShippingMethod {
 
   @@unique([spaceId, name])
   @@index([spaceId])
+  @@index([locationId])
 }
 
 // 배송 방식 × 옵션별 필드 오버라이드 (배송 파일 생성 시 적용)

@@ -14,7 +14,7 @@ const WORKER_SERVICE = 'coupang-sales-sync'
  * 워커가 수집한 어제(KST) 판매분석(VENDOR_ITEM_METRICS) 로켓그로스 판매량을
  * OUTBOUND 이동으로 변환한다. 발주예측이 로켓그로스 수요를 읽을 수 있게 한다.
  *
- * - 판매자배송은 제외(이미 DelBatch→OUTBOUND, 무중복).
+ * - 판매자배송은 제외(DelBatch 완료 시 배송 방식 출고 위치 OUTBOUND 담당, 무중복).
  * - referenceId 멱등 — 재실행/정정 안전(정정 시 delta 재고 보정).
  * - **재고 차감**: OUTBOUND 가 재고를 차감한다(perpetual ledger). 재고 truth =
  *   OUTBOUND 차감 + 사용자 수동 대조 보정. (자동 대조 cron 은 제거됨.)

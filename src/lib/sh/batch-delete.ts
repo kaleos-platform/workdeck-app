@@ -1,9 +1,11 @@
 /**
  * 배송 묶음(DelBatch) 삭제 — 묶음 + 주문 + 연동 InvMovement 함께 제거.
  *
- * 연동 InvMovement(이력 이전 OUTBOUND)는 `InvMovement.delBatchId` FK가 onDelete:Cascade라
+ * 연동 InvMovement는 `InvMovement.delBatchId` FK가 onDelete:Cascade라
  * DelBatch 삭제 시 DB가 자동으로 지운다. DelOrder/Item/Fulfillment도 FK cascade.
- * IMPORT 묶음의 OUTBOUND는 재고를 차감하지 않았으므로 역산(reverseMovement)은 불필요하다.
+ * IMPORT 묶음의 OUTBOUND(이력 이전)는 재고를 차감하지 않았으므로 역산이 불필요하지만,
+ * MANUAL 묶음 완료 시 생성된 OUTBOUND(배송 방식 출고 위치 차감)는 cascade 전에
+ * reverseMovement로 위치 재고를 복원해야 한다.
  *
  * MANUAL 묶음의 channelStock 복원:
  *   COMPLETED 상태에서 차감된 channelStock은 ChannelStockMovement 원장에 정확히 기록된다.
@@ -13,6 +15,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { lockStockLevel, reverseMovement } from '@/lib/inv/movement-processor'
 
 /**
  * 배송 묶음을 삭제한다. 연동 movement·주문은 FK cascade로 함께 삭제된다.
@@ -24,9 +27,34 @@ export async function deleteBatchWithMovements(
   batchId: string
 ): Promise<{ deletedMovements: number }> {
   return prisma.$transaction(async (tx) => {
-    const deletedMovements = await tx.invMovement.count({
+    const batch = await tx.delBatch.findUnique({
+      where: { id: batchId },
+      select: { source: true },
+    })
+
+    const invMovements = await tx.invMovement.findMany({
       where: { spaceId, delBatchId: batchId },
     })
+    const deletedMovements = invMovements.length
+
+    // MANUAL 묶음 완료 시 차감된 위치 재고 복원 — cascade가 movement를 지우기 전에 역산.
+    // IMPORT(이력 이전) movement는 재고 미차감이었으므로 제외.
+    if (batch?.source === 'MANUAL' && invMovements.length > 0) {
+      const sorted = [...invMovements].sort((a, b) =>
+        a.optionId === b.optionId
+          ? a.locationId.localeCompare(b.locationId)
+          : a.optionId.localeCompare(b.optionId)
+      )
+      const locked = new Set<string>()
+      for (const m of sorted) {
+        const key = `${m.optionId}|${m.locationId}`
+        if (!locked.has(key)) {
+          await lockStockLevel(tx, m.optionId, m.locationId)
+          locked.add(key)
+        }
+        await reverseMovement(tx, spaceId, m)
+      }
+    }
 
     // MANUAL 묶음의 channelStock 복원 — 삭제 cascade가 ChannelStockMovement를 지우기 전에 읽어야 함
     const stockMovements = await tx.channelStockMovement.findMany({
