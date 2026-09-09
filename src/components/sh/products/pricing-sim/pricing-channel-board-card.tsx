@@ -51,7 +51,7 @@ function promoLabel(p: PromotionValue): string | null {
     case 'COUPON':
       return `쿠폰 ₩${fmt(p.value)}`
     case 'MIN_PRICE':
-      return `최소가 ₩${fmt(p.value)}`
+      return `지정가 ₩${fmt(p.value)}`
     default:
       return null
   }
@@ -179,7 +179,6 @@ export function PricingChannelBoardCard({
 
   // ── 프로모션 여력 게이지 ──────────────────────────────────────────────────
   const floorPct = globals.minimumAcceptableMargin
-  const maxDiscount = headlineMatrix?.maxDiscountForMinMargin ?? null
   // 프로모션 적용 매트릭스 (실제 promotion) — 게이지 fill·하한 경고 소스.
   const hasPromo = promotion.type !== 'NONE'
   const promoLabelText = promoLabel(promotionValue)
@@ -202,10 +201,21 @@ export function PricingChannelBoardCard({
       ? Math.max(0, 1 - promoCell.finalPrice / cell.finalPrice)
       : 0
   const overFloor = promoCell != null && promoCell.margin < floorPct - 0.005
-  // 잔여 할인 여력 = 리스트가 기준 하한 한계(maxDiscount) − 이미 적용된 프로모 할인(currentDiscount).
-  // 프로모로 이미 하한 도달 시 0으로 수렴(기존 headroom은 프로모 무시하고 전체 maxDiscount를 표시).
-  const remainingDiscount = maxDiscount != null ? Math.max(0, maxDiscount - currentDiscount) : 0
-  const headroomAmount = cell != null ? Math.max(0, cell.finalPrice * remainingDiscount) : 0
+  // 마진 하한(floorPct)을 정확히 만족하는 최저 판매가 — 역산 연속 해.
+  // (maxDiscountForMinMargin은 20개 할인율 컬럼 그리드 이산값이라 여력이 최대 한 스텝 과소 표시됐음)
+  const floorPrice = headlineMatrix?.recommendedRetail.min ?? null
+  // 잔여 할인 여력 = 현재 표시가(프로모 적용 후) − 하한가. 프로모션 유형 무관 정확값.
+  const displayPrice = promoCell?.finalPrice ?? cell?.finalPrice ?? 0
+  const headroomAmount =
+    floorPrice != null && displayPrice > 0 ? Math.max(0, displayPrice - floorPrice) : 0
+  // %p는 기준 판매가(프로모 전) 대비 — currentDiscount와 같은 분모.
+  const remainingDiscount =
+    cell != null && cell.finalPrice > 0 ? headroomAmount / cell.finalPrice : 0
+  // 하한 초과분(할인 과다) — overFloor 안내에 사용, 기준가 대비 %p.
+  const overFloorPct =
+    floorPrice != null && cell != null && cell.finalPrice > 0
+      ? Math.max(0, (floorPrice - displayPrice) / cell.finalPrice)
+      : 0
 
   // 판매가 조정 슬라이더 범위 — 권장가 주변, 상한은 소비자가(retailCap)로 클램프.
   // 소비자가 없으면 권장가×1.5. 판매가는 소비자가를 넘을 수 없음.
@@ -501,14 +511,19 @@ export function PricingChannelBoardCard({
 
         {/* 여력 상세 — 하한 정보는 이 문장에 모두 포함(항목6: 별도 '하한 한계' 표시 제거) */}
         <p className="mt-2 text-[13px] leading-snug">
-          {maxDiscount == null ? (
+          {floorPrice == null ? (
             <span className="text-destructive">
-              0% 할인에서도 마진 하한 {(floorPct * 100).toFixed(0)}% 미달
+              구조적으로 마진 하한 {(floorPct * 100).toFixed(0)}% 달성 불가 — 수수료·원가가 너무
+              높습니다
             </span>
-          ) : overFloor ? (
+          ) : overFloor && floorPrice <= cell.finalPrice ? (
             <span className="text-destructive">
               ⚠ 마진 하한 {(floorPct * 100).toFixed(0)}% 미달 — 할인폭을{' '}
-              {((currentDiscount - maxDiscount) * 100).toFixed(0)}% 줄이세요.
+              {(overFloorPct * 100).toFixed(1)}%p 줄이세요.
+            </span>
+          ) : floorPrice > cell.finalPrice ? (
+            <span className="text-destructive">
+              0% 할인에서도 마진 하한 {(floorPct * 100).toFixed(0)}% 미달
             </span>
           ) : (
             <span className="text-muted-foreground">
