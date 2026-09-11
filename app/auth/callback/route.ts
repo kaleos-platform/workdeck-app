@@ -58,7 +58,12 @@ export async function GET(request: NextRequest) {
         })
 
         if (!workspace) {
-          return NextResponse.redirect(`${origin}/workspace-setup`)
+          // 원래 가려던 목적지를 workspace-setup 너머까지 넘긴다
+          // (마케팅 랜딩에서 특정 업무를 보고 온 경우 그 업무로 이어져야 한다)
+          const setupUrl = requestedNext
+            ? `${origin}/workspace-setup?redirectTo=${encodeURIComponent(requestedNext)}`
+            : `${origin}/workspace-setup`
+          return NextResponse.redirect(setupUrl)
         }
       }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,8 +9,11 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { AlertTriangle, CheckCircle2, Info, Loader2, ShieldAlert, XCircle } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { SETTINGS_BILLING_PATH } from '@/lib/deck-routes'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 import { cn } from '@/lib/utils'
+import { SubscribeDialog, type SubscribeTarget } from './subscribe-dialog'
 import {
   REASON_BADGE,
   daysUntil,
@@ -24,6 +27,8 @@ export function SubscriptionSettingsClient() {
   const [selectedDecks, setSelectedDecks] = useState<string[]>([])
   const [startBusy, setStartBusy] = useState(false)
   const [deckBusyId, setDeckBusyId] = useState<string | null>(null)
+  const [pending, setPending] = useState<SubscribeTarget | null>(null)
+  const searchParams = useSearchParams()
 
   const toggleDeckSelection = useCallback((deckId: string) => {
     setSelectedDecks((prev) =>
@@ -31,7 +36,7 @@ export function SubscriptionSettingsClient() {
     )
   }, [])
 
-  const handleStartSubscription = useCallback(async () => {
+  const runStartSubscription = useCallback(async () => {
     if (selectedDecks.length === 0) return
     setStartBusy(true)
     setBanner(null)
@@ -56,7 +61,7 @@ export function SubscriptionSettingsClient() {
     }
   }, [selectedDecks, load])
 
-  const handleAddDeck = useCallback(
+  const runAddDeck = useCallback(
     async (deckAppId: string) => {
       setDeckBusyId(deckAppId)
       setBanner(null)
@@ -117,6 +122,49 @@ export function SubscriptionSettingsClient() {
     },
     [load]
   )
+
+  /** 확인 모달을 연다. 실제 호출은 onConfirm 에서 일어난다. */
+  const openSubscribeDialog = useCallback(
+    (deckIds: string[], isAddition: boolean) => {
+      const decks = (data?.products ?? [])
+        .filter((p) => deckIds.includes(p.id))
+        .map((p) => ({ id: p.id, name: p.name, monthlyPrice: p.monthlyPrice }))
+      if (decks.length === 0) return
+      setPending({ decks, isAddition })
+    },
+    [data]
+  )
+
+  const confirmPending = useCallback(async () => {
+    if (!pending) return
+    if (pending.isAddition) {
+      await runAddDeck(pending.decks[0].id)
+    } else {
+      await runStartSubscription()
+    }
+    setPending(null)
+  }, [pending, runAddDeck, runStartSubscription])
+
+  // 카드 등록 왕복(?subscribe=) 후 돌아왔을 때 확인 단계를 이어서 연다.
+  const subscribeParam = searchParams.get('subscribe')
+  useEffect(() => {
+    if (!subscribeParam || !data) return
+    const ids = subscribeParam.split(',').filter(Boolean)
+    const already = new Set(
+      (data.subscription?.items ?? []).filter((i) => i.status === 'ACTIVE').map((i) => i.deckAppId)
+    )
+    const target = ids.filter((id) => !already.has(id))
+    if (target.length === 0) return
+    const isAddition = data.subscription?.status === 'ACTIVE'
+    const decks = data.products
+      .filter((p) => target.includes(p.id) && p.pricingMode === 'SUBSCRIPTION')
+      .map((p) => ({ id: p.id, name: p.name, monthlyPrice: p.monthlyPrice }))
+    if (decks.length === 0) return
+    setSelectedDecks(decks.map((d) => d.id))
+    setPending({ decks, isAddition })
+    // 한 번만 열리도록 파라미터 제거
+    window.history.replaceState(null, '', window.location.pathname)
+  }, [subscribeParam, data])
 
   const subscribableProducts = useMemo(
     () => data?.products.filter((p) => p.pricingMode === 'SUBSCRIPTION') ?? [],
@@ -356,7 +404,7 @@ export function SubscriptionSettingsClient() {
                                 variant="ghost"
                                 className="ml-auto"
                                 disabled={busy}
-                                onClick={() => handleAddDeck(product.id)}
+                                onClick={() => openSubscribeDialog([product.id], true)}
                               >
                                 {busy && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
                                 재개
@@ -371,7 +419,7 @@ export function SubscriptionSettingsClient() {
                             variant="outline"
                             className="ml-auto"
                             disabled={busy || !method}
-                            onClick={() => handleAddDeck(product.id)}
+                            onClick={() => openSubscribeDialog([product.id], true)}
                           >
                             {busy && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
                             추가
@@ -433,7 +481,7 @@ export function SubscriptionSettingsClient() {
                 </Alert>
               ) : (
                 <Button
-                  onClick={handleStartSubscription}
+                  onClick={() => openSubscribeDialog(selectedDecks, false)}
                   disabled={startBusy || selectedDecks.length === 0}
                 >
                   {startBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -444,6 +492,15 @@ export function SubscriptionSettingsClient() {
           </Card>
         )}
       </div>
+
+      <SubscribeDialog
+        target={pending}
+        cardSummary={method?.cardSummary ?? null}
+        returnTo={`${SETTINGS_BILLING_PATH}?subscribe=${(pending?.decks ?? []).map((d) => d.id).join(',')}`}
+        busy={startBusy || deckBusyId !== null}
+        onCancel={() => setPending(null)}
+        onConfirm={confirmPending}
+      />
     </TooltipProvider>
   )
 }
