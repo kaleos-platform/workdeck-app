@@ -92,7 +92,7 @@ function DeckIntroLink({ deck }: { deck: DeckSummary }) {
       aria-label={`${deck.name} 소개 페이지 새 탭에서 열기`}
       className="inline-flex items-center gap-1 text-xs whitespace-nowrap text-muted-foreground underline underline-offset-2 hover:text-foreground"
     >
-      자세히 확인
+      자세히
       <ExternalLink className="h-3 w-3" />
     </a>
   )
