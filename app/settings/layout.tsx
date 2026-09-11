@@ -21,6 +21,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
       where: { userId: user.id },
       select: {
         spaceId: true,
+        role: true,
         space: {
           select: {
             deckInstances: {
@@ -47,6 +48,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
       workspaceName={workspace.name}
       variant="workdeck"
       mode="my-deck"
+      isOwner={membership?.role === 'OWNER'}
       activeDecks={membership?.space.deckInstances.map(({ deckApp }) => deckApp) ?? []}
     >
       {children}

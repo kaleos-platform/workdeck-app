@@ -36,6 +36,19 @@ export default async function MyDeckPage() {
   const { space } = membership
   const activeDeckIds = space.deckInstances.map((instance) => instance.deckApp.id)
 
+  // 구독 해제 버튼은 실제로 과금 중인 업무에만 노출한다.
+  // Trial·면제·무료 베타는 해제할 구독 아이템이 없어 cancelDeck이 404를 낸다.
+  const subscription = await prisma.spaceSubscription.findUnique({
+    where: { spaceId: space.id },
+    select: {
+      items: {
+        where: { type: 'DECK', status: 'ACTIVE' },
+        select: { deckAppId: true },
+      },
+    },
+  })
+  const subscribedDeckIds = subscription?.items.map((item) => item.deckAppId) ?? []
+
   const availableDecks = await prisma.deckApp.findMany({
     where:
       activeDeckIds.length > 0
@@ -53,6 +66,7 @@ export default async function MyDeckPage() {
       spaceName={space.name}
       activeDecks={space.deckInstances.map((instance) => instance.deckApp)}
       availableDecks={availableDecks}
+      subscribedDeckIds={subscribedDeckIds}
     />
   )
 }
