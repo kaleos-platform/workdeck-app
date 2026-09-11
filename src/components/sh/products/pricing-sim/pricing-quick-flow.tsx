@@ -68,11 +68,13 @@ import {
 } from '@/components/sh/channels/channel-edit-dialog'
 import {
   PRICING_DRAFT_KEY,
+  buildRepresentativeSummary,
   isMeaningfulSnapshot,
   parseSnapshot,
   type PricingSimMode,
   type PricingSimSnapshot,
   type PricingSimSummary,
+  type PricingVariant,
   type SnapChOverride,
 } from '@/lib/sh/pricing-scenario-snapshot'
 
@@ -96,6 +98,7 @@ import { ManualProductRow } from './pricing-manual-row'
 import { PricingChannelBoardCard } from './pricing-channel-board-card'
 import { type PromotionValue } from './pricing-promotion-card'
 import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
+import { PricingVariantTabs } from './pricing-variant-tabs'
 import { mapPricingSettings } from '@/lib/sh/pricing-settings'
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
@@ -386,6 +389,32 @@ function nextRowId(): string {
   return `row-${++_rowSeq}`
 }
 
+/** 고유 탭(옵션 조합) ID 생성 */
+let _variantSeq = 0
+function nextVariantId(): string {
+  return `variant-${++_variantSeq}`
+}
+
+/** 비활성 탭인데 아직 직렬화된 data가 없을 때(보관값 없음) 쓰는 빈 탭 — 방어적 기본값 */
+function emptyVariant(id: string, name: string): PricingVariant {
+  return {
+    id,
+    name,
+    mode: 'existing',
+    rows: [],
+    bundleNameInput: '',
+    summary: {
+      productNames: [],
+      channelCount: 0,
+      targetMarginPct: 0,
+      priceMin: null,
+      priceMax: null,
+      totalCost: 0,
+      mode: 'existing',
+    },
+  }
+}
+
 /** %/₩ suffix 입력 (설정 다이얼로그 패턴 재사용) */
 function SuffixInput({
   value,
@@ -589,6 +618,18 @@ export function PricingQuickFlow({
 
   const [bundleNameInput, setBundleNameInput] = useState('')
   const bundleName = bundleNameInput || defaultBundleName
+
+  // ── 옵션 조합(탭) ─────────────────────────────────────────────────────────
+  // 탭 UI는 3단계에서 배선 — 여기선 배관만. 활성 탭 = 위 useState들("라이브 상태")
+  // 전체. 비활성 탭은 data에 마지막 직렬화 값을 보관, 전환 시 applyVariant로 복원.
+  const [variants, setVariants] = useState<
+    Array<{ id: string; name: string; data: PricingVariant | null }>
+  >(() => [{ id: nextVariantId(), name: '조합 1', data: null }])
+  const [activeVariantId, setActiveVariantId] = useState<string>(() => variants[0].id)
+  const activeVariantName = useMemo(
+    () => variants.find((v) => v.id === activeVariantId)?.name ?? bundleName,
+    [variants, activeVariantId, bundleName]
+  )
 
   // 번들 비용 요약
   const bundleCostSummary = useMemo(() => {
@@ -979,6 +1020,9 @@ export function PricingQuickFlow({
     setChPromotions({})
     setLive(liveFromSettings(settings))
     setSnap(true)
+    const freshId = nextVariantId()
+    setVariants([{ id: freshId, name: '조합 1', data: null }])
+    setActiveVariantId(freshId)
     setRestorable(null)
     clearDraft()
     // 편집 모드 해제 — 초기화 후 저장은 원본 덮어쓰기가 아니라 새 시나리오여야 안전
@@ -1079,18 +1123,25 @@ export function PricingQuickFlow({
   // 선택 상품(대표 = 첫 확정행). 번들이면 productIds에 전부 담아 구성 상품 모두 조회 대상.
   // 신규 모드 행은 productId='' → filter(Boolean)로 제거해 빈 배열 유지
   // (['']로 저장 시 POST가 존재하지 않는 상품 검증 실패 → 저장 거부)
-  const scenarioProductIds = useMemo(
-    () => [...new Set(confirmedRows.map((r) => r.productId).filter(Boolean))],
-    [confirmedRows]
-  )
+  // 활성 탭(현 라이브 상태) 기준 구성 상품 id + 비활성 탭들의 보관된 구성 상품 id 합집합.
+  // 신규 모드 행은 productId='' → filter(Boolean)로 제거해 빈 배열 유지
+  // (['']로 저장 시 POST가 존재하지 않는 상품 검증 실패 → 저장 거부)
+  const allVariantProductIds = useMemo(() => {
+    const ids = new Set(confirmedRows.map((r) => r.productId).filter(Boolean))
+    for (const v of variants) {
+      if (v.id === activeVariantId) continue // 활성 탭은 위 confirmedRows가 최신
+      for (const r of v.data?.rows ?? []) {
+        if (r.productId) ids.add(r.productId)
+      }
+    }
+    return [...ids]
+  }, [confirmedRows, variants, activeVariantId])
 
-  const buildSnapshot = useCallback((): PricingSimSnapshot => {
-    const chOverrides: Record<string, SnapChOverride> = {}
+  /** 활성 탭의 현재 라이브 상태를 PricingVariant로 직렬화 */
+  const buildVariant = useCallback((): PricingVariant => {
     const snapManualPrices: Record<string, number | null> = {}
     const snapPromotions: Record<string, PromotionValue> = {}
     for (const id of selectedChannelIds) {
-      const c = allChannels.find((ch) => ch.id === id)
-      if (c) chOverrides[id] = overrideOf(c)
       // 선택 채널의 수동 판매가만 담는다(제거된 채널의 stale 값 배제)
       if (manualPrices[id] != null) snapManualPrices[id] = manualPrices[id]
       // 선택 채널의 프로모션(NONE 아님)만 담는다
@@ -1113,27 +1164,22 @@ export function PricingQuickFlow({
       discountMax: setPriceRange?.discountMax ?? null,
     }
     return {
-      v: 1,
+      id: activeVariantId,
+      name: activeVariantName,
       mode,
-      live,
       rows: confirmedRows,
       bundleNameInput,
-      selectedChannelIds,
-      chOverrides,
       manualPrices: snapManualPrices,
       retailOverride,
       chPromotions: snapPromotions,
-      // 레거시 계약 충족(구 뷰어 안전). 실 복원 소스는 chPromotions.
-      promotion: { type: 'NONE', value: 0 },
-      snap,
       summary,
     }
   }, [
+    activeVariantId,
+    activeVariantName,
     mode,
     confirmedRows,
     selectedChannelIds,
-    allChannels,
-    overrideOf,
     live,
     boardSummary,
     setPriceRange,
@@ -1143,49 +1189,163 @@ export function PricingQuickFlow({
     manualPrices,
     retailOverride,
     chPromotions,
+  ])
+
+  /** 탭 data를 활성 탭("라이브 상태") setter에 적용 — 공통 상태(live/selectedChannelIds/chOverrides/snap)는 건드리지 않는다 */
+  const applyVariant = useCallback((v: PricingVariant) => {
+    setMode(v.mode)
+    setRows(
+      v.rows.length > 0
+        ? v.rows.map((rc) => ({ id: nextRowId(), resolved: rc }))
+        : [{ id: nextRowId(), resolved: null }]
+    )
+    setBundleNameInput(v.bundleNameInput)
+    setManualPrices(v.manualPrices ?? {})
+    setRetailOverride(v.retailOverride ?? null)
+    setChPromotions(v.chPromotions ?? {})
+    setExpandedChannels(new Set())
+  }, [])
+
+  // ── 옵션 조합(탭) 조작 ────────────────────────────────────────────────────
+  /** 활성 탭을 직렬화 보관 후 대상 탭으로 전환 */
+  const switchVariant = useCallback(
+    (id: string) => {
+      if (id === activeVariantId) return
+      const current = buildVariant()
+      setVariants((prev) =>
+        prev.map((v) => (v.id === activeVariantId ? { ...v, data: current } : v))
+      )
+      setActiveVariantId(id)
+      const target = variants.find((v) => v.id === id)
+      applyVariant(target?.data ?? emptyVariant(id, target?.name ?? ''))
+    },
+    [activeVariantId, buildVariant, variants, applyVariant]
+  )
+
+  const addVariant = useCallback(() => {
+    const current = buildVariant()
+    let n = 1
+    while (variants.some((v) => v.name === `조합 ${n}`)) n++
+    const id = nextVariantId()
+    const name = `조합 ${n}`
+    setVariants((prev) => [
+      ...prev.map((v) => (v.id === activeVariantId ? { ...v, data: current } : v)),
+      { id, name, data: null },
+    ])
+    setActiveVariantId(id)
+    applyVariant(emptyVariant(id, name))
+  }, [activeVariantId, buildVariant, variants, applyVariant])
+
+  const duplicateVariant = useCallback(
+    (id: string) => {
+      const current = buildVariant() // 활성 탭 최신 라이브 상태(전환 전 보관용)
+      const source =
+        id === activeVariantId
+          ? current
+          : (variants.find((v) => v.id === id)?.data ?? emptyVariant(id, ''))
+      const newId = nextVariantId()
+      const newName = `${source.name} 복사본`
+      const newData: PricingVariant = { ...source, id: newId, name: newName }
+      setVariants((prev) => [
+        ...prev.map((v) => (v.id === activeVariantId ? { ...v, data: current } : v)),
+        { id: newId, name: newName, data: newData },
+      ])
+      setActiveVariantId(newId)
+      applyVariant(newData)
+    },
+    [activeVariantId, buildVariant, variants, applyVariant]
+  )
+
+  const removeVariant = useCallback(
+    (id: string) => {
+      if (variants.length <= 1) return
+      const idx = variants.findIndex((v) => v.id === id)
+      if (idx === -1) return
+      const target = variants[idx]
+      const rowCount =
+        id === activeVariantId ? confirmedRows.length : (target.data?.rows.length ?? 0)
+      if (rowCount > 0 && !confirm(`"${target.name}" 조합을 삭제하시겠습니까?`)) return
+      const remaining = variants.filter((v) => v.id !== id)
+      setVariants(remaining)
+      if (id === activeVariantId) {
+        const next = remaining[idx - 1] ?? remaining[0]
+        setActiveVariantId(next.id)
+        applyVariant(next.data ?? emptyVariant(next.id, next.name))
+      }
+    },
+    [variants, activeVariantId, confirmedRows, applyVariant]
+  )
+
+  const renameVariant = useCallback((id: string, name: string) => {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    setVariants((prev) => prev.map((v) => (v.id === id ? { ...v, name: trimmed } : v)))
+  }, [])
+
+  const buildSnapshot = useCallback((): PricingSimSnapshot => {
+    const snapChOverrides: Record<string, SnapChOverride> = {}
+    for (const id of selectedChannelIds) {
+      const c = allChannels.find((ch) => ch.id === id)
+      if (c) snapChOverrides[id] = overrideOf(c)
+    }
+    const activeVariant = buildVariant()
+    const allVariants = variants.map((v) =>
+      v.id === activeVariantId ? activeVariant : (v.data ?? emptyVariant(v.id, v.name))
+    )
+    const summary = buildRepresentativeSummary(allVariants, {
+      channelCount: selectedChannelIds.length,
+      targetMarginPct: Math.round(live.targetMargin * 100),
+    })
+    return {
+      v: 2,
+      live,
+      selectedChannelIds,
+      chOverrides: snapChOverrides,
+      snap,
+      activeVariantId,
+      variants: allVariants,
+      summary,
+    }
+  }, [
+    selectedChannelIds,
+    allChannels,
+    overrideOf,
+    buildVariant,
+    variants,
+    activeVariantId,
+    live,
     snap,
   ])
 
-  const applySnapshot = useCallback((s: PricingSimSnapshot) => {
-    // 초기 settings 로드가 아직이면, 뒤늦게 도착할 리셋 1회를 건너뛰도록 arm
-    if (!settingsLoadedRef.current) skipNextLiveResetRef.current = true
-    setMode(s.mode ?? 'existing')
-    setLive(s.live)
-    setRows(
-      s.rows.length > 0
-        ? s.rows.map((rc) => ({ id: nextRowId(), resolved: rc }))
-        : [{ id: nextRowId(), resolved: null }]
-    )
-    setBundleNameInput(s.bundleNameInput)
-    setSelectedChannelIds(s.selectedChannelIds)
-    // 구 스냅샷 호환 — 무료배송 필드 기본값 채움
-    const restoredOverrides: Record<string, ChOverride> = {}
-    for (const [id, o] of Object.entries(s.chOverrides)) {
-      restoredOverrides[id] = {
-        ...o,
-        // 구 스냅샷 호환 — 카테고리 미기록이면 '기본'. feePct·feeCategory 동결 복원(재시딩 금지)
-        feeCategory: o.feeCategory ?? '기본',
-        freeShipping: o.freeShipping ?? false,
-        freeShippingThreshold: o.freeShippingThreshold ?? null,
-        // 구 스냅샷 호환 — VAT 포함 여부 미기록이면 false(기본값=미포함)
-        vatIncludedInFee: o.vatIncludedInFee ?? false,
-        paymentFeeVatIncluded: o.paymentFeeVatIncluded ?? false,
+  const applySnapshot = useCallback(
+    (s: PricingSimSnapshot) => {
+      // 초기 settings 로드가 아직이면, 뒤늦게 도착할 리셋 1회를 건너뛰도록 arm
+      if (!settingsLoadedRef.current) skipNextLiveResetRef.current = true
+      setLive(s.live)
+      setSelectedChannelIds(s.selectedChannelIds)
+      // 구 스냅샷 호환 — 무료배송 필드 기본값 채움
+      const restoredOverrides: Record<string, ChOverride> = {}
+      for (const [id, o] of Object.entries(s.chOverrides)) {
+        restoredOverrides[id] = {
+          ...o,
+          // 구 스냅샷 호환 — 카테고리 미기록이면 '기본'. feePct·feeCategory 동결 복원(재시딩 금지)
+          feeCategory: o.feeCategory ?? '기본',
+          freeShipping: o.freeShipping ?? false,
+          freeShippingThreshold: o.freeShippingThreshold ?? null,
+          // 구 스냅샷 호환 — VAT 포함 여부 미기록이면 false(기본값=미포함)
+          vatIncludedInFee: o.vatIncludedInFee ?? false,
+          paymentFeeVatIncluded: o.paymentFeeVatIncluded ?? false,
+        }
       }
-    }
-    setChOverrides(restoredOverrides)
-    setManualPrices(s.manualPrices ?? {})
-    setRetailOverride(s.retailOverride ?? null)
-    setExpandedChannels(new Set())
-    // 프로모션 복원: 채널별(chPromotions) 우선, 없으면 레거시 전역 프로모션을 전 채널에 동일 적용
-    if (s.chPromotions) {
-      setChPromotions(s.chPromotions)
-    } else if (s.promotion?.type !== 'NONE') {
-      setChPromotions(Object.fromEntries(s.selectedChannelIds.map((id) => [id, s.promotion])))
-    } else {
-      setChPromotions({})
-    }
-    setSnap(s.snap)
-  }, [])
+      setChOverrides(restoredOverrides)
+      setSnap(s.snap)
+      setVariants(s.variants.map((v) => ({ id: v.id, name: v.name, data: v })))
+      setActiveVariantId(s.activeVariantId)
+      const active = s.variants.find((v) => v.id === s.activeVariantId) ?? s.variants[0]
+      applyVariant(active)
+    },
+    [applyVariant]
+  )
 
   // ── 진입점 ①: 저장 시나리오 로드 (편집 모드) ──────────────────────────────
   useEffect(() => {
@@ -1379,7 +1539,7 @@ export function PricingQuickFlow({
   const savePayload = (name: string) => ({
     name,
     memo: saveMemo.trim() || undefined,
-    productIds: scenarioProductIds,
+    productIds: allVariantProductIds,
     inputSnapshot: buildSnapshot(),
   })
 
@@ -1694,6 +1854,17 @@ export function PricingQuickFlow({
           onSaved={handleDefaultsSaved}
         />
       )}
+
+      {/* ── 옵션 조합(탭) 바 ── */}
+      <PricingVariantTabs
+        tabs={variants.map((v) => ({ id: v.id, name: v.name }))}
+        activeId={activeVariantId}
+        onSelect={switchVariant}
+        onAdd={addVariant}
+        onRename={renameVariant}
+        onRemove={removeVariant}
+        onDuplicate={duplicateVariant}
+      />
 
       {/* ── 본문 2단 ── */}
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
