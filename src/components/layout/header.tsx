@@ -10,10 +10,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Moon, Sun, LogOut } from 'lucide-react'
+import { Moon, Sun, LogOut, UserCog } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useAuth } from '@/hooks/use-auth'
 import type { DeckVariant } from '@/lib/deck-meta'
+import { SETTINGS_ACCOUNT_PATH } from '@/lib/deck-routes'
 
 type HeaderProps = {
   variant?: DeckVariant
@@ -69,8 +70,12 @@ export function Header({ variant = 'workdeck' }: HeaderProps) {
               <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>프로필</DropdownMenuItem>
-            <DropdownMenuItem>설정</DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href={SETTINGS_ACCOUNT_PATH}>
+                <UserCog className="mr-2 h-4 w-4" />
+                계정 설정
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut} className="cursor-pointer">
               <LogOut className="mr-2 h-4 w-4" />

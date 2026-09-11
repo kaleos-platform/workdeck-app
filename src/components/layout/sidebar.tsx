@@ -38,6 +38,7 @@ import {
   ShieldCheck,
   Plug,
   Sparkles,
+  CreditCard,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -101,6 +102,7 @@ import {
   APPROVALS_PATH,
   SETTINGS_INTEGRATIONS_PATH,
   SETTINGS_AI_PATH,
+  SETTINGS_BILLING_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -505,7 +507,19 @@ export function Sidebar({
                 href={SETTINGS_AI_PATH}
                 icon={Sparkles}
                 label="AI 설정"
-                isActive={pathname === SETTINGS_AI_PATH || pathname.startsWith(`${SETTINGS_AI_PATH}/`)}
+                isActive={
+                  pathname === SETTINGS_AI_PATH || pathname.startsWith(`${SETTINGS_AI_PATH}/`)
+                }
+                collapsed={collapsed}
+              />
+              <RailLink
+                href={SETTINGS_BILLING_PATH}
+                icon={CreditCard}
+                label="결제 관리"
+                isActive={
+                  pathname === SETTINGS_BILLING_PATH ||
+                  pathname.startsWith(`${SETTINGS_BILLING_PATH}/`)
+                }
                 collapsed={collapsed}
               />
             </div>
