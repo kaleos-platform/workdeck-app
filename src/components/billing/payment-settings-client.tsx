@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -39,7 +41,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
-import { SETTINGS_PAYMENTS_PATH } from '@/lib/deck-routes'
+import { SETTINGS_BILLING_PATH, SETTINGS_PAYMENTS_PATH } from '@/lib/deck-routes'
 import {
   CHARGE_STATUS_LABEL,
   formatDate,
@@ -57,6 +59,7 @@ export function PaymentSettingsClient({
 }) {
   const { data, loading, error, banner, setBanner, load, isOwner } = useBillingOverview()
   const [cardBusy, setCardBusy] = useState(false)
+  const router = useRouter()
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [removeBusy, setRemoveBusy] = useState(false)
 
@@ -115,10 +118,17 @@ export function PaymentSettingsClient({
         error?: string
       } | null
       if (!res.ok) {
-        setBanner({
-          type: 'error',
-          message: json?.message ?? json?.error ?? '결제수단 삭제에 실패했습니다',
-        })
+        const message = json?.message ?? json?.error ?? '결제수단 삭제에 실패했습니다'
+        // 구독이 남아 삭제가 막힌 경우(409)는 해지부터 해야 하므로 구독 업무 관리로 보낸다.
+        if (res.status === 409) {
+          setConfirmRemove(false)
+          toast.error(message, {
+            description: '구독 업무 관리에서 먼저 해지한 뒤 다시 시도하세요.',
+          })
+          router.push(SETTINGS_BILLING_PATH)
+          return
+        }
+        setBanner({ type: 'error', message })
         return
       }
       setBanner({ type: 'success', message: '결제수단을 삭제했습니다' })
@@ -129,7 +139,7 @@ export function PaymentSettingsClient({
     } finally {
       setRemoveBusy(false)
     }
-  }, [load, setBanner])
+  }, [load, router, setBanner])
 
   if (loading) {
     return (
