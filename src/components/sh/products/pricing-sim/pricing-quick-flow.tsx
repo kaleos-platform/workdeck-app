@@ -1763,6 +1763,17 @@ export function PricingQuickFlow({
         </div>
       </div>
 
+      {/* ── 옵션 조합(탭) 바 — 제목 바로 아래. KPI·보드는 활성 탭의 하위 정보 ── */}
+      <PricingVariantTabs
+        tabs={variants.map((v) => ({ id: v.id, name: v.name }))}
+        activeId={activeVariantId}
+        onSelect={switchVariant}
+        onAdd={addVariant}
+        onRename={renameVariant}
+        onRemove={removeVariant}
+        onDuplicate={duplicateVariant}
+      />
+
       {/* ── KPI 스트립 (순서: 원가매입 → 소비자가 → 판매가 → 할인율) ── */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiCell
@@ -1854,17 +1865,6 @@ export function PricingQuickFlow({
           onSaved={handleDefaultsSaved}
         />
       )}
-
-      {/* ── 옵션 조합(탭) 바 ── */}
-      <PricingVariantTabs
-        tabs={variants.map((v) => ({ id: v.id, name: v.name }))}
-        activeId={activeVariantId}
-        onSelect={switchVariant}
-        onAdd={addVariant}
-        onRename={renameVariant}
-        onRemove={removeVariant}
-        onDuplicate={duplicateVariant}
-      />
 
       {/* ── 본문 2단 ── */}
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">

@@ -432,7 +432,9 @@ export function BillingSettingsClient({
             {data.subscription?.exemptFlag && <Badge variant="secondary">무료 이용 중</Badge>}
           </CardHeader>
           <CardContent className="space-y-3">
-            {!subscription && (
+            {/* 구독 이력이 없거나, 면제 백필로 생긴 빈 TRIALING 행(trialEndsAt 없음)일 때 */}
+            {(!subscription ||
+              (subscription.status === 'TRIALING' && !subscription.trialEndsAt)) && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Info className="h-4 w-4" />
                 {hasSubscribableProduct
@@ -440,7 +442,7 @@ export function BillingSettingsClient({
                   : '현재 모든 업무를 무료로 제공하고 있습니다. 유료 청구가 시작되기 전에 미리 안내드립니다.'}
               </div>
             )}
-            {subscription?.status === 'TRIALING' && (
+            {subscription?.status === 'TRIALING' && subscription.trialEndsAt && (
               <div className="flex items-center gap-2 text-sm">
                 <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                   Trial
