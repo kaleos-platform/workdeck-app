@@ -2,9 +2,11 @@ import {
   collectPricingScenarioChannelIds,
   matchPricingScenarioToListingGroup,
 } from '@/lib/sh/pricing-scenario-query'
-import type { PricingSimSnapshot } from '@/lib/sh/pricing-scenario-snapshot'
+import type { PricingSimSnapshotV1 } from '@/lib/sh/pricing-scenario-snapshot'
 
-function makeSnapshot(channelIds: string[]): PricingSimSnapshot {
+// v1 형태 그대로 테스트 — parseSnapshot이 v1→v2 변환 후에도 selectedChannelIds는
+// top-level 유지되므로 query.ts 동작은 버전 무관하게 동일해야 한다.
+function makeSnapshot(channelIds: string[]): PricingSimSnapshotV1 {
   return {
     v: 1,
     mode: 'existing',
@@ -73,6 +75,50 @@ describe('pricing-scenario-query', () => {
         target,
       })
     ).toBe(false)
+  })
+
+  it('v2 스냅샷(variants[])도 selectedChannelIds는 top-level이라 동일하게 매칭된다', () => {
+    const target = { productIds: ['prod-a'], channelId: 'channel-coupang' }
+    const v2Snapshot = {
+      v: 2,
+      live: makeSnapshot([]).live,
+      selectedChannelIds: ['channel-coupang'],
+      chOverrides: {},
+      snap: true,
+      activeVariantId: 'tab-1',
+      variants: [
+        {
+          id: 'tab-1',
+          name: '조합 1',
+          mode: 'existing',
+          rows: [],
+          bundleNameInput: '',
+          summary: {
+            productNames: [],
+            channelCount: 1,
+            targetMarginPct: 30,
+            priceMin: null,
+            priceMax: null,
+            totalCost: 0,
+          },
+        },
+      ],
+      summary: {
+        productNames: [],
+        channelCount: 1,
+        targetMarginPct: 30,
+        priceMin: null,
+        priceMax: null,
+        totalCost: 0,
+      },
+    }
+    expect(
+      matchPricingScenarioToListingGroup({
+        scenarioProductIds: ['prod-a'],
+        inputSnapshot: v2Snapshot,
+        target,
+      })
+    ).toBe(true)
   })
 
   it('스냅샷 selectedChannelIds와 레거시 channelId를 채널명 조회용으로 모은다', () => {
