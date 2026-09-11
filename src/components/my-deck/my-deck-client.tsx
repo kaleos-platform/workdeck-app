@@ -85,22 +85,16 @@ function DeckCardTitle({ deck }: { deck: DeckSummary }) {
 function DeckIntroLink({ deck }: { deck: DeckSummary }) {
   if (!toDeckMeta(deck.id)) return null
   return (
-    <Button
-      asChild
-      variant="ghost"
-      size="sm"
-      className="w-full text-muted-foreground hover:text-foreground"
+    <a
+      href={buildMarketingUrl(`/${deck.id}`)}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${deck.name} 소개 페이지 새 탭에서 열기`}
+      className="inline-flex items-center gap-1 text-xs whitespace-nowrap text-muted-foreground underline underline-offset-2 hover:text-foreground"
     >
-      <a
-        href={buildMarketingUrl(`/${deck.id}`)}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`${deck.name} 소개 페이지 새 탭에서 열기`}
-      >
-        소개 보기
-        <ExternalLink className="h-3.5 w-3.5" />
-      </a>
-    </Button>
+      자세히 확인
+      <ExternalLink className="h-3 w-3" />
+    </a>
   )
 }
 
@@ -330,7 +324,8 @@ export function MyDeckClient({
                   <CardDescription className="min-h-10">
                     {toDeckMeta(deck.id)?.description ??
                       deck.description ??
-                      '상세 설명이 아직 등록되지 않았습니다.'}
+                      '상세 설명이 아직 등록되지 않았습니다.'}{' '}
+                    <DeckIntroLink deck={deck} />
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -340,7 +335,6 @@ export function MyDeckClient({
                       <ExternalLink className="h-4 w-4" />
                     </Link>
                   </Button>
-                  <DeckIntroLink deck={deck} />
                   {isOwner && (
                     <Button
                       variant="ghost"
@@ -385,7 +379,8 @@ export function MyDeckClient({
                   <CardDescription className="min-h-10">
                     {toDeckMeta(deck.id)?.description ??
                       deck.description ??
-                      '상세 설명이 아직 등록되지 않았습니다.'}
+                      '상세 설명이 아직 등록되지 않았습니다.'}{' '}
+                    <DeckIntroLink deck={deck} />
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -398,7 +393,6 @@ export function MyDeckClient({
                     <PlusCircle className="h-4 w-4" />
                     추가하기
                   </Button>
-                  <DeckIntroLink deck={deck} />
                 </CardContent>
               </Card>
             ))}
