@@ -127,12 +127,12 @@ export function SubscribeDialog({
           </div>
 
           <ul className="space-y-1 text-xs break-keep text-muted-foreground">
-            <li>• 결제일로부터 1개월 단위로 자동 갱신되며, 언제든 해제할 수 있습니다.</li>
+            <li>• 결제일로부터 1개월 단위로 자동 갱신되며, 언제든 해지할 수 있습니다.</li>
             {target.isAddition && (
               <li>• 이용 기간 중 추가하므로 남은 기간만큼 일할 계산된 금액이 즉시 청구됩니다.</li>
             )}
             <li>
-              • 해제하면 결제한 기간의 마지막 날까지 이용할 수 있습니다. 자세한 기준은{' '}
+              • 해지하면 결제한 기간의 마지막 날까지 이용할 수 있습니다. 자세한 기준은{' '}
               <Link
                 href={buildMarketingUrl('/refund')}
                 target="_blank"

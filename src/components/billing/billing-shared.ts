@@ -142,7 +142,7 @@ export const CHARGE_STATUS_LABEL: Record<
 export const REASON_BADGE: Partial<Record<DeckAccessReason, { label: string; className: string }>> =
   {
     GRACE: {
-      label: '유예 중',
+      label: '무료 적용중',
       className: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
     },
     TRIAL: {
@@ -185,15 +185,15 @@ export function useBillingOverview() {
 }
 
 /**
- * 다음 주기 청구액 — 해제 예약(CANCEL_AT_PERIOD_END) 아이템은 다음 주기부터 빠진다.
- * 현재 주기 이용 금액과 다르다: 해제 예약분도 이번 주기까지는 이미 결제된 상태다.
+ * 다음 주기 청구액 — 해지 예약(CANCEL_AT_PERIOD_END) 아이템은 다음 주기부터 빠진다.
+ * 현재 주기 이용 금액과 다르다: 해지 예약분도 이번 주기까지는 이미 결제된 상태다.
  */
 export function nextCycleSupplyTotal(items: SubscriptionItemDto[]): number {
   return items.filter((i) => i.status === 'ACTIVE').reduce((sum, i) => sum + i.priceSnapshot, 0)
 }
 
 /**
- * 남은 업무가 전부 해제 예약이면 다음 주기에 구독 자체가 종료된다.
+ * 남은 업무가 전부 해지 예약이면 다음 주기에 구독 자체가 종료된다.
  * (runDueCharges 가 ACTIVE 아이템 0건이면 CANCELED 로 넘긴다.)
  * 이때 "다음 결제일 · 월 0원" 으로 보이면 오해를 부르므로 문구를 바꿔야 한다.
  */

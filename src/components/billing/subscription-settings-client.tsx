@@ -83,7 +83,7 @@ export function SubscriptionSettingsClient() {
           type: 'success',
           message: prorated
             ? `추가되었습니다 (일할 결제 ${formatWon(amount)})`
-            : '구독이 재개되었습니다',
+            : '구독을 다시 시작했습니다',
         })
         await load()
       } catch {
@@ -107,17 +107,17 @@ export function SubscriptionSettingsClient() {
         })
         const json = await res.json()
         if (!res.ok) {
-          setBanner({ type: 'error', message: json?.error ?? '해제에 실패했습니다' })
+          setBanner({ type: 'error', message: json?.error ?? '해지에 실패했습니다' })
           return
         }
         const { effectiveAt } = json as { effectiveAt: string | null }
         setBanner({
           type: 'success',
-          message: `해제가 예약되었습니다. ${formatDate(effectiveAt)}까지 계속 이용할 수 있습니다`,
+          message: `해지가 예약되었습니다. ${formatDate(effectiveAt)}까지 계속 이용할 수 있습니다`,
         })
         await load()
       } catch {
-        setBanner({ type: 'error', message: '해제에 실패했습니다' })
+        setBanner({ type: 'error', message: '해지에 실패했습니다' })
       } finally {
         setDeckBusyId(null)
       }
@@ -271,7 +271,7 @@ export function SubscriptionSettingsClient() {
             {subscription?.status === 'ACTIVE' && (
               <div className="flex items-center gap-2 text-sm">
                 <Badge variant={subscriptionEnding ? 'secondary' : 'default'}>
-                  {subscriptionEnding ? '해제 예정' : '구독 중'}
+                  {subscriptionEnding ? '해지 예정' : '구독 중'}
                 </Badge>
                 <span>
                   {subscriptionEnding
@@ -364,7 +364,7 @@ export function SubscriptionSettingsClient() {
                             </TooltipTrigger>
                             {access?.reason === 'GRACE' && access.graceEndsAt && (
                               <TooltipContent>
-                                유료 전환 유예 중입니다. {formatDate(access.graceEndsAt)}까지 계속
+                                무료로 이용 중입니다. {formatDate(access.graceEndsAt)}까지 계속
                                 사용할 수 있습니다.
                               </TooltipContent>
                             )}
@@ -385,7 +385,7 @@ export function SubscriptionSettingsClient() {
                                 onClick={() => handleCancelDeck(product.id)}
                               >
                                 {busy && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                                해제
+                                해지
                               </Button>
                             )}
                           </>
@@ -397,7 +397,7 @@ export function SubscriptionSettingsClient() {
                               variant="outline"
                               className="w-fit text-amber-700 dark:text-amber-400"
                             >
-                              기간말 해제 예정
+                              기간말 해지 예정
                             </Badge>
                             {isOwner && (
                               <Button
@@ -408,7 +408,7 @@ export function SubscriptionSettingsClient() {
                                 onClick={() => openSubscribeDialog([product.id], true)}
                               >
                                 {busy && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                                재개
+                                다시 시작
                               </Button>
                             )}
                           </>

@@ -25,7 +25,7 @@ describe('구독 상태 표시 판정', () => {
     ).toBe(50000)
   })
 
-  test('전부 해제 예약이면 주기 말에 구독이 종료된다', () => {
+  test('전부 해지 예약이면 주기 말에 구독이 종료된다', () => {
     expect(endsAtPeriodEnd([item('seller-hub', 'CANCEL_AT_PERIOD_END')])).toBe(true)
     expect(nextCycleSupplyTotal([item('seller-hub', 'CANCEL_AT_PERIOD_END')])).toBe(0)
   })
