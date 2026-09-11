@@ -7,6 +7,7 @@ import {
   prorateOrderId,
 } from '../pricing'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
+import { DECK_CATALOG_DEFAULTS } from '../catalog-defaults'
 
 describe('calcAmounts / sumLines', () => {
   test('VAT 별도: 공급가 × 1.1', () => {
@@ -71,17 +72,25 @@ describe('orderId 멱등키', () => {
 // DeckApp.id(시드/BillingDeckProduct 키)와 deck-meta DeckVariant 키 정합성 가드.
 // 과금 카탈로그 5종이 전부 DECK_META에 존재해야 UI 매핑이 깨지지 않는다.
 describe('BillingDeckProduct ↔ DeckVariant 키 정합', () => {
-  const BILLING_DECK_IDS = [
-    'coupang-ads',
-    'seller-hub',
-    'finance',
-    'sales-content',
-    'recruiting',
-  ]
+  const BILLING_DECK_IDS = ['coupang-ads', 'seller-hub', 'finance', 'sales-content', 'recruiting']
 
   test('과금 deck id 전부 DECK_META에 존재', () => {
     for (const id of BILLING_DECK_IDS) {
       expect(DECK_META[id as DeckVariant]).toBeDefined()
+    }
+  })
+})
+
+// 결제 내역·카드 명세서에 찍히는 orderName 은 deck id(slug)가 아니라
+// DECK_CATALOG_DEFAULTS 의 상품명을 쓴다. 이름이 비거나 slug 로 되돌아가면
+// 이용자가 마케팅 상품 페이지와 결제 내역을 대조할 수 없다.
+describe('결제 상품명(orderName) 소스', () => {
+  test('과금 deck 전부 slug 가 아닌 한글 상품명을 갖는다', () => {
+    expect(DECK_CATALOG_DEFAULTS.length).toBeGreaterThan(0)
+    for (const product of DECK_CATALOG_DEFAULTS) {
+      expect(product.name.trim()).not.toBe('')
+      expect(product.name).not.toBe(product.id)
+      expect(product.name).toBe(DECK_META[product.id as DeckVariant].name)
     }
   })
 })
