@@ -295,10 +295,12 @@ export function AnalyticsContentTable({
                       />
                     </td>
                     {/* 제목 + 상태 배지 */}
-                    <td className="max-w-[260px] px-3 py-2.5">
-                      <div className="flex items-center gap-2">
+                    <td className="px-3 py-2.5">
+                      <div className="flex max-w-[260px] items-center gap-2">
                         <ContentStatusBadge status={row.status} />
-                        <span className="truncate font-medium">{row.title}</span>
+                        <span className="min-w-0 truncate font-medium" title={row.title}>
+                          {row.title}
+                        </span>
                       </div>
                     </td>
                     {/* 게시일 */}

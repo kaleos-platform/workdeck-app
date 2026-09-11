@@ -190,11 +190,21 @@ export function PricingScenarioHistoryPanel({
                     <div className="text-sm font-medium">{r.name}</div>
                     {r.memo && <div className="text-xs text-muted-foreground">{r.memo}</div>}
                   </TableCell>
-                  <TableCell className="max-w-[220px] truncate text-sm text-muted-foreground">
-                    {joinedOrDash(r.summary?.productNames)}
+                  <TableCell className="text-sm text-muted-foreground">
+                    <div
+                      className="max-w-[220px] truncate"
+                      title={joinedOrDash(r.summary?.productNames)}
+                    >
+                      {joinedOrDash(r.summary?.productNames)}
+                    </div>
                   </TableCell>
-                  <TableCell className="max-w-[180px] truncate text-right text-muted-foreground">
-                    {joinedOrDash(r.channelNames)}
+                  <TableCell className="text-right text-muted-foreground">
+                    <div
+                      className="ml-auto max-w-[180px] truncate"
+                      title={joinedOrDash(r.channelNames)}
+                    >
+                      {joinedOrDash(r.channelNames)}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {r.summary ? `${r.summary.targetMarginPct}%` : '—'}

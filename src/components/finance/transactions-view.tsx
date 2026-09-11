@@ -1316,9 +1316,13 @@ function StagingRow({
 
       {/* 출처 칩 */}
       <TableCell>
-        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs">
-          <span className="text-muted-foreground">{accountKindLabel(row.account.kind)}</span>
-          <span className="font-medium">{row.account.name}</span>
+        <span className="inline-flex max-w-[150px] items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs">
+          <span className="shrink-0 text-muted-foreground">
+            {accountKindLabel(row.account.kind)}
+          </span>
+          <span className="truncate font-medium" title={row.account.name}>
+            {row.account.name}
+          </span>
         </span>
       </TableCell>
 

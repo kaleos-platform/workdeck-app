@@ -14,12 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { SELLER_HUB_PRODUCTION_PATH } from '@/lib/deck-routes'
 import type { ProductionRunStatus } from '@/lib/sh/production-runs-query'
 import { ProductionRunFormDialog } from './production-run-form-dialog'
@@ -74,11 +69,7 @@ function MyOptionChips({ items }: { items: MyOptionItem[] }) {
   return (
     <div className="flex flex-wrap items-center gap-1">
       {visible.map((i) => (
-        <Badge
-          key={i.optionId}
-          variant="secondary"
-          className="max-w-[160px] truncate text-xs"
-        >
+        <Badge key={i.optionId} variant="secondary" className="max-w-[160px] truncate text-xs">
           {i.optionName}
         </Badge>
       ))}
@@ -219,11 +210,10 @@ export function ProductProductionRunsPanel({ productId }: Props) {
                   }}
                 >
                   <TableCell className="font-mono text-sm">{r.runNo}</TableCell>
-                  <TableCell
-                    className="max-w-[220px] truncate text-sm text-muted-foreground"
-                    title={r.memo ?? undefined}
-                  >
-                    {r.memo ?? '-'}
+                  <TableCell className="text-sm text-muted-foreground">
+                    <div className="max-w-[220px] truncate" title={r.memo ?? undefined}>
+                      {r.memo ?? '-'}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={r.status} />
