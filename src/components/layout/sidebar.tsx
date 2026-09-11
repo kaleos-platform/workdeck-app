@@ -39,6 +39,7 @@ import {
   Plug,
   Sparkles,
   CreditCard,
+  Receipt,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -103,6 +104,7 @@ import {
   SETTINGS_INTEGRATIONS_PATH,
   SETTINGS_AI_PATH,
   SETTINGS_BILLING_PATH,
+  SETTINGS_PAYMENTS_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -120,6 +122,8 @@ type SidebarProps = {
   variant?: DeckVariant
   mode?: 'default' | 'my-deck'
   activeDecks?: Array<{ id: string; name: string }>
+  /** 구독·결제 메뉴는 소유자에게만 노출한다 */
+  isOwner?: boolean
 }
 
 const NVB_AD_TYPE = '신규 구매 고객 확보'
@@ -309,6 +313,7 @@ export function Sidebar({
   variant = 'workdeck',
   mode = 'default',
   activeDecks = [],
+  isOwner = false,
 }: SidebarProps) {
   const pathname = usePathname()
   const { signOut } = useAuth()
@@ -512,16 +517,30 @@ export function Sidebar({
                 }
                 collapsed={collapsed}
               />
-              <RailLink
-                href={SETTINGS_BILLING_PATH}
-                icon={CreditCard}
-                label="결제 관리"
-                isActive={
-                  pathname === SETTINGS_BILLING_PATH ||
-                  pathname.startsWith(`${SETTINGS_BILLING_PATH}/`)
-                }
-                collapsed={collapsed}
-              />
+              {isOwner && (
+                <>
+                  <RailLink
+                    href={SETTINGS_BILLING_PATH}
+                    icon={Receipt}
+                    label="구독 관리"
+                    isActive={
+                      pathname === SETTINGS_BILLING_PATH ||
+                      pathname.startsWith(`${SETTINGS_BILLING_PATH}/`)
+                    }
+                    collapsed={collapsed}
+                  />
+                  <RailLink
+                    href={SETTINGS_PAYMENTS_PATH}
+                    icon={CreditCard}
+                    label="결제 관리"
+                    isActive={
+                      pathname === SETTINGS_PAYMENTS_PATH ||
+                      pathname.startsWith(`${SETTINGS_PAYMENTS_PATH}/`)
+                    }
+                    collapsed={collapsed}
+                  />
+                </>
+              )}
             </div>
 
             {!collapsed && (

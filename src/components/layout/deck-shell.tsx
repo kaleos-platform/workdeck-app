@@ -9,6 +9,8 @@ type DeckShellProps = {
   activeDecks?: Array<{ id: string; name: string }>
   /** sales-content 등 deck-scoped CSS(`[data-deck='...']`)가 필요한 경우 전달 */
   dataDeck?: string
+  /** 구독·결제 메뉴 노출 여부 (SpaceMember.role === 'OWNER') */
+  isOwner?: boolean
   children: React.ReactNode
 }
 
@@ -23,6 +25,7 @@ export function DeckShell({
   mode,
   activeDecks,
   dataDeck,
+  isOwner,
   children,
 }: DeckShellProps) {
   return (
@@ -32,6 +35,7 @@ export function DeckShell({
         variant={variant}
         mode={mode}
         activeDecks={activeDecks}
+        isOwner={isOwner}
       />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header variant={variant} />
