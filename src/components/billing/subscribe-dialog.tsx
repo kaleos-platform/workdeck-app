@@ -58,7 +58,7 @@ export function SubscribeDialog({
       const res = await fetch('/api/billing/setup', { method: 'POST' })
       const json = await res.json()
       if (!res.ok) {
-        setCardError(json?.error ?? '카드 등록 준비에 실패했습니다')
+        setCardError(json?.message ?? json?.error ?? '카드 등록 준비에 실패했습니다')
         return
       }
       const { customerKey, clientKey } = json as { customerKey: string; clientKey: string }

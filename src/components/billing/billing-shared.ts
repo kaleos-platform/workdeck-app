@@ -166,7 +166,7 @@ export function useBillingOverview() {
       const res = await fetch('/api/billing/overview')
       const json = await res.json()
       if (!res.ok) {
-        setError(json?.error ?? '구독 정보를 불러오지 못했습니다')
+        setError(json?.message ?? json?.error ?? '구독 정보를 불러오지 못했습니다')
         return
       }
       setData(json as OverviewDto)
