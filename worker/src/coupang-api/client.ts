@@ -153,10 +153,16 @@ export class CoupangApiClient {
     path: string,
     query: Record<string, string | number | undefined> | undefined,
     pick: (res: R) => { items: T[]; nextToken?: string | null },
-    maxPages = DEFAULT_MAX_PAGES
+    maxPages = DEFAULT_MAX_PAGES,
+    // 페이징 토큰 쿼리 파라미터 이름. 대부분 'nextToken' 이지만 정산(revenue-history)은
+    // 'token' 을 요구하고, 이름이 틀리면 서버가 매번 첫 페이지 + 같은 nextToken 을 돌려줘
+    // maxPages 까지 무한 반복한다(실제로 12일 조회가 500페이지를 넘겼다).
+    tokenParam = 'nextToken'
   ): Promise<T[]> {
     const items: T[] = []
-    let nextToken: string | undefined
+    // 첫 페이지 토큰. 정산 API 는 token 파라미터가 없으면 400 "token cannot be null" 이라
+    // 빈 문자열로 시작해야 한다. nextToken 계열은 빈 값이 무시되므로 그대로 둬도 안전하다.
+    let nextToken: string | undefined = ''
     let page = 0
 
     do {
@@ -166,7 +172,7 @@ export class CoupangApiClient {
           `쿠팡 API 페이징이 maxPages(${maxPages})를 초과했습니다: ${path} — nextToken 이 계속 남아 있습니다`
         )
       }
-      const res = await this.get<R>(path, { ...query, nextToken })
+      const res = await this.get<R>(path, { ...query, [tokenParam]: nextToken })
       const { items: pageItems, nextToken: next } = pick(res)
       items.push(...pageItems)
       nextToken = next ?? undefined
