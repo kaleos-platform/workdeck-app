@@ -32,13 +32,21 @@
 ```
 가격시뮬 화면
   → [쿠팡에 반영] 버튼
-    → 대상 옵션 미리보기 (현재가 → 목표가, Δ%, 경고)
-      → 승인 큐에 PENDING 액션 생성
-        → 관리자 승인 (승인 상세 시트)
-          → CoupangWriteJob PENDING 행 생성
-            → 워커 폴링(30초) → 현재가 재조회 → 대조 → PUT → 응답 body 검증
-              → 결과 기록 + Slack 알림
+    → PRICE_REFRESH 잡 생성 → 워커가 대상 옵션 현재가만 조회(1.3초) → 스냅샷 갱신
+      → 대상 옵션 미리보기 (현재가 → 목표가, Δ%, 경고)
+        → 승인 큐에 PENDING 액션 생성
+          → 관리자 승인 (승인 상세 시트)
+            → CoupangWriteJob PENDING 행 생성
+              → 워커 폴링(30초) → 현재가 재조회 → 대조 → PUT → 응답 body 검증
+                → 결과 기록 + 스냅샷 갱신 + Slack 알림
 ```
+
+### 미리보기 전 갱신이 필요한 이유
+
+`CoupangProductItem` 수집은 주 1회다. 그 스냅샷의 값을 `expectedCurrentPrice` 로 쓰면 **사람은 최대 일주일 묵은 숫자를 보고 승인하고, 그 사이 가격이 움직였으면 워커가 전부 중단**시킨다. 신선도 가드와 수집 주기가 조용히 묶여 있어선 안 된다.
+
+- **미리보기 진입 시 대상 옵션만 단건 갱신**한다. 전체 순회 70초가 아니라 옵션 1건 1.3초다. `CoupangWriteJob` 에 `kind: PRICE_REFRESH` 를 추가해 같은 폴링 레일을 쓴다(새 인프라 없음). 화면은 잡 완료를 폴링한다.
+- **쓰기 성공 후 워커가 `CoupangProductItem.salePrice` 를 즉시 갱신**한다. 이게 없으면 §11 검증 4번(변경 후 원복)의 원복이 방금 무효화된 스냅샷을 상대로 제출돼 **반드시 ABORT** 된다 — 명세대로면 인수 테스트가 통과할 수 없다.
 
 ## 4. 가격 매핑 규칙 (결정 사항)
 
@@ -110,13 +118,22 @@
 | ------------------ | -------------------------------------------------------------- |
 | `workspaceId`      | 워커 폴링 스코프                                               |
 | `actionId`         | `AgentPendingAction.id` — `@unique` (멱등)                     |
-| `kind`             | `PRICE_CHANGE`                                                 |
+| `kind`             | `PRICE_CHANGE` \| `PRICE_REFRESH`                              |
 | `payload`          | Json — vendorItemId, targetPrice, expectedCurrentPrice, force  |
 | `status`           | `PENDING` \| `RUNNING` \| `SUCCEEDED` \| `FAILED` \| `ABORTED` |
 | `attempts`         | 재시도 횟수                                                    |
 | `observedPrice`    | 워커가 PUT 직전 읽은 실제 현재가                               |
 | `result` / `error` | 쿠팡 응답 / 실패 사유                                          |
 | `executedAt`       |                                                                |
+
+### 5.4 Space 축과 Workspace 축
+
+두 축이 섞여 있다. `ActionExecContext` 는 `{ spaceId, requestedBy }` 만 갖고 workspaceId 가 없는데, 워커 폴링과 옵션 브리지는 workspaceId 를 요구한다. **이 축 혼동은 이 기능에서 이미 버그로 나갔다** — `54b2f882 fix(coupang-ads): API 자격 저장·연결 테스트 실패 (워크스페이스 축 + 응답 래퍼)`.
+
+- 정식 해석 경로는 **`resolveCoupangWorkspaceForSpace(spaceId)`** 다(`src/lib/sh/margin-query.ts:229` 에서 `loadExternalOptionBridge(spaceId, coupang.workspaceId)` 호출에 쓰는 것과 동일).
+- **nullable 이다.** 쿠팡 워크스페이스가 연결돼 있지 않으면 액션 생성 자체를 거부한다(승인 후 워커에서 터지게 두지 않는다).
+- `execute()` 는 이 함수로 workspaceId 를 해석해 `CoupangWriteJob.workspaceId` 에 넣는다.
+- `CoupangProductItem` 은 `spaceId` 축으로 둔다(미리보기가 앱 쪽 Space 스코프에서 읽는다). 워커는 job 의 workspaceId 로 자격을 찾고, 적재 시 spaceId 로 되돌린다.
 
 ## 6. 실행 경로
 
@@ -148,12 +165,17 @@ params: {
 1. PENDING job 1건 claim (RUNNING 전이)
 2. 아이템별 수량/가격/상태 조회 API 로 현재가 재조회
 3. expectedCurrentPrice 와 대조
-   ├─ 불일치 → ABORTED. "미리보기 이후 가격이 변경됨(현재 X원)" 기록, PUT 안 함
-   └─ 일치   → observedPrice 기록 후 진행
+   ├─ 현재가 == targetPrice → SUCCEEDED (멱등 no-op). PUT 안 함
+   ├─ 현재가 != expectedCurrentPrice → ABORTED. "미리보기 이후 가격이 변경됨(현재 X원)"
+   └─ 일치 → observedPrice 기록 후 진행
 4. PUT /v2/providers/seller_api/apis/api/v1/marketplace/vendor-items/{vendorItemId}/prices/{price}
 5. 응답 body 검증 (§8)
-6. SUCCEEDED/FAILED 기록 → Slack 알림
+6. SUCCEEDED/FAILED 기록 → CoupangProductItem.salePrice 갱신 → Slack 알림
 ```
+
+**3번의 첫 분기가 크래시 복구다.** 잡이 RUNNING 이고 PUT은 성공했는데 기록 직전에 워커가 죽으면, 재시도 시 현재가가 이미 `targetPrice` 다. 이때 `expectedCurrentPrice` 와만 비교하면 ABORT 로 보고된다 — **쓰기는 일어났는데 안 일어났다고 보고**하는 상태다. 현재가 ∉ {expected, target} 일 때만 중단한다.
+
+⚠️ **2번 조회 엔드포인트는 아직 없다.** `endpoints.ts` 의 래퍼 8종에 "상품 아이템별 수량/가격/상태 조회"가 없다. 신규 래퍼 + 자체 픽스처 파싱 테스트가 필요하다(§11).
 
 **3번이 핵심이다.** `snapshot()` 은 앱에서 **생성 시점**에 찍히는데 PUT은 나중에 워커에서 실행된다. 그 사이 가격이 바뀌면 `beforeState` 가 낡고 롤백이 엉뚱한 값을 복원한다. 이는 재고 대조의 `matchResults.systemQuantity` 스냅샷 함정(차이 합계 −1,400 허수)과 **같은 버그 유형**이다. 워커가 PUT 직전 실제 값을 읽어 기록하고, 어긋나면 중단한다.
 
@@ -188,6 +210,8 @@ params: {
 
 `client.ts` 는 현재 **GET 전용**이다. `put<T>()` 을 추가한다 — CEA 서명 message 는 `signedDate + method + path + query` 로 **body를 포함하지 않으므로** 서명 로직은 그대로다. 스로틀·429 백오프·IP 거부 분류도 재사용한다.
 
+단 `forceSalePriceUpdate` 는 **쿼리 파라미터**다. 즉 `buildQueryString()` 을 거쳐 **서명 message 에 들어간다.** 서명에 쓴 query 문자열과 실제 요청 URL 의 순서가 어긋나면 서명 불일치로 실패한다(`signature.ts` 주석의 정렬 안 함 규약). `get()` 과 같은 방식으로 한 번만 만들어 양쪽에 쓴다.
+
 ## 9. 이 기능의 알려진 실패 유형
 
 읽기 구축에서 나온 무음 실패 5건은 **전부 같은 유형**이었다 — 타입이 실물과 달라 타입 에러 없이 조용히 `undefined` 가 되고 증상만 나타남.
@@ -218,9 +242,11 @@ params: {
 
 ## 11. 검증 계획
 
-1. **픽스처 파싱 테스트** — 쿠팡 쓰기 응답 실물 샘플로 성공/실패/에러코드 분기 고정 (구현 전)
-2. **액션 정의 단위 테스트** — paramsSchema 검증, VAT 가드, 1:N 매핑 가드, force 기본값
-3. **워커 대조 로직 테스트** — expectedCurrentPrice 불일치 시 PUT 미호출 확인
+1. **픽스처 파싱 테스트** — 구현 전에 먼저 고정한다. 대상 2개:
+   - 가격 변경 PUT 응답 (성공 / `data.code: "ERROR"` / HTTP 에러)
+   - **아이템별 수량/가격/상태 조회 응답** (신규 래퍼)
+2. **액션 정의 단위 테스트** — paramsSchema 검증, VAT 가드, 1:N 매핑 가드, force 기본값, 쿠팡 워크스페이스 미연결 시 생성 거부
+3. **워커 대조 로직 테스트** — 세 분기 전부: 일치→PUT, 불일치→ABORT(PUT 미호출), 이미 targetPrice→SUCCEEDED(PUT 미호출)
 4. **prod 실쓰기 1건** — 본인 계정 옵션 1개에 소액 변경 후 원복. no-op(같은 값)은 검증이 안 되므로 실제로 값을 바꾼다
 
 ## 12. 운영 함정 (기존 인프라에서 승계)
