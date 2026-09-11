@@ -1,8 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Eye, EyeOff, Pencil } from 'lucide-react'
+import { Copy, Eye, EyeOff, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -141,6 +142,7 @@ interface OrderDetailTableProps {
 const PAGE_SIZE = 50
 
 export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableProps) {
+  const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -287,6 +289,22 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     setEditOrder(order)
   }
 
+  // 재등록 — 완료 건을 DRAFT 묶음에 복제 후 등록 화면으로 이동
+  const [cloningId, setCloningId] = useState<string | null>(null)
+  const handleReregister = async (orderId: string) => {
+    setCloningId(orderId)
+    try {
+      const res = await fetch(`/api/sh/shipping/orders/${orderId}/clone`, { method: 'POST' })
+      if (!res.ok) throw new Error('재등록 실패')
+      toast.success('배송 등록 화면에 복제되었습니다')
+      router.push('/d/seller-ops/shipping/registration')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '재등록 실패')
+    } finally {
+      setCloningId(null)
+    }
+  }
+
   // 수정/삭제 후 — 복호화 캐시 무효화 + 재조회
   const handleEditSaved = (orderId: string) => {
     setDecryptedRows((prev) => {
@@ -401,7 +419,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
               <TableHead className="text-xs">수량</TableHead>
               <TableHead className="text-xs">주문일자</TableHead>
               <TableHead className="text-xs">메모</TableHead>
-              <TableHead className="w-[60px] text-xs" />
+              <TableHead className="w-[80px] text-xs" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -538,15 +556,27 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      title="수정"
-                      onClick={() => openEditDialog(order)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex gap-0.5">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        title="수정"
+                        onClick={() => openEditDialog(order)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        title="배송 등록에 재등록"
+                        disabled={cloningId === order.id}
+                        onClick={() => handleReregister(order.id)}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
