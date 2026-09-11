@@ -209,8 +209,11 @@ export function MyDeckClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      const json = (await res.json().catch(() => null)) as { error?: string } | null
-      if (!res.ok) throw new Error(json?.error ?? '구독에 실패했습니다')
+      const json = (await res.json().catch(() => null)) as {
+        message?: string
+        error?: string
+      } | null
+      if (!res.ok) throw new Error(json?.message ?? json?.error ?? '구독에 실패했습니다')
 
       // 구독이 끝나야 entitlement 게이트를 통과하므로 여기서 deck 을 활성화한다.
       const addRes = await fetch('/api/spaces/decks', {
