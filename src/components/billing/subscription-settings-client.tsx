@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils'
 import { SubscribeDialog, type SubscribeTarget } from './subscribe-dialog'
 import {
   REASON_BADGE,
+  endsAtPeriodEnd,
+  nextCycleSupplyTotal,
   daysUntil,
   formatDate,
   formatWon,
@@ -178,12 +180,8 @@ export function SubscriptionSettingsClient() {
     return { supply, withVat: Math.round(supply * 1.1) }
   }, [subscribableProducts, selectedDecks])
 
-  const monthlyTotal = useMemo(() => {
-    if (!data?.subscription) return 0
-    return data.subscription.items
-      .filter((i) => i.status === 'ACTIVE')
-      .reduce((sum, i) => sum + i.priceSnapshot, 0)
-  }, [data])
+  const monthlyTotal = useMemo(() => nextCycleSupplyTotal(data?.subscription?.items ?? []), [data])
+  const subscriptionEnding = useMemo(() => endsAtPeriodEnd(data?.subscription?.items ?? []), [data])
 
   if (loading) {
     return (
@@ -272,10 +270,13 @@ export function SubscriptionSettingsClient() {
             )}
             {subscription?.status === 'ACTIVE' && (
               <div className="flex items-center gap-2 text-sm">
-                <Badge>구독 중</Badge>
+                <Badge variant={subscriptionEnding ? 'secondary' : 'default'}>
+                  {subscriptionEnding ? '해제 예정' : '구독 중'}
+                </Badge>
                 <span>
-                  다음 결제일 {formatDate(subscription.currentPeriodEnd)} · 월{' '}
-                  {formatWon(Math.round(monthlyTotal * 1.1))} (VAT 포함)
+                  {subscriptionEnding
+                    ? `${formatDate(subscription.currentPeriodEnd)}까지 이용할 수 있으며, 이후 구독이 종료됩니다`
+                    : `다음 결제일 ${formatDate(subscription.currentPeriodEnd)} · 월 ${formatWon(Math.round(monthlyTotal * 1.1))} (VAT 포함)`}
                 </span>
               </div>
             )}
