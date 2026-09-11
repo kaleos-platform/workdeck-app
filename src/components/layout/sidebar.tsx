@@ -39,7 +39,7 @@ import {
   Plug,
   Sparkles,
   CreditCard,
-  Receipt,
+  PackageCheck,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -521,8 +521,8 @@ export function Sidebar({
                 <>
                   <RailLink
                     href={SETTINGS_BILLING_PATH}
-                    icon={Receipt}
-                    label="구독 관리"
+                    icon={PackageCheck}
+                    label="구독 업무 관리"
                     isActive={
                       pathname === SETTINGS_BILLING_PATH ||
                       pathname.startsWith(`${SETTINGS_BILLING_PATH}/`)
