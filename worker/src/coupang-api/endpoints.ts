@@ -155,8 +155,12 @@ export async function fetchRevenueHistory(
   const path = '/v2/providers/openapi/apis/api/v1/revenue-history'
   return client.paginate<RevenueHistoryItem, RevenueHistoryResponse>(
     path,
-    { vendorId, recognitionDateFrom, recognitionDateTo, token: '' },
-    (res) => ({ items: res.data ?? [], nextToken: res.nextToken })
+    // 이 API 는 페이징 토큰 이름이 'token' 이다(다른 계열은 'nextToken').
+    // 첫 페이지는 token='' 로 시작한다 — 생략하면 400 "token cannot be null".
+    { vendorId, recognitionDateFrom, recognitionDateTo },
+    (res) => ({ items: res.data ?? [], nextToken: res.nextToken }),
+    undefined,
+    'token'
   )
 }
 

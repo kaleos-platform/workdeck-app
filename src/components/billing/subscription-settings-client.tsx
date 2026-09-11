@@ -1,261 +1,34 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import {
-  AlertTriangle,
-  CheckCircle2,
-  CreditCard,
-  Info,
-  Loader2,
-  ShieldAlert,
-  XCircle,
-} from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Info, Loader2, ShieldAlert, XCircle } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { SETTINGS_BILLING_PATH } from '@/lib/deck-routes'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
 import { cn } from '@/lib/utils'
+import { SubscribeDialog, type SubscribeTarget } from './subscribe-dialog'
+import {
+  REASON_BADGE,
+  daysUntil,
+  formatDate,
+  formatWon,
+  useBillingOverview,
+} from './billing-shared'
 
-type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'EXPIRED'
-type SubscriptionItemStatus = 'ACTIVE' | 'CANCEL_AT_PERIOD_END' | 'ENDED'
-type PricingMode = 'FREE_BETA' | 'SUBSCRIPTION'
-type ChargeStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELED' | 'REFUNDED'
-type DeckAccessReason = 'FREE_BETA' | 'EXEMPT' | 'SUBSCRIBED' | 'TRIAL' | 'GRACE' | 'LOCKED'
-
-interface BillingProduct {
-  id: string
-  name: string
-  pricingMode: PricingMode
-  monthlyPrice: number
-  paidActivatedAt: string | null
-  isActive: boolean
-}
-
-interface SubscriptionItemDto {
-  id: string
-  deckAppId: string
-  priceSnapshot: number
-  status: SubscriptionItemStatus
-}
-
-interface SubscriptionDto {
-  status: SubscriptionStatus
-  trialEndsAt: string | null
-  currentPeriodEnd: string | null
-  exemptFlag: boolean
-  items: SubscriptionItemDto[]
-}
-
-interface MethodDto {
-  cardSummary: string | null
-  createdAt: string
-}
-
-interface ChargeBreakdownLine {
-  deckAppId: string
-  type: string
-  price: number
-  prorated?: boolean
-}
-
-interface ChargeDto {
-  orderId: string
-  amount: number
-  supplyAmount: number
-  vatAmount: number
-  status: ChargeStatus
-  failReason: string | null
-  periodStart: string
-  periodEnd: string
-  breakdown: ChargeBreakdownLine[]
-  createdAt: string
-}
-
-interface DeckAccessDto {
-  allowed: boolean
-  reason: DeckAccessReason
-  graceEndsAt?: string | null
-}
-
-interface EntitlementDto {
-  allowedDecks: string[]
-  lockedDecks: string[]
-  decks: Record<string, DeckAccessDto>
-}
-
-interface OverviewDto {
-  role: 'OWNER' | 'ADMIN' | 'MEMBER'
-  products: BillingProduct[]
-  subscription: SubscriptionDto | null
-  method: MethodDto | null
-  charges: ChargeDto[]
-  entitlement: EntitlementDto
-}
-
-declare global {
-  interface Window {
-    TossPayments?: (clientKey: string) => {
-      payment: (opts: { customerKey: string }) => {
-        requestBillingAuth: (opts: {
-          method: 'CARD'
-          successUrl: string
-          failUrl: string
-        }) => Promise<void>
-      }
-    }
-  }
-}
-
-const TOSS_SDK_URL = 'https://js.tosspayments.com/v2/standard'
-
-function formatWon(amount: number): string {
-  return `${amount.toLocaleString('ko-KR')}원`
-}
-
-function formatDate(value: string | null): string {
-  if (!value) return '-'
-  return new Date(value).toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
-function daysUntil(value: string | null): number | null {
-  if (!value) return null
-  const diffMs = new Date(value).getTime() - Date.now()
-  return Math.ceil(diffMs / (24 * 60 * 60 * 1000))
-}
-
-function loadTossSdk(): Promise<void> {
-  if (typeof window === 'undefined') return Promise.reject(new Error('브라우저 환경이 아닙니다'))
-  if (window.TossPayments) return Promise.resolve()
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script')
-    script.src = TOSS_SDK_URL
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error('결제 SDK 로드에 실패했습니다'))
-    document.head.appendChild(script)
-  })
-}
-
-const CHARGE_STATUS_LABEL: Record<
-  ChargeStatus,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
-> = {
-  PENDING: { label: '처리중', variant: 'secondary' },
-  PAID: { label: '결제완료', variant: 'default' },
-  FAILED: { label: '실패', variant: 'destructive' },
-  CANCELED: { label: '취소됨', variant: 'outline' },
-  REFUNDED: { label: '환불됨', variant: 'outline' },
-}
-
-const REASON_BADGE: Partial<Record<DeckAccessReason, { label: string; className: string }>> = {
-  GRACE: {
-    label: '유예 중',
-    className: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
-  },
-  TRIAL: {
-    label: 'Trial 이용 중',
-    className: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
-  },
-}
-
-export function BillingSettingsClient({
-  cardRegistered,
-  initialError,
-}: {
-  cardRegistered: string | null
-  initialError: string | null
-}) {
-  const [data, setData] = useState<OverviewDto | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [banner, setBanner] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-  const [cardBusy, setCardBusy] = useState(false)
+export function SubscriptionSettingsClient() {
+  const { data, loading, error, banner, setBanner, load, isOwner } = useBillingOverview()
   const [selectedDecks, setSelectedDecks] = useState<string[]>([])
   const [startBusy, setStartBusy] = useState(false)
   const [deckBusyId, setDeckBusyId] = useState<string | null>(null)
-
-  const load = useCallback(async () => {
-    setError(null)
-    try {
-      const res = await fetch('/api/billing/overview')
-      const json = await res.json()
-      if (!res.ok) {
-        setError(json?.error ?? '구독 정보를 불러오지 못했습니다')
-        return
-      }
-      setData(json as OverviewDto)
-    } catch {
-      setError('구독 정보를 불러오지 못했습니다')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    load()
-  }, [load])
-
-  useEffect(() => {
-    if (cardRegistered) {
-      setBanner({ type: 'success', message: '카드 등록이 완료되었습니다' })
-    } else if (initialError) {
-      setBanner({ type: 'error', message: initialError })
-    }
-  }, [cardRegistered, initialError])
-
-  const isOwner = data?.role === 'OWNER'
-
-  const handleRegisterCard = useCallback(async () => {
-    setCardBusy(true)
-    setBanner(null)
-    try {
-      const res = await fetch('/api/billing/setup', { method: 'POST' })
-      const json = await res.json()
-      if (!res.ok) {
-        setBanner({ type: 'error', message: json?.error ?? '카드 등록 준비에 실패했습니다' })
-        return
-      }
-      const { customerKey, clientKey } = json as { customerKey: string; clientKey: string }
-      await loadTossSdk()
-      if (!window.TossPayments) throw new Error('결제 SDK 로드에 실패했습니다')
-      const toss = window.TossPayments(clientKey)
-      const origin = window.location.origin
-      await toss.payment({ customerKey }).requestBillingAuth({
-        method: 'CARD',
-        successUrl: `${origin}/api/billing/toss/callback`,
-        failUrl: `${origin}/settings/billing?error=${encodeURIComponent('카드등록취소')}`,
-      })
-    } catch (e) {
-      setBanner({
-        type: 'error',
-        message: e instanceof Error ? e.message : '카드 등록에 실패했습니다',
-      })
-    } finally {
-      setCardBusy(false)
-    }
-  }, [])
+  const [pending, setPending] = useState<SubscribeTarget | null>(null)
+  const searchParams = useSearchParams()
 
   const toggleDeckSelection = useCallback((deckId: string) => {
     setSelectedDecks((prev) =>
@@ -263,7 +36,7 @@ export function BillingSettingsClient({
     )
   }, [])
 
-  const handleStartSubscription = useCallback(async () => {
+  const runStartSubscription = useCallback(async () => {
     if (selectedDecks.length === 0) return
     setStartBusy(true)
     setBanner(null)
@@ -288,7 +61,7 @@ export function BillingSettingsClient({
     }
   }, [selectedDecks, load])
 
-  const handleAddDeck = useCallback(
+  const runAddDeck = useCallback(
     async (deckAppId: string) => {
       setDeckBusyId(deckAppId)
       setBanner(null)
@@ -350,6 +123,49 @@ export function BillingSettingsClient({
     [load]
   )
 
+  /** 확인 모달을 연다. 실제 호출은 onConfirm 에서 일어난다. */
+  const openSubscribeDialog = useCallback(
+    (deckIds: string[], isAddition: boolean) => {
+      const decks = (data?.products ?? [])
+        .filter((p) => deckIds.includes(p.id))
+        .map((p) => ({ id: p.id, name: p.name, monthlyPrice: p.monthlyPrice }))
+      if (decks.length === 0) return
+      setPending({ decks, isAddition })
+    },
+    [data]
+  )
+
+  const confirmPending = useCallback(async () => {
+    if (!pending) return
+    if (pending.isAddition) {
+      await runAddDeck(pending.decks[0].id)
+    } else {
+      await runStartSubscription()
+    }
+    setPending(null)
+  }, [pending, runAddDeck, runStartSubscription])
+
+  // 카드 등록 왕복(?subscribe=) 후 돌아왔을 때 확인 단계를 이어서 연다.
+  const subscribeParam = searchParams.get('subscribe')
+  useEffect(() => {
+    if (!subscribeParam || !data) return
+    const ids = subscribeParam.split(',').filter(Boolean)
+    const already = new Set(
+      (data.subscription?.items ?? []).filter((i) => i.status === 'ACTIVE').map((i) => i.deckAppId)
+    )
+    const target = ids.filter((id) => !already.has(id))
+    if (target.length === 0) return
+    const isAddition = data.subscription?.status === 'ACTIVE'
+    const decks = data.products
+      .filter((p) => target.includes(p.id) && p.pricingMode === 'SUBSCRIPTION')
+      .map((p) => ({ id: p.id, name: p.name, monthlyPrice: p.monthlyPrice }))
+    if (decks.length === 0) return
+    setSelectedDecks(decks.map((d) => d.id))
+    setPending({ decks, isAddition })
+    // 한 번만 열리도록 파라미터 제거
+    window.history.replaceState(null, '', window.location.pathname)
+  }, [subscribeParam, data])
+
   const subscribableProducts = useMemo(
     () => data?.products.filter((p) => p.pricingMode === 'SUBSCRIPTION') ?? [],
     [data]
@@ -388,7 +204,7 @@ export function BillingSettingsClient({
     )
   }
 
-  const { subscription, method, charges, entitlement } = data
+  const { subscription, method, entitlement } = data
   const trialDaysLeft = daysUntil(subscription?.trialEndsAt ?? null)
   // 유료 전환된 업무가 하나도 없으면 구독 자체가 성립하지 않는다 (전 업무 무료 제공 중)
   const hasSubscribableProduct = subscribableProducts.length > 0
@@ -477,40 +293,6 @@ export function BillingSettingsClient({
               </div>
             )}
           </CardContent>
-        </Card>
-
-        {/* 결제수단 카드 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>결제수단</CardTitle>
-            <CardDescription>정기 결제에 사용되는 카드입니다.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {method ? (
-              <div className="flex items-center gap-2 text-sm">
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-                <span>{method.cardSummary ?? '등록된 카드'}</span>
-                <span className="text-muted-foreground">· {formatDate(method.createdAt)} 등록</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Info className="h-4 w-4" />
-                등록된 결제수단이 없습니다.
-              </div>
-            )}
-          </CardContent>
-          {isOwner && (
-            <CardFooter>
-              <Button
-                onClick={handleRegisterCard}
-                disabled={cardBusy}
-                variant={method ? 'outline' : 'default'}
-              >
-                {cardBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {method ? '카드 변경' : '카드 등록'}
-              </Button>
-            </CardFooter>
-          )}
         </Card>
 
         {/* 업무 목록 카드 그리드 */}
@@ -622,7 +404,7 @@ export function BillingSettingsClient({
                                 variant="ghost"
                                 className="ml-auto"
                                 disabled={busy}
-                                onClick={() => handleAddDeck(product.id)}
+                                onClick={() => openSubscribeDialog([product.id], true)}
                               >
                                 {busy && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
                                 재개
@@ -637,7 +419,7 @@ export function BillingSettingsClient({
                             variant="outline"
                             className="ml-auto"
                             disabled={busy || !method}
-                            onClick={() => handleAddDeck(product.id)}
+                            onClick={() => openSubscribeDialog([product.id], true)}
                           >
                             {busy && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
                             추가
@@ -699,7 +481,7 @@ export function BillingSettingsClient({
                 </Alert>
               ) : (
                 <Button
-                  onClick={handleStartSubscription}
+                  onClick={() => openSubscribeDialog(selectedDecks, false)}
                   disabled={startBusy || selectedDecks.length === 0}
                 >
                   {startBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -709,93 +491,16 @@ export function BillingSettingsClient({
             </CardContent>
           </Card>
         )}
-
-        {/* 결제 내역 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>결제 내역</CardTitle>
-            <CardDescription>최근 결제 내역입니다. 금액은 VAT 포함입니다.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {charges.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                결제 내역이 없습니다.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>결제일</TableHead>
-                      <TableHead>청구 기간</TableHead>
-                      <TableHead>금액</TableHead>
-                      <TableHead>상태</TableHead>
-                      <TableHead>내역</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {charges.map((charge) => {
-                      const statusMeta = CHARGE_STATUS_LABEL[charge.status]
-                      return (
-                        <TableRow key={charge.orderId}>
-                          <TableCell className="whitespace-nowrap">
-                            {formatDate(charge.createdAt)}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-muted-foreground">
-                            {formatDate(charge.periodStart)} ~ {formatDate(charge.periodEnd)}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {formatWon(charge.amount)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1.5">
-                              <Badge variant={statusMeta.variant}>{statusMeta.label}</Badge>
-                              {charge.status === 'FAILED' && charge.failReason && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>{charge.failReason}</TooltipContent>
-                                </Tooltip>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {Array.isArray(charge.breakdown) && charge.breakdown.length > 0 ? (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="cursor-help text-xs text-muted-foreground underline decoration-dotted">
-                                    {charge.breakdown.length}개 항목
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <ul className="space-y-0.5">
-                                    {charge.breakdown.map((line, idx) => {
-                                      const meta = DECK_META[line.deckAppId as DeckVariant]
-                                      return (
-                                        <li key={`${line.deckAppId}-${idx}`}>
-                                          {meta?.name ?? line.deckAppId} · {formatWon(line.price)}
-                                          {line.prorated ? ' (일할)' : ''}
-                                        </li>
-                                      )
-                                    })}
-                                  </ul>
-                                </TooltipContent>
-                              </Tooltip>
-                            ) : (
-                              '-'
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
+
+      <SubscribeDialog
+        target={pending}
+        cardSummary={method?.cardSummary ?? null}
+        returnTo={`${SETTINGS_BILLING_PATH}?subscribe=${(pending?.decks ?? []).map((d) => d.id).join(',')}`}
+        busy={startBusy || deckBusyId !== null}
+        onCancel={() => setPending(null)}
+        onConfirm={confirmPending}
+      />
     </TooltipProvider>
   )
 }

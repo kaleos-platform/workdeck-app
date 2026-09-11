@@ -35,6 +35,8 @@ const CRAWL_ONLY_FIELDS: Partial<Record<SourceField, string>> = {
     '재고는 크롤링 전용입니다. 쿠팡 Open API 가 반품 등급·입고예정·보관일수를 제공하지 않아 재고 파악이 부정확해집니다.',
   salesSource:
     '판매·주문은 크롤링 전용입니다. 쿠팡 Open API 주문 조회가 취소 정보를 제공하지 않고, 집계 축이 달라 출고 장부와 어긋납니다.',
+  settlementSource:
+    '정산은 크롤링 전용입니다. 쿠팡 Open API 매출내역이 판매자배송만 제공하고 로켓그로스 정산은 포함하지 않습니다.',
 }
 
 const SOURCE_FIELDS = [
