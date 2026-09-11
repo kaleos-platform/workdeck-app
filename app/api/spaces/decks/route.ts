@@ -75,3 +75,28 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ deck: deckApp, instance: created }, { status: 201 })
 }
+
+// DELETE /api/spaces/decks — 현재 Space에서 Deck 비활성화(사용 중지).
+// 구독 해지(SubscriptionItem)와는 다른 개념이다. 무료 제공·유예·Trial 처럼
+// 구독 아이템이 없는 업무를 목록에서 내릴 때 쓴다. 데이터는 지우지 않는다.
+export async function DELETE(request: NextRequest) {
+  const resolved = await resolveSpaceContext()
+  if ('error' in resolved) return resolved.error
+
+  const body = (await request.json().catch(() => null)) as CreateDeckRequest | null
+  const deckAppId = typeof body?.deckAppId === 'string' ? body.deckAppId.trim() : ''
+  if (!deckAppId) return errorResponse('deckAppId가 필요합니다', 400)
+
+  const existing = await prisma.deckInstance.findUnique({
+    where: { spaceId_deckAppId: { spaceId: resolved.space.id, deckAppId } },
+    select: { id: true, isActive: true },
+  })
+  if (!existing?.isActive) return errorResponse('사용 중인 업무가 아닙니다', 404)
+
+  await prisma.deckInstance.update({
+    where: { id: existing.id },
+    data: { isActive: false },
+  })
+
+  return NextResponse.json({ deckAppId, isActive: false })
+}
