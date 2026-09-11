@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-// 구독 관리(/settings/billing)와 결제 관리(/settings/payments)가 공유하는
+// 구독 업무 관리(/settings/billing)와 결제 관리(/settings/payments)가 공유하는
 // 타입·포맷터·오버뷰 로딩. 두 화면 모두 GET /api/billing/overview 한 번으로 충분하다.
 
 export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'EXPIRED'
