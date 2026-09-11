@@ -128,6 +128,15 @@ export function MyDeckClient({
   const [subscribeBusy, setSubscribeBusy] = useState(false)
   const searchParams = useSearchParams()
 
+  /** 이미 쓰던 업무인데 권한을 잃은 경우 (구독 만료 등) */
+  const isLocked = useCallback(
+    (deckId: string) => {
+      const info = billingById.get(deckId)
+      return Boolean(info && info.pricingMode === 'SUBSCRIPTION' && !info.allowed)
+    },
+    [billingById]
+  )
+
   /** 유료인데 아직 쓸 권한이 없으면 구독이 선행되어야 한다 */
   const needsSubscription = useCallback(
     (deckId: string) => {
@@ -317,9 +326,13 @@ export function MyDeckClient({
                 <CardHeader className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <DeckCardTitle deck={deck} />
-                    <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">
-                      사용 중
-                    </Badge>
+                    {isLocked(deck.id) ? (
+                      <Badge variant="destructive">이용 중지됨</Badge>
+                    ) : (
+                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">
+                        사용 중
+                      </Badge>
+                    )}
                   </div>
                   <CardDescription className="min-h-10">
                     {toDeckMeta(deck.id)?.description ??
@@ -329,12 +342,23 @@ export function MyDeckClient({
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button asChild className="w-full">
-                    <Link href={toDeckHref(deck.id)}>
-                      빠르게 진입
-                      <ExternalLink className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  {isLocked(deck.id) ? (
+                    <Button
+                      className="w-full"
+                      onClick={() => openDeck(deck)}
+                      disabled={!isOwner}
+                      aria-label={`${deck.name} 구독 다시 시작`}
+                    >
+                      구독하고 이용하기
+                    </Button>
+                  ) : (
+                    <Button asChild className="w-full">
+                      <Link href={toDeckHref(deck.id)}>
+                        빠르게 진입
+                        <ExternalLink className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  )}
                   {isOwner && (
                     <Button
                       variant="ghost"
