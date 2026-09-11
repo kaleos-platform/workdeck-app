@@ -2,6 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Card,
   CardContent,
   CardDescription,
@@ -31,6 +39,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
+import { SETTINGS_PAYMENTS_PATH } from '@/lib/deck-routes'
 import {
   CHARGE_STATUS_LABEL,
   formatDate,
@@ -46,8 +55,10 @@ export function PaymentSettingsClient({
   cardRegistered: string | null
   initialError: string | null
 }) {
-  const { data, loading, error, banner, setBanner, isOwner } = useBillingOverview()
+  const { data, loading, error, banner, setBanner, load, isOwner } = useBillingOverview()
   const [cardBusy, setCardBusy] = useState(false)
+  const [confirmRemove, setConfirmRemove] = useState(false)
+  const [removeBusy, setRemoveBusy] = useState(false)
 
   useEffect(() => {
     if (cardRegistered) {
@@ -64,7 +75,10 @@ export function PaymentSettingsClient({
       const res = await fetch('/api/billing/setup', { method: 'POST' })
       const json = await res.json()
       if (!res.ok) {
-        setBanner({ type: 'error', message: json?.error ?? '카드 등록 준비에 실패했습니다' })
+        setBanner({
+          type: 'error',
+          message: json?.message ?? json?.error ?? '카드 등록 준비에 실패했습니다',
+        })
         return
       }
       const { customerKey, clientKey } = json as { customerKey: string; clientKey: string }
@@ -75,7 +89,7 @@ export function PaymentSettingsClient({
       await toss.payment({ customerKey }).requestBillingAuth({
         method: 'CARD',
         successUrl: `${origin}/api/billing/toss/callback`,
-        failUrl: `${origin}/settings/billing?error=${encodeURIComponent('카드등록취소')}`,
+        failUrl: `${origin}${SETTINGS_PAYMENTS_PATH}?error=${encodeURIComponent('카드등록취소')}`,
       })
     } catch (e) {
       setBanner({
@@ -86,6 +100,36 @@ export function PaymentSettingsClient({
       setCardBusy(false)
     }
   }, [setBanner])
+
+  const handleRemoveCard = useCallback(async () => {
+    setRemoveBusy(true)
+    setBanner(null)
+    try {
+      const res = await fetch('/api/billing/methods', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const json = (await res.json().catch(() => null)) as {
+        message?: string
+        error?: string
+      } | null
+      if (!res.ok) {
+        setBanner({
+          type: 'error',
+          message: json?.message ?? json?.error ?? '결제수단 삭제에 실패했습니다',
+        })
+        return
+      }
+      setBanner({ type: 'success', message: '결제수단을 삭제했습니다' })
+      setConfirmRemove(false)
+      await load()
+    } catch {
+      setBanner({ type: 'error', message: '결제수단 삭제에 실패했습니다' })
+    } finally {
+      setRemoveBusy(false)
+    }
+  }, [load, setBanner])
 
   if (loading) {
     return (
@@ -162,6 +206,16 @@ export function PaymentSettingsClient({
                 {cardBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {method ? '카드 변경' : '카드 등록'}
               </Button>
+              {method && (
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => setConfirmRemove(true)}
+                  disabled={removeBusy}
+                >
+                  카드 삭제
+                </Button>
+              )}
             </CardFooter>
           )}
         </Card>
@@ -252,6 +306,30 @@ export function PaymentSettingsClient({
           </CardContent>
         </Card>
       </div>
+
+      <Dialog
+        open={confirmRemove}
+        onOpenChange={(open) => !open && !removeBusy && setConfirmRemove(false)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>결제수단을 삭제할까요?</DialogTitle>
+            <DialogDescription>
+              등록된 카드 정보를 삭제하고 결제 권한(빌링키)도 함께 폐기합니다. 다시 결제하려면
+              카드를 새로 등록해야 합니다. 구독 중인 업무가 있으면 삭제할 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConfirmRemove(false)} disabled={removeBusy}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={handleRemoveCard} disabled={removeBusy}>
+              {removeBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              카드 삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   )
 }

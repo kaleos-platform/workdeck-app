@@ -132,6 +132,45 @@ export async function registerBillingMethod(spaceId: string, authKey: string) {
 }
 
 // 구독 시작(또는 만료 상태에서 재시작): deck 선택 → 첫 결제 즉시 승인 → ACTIVE
+/**
+ * 결제수단 삭제. 빌링키는 결제를 실행할 수 있는 자격증명이므로 DB 행만 지우지 않고
+ * PG 쪽에서도 폐기한다. 구독이 살아 있는데 지우면 다음 정기결제가 실패해 의도치 않은
+ * 해지로 이어지므로, 청구 대상이 남아 있으면 막고 먼저 해지하게 한다.
+ */
+export async function removeBillingMethod(spaceId: string, methodId: string | null) {
+  const method = methodId
+    ? await prisma.billingMethod.findFirst({ where: { id: methodId, spaceId } })
+    : await prisma.billingMethod.findFirst({ where: { spaceId, isDefault: true } })
+  if (!method) throw new BillingError('등록된 결제수단이 없습니다', 404)
+
+  const subscription = await prisma.spaceSubscription.findUnique({
+    where: { spaceId },
+    include: { items: { where: { status: { in: ['ACTIVE', 'CANCEL_AT_PERIOD_END'] } } } },
+  })
+  const hasBillableItem =
+    subscription &&
+    !subscription.exemptFlag &&
+    (subscription.status === 'ACTIVE' || subscription.status === 'PAST_DUE') &&
+    subscription.items.some((item) => item.status === 'ACTIVE')
+  if (hasBillableItem) {
+    throw new BillingError(
+      '구독 중인 업무가 있어 결제수단을 삭제할 수 없습니다 — 먼저 구독을 해지하세요',
+      409
+    )
+  }
+
+  // PG 폐기가 실패해도 사용자에게는 삭제를 보장해야 하므로 DB 삭제는 진행한다.
+  // (남은 빌링키는 결제 시도 자체가 없으므로 사용되지 않는다.)
+  try {
+    const billingKey = decryptPii(method.billingKey, method.billingKeyIv)
+    await getBillingProvider().deleteBillingKey(billingKey)
+  } catch (e) {
+    console.error('[billing] 빌링키 폐기 실패 — DB 행은 삭제한다', e)
+  }
+
+  await prisma.billingMethod.delete({ where: { id: method.id } })
+}
+
 export async function startSubscription(spaceId: string, deckIds: string[]) {
   if (deckIds.length === 0) throw new BillingError('구독할 업무를 선택하세요', 400)
   const products = await loadProducts(deckIds)

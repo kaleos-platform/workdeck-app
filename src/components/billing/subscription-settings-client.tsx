@@ -50,7 +50,10 @@ export function SubscriptionSettingsClient() {
       })
       const json = await res.json()
       if (!res.ok) {
-        setBanner({ type: 'error', message: json?.error ?? '구독 시작에 실패했습니다' })
+        setBanner({
+          type: 'error',
+          message: json?.message ?? json?.error ?? '구독 시작에 실패했습니다',
+        })
         return
       }
       setBanner({ type: 'success', message: '구독이 시작되었습니다' })
@@ -75,7 +78,10 @@ export function SubscriptionSettingsClient() {
         })
         const json = await res.json()
         if (!res.ok) {
-          setBanner({ type: 'error', message: json?.error ?? '업무 추가에 실패했습니다' })
+          setBanner({
+            type: 'error',
+            message: json?.message ?? json?.error ?? '업무 추가에 실패했습니다',
+          })
           return
         }
         const { prorated, amount } = json as { prorated: boolean; amount: number }
@@ -107,7 +113,10 @@ export function SubscriptionSettingsClient() {
         })
         const json = await res.json()
         if (!res.ok) {
-          setBanner({ type: 'error', message: json?.error ?? '해지에 실패했습니다' })
+          setBanner({
+            type: 'error',
+            message: json?.message ?? json?.error ?? '해지에 실패했습니다',
+          })
           return
         }
         const { effectiveAt } = json as { effectiveAt: string | null }

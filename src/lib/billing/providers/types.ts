@@ -29,6 +29,8 @@ export interface CancelParams {
 export interface BillingProvider {
   readonly id: string // "toss"
   issueBillingKey(authKey: string, customerKey: string): Promise<IssueBillingKeyResult>
+  /** 더 이상 쓰지 않는 빌링키 폐기 — 결제 자격증명을 PG 쪽에도 남기지 않는다 */
+  deleteBillingKey(billingKey: string): Promise<void>
   charge(params: ChargeParams): Promise<ChargeResult>
   cancel(params: CancelParams): Promise<void>
   // 웹훅 페이로드에서 (orderId, status) 추출. 위조 방지는 상태를 신뢰하지 않고
