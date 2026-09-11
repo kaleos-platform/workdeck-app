@@ -123,10 +123,10 @@ interface Order {
 }
 
 // 주요 필드 폭 — table-fixed 에서만 유효하다. td 의 max-w 는 브라우저가 무시하므로 쓰지 않는다.
-const COL_RECIPIENT = 'w-[110px]'
-const COL_PHONE = 'w-[140px]'
-const COL_ADDRESS = 'w-[260px]'
-const COL_MESSAGE = 'w-[170px]'
+// 쌍을 이루는 필드는 한 컬럼에 2줄로 묶어 총 폭을 줄인다(받는분+전화, 주문번호+주문일자).
+const COL_RECIPIENT = 'w-[112px]'
+const COL_ADDRESS = 'w-[165px]'
+const COL_MESSAGE = 'w-[100px]'
 // 가로 스크롤 중에도 행을 식별할 수 있도록 받는분 컬럼을 왼쪽에 고정
 const STICKY_RECIPIENT = 'sticky left-0 bg-background'
 
@@ -264,19 +264,25 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     }
   }
 
-  // PII 셀 렌더링 (길면 2줄 clamp + 툴팁으로 전체 확인)
-  const renderPiiCell = (orderId: string, field: keyof DecryptedPii, maskedValue: string) => {
-    const decrypted = decryptedRows[orderId]
-    const isDecrypting = decryptingId === orderId
-    const value = decrypted ? decrypted[field] : maskedValue
+  // 받는분 셀 — 이름/전화를 2줄로 묶는다. 복호화는 행 단위라 눈 아이콘은 행당 하나면 충분하다.
+  const renderRecipientCell = (order: Order) => {
+    const decrypted = decryptedRows[order.id]
+    const isDecrypting = decryptingId === order.id
+    const name = decrypted ? decrypted.recipientName : order.recipientName
+    const phone = decrypted ? decrypted.phone : order.phone
     return (
       <div className="flex items-start gap-1">
-        <span className="line-clamp-2 text-xs break-keep" title={value}>
-          {value}
-        </span>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-xs" title={name}>
+            {name}
+          </div>
+          <div className="truncate text-[11px] text-muted-foreground" title={phone}>
+            {phone}
+          </div>
+        </div>
         <button
           className="mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-          onClick={() => handleDecryptInline(orderId)}
+          onClick={() => handleDecryptInline(order.id)}
           disabled={isDecrypting}
           title={decrypted ? '개인정보 숨기기' : '개인정보 보기'}
         >
@@ -407,35 +413,33 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
 
       {/* 테이블 */}
       <div className="rounded-md border">
-        <Table className="min-w-[1700px] table-fixed">
+        <Table className="min-w-[1100px] table-fixed">
           <TableHeader>
             <TableRow>
               <TableHead className={`text-xs ${COL_RECIPIENT} ${STICKY_RECIPIENT} z-30`}>
-                받는분
+                받는분 · 전화
               </TableHead>
-              <TableHead className={`text-xs ${COL_PHONE}`}>전화</TableHead>
               <TableHead className={`text-xs ${COL_ADDRESS}`}>주소</TableHead>
               <TableHead className={`text-xs ${COL_MESSAGE}`}>배송메시지</TableHead>
-              <TableHead className="w-[110px] text-xs">판매채널</TableHead>
-              <TableHead className="w-[130px] text-xs">주문번호</TableHead>
-              <TableHead className="w-[100px] text-right text-xs">결제금액</TableHead>
-              <TableHead className="w-[260px] text-xs">상품</TableHead>
-              <TableHead className="w-[70px] text-xs">수량</TableHead>
-              <TableHead className="w-[100px] text-xs">주문일자</TableHead>
-              <TableHead className="w-[150px] text-xs">메모</TableHead>
-              <TableHead className="w-[80px] text-xs" />
+              <TableHead className="w-[92px] text-xs">판매채널</TableHead>
+              <TableHead className="w-[132px] text-xs">주문번호 · 일자</TableHead>
+              <TableHead className="w-[82px] text-right text-xs">결제금액</TableHead>
+              <TableHead className="w-[210px] text-xs">상품</TableHead>
+              <TableHead className="w-[52px] text-xs">수량</TableHead>
+              <TableHead className="w-[82px] text-xs">메모</TableHead>
+              <TableHead className="w-[68px] text-xs" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={12} className="py-8 text-center text-xs text-muted-foreground">
+                <TableCell colSpan={10} className="py-8 text-center text-xs text-muted-foreground">
                   로딩 중...
                 </TableCell>
               </TableRow>
             ) : filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="py-8 text-center text-xs text-muted-foreground">
+                <TableCell colSpan={10} className="py-8 text-center text-xs text-muted-foreground">
                   주문이 없습니다
                 </TableCell>
               </TableRow>
@@ -443,32 +447,15 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
               filteredOrders.map((order) => (
                 <TableRow key={order.id} className="align-top">
                   <TableCell className={`${COL_RECIPIENT} ${STICKY_RECIPIENT} z-20`}>
-                    {renderPiiCell(order.id, 'recipientName', order.recipientName)}
-                  </TableCell>
-                  <TableCell className={COL_PHONE}>
-                    {renderPiiCell(order.id, 'phone', order.phone)}
+                    {renderRecipientCell(order)}
                   </TableCell>
                   <TableCell className={COL_ADDRESS}>
-                    <div className="flex items-start gap-1">
-                      <span
-                        className="line-clamp-2 text-xs break-keep"
-                        title={decryptedRows[order.id]?.address ?? order.address}
-                      >
-                        {decryptedRows[order.id]?.address ?? order.address}
-                      </span>
-                      <button
-                        className="mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-                        onClick={() => handleDecryptInline(order.id)}
-                        disabled={decryptingId === order.id}
-                        title={decryptedRows[order.id] ? '개인정보 숨기기' : '개인정보 보기'}
-                      >
-                        {decryptedRows[order.id] ? (
-                          <EyeOff className="h-3 w-3" />
-                        ) : (
-                          <Eye className="h-3 w-3" />
-                        )}
-                      </button>
-                    </div>
+                    <span
+                      className="line-clamp-2 text-xs break-keep"
+                      title={decryptedRows[order.id]?.address ?? order.address}
+                    >
+                      {decryptedRows[order.id]?.address ?? order.address}
+                    </span>
                   </TableCell>
                   <TableCell className={COL_MESSAGE}>
                     <span
@@ -491,13 +478,18 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                       '-'
                     )}
                   </TableCell>
-                  <TableCell className="truncate text-xs" title={order.orderNumber ?? ''}>
-                    {order.orderNumber || '-'}
+                  <TableCell className="text-xs">
+                    <div className="truncate" title={order.orderNumber ?? ''}>
+                      {order.orderNumber || '-'}
+                    </div>
+                    <div className="truncate text-[11px] text-muted-foreground">
+                      {formatDate(order.orderDate)}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right text-xs whitespace-nowrap">
                     {formatAmount(order.paymentAmount)}
                   </TableCell>
-                  <TableCell className="w-[260px] align-top">
+                  <TableCell className="w-[210px] align-top">
                     {order.items.length === 0 ? (
                       <span className="text-xs">-</span>
                     ) : (
@@ -544,7 +536,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                       />
                     )}
                   </TableCell>
-                  <TableCell className="w-[70px] align-top">
+                  <TableCell className="w-[52px] align-top">
                     {order.items.length === 0 ? (
                       <span className="text-xs">-</span>
                     ) : (
@@ -555,10 +547,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
                       />
                     )}
                   </TableCell>
-                  <TableCell className="text-xs whitespace-nowrap">
-                    {formatDate(order.orderDate)}
-                  </TableCell>
-                  <TableCell className="w-[150px]">
+                  <TableCell className="w-[82px]">
                     <span className="line-clamp-2 text-xs break-keep" title={order.memo ?? ''}>
                       {order.memo || '-'}
                     </span>
