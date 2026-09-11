@@ -231,12 +231,10 @@ function MethodPreviewCard({ method }: { method: MethodPreview }) {
               <TableRow key={ri}>
                 <TableCell className="text-xs text-muted-foreground">{ri + 1}</TableCell>
                 {method.columnFields.map((col, ci) => (
-                  <TableCell
-                    key={ci}
-                    className="max-w-[240px] truncate text-xs"
-                    title={String(row[col.column] ?? '')}
-                  >
-                    {String(row[col.column] ?? '')}
+                  <TableCell key={ci} className="text-xs">
+                    <div className="max-w-[240px] truncate" title={String(row[col.column] ?? '')}>
+                      {String(row[col.column] ?? '')}
+                    </div>
                   </TableCell>
                 ))}
               </TableRow>

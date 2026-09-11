@@ -237,8 +237,10 @@ export function MappingPresetsManager() {
                       <TableCell className="text-sm text-muted-foreground">
                         {row.institution}
                       </TableCell>
-                      <TableCell className="text-xs break-keep text-muted-foreground">
-                        {summarizeMapping(row.mapping, row.kind)}
+                      <TableCell className="text-xs text-muted-foreground">
+                        <div className="max-w-[320px] break-keep whitespace-normal">
+                          {summarizeMapping(row.mapping, row.kind)}
+                        </div>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {account?.name ?? '—'}

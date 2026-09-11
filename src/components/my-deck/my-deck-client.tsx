@@ -23,6 +23,8 @@ import {
   SELLER_HUB_BASE_PATH,
   SALES_CONTENT_BASE_PATH,
 } from '@/lib/deck-routes'
+import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
+import { buildMarketingUrl } from '@/lib/domain'
 
 type DeckSummary = {
   id: string
@@ -34,7 +36,7 @@ type MyDeckClientProps = {
   spaceName: string
   activeDecks: DeckSummary[]
   availableDecks: DeckSummary[]
-  /** 과금 중(SubscriptionItem ACTIVE)인 deck — 이 업무에만 구독 해지를 노출한다 */
+  /** 과금 중(SubscriptionItem ACTIVE)인 deck — 이 업무는 구독 해지, 나머지는 사용 중지 */
   subscribedDeckIds: string[]
   isOwner: boolean
   cardSummary: string | null
@@ -56,6 +58,50 @@ const DECK_ENTRY: Record<string, string> = {
 
 function toDeckHref(deckId: string) {
   return DECK_ENTRY[deckId] ?? `/d/${deckId}`
+}
+
+/** deck id가 DECK_META에 등록된 variant일 때만 메타 반환 (workdeck 제외) */
+function toDeckMeta(deckId: string) {
+  if (deckId === 'workdeck') return null
+  return deckId in DECK_META ? DECK_META[deckId as DeckVariant] : null
+}
+
+function DeckCardTitle({ deck }: { deck: DeckSummary }) {
+  const meta = toDeckMeta(deck.id)
+  return (
+    <div className="flex items-center gap-2.5">
+      {meta && (
+        <div
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${meta.gradient}`}
+        >
+          <meta.icon className="h-4 w-4 text-white" />
+        </div>
+      )}
+      <CardTitle className="text-base">{deck.name}</CardTitle>
+    </div>
+  )
+}
+
+function DeckIntroLink({ deck }: { deck: DeckSummary }) {
+  if (!toDeckMeta(deck.id)) return null
+  return (
+    <Button
+      asChild
+      variant="ghost"
+      size="sm"
+      className="w-full text-muted-foreground hover:text-foreground"
+    >
+      <a
+        href={buildMarketingUrl(`/${deck.id}`)}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${deck.name} 소개 페이지 새 탭에서 열기`}
+      >
+        소개 보기
+        <ExternalLink className="h-3.5 w-3.5" />
+      </a>
+    </Button>
+  )
 }
 
 function formatDate(value: string) {
@@ -194,35 +240,52 @@ export function MyDeckClient({
     openDeck(deck)
   }, [subscribeParam, availableDecks, openDeck])
 
+  /**
+   * 과금 중이면 구독 해지(기간 말까지 이용), 아니면 업무 사용 중지(목록에서 내림).
+   * 무료 제공·유예·Trial 업무는 해지할 구독 아이템이 없어 billing API 가 404 를 낸다.
+   */
   async function confirmCancelDeck() {
     if (!cancelTarget || isCanceling) return
+    const isSubscribed = subscribed.has(cancelTarget.id)
     setIsCanceling(true)
 
     try {
-      const response = await fetch('/api/billing/subscription/decks', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deckAppId: cancelTarget.id }),
-      })
+      const response = await fetch(
+        isSubscribed ? '/api/billing/subscription/decks' : '/api/spaces/decks',
+        {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deckAppId: cancelTarget.id }),
+        }
+      )
 
       const payload = (await response.json().catch(() => null)) as {
         message?: string
+        error?: string
         effectiveAt?: string | null
       } | null
 
       if (!response.ok) {
-        throw new Error(payload?.message ?? '구독 해지에 실패했습니다')
+        throw new Error(
+          payload?.message ??
+            payload?.error ??
+            (isSubscribed ? '구독 해지에 실패했습니다' : '사용 중지에 실패했습니다')
+        )
       }
 
-      toast.success(
-        payload?.effectiveAt
-          ? `${cancelTarget.name} 구독을 해지했습니다. ${formatDate(payload.effectiveAt)}까지 이용할 수 있습니다.`
-          : `${cancelTarget.name} 구독을 해지했습니다.`
-      )
+      if (isSubscribed) {
+        toast.success(
+          payload?.effectiveAt
+            ? `${cancelTarget.name} 구독을 해지했습니다. ${formatDate(payload.effectiveAt)}까지 이용할 수 있습니다.`
+            : `${cancelTarget.name} 구독을 해지했습니다.`
+        )
+      } else {
+        toast.success(`${cancelTarget.name} 사용을 중지했습니다. 언제든 다시 추가할 수 있습니다.`)
+      }
       setCancelTarget(null)
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '구독 해지 중 오류가 발생했습니다')
+      toast.error(error instanceof Error ? error.message : '처리 중 오류가 발생했습니다')
     } finally {
       setIsCanceling(false)
     }
@@ -259,13 +322,15 @@ export function MyDeckClient({
               <Card key={deck.id} className="gap-4">
                 <CardHeader className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <CardTitle className="text-base">{deck.name}</CardTitle>
+                    <DeckCardTitle deck={deck} />
                     <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">
                       사용 중
                     </Badge>
                   </div>
                   <CardDescription className="min-h-10">
-                    {deck.description ?? '상세 설명이 아직 등록되지 않았습니다.'}
+                    {toDeckMeta(deck.id)?.description ??
+                      deck.description ??
+                      '상세 설명이 아직 등록되지 않았습니다.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -275,15 +340,16 @@ export function MyDeckClient({
                       <ExternalLink className="h-4 w-4" />
                     </Link>
                   </Button>
-                  {subscribed.has(deck.id) && (
+                  <DeckIntroLink deck={deck} />
+                  {isOwner && (
                     <Button
                       variant="ghost"
                       size="sm"
                       className="w-full text-muted-foreground hover:text-foreground"
                       onClick={() => setCancelTarget(deck)}
-                      aria-label={`${deck.name} 구독 해지 확인 열기`}
+                      aria-label={`${deck.name} ${subscribed.has(deck.id) ? '구독 해지' : '사용 중지'} 확인 열기`}
                     >
-                      구독 해지
+                      {subscribed.has(deck.id) ? '구독 해지' : '사용 중지'}
                     </Button>
                   )}
                 </CardContent>
@@ -313,14 +379,16 @@ export function MyDeckClient({
               <Card key={deck.id} className="gap-4">
                 <CardHeader className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
-                    <CardTitle className="text-base">{deck.name}</CardTitle>
+                    <DeckCardTitle deck={deck} />
                     <Badge variant="outline">미사용</Badge>
                   </div>
                   <CardDescription className="min-h-10">
-                    {deck.description ?? '상세 설명이 아직 등록되지 않았습니다.'}
+                    {toDeckMeta(deck.id)?.description ??
+                      deck.description ??
+                      '상세 설명이 아직 등록되지 않았습니다.'}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-2">
                   <Button
                     variant="outline"
                     className="w-full"
@@ -330,6 +398,7 @@ export function MyDeckClient({
                     <PlusCircle className="h-4 w-4" />
                     추가하기
                   </Button>
+                  <DeckIntroLink deck={deck} />
                 </CardContent>
               </Card>
             ))}
@@ -362,11 +431,17 @@ export function MyDeckClient({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>구독을 해지할까요?</DialogTitle>
+            <DialogTitle>
+              {cancelTarget && subscribed.has(cancelTarget.id)
+                ? '구독을 해지할까요?'
+                : '사용을 중지할까요?'}
+            </DialogTitle>
             <DialogDescription>
-              {cancelTarget
-                ? `${cancelTarget.name} 구독을 해지하면 이미 결제한 이용 기간의 마지막 날까지는 그대로 사용할 수 있고, 다음 주기부터 요금이 청구되지 않습니다. 기존 데이터는 삭제되지 않습니다.`
-                : '해지할 업무를 확인해주세요.'}
+              {!cancelTarget
+                ? '확인할 업무를 선택해주세요.'
+                : subscribed.has(cancelTarget.id)
+                  ? `${cancelTarget.name} 구독을 해지하면 이미 결제한 이용 기간의 마지막 날까지는 그대로 사용할 수 있고, 다음 주기부터 요금이 청구되지 않습니다. 기존 데이터는 삭제되지 않습니다.`
+                  : `${cancelTarget.name}을(를) 사용 중인 업무에서 내립니다. 기존 데이터는 삭제되지 않으며 언제든 다시 추가할 수 있습니다.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -378,7 +453,11 @@ export function MyDeckClient({
               onClick={confirmCancelDeck}
               disabled={!cancelTarget || isCanceling}
             >
-              {isCanceling ? '해지 중...' : '구독 해지'}
+              {isCanceling
+                ? '처리 중...'
+                : cancelTarget && subscribed.has(cancelTarget.id)
+                  ? '구독 해지'
+                  : '사용 중지'}
             </Button>
           </DialogFooter>
         </DialogContent>

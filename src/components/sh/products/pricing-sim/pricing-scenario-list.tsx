@@ -259,18 +259,22 @@ export function PricingScenarioList() {
 
       {/* 시나리오 테이블 */}
       <div className="rounded-md border">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>이름</TableHead>
-              <TableHead>상품</TableHead>
-              <TableHead className="text-right">채널</TableHead>
-              <TableHead className="text-right">목표 마진</TableHead>
-              <TableHead className="text-right">소비자가</TableHead>
-              <TableHead className="text-right">판매가</TableHead>
-              <TableHead className="text-right">소비자가 대비 할인율</TableHead>
-              <TableHead>수정일</TableHead>
-              <TableHead className="w-16 text-right">작업</TableHead>
+              <TableHead className="w-[164px]">이름</TableHead>
+              <TableHead className="w-[144px]">상품</TableHead>
+              <TableHead className="w-[132px] text-right">채널</TableHead>
+              <TableHead className="w-[72px] text-right leading-tight whitespace-normal">
+                목표 마진
+              </TableHead>
+              <TableHead className="w-[84px] text-right">소비자가</TableHead>
+              <TableHead className="w-[104px] text-right">판매가</TableHead>
+              <TableHead className="w-[80px] text-right leading-tight whitespace-normal">
+                소비자가 대비 할인율
+              </TableHead>
+              <TableHead className="w-[80px]">수정일</TableHead>
+              <TableHead className="w-11 text-right">작업</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -327,10 +331,17 @@ export function PricingScenarioList() {
                               )}
                             </button>
                           )}
-                          <div>
-                            <div className="font-medium">{row.name}</div>
+                          <div className="min-w-0">
+                            <div className="truncate font-medium" title={row.name}>
+                              {row.name}
+                            </div>
                             {row.memo && (
-                              <div className="text-xs text-muted-foreground">{row.memo}</div>
+                              <div
+                                className="truncate text-xs text-muted-foreground"
+                                title={row.memo}
+                              >
+                                {row.memo}
+                              </div>
                             )}
                           </div>
                           {expandable && (
@@ -341,17 +352,21 @@ export function PricingScenarioList() {
                         </div>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex min-w-0 items-center gap-1.5">
                           {row.summary?.mode === 'new' && (
                             <Badge variant="secondary" className="shrink-0 text-[10px]">
                               신규 상품
                             </Badge>
                           )}
-                          <span className="truncate">{productLabel}</span>
+                          <span className="truncate" title={productLabel}>
+                            {productLabel}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground tabular-nums">
-                        {joinedOrDash(row.channelNames)}
+                        <span className="block truncate" title={joinedOrDash(row.channelNames)}>
+                          {joinedOrDash(row.channelNames)}
+                        </span>
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
                         {row.summary ? `${row.summary.targetMarginPct}%` : '—'}
@@ -396,7 +411,7 @@ export function PricingScenarioList() {
                           onClick={goDetail}
                           className="cursor-pointer bg-muted/30 hover:bg-muted/50"
                         >
-                          <TableCell className="pl-9 text-sm text-muted-foreground">
+                          <TableCell className="truncate pl-9 text-sm text-muted-foreground">
                             {v.name}
                           </TableCell>
                           <TableCell />
