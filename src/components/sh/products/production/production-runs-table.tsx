@@ -596,7 +596,7 @@ export function ProductionRunsTable() {
               <SortableHead
                 field="memo"
                 label="메모"
-                className="w-[280px]"
+                className="w-[200px]"
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
@@ -738,11 +738,10 @@ export function ProductionRunsTable() {
                           <p className="font-medium">{run.runNo}</p>
                         </div>
                       </TableCell>
-                      <TableCell
-                        className="max-w-[280px] truncate text-sm text-muted-foreground"
-                        title={run.memo ?? undefined}
-                      >
-                        {run.memo ?? '-'}
+                      <TableCell className="text-sm text-muted-foreground">
+                        <div className="max-w-[200px] truncate" title={run.memo ?? undefined}>
+                          {run.memo ?? '-'}
+                        </div>
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <StatusTransitionMenu

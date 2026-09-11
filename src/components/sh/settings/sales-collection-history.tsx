@@ -354,9 +354,12 @@ export function SalesCollectionHistory() {
                         <TableCell className="text-right">
                           {(job.outboundCount ?? 0).toLocaleString()}건
                         </TableCell>
-                        <TableCell className="max-w-[260px]">
+                        <TableCell>
                           {job.error ? (
-                            <span className="truncate text-sm text-destructive" title={job.error}>
+                            <span
+                              className="block max-w-[260px] truncate text-sm text-destructive"
+                              title={job.error}
+                            >
                               {job.error}
                             </span>
                           ) : ACTIVE_STATUSES.includes(job.status) ? (
