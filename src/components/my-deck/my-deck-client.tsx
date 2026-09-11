@@ -34,7 +34,7 @@ type MyDeckClientProps = {
   spaceName: string
   activeDecks: DeckSummary[]
   availableDecks: DeckSummary[]
-  /** 과금 중(SubscriptionItem ACTIVE)인 deck — 이 업무에만 구독 해제를 노출한다 */
+  /** 과금 중(SubscriptionItem ACTIVE)인 deck — 이 업무에만 구독 해지를 노출한다 */
   subscribedDeckIds: string[]
   isOwner: boolean
   cardSummary: string | null
@@ -211,18 +211,18 @@ export function MyDeckClient({
       } | null
 
       if (!response.ok) {
-        throw new Error(payload?.message ?? '구독 해제에 실패했습니다')
+        throw new Error(payload?.message ?? '구독 해지에 실패했습니다')
       }
 
       toast.success(
         payload?.effectiveAt
-          ? `${cancelTarget.name} 구독을 해제했습니다. ${formatDate(payload.effectiveAt)}까지 이용할 수 있습니다.`
-          : `${cancelTarget.name} 구독을 해제했습니다.`
+          ? `${cancelTarget.name} 구독을 해지했습니다. ${formatDate(payload.effectiveAt)}까지 이용할 수 있습니다.`
+          : `${cancelTarget.name} 구독을 해지했습니다.`
       )
       setCancelTarget(null)
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '구독 해제 중 오류가 발생했습니다')
+      toast.error(error instanceof Error ? error.message : '구독 해지 중 오류가 발생했습니다')
     } finally {
       setIsCanceling(false)
     }
@@ -281,9 +281,9 @@ export function MyDeckClient({
                       size="sm"
                       className="w-full text-muted-foreground hover:text-foreground"
                       onClick={() => setCancelTarget(deck)}
-                      aria-label={`${deck.name} 구독 해제 확인 열기`}
+                      aria-label={`${deck.name} 구독 해지 확인 열기`}
                     >
-                      구독 해제
+                      구독 해지
                     </Button>
                   )}
                 </CardContent>
@@ -362,11 +362,11 @@ export function MyDeckClient({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>구독을 해제할까요?</DialogTitle>
+            <DialogTitle>구독을 해지할까요?</DialogTitle>
             <DialogDescription>
               {cancelTarget
-                ? `${cancelTarget.name} 구독을 해제하면 이미 결제한 이용 기간의 마지막 날까지는 그대로 사용할 수 있고, 다음 주기부터 요금이 청구되지 않습니다. 기존 데이터는 삭제되지 않습니다.`
-                : '해제할 업무를 확인해주세요.'}
+                ? `${cancelTarget.name} 구독을 해지하면 이미 결제한 이용 기간의 마지막 날까지는 그대로 사용할 수 있고, 다음 주기부터 요금이 청구되지 않습니다. 기존 데이터는 삭제되지 않습니다.`
+                : '해지할 업무를 확인해주세요.'}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -378,7 +378,7 @@ export function MyDeckClient({
               onClick={confirmCancelDeck}
               disabled={!cancelTarget || isCanceling}
             >
-              {isCanceling ? '해제 중...' : '구독 해제'}
+              {isCanceling ? '해지 중...' : '구독 해지'}
             </Button>
           </DialogFooter>
         </DialogContent>
