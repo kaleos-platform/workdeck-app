@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Trash2 } from 'lucide-react'
+import { Copy, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -103,9 +104,11 @@ export function OrderEditDialog({
   onSaved,
   onDeleted,
 }: Props) {
+  const router = useRouter()
   const [form, setForm] = useState<EditForm>(() => buildInitialForm(initial))
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [cloning, setCloning] = useState(false)
 
   // 열릴 때마다 폼 초기화 + PII 복호화 로드
   useEffect(() => {
@@ -188,6 +191,22 @@ export function OrderEditDialog({
       toast.error(err instanceof Error ? err.message : '수정 실패')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // 재등록 — 이 주문을 DRAFT 묶음에 복제 후 등록 화면으로 이동
+  const handleReregister = async () => {
+    setCloning(true)
+    try {
+      const res = await fetch(`/api/sh/shipping/orders/${orderId}/clone`, { method: 'POST' })
+      if (!res.ok) throw new Error('재등록 실패')
+      toast.success('배송 등록 화면에 복제되었습니다')
+      onOpenChange(false)
+      router.push('/d/seller-ops/shipping/registration')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '재등록 실패')
+    } finally {
+      setCloning(false)
     }
   }
 
@@ -382,19 +401,28 @@ export function OrderEditDialog({
           </div>
         )}
         <DialogFooter className="flex justify-between sm:justify-between">
-          {onDeleted ? (
+          <div className="flex gap-2">
+            {onDeleted && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDelete}
+                disabled={loading || saving || cloning}
+              >
+                <Trash2 className="mr-1 h-3.5 w-3.5" />
+                삭제
+              </Button>
+            )}
             <Button
-              variant="destructive"
+              variant="outline"
               size="sm"
-              onClick={handleDelete}
-              disabled={loading || saving}
+              onClick={handleReregister}
+              disabled={loading || saving || cloning}
             >
-              <Trash2 className="mr-1 h-3.5 w-3.5" />
-              삭제
+              <Copy className="mr-1 h-3.5 w-3.5" />
+              {cloning ? '복제 중...' : '배송 등록에 재등록'}
             </Button>
-          ) : (
-            <span />
-          )}
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               취소
