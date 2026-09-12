@@ -12,7 +12,7 @@ import { prisma } from '@/lib/prisma'
 import { rebuildDerivedSnapshots } from '@/lib/finance/snapshot-rebuild'
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 

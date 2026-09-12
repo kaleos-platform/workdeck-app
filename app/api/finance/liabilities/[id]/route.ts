@@ -5,7 +5,7 @@ import { toNum, toNumOrNull } from '@/lib/finance/serialize'
 
 // 수정: 부채 부분 업데이트
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
@@ -96,7 +96,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 // 삭제: 부채 제거
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
