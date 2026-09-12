@@ -15,6 +15,7 @@ import {
   prorateOrderId,
   type ChargeLine,
 } from './pricing'
+import { DECK_CATALOG_DEFAULTS } from './catalog-defaults'
 
 // dunning: 결제일 경과 +1·+3·+5일에 재시도, 3회 실패 시 EXPIRED
 const RETRY_OFFSETS_DAYS = [1, 3, 5]
@@ -30,8 +31,14 @@ function addMonthClamped(base: Date): Date {
   return d
 }
 
+// 카드 명세서·결제 내역에 찍히는 이름 — deck id(slug)가 아니라 판매 상품명을 쓴다.
+// 마케팅 상품 페이지의 상품명과 같아야 이용자가 결제 내역을 대조할 수 있다.
+function deckLabel(deckAppId: string): string {
+  return DECK_CATALOG_DEFAULTS.find((d) => d.id === deckAppId)?.name ?? deckAppId
+}
+
 function orderName(lines: ChargeLine[]): string {
-  const first = lines[0]?.deckAppId ?? 'workdeck'
+  const first = deckLabel(lines[0]?.deckAppId ?? 'workdeck')
   return lines.length > 1 ? `워크덱 ${first} 외 ${lines.length - 1}건` : `워크덱 ${first}`
 }
 
@@ -348,7 +355,7 @@ export async function addDeck(spaceId: string, deckAppId: string) {
     billingKey: method.decryptedBillingKey,
     customerKey: subscription.customerKey!,
     orderId,
-    orderName: `워크덱 ${deckAppId} (일할)`,
+    orderName: `워크덱 ${deckLabel(deckAppId)} (일할)`,
     amount: amounts.amount,
   })
 
