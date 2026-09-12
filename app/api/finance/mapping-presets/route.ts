@@ -50,7 +50,7 @@ export async function GET() {
 
 // 저장: (spaceId, name) upsert
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 

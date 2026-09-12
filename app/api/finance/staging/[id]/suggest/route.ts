@@ -12,7 +12,7 @@ import { toNum } from '@/lib/finance/serialize'
 import { suggestCategory, type SuggestCandidate } from '@/lib/finance/ai-suggest'
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
   const { id } = await params

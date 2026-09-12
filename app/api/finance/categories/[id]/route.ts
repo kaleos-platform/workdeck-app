@@ -12,7 +12,7 @@ function parseFlowRole(v: unknown): FinFlowRole | null | undefined {
 
 // 수정: alias/groupLabel/isActive는 isSystem 무관하게 허용, name은 isSystem=true 금지
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
@@ -97,7 +97,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 // 삭제: isSystem=true 금지, children은 cascade, transactions는 SetNull
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
