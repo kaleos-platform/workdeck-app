@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { getActionDefinition } from './registry'
 
 // 결정 결과 — API·Slack 핸들러가 그대로 응답에 쓴다.
@@ -8,6 +9,8 @@ export type DecisionOutcome =
   | { ok: false; status: 'REJECTED' }
   // 이미 다른 요청이 처리했거나 만료됨 — 경합 패자/무효 요청.
   | { ok: false; status: 'CONFLICT'; message: string }
+  // 구독 만료(LOCKED) Space — 결정하지 않고 PENDING 그대로 둔다.
+  | { ok: false; status: 'BLOCKED'; message: string }
 
 /**
  * 액션 승인 + 즉시 실행. 동시 승인 경합을 조건부 update로 차단한다.
@@ -26,6 +29,19 @@ export async function approveAndExecute(
   deciderId: string
 ): Promise<DecisionOutcome> {
   const now = new Date()
+
+  // 승인 게이트 **이전**의 entitlement 검사 — MCP·Slack·웹 승인이 모두 이 함수를 지난다.
+  // 여기서만 막으면 UI 가드가 없는 외부 토큰 경로까지 한 번에 닫힌다.
+  // 상태를 바꾸지 않고 PENDING으로 남기므로 재구독 후 그대로 승인할 수 있고,
+  // 승인 게이트의 "updateMany count===1" 불변식도 건드리지 않는다.
+  const pre = await prisma.agentPendingAction.findUnique({
+    where: { id: actionId },
+    select: { status: true, spaceId: true, deckKey: true },
+  })
+  if (pre?.status === 'PENDING') {
+    const blocked = await assertDeckWritable(pre.spaceId, pre.deckKey)
+    if (blocked) return { ok: false, status: 'BLOCKED', message: blocked }
+  }
 
   // 게이트: PENDING인 경우에만 APPROVED로 전이. 경합 패자는 count=0.
   const gate = await prisma.agentPendingAction.updateMany({

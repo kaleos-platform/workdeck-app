@@ -78,6 +78,11 @@ export async function PATCH(
       ? await approveAndExecute(actionId, user.id)
       : await rejectAction(actionId, user.id)
 
+  // 구독 만료로 차단 — 아무 상태도 바뀌지 않았으므로 Slack 동기화도 하지 않는다.
+  if (outcome.status === 'BLOCKED') {
+    return NextResponse.json({ outcome }, { status: 402 })
+  }
+
   // 결정 후 Slack 원본 메시지를 최종 상태로 동기화(sync 내부가 무해 — no-op·실패 흡수).
   await syncSlackDecision(actionId)
 
