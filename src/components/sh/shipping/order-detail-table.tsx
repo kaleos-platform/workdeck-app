@@ -30,6 +30,8 @@ import {
 } from '@/components/sh/shipping/order-product-fields'
 import { ProductMatchDialog } from '@/components/sh/shipping/product-match-dialog'
 import { OrderEditDialog } from '@/components/sh/shipping/order-edit-dialog'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 interface OrderItemOption {
   id: string
@@ -122,18 +124,47 @@ interface Order {
   createdAt: string
 }
 
-// 주요 필드 폭 — table-fixed 에서만 유효하다. td 의 max-w 는 브라우저가 무시하므로 쓰지 않는다.
+// 본문·헤더 공용 텍스트 크기. 2xl(1536px+)부터만 키운다 — 1440px 무스크롤을 지키기 위함.
+// 상품·수량 셀(order-product-fields)은 배송 등록과 공유하는 컴포넌트라 여기서 제외한다.
+const CELL_TEXT = 'text-xs 2xl:text-[13px]'
+
+// 컬럼 폭 — table-fixed 에서만 유효하다. td 의 max-w 는 브라우저가 무시하므로 쓰지 않는다.
 // 쌍을 이루는 필드는 한 컬럼에 2줄로 묶어 총 폭을 줄인다(받는분+전화, 주문번호+주문일자).
-const COL_RECIPIENT = 'w-[112px]'
-const COL_ADDRESS = 'w-[165px]'
-const COL_MESSAGE = 'w-[100px]'
-// 가로 스크롤 중에도 행을 식별할 수 있도록 받는분 컬럼을 왼쪽에 고정
+// 폭은 "흔한 값이 안 잘리는 정도"로만 잡는다. 채널명 등은 길이 제한이 없어 어떤 폭도 언젠가
+// 넘치므로, 넘쳤을 때 깨지지 않는 구조(안쪽 요소 truncate + 툴팁)가 본체다.
+const COL_RECIPIENT = 'w-[96px] 2xl:w-[104px]'
+const COL_ADDRESS = 'w-[186px] 2xl:w-[202px]'
+const COL_MESSAGE = 'w-[84px] 2xl:w-[90px]'
+const COL_CHANNEL = 'w-[110px] 2xl:w-[124px]'
+const COL_ORDER = 'w-[124px] 2xl:w-[134px]'
+const COL_AMOUNT = 'w-[78px] 2xl:w-[84px]'
+const COL_MEMO = 'w-[64px] 2xl:w-[70px]'
+// 버튼 3개(28px) + gap = 88px. padding 16px 를 더해 106px 이상이어야 셀 밖으로 넘치지 않는다.
+const COL_ACTIONS = 'w-[106px]'
+// 가로 스크롤 중에도 행을 식별하고 액션을 쓸 수 있도록 양끝 컬럼을 고정한다.
+// 아래로 지나가는 컬럼이 비쳐 보이면 안 되므로 배경은 반드시 불투명해야 한다.
 const STICKY_RECIPIENT = 'sticky left-0 bg-background'
+const STICKY_ACTIONS = 'sticky right-0 bg-background'
 
 interface DecryptedPii {
   recipientName: string
   phone: string
   address: string
+}
+
+// 잘릴 수 있는 값 — 마우스를 올리면 전문을 보여준다.
+// 네이티브 title 은 1초 지연 + 터치 미지원이라 Radix 툴팁을 쓴다.
+function TruncatedCell({ value, className }: { value: string; className?: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={cn('block', className)}>{value}</span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[320px] break-keep whitespace-normal">
+        {value}
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 interface OrderDetailTableProps {
@@ -264,30 +295,20 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
     }
   }
 
-  // 받는분 셀 — 이름/전화를 2줄로 묶는다. 복호화는 행 단위라 눈 아이콘은 행당 하나면 충분하다.
+  // 받는분 셀 — 이름/전화를 2줄로 묶는다. 두 줄은 같은 크기·색상으로 표시한다.
+  // 복호화 토글(눈 아이콘)은 우측 액션 컬럼에 있다.
   const renderRecipientCell = (order: Order) => {
     const decrypted = decryptedRows[order.id]
-    const isDecrypting = decryptingId === order.id
     const name = decrypted ? decrypted.recipientName : order.recipientName
     const phone = decrypted ? decrypted.phone : order.phone
     return (
-      <div className="flex items-start gap-1">
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-xs" title={name}>
-            {name}
-          </div>
-          <div className="truncate text-[11px] text-muted-foreground" title={phone}>
-            {phone}
-          </div>
+      <div className={cn('min-w-0', CELL_TEXT)}>
+        <div className="truncate" title={name}>
+          {name}
         </div>
-        <button
-          className="mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-          onClick={() => handleDecryptInline(order.id)}
-          disabled={isDecrypting}
-          title={decrypted ? '개인정보 숨기기' : '개인정보 보기'}
-        >
-          {decrypted ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-        </button>
+        <div className="truncate" title={phone}>
+          {phone}
+        </div>
       </div>
     )
   }
@@ -412,175 +433,192 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
       </div>
 
       {/* 테이블 */}
-      <div className="rounded-md border">
-        <Table className="min-w-[1100px] table-fixed">
-          <TableHeader>
-            <TableRow>
-              <TableHead className={`text-xs ${COL_RECIPIENT} ${STICKY_RECIPIENT} z-30`}>
-                받는분 · 전화
-              </TableHead>
-              <TableHead className={`text-xs ${COL_ADDRESS}`}>주소</TableHead>
-              <TableHead className={`text-xs ${COL_MESSAGE}`}>배송메시지</TableHead>
-              <TableHead className="w-[92px] text-xs">판매채널</TableHead>
-              <TableHead className="w-[132px] text-xs">주문번호 · 일자</TableHead>
-              <TableHead className="w-[82px] text-right text-xs">결제금액</TableHead>
-              <TableHead className="w-[210px] text-xs">상품</TableHead>
-              <TableHead className="w-[52px] text-xs">수량</TableHead>
-              <TableHead className="w-[82px] text-xs">메모</TableHead>
-              <TableHead className="w-[68px] text-xs" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+      <TooltipProvider>
+        <div className="rounded-md border">
+          <Table className="min-w-[1110px] table-fixed 2xl:min-w-[1180px]">
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={10} className="py-8 text-center text-xs text-muted-foreground">
-                  로딩 중...
-                </TableCell>
+                <TableHead className={cn(CELL_TEXT, COL_RECIPIENT, STICKY_RECIPIENT, 'z-30')}>
+                  받는분 · 전화
+                </TableHead>
+                <TableHead className={cn(CELL_TEXT, COL_ADDRESS)}>주소</TableHead>
+                <TableHead className={cn(CELL_TEXT, COL_MESSAGE)}>배송메시지</TableHead>
+                <TableHead className={cn(CELL_TEXT, COL_CHANNEL)}>판매채널</TableHead>
+                <TableHead className={cn(CELL_TEXT, COL_ORDER)}>주문번호 · 일자</TableHead>
+                <TableHead className={cn(CELL_TEXT, COL_AMOUNT, 'text-right')}>결제금액</TableHead>
+                <TableHead className={cn(CELL_TEXT, 'w-[210px]')}>상품</TableHead>
+                <TableHead className={cn(CELL_TEXT, 'w-[48px]')}>수량</TableHead>
+                <TableHead className={cn(CELL_TEXT, COL_MEMO)}>메모</TableHead>
+                <TableHead className={cn(CELL_TEXT, COL_ACTIONS, STICKY_ACTIONS, 'z-30')} />
               </TableRow>
-            ) : filteredOrders.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={10} className="py-8 text-center text-xs text-muted-foreground">
-                  주문이 없습니다
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredOrders.map((order) => (
-                <TableRow key={order.id} className="align-top">
-                  <TableCell className={`${COL_RECIPIENT} ${STICKY_RECIPIENT} z-20`}>
-                    {renderRecipientCell(order)}
-                  </TableCell>
-                  <TableCell className={COL_ADDRESS}>
-                    <span
-                      className="line-clamp-2 text-xs break-keep"
-                      title={decryptedRows[order.id]?.address ?? order.address}
-                    >
-                      {decryptedRows[order.id]?.address ?? order.address}
-                    </span>
-                  </TableCell>
-                  <TableCell className={COL_MESSAGE}>
-                    <span
-                      className="line-clamp-2 text-xs break-keep"
-                      title={order.deliveryMessage ?? ''}
-                    >
-                      {order.deliveryMessage || '-'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="truncate text-xs">
-                    {order.channel ? (
-                      <Badge
-                        variant="outline"
-                        className="max-w-full truncate text-xs"
-                        title={order.channel.name}
-                      >
-                        {order.channel.name}
-                      </Badge>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    <div className="truncate" title={order.orderNumber ?? ''}>
-                      {order.orderNumber || '-'}
-                    </div>
-                    <div className="truncate text-[11px] text-muted-foreground">
-                      {formatDate(order.orderDate)}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right text-xs whitespace-nowrap">
-                    {formatAmount(order.paymentAmount)}
-                  </TableCell>
-                  <TableCell className="w-[210px] align-top">
-                    {order.items.length === 0 ? (
-                      <span className="text-xs">-</span>
-                    ) : (
-                      <OrderProductNamesCell
-                        value={toOrderProducts(order.items)}
-                        onChange={() => {}}
-                        allowAdd={false}
-                        allowRemove={false}
-                        allowNameEdit={false}
-                        matchEnabled={!!order.channel}
-                        onOpenMatch={(idx) => {
-                          const item = order.items[idx]
-                          if (!item) return
-                          setMatchTarget({
-                            orderId: order.id,
-                            itemId: item.id,
-                            itemIndex: idx,
-                            rawName: item.name,
-                            orderQty: item.quantity,
-                            channelId: order.channel?.id ?? null,
-                          })
-                        }}
-                        onClearMatch={async (idx) => {
-                          const item = order.items[idx]
-                          if (!item) return
-                          try {
-                            const res = await fetch(
-                              `/api/sh/shipping/orders/${order.id}/items/${item.id}/match`,
-                              {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ mode: 'clear' }),
-                              }
-                            )
-                            if (!res.ok) {
-                              const data = await res.json().catch(() => ({}))
-                              throw new Error(data?.message ?? '매칭 해제 실패')
-                            }
-                            fetchOrders()
-                          } catch (err) {
-                            toast.error(err instanceof Error ? err.message : '매칭 해제 실패')
-                          }
-                        }}
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell className="w-[52px] align-top">
-                    {order.items.length === 0 ? (
-                      <span className="text-xs">-</span>
-                    ) : (
-                      <OrderProductQtyCell
-                        value={toOrderProducts(order.items)}
-                        onChange={() => {}}
-                        onItemPatch={(itemId, patch) => handleItemPatch(order.id, itemId, patch)}
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell className="w-[82px]">
-                    <span className="line-clamp-2 text-xs break-keep" title={order.memo ?? ''}>
-                      {order.memo || '-'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-0.5">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        title="수정"
-                        onClick={() => openEditDialog(order)}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        title="배송 등록에 재등록"
-                        disabled={cloningId === order.id}
-                        onClick={() => handleReregister(order.id)}
-                      >
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={10}
+                    className="py-8 text-center text-xs text-muted-foreground"
+                  >
+                    로딩 중...
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ) : filteredOrders.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={10}
+                    className="py-8 text-center text-xs text-muted-foreground"
+                  >
+                    주문이 없습니다
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredOrders.map((order) => (
+                  <TableRow key={order.id} className="align-top">
+                    <TableCell className={`${COL_RECIPIENT} ${STICKY_RECIPIENT} z-20`}>
+                      {renderRecipientCell(order)}
+                    </TableCell>
+                    <TableCell className={COL_ADDRESS}>
+                      {/* 주소는 중요 정보 — clamp 없이 전문을 줄바꿈해 보여준다.
+                          TableCell 기본값이 whitespace-nowrap 이라 명시적으로 풀어야 줄바꿈된다.
+                          (기존에 주소가 1줄만 보이고 잘리던 근본 원인) */}
+                      <span className={cn('block break-keep whitespace-normal', CELL_TEXT)}>
+                        {decryptedRows[order.id]?.address ?? order.address}
+                      </span>
+                    </TableCell>
+                    <TableCell className={COL_MESSAGE}>
+                      <TruncatedCell
+                        value={order.deliveryMessage || '-'}
+                        className={cn('line-clamp-2 break-keep whitespace-normal', CELL_TEXT)}
+                      />
+                    </TableCell>
+                    <TableCell className={cn(CELL_TEXT, COL_CHANNEL)}>
+                      {order.channel ? (
+                        // Badge 는 inline-flex 라 배지 자체의 truncate 는 무효다(ellipsis 미적용).
+                        // 안쪽 span 은 flex item 으로 blockify 되어 정상 동작하고, 캡슐 모양도 유지된다.
+                        <Badge variant="outline" className={cn('max-w-full', CELL_TEXT)}>
+                          <TruncatedCell value={order.channel.name} className="truncate" />
+                        </Badge>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    <TableCell className={cn(CELL_TEXT, COL_ORDER)}>
+                      <TruncatedCell value={order.orderNumber || '-'} className="truncate" />
+                      <div className="truncate">{formatDate(order.orderDate)}</div>
+                    </TableCell>
+                    <TableCell
+                      className={cn(CELL_TEXT, COL_AMOUNT, 'text-right whitespace-nowrap')}
+                    >
+                      {formatAmount(order.paymentAmount)}
+                    </TableCell>
+                    <TableCell className="w-[210px] align-top">
+                      {order.items.length === 0 ? (
+                        <span className="text-xs">-</span>
+                      ) : (
+                        <OrderProductNamesCell
+                          value={toOrderProducts(order.items)}
+                          onChange={() => {}}
+                          allowAdd={false}
+                          allowRemove={false}
+                          allowNameEdit={false}
+                          matchEnabled={!!order.channel}
+                          onOpenMatch={(idx) => {
+                            const item = order.items[idx]
+                            if (!item) return
+                            setMatchTarget({
+                              orderId: order.id,
+                              itemId: item.id,
+                              itemIndex: idx,
+                              rawName: item.name,
+                              orderQty: item.quantity,
+                              channelId: order.channel?.id ?? null,
+                            })
+                          }}
+                          onClearMatch={async (idx) => {
+                            const item = order.items[idx]
+                            if (!item) return
+                            try {
+                              const res = await fetch(
+                                `/api/sh/shipping/orders/${order.id}/items/${item.id}/match`,
+                                {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ mode: 'clear' }),
+                                }
+                              )
+                              if (!res.ok) {
+                                const data = await res.json().catch(() => ({}))
+                                throw new Error(data?.message ?? '매칭 해제 실패')
+                              }
+                              fetchOrders()
+                            } catch (err) {
+                              toast.error(err instanceof Error ? err.message : '매칭 해제 실패')
+                            }
+                          }}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="w-[48px] align-top">
+                      {order.items.length === 0 ? (
+                        <span className="text-xs">-</span>
+                      ) : (
+                        <OrderProductQtyCell
+                          value={toOrderProducts(order.items)}
+                          onChange={() => {}}
+                          onItemPatch={(itemId, patch) => handleItemPatch(order.id, itemId, patch)}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className={COL_MEMO}>
+                      <TruncatedCell
+                        value={order.memo || '-'}
+                        className={cn('line-clamp-2 break-keep whitespace-normal', CELL_TEXT)}
+                      />
+                    </TableCell>
+                    <TableCell className={cn(COL_ACTIONS, STICKY_ACTIONS, 'z-20')}>
+                      <div className="flex gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          title={decryptedRows[order.id] ? '개인정보 숨기기' : '개인정보 보기'}
+                          disabled={decryptingId === order.id}
+                          onClick={() => handleDecryptInline(order.id)}
+                        >
+                          {decryptedRows[order.id] ? (
+                            <EyeOff className="h-3.5 w-3.5" />
+                          ) : (
+                            <Eye className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          title="수정"
+                          onClick={() => openEditDialog(order)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          title="배송 등록에 재등록"
+                          disabled={cloningId === order.id}
+                          onClick={() => handleReregister(order.id)}
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </TooltipProvider>
 
       {/* 페이지네이션 */}
       {totalPages > 1 && (
