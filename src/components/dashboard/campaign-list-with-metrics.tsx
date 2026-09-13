@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react'
@@ -75,35 +75,26 @@ export function CampaignListWithMetrics({ from, to }: { from: string; to: string
   const [campaigns, setCampaigns] = useState<CampaignWithMetrics[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchCampaigns = useCallback(async (startDate: string, endDate: string) => {
-    setIsLoading(true)
-    try {
-      const res = await fetch(`/api/campaigns?startDate=${startDate}&endDate=${endDate}`)
-      if (!res.ok) return
-      const data = (await res.json()) as CampaignWithMetrics[]
-
-      // 소진율/달성율 병렬 조회
-      const summaries = await Promise.all(
-        data.map((c) =>
-          fetch(`/api/campaigns/${c.id}/targets/summary?from=${startDate}&to=${endDate}`)
-            .then((r) =>
-              r.ok
-                ? (r.json() as Promise<CampaignSummary>)
-                : { budgetUtilization: null, roasAchievement: null }
-            )
-            .catch(() => ({ budgetUtilization: null, roasAchievement: null }))
-        )
-      )
-
-      setCampaigns(data.map((c, i) => ({ ...c, summary: summaries[i] })))
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
   useEffect(() => {
-    fetchCampaigns(from, to)
-  }, [from, to, fetchCampaigns])
+    const controller = new AbortController()
+    async function load() {
+      setIsLoading(true)
+      try {
+        const res = await fetch(`/api/campaigns?startDate=${from}&endDate=${to}`, {
+          signal: controller.signal,
+        })
+        if (!res.ok) return
+        const data = (await res.json()) as CampaignWithMetrics[]
+        if (!controller.signal.aborted) setCampaigns(data)
+      } catch {
+        // 취소되거나 실패한 조회가 다른 기간의 최신 결과를 덮지 않도록 한다.
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false)
+      }
+    }
+    void load()
+    return () => controller.abort()
+  }, [from, to])
 
   // 해당 기간에 데이터가 있는 캠페인만 표시 (광고비 또는 매출 > 0)
   const activeCampaigns = campaigns.filter(

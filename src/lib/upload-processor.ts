@@ -1,3 +1,4 @@
+import { invalidateCoupangAdsCache } from '@/lib/coupang-ads/cache'
 import { prisma } from '@/lib/prisma'
 import {
   parseExcelBuffer,
@@ -193,93 +194,98 @@ export async function processUpload(params: {
     { maxWait: 10_000, timeout: 60_000 }
   )
 
-  // ── 캠페인명 변경 감지 ──
-  const latestByUpload = new Map<string, { date: Date; name: string }>()
-  for (const row of rows) {
-    const existing = latestByUpload.get(row.campaignId)
-    if (!existing || row.date > existing.date) {
-      latestByUpload.set(row.campaignId, { date: row.date, name: row.campaignName })
-    }
-  }
-
-  // DB에서 campaignId별 현재 최신 campaignName 조회 (업로드 전 상태)
-  const metaCampaignIds = [...latestByUpload.keys()]
-  const dbLatest = await prisma.adRecord.findMany({
-    where: {
-      workspaceId,
-      campaignId: { in: metaCampaignIds },
-      reportId: { not: uploadId },
-    },
-    orderBy: { date: 'desc' },
-    distinct: ['campaignId'],
-    select: { campaignId: true, campaignName: true },
-  })
-
-  const dbNameMap = new Map(dbLatest.map((r) => [r.campaignId, r.campaignName]))
-
-  for (const [campaignId, { date: firstChangeDate, name: newName }] of latestByUpload.entries()) {
-    const oldName = dbNameMap.get(campaignId)
-    if (!oldName || oldName === newName) {
-      if (!oldName) {
-        await prisma.campaignMeta.upsert({
-          where: { workspaceId_campaignId: { workspaceId, campaignId } },
-          create: { workspaceId, campaignId, displayName: newName, isCustomName: false },
-          update: {},
-        })
+  try {
+    // ── 캠페인명 변경 감지 ──
+    const latestByUpload = new Map<string, { date: Date; name: string }>()
+    for (const row of rows) {
+      const existing = latestByUpload.get(row.campaignId)
+      if (!existing || row.date > existing.date) {
+        latestByUpload.set(row.campaignId, { date: row.date, name: row.campaignName })
       }
-      continue
     }
 
-    // 캠페인명 변경 감지: CampaignMeta 업데이트 (isCustomName=false인 경우만)
-    const meta = await prisma.campaignMeta.findUnique({
-      where: { workspaceId_campaignId: { workspaceId, campaignId } },
-      select: { isCustomName: true },
-    })
-
-    await prisma.campaignMeta.upsert({
-      where: { workspaceId_campaignId: { workspaceId, campaignId } },
-      create: { workspaceId, campaignId, displayName: newName, isCustomName: false },
-      update: meta?.isCustomName ? {} : { displayName: newName },
-    })
-
-    // 변경 첫 날짜에 자동 메모 생성
-    await prisma.dailyMemo.upsert({
+    // DB에서 campaignId별 현재 최신 campaignName 조회 (업로드 전 상태)
+    const metaCampaignIds = [...latestByUpload.keys()]
+    const dbLatest = await prisma.adRecord.findMany({
       where: {
-        workspaceId_campaignId_date: { workspaceId, campaignId, date: firstChangeDate },
-      },
-      create: {
         workspaceId,
-        campaignId,
-        date: firstChangeDate,
-        content: `캠페인 이름 변경: ${oldName} → ${newName}`,
+        campaignId: { in: metaCampaignIds },
+        reportId: { not: uploadId },
       },
-      update: {
-        content: `캠페인 이름 변경: ${oldName} → ${newName}`,
-      },
+      orderBy: { date: 'desc' },
+      distinct: ['campaignId'],
+      select: { campaignId: true, campaignName: true },
     })
-  }
 
-  // 처리 결과 통계 계산
-  const totalRows = rows.length
-  const insertedRows = inserted
-  const duplicateRows = overwrite === true ? 0 : totalRows - insertedRows
-  const skippedRows = 0
+    const dbNameMap = new Map(dbLatest.map((r) => [r.campaignId, r.campaignName]))
 
-  // 업로드 이력에 처리 결과 저장
-  await prisma.reportUpload.update({
-    where: { id: uploadId },
-    data: { totalRows, insertedRows, duplicateRows, skippedRows },
-  })
+    for (const [campaignId, { date: firstChangeDate, name: newName }] of latestByUpload.entries()) {
+      const oldName = dbNameMap.get(campaignId)
+      if (!oldName || oldName === newName) {
+        if (!oldName) {
+          await prisma.campaignMeta.upsert({
+            where: { workspaceId_campaignId: { workspaceId, campaignId } },
+            create: { workspaceId, campaignId, displayName: newName, isCustomName: false },
+            update: {},
+          })
+        }
+        continue
+      }
 
-  return {
-    success: true,
-    uploadId,
-    inserted,
-    skipped: rows.length - inserted,
-    totalRows,
-    insertedRows,
-    duplicateRows,
-    periodStart: periodStart.toISOString(),
-    periodEnd: periodEnd.toISOString(),
+      // 캠페인명 변경 감지: CampaignMeta 업데이트 (isCustomName=false인 경우만)
+      const meta = await prisma.campaignMeta.findUnique({
+        where: { workspaceId_campaignId: { workspaceId, campaignId } },
+        select: { isCustomName: true },
+      })
+
+      await prisma.campaignMeta.upsert({
+        where: { workspaceId_campaignId: { workspaceId, campaignId } },
+        create: { workspaceId, campaignId, displayName: newName, isCustomName: false },
+        update: meta?.isCustomName ? {} : { displayName: newName },
+      })
+
+      // 변경 첫 날짜에 자동 메모 생성
+      await prisma.dailyMemo.upsert({
+        where: {
+          workspaceId_campaignId_date: { workspaceId, campaignId, date: firstChangeDate },
+        },
+        create: {
+          workspaceId,
+          campaignId,
+          date: firstChangeDate,
+          content: `캠페인 이름 변경: ${oldName} → ${newName}`,
+        },
+        update: {
+          content: `캠페인 이름 변경: ${oldName} → ${newName}`,
+        },
+      })
+    }
+
+    // 처리 결과 통계 계산
+    const totalRows = rows.length
+    const insertedRows = inserted
+    const duplicateRows = overwrite === true ? 0 : totalRows - insertedRows
+    const skippedRows = 0
+
+    // 업로드 이력에 처리 결과 저장
+    await prisma.reportUpload.update({
+      where: { id: uploadId },
+      data: { totalRows, insertedRows, duplicateRows, skippedRows },
+    })
+
+    return {
+      success: true,
+      uploadId,
+      inserted,
+      skipped: rows.length - inserted,
+      totalRows,
+      insertedRows,
+      duplicateRows,
+      periodStart: periodStart.toISOString(),
+      periodEnd: periodEnd.toISOString(),
+    }
+  } finally {
+    // 광고 데이터 커밋 이후 부가 정보 저장에 실패해도 기존 캐시를 만료한다.
+    invalidateCoupangAdsCache(workspaceId)
   }
 }
