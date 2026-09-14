@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { buildAppUrl } from '@/lib/domain'
 import { notifyPendingAction } from '@/lib/slack/notify-pending-action'
 import { getActionDefinition } from './registry'
@@ -35,6 +36,11 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
     )
   }
   const params = parsed.data
+
+  // 구독 만료 Space는 큐잉 자체를 막는다. 실행 경로(approveAndExecute)가 보안 경계이고
+  // 여기는 UX — 승인해도 실행되지 않을 액션을 72시간 남기거나 Slack 알림을 쏘지 않기 위함.
+  const blocked = await assertDeckWritable(draft.spaceId, def.deckKey)
+  if (blocked) throw new Error(blocked)
 
   // 멱등: 동일 키 기존 액션이 있으면 새로 만들지 않고 그대로 반환.
   if (draft.idempotencyKey) {
