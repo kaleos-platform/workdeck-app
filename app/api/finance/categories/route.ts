@@ -81,7 +81,7 @@ export async function GET() {
 
 // 생성: 사용자 하위계정 추가 (parentId 필수, 부모 type 상속)
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 

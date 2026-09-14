@@ -11,7 +11,7 @@ import { prisma } from '@/lib/prisma'
 import { rebuildDerivedSnapshots } from '@/lib/finance/snapshot-rebuild'
 
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 

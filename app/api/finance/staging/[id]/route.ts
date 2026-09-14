@@ -14,7 +14,7 @@ import type { FinStagedResolution } from '@/generated/prisma/enums'
 const RESOLUTIONS: FinStagedResolution[] = ['NEW', 'DUP_SAME', 'DUP_CHANGED', 'DUP_OVERWRITE']
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
   const { id } = await params

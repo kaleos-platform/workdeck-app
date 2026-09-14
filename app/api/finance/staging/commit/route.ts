@@ -19,7 +19,7 @@ function yearMonth(d: Date): string {
 }
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 

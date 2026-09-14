@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
+import { assertDeckWritable } from '@/lib/billing/entitlement'
 
 // 에러 응답 생성 헬퍼 — extra 필드를 병합해 추가 정보를 포함할 수 있음
 export function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
@@ -26,8 +27,20 @@ async function isWorkerAuthenticated(): Promise<boolean> {
   return timingSafeEqualString(apiKey, expected)
 }
 
+/**
+ * deck 컨텍스트 해석 옵션.
+ *
+ * `write: true` 는 **변경(POST/PUT/PATCH/DELETE) 핸들러 전용**이다. 구독이 만료된
+ * Space 의 쓰기를 402 로 막되 조회는 그대로 통과시킨다. `resolveDeckContext` 는
+ * 요청 객체를 받지 않아 HTTP 메서드를 알 수 없으므로, GET 과 mutation 이 같은 파일에
+ * 공존하는 라우트에서도 호출부가 명시적으로 구분해 넘겨야 한다.
+ */
+export interface DeckContextOptions {
+  write?: boolean
+}
+
 // 인증 + 워크스페이스 소유권 검증 (세션 또는 worker key)
-export async function resolveWorkspace() {
+export async function resolveWorkspace(opts?: DeckContextOptions) {
   // Worker/Agent key 인증 fallback — 세션 없이 API key로 접근하는 경우
   if (await isWorkerAuthenticated()) {
     const h = await headers()
@@ -61,7 +74,7 @@ export async function resolveWorkspace() {
     if (workspace) return { workspace }
   }
 
-  const deckContext = await resolveDeckContext('coupang-ads')
+  const deckContext = await resolveDeckContext('coupang-ads', opts)
   const deckError = 'error' in deckContext ? deckContext.error : null
   if (deckError && deckError.status !== 404) {
     return { error: deckError }
@@ -112,7 +125,7 @@ export async function resolveSpaceContext() {
 }
 
 // 인증 + Space 멤버십 + DeckInstance 활성화 여부 검증
-export async function resolveDeckContext(deckKey = 'coupang-ads') {
+export async function resolveDeckContext(deckKey = 'coupang-ads', opts?: DeckContextOptions) {
   const resolved = await resolveSpaceContext()
   if ('error' in resolved) return resolved
 
@@ -120,6 +133,12 @@ export async function resolveDeckContext(deckKey = 'coupang-ads') {
     where: { spaceId_deckAppId: { spaceId: resolved.space.id, deckAppId: deckKey } },
   })
   if (!deckInstance?.isActive) return { error: errorResponse('카드가 활성화되지 않았습니다', 403) }
+
+  // 구독 만료 Space 의 쓰기 차단 — 조회(write 미지정)는 그대로 통과한다.
+  if (opts?.write) {
+    const blocked = await assertDeckWritable(resolved.space.id, deckKey)
+    if (blocked) return { error: errorResponse(blocked, 402) }
+  }
 
   return resolved
 }

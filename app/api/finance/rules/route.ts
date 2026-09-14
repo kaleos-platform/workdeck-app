@@ -31,7 +31,7 @@ export async function GET() {
 
 // 생성: 수동 분류 규칙 추가 (matchKey 정규화, spaceId+matchKey upsert)
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
