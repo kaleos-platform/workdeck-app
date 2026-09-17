@@ -96,3 +96,14 @@
 로그인 직후 catalog loader 17.49초, 날짜 범위 3.24초도 관측했다.
 후속으로 전체 원본 정렬을 없애는 catalog SQL 변경과 overview 개별 쿼리 계측을 구현했다.
 개발 DB 실행 계획 비교 및 임시 15만 행 회귀 테스트를 통과했다. 후속 운영 배포·재측정은 남아 있다.
+
+### 2026-09-17 인덱스 후속 계획
+
+PR #890/#891 배포 후에도 최초 catalog 19.42초, overview 광고유형 조회 13.94초로 목표 미달이다.
+목록 쿼리 변경만으로 최초 조회 문제가 해결되지 않았으므로 캐시와 별도로 DB 접근 경로를 개선한다.
+
+- [ ] 개발 DB에서 catalog/adType 조회 실행 계획과 5회 시간을 기록한다.
+- [ ] `AdRecord(workspaceId, campaignId, adType, date)` 복합 인덱스를 schema에 추가하고 `prisma migrate dev --name coupang_ads_catalog_index`로 생성·적용한다.
+- [ ] 같은 개발 데이터에서 index-only scan 사용, 읽은 block 수, 결과 동등성, 처리 시간 변화를 검증한다. 기존 최신 이름·workspace·전체 정렬 회귀 테스트도 실행한다.
+- [ ] 단위 테스트, lint, build와 리뷰 후 develop → main 절차로 배포한다. 운영 직접 SQL은 실행하지 않는다.
+- [ ] 운영 응답 동등성과 5회 화면 표시 시간을 다시 기록한다. pool 설정은 유지하고 남은 목표 초과를 숨기지 않는다.
