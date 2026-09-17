@@ -1,0 +1,160 @@
+{
+  "deployment": "dpl_5psw4jQ99cZmkWeUQnkMcJ4n6DaF",
+  "commit": "cb789565a5c8cbcd3d219f74c20050d0a06a609d",
+  "period": {
+    "from": "2026-09-10",
+    "to": "2026-09-16"
+  },
+  "samples": [
+    {
+      "i": 0,
+      "kind": "home-document",
+      "ms": 24720,
+      "status": 200,
+      "timing": "auth;dur=911.4, catalog_loader;dur=19419.4, target_summaries;dur=6.0, data;dur=19501.8, total;dur=20414.1",
+      "kpi": "auth;dur=933.0, kpi_current;dur=170.9, kpi_previous;dur=104.1, kpi_loader;dur=275.6, data;dur=326.3, total;dur=1260.1"
+    },
+    {
+      "i": 0,
+      "kind": "detail-entry",
+      "ms": 20762,
+      "status": 200,
+      "timing": "auth;dur=3479.0, overview_latest;dur=166.0, overview_ad_types;dur=13938.2, overview_current;dur=14024.1, overview_previous;dur=14042.0, overview_targets;dur=14049.1, overview_memos;dur=14080.8, overview_meta;dur=14086.5, overview_loader;dur=14088.8, data;dur=14103.5, total;dur=17583.3"
+    },
+    {
+      "i": 0,
+      "kind": "home-revisit",
+      "ms": 2880,
+      "status": 200,
+      "timing": "auth;dur=145.3, target_summaries;dur=5.1, data;dur=28.5, total;dur=174.1",
+      "kpi": "auth;dur=69.6, data;dur=10.5, total;dur=80.4"
+    },
+    {
+      "i": 0,
+      "kind": "detail-revisit",
+      "ms": 623,
+      "status": 200,
+      "timing": "auth;dur=53.9, data;dur=6.1, total;dur=60.4"
+    },
+    {
+      "i": 1,
+      "kind": "home-document",
+      "ms": 1528,
+      "status": 200,
+      "timing": "auth;dur=89.6, target_summaries;dur=5.0, data;dur=33.4, total;dur=131.7",
+      "kpi": "auth;dur=122.9, data;dur=6.4, total;dur=129.6"
+    },
+    {
+      "i": 1,
+      "kind": "detail-entry",
+      "ms": 326,
+      "status": 200,
+      "timing": "auth;dur=43.4, data;dur=20.7, total;dur=64.8"
+    },
+    {
+      "i": 1,
+      "kind": "home-revisit",
+      "ms": 1059,
+      "status": 200,
+      "timing": "auth;dur=45.8, target_summaries;dur=5.1, data;dur=19.3, total;dur=65.4",
+      "kpi": "auth;dur=39.0, data;dur=5.2, total;dur=44.5"
+    },
+    {
+      "i": 1,
+      "kind": "detail-revisit",
+      "ms": 906,
+      "status": 200,
+      "timing": "auth;dur=459.7, data;dur=5.9, total;dur=466.3"
+    },
+    {
+      "i": 2,
+      "kind": "home-document",
+      "ms": 1164,
+      "status": 200,
+      "timing": "auth;dur=54.0, target_summaries;dur=5.0, data;dur=21.9, total;dur=76.3",
+      "kpi": "auth;dur=41.1, data;dur=5.4, total;dur=46.8"
+    },
+    {
+      "i": 2,
+      "kind": "detail-entry",
+      "ms": 311,
+      "status": 200,
+      "timing": "auth;dur=36.2, data;dur=4.8, total;dur=41.3"
+    },
+    {
+      "i": 2,
+      "kind": "home-revisit",
+      "ms": 1354,
+      "status": 200,
+      "timing": "auth;dur=45.4, target_summaries;dur=4.3, data;dur=21.3, total;dur=67.1",
+      "kpi": "auth;dur=44.8, data;dur=4.6, total;dur=49.7"
+    },
+    {
+      "i": 2,
+      "kind": "detail-revisit",
+      "ms": 263,
+      "status": 200,
+      "timing": "auth;dur=35.4, data;dur=5.7, total;dur=41.6"
+    },
+    {
+      "i": 3,
+      "kind": "home-document",
+      "ms": 1350,
+      "status": 200,
+      "timing": "auth;dur=69.2, target_summaries;dur=5.4, data;dur=31.8, total;dur=101.3",
+      "kpi": "auth;dur=93.9, data;dur=6.4, total;dur=100.4"
+    },
+    {
+      "i": 3,
+      "kind": "detail-entry",
+      "ms": 310,
+      "status": 200,
+      "timing": "auth;dur=50.5, data;dur=6.7, total;dur=57.5"
+    },
+    {
+      "i": 3,
+      "kind": "home-revisit",
+      "ms": 1056,
+      "status": 200,
+      "timing": "auth;dur=42.2, target_summaries;dur=4.0, data;dur=17.3, total;dur=59.7",
+      "kpi": "auth;dur=44.2, data;dur=5.2, total;dur=49.6"
+    },
+    {
+      "i": 3,
+      "kind": "detail-revisit",
+      "ms": 267,
+      "status": 200,
+      "timing": "auth;dur=33.0, data;dur=5.6, total;dur=39.0"
+    },
+    {
+      "i": 4,
+      "kind": "home-document",
+      "ms": 356,
+      "status": 200,
+      "timing": "auth;dur=41.6, target_summaries;dur=4.6, data;dur=17.0, total;dur=58.9",
+      "kpi": "auth;dur=39.5, data;dur=5.9, total;dur=45.6"
+    },
+    {
+      "i": 4,
+      "kind": "detail-entry",
+      "ms": 262,
+      "status": 200,
+      "timing": "auth;dur=38.3, data;dur=5.7, total;dur=44.4"
+    },
+    {
+      "i": 4,
+      "kind": "home-revisit",
+      "ms": 308,
+      "status": 200,
+      "timing": "auth;dur=38.2, target_summaries;dur=6.4, data;dur=27.2, total;dur=65.7",
+      "kpi": "auth;dur=43.9, data;dur=4.9, total;dur=49.0"
+    },
+    {
+      "i": 4,
+      "kind": "detail-revisit",
+      "ms": 327,
+      "status": 200,
+      "timing": "auth;dur=38.4, data;dur=4.5, total;dur=43.2"
+    }
+  ]
+}

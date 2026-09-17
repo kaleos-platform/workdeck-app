@@ -109,3 +109,43 @@ npx jest --config jest.config.e2e.ts --runInBand campaign-catalog.e2e.test.ts
 상세는 `overview_latest/ad_types/meta/current/previous/targets/memos` 개별 계측을 추가한다.
 동시에 시작한 쿼리의 시간에는 pool 대기도 포함되므로 합산하지 않는다.
 후속 배포 후 재측정과 테스트 workspace의 실제 변경 후 갱신 검증은 남아 있다.
+
+### 목록 쿼리 변경만 배포한 결과
+
+PR #890/#891, commit `cb789565`, production `dpl_5psw4jQ99cZmkWeUQnkMcJ4n6DaF`에서 재측정했다.
+[5회 원시값](assets/2026-09-17-performance-followup.json): 최초 첫 화면 24.72초,
+최초 상세 20.76초였다. 이후 warm 상세 진입 0.26~0.33초, 상세 재진입 0.26~0.91초였지만
+목록 SQL 변경만으로 cold 조회 목표는 해결되지 않았다.
+catalog loader 19.42초, overview_latest 0.166초, overview_ad_types 13.94초,
+뒤에 대기한 나머지 overview 쿼리 약 14.0초였다. 광고유형 전체 이력 조회가 주요 병목으로 좁혀졌다.
+같은 기간의 목록과 overview 응답 SHA-256은 변경 전후 동일했다.
+
+### 전체 이력 조회용 인덱스
+
+`AdRecord(workspaceId, campaignId, adType, date)`를 추가한다. 기존 유니크 인덱스는 keyword 등
+넓은 컬럼을 포함하고 campaignId 앞에 date가 있어 광고유형 조회에 읽는 범위가 크다.
+새 비고유 인덱스는 조회 의미·데이터를 바꾸지 않는다. `CREATE INDEX CONCURRENTLY`로 생성한다.
+실패 시 invalid index가 남을 수 있으므로 배포 실패를 무시하거나 migration을 적용 완료로 표시하지 않는다.
+
+개발 DB의 같은 데이터·SQL로 5회 비교한 값:
+
+| 조회    | 적용 전 실행(ms)                         | 적용 후 실행(ms)                       | 접근 block 전 → 후 |
+| ------- | ---------------------------------------- | -------------------------------------- | ------------------ |
+| catalog | 2198.535, 56.914, 54.700, 55.598, 55.716 | 49.369, 41.498, 40.850, 41.510, 40.829 | 약 5855 → 224      |
+| adType  | 61.539, 61.190, 61.281, 61.084, 61.206   | 26.362, 26.465, 26.575, 26.406, 26.621 | 5774 → 151         |
+
+적용 후 두 조회 모두 새 인덱스의 Index Only Scan을 사용했다. 적용 전 첫 표본의 IO 조건이
+다르므로 이를 그대로 개선율로 주장하지 않는다. 15만 행 TEMP 테이블 회귀 테스트도 통과했다.
+
+Migration 생성 과정에서 기존 이력의 두 문제가 확인됐다:
+
+1. 자동 shadow DB에 `storage.buckets`가 없어 `20260304231000` migration에서 P3006.
+2. 해당 의존성을 구성한 로컬 shadow에서도 `20260606120000`이 `CoupangBackfillStatus` 생성(`20260623000000`)보다 먼저 실행되어 P3006.
+
+기존 migration 파일과 실제 데이터는 수정하지 않았다. PostgreSQL 16 임시 컨테이너의 분리된
+개발 DB에 현재 HEAD schema를 `prisma migrate dev --name local_baseline`으로 구성하고,
+인덱스 추가 schema로 `prisma migrate dev --name coupang_ads_catalog_index --create-only`를 실행했다.
+생성된 인덱스 SQL을 CONCURRENTLY로 바꾼 후 로컬 `migrate dev` 적용을 확인했다.
+새 인덱스 migration만 저장소에 복사하고 실제 개발 DB에는 `migrate deploy`로 적용했다.
+baseline은 임시 검증용이며 저장소나 기존 개발·운영 DB에 적용하지 않았다.
+운영 적용은 기존 Vercel `migrate deploy` 경로로 진행한다. 운영 직접 SQL·db push·reset은 사용하지 않았다.
