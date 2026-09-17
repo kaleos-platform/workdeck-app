@@ -12,6 +12,11 @@
 import { prisma } from '@/lib/prisma'
 import { formatDateToYmdKst } from '@/lib/date-range'
 import { cacheCoupangAdsData } from '@/lib/coupang-ads/cache'
+import {
+  queryCampaignTargetSummaries,
+  type CampaignTargetSummary,
+} from '@/lib/coupang-ads/target-summary'
+import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 import { calculateCTR, calculateCVR, calculateROAS } from '@/lib/metrics-calculator'
 import type { KeywordQuery, KeywordSortKey } from '@/lib/coupang-ads/keyword-query'
 import { buildKeywordHavingSql } from '@/lib/coupang-ads/metric-filter'
@@ -26,6 +31,12 @@ function calcWow(current: number, prev: number): number | null {
 
 /** GET /api/dashboard/kpi 인라인 로직 이동 — 선택 기간 집계 KPI + 이전 동일 기간 대비 증감율. */
 export async function queryKpi(workspaceId: string, opts: { startDate: string; endDate: string }) {
+  return cacheCoupangAdsData('kpi', { workspaceId, from: opts.startDate, to: opts.endDate }, () =>
+    measureCoupangAds('kpi_loader', () => loadKpi(workspaceId, opts))
+  )
+}
+
+async function loadKpi(workspaceId: string, opts: { startDate: string; endDate: string }) {
   const { startDate, endDate } = opts
 
   const startObj = new Date(startDate + 'T00:00:00+09:00')
@@ -41,22 +52,26 @@ export async function queryKpi(workspaceId: string, opts: { startDate: string; e
   const prevEndObj = new Date(prevEndDate + 'T23:59:59+09:00')
 
   // 현재 기간 집계
-  const currentAgg = await prisma.adRecord.aggregate({
-    where: {
-      workspaceId,
-      date: { gte: startObj, lte: endObj },
-    },
-    _sum: { adCost: true, revenue1d: true, orders1d: true, clicks: true, impressions: true },
-  })
+  const currentAgg = await measureCoupangAds('kpi_current', () =>
+    prisma.adRecord.aggregate({
+      where: {
+        workspaceId,
+        date: { gte: startObj, lte: endObj },
+      },
+      _sum: { adCost: true, revenue1d: true, orders1d: true, clicks: true, impressions: true },
+    })
+  )
 
   // 이전 기간 집계
-  const prevAgg = await prisma.adRecord.aggregate({
-    where: {
-      workspaceId,
-      date: { gte: prevStartObj, lte: prevEndObj },
-    },
-    _sum: { adCost: true, revenue1d: true, orders1d: true, clicks: true, impressions: true },
-  })
+  const prevAgg = await measureCoupangAds('kpi_previous', () =>
+    prisma.adRecord.aggregate({
+      where: {
+        workspaceId,
+        date: { gte: prevStartObj, lte: prevEndObj },
+      },
+      _sum: { adCost: true, revenue1d: true, orders1d: true, clicks: true, impressions: true },
+    })
+  )
 
   // 현재 수치
   const adCost = Number(currentAgg._sum.adCost ?? 0)
@@ -107,38 +122,36 @@ export async function queryKpi(workspaceId: string, opts: { startDate: string; e
  * GET /api/campaigns 인라인 로직 이동 — 캠페인 목록(displayName 포함).
  * startDate·endDate 제공 시 캠페인별 기간 지표 + 이전 동일 기간 지표 enrich.
  */
-export async function queryCampaigns(
-  workspaceId: string,
-  opts: { startDate?: string; endDate?: string } = {}
-) {
+async function loadCampaignCatalog(workspaceId: string, today: string) {
   const { rows, metas, allTargets } = await cacheCoupangAdsData(
-    'campaign-catalog',
+    `campaign-catalog-${today}`,
     { workspaceId },
-    async () => {
-      // Prisma distinct는 모든 원본 행을 애플리케이션으로 가져오므로 DB DISTINCT ON을 사용한다.
-      const [rows, metas, allTargets] = await Promise.all([
-        prisma.$queryRaw<Array<{ campaignId: string; campaignName: string; adType: string }>>`
+    () =>
+      measureCoupangAds('catalog_loader', async () => {
+        // Prisma distinct는 모든 원본 행을 애플리케이션으로 가져오므로 DB DISTINCT ON을 사용한다.
+        const [rows, metas, allTargets] = await Promise.all([
+          prisma.$queryRaw<Array<{ campaignId: string; campaignName: string; adType: string }>>`
           SELECT DISTINCT ON ("campaignId", "adType")
             "campaignId", "campaignName", "adType"
           FROM "AdRecord"
           WHERE "workspaceId" = ${workspaceId}
           ORDER BY "campaignId" ASC, "adType" ASC, date DESC
         `,
-        prisma.campaignMeta.findMany({
-          where: { workspaceId },
-          select: { campaignId: true, displayName: true, isCustomName: true },
-        }),
-        prisma.campaignTarget.findMany({
-          where: {
-            workspaceId,
-            effectiveDate: { lte: new Date() },
-          },
-          orderBy: { effectiveDate: 'desc' },
-          select: { campaignId: true, dailyBudget: true, targetRoas: true },
-        }),
-      ])
-      return { rows, metas, allTargets }
-    }
+          prisma.campaignMeta.findMany({
+            where: { workspaceId },
+            select: { campaignId: true, displayName: true, isCustomName: true },
+          }),
+          prisma.campaignTarget.findMany({
+            where: {
+              workspaceId,
+              effectiveDate: { lte: new Date() },
+            },
+            orderBy: { effectiveDate: 'desc' },
+            select: { campaignId: true, dailyBudget: true, targetRoas: true },
+          }),
+        ])
+        return { rows, metas, allTargets }
+      })
   )
 
   const metaMap = new Map(metas.map((m) => [m.campaignId, m]))
@@ -175,7 +188,42 @@ export async function queryCampaigns(
     }
   }
 
+  return { campaigns, targetMap }
+}
+
+export async function queryCampaignNavigation(workspaceId: string) {
+  const today = new Date().toISOString().split('T')[0]
+  const { campaigns } = await loadCampaignCatalog(workspaceId, today)
+  return campaigns
+}
+
+export async function queryCampaigns(
+  workspaceId: string,
+  opts: { startDate?: string; endDate?: string } = {}
+) {
+  const today = new Date().toISOString().split('T')[0]
+  const { campaigns, targetMap } = await loadCampaignCatalog(workspaceId, today)
   const { startDate, endDate } = opts
+  const dateRanges = await cacheCoupangAdsData(
+    'campaign-date-ranges',
+    { workspaceId },
+    async () => {
+      const rows = await measureCoupangAds('date_ranges', () =>
+        prisma.adRecord.groupBy({
+          by: ['campaignId'],
+          where: { workspaceId },
+          _min: { date: true },
+          _max: { date: true },
+        })
+      )
+      return rows.map((row) => ({
+        campaignId: row.campaignId,
+        minDate: row._min.date ? formatDateToYmdKst(row._min.date) : null,
+        maxDate: row._max.date ? formatDateToYmdKst(row._max.date) : null,
+      }))
+    }
+  )
+  const dateRangeMap = new Map(dateRanges.map((row) => [row.campaignId, row]))
 
   if (startDate && endDate) {
     const startObj = new Date(startDate + 'T00:00:00+09:00')
@@ -190,46 +238,43 @@ export async function queryCampaigns(
     const prevStartObj = new Date(prevStartDate + 'T00:00:00+09:00')
     const prevEndObj = new Date(prevEndDate + 'T23:59:59+09:00')
 
-    // 캠페인별 전체 데이터 기간 (minDate, maxDate)
-    const dateRanges = await prisma.adRecord.groupBy({
-      by: ['campaignId'],
-      where: { workspaceId },
-      _min: { date: true },
-      _max: { date: true },
-    })
-    const dateRangeMap = new Map(
-      (
-        dateRanges as Array<{
-          campaignId: string
-          _min: { date: unknown }
-          _max: { date: unknown }
-        }>
-      ).map((r) => [
-        r.campaignId,
-        {
-          minDate: r._min.date ? formatDateToYmdKst(r._min.date as Date) : null,
-          maxDate: r._max.date ? formatDateToYmdKst(r._max.date as Date) : null,
-        },
-      ])
+    const { currentAgg, prevAgg } = await cacheCoupangAdsData(
+      'campaign-metrics',
+      { workspaceId, from: startDate, to: endDate },
+      async () => {
+        // 현재 기간 캠페인별 집계
+        const currentAgg = await measureCoupangAds('campaign_current', () =>
+          prisma.adRecord.groupBy({
+            by: ['campaignId'],
+            where: { workspaceId, date: { gte: startObj, lte: endObj } },
+            _sum: { adCost: true, revenue1d: true },
+          })
+        )
+
+        // 이전 기간 캠페인별 집계
+        const prevAgg = await measureCoupangAds('campaign_previous', () =>
+          prisma.adRecord.groupBy({
+            by: ['campaignId'],
+            where: { workspaceId, date: { gte: prevStartObj, lte: prevEndObj } },
+            _sum: { adCost: true, revenue1d: true },
+          })
+        )
+
+        return { currentAgg, prevAgg }
+      }
     )
-
-    // 현재 기간 캠페인별 집계
-    const currentAgg = await prisma.adRecord.groupBy({
-      by: ['campaignId'],
-      where: { workspaceId, date: { gte: startObj, lte: endObj } },
-      _sum: { adCost: true, revenue1d: true },
-    })
-
-    // 이전 기간 캠페인별 집계
-    const prevAgg = await prisma.adRecord.groupBy({
-      by: ['campaignId'],
-      where: { workspaceId, date: { gte: prevStartObj, lte: prevEndObj } },
-      _sum: { adCost: true, revenue1d: true },
-    })
 
     type AggRow = { campaignId: string; _sum: { adCost: unknown; revenue1d: unknown } }
     const currentMap = new Map((currentAgg as AggRow[]).map((a) => [a.campaignId, a]))
     const prevMap = new Map((prevAgg as AggRow[]).map((a) => [a.campaignId, a]))
+
+    const summaries: Record<string, CampaignTargetSummary> = await measureCoupangAds(
+      'target_summaries',
+      () => queryCampaignTargetSummaries(workspaceId, startDate, endDate)
+    ).catch(() => {
+      // 보조 지표 실패가 성과 목록을 막지 않도록 하며, 실패 결과는 cache에 저장하지 않는다.
+      return {}
+    })
 
     const enriched = campaigns.map((c) => {
       const curr = currentMap.get(c.id)
@@ -252,6 +297,7 @@ export async function queryCampaigns(
           ? { totalAdCost: prevAdCost, totalRevenue: prevRevenue, avgRoas: prevRoas }
           : null,
         currentTarget: ct,
+        summary: summaries[c.id] ?? { budgetUtilization: null, roasAchievement: null },
         minDate: dr?.minDate ?? null,
         maxDate: dr?.maxDate ?? null,
       }
@@ -260,31 +306,8 @@ export async function queryCampaigns(
     return enriched
   }
 
-  // 기간 파라미터 없을 때도 minDate/maxDate 포함
-  const allDateRanges = await prisma.adRecord.groupBy({
-    by: ['campaignId'],
-    where: { workspaceId },
-    _min: { date: true },
-    _max: { date: true },
-  })
-  const allDateRangeMap = new Map(
-    (
-      allDateRanges as Array<{
-        campaignId: string
-        _min: { date: unknown }
-        _max: { date: unknown }
-      }>
-    ).map((r) => [
-      r.campaignId,
-      {
-        minDate: r._min.date ? formatDateToYmdKst(r._min.date as Date) : null,
-        maxDate: r._max.date ? formatDateToYmdKst(r._max.date as Date) : null,
-      },
-    ])
-  )
-
   return campaigns.map((c) => {
-    const dr = allDateRangeMap.get(c.id)
+    const dr = dateRangeMap.get(c.id)
     return {
       ...c,
       currentTarget: targetMap.get(c.id) ?? null,

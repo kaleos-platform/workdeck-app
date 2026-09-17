@@ -17,7 +17,9 @@ export default async function CoupangAdsHomePage() {
   })
   if (!workspace) redirect('/workspace-setup')
 
-  const hasData = (await prisma.adRecord.count({ where: { workspaceId: workspace.id } })) > 0
+  const hasData = Boolean(
+    await prisma.adRecord.findFirst({ where: { workspaceId: workspace.id }, select: { id: true } })
+  )
 
   return (
     <div className="space-y-8">
