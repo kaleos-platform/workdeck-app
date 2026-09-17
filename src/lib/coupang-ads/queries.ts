@@ -128,14 +128,25 @@ async function loadCampaignCatalog(workspaceId: string, today: string) {
     { workspaceId },
     () =>
       measureCoupangAds('catalog_loader', async () => {
-        // Prisma distinct는 모든 원본 행을 애플리케이션으로 가져오므로 DB DISTINCT ON을 사용한다.
+        // 최신 날짜만 집계한 뒤 이름을 읽어 전체 원본 행의 정렬·디스크 임시 파일을 피한다.
         const [rows, metas, allTargets] = await Promise.all([
           prisma.$queryRaw<Array<{ campaignId: string; campaignName: string; adType: string }>>`
-          SELECT DISTINCT ON ("campaignId", "adType")
-            "campaignId", "campaignName", "adType"
-          FROM "AdRecord"
-          WHERE "workspaceId" = ${workspaceId}
-          ORDER BY "campaignId" ASC, "adType" ASC, date DESC
+          SELECT groups."campaignId", latest."campaignName", groups."adType"
+          FROM (
+            SELECT "campaignId", "adType", max(date) AS date
+            FROM "AdRecord"
+            WHERE "workspaceId" = ${workspaceId}
+            GROUP BY "campaignId", "adType"
+          ) groups
+          CROSS JOIN LATERAL (
+            SELECT "campaignName" FROM "AdRecord"
+            WHERE "workspaceId" = ${workspaceId}
+              AND "campaignId" = groups."campaignId"
+              AND "adType" = groups."adType"
+              AND date = groups.date
+            LIMIT 1
+          ) latest
+          ORDER BY groups."campaignId" ASC, groups."adType" ASC
         `,
           prisma.campaignMeta.findMany({
             where: { workspaceId },
