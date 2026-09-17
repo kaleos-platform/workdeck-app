@@ -67,4 +67,45 @@ PLAYWRIGHT_BASE_URL=https://app.workdeck.work E2E_COUPANG_ADS_PERF=1 npx playwri
 NEXT_PUBLIC_SUPABASE_URL=https://build-check.invalid NEXT_PUBLIC_SUPABASE_ANON_KEY=build-check-placeholder npm run build
 ```
 
-운영 배포 전후 측정, cold cache 3초 및 재진입 1초 목표 달성 여부는 아직 확인되지 않았다.
+## 2026-09-17 운영 측정과 후속 개선
+
+PR #888 → #889를 통해 `b6c40ffc08948a8d688507297df7e753dd672a29`를 운영에 배포했다.
+`app.workdeck.work`의 deployment는 `dpl_8NHL4YkuRfCLKUECFZV1jYGtvrL1`이며 READY를 확인했다.
+실제 production 공개 환경변수로 build를 다시 통과했고, 관련 30개 테스트와 lint도 재검증했다.
+
+사용자가 로그인한 브라우저에서 2026-09-10~2026-09-16 기간의 같은 캠페인을 대상으로 각 5회 측정했다.
+첫 화면은 KPI 숫자와 캠페인 카드, 상세는 overview 응답·제목·chart SVG를 기다렸다.
+전용 Playwright 테스트 파일은 인증 환경변수가 없어 실행하지 않았으며, 로그인된 브라우저에서 동등한 흐름을 실행했다.
+
+| 흐름              | 5회 표시 시간(ms)           | 중앙값 | 최댓값 | 목표 충족     |
+| ----------------- | --------------------------- | ------ | ------ | ------------- |
+| 첫 화면 문서 진입 | 5782, 2304, 1501, 1649, 465 | 1649   | 5782   | 아니오        |
+| 상세 진입         | 7900, 400, 8034, 385, 317   | 400    | 8034   | 아니오        |
+| 첫 화면 재진입    | 3261, 474, 4135, 358, 370   | 474    | 4135   | 아니오        |
+| 상세 재진입       | 341, 560, 421, 271, 289     | 341    | 560    | 예(이번 표본) |
+
+[원시 측정값](assets/2026-09-17-performance.json)에 Server-Timing과 배포 정보를 보관한다.
+문서 재진입이 cold cache를 보장하지 않으며, 이전 배포의 동일 조건 5회 baseline은 없다.
+로그인 직후 별도 관측에서 catalog loader 17.49초, date_ranges 3.24초, 목록 API 전체 20.86초가 기록됐다.
+KPI auth도 17.53초였으나 connection pool 대기와 인증 처리 시간을 아직 분리하지 못했다.
+반복 측정에서 overview loader가 6.79초와 7.67초인 표본이 있어 캐시만으로 완료 처리할 수 없다.
+운영 PRISMA_POOL_MAX 환경변수는 미설정으로 소스의 기본값 1이 적용된다. pool은 변경하지 않았다.
+
+후속 변경은 catalog의 전체 DISTINCT ON 정렬을 그룹별 최신 날짜 집계와 LATERAL 이름 조회로 대체한다.
+개발 DB 143,621행에서 기존 실행 계획은 10MB external merge 정렬, 실행 564.9ms,
+후보는 작은 그룹 정렬과 index-only scan, 실행 381.2ms였다. 조회 결과는 동일했다.
+이는 개발 DB의 단일 비교이며 운영 개선율로 해석하지 않는다.
+대표 이름 선택 순서를 유지하도록 최종 campaignId/adType 정렬과 workspace 조건을 보존한다.
+같은 최신 날짜에 다른 이름이 있으면 기존 구현도 선택이 비결정적이었다.
+
+`campaign-catalog.e2e.test.ts`는 명시적 개발 DB 연결에서 임시 테이블 15만 행으로 실제 SQL을 실행한다.
+기존 코드에서는 원본 15만 행 정렬 검사에 실패하고, 변경 후 결과·workspace 격리·정렬 축소 검사가 통과했다.
+영구 테이블과 운영 데이터는 수정하지 않는다. 실행 시 `COUPANG_ADS_TEST_DATABASE_URL`을 개발 DB로만 설정한다.
+
+```sh
+npx jest --config jest.config.e2e.ts --runInBand campaign-catalog.e2e.test.ts
+```
+
+상세는 `overview_latest/ad_types/meta/current/previous/targets/memos` 개별 계측을 추가한다.
+동시에 시작한 쿼리의 시간에는 pool 대기도 포함되므로 합산하지 않는다.
+후속 배포 후 재측정과 테스트 workspace의 실제 변경 후 갱신 검증은 남아 있다.
