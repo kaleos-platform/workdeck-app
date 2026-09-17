@@ -44,6 +44,10 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
+import {
+  useCampaignNavigation,
+  type NavigationCampaign as Campaign,
+} from '@/hooks/use-campaign-navigation'
 import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -108,14 +112,6 @@ import {
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
-
-type Campaign = {
-  id: string
-  name: string
-  displayName: string
-  isCustomName: boolean
-  adTypes: string[]
-}
 
 type SidebarProps = {
   workspaceName: string
@@ -318,11 +314,11 @@ export function Sidebar({
   const pathname = usePathname()
   const { signOut } = useAuth()
   const { collapsed, toggle, expand, mounted } = useSidebarCollapsed()
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0)
   const isWorkdeckSidebar = variant === 'workdeck'
   const isCoupangSidebar = variant === 'coupang-ads'
+  const campaigns = useCampaignNavigation(isCoupangSidebar)
   const isSellerHubSidebar = variant === 'seller-hub'
   const isSalesContentSidebar = variant === 'sales-content'
   const isFinanceSidebar = variant === 'finance'
@@ -330,15 +326,6 @@ export function Sidebar({
   const isMyDeckMode = mode === 'my-deck'
   const meta = DECK_META[variant]
   const BrandIcon = meta.icon
-
-  useEffect(() => {
-    if (!isCoupangSidebar) return
-
-    fetch('/api/campaigns')
-      .then((r) => (r.ok ? r.json() : []))
-      .then((list: Campaign[]) => setCampaigns(list))
-      .catch(() => {})
-  }, [pathname, isCoupangSidebar])
 
   // 승인 대기 카운트 — workdeck 허브(My Deck 홈)에서만 가볍게 조회.
   // 네비게이션(pathname)뿐 아니라 승인/거부 후에도 갱신되도록 커스텀 이벤트를 구독한다

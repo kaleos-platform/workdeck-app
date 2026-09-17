@@ -1,5 +1,7 @@
 'use client'
 
+import { notifyCampaignsChanged } from '@/hooks/use-campaign-navigation'
+
 import { useState, useMemo, useEffect, useLayoutEffect, useRef, use, useDeferredValue } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -754,6 +756,7 @@ export default function CampaignDetailPage({
         body: JSON.stringify({ displayName: trimmed }),
       })
       if (!res.ok) throw new Error('저장에 실패했습니다')
+      notifyCampaignsChanged()
       setDisplayName(trimmed)
       setIsEditingName(false)
       toast.success('캠페인 이름이 변경되었습니다')
@@ -965,6 +968,7 @@ export default function CampaignDetailPage({
         throw new Error(data?.message ?? '캠페인 삭제에 실패했습니다')
       }
 
+      notifyCampaignsChanged()
       toast.success('캠페인이 삭제되었습니다')
       setIsDeleteDialogOpen(false)
       router.push(COUPANG_ADS_BASE_PATH)

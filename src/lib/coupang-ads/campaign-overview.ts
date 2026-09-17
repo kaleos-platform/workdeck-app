@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { prisma } from '@/lib/prisma'
+import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 import {
   calculateCTR,
   calculateCVR,
@@ -254,5 +255,7 @@ export async function loadCampaignOverview(
 }
 
 export function getCachedCampaignOverview(input: CampaignOverviewInput): Promise<CampaignOverview> {
-  return cacheCoupangAdsData('overview', input, () => loadCampaignOverview(input))
+  return cacheCoupangAdsData('overview', input, () =>
+    measureCoupangAds('overview_loader', () => loadCampaignOverview(input))
+  )
 }

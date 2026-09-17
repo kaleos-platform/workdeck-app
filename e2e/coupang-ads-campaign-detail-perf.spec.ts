@@ -73,3 +73,131 @@ test.describe('쿠팡 광고 캠페인 상세 초기 요청', () => {
     expect(uniquePaths).toHaveLength(2)
   })
 })
+
+test('첫 화면은 캠페인별 목표 요약 API 없이 성과를 표시한다', async ({ page }) => {
+  await loginUser(page)
+  const requests: string[] = []
+  page.on('request', (request) => requests.push(new URL(request.url()).pathname))
+  const campaignResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url())
+    return url.pathname === '/api/campaigns' && url.searchParams.has('startDate')
+  })
+  await page.goto('/d/coupang-ads')
+  const response = await campaignResponse
+  expect(response.ok()).toBeTruthy()
+  const campaigns = (await response.json()) as Array<{
+    id: string
+    displayName: string
+    metrics: { totalAdCost: number; totalRevenue: number }
+    summary: { budgetUtilization: number | null; roasAchievement: number | null }
+  }>
+  const campaign = campaigns.find((c) => c.metrics.totalAdCost > 0 || c.metrics.totalRevenue > 0)
+  expect(campaign, '최근 7일 광고 데이터가 있는 테스트 workspace가 필요합니다').toBeDefined()
+  await expect(
+    page
+      .locator(`a[href^="/d/coupang-ads/campaigns/${campaign!.id}?"]`)
+      .filter({ hasText: '총 광고비' })
+  ).toBeVisible()
+  expect(campaign!.summary).toHaveProperty('budgetUtilization')
+  expect(requests.filter((path) => path.endsWith('/targets/summary'))).toEqual([])
+})
+
+test('배포 환경에서 첫 진입·재진입 표시 시간을 5회 측정한다', async ({ page }, testInfo) => {
+  test.skip(process.env.E2E_COUPANG_ADS_PERF !== '1', '배포 성능 측정 시에만 활성화')
+  test.setTimeout(600_000)
+  await loginUser(page)
+  const samples: Array<{ screen: string; ms: number; serverTiming: string | null }> = []
+
+  async function home(action: () => Promise<unknown>, screen: string) {
+    const campaignResponse = page.waitForResponse(
+      (response) => {
+        const url = new URL(response.url())
+        return url.pathname === '/api/campaigns' && url.searchParams.has('startDate')
+      },
+      { timeout: 60_000 }
+    )
+    const kpiResponse = page.waitForResponse(
+      (response) => new URL(response.url()).pathname === '/api/dashboard/kpi',
+      { timeout: 60_000 }
+    )
+    const start = performance.now()
+    await action()
+    const [response, kpi] = await Promise.all([campaignResponse, kpiResponse])
+    expect(response.ok()).toBeTruthy()
+    expect(kpi.ok()).toBeTruthy()
+    const campaigns = (await response.json()) as Array<{
+      id: string
+      metrics: { totalAdCost: number; totalRevenue: number }
+    }>
+    const campaign = campaigns.find(
+      (c) => c.id === CAMPAIGN_ID && (c.metrics.totalAdCost > 0 || c.metrics.totalRevenue > 0)
+    )
+    expect(campaign, '지정 캠페인에 최근 7일 성과 데이터가 필요합니다').toBeDefined()
+    const link = page
+      .locator(`a[href^="/d/coupang-ads/campaigns/${CAMPAIGN_ID}?"]`)
+      .filter({ hasText: '총 광고비' })
+    await expect(link).toBeVisible()
+    const { adCost } = (await kpi.json()) as { adCost: number }
+    await expect(
+      page
+        .locator('[data-slot="card"]')
+        .filter({
+          has: page.locator('[data-slot="card-title"]').filter({ hasText: /^총 광고비$/ }),
+        })
+        .getByText(`${adCost.toLocaleString('ko-KR')}원`, { exact: true })
+    ).toBeVisible()
+    samples.push({
+      screen,
+      ms: performance.now() - start,
+      serverTiming: response.headers()['server-timing'] ?? null,
+    })
+    return link
+  }
+
+  async function detail(action: () => Promise<unknown>, screen: string) {
+    const overviewResponse = page.waitForResponse(
+      (response) => new URL(response.url()).pathname === `/api/campaigns/${CAMPAIGN_ID}/overview`,
+      { timeout: 60_000 }
+    )
+    const start = performance.now()
+    await action()
+    const response = await overviewResponse
+    expect(response.ok()).toBeTruthy()
+    const overview = (await response.json()) as {
+      campaign: { displayName: string }
+      metricSeries: unknown[]
+    }
+    expect(overview.metricSeries.length).toBeGreaterThan(0)
+    await expect(
+      page.getByRole('heading', { name: overview.campaign.displayName, exact: true })
+    ).toBeVisible()
+    await expect(page.locator('.recharts-surface').first()).toBeVisible()
+    samples.push({
+      screen,
+      ms: performance.now() - start,
+      serverTiming: response.headers()['server-timing'] ?? null,
+    })
+  }
+
+  try {
+    for (let i = 0; i < 5; i++) {
+      const link = await home(() => page.goto('/d/coupang-ads'), 'first')
+      await detail(() => link.click(), 'detail')
+      const revisitLink = await home(
+        () => page.locator('a[href="/d/coupang-ads"]').first().click(),
+        'revisit'
+      )
+      await detail(() => revisitLink.click(), 'detail_revisit')
+    }
+  } finally {
+    await testInfo.attach('coupang-ads-performance.json', {
+      body: JSON.stringify(samples, null, 2),
+      contentType: 'application/json',
+    })
+  }
+  for (const sample of samples) {
+    expect
+      .soft(sample.ms, `${sample.screen}: ${sample.ms.toFixed(0)}ms`)
+      .toBeLessThanOrEqual(sample.screen.includes('revisit') ? 1000 : 3000)
+  }
+})
