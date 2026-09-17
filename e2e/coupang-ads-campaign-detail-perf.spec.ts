@@ -122,6 +122,16 @@ test('배포 환경에서 첫 진입·재진입 표시 시간을 5회 측정한�
     )
     const start = performance.now()
     await action()
+    const link = page
+      .locator(`a[href^="/d/coupang-ads/campaigns/${CAMPAIGN_ID}?"]`)
+      .filter({ hasText: '총 광고비' })
+    await expect(link).toBeVisible()
+    const adCostCard = page.locator('[data-slot="card"]').filter({
+      has: page.locator('[data-slot="card-title"]').filter({ hasText: /^총 광고비$/ }),
+    })
+    await expect(adCostCard.locator('.text-2xl')).toHaveText(/^[\d,]+원$/)
+    // 초기 서버 데이터 표시 시간과 이후 API 재검증 완료 시간을 분리한다.
+    const readyMs = performance.now() - start
     const [response, kpi] = await Promise.all([campaignResponse, kpiResponse])
     expect(response.ok()).toBeTruthy()
     expect(kpi.ok()).toBeTruthy()
@@ -133,10 +143,6 @@ test('배포 환경에서 첫 진입·재진입 표시 시간을 5회 측정한�
       (c) => c.id === CAMPAIGN_ID && (c.metrics.totalAdCost > 0 || c.metrics.totalRevenue > 0)
     )
     expect(campaign, '지정 캠페인에 최근 7일 성과 데이터가 필요합니다').toBeDefined()
-    const link = page
-      .locator(`a[href^="/d/coupang-ads/campaigns/${CAMPAIGN_ID}?"]`)
-      .filter({ hasText: '총 광고비' })
-    await expect(link).toBeVisible()
     const { adCost } = (await kpi.json()) as { adCost: number }
     await expect(
       page
@@ -148,7 +154,7 @@ test('배포 환경에서 첫 진입·재진입 표시 시간을 5회 측정한�
     ).toBeVisible()
     samples.push({
       screen,
-      ms: performance.now() - start,
+      ms: readyMs,
       serverTiming: response.headers()['server-timing'] ?? null,
     })
     return link
