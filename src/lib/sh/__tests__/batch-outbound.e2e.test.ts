@@ -169,6 +169,47 @@ d('배송 묶음 출고 위치 재고 차감 (dev DB)', () => {
     expect(await prisma.invMovement.count({ where: { delBatchId: batchId } })).toBe(2)
   })
 
+  // 회귀: 상품이 미사용(INACTIVE)으로 전환된 뒤 매칭된 주문이 있으면 완료 전체가 롤백되던 문제.
+  // 이미 발송된 출고는 원장에 기록돼야 하므로 INACTIVE 여도 차감한다.
+  it('미사용(INACTIVE) 상품 옵션도 차감된다', async () => {
+    const group = await prisma.invProductGroup.findFirstOrThrow({ where: { spaceId: SPACE_ID } })
+    const inactive = await prisma.invProduct.create({
+      data: { spaceId: SPACE_ID, name: 'E2E 미사용 상품', groupId: group.id, status: 'INACTIVE' },
+    })
+    const opt = await prisma.invProductOption.create({
+      data: { productId: inactive.id, name: '기본' },
+    })
+    await prisma.invStockLevel.create({
+      data: { spaceId: SPACE_ID, optionId: opt.id, locationId, quantity: 4 },
+    })
+    const method3pl = await prisma.delShippingMethod.findFirstOrThrow({
+      where: { spaceId: SPACE_ID, locationId },
+    })
+    const batch2 = await prisma.delBatch.create({
+      data: { spaceId: SPACE_ID, source: 'MANUAL', status: 'DRAFT' },
+    })
+    const order = await prisma.delOrder.create({
+      data: {
+        spaceId: SPACE_ID,
+        batchId: batch2.id,
+        shippingMethodId: method3pl.id,
+        orderDate: new Date(),
+        ...PII,
+      },
+    })
+    await prisma.delOrderItem.create({
+      data: { orderId: order.id, name: '미사용 상품', quantity: 1, optionId: opt.id },
+    })
+
+    await prisma.$transaction((tx) =>
+      applyBatchOutboundForBatch(tx, SPACE_ID, batch2.id, new Date())
+    )
+
+    expect(await stock(opt.id)).toBe(3)
+    expect(await prisma.invMovement.count({ where: { delBatchId: batch2.id } })).toBe(1)
+    await deleteBatchWithMovements(SPACE_ID, batch2.id)
+  })
+
   it('묶음 삭제 시 재고 원상복구', async () => {
     const { deletedMovements } = await deleteBatchWithMovements(SPACE_ID, batchId)
     expect(deletedMovements).toBe(2)
