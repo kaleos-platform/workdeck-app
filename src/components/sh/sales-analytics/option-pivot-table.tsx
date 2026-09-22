@@ -13,16 +13,20 @@ import {
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
+  formatKRW,
   pctChange,
   seriesBucketValue,
   type OptionBucket,
   type OptionSeries,
+  type SalesMetric,
 } from '@/lib/sh/sales-analytics'
 
 type Props = {
   buckets: OptionBucket[]
   /** 표 열 = 해석된 시리즈 (차트와 동일 단일 소스). */
   series: OptionSeries[]
+  /** 표시 지표 — 차트·랭킹과 공유. */
+  metric: SalesMetric
   loading: boolean
 }
 
@@ -46,16 +50,19 @@ function DeltaText({ pct }: { pct: number | null }) {
   )
 }
 
-const qty = (n: number) => `${n.toLocaleString('ko-KR')}개`
+const qty = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}개`
+const formatMetric = (n: number, metric: SalesMetric) =>
+  metric === 'revenue' ? formatKRW(n) : qty(n)
 
-export function OptionPivotTable({ buckets, series, loading }: Props) {
+export function OptionPivotTable({ buckets, series, metric, loading }: Props) {
   // 버킷별 합계(표시 시리즈 합) — 차트 선들의 합과 일치
-  const rowTotal = (b: OptionBucket) => series.reduce((s, ser) => s + seriesBucketValue(b, ser), 0)
+  const rowTotal = (b: OptionBucket) =>
+    series.reduce((s, ser) => s + seriesBucketValue(b, ser, metric), 0)
 
   // 시리즈 열별 기간 합계 (하단 합계행)
   const seriesColumnTotals = useMemo(
-    () => series.map((ser) => buckets.reduce((s, b) => s + seriesBucketValue(b, ser), 0)),
-    [series, buckets]
+    () => series.map((ser) => buckets.reduce((s, b) => s + seriesBucketValue(b, ser, metric), 0)),
+    [series, buckets, metric]
   )
 
   const grandTotal = useMemo(
@@ -66,7 +73,7 @@ export function OptionPivotTable({ buckets, series, loading }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>기간별·상품(옵션)별 판매량</CardTitle>
+        <CardTitle>기간별·상품(옵션)별 {metric === 'revenue' ? '매출' : '판매량'}</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -102,7 +109,7 @@ export function OptionPivotTable({ buckets, series, loading }: Props) {
                         {bucket.label}
                       </TableCell>
                       <TableCell className="bg-muted/40 text-right font-semibold tabular-nums">
-                        {qty(cur)}
+                        {formatMetric(cur, metric)}
                       </TableCell>
                       <TableCell className="border-r bg-muted/40 text-right">
                         {idx === 0 ? (
@@ -113,7 +120,7 @@ export function OptionPivotTable({ buckets, series, loading }: Props) {
                       </TableCell>
                       {series.map((ser) => (
                         <TableCell key={ser.id} className="w-[120px] text-right tabular-nums">
-                          {qty(seriesBucketValue(bucket, ser))}
+                          {formatMetric(seriesBucketValue(bucket, ser, metric), metric)}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -125,14 +132,14 @@ export function OptionPivotTable({ buckets, series, loading }: Props) {
                 <TableRow className="border-t-2 font-semibold">
                   <TableCell className="sticky left-0 z-10 bg-muted/60">합계</TableCell>
                   <TableCell className="bg-muted/60 text-right tabular-nums">
-                    {qty(grandTotal)}
+                    {formatMetric(grandTotal, metric)}
                   </TableCell>
                   <TableCell className="border-r bg-muted/60 text-right">
                     <span className="text-xs text-muted-foreground">-</span>
                   </TableCell>
                   {series.map((ser, i) => (
                     <TableCell key={ser.id} className="w-[120px] text-right tabular-nums">
-                      {qty(seriesColumnTotals[i])}
+                      {formatMetric(seriesColumnTotals[i], metric)}
                     </TableCell>
                   ))}
                 </TableRow>
