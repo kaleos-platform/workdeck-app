@@ -19,7 +19,7 @@ type CampaignSummary = {
   roasAchievement: number | null
 }
 
-type CampaignWithMetrics = {
+export type CampaignWithMetrics = {
   id: string
   name: string
   displayName: string
@@ -71,8 +71,17 @@ function DiffBadge({ diff }: { diff: number | null }) {
   )
 }
 
-export function CampaignListWithMetrics({ from, to }: { from: string; to: string }) {
-  const [campaigns, setCampaigns] = useState<CampaignWithMetrics[]>([])
+export function CampaignListWithMetrics({
+  from,
+  to,
+  initialCampaigns,
+}: {
+  from: string
+  to: string
+  initialCampaigns?: CampaignWithMetrics[]
+}) {
+  const [campaigns, setCampaigns] = useState<CampaignWithMetrics[]>(initialCampaigns ?? [])
+  const [loadedPeriod, setLoadedPeriod] = useState(initialCampaigns ? `${from}:${to}` : '')
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -85,7 +94,10 @@ export function CampaignListWithMetrics({ from, to }: { from: string; to: string
         })
         if (!res.ok) return
         const data = (await res.json()) as CampaignWithMetrics[]
-        if (!controller.signal.aborted) setCampaigns(data)
+        if (!controller.signal.aborted) {
+          setCampaigns(data)
+          setLoadedPeriod(`${from}:${to}`)
+        }
       } catch {
         // 취소되거나 실패한 조회가 다른 기간의 최신 결과를 덮지 않도록 한다.
       } finally {
@@ -94,10 +106,13 @@ export function CampaignListWithMetrics({ from, to }: { from: string; to: string
     }
     void load()
     return () => controller.abort()
-  }, [from, to])
+  }, [from, to, initialCampaigns])
+
+  // 서버 초기 결과는 재검증 중에도 표시하되 다른 기간의 수치는 숨긴다.
+  const showLoading = isLoading && loadedPeriod !== `${from}:${to}`
 
   // 해당 기간에 데이터가 있는 캠페인만 표시 (광고비 또는 매출 > 0)
-  const activeCampaigns = campaigns.filter(
+  const activeCampaigns = (loadedPeriod === `${from}:${to}` ? campaigns : []).filter(
     (c) => c.metrics.totalAdCost > 0 || c.metrics.totalRevenue > 0
   )
 
@@ -117,7 +132,7 @@ export function CampaignListWithMetrics({ from, to }: { from: string; to: string
         <CardTitle className="text-base">캠페인별 성과</CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {showLoading ? (
           <p className="py-6 text-center text-sm text-muted-foreground">불러오는 중...</p>
         ) : activeCampaigns.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
