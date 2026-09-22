@@ -8,19 +8,22 @@ import { DashboardClient, type InitialDashboardData } from '@/components/dashboa
 import { COUPANG_ADS_UPLOAD_PATH } from '@/lib/deck-routes'
 import { getDaysAgoStrKst } from '@/lib/date-range'
 import { queryCampaigns, queryKpi } from '@/lib/coupang-ads/queries'
+import { measureCoupangAds, withCoupangAdsPageTiming } from '@/lib/coupang-ads/server-timing'
 
-export default async function CoupangAdsHomePage() {
-  const resolved = await resolveWorkspace()
+async function renderHomePage() {
+  const resolved = await measureCoupangAds('auth', resolveWorkspace)
   if (resolved.error) {
     if (resolved.error.status === 401) redirect('/login')
     if (resolved.error.status === 404) redirect('/workspace-setup')
     redirect('/my-deck')
   }
 
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: resolved.workspace.id },
-    select: { id: true, name: true },
-  })
+  const workspace = await measureCoupangAds('workspace', () =>
+    prisma.workspace.findUnique({
+      where: { id: resolved.workspace.id },
+      select: { id: true, name: true },
+    })
+  )
   if (!workspace) redirect('/workspace-setup')
 
   const from = getDaysAgoStrKst(7)
@@ -28,8 +31,10 @@ export default async function CoupangAdsHomePage() {
   let initialData: InitialDashboardData | undefined
   try {
     const [kpi, campaigns] = await Promise.all([
-      queryKpi(workspace.id, { startDate: from, endDate: to }),
-      queryCampaigns(workspace.id, { startDate: from, endDate: to }),
+      measureCoupangAds('kpi', () => queryKpi(workspace.id, { startDate: from, endDate: to })),
+      measureCoupangAds('campaigns', () =>
+        queryCampaigns(workspace.id, { startDate: from, endDate: to })
+      ),
     ])
     initialData = {
       from,
@@ -72,4 +77,8 @@ export default async function CoupangAdsHomePage() {
       <DashboardClient hasData={hasData} initialData={initialData} />
     </div>
   )
+}
+
+export default function CoupangAdsHomePage() {
+  return withCoupangAdsPageTiming(renderHomePage)
 }
