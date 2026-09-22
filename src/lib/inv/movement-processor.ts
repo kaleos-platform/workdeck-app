@@ -62,7 +62,14 @@ async function assertLocationInSpace(
   return loc
 }
 
-async function assertOptionInSpace(tx: Tx, spaceId: string, optionId: string) {
+// allowInactive: 이미 물리적으로 발생한 이동(배송 묶음 출고)은 상품이 미사용 전환된 뒤에도
+// 원장에 기록되어야 한다. 신규 수기 입력 경로에서만 ACTIVE를 강제한다.
+async function assertOptionInSpace(
+  tx: Tx,
+  spaceId: string,
+  optionId: string,
+  opts: { allowInactive?: boolean } = {}
+) {
   const option = await tx.invProductOption.findUnique({
     where: { id: optionId },
     include: { product: { select: { spaceId: true, status: true } } },
@@ -70,7 +77,7 @@ async function assertOptionInSpace(tx: Tx, spaceId: string, optionId: string) {
   if (!option || option.product.spaceId !== spaceId) {
     throw new MovementError('상품 옵션을 찾을 수 없습니다', 404)
   }
-  if (option.product.status !== 'ACTIVE') {
+  if (!opts.allowInactive && option.product.status !== 'ACTIVE') {
     throw new MovementError('미사용 상품입니다. 사용 재개 후 처리하세요', 400)
   }
   return option
@@ -684,7 +691,7 @@ export async function applyBatchOutbound(
   const seenLocations = new Set<string>()
   for (const item of items) {
     if (!seenOptions.has(item.optionId)) {
-      await assertOptionInSpace(tx, spaceId, item.optionId)
+      await assertOptionInSpace(tx, spaceId, item.optionId, { allowInactive: true })
       seenOptions.add(item.optionId)
     }
     if (!seenLocations.has(item.locationId)) {

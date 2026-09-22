@@ -69,6 +69,7 @@ import {
   type ComboOption,
 } from '@/lib/finance/category-options'
 import { MEMO_MAX } from '@/lib/finance/memo'
+import { finTxnLabel } from '@/lib/finance/txn-label'
 import { FINANCE_UPLOAD_PATH, FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-routes'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
@@ -1415,7 +1416,8 @@ function CashflowTxnPanel({
       ? data.rows.filter(
           (r) =>
             (r.description ?? '').toLowerCase().includes(q) ||
-            (r.counterparty ?? '').toLowerCase().includes(q)
+            (r.counterparty ?? '').toLowerCase().includes(q) ||
+            (r.memo ?? '').toLowerCase().includes(q)
         )
       : data.rows
     const dir = sortDir === 'asc' ? 1 : -1
@@ -1554,7 +1556,7 @@ function CashflowTxnPanel({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="적요·가맹점 검색"
+              placeholder="적요·가맹점·메모 검색"
               className="h-8 pl-7 text-xs"
             />
           </div>
@@ -1661,8 +1663,8 @@ function PanelTxnRow({
                 {formatWon(txn.amount)}
               </span>
             </span>
-            <span className="mt-0.5 block truncate text-xs" title={txn.description ?? ''}>
-              {txn.description ?? txn.counterparty ?? '-'}
+            <span className="mt-0.5 block truncate text-xs" title={finTxnLabel(txn)}>
+              {finTxnLabel(txn)}
             </span>
             <span className="mt-1 flex items-center gap-1.5">
               <span className="inline-flex items-center gap-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px]">
