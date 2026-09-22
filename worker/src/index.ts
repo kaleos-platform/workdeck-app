@@ -12,6 +12,7 @@ import { startManualPoller } from './manual-poller.js'
 import { startAnalysisPoller } from './analysis-poller.js'
 import { startWorkerHeartbeat } from './heartbeat.js'
 import { startBackfillPoller } from './backfill-poller.js'
+import { startCoupangWritePoller } from './coupang-write-poller.js'
 import { pruneScreenshots } from './screenshot-retention.js'
 
 // playwright-extra 의 puppeteer 호환 shim 은 브라우저/페이지가 먼저 닫히면
@@ -72,6 +73,9 @@ startWorkerHeartbeat()
 
 // 콜드스타트 백필 잡 폴링 시작
 startBackfillPoller()
+
+// 쿠팡 쓰기 잡(가격 변경·상품 동기화) 폴링 시작
+startCoupangWritePoller()
 
 // 진단용 스크린샷 보존 정리 — 기동 시 1회 + 매일 04:00 KST(수집 09:00 과 겹치지 않게)
 pruneScreenshots()

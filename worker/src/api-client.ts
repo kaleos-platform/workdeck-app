@@ -364,6 +364,44 @@ export async function upsertProductItems(
   return { upserted: Number(data?.upserted ?? 0) }
 }
 
+/** 쿠팡 쓰기 잡(CoupangWriteJob) — 워커가 claim 한 잡 1건. */
+export type CoupangWriteJobPayload = {
+  id: string
+  workspaceId: string
+  spaceId: string
+  kind: 'PRICE_CHANGE' | 'PRODUCT_SYNC'
+  payload: unknown
+}
+
+/**
+ * PENDING 쓰기 잡 1건 claim (경합 방지는 라우트의 updateMany 게이트가 담당).
+ * POST /api/coupang/write-jobs/claim
+ * `{ job }` 래퍼를 벗겨서 반환한다 — getSourceSetting() 과 같은 실수를 반복하지 않기 위해.
+ */
+export async function claimWriteJob(): Promise<CoupangWriteJobPayload | null> {
+  const response = await workerFetch('/api/coupang/write-jobs/claim', { method: 'POST' })
+  const data = await response.json()
+  return data?.job ?? null
+}
+
+/**
+ * 쓰기 잡 결과 보고.
+ * POST /api/coupang/write-jobs/[jobId]/report
+ */
+export async function reportWriteJob(
+  jobId: string,
+  body: {
+    status: 'SUCCEEDED' | 'PARTIAL' | 'FAILED'
+    results?: unknown[]
+    error?: string
+  }
+): Promise<void> {
+  await workerFetch(`/api/coupang/write-jobs/${jobId}/report`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
 /** 쿠팡 재고 API 로 수집한 행 하나. productId/productName/optionName 은 없다 — 앱이 이력 역산으로 채운다. */
 export type InventoryApiRowPayload = {
   optionId: string
