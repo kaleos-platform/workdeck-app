@@ -222,3 +222,12 @@ Playwright 1개 테스트를 실행해 통과했다(7.1초). 일회용 계정·w
 PR #908/#909의 SSR 계측에서 느린 요청의 auth는 930.7~1016.3ms, KPI는 35.3~40.8ms,
 목록은 208.8~223.8ms였다. 이에 PR #910/#911에서 auth를 사용자·멤버십·deck·workspace 조회로 나누었다.
 로그는 고정 구간명과 시간만 기록하며 개인정보·광고 결과·오류 메시지는 포함하지 않는다.
+
+인증 세부 계측에서는 느린 표본의 `auth_user`가 185.9~274.8ms, `auth_membership`이 717.3~749.7ms였다.
+`auth_deck`은 13.8~17.8ms, `auth_workspace`는 5.5~14.8ms였다. 멤버십 구간에는 DB 연결·대기가 포함될 수 있으며 SQL 실행 시간으로 단정하지 않는다.
+레이아웃과 페이지가 반복 호출하는 `getUser`·`resolveSpaceContext`에 React `cache`를 적용해 한 서버 렌더링 요청에서만 공유한다.
+다음 요청은 다시 검증하며 Route Handler에서는 React 렌더링 캐시를 재사용하지 않는다.
+실제 RSC 렌더러 테스트는 서로 다른 사용자·익명·동일 사용자 재요청 4회를 검증한다.
+사용자 조회가 변경 전 20회로 실패하고 변경 후 4회로 통과했으며 인증된 요청의 멤버십 조회는 각각 1회였다.
+레이아웃이 먼저 시작한 공유 조회는 페이지의 AsyncLocalStorage 로그에 세부 구간이 없을 수 있으므로 이를 DB 조회 0ms로 해석하지 않는다.
+참고: [React cache의 요청별 범위](https://react.dev/reference/react/cache).
