@@ -207,3 +207,52 @@ test('배포 환경에서 첫 진입·재진입 표시 시간을 5회 측정한�
       .toBeLessThanOrEqual(sample.screen.includes('revisit') ? 1000 : 3000)
   }
 })
+
+// 삭제 가능한 합성 데이터 workspace에서만 명시적으로 실행한다.
+test('테스트 workspace에서 캠페인 이름 변경 후 현재 화면과 재진입 화면이 갱신된다', async ({
+  page,
+}) => {
+  test.skip(process.env.E2E_COUPANG_ADS_MUTATION !== '1', '일회용 테스트 workspace에서만 실행')
+  test.setTimeout(120_000)
+  await loginUser(page)
+  await page.goto('/d/coupang-ads')
+  const card = page
+    .locator(`a[href^="/d/coupang-ads/campaigns/${CAMPAIGN_ID}?"]`)
+    .filter({ hasText: '총 광고비' })
+  const overviewResponse = page.waitForResponse((r) =>
+    r.url().includes(`/api/campaigns/${CAMPAIGN_ID}/overview`)
+  )
+  await card.click()
+  const overview = await overviewResponse
+  expect(overview.status()).toBe(200)
+  const { campaign } = (await overview.json()) as { campaign: { displayName: string } }
+  const heading = page.getByRole('heading', { level: 1 })
+  const original = campaign.displayName
+  await expect(heading).toHaveText(original)
+  const changed = `${original} 갱신 검증`
+  try {
+    await heading.locator('..').locator('button').click()
+    const input = page.locator('input.text-xl')
+    await input.fill(changed)
+    const response = page.waitForResponse(
+      (r) => r.url().endsWith(`/api/campaigns/${CAMPAIGN_ID}`) && r.request().method() === 'PATCH'
+    )
+    await input.press('Enter')
+    expect((await response).status()).toBe(200)
+    await expect(heading).toHaveText(changed)
+    await expect(
+      page.locator(`a[href="/d/coupang-ads/campaigns/${CAMPAIGN_ID}"]`).first()
+    ).toContainText(changed)
+    await page.locator('a[href="/d/coupang-ads"]').first().click()
+    await expect(card).toContainText(changed)
+    await card.click()
+    await expect(heading).toHaveText(changed)
+  } finally {
+    const restored = await page.request.patch(`/api/campaigns/${CAMPAIGN_ID}`, {
+      data: { displayName: original },
+    })
+    expect(restored.status()).toBe(200)
+  }
+  await page.goto('/d/coupang-ads')
+  await expect(card.getByText(original, { exact: true })).toBeVisible()
+})
