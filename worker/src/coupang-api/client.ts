@@ -145,6 +145,70 @@ export class CoupangApiClient {
   }
 
   /**
+   * PUT 호출. CEA 서명 message 는 signedDate+method+path+query 로 body 를 포함하지 않으므로
+   * 서명 로직은 get() 과 동일하다. 단 쿼리 파라미터(apActive 등)는 서명 message 에 들어가므로
+   * 문자열을 한 번만 만들어 서명과 URL 양쪽에 같은 것을 써야 한다.
+   *
+   * 응답은 해석하지 않고 그대로 돌려준다 — 성공 판정은 중첩 body 필드라
+   * write-result.ts 가 단독으로 책임진다(호출부가 status 로 판단하지 못하게).
+   */
+  async put<T>(
+    path: string,
+    query?: Record<string, string | number | undefined>
+  ): Promise<{ body: T; status: number }> {
+    const queryStr = buildQueryString(query)
+    const url = `${COUPANG_API_BASE}${path}${queryStr ? `?${queryStr}` : ''}`
+
+    let attempt = 0
+    for (;;) {
+      await this.throttle()
+
+      const authorization = buildAuthorization({
+        method: 'PUT',
+        path,
+        query: queryStr,
+        accessKey: this.cfg.accessKey,
+        secretKey: this.cfg.secretKey,
+      })
+
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json;charset=UTF-8',
+          Authorization: authorization,
+          'X-Requested-By': this.cfg.vendorId,
+        },
+      })
+
+      const text = await response.text().catch(() => '')
+      let body: unknown = null
+      try {
+        body = text ? JSON.parse(text) : null
+      } catch {
+        body = null
+      }
+
+      if (response.status === 429 && attempt < MAX_RETRIES) {
+        attempt += 1
+        const backoffMs = MIN_INTERVAL_MS * 2 ** attempt
+        console.warn(
+          `[coupang-api] 429 재시도 ${attempt}/${MAX_RETRIES} — ${backoffMs}ms 대기 (PUT ${path})`
+        )
+        await sleep(backoffMs)
+        continue
+      }
+
+      // IP allowlist 미등록은 다른 실패와 구분해야 알림 문구가 정확해진다.
+      const reason = classifyApiFailure(response.status, text)
+      if (reason === 'IP_REJECTED') {
+        throw new CoupangApiError(reason, `쿠팡 API IP 거부 (PUT ${path})`, response.status, text)
+      }
+
+      return { body: body as T, status: response.status }
+    }
+  }
+
+  /**
    * nextToken 기반 페이징을 자동 순회한다.
    * @param pick 응답에서 이번 페이지 items 와 다음 페이지 nextToken 을 뽑아내는 함수
    * @param maxPages 안전장치 — 초과 시 throw(무한 루프 방지)

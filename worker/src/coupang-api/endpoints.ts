@@ -5,6 +5,7 @@
  * 확인한 4종의 근거는 이 파일 각 함수 주석 및 팀 보고 참조.
  */
 import { CoupangApiClient } from './client.js'
+import { unwrapWriteResult } from './write-result.js'
 
 // ─── 로켓창고 재고 요약 (확인됨 — 계획서 §2-3에 명시된 path) ─────────────────────
 
@@ -331,4 +332,51 @@ export function extractOptionIdentities(productDetail: SellerProductDetail): Opt
  */
 export function extractVendorItemIds(productDetail: SellerProductDetail): string[] {
   return extractOptionIdentities(productDetail).map((r) => r.optionId)
+}
+
+// ─── 아이템별 수량/가격/상태 조회 ────────────────────────────────────────────
+// 응답은 4필드뿐이다(실측): sellerItemId · amountInStock · salePrice · onSale.
+// 자동 가격조정(apActive/apMinSalePrice) 상태는 응답에 없다 — 읽을 수단이 없다.
+// ⚠️ 경로는 문서에 명시돼 있지 않은 추정치다 — Task 5 실호출로 확인 전까지 미검증.
+export interface VendorItemStatus {
+  sellerItemId: number
+  amountInStock: number
+  salePrice: number
+  onSale: boolean
+}
+
+interface VendorItemStatusResponse {
+  code: number | string
+  message: string
+  data: VendorItemStatus
+}
+
+export async function fetchVendorItemStatus(
+  client: CoupangApiClient,
+  vendorItemId: string | number
+): Promise<VendorItemStatus> {
+  const path = `/v2/providers/seller_api/apis/api/v1/marketplace/vendor-items/${vendorItemId}/inventories`
+  const res = await client.get<VendorItemStatusResponse>(path)
+  return res.data
+}
+
+// ─── 아이템별 가격 변경 ──────────────────────────────────────────────────────
+// 로켓그로스/하이브리드 상품도 이 API 가 정규 경로다(상품수정 API 로는 불가).
+// apActive·apMinSalePrice 는 반드시 함께 보낸다 — 단독이면 400.
+// forceSalePriceUpdate 는 쓰지 않는다(쿠팡 자체 변동폭 가드를 살려둔다).
+export async function changeVendorItemPrice(
+  client: CoupangApiClient,
+  args: {
+    vendorItemId: string | number
+    price: number
+    apActive: boolean
+    apMinSalePrice: number
+  }
+): Promise<number> {
+  const path = `/v2/providers/seller_api/apis/api/v1/marketplace/vendor-items/${args.vendorItemId}/prices/${args.price}`
+  const { body, status } = await client.put<unknown>(path, {
+    apActive: String(args.apActive),
+    apMinSalePrice: args.apMinSalePrice,
+  })
+  return unwrapWriteResult(body, status)
 }
