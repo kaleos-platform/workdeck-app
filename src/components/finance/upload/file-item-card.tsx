@@ -39,6 +39,7 @@ import { AccountRegisterDialog } from './account-register-dialog'
 import {
   NONE_ACCOUNT,
   findMatchedAccount,
+  duplicateColumnFields,
   isMappingDirty,
   isMappingValid,
   type Account,
@@ -479,6 +480,14 @@ export function FileItemCard({
             </p>
           )}
 
+          {/* 동일 컬럼 이중 매핑 경고 — 같은 값이 두 필드에 저장된다 */}
+          {duplicateColumnFields(item.mapping, item.kind).map(({ colIdx, labels }) => (
+            <p key={colIdx} className="text-xs text-amber-600 dark:text-amber-400">
+              &quot;{preview.preview.headers[colIdx]}&quot; 컬럼이 {labels.join(' · ')}에 동시에
+              매핑돼 있습니다 — 같은 값이 두 필드에 저장됩니다
+            </p>
+          ))}
+
           {/* 이 규칙 기억 / 갱신 */}
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -498,8 +507,7 @@ export function FileItemCard({
             </div>
             {!item.savePreset && mappingDirty && (
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                수정한 컬럼 매핑이 저장되지 않습니다 — 다음 업로드에는 기존 규칙이 그대로
-                적용됩니다
+                수정한 컬럼 매핑이 저장되지 않습니다 — 다음 업로드에는 기존 규칙이 그대로 적용됩니다
               </p>
             )}
             {item.savePreset && (

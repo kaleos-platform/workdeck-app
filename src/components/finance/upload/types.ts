@@ -155,6 +155,28 @@ export function isMappingValid(
   return { ok: true }
 }
 
+/**
+ * 두 개 이상의 필드에 동시 매핑된 컬럼 → { 컬럼 인덱스, 해당 필드 라벨들 }.
+ * 경고용이라 저장을 막지 않는다(isMappingValid 와 분리). 신한 프리셋이 "내용" 컬럼을
+ * description·counterparty 양쪽에 매핑해 578건이 두 필드 동일값으로 저장된 사례 방지용.
+ */
+export function duplicateColumnFields(
+  mapping: FieldMapping,
+  kind: FinKind
+): { colIdx: number; labels: string[] }[] {
+  const byCol = new Map<number, string[]>()
+  for (const [field, cols] of Object.entries(mapping)) {
+    for (const c of cols ?? []) {
+      const arr = byCol.get(c)
+      if (arr) arr.push(fieldLabel(field, kind))
+      else byCol.set(c, [fieldLabel(field, kind)])
+    }
+  }
+  return [...byCol.entries()]
+    .filter(([, labels]) => labels.length > 1)
+    .map(([colIdx, labels]) => ({ colIdx, labels }))
+}
+
 /** suggestedMapping/preset.mapping [{headerName, field}] → FieldMapping(필드→헤더 인덱스 배열) */
 export function mappingEntriesToState(entries: MappingEntry[], headers: string[]): FieldMapping {
   const result: FieldMapping = {}
@@ -266,7 +288,8 @@ export function resolveInitialSelection(data: PreviewResponse): {
     // 기본 이름은 **파일명이 아니라 선택된 계좌**(사용자가 확정한 정보) 기준 — 파일명이
     // 달라질 때마다 다른 이름의 규칙이 생기는 문제를 막는다. 파일명 추정은 최후 폴백.
     presetName:
-      data.matchedPreset?.name ?? defaultPresetName(selectedAccount, resolvedKind, data.institution),
+      data.matchedPreset?.name ??
+      defaultPresetName(selectedAccount, resolvedKind, data.institution),
     matchedAccount: matched,
   }
 }
