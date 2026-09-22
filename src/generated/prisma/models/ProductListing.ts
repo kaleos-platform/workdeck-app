@@ -307,6 +307,7 @@ export type ProductListingWhereInput = {
   productionRunSets?: Prisma.ProductionRunSetListRelationFilter
   keywordLinks?: Prisma.KeywordMasterLinkListRelationFilter
   keywordChanges?: Prisma.KeywordChangeLogListRelationFilter
+  coupangProductItem?: Prisma.XOR<Prisma.CoupangProductItemNullableScalarRelationFilter, Prisma.CoupangProductItemWhereInput> | null
 }
 
 export type ProductListingOrderByWithRelationInput = {
@@ -336,6 +337,7 @@ export type ProductListingOrderByWithRelationInput = {
   productionRunSets?: Prisma.ProductionRunSetOrderByRelationAggregateInput
   keywordLinks?: Prisma.KeywordMasterLinkOrderByRelationAggregateInput
   keywordChanges?: Prisma.KeywordChangeLogOrderByRelationAggregateInput
+  coupangProductItem?: Prisma.CoupangProductItemOrderByWithRelationInput
 }
 
 export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
@@ -368,6 +370,7 @@ export type ProductListingWhereUniqueInput = Prisma.AtLeast<{
   productionRunSets?: Prisma.ProductionRunSetListRelationFilter
   keywordLinks?: Prisma.KeywordMasterLinkListRelationFilter
   keywordChanges?: Prisma.KeywordChangeLogListRelationFilter
+  coupangProductItem?: Prisma.XOR<Prisma.CoupangProductItemNullableScalarRelationFilter, Prisma.CoupangProductItemWhereInput> | null
 }, "id">
 
 export type ProductListingOrderByWithAggregationInput = {
@@ -438,6 +441,7 @@ export type ProductListingCreateInput = {
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateInput = {
@@ -464,6 +468,7 @@ export type ProductListingUncheckedCreateInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUpdateInput = {
@@ -490,6 +495,7 @@ export type ProductListingUpdateInput = {
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateInput = {
@@ -516,6 +522,7 @@ export type ProductListingUncheckedUpdateInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingCreateManyInput = {
@@ -691,6 +698,22 @@ export type ProductListingUncheckedUpdateManyWithoutSpaceNestedInput = {
   update?: Prisma.ProductListingUpdateWithWhereUniqueWithoutSpaceInput | Prisma.ProductListingUpdateWithWhereUniqueWithoutSpaceInput[]
   updateMany?: Prisma.ProductListingUpdateManyWithWhereWithoutSpaceInput | Prisma.ProductListingUpdateManyWithWhereWithoutSpaceInput[]
   deleteMany?: Prisma.ProductListingScalarWhereInput | Prisma.ProductListingScalarWhereInput[]
+}
+
+export type ProductListingCreateNestedOneWithoutCoupangProductItemInput = {
+  create?: Prisma.XOR<Prisma.ProductListingCreateWithoutCoupangProductItemInput, Prisma.ProductListingUncheckedCreateWithoutCoupangProductItemInput>
+  connectOrCreate?: Prisma.ProductListingCreateOrConnectWithoutCoupangProductItemInput
+  connect?: Prisma.ProductListingWhereUniqueInput
+}
+
+export type ProductListingUpdateOneWithoutCoupangProductItemNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductListingCreateWithoutCoupangProductItemInput, Prisma.ProductListingUncheckedCreateWithoutCoupangProductItemInput>
+  connectOrCreate?: Prisma.ProductListingCreateOrConnectWithoutCoupangProductItemInput
+  upsert?: Prisma.ProductListingUpsertWithoutCoupangProductItemInput
+  disconnect?: Prisma.ProductListingWhereInput | boolean
+  delete?: Prisma.ProductListingWhereInput | boolean
+  connect?: Prisma.ProductListingWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductListingUpdateToOneWithWhereWithoutCoupangProductItemInput, Prisma.ProductListingUpdateWithoutCoupangProductItemInput>, Prisma.ProductListingUncheckedUpdateWithoutCoupangProductItemInput>
 }
 
 export type ProductListingCreateNestedOneWithoutDelItemsInput = {
@@ -924,6 +947,7 @@ export type ProductListingCreateWithoutSpaceInput = {
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutSpaceInput = {
@@ -949,6 +973,7 @@ export type ProductListingUncheckedCreateWithoutSpaceInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutSpaceInput = {
@@ -998,6 +1023,126 @@ export type ProductListingScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"ProductListing"> | Date | string
 }
 
+export type ProductListingCreateWithoutCoupangProductItemInput = {
+  id?: string
+  internalCode?: string | null
+  searchName: string
+  displayName: string
+  managementName?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: number | null
+  status?: $Enums.ProductListingStatus
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutProductListingsInput
+  channel: Prisma.ChannelCreateNestedOneWithoutProductListingsInput
+  channelProduct?: Prisma.ChannelProductCreateNestedOneWithoutListingsInput
+  items?: Prisma.ProductListingItemCreateNestedManyWithoutListingInput
+  aliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutListingInput
+  delItems?: Prisma.DelOrderItemCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutListingInput
+  reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
+  productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
+  keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+}
+
+export type ProductListingUncheckedCreateWithoutCoupangProductItemInput = {
+  id?: string
+  spaceId: string
+  channelId: string
+  channelProductId?: string | null
+  internalCode?: string | null
+  searchName: string
+  displayName: string
+  managementName?: string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: number | null
+  status?: $Enums.ProductListingStatus
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  items?: Prisma.ProductListingItemUncheckedCreateNestedManyWithoutListingInput
+  aliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutListingInput
+  delItems?: Prisma.DelOrderItemUncheckedCreateNestedManyWithoutListingInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutListingInput
+  reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
+  productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+}
+
+export type ProductListingCreateOrConnectWithoutCoupangProductItemInput = {
+  where: Prisma.ProductListingWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductListingCreateWithoutCoupangProductItemInput, Prisma.ProductListingUncheckedCreateWithoutCoupangProductItemInput>
+}
+
+export type ProductListingUpsertWithoutCoupangProductItemInput = {
+  update: Prisma.XOR<Prisma.ProductListingUpdateWithoutCoupangProductItemInput, Prisma.ProductListingUncheckedUpdateWithoutCoupangProductItemInput>
+  create: Prisma.XOR<Prisma.ProductListingCreateWithoutCoupangProductItemInput, Prisma.ProductListingUncheckedCreateWithoutCoupangProductItemInput>
+  where?: Prisma.ProductListingWhereInput
+}
+
+export type ProductListingUpdateToOneWithWhereWithoutCoupangProductItemInput = {
+  where?: Prisma.ProductListingWhereInput
+  data: Prisma.XOR<Prisma.ProductListingUpdateWithoutCoupangProductItemInput, Prisma.ProductListingUncheckedUpdateWithoutCoupangProductItemInput>
+}
+
+export type ProductListingUpdateWithoutCoupangProductItemInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  internalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  searchName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutProductListingsNestedInput
+  channel?: Prisma.ChannelUpdateOneRequiredWithoutProductListingsNestedInput
+  channelProduct?: Prisma.ChannelProductUpdateOneWithoutListingsNestedInput
+  items?: Prisma.ProductListingItemUpdateManyWithoutListingNestedInput
+  aliases?: Prisma.ChannelProductAliasUpdateManyWithoutListingNestedInput
+  delItems?: Prisma.DelOrderItemUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutListingNestedInput
+  reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
+  productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+}
+
+export type ProductListingUncheckedUpdateWithoutCoupangProductItemInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  searchName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  managementName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  keywords?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  retailPrice?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  channelStock?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumProductListingStatusFieldUpdateOperationsInput | $Enums.ProductListingStatus
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  items?: Prisma.ProductListingItemUncheckedUpdateManyWithoutListingNestedInput
+  aliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutListingNestedInput
+  delItems?: Prisma.DelOrderItemUncheckedUpdateManyWithoutListingNestedInput
+  stockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutListingNestedInput
+  reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
+  productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
+  keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
+  keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+}
+
 export type ProductListingCreateWithoutDelItemsInput = {
   id?: string
   internalCode?: string | null
@@ -1021,6 +1166,7 @@ export type ProductListingCreateWithoutDelItemsInput = {
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutDelItemsInput = {
@@ -1046,6 +1192,7 @@ export type ProductListingUncheckedCreateWithoutDelItemsInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutDelItemsInput = {
@@ -1087,6 +1234,7 @@ export type ProductListingUpdateWithoutDelItemsInput = {
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutDelItemsInput = {
@@ -1112,6 +1260,7 @@ export type ProductListingUncheckedUpdateWithoutDelItemsInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutAliasesInput = {
@@ -1137,6 +1286,7 @@ export type ProductListingCreateWithoutAliasesInput = {
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutAliasesInput = {
@@ -1162,6 +1312,7 @@ export type ProductListingUncheckedCreateWithoutAliasesInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutAliasesInput = {
@@ -1203,6 +1354,7 @@ export type ProductListingUpdateWithoutAliasesInput = {
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutAliasesInput = {
@@ -1228,6 +1380,7 @@ export type ProductListingUncheckedUpdateWithoutAliasesInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutChannelInput = {
@@ -1253,6 +1406,7 @@ export type ProductListingCreateWithoutChannelInput = {
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutChannelInput = {
@@ -1278,6 +1432,7 @@ export type ProductListingUncheckedCreateWithoutChannelInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutChannelInput = {
@@ -1329,6 +1484,7 @@ export type ProductListingCreateWithoutProductionRunSetsInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutProductionRunSetsInput = {
@@ -1354,6 +1510,7 @@ export type ProductListingUncheckedCreateWithoutProductionRunSetsInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutProductionRunSetsInput = {
@@ -1395,6 +1552,7 @@ export type ProductListingUpdateWithoutProductionRunSetsInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutProductionRunSetsInput = {
@@ -1420,6 +1578,7 @@ export type ProductListingUncheckedUpdateWithoutProductionRunSetsInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutItemsInput = {
@@ -1445,6 +1604,7 @@ export type ProductListingCreateWithoutItemsInput = {
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutItemsInput = {
@@ -1470,6 +1630,7 @@ export type ProductListingUncheckedCreateWithoutItemsInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutItemsInput = {
@@ -1511,6 +1672,7 @@ export type ProductListingUpdateWithoutItemsInput = {
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutItemsInput = {
@@ -1536,6 +1698,7 @@ export type ProductListingUncheckedUpdateWithoutItemsInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutStockMovementsInput = {
@@ -1561,6 +1724,7 @@ export type ProductListingCreateWithoutStockMovementsInput = {
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutStockMovementsInput = {
@@ -1586,6 +1750,7 @@ export type ProductListingUncheckedCreateWithoutStockMovementsInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutStockMovementsInput = {
@@ -1627,6 +1792,7 @@ export type ProductListingUpdateWithoutStockMovementsInput = {
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutStockMovementsInput = {
@@ -1652,6 +1818,7 @@ export type ProductListingUncheckedUpdateWithoutStockMovementsInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutChannelProductInput = {
@@ -1677,6 +1844,7 @@ export type ProductListingCreateWithoutChannelProductInput = {
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutChannelProductInput = {
@@ -1702,6 +1870,7 @@ export type ProductListingUncheckedCreateWithoutChannelProductInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutChannelProductInput = {
@@ -1753,6 +1922,7 @@ export type ProductListingCreateWithoutKeywordLinksInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutKeywordLinksInput = {
@@ -1778,6 +1948,7 @@ export type ProductListingUncheckedCreateWithoutKeywordLinksInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutKeywordLinksInput = {
@@ -1819,6 +1990,7 @@ export type ProductListingUpdateWithoutKeywordLinksInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutKeywordLinksInput = {
@@ -1844,6 +2016,7 @@ export type ProductListingUncheckedUpdateWithoutKeywordLinksInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutKeywordChangesInput = {
@@ -1869,6 +2042,7 @@ export type ProductListingCreateWithoutKeywordChangesInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutKeywordChangesInput = {
@@ -1894,6 +2068,7 @@ export type ProductListingUncheckedCreateWithoutKeywordChangesInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedCreateNestedManyWithoutListingInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutKeywordChangesInput = {
@@ -1935,6 +2110,7 @@ export type ProductListingUpdateWithoutKeywordChangesInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutKeywordChangesInput = {
@@ -1960,6 +2136,7 @@ export type ProductListingUncheckedUpdateWithoutKeywordChangesInput = {
   reorderPlanSets?: Prisma.ReorderPlanSetUncheckedUpdateManyWithoutListingNestedInput
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingCreateWithoutReorderPlanSetsInput = {
@@ -1985,6 +2162,7 @@ export type ProductListingCreateWithoutReorderPlanSetsInput = {
   productionRunSets?: Prisma.ProductionRunSetCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingUncheckedCreateWithoutReorderPlanSetsInput = {
@@ -2010,6 +2188,7 @@ export type ProductListingUncheckedCreateWithoutReorderPlanSetsInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedCreateNestedManyWithoutListingInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedCreateNestedManyWithoutListingInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutListingInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedCreateNestedOneWithoutListingInput
 }
 
 export type ProductListingCreateOrConnectWithoutReorderPlanSetsInput = {
@@ -2051,6 +2230,7 @@ export type ProductListingUpdateWithoutReorderPlanSetsInput = {
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutReorderPlanSetsInput = {
@@ -2076,6 +2256,7 @@ export type ProductListingUncheckedUpdateWithoutReorderPlanSetsInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingCreateManySpaceInput = {
@@ -2118,6 +2299,7 @@ export type ProductListingUpdateWithoutSpaceInput = {
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutSpaceInput = {
@@ -2143,6 +2325,7 @@ export type ProductListingUncheckedUpdateWithoutSpaceInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateManyWithoutSpaceInput = {
@@ -2202,6 +2385,7 @@ export type ProductListingUpdateWithoutChannelInput = {
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutChannelInput = {
@@ -2227,6 +2411,7 @@ export type ProductListingUncheckedUpdateWithoutChannelInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateManyWithoutChannelInput = {
@@ -2286,6 +2471,7 @@ export type ProductListingUpdateWithoutChannelProductInput = {
   productionRunSets?: Prisma.ProductionRunSetUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateWithoutChannelProductInput = {
@@ -2311,6 +2497,7 @@ export type ProductListingUncheckedUpdateWithoutChannelProductInput = {
   productionRunSets?: Prisma.ProductionRunSetUncheckedUpdateManyWithoutListingNestedInput
   keywordLinks?: Prisma.KeywordMasterLinkUncheckedUpdateManyWithoutListingNestedInput
   keywordChanges?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutListingNestedInput
+  coupangProductItem?: Prisma.CoupangProductItemUncheckedUpdateOneWithoutListingNestedInput
 }
 
 export type ProductListingUncheckedUpdateManyWithoutChannelProductInput = {
@@ -2451,6 +2638,7 @@ export type ProductListingSelect<ExtArgs extends runtime.Types.Extensions.Intern
   productionRunSets?: boolean | Prisma.ProductListing$productionRunSetsArgs<ExtArgs>
   keywordLinks?: boolean | Prisma.ProductListing$keywordLinksArgs<ExtArgs>
   keywordChanges?: boolean | Prisma.ProductListing$keywordChangesArgs<ExtArgs>
+  coupangProductItem?: boolean | Prisma.ProductListing$coupangProductItemArgs<ExtArgs>
   _count?: boolean | Prisma.ProductListingCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["productListing"]>
 
@@ -2527,6 +2715,7 @@ export type ProductListingInclude<ExtArgs extends runtime.Types.Extensions.Inter
   productionRunSets?: boolean | Prisma.ProductListing$productionRunSetsArgs<ExtArgs>
   keywordLinks?: boolean | Prisma.ProductListing$keywordLinksArgs<ExtArgs>
   keywordChanges?: boolean | Prisma.ProductListing$keywordChangesArgs<ExtArgs>
+  coupangProductItem?: boolean | Prisma.ProductListing$coupangProductItemArgs<ExtArgs>
   _count?: boolean | Prisma.ProductListingCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProductListingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2554,6 +2743,7 @@ export type $ProductListingPayload<ExtArgs extends runtime.Types.Extensions.Inte
     productionRunSets: Prisma.$ProductionRunSetPayload<ExtArgs>[]
     keywordLinks: Prisma.$KeywordMasterLinkPayload<ExtArgs>[]
     keywordChanges: Prisma.$KeywordChangeLogPayload<ExtArgs>[]
+    coupangProductItem: Prisma.$CoupangProductItemPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2976,6 +3166,7 @@ export interface Prisma__ProductListingClient<T, Null = never, ExtArgs extends r
   productionRunSets<T extends Prisma.ProductListing$productionRunSetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$productionRunSetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductionRunSetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   keywordLinks<T extends Prisma.ProductListing$keywordLinksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$keywordLinksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordMasterLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   keywordChanges<T extends Prisma.ProductListing$keywordChangesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$keywordChangesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordChangeLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  coupangProductItem<T extends Prisma.ProductListing$coupangProductItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductListing$coupangProductItemArgs<ExtArgs>>): Prisma.Prisma__CoupangProductItemClient<runtime.Types.Result.GetResult<Prisma.$CoupangProductItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3624,6 +3815,25 @@ export type ProductListing$keywordChangesArgs<ExtArgs extends runtime.Types.Exte
   take?: number
   skip?: number
   distinct?: Prisma.KeywordChangeLogScalarFieldEnum | Prisma.KeywordChangeLogScalarFieldEnum[]
+}
+
+/**
+ * ProductListing.coupangProductItem
+ */
+export type ProductListing$coupangProductItemArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CoupangProductItem
+   */
+  select?: Prisma.CoupangProductItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CoupangProductItem
+   */
+  omit?: Prisma.CoupangProductItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CoupangProductItemInclude<ExtArgs> | null
+  where?: Prisma.CoupangProductItemWhereInput
 }
 
 /**

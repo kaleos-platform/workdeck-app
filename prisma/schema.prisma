@@ -219,6 +219,7 @@ model Workspace {
   collectionSchedule   CollectionSchedule?
   collectionRuns       CollectionRun[]
   coupangBackfillJobs  CoupangBackfillJob[]
+  coupangWriteJobs     CoupangWriteJob[]
 
   // 재고 관리
   inventoryUploads          InventoryUpload[]
@@ -441,6 +442,8 @@ model Space {
   pricingScenarios       PricingScenario[]
   adCampaignProductMaps  AdCampaignProductMap[]
   productExtractionJobs  ProductExtractionJob[]
+  coupangProductItems    CoupangProductItem[]
+  coupangWriteJobs       CoupangWriteJob[]
 
   // 발주 계획
   reorderPlans ReorderPlan[]
@@ -733,6 +736,79 @@ model CoupangSourceSetting {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   workspace        Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// 쿠팡 상품 API 스냅샷 — item 당 1행(한 item 안에 RG·MP vendorItemId 가 공존).
+// CoupangSourceSetting(CRAWL/API 소스 전환 토글)과 무관하다. 이건 소스 전환이 아니라
+// 크롤링이 주지 못하는 보강 데이터다.
+model CoupangProductItem {
+  id              String  @id @default(cuid())
+  spaceId         String
+  sellerProductId String // Wing 딥링크의 vendorInventoryId 와 같은 값
+  itemName        String?
+
+  rgVendorItemId String? // 로켓그로스 축 — items[].rocketGrowthItemData.vendorItemId
+  rgSalePrice    Int?
+  mpVendorItemId String? // 마켓플레이스(판매자배송) 축
+  mpSalePrice    Int?
+
+  barcode    String? // RG 쪽에만 존재
+  skuInfo    Json? // RG 전용 — 치수·무게·quantityPerBox·유통기한
+  statusName String?
+
+  // 지연 매핑 저장소 — 사용 시점에 사람이 확정한 ProductListing 연결.
+  listingId String? @unique
+
+  collectedAt DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  space   Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  listing ProductListing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  @@unique([spaceId, rgVendorItemId])
+  @@unique([spaceId, mpVendorItemId])
+  @@index([spaceId, sellerProductId])
+}
+
+enum CoupangWriteJobKind {
+  PRICE_CHANGE
+  PRODUCT_SYNC
+}
+
+enum CoupangWriteJobStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  PARTIAL
+  FAILED
+}
+
+// 앱은 쿠팡 API 를 호출할 수 없다(IP allowlist). 승인된 액션의 execute() 는 이 행만
+// 만들고, 워커가 폴링해 실제 호출을 수행한다 — manual-poller 와 같은 패턴.
+model CoupangWriteJob {
+  id          String                @id @default(cuid())
+  workspaceId String // 워커 폴링·자격 조회 축
+  spaceId     String // 결과 반영 축(CoupangProductItem·알림)
+  actionId    String?               @unique // AgentPendingAction.id — 멱등. PRODUCT_SYNC 는 null
+  kind        CoupangWriteJobKind
+  status      CoupangWriteJobStatus @default(PENDING)
+  payload     Json
+  results     Json? // 타깃별 { vendorItemId, observedPrice, ok, error }
+  error       String?
+  attempts    Int                   @default(0)
+  claimedAt   DateTime?
+  executedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  space     Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([workspaceId, status])
+  @@index([spaceId, createdAt])
 }
 
 // 자동 수집 스케줄 (워크스페이스당 1개)
@@ -2141,6 +2217,7 @@ model ProductListing {
   productionRunSets ProductionRunSet[] // 세트 생산차수에서 이 listing(=세트)을 참조
   keywordLinks      KeywordMasterLink[] // 키워드 마스터 연결 (§24)
   keywordChanges    KeywordChangeLog[] // §26 변경 이력 (리스팅 단위)
+  coupangProductItem CoupangProductItem?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
