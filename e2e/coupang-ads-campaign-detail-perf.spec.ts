@@ -214,8 +214,24 @@ test('테스트 workspace에서 캠페인 이름 변경 후 현재 화면과 재
 }) => {
   test.skip(process.env.E2E_COUPANG_ADS_MUTATION !== '1', '일회용 테스트 workspace에서만 실행')
   test.setTimeout(120_000)
+  // production mode에서는 변경 전에 홈 데이터까지 미리 불러온 상태를 검증한다.
+  const homePrefetch =
+    process.env.E2E_COUPANG_ADS_PREFETCH === '1'
+      ? page.waitForResponse(
+          async (r) =>
+            new URL(r.url()).pathname === '/d/coupang-ads' &&
+            r.request().headers().rsc === '1' &&
+            (await r.text()).includes('"initialData":'),
+          { timeout: 30_000 }
+        )
+      : null
   await loginUser(page)
-  await page.goto('/d/coupang-ads')
+  if (homePrefetch) {
+    expect(await (await homePrefetch).text()).toContain('"initialData":')
+    await page.locator('a[href="/d/coupang-ads"]').first().click()
+  } else {
+    await page.goto('/d/coupang-ads')
+  }
   const card = page
     .locator(`a[href^="/d/coupang-ads/campaigns/${CAMPAIGN_ID}?"]`)
     .filter({ hasText: '총 광고비' })
@@ -243,6 +259,11 @@ test('테스트 workspace에서 캠페인 이름 변경 후 현재 화면과 재
     await expect(
       page.locator(`a[href="/d/coupang-ads/campaigns/${CAMPAIGN_ID}"]`).first()
     ).toContainText(changed)
+    if (homePrefetch) {
+      // 백그라운드 API가 이전 Router Cache의 값을 나중에 고치는 것으로 통과하지 않게 한다.
+      await page.route('**/api/campaigns?*startDate=*', (route) => route.abort())
+      await page.route('**/api/dashboard/kpi?*', (route) => route.abort())
+    }
     await page.locator('a[href="/d/coupang-ads"]').first().click()
     await expect(card).toContainText(changed)
     await card.click()
