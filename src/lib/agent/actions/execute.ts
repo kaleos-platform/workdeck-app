@@ -6,8 +6,10 @@ export type DecisionOutcome =
   | { ok: true; status: 'EXECUTED'; result: unknown }
   | { ok: false; status: 'FAILED'; error: string }
   | { ok: false; status: 'REJECTED' }
-  // 이미 다른 요청이 처리했거나 만료됨 — 경합 패자/무효 요청.
+  // 이미 다른 요청이 처리했거나 대기 상태가 아님 — 경합 패자/무효 요청.
   | { ok: false; status: 'CONFLICT'; message: string }
+  // PENDING이지만 expiresAt이 지남 — EXPIRED 전환(lazy expire·cron) 전이라도 승인 차단.
+  | { ok: false; status: 'EXPIRED'; message: string }
 
 /**
  * 액션 승인 + 즉시 실행. 동시 승인 경합을 조건부 update로 차단한다.
@@ -27,12 +29,26 @@ export async function approveAndExecute(
 ): Promise<DecisionOutcome> {
   const now = new Date()
 
-  // 게이트: PENDING인 경우에만 APPROVED로 전이. 경합 패자는 count=0.
+  // 게이트: PENDING 이고 아직 만료되지 않은 경우에만 APPROVED 로 전이.
+  // expiresAt 을 보지 않으면 EXPIRED 전환(목록 lazy expire·하루 1회 cron) 전의
+  // 만료 액션이 그대로 승인·실행된다 — 가격 쓰기의 6시간 만료가 무효가 된다.
   const gate = await prisma.agentPendingAction.updateMany({
-    where: { id: actionId, status: 'PENDING' },
+    where: { id: actionId, status: 'PENDING', expiresAt: { gt: now } },
     data: { status: 'APPROVED', decidedBy: deciderId, decidedAt: now },
   })
   if (gate.count !== 1) {
+    // count=0 의 사유를 나눠야 사용자가 영문을 안다.
+    const current = await prisma.agentPendingAction.findUnique({
+      where: { id: actionId },
+      select: { status: true, expiresAt: true },
+    })
+    if (current?.status === 'PENDING' && current.expiresAt <= now) {
+      return {
+        ok: false,
+        status: 'EXPIRED',
+        message: '승인 유효기간이 지난 액션입니다. 다시 요청해 주세요',
+      }
+    }
     return {
       ok: false,
       status: 'CONFLICT',

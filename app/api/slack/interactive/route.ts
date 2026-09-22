@@ -110,6 +110,9 @@ export async function POST(req: NextRequest) {
   if (outcome.status === 'CONFLICT' && payload.response_url) {
     await postEphemeral(payload.response_url, '이미 처리된 요청입니다.')
   }
+  if (outcome.status === 'EXPIRED' && payload.response_url) {
+    await postEphemeral(payload.response_url, outcome.message)
+  }
 
   return NextResponse.json({ ok: true })
 }

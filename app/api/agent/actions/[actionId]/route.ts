@@ -81,7 +81,7 @@ export async function PATCH(
   // 결정 후 Slack 원본 메시지를 최종 상태로 동기화(sync 내부가 무해 — no-op·실패 흡수).
   await syncSlackDecision(actionId)
 
-  // CONFLICT(이미 처리/만료)면 409, 그 외는 결과 그대로 200.
-  const httpStatus = outcome.status === 'CONFLICT' ? 409 : 200
+  // CONFLICT(이미 처리) 또는 EXPIRED(승인 유효기간 만료)면 409, 그 외는 결과 그대로 200.
+  const httpStatus = outcome.status === 'CONFLICT' || outcome.status === 'EXPIRED' ? 409 : 200
   return NextResponse.json({ outcome }, { status: httpStatus })
 }
