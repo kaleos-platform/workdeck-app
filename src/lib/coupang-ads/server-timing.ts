@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { performance } from 'node:perf_hooks'
 
 const timings = new AsyncLocalStorage<Map<string, number>>()
 
@@ -7,10 +8,17 @@ export async function measureCoupangAds<T>(name: string, loader: () => Promise<T
   const scope = timings.getStore()
   if (!scope || !/^[a-z][a-z0-9_]*$/.test(name)) return loader()
   const start = performance.now()
+  const loopStart = name === 'auth_membership' ? performance.eventLoopUtilization() : null
   try {
     return await loader()
   } finally {
     scope.set(name, (scope.get(name) ?? 0) + performance.now() - start)
+    if (loopStart) {
+      // 프로세스 전체 지표이며, 동시 요청의 작업도 포함될 수 있다.
+      const loop = performance.eventLoopUtilization(loopStart)
+      scope.set('membership_loop_active', loop.active)
+      scope.set('membership_loop_idle', loop.idle)
+    }
   }
 }
 
@@ -41,4 +49,12 @@ export async function withCoupangAdsPageTiming<T>(handler: () => Promise<T>): Pr
       )
     }
   })
+}
+
+// 연결 이벤트처럼 콜백으로 끝나는 작업도 요청별 계측 범위에만 기록한다.
+export function recordCoupangAdsTiming(name: string, duration: number): void {
+  const scope = timings.getStore()
+  if (!scope || !/^[a-z][a-z0-9_]*$/.test(name) || !Number.isFinite(duration) || duration < 0)
+    return
+  scope.set(name, (scope.get(name) ?? 0) + duration)
 }
