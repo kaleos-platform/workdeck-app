@@ -40,3 +40,18 @@ describe('splitRocketBundle', () => {
     ])
   })
 })
+
+describe('splitRocketBundle — 반품(수량 0 + 음수 매출)', () => {
+  it('수량이 0이어도 음수 매출은 보존된다', () => {
+    const out = splitRocketBundle(0, -30000, [
+      { optionId: 'A', quantity: 2 },
+      { optionId: 'B', quantity: 1 },
+    ])
+    expect(out.reduce((a, r) => a + r.revenue, 0)).toBe(-30000)
+    expect(out.every((r) => r.quantity === 0)).toBe(true)
+  })
+
+  it('수량·매출이 둘 다 0이면 제외', () => {
+    expect(splitRocketBundle(0, 0, [{ optionId: 'A', quantity: 1 }])).toEqual([])
+  })
+})

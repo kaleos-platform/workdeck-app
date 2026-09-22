@@ -578,8 +578,10 @@ export async function loadRocketDailyOptionQty(
 
   for (const r of records) {
     const qty = Math.max(0, r.salesQty30d ?? 0)
-    const dailyRevenue = Math.max(0, Number(r.revenue30d ?? 0))
-    if (qty <= 0 && dailyRevenue <= 0) continue
+    // 매출은 클램프하지 않는다 — 반품/환불로 음수가 나올 수 있고, 잘라내면
+    // 채널 탭 총매출(rocket-revenue.ts)과 합계가 어긋난다.
+    const dailyRevenue = Number(r.revenue30d ?? 0)
+    if (qty <= 0 && dailyRevenue === 0) continue
     const code = externalCodeFor(r)
     const mapping = code ? mappingByCode.get(code) : undefined
     if (!mapping || mapping.items.length === 0) {

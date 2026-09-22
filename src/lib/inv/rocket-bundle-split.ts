@@ -12,7 +12,8 @@ export type BundleSplitRow = { optionId: string; quantity: number; revenue: numb
  * 외부 옵션 1건의 (수량, 매출)을 묶음 구성 옵션으로 분해한다.
  * 매출은 최대 잔여법으로 정수 배분해 합이 정확히 보존된다.
  *
- * @returns quantity 가 0 이하인 구성은 제외. 매핑이 비면 빈 배열.
+ * @returns 수량·매출이 둘 다 0인 구성은 제외. 매핑이 비면 빈 배열.
+ *          수량 0 + 매출 음수(반품/환불)는 살린다 — 버리면 총매출 합계가 어긋난다.
  */
 export function splitRocketBundle(
   qty: number,
@@ -23,7 +24,8 @@ export function splitRocketBundle(
   if (valid.length === 0) return []
 
   const weightSum = valid.reduce((a, it) => a + it.quantity, 0)
-  const rev = Number.isFinite(revenue) ? Math.max(0, revenue) : 0
+  // 음수(반품/환불) 허용 — 클램프하면 총매출 합계가 어긋난다.
+  const rev = Number.isFinite(revenue) ? revenue : 0
 
   const exact = valid.map((it) => (rev * it.quantity) / weightSum)
   const revs = exact.map((v) => Math.floor(v))
@@ -43,5 +45,5 @@ export function splitRocketBundle(
       quantity: qty * it.quantity, // 배수 — 매출과 다르다
       revenue: revs[i],
     }))
-    .filter((r) => r.quantity > 0)
+    .filter((r) => r.quantity > 0 || r.revenue !== 0)
 }
