@@ -2,6 +2,11 @@
  * POST /api/coupang/write-jobs/[jobId]/report — 워커 전용. 잡 결과 보고.
  * 성공한 PRICE_CHANGE 타깃은 CoupangProductItem 스냅샷 가격을 즉시 갱신해
  * 다음 미리보기가 낡은 가격을 보여주지 않게 한다. Slack 알림까지 여기서 체이닝한다.
+ *
+ * RUNNING 상태일 때만 갱신한다(updateMany 게이트) — reap cron 이 먼저 stale 회수해
+ * PENDING/FAILED 로 돌려놓은 뒤 원래 워커의 뒤늦은 보고가 도착하면, 그 보고로 최신
+ * 상태(재시도 결과일 수도 있는)를 덮어쓰면 안 된다. count=0 이면 stale 응답만 주고
+ * 아무것도 건드리지 않는다(스냅샷 갱신·Slack 알림 포함).
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
@@ -21,8 +26,8 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ jobId:
     error?: string
   }
 
-  const job = await prisma.coupangWriteJob.update({
-    where: { id: jobId },
+  const gate = await prisma.coupangWriteJob.updateMany({
+    where: { id: jobId, status: 'RUNNING' },
     data: {
       status: body.status,
       results: (body.results ?? []) as unknown as object,
@@ -30,6 +35,11 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ jobId:
       executedAt: new Date(),
     },
   })
+  if (gate.count !== 1) {
+    return NextResponse.json({ ok: false, stale: true })
+  }
+
+  const job = await prisma.coupangWriteJob.findUniqueOrThrow({ where: { id: jobId } })
 
   // 성공한 타깃의 스냅샷 가격을 즉시 갱신해 미리보기가 낡지 않게 한다.
   if (job.kind === 'PRICE_CHANGE' && body.results?.length) {
