@@ -207,3 +207,18 @@ PR #901/#902로 main `b2447845`에 통합했고 production `dpl_3iKxNEEfx4DyuEAU
 남은 검증은 테스트 workspace의 실제 변경 후 현재·재진입 화면 갱신이다. 테스트 workspace가 지정되지 않아
 운영 데이터를 변경하지 않았다. 홈 목표 초과 원인을 좁히려면 SSR/auth/DB 연결 대기 및 브라우저 표시 구간을
 분리해 관측해야 한다. 백그라운드 API Server-Timing을 초기 SSR 시간으로 해석하거나 pool을 근거 없이 늘리지 않는다.
+
+### 실제 변경 후 갱신 검증과 SSR 구간 진단
+
+개발 Supabase Auth에 메일 발송 없이 일회용 계정을 만들고, 분리된 개발 DB에 합성 광고 1행과
+일회용 workspace/space를 생성했다. 로컬 Next.js에서 실제 로그인 후 캠페인 이름을 변경하고
+현재 상세·사이드바·홈 재진입·상세 재진입의 갱신 및 원래 이름 복원을 연속 두 번 확인했다.
+같은 흐름을 `e2e/coupang-ads-campaign-detail-perf.spec.ts`에 추가했고, 새 일회용 workspace로
+Playwright 1개 테스트를 실행해 통과했다(7.1초). 일회용 계정·workspace·space와 광고 데이터는 삭제했다.
+이 테스트는 `E2E_COUPANG_ADS_MUTATION=1`과 기존 E2E 로그인 변수를 명시한 삭제 가능한 테스트 workspace에서만 실행한다.
+운영 데이터를 변경하지 않았으며, 업로드 파일 처리의 실제 UI 검증과는 구분한다.
+
+홈 재진입 지연은 prefetch 차단 상태에서도 1.312초로 재현되어 prefetch만이 원인은 아니었다.
+PR #908/#909의 SSR 계측에서 느린 요청의 auth는 930.7~1016.3ms, KPI는 35.3~40.8ms,
+목록은 208.8~223.8ms였다. 이에 PR #910/#911에서 auth를 사용자·멤버십·deck·workspace 조회로 나누었다.
+로그는 고정 구간명과 시간만 기록하며 개인정보·광고 결과·오류 메시지는 포함하지 않는다.
