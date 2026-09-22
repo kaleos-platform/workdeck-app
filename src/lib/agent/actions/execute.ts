@@ -79,7 +79,7 @@ export async function approveAndExecute(
   try {
     const parsed = def.paramsSchema.parse(action.payload)
     const result = await def.execute(
-      { spaceId: action.spaceId, requestedBy: action.requestedBy },
+      { spaceId: action.spaceId, requestedBy: action.requestedBy, actionId },
       parsed
     )
     await prisma.agentPendingAction.update({

@@ -7,6 +7,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
 
 /**
  * workspaceId 를 externalIntegrationKey 로 가진 로켓그로스 위치의 spaceId 를 찾는다.
@@ -22,4 +23,15 @@ export async function resolveSpaceIdForWorkspace(workspaceId: string): Promise<s
     select: { spaceId: true },
   })
   return location?.spaceId ?? null
+}
+
+/**
+ * space → 쿠팡 workspace. 미연결이면 throw(승인 큐 액션 생성 시점 가드).
+ * 승인 시점·워커 실행 시점이 아니라 액션 "생성" 시점에 실패시켜야
+ * 사람이 실행 불가능한 액션을 승인하는 사고를 막는다.
+ */
+export async function requireCoupangWorkspaceId(spaceId: string): Promise<string> {
+  const ws = await resolveCoupangWorkspaceForSpace(spaceId)
+  if (!ws) throw new Error('쿠팡 워크스페이스가 연결되어 있지 않습니다')
+  return ws.workspaceId
 }
