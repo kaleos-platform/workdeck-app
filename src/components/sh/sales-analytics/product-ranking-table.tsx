@@ -48,11 +48,12 @@ function DeltaCell({ cur, prev }: { cur: number; prev: number }) {
   if (d === null) {
     return <span className="text-muted-foreground">{prev === 0 && cur > 0 ? '신규' : '-'}</span>
   }
+  // pctChange 는 이미 퍼센트 값(소수 1자리 반올림)을 준다 — 100 을 다시 곱하지 말 것.
   const up = d >= 0
   return (
     <span className={up ? 'text-emerald-600' : 'text-rose-600'}>
       {up ? '+' : ''}
-      {(d * 100).toFixed(1)}%
+      {d.toFixed(1)}%
     </span>
   )
 }
@@ -206,7 +207,7 @@ export function ProductRankingTable({
       <CardContent>
         {loading ? (
           <p className="py-8 text-center text-sm text-muted-foreground">불러오는 중…</p>
-        ) : allRows.length === 0 ? (
+        ) : allRows.length === 0 && (ranking?.unmatched.revenue ?? 0) === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
             선택한 기간에 판매 데이터가 없습니다
           </p>
