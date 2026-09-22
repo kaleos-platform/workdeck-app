@@ -334,6 +334,80 @@ export function extractVendorItemIds(productDetail: SellerProductDetail): string
   return extractOptionIdentities(productDetail).map((r) => r.optionId)
 }
 
+// ─── 상품 item 파싱 — RG·MP 두 축이 한 행에 공존 ──────────────────────────────────
+
+export interface CoupangItemPriceData {
+  originalPrice?: number
+  salePrice?: number
+  supplyPrice?: number
+}
+
+export interface CoupangAxisItemData {
+  vendorItemId?: number
+  priceData?: CoupangItemPriceData | null
+  barcode?: string | null
+  skuInfo?: unknown
+  [key: string]: unknown
+}
+
+/** item 당 1행 — RG·MP 두 축이 한 행에 공존한다(축별 분리 불필요). */
+export interface CoupangProductItemRow {
+  sellerProductId: string
+  itemName: string | null
+  rgVendorItemId: string | null
+  rgSalePrice: number | null
+  mpVendorItemId: string | null
+  mpSalePrice: number | null
+  barcode: string | null
+  skuInfo: unknown | null
+  statusName: string | null
+}
+
+function axisId(data?: CoupangAxisItemData | null): string | null {
+  return data?.vendorItemId == null ? null : String(data.vendorItemId)
+}
+
+function axisPrice(data?: CoupangAxisItemData | null): number | null {
+  // 가격은 priceData.salePrice — 2단 중첩이다. 평면 salePrice 로 읽으면 전건 null 이 된다.
+  const v = data?.priceData?.salePrice
+  return typeof v === 'number' ? v : null
+}
+
+function nonEmpty(v: unknown): string | null {
+  return typeof v === 'string' && v.trim() !== '' ? v : null
+}
+
+/**
+ * 상품 단건 응답에서 적재용 행을 만든다.
+ * 두 축 모두 vendorItemId 가 없으면 쓰기 타깃이 없으므로 버린다.
+ */
+export function extractProductItems(detail: SellerProductDetail): CoupangProductItemRow[] {
+  const rows: CoupangProductItemRow[] = []
+  const statusName = nonEmpty((detail as Record<string, unknown>).statusName)
+
+  for (const item of detail.items ?? []) {
+    const rg = item.rocketGrowthItemData as CoupangAxisItemData | null | undefined
+    const mp = item.marketplaceItemData as CoupangAxisItemData | null | undefined
+    const rgVendorItemId = axisId(rg)
+    const mpVendorItemId = axisId(mp)
+    if (!rgVendorItemId && !mpVendorItemId) continue
+
+    rows.push({
+      sellerProductId: String(detail.sellerProductId),
+      itemName: nonEmpty(item.itemName),
+      rgVendorItemId,
+      rgSalePrice: axisPrice(rg),
+      mpVendorItemId,
+      mpSalePrice: axisPrice(mp),
+      // 바코드·skuInfo 는 RG 쪽에만 있다(MP 는 빈 문자열).
+      barcode: nonEmpty(rg?.barcode) ?? nonEmpty(mp?.barcode),
+      skuInfo: rg?.skuInfo ?? null,
+      statusName,
+    })
+  }
+  return rows
+}
+
 // ─── 아이템별 수량/가격/상태 조회 ────────────────────────────────────────────
 // 응답은 4필드뿐이다(실측): sellerItemId · amountInStock · salePrice · onSale.
 // 자동 가격조정(apActive/apMinSalePrice) 상태는 응답에 없다 — 읽을 수단이 없다.
