@@ -44,3 +44,23 @@ test('예상 밖 형태 — 조용히 성공 처리하지 않는다', () => {
   assert.throws(() => unwrapWriteResult({ ok: true }, 200), CoupangWriteError)
   assert.throws(() => unwrapWriteResult(null, 200), CoupangWriteError)
 })
+
+test('중첩 data.code 가 SUCCESS 도 ERROR 도 아닐 때 — 알 수 없는 형태로 던진다', () => {
+  const body = {
+    data: { code: 'UNKNOWN' },
+  }
+  assert.throws(
+    () => unwrapWriteResult(body, 200),
+    (err: unknown) =>
+      err instanceof CoupangWriteError && err.coupangMessage.includes('알 수 없는 응답 형태')
+  )
+})
+
+test('SUCCESS 이어도 내부 data 가 숫자가 아니면 0 을 돌려준다', () => {
+  const body = {
+    code: '200',
+    message: '',
+    data: { code: 'SUCCESS', message: '', data: 'not-a-number' },
+  }
+  assert.equal(unwrapWriteResult(body, 200), 0)
+})
