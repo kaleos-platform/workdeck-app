@@ -294,3 +294,23 @@ small compiler의 운영 개선율을 단정하지 않는다. 이 배포에서�
 상세는 이번 표본에서 최초 3초·재진입 1초 목표를 충족했다. **홈 목표는 미완료**다.
 현재 남은 진단 범위는 새 실행 환경의 초기화, SSR 밖 레이아웃·인증 대기, RSC 전달과 표시 구간이다.
 멤버십 전체 시간을 SQL 시간 또는 CPU 사용 시간으로 해석하거나, 근거 없이 DB pool/유료 자원을 늘리지 않는다.
+
+### 홈 링크의 데이터 prefetch와 변경 후 무효화
+
+추가 CDP 관찰에서 느린 홈 재진입은 응답 헤더 252ms, 핵심 RSC 조각 수신 1079ms,
+DOM 조건 충족 1092ms였다. 다른 느린 표본도 데이터 수신 후 DOM 반영은 약 10ms였고,
+서버 응답에서 먼저 대기가 발생했다. 신규 실행 환경의 인증·Prisma 초기화 지연이 남아 있으므로
+클릭 후 그 대기를 반복하지 않도록 쿠팡 광고 홈 링크에만 Next.js full prefetch를 적용한다.
+My Deck의 진입 링크와 사이드바의 홈 링크가 대상이며, 직접 URL 접속의 초기화 비용까지 제거하는 변경은 아니다.
+
+기존 서버 데이터 cache는 1시간이며, [Next.js full prefetch](https://nextjs.org/docs/app/guides/prefetching)는
+클라이언트 Router Cache에서 서버 페이지 결과를 재사용한다. 권한 검사는 서버 prefetch 요청 때 실행되며,
+캐시로 이동하는 클릭마다 다시 실행된다고 주장하지 않는다. 쓰기 API의 권한 검사는 유지한다.
+이름·삭제·업로드·목표 예산/ROAS 변경 성공 알림에서 `router.refresh()`를 호출해 이전 홈 결과를 버린다.
+목표 저장/삭제 실패 시에는 변경 알림을 보내지 않는다.
+
+실제 production-mode 로컬 서버와 분리된 개발 합성 workspace에서
+My Deck의 홈 `initialData` prefetch 완료 → 홈 → 상세 → 이름 변경 → KPI·목록 API 차단 →
+홈의 새 이름 및 상세 재진입을 확인했다. API가 이전 값을 나중에 고치는 방식으로 통과하지 않는다.
+실행 시 `E2E_COUPANG_ADS_MUTATION=1 E2E_COUPANG_ADS_PREFETCH=1`을 명시한다.
+추가 UI 회귀를 포함한 45 tests, lint(0 errors/기존 63 warnings), production-mode build를 통과했다.

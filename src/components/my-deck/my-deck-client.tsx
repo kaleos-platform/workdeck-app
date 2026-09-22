@@ -356,7 +356,10 @@ export function MyDeckClient({
                     </Button>
                   ) : (
                     <Button asChild className="w-full">
-                      <Link href={toDeckHref(deck.id)}>
+                      <Link
+                        href={toDeckHref(deck.id)}
+                        prefetch={deck.id === 'coupang-ads' ? true : undefined}
+                      >
                         빠르게 진입
                         <ExternalLink className="h-4 w-4" />
                       </Link>
