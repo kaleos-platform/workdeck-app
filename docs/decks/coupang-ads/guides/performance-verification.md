@@ -249,3 +249,18 @@ PR #912/#913, main `e5459ccc`, production `dpl_H5uEin1GqDPeNJRxKpWzEi8rUzLR`의 
 그 외 대기를 구분하기 위해 `db_connect`를 추가 계측한다. 연결 수/SSL/URL/idle 설정은 유지한다.
 `db_connect`는 성공한 새 연결만 나타내며 pool 대기·실패는 포함하지 않는다. 기록이 없다고 연결이 없었다고 단정하지 않는다.
 `membership_loop_active/idle`은 해당 구간의 프로세스 이벤트 루프 지표이며 동시 요청 작업도 포함할 수 있다.
+
+### 첫 조회 초기화 비용과 작은 query compiler 검증
+
+PR #914/#915 배포 후 느린 SSR 표본은 `auth_membership=943.4ms`, `db_connect=60.9ms`,
+`membership_loop_active=867.3ms`, `membership_loop_idle=76.0ms`였다. 연결 수립만으로 전체 지연을
+설명할 수 없다. 이벤트 루프 활성 시간은 CPU 사용 시간이나 Prisma만의 실행 시간이 아니므로,
+애플리케이션 초기화 비용을 추가 후보로 다룬다.
+
+Prisma 7.4.1에서 지원하는 generator의 `compilerBuild = "small"`을 비교한다.
+[공식 설명](https://www.prisma.io/changelog/2026-01-21)에 따르면 작은 번들과 쿼리 실행 성능의 trade-off가 있다.
+동일 개발 DB의 존재하지 않는 멤버십을 별도 새 Node.js process에서 조회한 3회 결과는
+기본 compiler 최초 311/178/162ms, small 최초 148/151/139ms였다. 후속 조회는 양쪽 모두 13~17ms였다.
+로컬 소표본이므로 운영 개선을 입증한 것으로 해석하지 않는다.
+DB 모델·마이그레이션·연결 수·SSL 설정을 변경하지 않고 생성 client의 compiler만 바꾼다.
+관련 41개 테스트와 실제 합성 workspace 이름 변경·현재/재진입 갱신 E2E가 통과했다.
