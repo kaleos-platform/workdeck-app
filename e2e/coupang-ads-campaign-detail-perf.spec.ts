@@ -219,10 +219,16 @@ test('테스트 workspace에서 캠페인 이름 변경 후 현재 화면과 재
   const card = page
     .locator(`a[href^="/d/coupang-ads/campaigns/${CAMPAIGN_ID}?"]`)
     .filter({ hasText: '총 광고비' })
+  const overviewResponse = page.waitForResponse((r) =>
+    r.url().includes(`/api/campaigns/${CAMPAIGN_ID}/overview`)
+  )
   await card.click()
+  const overview = await overviewResponse
+  expect(overview.status()).toBe(200)
+  const { campaign } = (await overview.json()) as { campaign: { displayName: string } }
   const heading = page.getByRole('heading', { level: 1 })
-  await expect(heading).not.toHaveText(CAMPAIGN_ID)
-  const original = await heading.innerText()
+  const original = campaign.displayName
+  await expect(heading).toHaveText(original)
   const changed = `${original} 갱신 검증`
   try {
     await heading.locator('..').locator('button').click()
@@ -248,5 +254,5 @@ test('테스트 workspace에서 캠페인 이름 변경 후 현재 화면과 재
     expect(restored.status()).toBe(200)
   }
   await page.goto('/d/coupang-ads')
-  await expect(card).toContainText(original)
+  await expect(card.getByText(original, { exact: true })).toBeVisible()
 })
