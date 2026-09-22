@@ -94,6 +94,8 @@ type StagedRow = {
   account: { id: string; name: string; kind: FinAccountKind }
   /** 미분류 행의 룰(키워드) 추천 — 서버가 배치 계산. 매칭 없으면 null. 버튼 없이 자동 표시. */
   ruleSuggestion: { categoryId: string; categoryName: string; reason: string } | null
+  /** 중복 행의 기존 확정 거래 값 — 저장 시 이 값이 아래 description/counterparty로 덮인다 */
+  prev: { description: string | null; counterparty: string | null } | null
 }
 
 type StagedCounts = {
@@ -185,6 +187,7 @@ export function TransactionsView() {
     classified: 0,
   })
   const [stagingTab, setStagingTab] = useState<string>('all')
+  const [stagingQ, setStagingQ] = useState('')
   const [stagingLoading, setStagingLoading] = useState(true)
 
   // 확정 거래 상태
@@ -311,10 +314,11 @@ export function TransactionsView() {
   }, [])
 
   // 스테이징 조회
-  const loadStaging = useCallback(async (tab: string = 'all') => {
+  const loadStaging = useCallback(async (tab: string = 'all', q: string = '') => {
     setStagingLoading(true)
     try {
       const params = new URLSearchParams({ tab })
+      if (q.trim()) params.set('q', q.trim())
       const res = await fetch(`/api/finance/staging?${params}`)
       if (!res.ok) throw new Error('스테이징 조회 실패')
       const data = await res.json()
@@ -441,7 +445,12 @@ export function TransactionsView() {
   // 스테이징 하위 탭 변경
   const handleStagingTabChange = (tab: string) => {
     setStagingTab(tab)
-    void loadStaging(tab)
+    void loadStaging(tab, stagingQ)
+  }
+
+  // 스테이징 검색 — 확정 거래 검색과 동일하게 Enter로 실행(입력마다 재조회 안 함)
+  const handleStagingSearch = () => {
+    void loadStaging(stagingTab, stagingQ)
   }
 
   // 스테이징 categoryId 선택 — 즉시 저장 대신 확인 팝업(규칙 저장 여부 + 메모)을 연다.
@@ -471,7 +480,7 @@ export function TransactionsView() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '분류 저장 실패')
       setClassifyConfirm(null)
-      void loadStaging(stagingTab)
+      void loadStaging(stagingTab, stagingQ)
       // 동일 적요+동일 방향 미처리 행이 있으면 자동 적용 여부를 물음(메모도 함께 전파)
       const siblingIds: string[] = Array.isArray(data?.siblingIds) ? data.siblingIds : []
       if (siblingIds.length > 0) setAutoApply({ categoryId, siblingIds, memo })
@@ -508,7 +517,7 @@ export function TransactionsView() {
     try {
       const n = await applyBulk({ ids, categoryId })
       toast.success(`${n}건에 계정과목을 적용했습니다`)
-      void loadStaging(stagingTab)
+      void loadStaging(stagingTab, stagingQ)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '일괄 처리 실패')
     }
@@ -518,7 +527,7 @@ export function TransactionsView() {
     try {
       const n = await applyBulk({ ids, resolution })
       toast.success(resolution === 'DUP_SAME' ? `${n}건 제외 처리` : `${n}건 유지 처리`)
-      void loadStaging(stagingTab)
+      void loadStaging(stagingTab, stagingQ)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '일괄 처리 실패')
     }
@@ -538,7 +547,7 @@ export function TransactionsView() {
       toast.error(err instanceof Error ? err.message : '일괄 적용 실패')
     } finally {
       setAutoApply(null)
-      void loadStaging(stagingTab)
+      void loadStaging(stagingTab, stagingQ)
     }
   }
 
@@ -553,7 +562,7 @@ export function TransactionsView() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
       toast.success(`${data.deleted ?? 0}건을 삭제했습니다`)
-      void loadStaging(stagingTab)
+      void loadStaging(stagingTab, stagingQ)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '삭제 실패')
     }
@@ -561,7 +570,7 @@ export function TransactionsView() {
 
   // 업로드 파일 단위 삭제 후 갱신 — 저장된 거래까지 지웠으면 전체 거래도 재조회
   const handleImportDeleted = (deletedTransactions: number) => {
-    void loadStaging(stagingTab)
+    void loadStaging(stagingTab, stagingQ)
     if (deletedTransactions > 0) void loadTransactions()
   }
 
@@ -575,7 +584,7 @@ export function TransactionsView() {
       })
       if (!res.ok) throw new Error('처리 저장 실패')
       toast.success(resolution === 'DUP_SAME' ? '제외 처리되었습니다' : '유지로 변경되었습니다')
-      void loadStaging(stagingTab)
+      void loadStaging(stagingTab, stagingQ)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '처리 저장 실패')
     }
@@ -630,7 +639,7 @@ export function TransactionsView() {
           : `분류완료 ${data.committed}건을 저장했습니다`
       )
       setCommitDialogOpen(false)
-      void loadStaging(stagingTab) // 잔여(미분류·검토) 갱신
+      void loadStaging(stagingTab, stagingQ) // 잔여(미분류·검토) 갱신
       // 전체 거래 탭으로 전환
       setMainTab('transactions')
       void loadTransactions()
@@ -778,6 +787,9 @@ export function TransactionsView() {
           counts={stagingCounts}
           loading={stagingLoading}
           tab={stagingTab}
+          searchQ={stagingQ}
+          onSearchQChange={setStagingQ}
+          onSearch={handleStagingSearch}
           leafTargets={leafTargets}
           categoryTree={categoryTree}
           reloadCategories={loadCategories}
@@ -921,6 +933,9 @@ function StagingPanel({
   counts,
   loading,
   tab,
+  searchQ,
+  onSearchQChange,
+  onSearch,
   leafTargets,
   categoryTree,
   reloadCategories,
@@ -940,6 +955,9 @@ function StagingPanel({
   counts: StagedCounts
   loading: boolean
   tab: string
+  searchQ: string
+  onSearchQChange: (q: string) => void
+  onSearch: () => void
   leafTargets: ComboOption[]
   categoryTree: CategoryNode[]
   reloadCategories: () => Promise<void>
@@ -1031,10 +1049,19 @@ function StagingPanel({
             )}
           </button>
         ))}
+        <Input
+          value={searchQ}
+          onChange={(e) => onSearchQChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onSearch()
+          }}
+          placeholder="적요 · 상대 · 메모 검색"
+          className="ml-auto h-7 max-w-44 text-xs"
+        />
         <Button
           size="sm"
           variant="outline"
-          className="ml-auto h-7 text-xs"
+          className="h-7 text-xs"
           onClick={() => setImportDialogOpen(true)}
         >
           업로드 파일 관리
@@ -1057,7 +1084,9 @@ function StagingPanel({
           처리 대기 중인 내역이 없습니다
         </p>
       ) : rows.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">해당 탭에 내역이 없습니다</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          {searchQ ? `"${searchQ}" 검색 결과가 없습니다` : '해당 탭에 내역이 없습니다'}
+        </p>
       ) : (
         <div className="rounded-lg border">
           <Table>
@@ -1110,6 +1139,11 @@ function StagingPanel({
           분류완료 <span className="font-medium text-foreground">{classifiedCount}</span>건 저장
           가능
           {heldBack > 0 && ` · 미처리 ${heldBack}건 보류`}
+          {searchQ && (
+            <span className="ml-1 text-amber-600 dark:text-amber-400">
+              — 검색은 화면 표시만 거릅니다. 저장 처리는 검색과 무관하게 대기열 전체를 확정합니다
+            </span>
+          )}
         </p>
         <Button onClick={onCommitRequest} disabled={classifiedCount === 0} size="sm">
           저장 처리
@@ -1327,11 +1361,19 @@ function StagingRow({
         </span>
       </TableCell>
 
-      {/* 적요 */}
+      {/* 적요 — 중복 행은 기존 확정 거래 값이 어떻게 바뀌는지 함께 보여준다 */}
       <TableCell>
         <span className="block max-w-[280px] truncate text-xs" title={finTxnLabel(row)}>
           {finTxnLabel(row)}
         </span>
+        {row.prev && finTxnLabel(row.prev) !== finTxnLabel(row) && (
+          <span
+            className="mt-0.5 block max-w-[280px] truncate text-[10px] text-amber-600 dark:text-amber-400"
+            title={`저장 시 "${finTxnLabel(row.prev)}" → "${finTxnLabel(row)}" 로 바뀝니다`}
+          >
+            변경 전: {finTxnLabel(row.prev)}
+          </span>
+        )}
       </TableCell>
 
       {/* 금액 */}
