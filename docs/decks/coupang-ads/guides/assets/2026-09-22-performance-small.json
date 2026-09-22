@@ -1,0 +1,193 @@
+{
+  "measuredAt": "2026-09-22",
+  "commit": "a3a0d8630680aa644aed534e386f4c8f7b1a86d9",
+  "deployment": "dpl_EnDzg7uhCaM8XhkRc56h2dCb9ni8",
+  "method": "Each of five cycles resets the workspace Data Cache tag, then measures home-first, detail-first, home-revisit, detail-revisit. Cache reset does not guarantee a platform cold start. Includes first post-deployment sample. Locator observation includes polling overhead; follow-up DOM observation recorded separately.",
+  "samples": [
+    [
+      {
+        "screen": "home-first",
+        "ms": 4850,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=41.0, auth_membership;dur=21.4, membership_loop_active;dur=18.2, membership_loop_idle;dur=3.2, auth_deck;dur=5.0, auth_workspace;dur=5.0, auth;dur=72.7, date_ranges;dur=55.2, campaign_current;dur=7.6, campaign_previous;dur=6.2, summary_loader;dur=14.8, target_summaries;dur=21.7, data;dur=140.8, total;dur=213.7"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 956,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=39.9, auth_membership;dur=9.6, membership_loop_active;dur=2.1, membership_loop_idle;dur=7.5, auth_deck;dur=4.8, auth_workspace;dur=4.7, auth;dur=59.1, overview_latest;dur=17.7, overview_ad_types;dur=39.8, overview_current;dur=47.1, overview_previous;dur=63.2, overview_targets;dur=67.6, overview_memos;dur=81.8, overview_meta;dur=86.5, overview_loader;dur=88.1, data;dur=96.4, total;dur=156.2"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 1323,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=99.1, db_connect;dur=32.1, auth_membership;dur=57.0, membership_loop_active;dur=30.7, membership_loop_idle;dur=26.3, auth_deck;dur=7.5, auth_workspace;dur=14.3, auth;dur=178.8, target_summaries;dur=5.6, data;dur=49.8, total;dur=229.3"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 689,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=40.3, auth_membership;dur=8.8, membership_loop_active;dur=2.5, membership_loop_idle;dur=6.3, auth_deck;dur=4.3, auth_workspace;dur=4.3, auth;dur=67.4, data;dur=6.4, total;dur=74.6"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 1502,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=106.1, db_connect;dur=37.5, auth_membership;dur=586.1, membership_loop_active;dur=561.9, membership_loop_idle;dur=24.1, auth_deck;dur=8.2, auth_workspace;dur=9.8, auth;dur=711.0, catalog_loader;dur=60.5, date_ranges;dur=47.0, campaign_current;dur=7.8, campaign_previous;dur=5.7, summary_loader;dur=13.9, target_summaries;dur=20.4, data;dur=211.9, total;dur=923.7"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 451,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=29.6, auth_membership;dur=5.8, membership_loop_active;dur=1.8, membership_loop_idle;dur=3.9, auth_deck;dur=2.8, auth_workspace;dur=2.8, auth;dur=41.1, overview_latest;dur=12.3, overview_ad_types;dur=30.6, overview_current;dur=35.9, overview_previous;dur=38.9, overview_targets;dur=41.2, overview_memos;dur=45.3, overview_meta;dur=47.2, overview_loader;dur=48.9, data;dur=67.0, total;dur=108.7"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 217,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=24.7, auth_membership;dur=5.2, membership_loop_active;dur=1.5, membership_loop_idle;dur=3.8, auth_deck;dur=2.6, auth_workspace;dur=2.3, auth;dur=34.9, catalog_loader;dur=56.5, date_ranges;dur=42.4, target_summaries;dur=5.9, data;dur=129.7, total;dur=164.9"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 242,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=23.1, auth_membership;dur=5.6, membership_loop_active;dur=1.7, membership_loop_idle;dur=3.9, auth_deck;dur=2.7, auth_workspace;dur=2.3, auth;dur=33.8, data;dur=6.9, total;dur=41.0"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 441,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=29.9, auth_membership;dur=44.5, membership_loop_active;dur=6.2, membership_loop_idle;dur=38.4, auth_deck;dur=3.6, auth_workspace;dur=3.3, auth;dur=81.5, catalog_loader;dur=65.3, date_ranges;dur=47.4, campaign_current;dur=5.9, campaign_previous;dur=5.6, summary_loader;dur=10.7, target_summaries;dur=18.1, data;dur=163.3, total;dur=245.1"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 405,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=27.6, auth_membership;dur=7.7, membership_loop_active;dur=1.7, membership_loop_idle;dur=6.0, auth_deck;dur=3.8, auth_workspace;dur=3.6, auth;dur=42.9, overview_latest;dur=12.4, overview_ad_types;dur=30.4, overview_current;dur=34.7, overview_previous;dur=38.8, overview_targets;dur=42.1, overview_memos;dur=46.1, overview_meta;dur=48.9, overview_loader;dur=50.9, data;dur=58.3, total;dur=101.9"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 825,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=27.1, auth_membership;dur=5.4, membership_loop_active;dur=1.7, membership_loop_idle;dur=3.7, auth_deck;dur=2.4, auth_workspace;dur=2.2, auth;dur=37.3, catalog_loader;dur=51.3, target_summaries;dur=5.6, data;dur=83.0, total;dur=120.5"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 262,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=24.5, auth_membership;dur=5.2, membership_loop_active;dur=1.5, membership_loop_idle;dur=3.7, auth_deck;dur=2.7, auth_workspace;dur=2.5, auth;dur=35.0, data;dur=7.0, total;dur=42.3"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 437,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=40.0, auth_membership;dur=5.7, membership_loop_active;dur=5.7, membership_loop_idle;dur=0.0, auth_deck;dur=13.8, auth_workspace;dur=3.1, auth;dur=62.7, catalog_loader;dur=65.3, date_ranges;dur=60.8, campaign_current;dur=5.7, campaign_previous;dur=4.0, summary_loader;dur=11.3, target_summaries;dur=16.1, data;dur=184.0, total;dur=247.0"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 387,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=36.0, auth_membership;dur=8.6, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.2, auth_deck;dur=4.5, auth_workspace;dur=4.1, auth;dur=53.3, overview_latest;dur=12.3, overview_ad_types;dur=33.2, overview_current;dur=37.9, overview_previous;dur=43.0, overview_targets;dur=46.9, overview_memos;dur=51.6, overview_meta;dur=55.4, overview_loader;dur=56.7, data;dur=63.5, total;dur=117.4"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 1330,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=98.8, auth_membership;dur=5.7, membership_loop_active;dur=1.8, membership_loop_idle;dur=3.9, auth_deck;dur=2.7, auth_workspace;dur=2.4, auth;dur=109.8, date_ranges;dur=44.3, target_summaries;dur=11.2, data;dur=71.5, total;dur=181.6"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 320,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=21.3, auth_membership;dur=5.3, membership_loop_active;dur=1.5, membership_loop_idle;dur=3.9, auth_deck;dur=2.5, auth_workspace;dur=2.4, auth;dur=31.7, data;dur=6.4, total;dur=38.6"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 483,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=42.3, auth_membership;dur=8.6, membership_loop_active;dur=1.7, membership_loop_idle;dur=6.9, auth_deck;dur=3.8, auth_workspace;dur=4.1, auth;dur=59.0, catalog_loader;dur=91.1, date_ranges;dur=69.0, campaign_current;dur=5.6, campaign_previous;dur=5.8, summary_loader;dur=10.0, target_summaries;dur=15.1, data;dur=215.8, total;dur=275.0"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 384,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=29.8, auth_membership;dur=7.7, membership_loop_active;dur=1.7, membership_loop_idle;dur=6.0, auth_deck;dur=4.0, auth_workspace;dur=3.7, auth;dur=45.3, overview_latest;dur=5.9, overview_ad_types;dur=24.8, overview_current;dur=29.1, overview_previous;dur=33.6, overview_targets;dur=37.5, overview_memos;dur=41.4, overview_meta;dur=44.2, overview_loader;dur=45.1, data;dur=55.3, total;dur=101.0"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 326,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=44.2, auth_membership;dur=7.6, membership_loop_active;dur=1.6, membership_loop_idle;dur=6.1, auth_deck;dur=3.9, auth_workspace;dur=3.6, auth;dur=59.5, target_summaries;dur=4.7, data;dur=21.7, total;dur=81.4"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 385,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=36.1, auth_membership;dur=7.1, membership_loop_active;dur=1.6, membership_loop_idle;dur=5.5, auth_deck;dur=3.7, auth_workspace;dur=3.5, auth;dur=50.5, data;dur=7.3, total;dur=58.1"
+      }
+    ]
+  ],
+  "followupHomeRevisitDomObservation": {
+    "method": "Five additional warm cycles without cache reset. MutationObserver checks KPI numeric text and visible campaign card; this is DOM availability, not a browser paint timestamp. Separate run, not a replacement for the primary five samples.",
+    "samples": [
+      {
+        "legacyMs": 1821,
+        "domReadyMs": 1440
+      },
+      {
+        "legacyMs": 319,
+        "domReadyMs": 283
+      },
+      {
+        "legacyMs": 210,
+        "domReadyMs": 209
+      },
+      {
+        "legacyMs": 211,
+        "domReadyMs": 187
+      },
+      {
+        "legacyMs": 214,
+        "domReadyMs": 196
+      }
+    ]
+  }
+}
