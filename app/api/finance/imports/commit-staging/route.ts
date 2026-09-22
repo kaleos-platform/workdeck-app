@@ -278,6 +278,7 @@ export async function POST(req: NextRequest) {
           txnDate: r.txnDate,
           description: r.description ?? null,
           counterparty: r.counterparty ?? null,
+          memo: r.memo ?? null,
           amount: r.amount,
           balanceAfter: r.balanceAfter ?? null,
           approvalNo: r.approvalNo ?? null,
@@ -294,8 +295,9 @@ export async function POST(req: NextRequest) {
         categoryId: cls.categoryId,
         classStatus: cls.classStatus,
         matchedRuleId: cls.matchedRuleId,
-        // 규칙 메모는 확정(EXACT) 자동분류에만 복사 — REVIEW는 제안 단계라 미복사
-        memo: cls.classStatus === 'CLASSIFIED' ? (cls.ruleMemo ?? null) : null,
+        // 업로드 파일의 메모 컬럼이 최우선. 없을 때만 규칙 메모를 쓰고, 규칙 메모는
+        // 확정(EXACT) 자동분류에만 복사한다 — REVIEW는 제안 단계라 미복사.
+        memo: r.memo ?? (cls.classStatus === 'CLASSIFIED' ? (cls.ruleMemo ?? null) : null),
         identityKey: r.identityKey,
         contentHash: r.contentHash,
         resolution,

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ArrowRight, Check } from 'lucide-react'
@@ -105,6 +106,19 @@ export default async function DeckProductPage({ params }: ProductPageProps) {
               </h1>
               <p className="text-lg break-keep text-muted-foreground">{row.summary}</p>
             </div>
+
+            {landing.screenshots?.[0] ? (
+              <div className="overflow-hidden rounded-xl border shadow-sm">
+                <Image
+                  src={landing.screenshots[0].src}
+                  alt={landing.screenshots[0].alt}
+                  width={1600}
+                  height={900}
+                  className="h-auto w-full"
+                  priority
+                />
+              </div>
+            ) : null}
 
             <ul className="space-y-2">
               {landing.features.slice(0, 5).map((feature) => (

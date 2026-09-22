@@ -10,6 +10,7 @@ const DEFAULT_MAX_TOKENS = 4096
 
 export class AnthropicProvider implements TextProvider {
   readonly name = 'anthropic'
+  readonly supportsImages = true
   private readonly apiKey: string
   private readonly model: string
   private readonly timeoutMs: number
@@ -43,12 +44,28 @@ export class AnthropicProvider implements TextProvider {
     const started = Date.now()
 
     // Anthropic 은 system 이 별도 파라미터이고 messages 에 system role 을 허용하지 않는다.
-    const system = [req.system, ...req.messages.filter((m) => m.role === 'system').map((m) => m.content)]
+    const system = [
+      req.system,
+      ...req.messages.filter((m) => m.role === 'system').map((m) => m.content),
+    ]
       .filter(Boolean)
       .join('\n\n')
     const messages = req.messages
       .filter((m) => m.role !== 'system')
-      .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+      .map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.images?.length
+          ? [
+              ...m.images.map(
+                (image): Anthropic.ImageBlockParam => ({
+                  type: 'image',
+                  source: { type: 'base64', media_type: image.mimeType, data: image.data },
+                })
+              ),
+              { type: 'text' as const, text: m.content },
+            ]
+          : m.content,
+      }))
     if (messages.length === 0) throw new Error('Anthropic 요청에 user 메시지가 필요합니다')
 
     const response = await this.client().messages.create(

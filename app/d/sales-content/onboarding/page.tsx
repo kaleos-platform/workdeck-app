@@ -3,6 +3,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { OnboardingWizard } from '@/components/sc/onboarding/onboarding-wizard'
 import type { OnboardingDraft } from '@/lib/sc/onboarding/schemas'
+import { customFieldsSchema } from '@/lib/sc/schemas'
 
 // 서버 컴포넌트 — 위저드 초기 데이터를 병렬로 fetch 후 클라이언트 위저드에 주입
 export default async function OnboardingPage() {
@@ -39,6 +40,7 @@ export default async function OnboardingPage() {
         companyName: brandProfile.companyName,
         shortDescription: brandProfile.shortDescription ?? '',
         toneOfVoice: (brandProfile.toneOfVoice as string[] | null) ?? [],
+        customFields: customFieldsSchema.safeParse(brandProfile.customFields).data ?? [],
       }
     : null
 

@@ -26,6 +26,12 @@ import { GeminiImageProvider } from './image-gemini'
 export type TextMessage = {
   role: 'system' | 'user' | 'assistant'
   content: string
+  images?: TextImage[]
+}
+
+export type TextImage = {
+  mimeType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+  data: string
 }
 
 export interface TextGenerateRequest {
@@ -51,6 +57,7 @@ export interface TextGenerateResult {
 
 export interface TextProvider {
   readonly name: string
+  readonly supportsImages?: boolean
   isConfigured(): boolean
   healthcheck(signal?: AbortSignal): Promise<boolean>
   generate(req: TextGenerateRequest): Promise<TextGenerateResult>

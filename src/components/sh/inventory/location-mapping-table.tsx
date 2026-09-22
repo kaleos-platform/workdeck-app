@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { isReturnGrade } from '@/lib/inv/product-grade'
+import { Badge } from '@/components/ui/badge'
 import {
   isSyntheticExternalCode,
   syntheticExternalCode,
@@ -47,6 +49,8 @@ type MappingRow = {
   externalCode: string
   externalName: string | null
   externalOptionName: string | null
+  /** 쿠팡 상품등급 — 로켓그로스 위치에서만 채워진다 */
+  externalGrade?: string | null
   items: MappingItem[]
 }
 
@@ -278,6 +282,17 @@ export function LocationMappingTable({ locationId }: Props) {
                       <span className="text-muted-foreground/50">—</span>
                     ) : (
                       m.externalCode
+                    )}
+                    {isReturnGrade(m.externalGrade) && (
+                      // 쿠팡이 반품품을 별도 상품으로 재등록해 같은 상품·옵션의 매핑이
+                      // 여러 개 생긴다. 등급이 없으면 목록에서 구분할 수 없다.
+                      <Badge
+                        variant="outline"
+                        className="ml-1.5 border-amber-200 bg-amber-50 px-1 py-0 text-[10px] font-normal text-amber-700"
+                        title="쿠팡 반품 등급 재고 — 재고 현황에는 포함되지만 발주 계획에서는 제외됩니다."
+                      >
+                        {m.externalGrade}
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell>{renderOptionCell(m.items)}</TableCell>

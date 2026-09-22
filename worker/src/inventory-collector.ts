@@ -43,6 +43,12 @@ const LOGIN_FORM_TIMEOUT = 15_000
 
 // ─── 헬퍼 ────────────────────────────────────────────────────────────────────────
 
+// ⚠️ locator.isVisible() 은 즉시 판정이다 — timeout 옵션을 줘도 기다리지 않는다.
+// 2026-08-25 판매분석 수집 실패 때 `isVisible({ timeout: 5000 })` 가 229ms 만에 false 를
+// 반환한 게 "하이드레이션 레이스가 아니라 셀렉터 불일치"의 결정적 근거였다.
+// 실제로 기다려야 하는 지점은 locator.waitFor({ state: 'visible', timeout }) 를 쓸 것.
+// 아래 isVisible() 들은 폴백 체인의 "지금 보이나" 분기라 즉시 판정이 맞다.
+
 async function saveScreenshot(page: Page, name: string): Promise<void> {
   // ⚠️ 진단용 스크린샷은 절대 throw 해선 안 된다. catch 블록에서 호출되는 경우가
   // 많은데(에러 직후 화면 캡처), 이때 page/context 가 이미 닫혔으면 screenshot 가
@@ -101,7 +107,7 @@ async function performWingLogin(
   const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[type="text"]']
   for (const sel of idSelectors) {
     const el = page.locator(sel).first()
-    if (await el.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await el.isVisible().catch(() => false)) {
       await el.fill(credentials.loginId)
       console.log(`[inventory]   → ID 입력 (${sel})`)
       break
@@ -227,7 +233,7 @@ async function dismissModals(page: Page): Promise<boolean> {
   ]
   for (const sel of dismissCandidates) {
     const btn = page.locator(sel).first()
-    if (await btn.isVisible({ timeout: 800 }).catch(() => false)) {
+    if (await btn.isVisible().catch(() => false)) {
       await btn.click({ force: true }).catch(() => {})
       dismissed = true
       await page.waitForTimeout(400)
@@ -245,7 +251,7 @@ async function dismissModals(page: Page): Promise<boolean> {
   const modalTitles = ['더 고도화된 재고현황', '품절 상품을 신속히 재입고', '비즈니스 인사이트']
   for (const title of modalTitles) {
     const modalTitle = page.locator(`text=${title}`).first()
-    if (!(await modalTitle.isVisible({ timeout: 800 }).catch(() => false))) continue
+    if (!(await modalTitle.isVisible().catch(() => false))) continue
 
     const modalBox = await modalTitle
       .evaluate((node) => {
@@ -296,7 +302,7 @@ async function dismissModals(page: Page): Promise<boolean> {
       }
     }
 
-    if (await modalTitle.isVisible({ timeout: 500 }).catch(() => false)) {
+    if (await modalTitle.isVisible().catch(() => false)) {
       await page.keyboard.press('Escape').catch(() => {})
       await page.waitForTimeout(500)
     }
@@ -454,7 +460,7 @@ async function navigateToRocketGrowthInventory(page: Page): Promise<void> {
   await dismissModals(page)
 
   const rocketGrowth = page.locator('text=로켓그로스').first()
-  if (await rocketGrowth.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await rocketGrowth.isVisible().catch(() => false)) {
     await rocketGrowth.click({ force: true }).catch(() => {})
     await page.waitForTimeout(1000)
   }
@@ -462,7 +468,7 @@ async function navigateToRocketGrowthInventory(page: Page): Promise<void> {
   const inventoryMenu = page
     .locator('a:has-text("재고현황"), button:has-text("재고현황"), text=재고현황')
     .first()
-  if (await inventoryMenu.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await inventoryMenu.isVisible().catch(() => false)) {
     await inventoryMenu.click({ force: true })
   } else {
     console.log('[inventory]   → 사이드바 경로 실패, 직접 URL fallback')
@@ -509,11 +515,11 @@ async function downloadInventoryHealth(
   await clearCartSelection(page)
 
   let downloadBtn = page.locator('.excel_download button:has-text("엑셀 다운로드")').first()
-  if (!(await downloadBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+  if (!(await downloadBtn.isVisible().catch(() => false))) {
     downloadBtn = page.locator('button:has-text("엑셀 다운로드")').first()
   }
 
-  if (!(await downloadBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+  if (!(await downloadBtn.isVisible().catch(() => false))) {
     await saveScreenshot(page, 'inventory-health-no-btn')
     throw new Error('[inventory] 재고현황의 "엑셀 다운로드" 버튼을 찾을 수 없습니다')
   }
@@ -527,7 +533,7 @@ async function downloadInventoryHealth(
   let requestBtn = page.locator('text=엑셀 다운로드 요청').first()
   if (await dismissModals(page)) {
     await page.waitForTimeout(500)
-    const isMenuAlreadyOpen = await requestBtn.isVisible({ timeout: 1000 }).catch(() => false)
+    const isMenuAlreadyOpen = await requestBtn.isVisible().catch(() => false)
     if (!isMenuAlreadyOpen) {
       await downloadBtn.click({ force: true })
       await page.waitForTimeout(1000)
@@ -535,10 +541,10 @@ async function downloadInventoryHealth(
   }
 
   await saveScreenshot(page, 'inventory-health-menu-open')
-  if (!(await requestBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+  if (!(await requestBtn.isVisible().catch(() => false))) {
     requestBtn = page.locator('.backdrop div:has-text("엑셀 다운로드 요청")').first()
   }
-  if (!(await requestBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+  if (!(await requestBtn.isVisible().catch(() => false))) {
     requestBtn = page
       .locator(
         'div[role="menuitem"]:has-text("엑셀 다운로드 요청"), li:has-text("엑셀 다운로드 요청")'
@@ -548,7 +554,7 @@ async function downloadInventoryHealth(
 
   // 드롭다운이 끝내 안 열렸으면(늦게 뜬 공지 모달 백드롭이 클릭을 삼킨 경우 등)
   // 모달을 한 번 더 정리하고 다운로드 버튼을 재클릭한 뒤 재확인한다(1회 가드).
-  if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+  if (!(await requestBtn.isVisible().catch(() => false))) {
     console.log('[inventory]   → 드롭다운 미열림 — 모달 재정리 후 재클릭 재시도')
     await dismissModals(page)
     await page.waitForTimeout(500)
@@ -557,7 +563,7 @@ async function downloadInventoryHealth(
     requestBtn = page.locator('text=엑셀 다운로드 요청').first()
   }
 
-  if (!(await requestBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+  if (!(await requestBtn.isVisible().catch(() => false))) {
     await saveScreenshot(page, 'inventory-health-no-request-btn')
     throw new Error('[inventory] 재고현황의 "엑셀 다운로드 요청" 메뉴를 찾을 수 없습니다')
   }
@@ -973,7 +979,7 @@ async function downloadSalesAnalysisVendor(
     }
   }
 
-  if (!(await excelTextSpan.isVisible({ timeout: 5000 }).catch(() => false))) {
+  if (!(await excelTextSpan.isVisible().catch(() => false))) {
     await saveScreenshot(page, 'sales-analysis-no-excel-btn')
     throw new Error(
       '[inventory] 판매분석의 "엑셀 다운로드" 버튼을 찾을 수 없습니다 — TODO: 실제 셀렉터 확인 필요'
@@ -998,13 +1004,13 @@ async function downloadSalesAnalysisVendor(
   // 변경됨(2026-07-19 계측 덤프 실증: 드롭다운 _active 안에 기간별/상품별 판매 리포트).
   // 신규 텍스트 우선, 구 텍스트는 폴백 체인에 유지.
   let vendorMenuBtn = page.locator('text=상품별 판매 리포트').first()
-  if (!(await vendorMenuBtn.isVisible({ timeout: 1500 }).catch(() => false))) {
+  if (!(await vendorMenuBtn.isVisible().catch(() => false))) {
     vendorMenuBtn = page.locator('text=상품별 엑셀 다운로드').first()
   }
 
   // 드롭다운이 안 열렸으면(모달·오클릭으로 열린 내비 등 잔여 오버레이) Escape로 정리 후
   // span에 직접 JS 클릭으로 재시도한다.
-  const menuOpened = await vendorMenuBtn.isVisible({ timeout: 2000 }).catch(() => false)
+  const menuOpened = await vendorMenuBtn.isVisible().catch(() => false)
   if (!menuOpened) {
     // 계측: 드롭다운 미열림 시 페이지의 '엑셀'/'다운로드' 포함 요소 전수 덤프(원인 확정용).
     const candidates = await page
@@ -1038,14 +1044,14 @@ async function downloadSalesAnalysisVendor(
   await saveScreenshot(page, 'sales-analysis-excel-menu-open')
 
   // fallback 셀렉터들
-  if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+  if (!(await vendorMenuBtn.isVisible().catch(() => false))) {
     vendorMenuBtn = page
       .locator(
         '.backdrop div:has-text("상품별 판매 리포트"), .backdrop div:has-text("상품별 엑셀 다운로드")'
       )
       .first()
   }
-  if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+  if (!(await vendorMenuBtn.isVisible().catch(() => false))) {
     vendorMenuBtn = page
       .locator(
         'div[role="menuitem"]:has-text("상품별 엑셀 다운로드"), li:has-text("상품별 엑셀 다운로드")'
@@ -1053,13 +1059,13 @@ async function downloadSalesAnalysisVendor(
       .first()
   }
   // TODO: 실제 DOM 확인 필요 — 메뉴 텍스트가 "상품별" 이 아닌 경우 대비 (예: "VENDOR", "아이템별" 등)
-  if (!(await vendorMenuBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
+  if (!(await vendorMenuBtn.isVisible().catch(() => false))) {
     vendorMenuBtn = page
       .locator('div[role="menuitem"]:has-text("상품"), li:has-text("상품")')
       .first()
   }
 
-  if (!(await vendorMenuBtn.isVisible({ timeout: 5000 }).catch(() => false))) {
+  if (!(await vendorMenuBtn.isVisible().catch(() => false))) {
     await saveScreenshot(page, 'sales-analysis-no-vendor-menu')
     throw new Error(
       '[inventory] 판매분석의 "상품별 엑셀 다운로드" 메뉴를 찾을 수 없습니다 — TODO: 실제 DOM 확인 필요'

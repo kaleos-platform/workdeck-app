@@ -1429,7 +1429,7 @@ function MappingView(p: MappingViewProps) {
                         key={ci}
                         title={cell}
                         className={cn(
-                          'max-w-[240px] truncate text-xs transition-colors',
+                          'text-xs transition-colors',
                           dimmed && 'text-muted-foreground opacity-60',
                           empty && 'italic opacity-40',
                           hoveredColumnIdx === ci && 'bg-primary/10 text-foreground opacity-100'
@@ -1437,7 +1437,7 @@ function MappingView(p: MappingViewProps) {
                         onMouseEnter={() => setHoveredColumnIdx(ci)}
                         onMouseLeave={() => setHoveredColumnIdx(null)}
                       >
-                        {cell}
+                        <div className="max-w-[240px] truncate">{cell}</div>
                       </TableCell>
                     )
                   })}

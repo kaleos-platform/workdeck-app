@@ -16,10 +16,15 @@ import { DeckCrossLinks } from './deck-cross-links'
 export function DeckLanding({ content }: { content: DeckLandingContent }) {
   const meta = DECK_META[content.slug]
 
+  // [시작하기]는 이 업무를 보고 온 사람을 위한 CTA다. 가입 후 곧장 해당 업무의
+  // 구독 확인 단계로 이어지도록 목적지를 실어 보낸다 (로그인 상태면 바로 도착).
+  const startHref = `/signup?redirectTo=${encodeURIComponent(`/my-deck?subscribe=${content.slug}`)}`
+  const primaryCta = { ...content.hero.primaryCta, href: startHref }
+
   return (
     <div className="w-full">
       <HeroSection
-        hero={content.hero}
+        hero={{ ...content.hero, primaryCta }}
         deckName={meta.name}
         gradient={meta.gradient}
         icon={meta.icon}
@@ -41,11 +46,7 @@ export function DeckLanding({ content }: { content: DeckLandingContent }) {
 
       <FaqSection faq={content.faq} />
 
-      <CtaSection
-        finalCta={content.finalCta}
-        primaryCta={content.hero.primaryCta}
-        gradient={meta.gradient}
-      />
+      <CtaSection finalCta={content.finalCta} primaryCta={primaryCta} gradient={meta.gradient} />
 
       {content.relatedDecks && content.relatedDecks.length > 0 ? (
         <DeckCrossLinks relatedDecks={content.relatedDecks} />

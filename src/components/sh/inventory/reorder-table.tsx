@@ -42,6 +42,8 @@ type ReorderRow = {
   sku: string | null
   currentStock: number
   onHandStock: number
+  /** 발주 계산에서 제외된 반품 등급 재고. 재고 현황에는 포함돼 있어 숫자가 다르다. */
+  returnQty?: number
   incomingQty: number
   totalOutbound: number
   windowDays: number
@@ -448,6 +450,14 @@ export function ReorderTable({ productId }: { productId: string }) {
                       <div className="text-[11px] text-muted-foreground">
                         현재 {QTY.format(row.onHandStock)} · 입고예정 {QTY.format(row.incomingQty)}
                       </div>
+                      {row.returnQty ? (
+                        <div
+                          className="text-[11px] text-muted-foreground/70"
+                          title="쿠팡 반품 등급 재고 — 반품 전용 리스팅에서만 팔려 정상 수요를 메우지 못하므로 발주 계산에서 제외했습니다. 재고 현황에는 포함됩니다."
+                        >
+                          반품등급 {QTY.format(row.returnQty)} 제외
+                        </div>
+                      ) : null}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{row.totalOutbound}</TableCell>
                     <TableCell className="text-right tabular-nums">

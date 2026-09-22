@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/table'
 import { classStatusBadge, accountKindLabel, formatWon } from '@/components/finance/format'
 import { MEMO_MAX } from '@/lib/finance/memo'
+import { finTxnLabel } from '@/lib/finance/txn-label'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
 import { useShiftSelect } from '@/components/finance/use-shift-select'
 import { ImportDeleteDialog } from '@/components/finance/import-delete-dialog'
@@ -1316,16 +1317,20 @@ function StagingRow({
 
       {/* 출처 칩 */}
       <TableCell>
-        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs">
-          <span className="text-muted-foreground">{accountKindLabel(row.account.kind)}</span>
-          <span className="font-medium">{row.account.name}</span>
+        <span className="inline-flex max-w-[150px] items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs">
+          <span className="shrink-0 text-muted-foreground">
+            {accountKindLabel(row.account.kind)}
+          </span>
+          <span className="truncate font-medium" title={row.account.name}>
+            {row.account.name}
+          </span>
         </span>
       </TableCell>
 
       {/* 적요 */}
       <TableCell>
-        <span className="block max-w-[280px] truncate text-xs" title={row.description ?? ''}>
-          {row.description ?? row.counterparty ?? '-'}
+        <span className="block max-w-[280px] truncate text-xs" title={finTxnLabel(row)}>
+          {finTxnLabel(row)}
         </span>
       </TableCell>
 
@@ -1638,7 +1643,7 @@ function TransactionsPanel({
           onKeyDown={(e) => {
             if (e.key === 'Enter') onSearch()
           }}
-          placeholder="적요 · 가맹점 검색"
+          placeholder="적요 · 가맹점 · 메모 검색"
           className="h-8 max-w-52 text-xs"
         />
         <div className="flex items-center gap-1.5">
@@ -2089,8 +2094,8 @@ function TransactionRow({
 
       {/* 적요 + 부채 연결 배지 */}
       <TableCell>
-        <span className="block max-w-[280px] truncate text-xs" title={txn.description ?? ''}>
-          {txn.description ?? txn.counterparty ?? '-'}
+        <span className="block max-w-[280px] truncate text-xs" title={finTxnLabel(txn)}>
+          {finTxnLabel(txn)}
         </span>
         {txn.liability && (
           <span className="mt-0.5 inline-flex items-center gap-0.5 rounded-full border border-red-200 bg-red-50 px-1.5 py-0 text-[10px] text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">

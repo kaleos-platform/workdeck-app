@@ -349,14 +349,16 @@ export function ContentComparePanel({ data, onClose }: Props) {
                   return (
                     <tr key={row.id} className="border-t">
                       {/* 제목 + 색상 indicator */}
-                      <td className="max-w-[200px] px-3 py-2.5">
-                        <div className="flex items-center gap-2">
+                      <td className="px-3 py-2.5">
+                        <div className="flex max-w-[200px] items-center gap-2">
                           <span
                             className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
                             style={{ background: color }}
                             aria-hidden="true"
                           />
-                          <span className="truncate font-medium">{row.title}</span>
+                          <span className="min-w-0 truncate font-medium" title={row.title}>
+                            {row.title}
+                          </span>
                         </div>
                       </td>
                       <td className="px-3 py-2.5 text-right tabular-nums">

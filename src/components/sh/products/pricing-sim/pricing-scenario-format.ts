@@ -11,6 +11,7 @@ export type ScenarioRow = {
   channelIds?: string[]
   channelNames?: string[]
   summary: PricingSimSummary | null
+  variants?: { id: string; name: string; summary: PricingSimSummary | null }[]
   updatedAt: string
 }
 

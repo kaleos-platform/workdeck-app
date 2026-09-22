@@ -15,6 +15,7 @@ export type BrandProfileData = {
   companyName: string
   shortDescription: string
   toneOfVoice: string[]
+  customFields?: { key: string; value: string }[]
 }
 
 export type WizardData = {

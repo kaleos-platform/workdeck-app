@@ -21,6 +21,12 @@ export const productExtractSchema = z.object({
   originCountry: looseString,
   capacity: looseString,
   cautions: looseList,
+  materials: looseString,
+  customization: looseString,
+  ordering: looseString,
+  useCases: looseList,
+  esgEvidence: looseList,
+  missingInfo: looseList,
 })
 
 export type ProductExtractRaw = z.infer<typeof productExtractSchema>
@@ -67,6 +73,12 @@ export function normalizeExtracted(raw: ProductExtractRaw): ProductDraft {
     [PRODUCT_FIELD_LABELS.originCountry, clampText(raw.originCountry ?? '', VALUE_MAX)],
     [PRODUCT_FIELD_LABELS.capacity, clampText(raw.capacity ?? '', VALUE_MAX)],
     [PRODUCT_FIELD_LABELS.cautions, clampText(listToText(raw.cautions), VALUE_MAX)],
+    [PRODUCT_FIELD_LABELS.materials, clampText(raw.materials ?? '', VALUE_MAX)],
+    [PRODUCT_FIELD_LABELS.customization, clampText(raw.customization ?? '', VALUE_MAX)],
+    [PRODUCT_FIELD_LABELS.ordering, clampText(raw.ordering ?? '', VALUE_MAX)],
+    [PRODUCT_FIELD_LABELS.useCases, clampText(listToText(raw.useCases), VALUE_MAX)],
+    [PRODUCT_FIELD_LABELS.esgEvidence, clampText(listToText(raw.esgEvidence), VALUE_MAX)],
+    [PRODUCT_FIELD_LABELS.missingInfo, clampText(listToText(raw.missingInfo), VALUE_MAX)],
   ]
 
   return {

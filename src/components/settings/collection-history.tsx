@@ -343,62 +343,68 @@ export function CollectionHistory() {
                           )
                         : '-'}
                     </TableCell>
-                    <TableCell className="max-w-[300px]">
-                      {run.status === 'COMPLETED' && run.error ? (
-                        // 광고 수집은 성공했으나 재고 등 후속 단계 일부 실패 — 업로드 정보 + 경고 병기
-                        <span className="flex flex-col gap-0.5 text-sm">
-                          {run.upload && (
-                            <span className="text-muted-foreground">
-                              {formatDate(run.upload.periodStart)} ~{' '}
-                              {formatDate(run.upload.periodEnd)}
-                              {' · '}
-                              <span className="font-medium text-foreground">
-                                {(
-                                  run.upload.insertedRows ??
-                                  run.upload.totalRows ??
-                                  0
-                                ).toLocaleString()}
-                                건
+                    <TableCell>
+                      <div className="max-w-[300px]">
+                        {run.status === 'COMPLETED' && run.error ? (
+                          // 광고 수집은 성공했으나 재고 등 후속 단계 일부 실패 — 업로드 정보 + 경고 병기
+                          <span className="flex flex-col gap-0.5 text-sm">
+                            {run.upload && (
+                              <span className="text-muted-foreground">
+                                {formatDate(run.upload.periodStart)} ~{' '}
+                                {formatDate(run.upload.periodEnd)}
+                                {' · '}
+                                <span className="font-medium text-foreground">
+                                  {(
+                                    run.upload.insertedRows ??
+                                    run.upload.totalRows ??
+                                    0
+                                  ).toLocaleString()}
+                                  건
+                                </span>
                               </span>
+                            )}
+                            <span
+                              className="truncate text-amber-600 dark:text-amber-500"
+                              title={run.error}
+                            >
+                              ⚠ {run.error}
                             </span>
-                          )}
+                          </span>
+                        ) : run.error ? (
                           <span
-                            className="truncate text-amber-600 dark:text-amber-500"
+                            className="block truncate text-sm text-destructive"
                             title={run.error}
                           >
-                            ⚠ {run.error}
+                            {run.error}
                           </span>
-                        </span>
-                      ) : run.error ? (
-                        <span className="truncate text-sm text-destructive" title={run.error}>
-                          {run.error}
-                        </span>
-                      ) : run.upload ? (
-                        <span className="text-sm text-muted-foreground">
-                          {formatDate(run.upload.periodStart)} ~ {formatDate(run.upload.periodEnd)}
-                          {' · '}
-                          <span className="font-medium text-foreground">
-                            {(
-                              run.upload.insertedRows ??
-                              run.upload.totalRows ??
-                              0
-                            ).toLocaleString()}
-                            건
-                          </span>
-                          {(run.upload.duplicateRows ?? 0) > 0 && (
-                            <span className="text-muted-foreground">
-                              {' '}
-                              (중복 {run.upload.duplicateRows}건)
+                        ) : run.upload ? (
+                          <span className="text-sm text-muted-foreground">
+                            {formatDate(run.upload.periodStart)} ~{' '}
+                            {formatDate(run.upload.periodEnd)}
+                            {' · '}
+                            <span className="font-medium text-foreground">
+                              {(
+                                run.upload.insertedRows ??
+                                run.upload.totalRows ??
+                                0
+                              ).toLocaleString()}
+                              건
                             </span>
-                          )}
-                        </span>
-                      ) : run.status === 'COMPLETED' ? (
-                        <span className="text-sm text-muted-foreground">완료</span>
-                      ) : ACTIVE_STATUSES.includes(run.status) ? (
-                        <span className="text-sm text-muted-foreground">진행 중...</span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
+                            {(run.upload.duplicateRows ?? 0) > 0 && (
+                              <span className="text-muted-foreground">
+                                {' '}
+                                (중복 {run.upload.duplicateRows}건)
+                              </span>
+                            )}
+                          </span>
+                        ) : run.status === 'COMPLETED' ? (
+                          <span className="text-sm text-muted-foreground">완료</span>
+                        ) : ACTIVE_STATUSES.includes(run.status) ? (
+                          <span className="text-sm text-muted-foreground">진행 중...</span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

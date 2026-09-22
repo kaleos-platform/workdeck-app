@@ -102,3 +102,42 @@ describe('parseStockStatusExport — 합성 externalCode', () => {
     expect(res.rows[0].externalCode).toBe(res.rows[1].externalCode)
   })
 })
+
+describe('parseCoupangHealth — 상품등급(반품 구분)', () => {
+  // 쿠팡 재고현황 엑셀은 2행 헤더다. 감지 조건은 (등록상품 ID) + (SKU ID | 옵션 ID) + 판매가능재고.
+  const H0 = ['등록상품 ID', 'SKU ID', '등록상품명', '옵션명', '상품등급', '판매가능재고']
+  const H1 = ['', '', '', '', '', '']
+
+  function buildHealth(rows: (string | number)[][], row1 = H1): ArrayBuffer {
+    const ws = XLSX.utils.aoa_to_sheet([H0, row1, ...rows])
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '재고현황')
+    return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
+  }
+
+  it('상품등급을 externalGrade 로 싣는다', () => {
+    const buf = buildHealth([
+      ['15310469575', '57898934', '텐셀 모달 머드 우먼 팬티 1장', '누드 XL', 'NEW', 11],
+      ['15710736003', '63489811', '텐셀 모달 머드 우먼 팬티 1장', '누드 XL', '반품-최상', 4],
+    ])
+    const res = parseReconciliationFile(buf, 'inventory_health.xlsx')
+    expect(res.format).toBe('coupang_health')
+    expect(res.rows.map((r) => r.externalGrade)).toEqual(['NEW', '반품-최상'])
+    // externalCode 는 SKU ID 우선 — Deck 연동(getCoupangInventoryRows)과 동일 규칙
+    expect(res.rows.map((r) => r.externalCode)).toEqual(['57898934', '63489811'])
+  })
+
+  it('등급 컬럼이 없으면 undefined — 정상(비반품)으로 취급된다', () => {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['등록상품 ID', 'SKU ID', '등록상품명', '옵션명', '판매가능재고'],
+      ['', '', '', '', ''],
+      ['15310469575', '57898934', '상품', '옵션', 3],
+    ])
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '재고현황')
+    const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
+    const res = parseReconciliationFile(buf, 'inventory_health.xlsx')
+    expect(res.format).toBe('coupang_health')
+    expect(res.rows[0].externalGrade).toBeUndefined()
+  })
+})

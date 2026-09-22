@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveSpaceContext, assertRole } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { registerBillingMethod, BillingError } from '@/lib/billing/subscription-service'
+import { sanitizeRedirectPath } from '@/lib/auth-redirect'
+import { SETTINGS_PAYMENTS_PATH } from '@/lib/deck-routes'
 
 export const maxDuration = 60
 
@@ -13,7 +15,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  const billingUrl = new URL('/settings/billing', request.url)
+  // returnTo: 카드 등록을 시작한 화면으로 되돌린다 (구독 확인 모달을 이어서 열기 위함).
+  // 외부 URL 이 들어오면 오픈 리다이렉트가 되므로 내부 경로만 허용한다.
+  const returnTo =
+    sanitizeRedirectPath(request.nextUrl.searchParams.get('returnTo')) ?? SETTINGS_PAYMENTS_PATH
+  const billingUrl = new URL(returnTo, request.url)
 
   const roleError = assertRole(resolved.role, 'OWNER')
   if (roleError) {

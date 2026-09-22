@@ -90,10 +90,14 @@ export async function POST(req: NextRequest) {
   const identityKeys = [...new Set(staged.map((s) => s.identityKey))]
   const existingTxns = await prisma.finTransaction.findMany({
     where: { spaceId, identityKey: { in: identityKeys } },
-    select: { accountId: true, identityKey: true, categoryId: true },
+    select: { accountId: true, identityKey: true, categoryId: true, memo: true },
   })
   const classifiedKeys = new Set(
     existingTxns.filter((t) => t.categoryId != null).map((t) => `${t.accountId}|${t.identityKey}`)
+  )
+  // 이미 메모가 있는 확정 거래 — 재임포트분 메모로 덮어쓰지 않는다(사용자 편집 보호).
+  const memoedKeys = new Set(
+    existingTxns.filter((t) => t.memo != null).map((t) => `${t.accountId}|${t.identityKey}`)
   )
 
   const affectedAccounts = [...new Set(staged.map((s) => s.accountId))]
@@ -138,11 +142,16 @@ export async function POST(req: NextRequest) {
         // 단, 사용자가 "유지"로 명시 선택한 중복(DUP_OVERWRITE)은 덮어쓰기 의도이므로 분류를 반영한다.
         const preserve =
           classifiedKeys.has(`${s.accountId}|${s.identityKey}`) && s.resolution !== 'DUP_OVERWRITE'
-        // 메모는 content/classification 어느 쪽도 아닌 조건부 필드 — staged에 메모가 있을 때만
-        // 반영한다. content에 넣으면 재업로드분(memo=null) 재커밋이 기존 확정 거래 메모를 지우고,
-        // classification에 넣으면 preserve 시 유실된다. 의도된 제약: 스테이징 단계에서 기존
-        // 확정 거래의 메모를 삭제할 수는 없다(삭제는 전체 거래 탭에서).
-        const memoPatch = s.memo != null ? { memo: s.memo } : {}
+        // 메모는 content/classification 어느 쪽도 아닌 조건부 필드 — staged에 메모가 있고
+        // 기존 확정 거래에 메모가 없을 때만 반영한다. content에 넣으면 재업로드분(memo=null)
+        // 재커밋이 기존 메모를 지우고, classification에 넣으면 preserve 시 유실된다.
+        // 기존 메모가 있으면 건너뛴다 — 업로드 파일의 메모 컬럼·규칙 메모가 사용자가
+        // 거래내역에서 직접 편집한 메모를 덮어쓰지 않도록. 의도된 제약: 스테이징 단계에서
+        // 기존 확정 거래의 메모를 수정·삭제할 수는 없다(수정·삭제는 전체 거래 탭에서).
+        const memoPatch =
+          s.memo != null && !memoedKeys.has(`${s.accountId}|${s.identityKey}`)
+            ? { memo: s.memo }
+            : {}
         await tx.finTransaction.upsert({
           where: {
             spaceId_accountId_identityKey: {

@@ -52,11 +52,15 @@ export interface HtmlToTextResult {
   structured: ProductStructuredData | null
   /** 상세페이지 이미지 절대 URL (상세 컨테이너 우선, 아이콘/배너/썸네일 제외) */
   imageUrls: string[]
+  imageUrlsTruncated?: boolean
 }
 
 export interface HtmlToTextOptions {
   /** 상대 경로·프로토콜 상대 URL을 절대 URL로 만들 때 쓰는 기준 URL */
   baseUrl?: string
+  /** 호출자가 이미지 분석을 분할 처리할 때만 기본 상한을 늘린다. */
+  maxImageUrls?: number
+  detailImagesOnly?: boolean
 }
 
 /** script/style 등 내용까지 통째로 제거해야 하는 태그 목록 */
@@ -363,7 +367,9 @@ function extractFirstDetailContainer(html: string): string | null {
 function extractImageUrls(
   html: string,
   structured: ProductStructuredData | null,
-  baseUrl: string | undefined
+  baseUrl: string | undefined,
+  maxImages = MAX_IMAGE_URLS,
+  detailImagesOnly = false
 ): string[] {
   const seen = new Set<string>()
   const ordered: string[] = []
@@ -376,6 +382,7 @@ function extractImageUrls(
   const container = extractFirstDetailContainer(html)
   if (container) {
     for (const url of collectImageCandidates(container, baseUrl)) add(url)
+    if (detailImagesOnly && ordered.length) return ordered.slice(0, maxImages)
   }
 
   if (structured) {
@@ -387,7 +394,7 @@ function extractImageUrls(
 
   for (const url of collectImageCandidates(html, baseUrl)) add(url)
 
-  return ordered.slice(0, MAX_IMAGE_URLS)
+  return ordered.slice(0, maxImages)
 }
 
 export function htmlToText(
@@ -411,7 +418,15 @@ export function htmlToText(
   const summary = decodedOgDescription || decodedMetaDescription || null
 
   const structured = extractStructuredData(html)
-  const imageUrls = extractImageUrls(html, structured, options.baseUrl)
+  const imageLimit = options.maxImageUrls ?? MAX_IMAGE_URLS
+  const imageCandidates = extractImageUrls(
+    html,
+    structured,
+    options.baseUrl,
+    imageLimit + 1,
+    options.detailImagesOnly
+  )
+  const imageUrls = imageCandidates.slice(0, imageLimit)
 
   // 2. 주석 및 내용까지 제거해야 하는 블록 태그 제거
   //    (select=배송국가 등 대용량 노이즈, nav/header/footer/aside=전역 UI)
@@ -464,5 +479,12 @@ export function htmlToText(
     truncated = true
   }
 
-  return { title, text: work, truncated, structured, imageUrls }
+  return {
+    title,
+    text: work,
+    truncated,
+    structured,
+    imageUrls,
+    ...(imageCandidates.length > imageLimit ? { imageUrlsTruncated: true } : {}),
+  }
 }

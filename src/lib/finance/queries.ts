@@ -55,7 +55,9 @@ function buildOrderBy(
     case 'classStatus':
       return [{ classStatus: order }, tie]
     case 'description':
-      return [{ description: order }, tie]
+      // 적요 셀은 finTxnLabel(description + counterparty)을 표시한다.
+      // description이 비어 counterparty가 적요로 보이는 행까지 같은 기준으로 묶기 위해 2차 키 추가.
+      return [{ description: order }, { counterparty: order }, tie]
     default:
       return [{ txnDate: order }]
   }
@@ -133,9 +135,9 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
   const wantUncat = opts.uncategorized === true
   const singleCat = opts.categoryId ?? null
   // 원본 선택 id 집합(sentinel 유입 방어). categoryIds 우선, 없으면 단일 categoryId.
-  const rawCatIds = (opts.categoryIds?.length ? opts.categoryIds : singleCat ? [singleCat] : []).filter(
-    (id) => id && id !== '__uncategorized__'
-  )
+  const rawCatIds = (
+    opts.categoryIds?.length ? opts.categoryIds : singleCat ? [singleCat] : []
+  ).filter((id) => id && id !== '__uncategorized__')
   // expandCategory=1이면 대분류→자손 리프 확장(리프는 self로 확장=정확 일치, 하위호환). 아니면 정확 일치.
   const categoryIds = opts.expandCategory
     ? await collectSelfAndDescendants(spaceId, rawCatIds)
@@ -169,11 +171,13 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
     where.categoryId = null
   }
 
-  // 적요/가맹점 검색 — 위 계정과목 OR와 키 충돌 방지 위해 OR 병존 시 AND로 감쌈.
+  // 적요/가맹점/메모 검색 — 위 계정과목 OR와 키 충돌 방지 위해 OR 병존 시 AND로 감쌈.
+  // 화면에 표시되는 텍스트 컬럼 전부를 대상으로 한다(적요=description+counterparty, 메모 컬럼).
   if (q) {
     const qOr: Prisma.FinTransactionWhereInput[] = [
       { description: { contains: q, mode: 'insensitive' } },
       { counterparty: { contains: q, mode: 'insensitive' } },
+      { memo: { contains: q, mode: 'insensitive' } },
     ]
     if (where.OR) {
       where.AND = [{ OR: where.OR }, { OR: qOr }]

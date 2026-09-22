@@ -1,26 +1,11 @@
-import { redirect } from 'next/navigation'
-import { getUser } from '@/hooks/use-user'
-import { prisma } from '@/lib/prisma'
+import { requireDeckAccess } from '@/lib/billing/deck-layout-guard'
 import { DeckShell } from '@/components/layout/deck-shell'
 
 export default async function CoupangAdsLayout({ children }: { children: React.ReactNode }) {
-  const user = await getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
-
-  const workspace = await prisma.workspace.findUnique({
-    where: { ownerId: user.id },
-    select: { id: true, name: true },
-  })
-
-  if (!workspace) {
-    redirect('/workspace-setup')
-  }
+  const { spaceName } = await requireDeckAccess('coupang-ads')
 
   return (
-    <DeckShell workspaceName={workspace.name} variant="coupang-ads">
+    <DeckShell workspaceName={spaceName} variant="coupang-ads">
       {children}
     </DeckShell>
   )

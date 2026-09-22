@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,10 @@ import {
 } from 'lucide-react'
 import { getDaysAgoStrKst, getTodayStrKst } from '@/lib/date-range'
 import { getDeltaColor } from '@/lib/delta-color'
-import { CampaignListWithMetrics } from '@/components/dashboard/campaign-list-with-metrics'
+import {
+  CampaignListWithMetrics,
+  type CampaignWithMetrics,
+} from '@/components/dashboard/campaign-list-with-metrics'
 import { COUPANG_ADS_UPLOAD_PATH } from '@/lib/deck-routes'
 
 const QUICK_PERIODS = [
@@ -47,6 +50,13 @@ type KpiData = {
   }
 }
 
+export type InitialDashboardData = {
+  from: string
+  to: string
+  kpi: KpiData
+  campaigns: CampaignWithMetrics[]
+}
+
 function WowBadge({ diff }: { diff: number | null }) {
   if (diff === null) {
     return (
@@ -72,29 +82,46 @@ function WowBadge({ diff }: { diff: number | null }) {
   )
 }
 
-export function DashboardClient({ hasData }: { hasData: boolean }) {
+export function DashboardClient({
+  hasData,
+  initialData,
+}: {
+  hasData: boolean
+  initialData?: InitialDashboardData
+}) {
   const today = getTodayStrKst()
-  const [from, setFrom] = useState(getDaysAgoStrKst(7))
-  const [to, setTo] = useState(getDaysAgoStrKst(1))
+  const [from, setFrom] = useState(initialData?.from ?? getDaysAgoStrKst(7))
+  const [to, setTo] = useState(initialData?.to ?? getDaysAgoStrKst(1))
   const [activePreset, setActivePreset] = useState<number | null>(7)
-  const [kpi, setKpi] = useState<KpiData | null>(null)
-  const [kpiLoading, setKpiLoading] = useState(false)
-
-  const fetchKpi = useCallback(async (startDate: string, endDate: string) => {
-    setKpiLoading(true)
-    try {
-      const res = await fetch(`/api/dashboard/kpi?startDate=${startDate}&endDate=${endDate}`)
-      if (res.ok) {
-        setKpi((await res.json()) as KpiData)
-      }
-    } finally {
-      setKpiLoading(false)
-    }
-  }, [])
+  const [result, setResult] = useState(
+    initialData
+      ? {
+          from: initialData.from,
+          to: initialData.to,
+          kpi: initialData.kpi,
+        }
+      : null
+  )
+  const kpi = result?.from === from && result.to === to ? result.kpi : null
+  const kpiLoading = !kpi
 
   useEffect(() => {
-    fetchKpi(from, to)
-  }, [from, to, fetchKpi])
+    const controller = new AbortController()
+    async function revalidate() {
+      try {
+        const res = await fetch(`/api/dashboard/kpi?startDate=${from}&endDate=${to}`, {
+          signal: controller.signal,
+        })
+        if (!res.ok) return
+        const data = (await res.json()) as KpiData
+        if (!controller.signal.aborted) setResult({ from, to, kpi: data })
+      } catch {
+        // 재검증 실패 시 같은 기간의 초기 결과를 유지하고 취소된 응답은 반영하지 않는다.
+      }
+    }
+    void revalidate()
+    return () => controller.abort()
+  }, [from, to, initialData])
 
   function handlePreset(days: number) {
     setFrom(getDaysAgoStrKst(days))
@@ -246,7 +273,9 @@ export function DashboardClient({ hasData }: { hasData: boolean }) {
       </div>
 
       {/* 캠페인별 성과 */}
-      {hasData && <CampaignListWithMetrics from={from} to={to} />}
+      {hasData && (
+        <CampaignListWithMetrics from={from} to={to} initialCampaigns={initialData?.campaigns} />
+      )}
     </div>
   )
 }

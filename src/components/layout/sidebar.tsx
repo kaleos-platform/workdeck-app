@@ -38,10 +38,16 @@ import {
   ShieldCheck,
   Plug,
   Sparkles,
+  CreditCard,
+  PackageCheck,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
+import {
+  useCampaignNavigation,
+  type NavigationCampaign as Campaign,
+} from '@/hooks/use-campaign-navigation'
 import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -101,23 +107,19 @@ import {
   APPROVALS_PATH,
   SETTINGS_INTEGRATIONS_PATH,
   SETTINGS_AI_PATH,
+  SETTINGS_BILLING_PATH,
+  SETTINGS_PAYMENTS_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
-
-type Campaign = {
-  id: string
-  name: string
-  displayName: string
-  isCustomName: boolean
-  adTypes: string[]
-}
 
 type SidebarProps = {
   workspaceName: string
   variant?: DeckVariant
   mode?: 'default' | 'my-deck'
   activeDecks?: Array<{ id: string; name: string }>
+  /** 구독·결제 메뉴는 소유자에게만 노출한다 */
+  isOwner?: boolean
 }
 
 const NVB_AD_TYPE = '신규 구매 고객 확보'
@@ -307,15 +309,16 @@ export function Sidebar({
   variant = 'workdeck',
   mode = 'default',
   activeDecks = [],
+  isOwner = false,
 }: SidebarProps) {
   const pathname = usePathname()
   const { signOut } = useAuth()
   const { collapsed, toggle, expand, mounted } = useSidebarCollapsed()
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0)
   const isWorkdeckSidebar = variant === 'workdeck'
   const isCoupangSidebar = variant === 'coupang-ads'
+  const campaigns = useCampaignNavigation(isCoupangSidebar)
   const isSellerHubSidebar = variant === 'seller-hub'
   const isSalesContentSidebar = variant === 'sales-content'
   const isFinanceSidebar = variant === 'finance'
@@ -323,15 +326,6 @@ export function Sidebar({
   const isMyDeckMode = mode === 'my-deck'
   const meta = DECK_META[variant]
   const BrandIcon = meta.icon
-
-  useEffect(() => {
-    if (!isCoupangSidebar) return
-
-    fetch('/api/campaigns')
-      .then((r) => (r.ok ? r.json() : []))
-      .then((list: Campaign[]) => setCampaigns(list))
-      .catch(() => {})
-  }, [pathname, isCoupangSidebar])
 
   // 승인 대기 카운트 — workdeck 허브(My Deck 홈)에서만 가볍게 조회.
   // 네비게이션(pathname)뿐 아니라 승인/거부 후에도 갱신되도록 커스텀 이벤트를 구독한다
@@ -505,9 +499,35 @@ export function Sidebar({
                 href={SETTINGS_AI_PATH}
                 icon={Sparkles}
                 label="AI 설정"
-                isActive={pathname === SETTINGS_AI_PATH || pathname.startsWith(`${SETTINGS_AI_PATH}/`)}
+                isActive={
+                  pathname === SETTINGS_AI_PATH || pathname.startsWith(`${SETTINGS_AI_PATH}/`)
+                }
                 collapsed={collapsed}
               />
+              {isOwner && (
+                <>
+                  <RailLink
+                    href={SETTINGS_BILLING_PATH}
+                    icon={PackageCheck}
+                    label="구독 업무 관리"
+                    isActive={
+                      pathname === SETTINGS_BILLING_PATH ||
+                      pathname.startsWith(`${SETTINGS_BILLING_PATH}/`)
+                    }
+                    collapsed={collapsed}
+                  />
+                  <RailLink
+                    href={SETTINGS_PAYMENTS_PATH}
+                    icon={CreditCard}
+                    label="결제 관리"
+                    isActive={
+                      pathname === SETTINGS_PAYMENTS_PATH ||
+                      pathname.startsWith(`${SETTINGS_PAYMENTS_PATH}/`)
+                    }
+                    collapsed={collapsed}
+                  />
+                </>
+              )}
             </div>
 
             {!collapsed && (

@@ -455,7 +455,7 @@ export function MovementHistory() {
               <TableHead className="text-right">수량</TableHead>
               <TableHead>위치</TableHead>
               <TableHead>채널</TableHead>
-              <TableHead className="min-w-[280px]">사유</TableHead>
+              <TableHead className="min-w-[180px]">사유</TableHead>
               <TableHead className="w-24">동작</TableHead>
             </TableRow>
           </TableHeader>
@@ -529,7 +529,7 @@ export function MovementHistory() {
                     <TableCell className="text-xs text-muted-foreground">
                       {r.reason ? (
                         <span
-                          className="block max-w-[280px] break-words whitespace-normal"
+                          className="block max-w-[200px] break-words whitespace-normal"
                           title={r.reason}
                         >
                           {r.reason}

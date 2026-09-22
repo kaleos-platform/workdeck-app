@@ -202,18 +202,18 @@ export function OrderSearchResults({ query, shippingMethods, channels }: Props) 
         {result?.hasMore && <span>최대 {orders.length}건만 표시 — 검색어를 좁혀주세요</span>}
       </div>
       <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[1350px] table-fixed text-sm">
           <thead className="border-b bg-muted/40">
             <tr className="text-left text-xs text-muted-foreground">
-              <th className="px-3 py-2 font-medium">받는분</th>
-              <th className="px-3 py-2 font-medium">주문번호</th>
-              <th className="px-3 py-2 font-medium">전화</th>
-              <th className="px-3 py-2 font-medium">주소</th>
-              <th className="px-3 py-2 font-medium">상품</th>
-              <th className="px-3 py-2 font-medium">메모</th>
-              <th className="px-3 py-2 font-medium">판매채널</th>
-              <th className="px-3 py-2 font-medium">주문일자</th>
-              <th className="px-3 py-2 text-right font-medium">결제금액</th>
+              <th className="w-[130px] px-3 py-2 font-medium">받는분</th>
+              <th className="w-[140px] px-3 py-2 font-medium">주문번호</th>
+              <th className="w-[130px] px-3 py-2 font-medium">전화</th>
+              <th className="w-[260px] px-3 py-2 font-medium">주소</th>
+              <th className="w-[200px] px-3 py-2 font-medium">상품</th>
+              <th className="w-[140px] px-3 py-2 font-medium">메모</th>
+              <th className="w-[120px] px-3 py-2 font-medium">판매채널</th>
+              <th className="w-[100px] px-3 py-2 font-medium">주문일자</th>
+              <th className="w-[100px] px-3 py-2 text-right font-medium">결제금액</th>
             </tr>
           </thead>
           <tbody>
@@ -226,8 +226,8 @@ export function OrderSearchResults({ query, shippingMethods, channels }: Props) 
                   className="cursor-pointer border-b last:border-0 hover:bg-muted/30"
                   onClick={() => setDetailOrder(o)}
                 >
-                  <td className="max-w-[160px] min-w-[110px] px-3 py-2">
-                    <div className="flex items-start gap-1">
+                  <td className="px-3 py-2">
+                    <div className="flex min-w-0 items-start gap-1">
                       <span className="truncate" title={dec?.recipientName ?? o.recipientName}>
                         {dec?.recipientName ?? o.recipientName}
                       </span>
@@ -245,26 +245,24 @@ export function OrderSearchResults({ query, shippingMethods, channels }: Props) 
                       </button>
                     </div>
                   </td>
-                  <td className="px-3 py-2">{o.orderNumber ?? '-'}</td>
-                  <td
-                    className="max-w-[160px] min-w-[130px] truncate px-3 py-2"
-                    title={dec?.phone ?? o.phone}
-                  >
+                  <td className="truncate px-3 py-2" title={o.orderNumber ?? ''}>
+                    {o.orderNumber ?? '-'}
+                  </td>
+                  <td className="truncate px-3 py-2" title={dec?.phone ?? o.phone}>
                     {dec?.phone ?? o.phone}
                   </td>
-                  <td
-                    className="max-w-[320px] min-w-[240px] truncate px-3 py-2"
-                    title={dec?.address ?? o.address}
-                  >
+                  <td className="truncate px-3 py-2" title={dec?.address ?? o.address}>
                     {dec?.address ?? o.address}
                   </td>
-                  <td className="max-w-[200px] truncate px-3 py-2" title={summarizeItems(o.items)}>
+                  <td className="truncate px-3 py-2" title={summarizeItems(o.items)}>
                     {summarizeItems(o.items)}
                   </td>
-                  <td className="max-w-[140px] truncate px-3 py-2" title={o.memo ?? ''}>
+                  <td className="truncate px-3 py-2" title={o.memo ?? ''}>
                     {o.memo || '-'}
                   </td>
-                  <td className="px-3 py-2">{o.channel?.name ?? '-'}</td>
+                  <td className="truncate px-3 py-2" title={o.channel?.name ?? ''}>
+                    {o.channel?.name ?? '-'}
+                  </td>
                   <td className="px-3 py-2 whitespace-nowrap">{formatDate(o.orderDate)}</td>
                   <td className="px-3 py-2 text-right whitespace-nowrap">
                     {formatAmount(o.paymentAmount)}

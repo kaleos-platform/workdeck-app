@@ -62,7 +62,14 @@ async function assertLocationInSpace(
   return loc
 }
 
-async function assertOptionInSpace(tx: Tx, spaceId: string, optionId: string) {
+// allowInactive: 이미 물리적으로 발생한 이동(배송 묶음 출고)은 상품이 미사용 전환된 뒤에도
+// 원장에 기록되어야 한다. 신규 수기 입력 경로에서만 ACTIVE를 강제한다.
+async function assertOptionInSpace(
+  tx: Tx,
+  spaceId: string,
+  optionId: string,
+  opts: { allowInactive?: boolean } = {}
+) {
   const option = await tx.invProductOption.findUnique({
     where: { id: optionId },
     include: { product: { select: { spaceId: true, status: true } } },
@@ -70,7 +77,7 @@ async function assertOptionInSpace(tx: Tx, spaceId: string, optionId: string) {
   if (!option || option.product.spaceId !== spaceId) {
     throw new MovementError('상품 옵션을 찾을 수 없습니다', 404)
   }
-  if (option.product.status !== 'ACTIVE') {
+  if (!opts.allowInactive && option.product.status !== 'ACTIVE') {
     throw new MovementError('미사용 상품입니다. 사용 재개 후 처리하세요', 400)
   }
   return option
@@ -650,6 +657,77 @@ export async function applyBatchInbound(
     results.push({ optionId: item.optionId, locationId: item.locationId, stockLevelAfter: after })
   }
   return results
+}
+
+export type BatchOutboundItem = {
+  optionId: string
+  locationId: string
+  quantity: number
+  channelId?: string | null
+}
+
+/**
+ * 배송 묶음 완료 시 옵션×위치 단위 OUTBOUND 일괄 처리 (호출 측 트랜잭션 내).
+ * applyBatchInbound와 대칭 — 검증·결정론적 잠금 후 stock 차감 + InvMovement 기록.
+ * delBatchId를 남겨 묶음 삭제 시 원장 추적·재고 복원(batch-delete)이 가능하다.
+ * 음수 재고 허용(경고 없음) — 물리 출고는 이미 발생한 사실이므로 기록이 우선.
+ */
+export async function applyBatchOutbound(
+  tx: Tx,
+  spaceId: string,
+  items: BatchOutboundItem[],
+  movementDate: Date,
+  delBatchId: string
+): Promise<void> {
+  if (items.length === 0) return
+
+  for (const item of items) {
+    if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+      throw new MovementError('OUTBOUND 수량은 양수여야 합니다', 400)
+    }
+  }
+
+  const seenOptions = new Set<string>()
+  const seenLocations = new Set<string>()
+  for (const item of items) {
+    if (!seenOptions.has(item.optionId)) {
+      await assertOptionInSpace(tx, spaceId, item.optionId, { allowInactive: true })
+      seenOptions.add(item.optionId)
+    }
+    if (!seenLocations.has(item.locationId)) {
+      await assertLocationInSpace(tx, spaceId, item.locationId)
+      seenLocations.add(item.locationId)
+    }
+  }
+
+  const distinctPairs = Array.from(
+    new Map(items.map((it) => [`${it.optionId}|${it.locationId}`, it])).values()
+  )
+  distinctPairs.sort((a, b) =>
+    a.optionId === b.optionId
+      ? a.locationId.localeCompare(b.locationId)
+      : a.optionId.localeCompare(b.optionId)
+  )
+  for (const p of distinctPairs) {
+    await lockStockLevel(tx, p.optionId, p.locationId)
+  }
+
+  for (const item of items) {
+    await upsertStockLevel(tx, spaceId, item.optionId, item.locationId, -item.quantity)
+    await tx.invMovement.create({
+      data: {
+        spaceId,
+        optionId: item.optionId,
+        locationId: item.locationId,
+        channelId: item.channelId ?? null,
+        type: 'OUTBOUND',
+        quantity: item.quantity,
+        movementDate,
+        reason: '배송 묶음 출고',
+        delBatchId,
+      },
+    })
+  }
 }
 
 /**

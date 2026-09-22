@@ -29,10 +29,21 @@ export async function POST(req: NextRequest) {
   const name = typeof body?.name === 'string' ? body.name.trim() : ''
   const formatConfig = body?.formatConfig
   const defaultSplitMode = body?.defaultSplitMode === 'option' ? 'option' : 'order'
+  const locationId =
+    typeof body?.locationId === 'string' && body.locationId ? body.locationId : null
 
   if (!name) return errorResponse('배송 방식 이름이 필요합니다', 400)
   if (!Array.isArray(formatConfig) || formatConfig.length === 0) {
     return errorResponse('포맷 설정이 필요합니다', 400)
+  }
+  if (locationId) {
+    const loc = await prisma.invStorageLocation.findUnique({
+      where: { id: locationId },
+      select: { spaceId: true },
+    })
+    if (!loc || loc.spaceId !== resolved.space.id) {
+      return errorResponse('출고 위치를 찾을 수 없습니다', 404)
+    }
   }
 
   const duplicate = await prisma.delShippingMethod.findFirst({
@@ -46,6 +57,7 @@ export async function POST(req: NextRequest) {
       name,
       formatConfig,
       defaultSplitMode,
+      locationId,
     },
   })
 

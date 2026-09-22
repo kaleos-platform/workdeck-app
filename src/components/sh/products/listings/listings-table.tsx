@@ -208,8 +208,10 @@ function ListingRowView({ row }: { row: ListingRow }) {
         )}
         {row.internalCode && <p className="text-xs text-muted-foreground">{row.internalCode}</p>}
       </TableCell>
-      <TableCell className="max-w-[260px]">
-        <p className="truncate text-sm">{row.displayName}</p>
+      <TableCell>
+        <p className="max-w-[260px] truncate text-sm" title={row.displayName}>
+          {row.displayName}
+        </p>
       </TableCell>
       <TableCell>
         <TooltipProvider>

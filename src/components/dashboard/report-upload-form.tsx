@@ -1,5 +1,7 @@
 'use client'
 
+import { notifyCampaignsChanged } from '@/hooks/use-campaign-navigation'
+
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -250,6 +252,7 @@ export function ReportUploadForm({ onComplete }: { onComplete?: () => void } = {
       }
     }
 
+    notifyCampaignsChanged()
     updateFile(entryId, { status: 'done', insertedRows: okData.inserted })
     return { inserted: okData.inserted }
   }

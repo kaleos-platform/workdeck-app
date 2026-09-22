@@ -152,8 +152,10 @@ export function BulkPasteDialog({ onParsed }: BulkPasteDialogProps) {
                     {preview.map((row, i) => (
                       <TableRow key={i}>
                         {EXPECTED_COLUMNS.map((_, j) => (
-                          <TableCell key={j} className="max-w-[200px] truncate text-xs">
-                            {row[j] ?? ''}
+                          <TableCell key={j} className="text-xs">
+                            <div className="max-w-[200px] truncate" title={row[j] ?? ''}>
+                              {row[j] ?? ''}
+                            </div>
                           </TableCell>
                         ))}
                       </TableRow>

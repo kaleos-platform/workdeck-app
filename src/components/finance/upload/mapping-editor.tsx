@@ -247,13 +247,13 @@ export function SampleTable({ headers, sampleRows, emptyColumns, mapping }: Samp
                   key={ci}
                   title={cell}
                   className={cn(
-                    'max-w-[200px] truncate text-xs',
+                    'text-xs',
                     isEmpty && 'text-muted-foreground italic opacity-40',
                     !isMapped && !isEmpty && 'text-muted-foreground opacity-60',
                     isMapped && !isEmpty && 'text-foreground'
                   )}
                 >
-                  {cell}
+                  <div className="max-w-[200px] truncate">{cell}</div>
                 </TableCell>
               )
             })}

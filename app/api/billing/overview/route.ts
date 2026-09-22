@@ -3,7 +3,7 @@ import { resolveSpaceContext, assertRole } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { resolveEntitlement } from '@/lib/billing/entitlement'
 
-// GET /api/billing/overview — 구독 관리 페이지 데이터 (ADMIN 이상 조회)
+// GET /api/billing/overview — 구독 업무 관리 페이지 데이터 (ADMIN 이상 조회)
 export async function GET() {
   const resolved = await resolveSpaceContext()
   if ('error' in resolved) return resolved.error

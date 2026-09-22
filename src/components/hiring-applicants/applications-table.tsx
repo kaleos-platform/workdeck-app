@@ -229,7 +229,11 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
                     />
                   </TableCell>
                   <TableCell className="font-medium">{r.maskedName}</TableCell>
-                  <TableCell className="max-w-[220px] truncate text-sm">{r.postingTitle}</TableCell>
+                  <TableCell className="text-sm">
+                    <div className="max-w-[220px] truncate" title={r.postingTitle}>
+                      {r.postingTitle}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <StageBadge stage={r.stage} />
                   </TableCell>

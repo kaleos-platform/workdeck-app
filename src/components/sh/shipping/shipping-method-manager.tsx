@@ -18,6 +18,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { FormatEditor } from '@/components/sh/shipping/format-editor'
 import { FormatAnalyzeDialog } from '@/components/sh/shipping/format-analyze-dialog'
 import type { DelFormatColumn } from '@/lib/del/format-templates'
@@ -31,7 +38,16 @@ type ShippingMethod = {
   isActive: boolean
   formatConfig: DelFormatColumn[]
   defaultSplitMode?: SplitMode
+  locationId?: string | null
 }
+
+type StorageLocation = {
+  id: string
+  name: string
+  isActive: boolean
+}
+
+const NO_LOCATION = '__none__'
 
 export function ShippingMethodManager() {
   const [methods, setMethods] = useState<ShippingMethod[]>([])
@@ -42,16 +58,25 @@ export function ShippingMethodManager() {
   const [name, setName] = useState('')
   const [formatConfig, setFormatConfig] = useState<DelFormatColumn[]>([])
   const [defaultSplitMode, setDefaultSplitMode] = useState<SplitMode>('order')
+  const [locationId, setLocationId] = useState<string>(NO_LOCATION)
+  const [locations, setLocations] = useState<StorageLocation[]>([])
   const [saving, setSaving] = useState(false)
   const [analyzeOpen, setAnalyzeOpen] = useState(false)
 
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/sh/shipping/shipping-methods')
+      const [res, locRes] = await Promise.all([
+        fetch('/api/sh/shipping/shipping-methods'),
+        fetch('/api/sh/inventory/locations?isActive=true'),
+      ])
       if (!res.ok) throw new Error('조회 실패')
       const data = await res.json()
       setMethods(data.methods ?? [])
+      if (locRes.ok) {
+        const locData = await locRes.json()
+        setLocations(locData.locations ?? [])
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '데이터 조회 실패')
     } finally {
@@ -68,6 +93,7 @@ export function ShippingMethodManager() {
     setName('')
     setFormatConfig([])
     setDefaultSplitMode('order')
+    setLocationId(NO_LOCATION)
     setDialogOpen(true)
   }
 
@@ -76,6 +102,7 @@ export function ShippingMethodManager() {
     setName(method.name)
     setFormatConfig(method.formatConfig)
     setDefaultSplitMode(method.defaultSplitMode ?? 'order')
+    setLocationId(method.locationId ?? NO_LOCATION)
     setDialogOpen(true)
   }
 
@@ -97,7 +124,12 @@ export function ShippingMethodManager() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), formatConfig, defaultSplitMode }),
+        body: JSON.stringify({
+          name: name.trim(),
+          formatConfig,
+          defaultSplitMode,
+          locationId: locationId === NO_LOCATION ? null : locationId,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '저장 실패')
@@ -156,6 +188,12 @@ export function ShippingMethodManager() {
                     <p className="font-medium">{method.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {method.formatConfig.length}개 컬럼
+                      {method.locationId && (
+                        <>
+                          {' · 출고 위치: '}
+                          {locations.find((l) => l.id === method.locationId)?.name ?? '알 수 없음'}
+                        </>
+                      )}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -278,6 +316,25 @@ export function ShippingMethodManager() {
                   </div>
                 </label>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>출고 재고 위치</Label>
+              <p className="text-xs text-muted-foreground">
+                설정하면 배송 등록 완료 시 이 위치의 재고가 자동으로 차감됩니다. 예: 3PL 창고.
+              </p>
+              <Select value={locationId} onValueChange={setLocationId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="사용 안 함" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_LOCATION}>사용 안 함 (재고 차감 없음)</SelectItem>
+                  {locations.map((loc) => (
+                    <SelectItem key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <FormatEditor value={formatConfig} onChange={setFormatConfig} />
           </div>

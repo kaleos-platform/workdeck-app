@@ -1,0 +1,345 @@
+'use client'
+
+import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CreditCard,
+  Info,
+  Loader2,
+  ShieldAlert,
+  XCircle,
+} from 'lucide-react'
+import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
+import { SETTINGS_BILLING_PATH, SETTINGS_PAYMENTS_PATH } from '@/lib/deck-routes'
+import {
+  CHARGE_STATUS_LABEL,
+  formatDate,
+  formatWon,
+  loadTossSdk,
+  useBillingOverview,
+} from './billing-shared'
+
+export function PaymentSettingsClient({
+  cardRegistered,
+  initialError,
+}: {
+  cardRegistered: string | null
+  initialError: string | null
+}) {
+  const { data, loading, error, banner, setBanner, load, isOwner } = useBillingOverview()
+  const [cardBusy, setCardBusy] = useState(false)
+  const router = useRouter()
+  const [confirmRemove, setConfirmRemove] = useState(false)
+  const [removeBusy, setRemoveBusy] = useState(false)
+
+  useEffect(() => {
+    if (cardRegistered) {
+      setBanner({ type: 'success', message: '카드 등록이 완료되었습니다' })
+    } else if (initialError) {
+      setBanner({ type: 'error', message: initialError })
+    }
+  }, [cardRegistered, initialError, setBanner])
+
+  const handleRegisterCard = useCallback(async () => {
+    setCardBusy(true)
+    setBanner(null)
+    try {
+      const res = await fetch('/api/billing/setup', { method: 'POST' })
+      const json = await res.json()
+      if (!res.ok) {
+        setBanner({
+          type: 'error',
+          message: json?.message ?? json?.error ?? '카드 등록 준비에 실패했습니다',
+        })
+        return
+      }
+      const { customerKey, clientKey } = json as { customerKey: string; clientKey: string }
+      await loadTossSdk()
+      if (!window.TossPayments) throw new Error('결제 SDK 로드에 실패했습니다')
+      const toss = window.TossPayments(clientKey)
+      const origin = window.location.origin
+      await toss.payment({ customerKey }).requestBillingAuth({
+        method: 'CARD',
+        successUrl: `${origin}/api/billing/toss/callback`,
+        failUrl: `${origin}${SETTINGS_PAYMENTS_PATH}?error=${encodeURIComponent('카드등록취소')}`,
+      })
+    } catch (e) {
+      setBanner({
+        type: 'error',
+        message: e instanceof Error ? e.message : '카드 등록에 실패했습니다',
+      })
+    } finally {
+      setCardBusy(false)
+    }
+  }, [setBanner])
+
+  const handleRemoveCard = useCallback(async () => {
+    setRemoveBusy(true)
+    setBanner(null)
+    try {
+      const res = await fetch('/api/billing/methods', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const json = (await res.json().catch(() => null)) as {
+        message?: string
+        error?: string
+      } | null
+      if (!res.ok) {
+        const message = json?.message ?? json?.error ?? '결제수단 삭제에 실패했습니다'
+        // 구독이 남아 삭제가 막힌 경우(409)는 해지부터 해야 하므로 구독 업무 관리로 보낸다.
+        if (res.status === 409) {
+          setConfirmRemove(false)
+          toast.error(message, {
+            description: '구독 업무 관리에서 먼저 해지한 뒤 다시 시도하세요.',
+          })
+          router.push(SETTINGS_BILLING_PATH)
+          return
+        }
+        setBanner({ type: 'error', message })
+        return
+      }
+      setBanner({ type: 'success', message: '결제수단을 삭제했습니다' })
+      setConfirmRemove(false)
+      await load()
+    } catch {
+      setBanner({ type: 'error', message: '결제수단 삭제에 실패했습니다' })
+    } finally {
+      setRemoveBusy(false)
+    }
+  }, [load, router, setBanner])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-muted-foreground">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+        불러오는 중...
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <Alert variant="destructive">
+        <XCircle className="h-4 w-4" />
+        <AlertTitle>결제 정보를 불러오지 못했습니다</AlertTitle>
+        <AlertDescription>{error ?? '알 수 없는 오류가 발생했습니다'}</AlertDescription>
+      </Alert>
+    )
+  }
+
+  const { method, charges } = data
+
+  return (
+    <TooltipProvider>
+      <div className="space-y-6">
+        {banner && (
+          <Alert variant={banner.type === 'error' ? 'destructive' : 'default'}>
+            {banner.type === 'error' ? (
+              <XCircle className="h-4 w-4" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4" />
+            )}
+            <AlertTitle>{banner.message}</AlertTitle>
+          </Alert>
+        )}
+
+        {!isOwner && (
+          <Alert>
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>결제 관리는 소유자만 가능합니다</AlertTitle>
+            <AlertDescription>
+              구독 현황은 열람할 수 있지만 변경은 소유자에게 요청하세요.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* 결제수단 카드 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>결제수단</CardTitle>
+            <CardDescription>정기 결제에 사용되는 카드입니다.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {method ? (
+              <div className="flex items-center gap-2 text-sm">
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <span>{method.cardSummary ?? '등록된 카드'}</span>
+                <span className="text-muted-foreground">· {formatDate(method.createdAt)} 등록</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Info className="h-4 w-4" />
+                등록된 결제수단이 없습니다.
+              </div>
+            )}
+          </CardContent>
+          {isOwner && (
+            <CardFooter>
+              <Button
+                onClick={handleRegisterCard}
+                disabled={cardBusy}
+                variant={method ? 'outline' : 'default'}
+              >
+                {cardBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {method ? '카드 변경' : '카드 등록'}
+              </Button>
+              {method && (
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => setConfirmRemove(true)}
+                  disabled={removeBusy}
+                >
+                  카드 삭제
+                </Button>
+              )}
+            </CardFooter>
+          )}
+        </Card>
+
+        {/* 결제 내역 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>결제 내역</CardTitle>
+            <CardDescription>최근 결제 내역입니다. 금액은 VAT 포함입니다.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {charges.length === 0 ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                결제 내역이 없습니다.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>결제일</TableHead>
+                      <TableHead>청구 기간</TableHead>
+                      <TableHead>금액</TableHead>
+                      <TableHead>상태</TableHead>
+                      <TableHead>내역</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {charges.map((charge) => {
+                      const statusMeta = CHARGE_STATUS_LABEL[charge.status]
+                      return (
+                        <TableRow key={charge.orderId}>
+                          <TableCell className="whitespace-nowrap">
+                            {formatDate(charge.createdAt)}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap text-muted-foreground">
+                            {formatDate(charge.periodStart)} ~ {formatDate(charge.periodEnd)}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {formatWon(charge.amount)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              <Badge variant={statusMeta.variant}>{statusMeta.label}</Badge>
+                              {charge.status === 'FAILED' && charge.failReason && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>{charge.failReason}</TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {Array.isArray(charge.breakdown) && charge.breakdown.length > 0 ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="cursor-help text-xs text-muted-foreground underline decoration-dotted">
+                                    {charge.breakdown.length}개 항목
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <ul className="space-y-0.5">
+                                    {charge.breakdown.map((line, idx) => {
+                                      const meta = DECK_META[line.deckAppId as DeckVariant]
+                                      return (
+                                        <li key={`${line.deckAppId}-${idx}`}>
+                                          {meta?.name ?? line.deckAppId} · {formatWon(line.price)}
+                                          {line.prorated ? ' (일할)' : ''}
+                                        </li>
+                                      )
+                                    })}
+                                  </ul>
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              '-'
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Dialog
+        open={confirmRemove}
+        onOpenChange={(open) => !open && !removeBusy && setConfirmRemove(false)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>결제수단을 삭제할까요?</DialogTitle>
+            <DialogDescription>
+              등록된 카드 정보를 삭제하고 결제 권한(빌링키)도 함께 폐기합니다. 다시 결제하려면
+              카드를 새로 등록해야 합니다. 구독 중인 업무가 있으면 삭제할 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConfirmRemove(false)} disabled={removeBusy}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={handleRemoveCard} disabled={removeBusy}>
+              {removeBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              카드 삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </TooltipProvider>
+  )
+}

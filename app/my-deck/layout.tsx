@@ -19,6 +19,7 @@ export default async function MyDeckLayout({ children }: { children: React.React
       where: { userId: user.id },
       select: {
         spaceId: true,
+        role: true,
         space: {
           select: {
             deckInstances: {
@@ -45,6 +46,7 @@ export default async function MyDeckLayout({ children }: { children: React.React
       workspaceName={workspace.name}
       variant="workdeck"
       mode="my-deck"
+      isOwner={membership?.role === 'OWNER'}
       activeDecks={membership?.space.deckInstances.map(({ deckApp }) => deckApp) ?? []}
     >
       {children}

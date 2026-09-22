@@ -3,6 +3,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { calculateReorder } from '@/lib/inv/reorder-calculator'
 import { loadOptionDemand } from '@/lib/inv/option-demand'
+import { getCoupangReturnStockByOption } from '@/lib/inv/coupang-return-stock'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 import { formatDateToYmdKst } from '@/lib/date-range'
 
@@ -74,6 +75,22 @@ export async function GET(req: NextRequest) {
   const stockByOption = new Map<string, number>()
   for (const g of stockGroups) {
     stockByOption.set(g.optionId, g._sum.quantity ?? 0)
+  }
+
+  // 반품 등급 재고 차감 — 쿠팡이 고객 반품품을 별도 상품으로 재등록한 재고는 반품
+  // 전용 리스팅에서만 팔려 정상 상품 수요를 메우지 못한다. 재고 현황에는 실물이므로
+  // 포함하되 발주 계산에서는 가용재고로 세지 않는다. plan/route.ts 와 같은 규칙.
+  const returnStock = await getCoupangReturnStockByOption(spaceId)
+  const returnQtyByOption = new Map<string, number>()
+  if (returnStock && returnStock.byOption.size > 0) {
+    for (const optionId of optionIds) {
+      const returnQty = returnStock.byOption.get(optionId) ?? 0
+      if (returnQty <= 0) continue
+      returnQtyByOption.set(optionId, returnQty)
+      const total = stockByOption.get(optionId)
+      // 스냅샷 시점 차이로 반품량이 현재고를 넘을 수 있다 — 음수 재고를 만들지 않는다.
+      if (total != null) stockByOption.set(optionId, Math.max(0, total - returnQty))
+    }
   }
 
   const pendingRuns = optionIds.length
@@ -169,6 +186,7 @@ export async function GET(req: NextRequest) {
         sku: o.sku ?? null,
         currentStock,
         onHandStock,
+        returnQty: returnQtyByOption.get(o.id),
         incomingQty,
         totalOutbound,
         windowDays,

@@ -23,9 +23,13 @@ interface TossErrorBody {
   message?: string
 }
 
-async function tossFetch(path: string, body?: Record<string, unknown>): Promise<Response> {
+async function tossFetch(
+  path: string,
+  body?: Record<string, unknown>,
+  method?: 'GET' | 'POST' | 'DELETE'
+): Promise<Response> {
   return fetch(`${API_BASE}${path}`, {
-    method: body === undefined ? 'GET' : 'POST',
+    method: method ?? (body === undefined ? 'GET' : 'POST'),
     headers: {
       Authorization: authHeader(),
       'Content-Type': 'application/json',
@@ -62,6 +66,19 @@ export const tossProvider: BillingProvider = {
     const masked = number ? `****${number.replace(/\D/g, '').slice(-4)}` : null
     const cardSummary = company || masked ? [company, masked].filter(Boolean).join(' ') : null
     return { billingKey: data.billingKey, cardSummary }
+  },
+
+  // DELETE /v1/billing/{billingKey} — 성공 시 빈 200.
+  async deleteBillingKey(billingKey: string): Promise<void> {
+    const res = await tossFetch(
+      `/v1/billing/${encodeURIComponent(billingKey)}`,
+      undefined,
+      'DELETE'
+    )
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as TossErrorBody | null
+      throw new Error(body?.message ?? '빌링키 삭제에 실패했습니다')
+    }
   },
 
   async charge(params: ChargeParams): Promise<ChargeResult> {

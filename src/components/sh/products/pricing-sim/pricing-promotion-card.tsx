@@ -39,7 +39,7 @@ type Props = {
 const RULE_TEXT: Record<PromotionValue['type'], string> = {
   NONE: '',
   MIN_PRICE:
-    '프로모션 적용 후 판매가가 이 값을 초과하지 않도록 강제 인하 — 컬럼 할인이 이미 더 낮으면 영향 없음.',
+    '판매가를 이 금액까지 강제 인하합니다(프로모션 목표가 지정) — 컬럼 할인 결과가 이미 더 낮으면 영향 없음.',
   PERCENT:
     '할인된 가격 × (1 - 프로모션%) 로 계산됩니다. 최소 조건 설정 시 조건 충족 가격에만 적용.',
   FLAT: '할인된 가격에서 정액을 차감합니다. 최소 조건 설정 시 조건 충족 가격에만 적용.',
@@ -51,7 +51,7 @@ const TYPE_ORDER: PromotionValue['type'][] = ['NONE', 'MIN_PRICE', 'PERCENT', 'F
 
 const TYPE_LABELS: Record<PromotionValue['type'], string> = {
   NONE: '없음',
-  MIN_PRICE: '최소 판매가',
+  MIN_PRICE: '프로모션가 지정',
   PERCENT: '정률 (%)',
   FLAT: '정액 (원)',
   COUPON: '쿠폰 (원)',
@@ -60,7 +60,7 @@ const TYPE_LABELS: Record<PromotionValue['type'], string> = {
 // 값 입력 필드 라벨
 const VALUE_LABEL: Record<PromotionValue['type'], string> = {
   NONE: '',
-  MIN_PRICE: '최소 판매가 (원)',
+  MIN_PRICE: '프로모션 판매가 (원)',
   PERCENT: '할인율',
   FLAT: '할인 금액',
   COUPON: '쿠폰 금액',

@@ -2,6 +2,14 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import { htmlToText, HTML_TEXT_MAX_CHARS, MAX_IMAGE_URLS } from '../html-to-text'
 
+it('상세 이미지만 선택하고 이미지 후보 상한의 누락을 표시한다', () => {
+  const html = `<img src="https://example.com/navigation.jpg"><div id="prdDetail">${Array.from({ length: 101 }, (_, i) => `<img ec-data-src="https://example.com/detail-${i}.jpg" src="data:image/png;base64,AA==">`).join('')}</div>`
+  const result = htmlToText(html, undefined, { maxImageUrls: 100, detailImagesOnly: true })
+  expect(result.imageUrls).toHaveLength(100)
+  expect(result.imageUrlsTruncated).toBe(true)
+  expect(result.imageUrls).not.toContain('https://example.com/navigation.jpg')
+})
+
 describe('htmlToText 위험 블록 제거', () => {
   it('script 내용은 출력에 나타나지 않는다', () => {
     const { text } = htmlToText('<div>본문<script>alert(1)</script>더본문</div>')

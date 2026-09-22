@@ -1,0 +1,161 @@
+{
+  "deployment": "dpl_8NHL4YkuRfCLKUECFZV1jYGtvrL1",
+  "commit": "b6c40ffc08948a8d688507297df7e753dd672a29",
+  "period": {
+    "from": "2026-09-10",
+    "to": "2026-09-16"
+  },
+  "note": "동일 로그인 세션. home-document는 전체 navigation이며 cold cache를 보장하지 않음. UI readiness: home KPI 숫자+캠페인 카드, detail 제목+chart SVG. 기존 버전 동일 조건 baseline 없음.",
+  "samples": [
+    {
+      "i": 0,
+      "kind": "home-document",
+      "ms": 5782,
+      "status": 200,
+      "timing": "auth;dur=3972.3, target_summaries;dur=5.0, data;dur=21.5, total;dur=3994.2",
+      "kpi": "auth;dur=1415.9, data;dur=9.0, total;dur=1425.2"
+    },
+    {
+      "i": 0,
+      "kind": "detail-entry",
+      "ms": 7900,
+      "status": 200,
+      "timing": "auth;dur=65.6, overview_loader;dur=6789.7, data;dur=6797.2, total;dur=6864.0"
+    },
+    {
+      "i": 0,
+      "kind": "home-revisit",
+      "ms": 3261,
+      "status": 200,
+      "timing": "auth;dur=365.0, target_summaries;dur=3.7, data;dur=29.2, total;dur=394.5",
+      "kpi": "auth;dur=121.9, data;dur=6.8, total;dur=128.9"
+    },
+    {
+      "i": 0,
+      "kind": "detail-revisit",
+      "ms": 341,
+      "status": 200,
+      "timing": "auth;dur=53.0, data;dur=6.9, total;dur=60.2"
+    },
+    {
+      "i": 1,
+      "kind": "home-document",
+      "ms": 2304,
+      "status": 200,
+      "timing": "auth;dur=697.4, target_summaries;dur=4.3, data;dur=21.9, total;dur=719.7",
+      "kpi": "auth;dur=52.0, data;dur=6.6, total;dur=58.8"
+    },
+    {
+      "i": 1,
+      "kind": "detail-entry",
+      "ms": 400,
+      "status": 200,
+      "timing": "auth;dur=42.5, data;dur=7.2, total;dur=50.2"
+    },
+    {
+      "i": 1,
+      "kind": "home-revisit",
+      "ms": 474,
+      "status": 200,
+      "timing": "auth;dur=35.9, target_summaries;dur=3.9, data;dur=25.2, total;dur=61.3",
+      "kpi": "auth;dur=48.3, data;dur=6.4, total;dur=54.8"
+    },
+    {
+      "i": 1,
+      "kind": "detail-revisit",
+      "ms": 560,
+      "status": 200,
+      "timing": "auth;dur=43.6, data;dur=6.4, total;dur=50.4"
+    },
+    {
+      "i": 2,
+      "kind": "home-document",
+      "ms": 1501,
+      "status": 200,
+      "timing": "auth;dur=114.7, target_summaries;dur=4.9, data;dur=27.1, total;dur=142.1",
+      "kpi": "auth;dur=50.1, data;dur=5.9, total;dur=56.1"
+    },
+    {
+      "i": 2,
+      "kind": "detail-entry",
+      "ms": 8034,
+      "status": 200,
+      "timing": "auth;dur=56.4, overview_loader;dur=7665.6, data;dur=7673.9, total;dur=7731.0"
+    },
+    {
+      "i": 2,
+      "kind": "home-revisit",
+      "ms": 4135,
+      "status": 200,
+      "timing": "auth;dur=900.2, target_summaries;dur=4.6, data;dur=32.8, total;dur=933.3",
+      "kpi": "auth;dur=502.4, data;dur=9.8, total;dur=512.4"
+    },
+    {
+      "i": 2,
+      "kind": "detail-revisit",
+      "ms": 421,
+      "status": 200,
+      "timing": "auth;dur=54.5, data;dur=8.4, total;dur=63.2"
+    },
+    {
+      "i": 3,
+      "kind": "home-document",
+      "ms": 1649,
+      "status": 200,
+      "timing": "auth;dur=118.6, target_summaries;dur=4.7, data;dur=24.4, total;dur=143.2",
+      "kpi": "auth;dur=85.5, data;dur=5.8, total;dur=91.6"
+    },
+    {
+      "i": 3,
+      "kind": "detail-entry",
+      "ms": 385,
+      "status": 200,
+      "timing": "auth;dur=53.0, data;dur=8.9, total;dur=62.2"
+    },
+    {
+      "i": 3,
+      "kind": "home-revisit",
+      "ms": 358,
+      "status": 200,
+      "timing": "auth;dur=46.6, target_summaries;dur=6.8, data;dur=25.3, total;dur=72.1",
+      "kpi": "auth;dur=47.6, data;dur=5.7, total;dur=53.6"
+    },
+    {
+      "i": 3,
+      "kind": "detail-revisit",
+      "ms": 271,
+      "status": 200,
+      "timing": "auth;dur=39.1, data;dur=6.2, total;dur=45.7"
+    },
+    {
+      "i": 4,
+      "kind": "home-document",
+      "ms": 465,
+      "status": 200,
+      "timing": "auth;dur=36.6, target_summaries;dur=3.6, data;dur=14.8, total;dur=51.6",
+      "kpi": "auth;dur=39.2, data;dur=7.5, total;dur=46.9"
+    },
+    {
+      "i": 4,
+      "kind": "detail-entry",
+      "ms": 317,
+      "status": 200,
+      "timing": "auth;dur=52.3, data;dur=7.1, total;dur=59.8"
+    },
+    {
+      "i": 4,
+      "kind": "home-revisit",
+      "ms": 370,
+      "status": 200,
+      "timing": "auth;dur=63.2, target_summaries;dur=4.8, data;dur=24.0, total;dur=87.4",
+      "kpi": "auth;dur=49.4, data;dur=6.3, total;dur=55.9"
+    },
+    {
+      "i": 4,
+      "kind": "detail-revisit",
+      "ms": 289,
+      "status": 200,
+      "timing": "auth;dur=57.2, data;dur=7.0, total;dur=64.5"
+    }
+  ]
+}

@@ -19,6 +19,8 @@ export async function GET(req: NextRequest) {
       productId: searchParams.get('productId'),
       q: searchParams.get('q'),
       onlyLow,
+      // 화면만 반품 보조표기를 켠다 — MCP 툴 경로에는 조인 비용을 얹지 않는다
+      includeReturnStock: true,
     })
   )
 }

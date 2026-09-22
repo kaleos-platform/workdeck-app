@@ -36,6 +36,17 @@
 - **선택 동작**: 헤더 체크박스(전체 선택 + indeterminate) + 행별 체크박스 + Shift+클릭 범위 선택을 표준으로 제공.
   - 범위 선택은 `@/lib/range-selection`의 `applyRangeSelection` 헬퍼를 재사용한다.
 
+### 3.2 테이블 컬럼 폭 표준
+
+`table-layout: auto`(브라우저 기본)에서 **`<td>`/`<th>` 의 `max-width` 는 무시된다.** `max-w-[...]` 로 컬럼을 제한하려는 코드는 동작하지 않으며, 거기에 딸린 `truncate` / `line-clamp` 도 함께 무효가 된다. 그 결과 긴 텍스트 컬럼이 무한히 늘어나고 나머지 컬럼은 `min-content` 까지 짓눌려 한글이 세로로 쌓인다.
+
+- 컬럼 폭은 **`<table>` 에 `table-fixed`** 를 걸고 **첫 행 `<TableHead>` 의 `w-[Npx]`** 로 지정한다. `max-w-*` 는 쓰지 않는다.
+- 가로 스크롤이 불가피한 입력 그리드는 `<table>` 에 `min-w-[Npx]` 를 함께 준다. **`min-w` 값은 선언한 컬럼 폭 합계 이상**이어야 한다 — 미만이면 컬럼이 다시 비례 압축된다.
+- `truncate` 는 셀 내부 요소에 걸고, flex 컨테이너 안이면 부모에 **`min-w-0`** 을 함께 준다(flex 아이템 기본 `min-width: auto` 때문에 truncate 가 무효화됨). 잘리는 값에는 `title` 로 전체값을 남긴다.
+- `Table`(`@/components/ui/table`)은 이미 내부에 `overflow-x-auto` 컨테이너를 갖는다. 바깥 래퍼에 `overflow-x-auto` 를 중복으로 두지 않는다 — sticky 가 엉뚱한 스크롤 조상에 붙는다.
+- 가로 스크롤 테이블은 식별 컬럼에 `sticky left-0` + **불투명 배경**(`bg-background`)과 z-index를 준다.
+- 레퍼런스: `src/components/sh/inventory/stock-status-matrix.tsx`, `src/components/finance/cashflow-view.tsx`, `src/components/sh/shipping/registration-table.tsx`.
+
 ## 4. Prisma & DB Migration
 
 - Dev/Prod DB 는 별도 Supabase 프로젝트로 분리되어 있으며, 데이터는 절대 서로 옮겨지지 않는다. 스키마 동기화는 마이그레이션 파일로만 이뤄진다.

@@ -161,6 +161,32 @@ const SHINHAN_MAP: FinColumnMapping = {
   balanceAfter: 7,
 }
 
+describe('메모 컬럼 매핑', () => {
+  test('mapping.memo 컬럼 값이 memo로 파싱된다', () => {
+    const map: FinColumnMapping = { ...SHINHAN_MAP, memo: 6 }
+    const { rows } = parseFinanceWithMapping(toBuf(SHINHAN), map, 'BANK', 'acc-shinhan')
+    expect(rows[0].memo).toBe('김OO')
+    expect(rows[1].memo).toBe('성장지원')
+  })
+
+  test('memo는 identityKey·contentHash에 영향을 주지 않는다', () => {
+    const base = parseFinanceWithMapping(toBuf(SHINHAN), SHINHAN_MAP, 'BANK', 'acc-shinhan').rows
+    const withMemo = parseFinanceWithMapping(
+      toBuf(SHINHAN),
+      { ...SHINHAN_MAP, memo: 6 },
+      'BANK',
+      'acc-shinhan'
+    ).rows
+    expect(withMemo[0].identityKey).toBe(base[0].identityKey)
+    expect(withMemo[0].contentHash).toBe(base[0].contentHash)
+  })
+
+  test('메모 미매핑이면 undefined', () => {
+    const { rows } = parseFinanceWithMapping(toBuf(SHINHAN), SHINHAN_MAP, 'BANK', 'acc-shinhan')
+    expect(rows[0].memo).toBeUndefined()
+  })
+})
+
 describe('신한은행 (헤더 0행)', () => {
   test('헤더 0행 감지 + 방향', () => {
     const p = previewFinanceFile(toBuf(SHINHAN))

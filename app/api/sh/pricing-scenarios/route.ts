@@ -28,6 +28,14 @@ function cardSummary(inputSnapshot: unknown) {
   return snap?.summary ?? null
 }
 
+// 목록 펼침 서브행용 탭별 요약 (parseSnapshot이 v1도 v2 정규화하므로 파싱 성공 시 항상 ≥1)
+function cardVariants(inputSnapshot: unknown) {
+  const snap = parseSnapshot(inputSnapshot)
+  return snap
+    ? snap.variants.map((v) => ({ id: v.id, name: v.name, summary: v.summary ?? null }))
+    : []
+}
+
 async function resolveListingGroupTarget(
   spaceId: string,
   channelProductId: string
@@ -84,7 +92,9 @@ export async function GET(req: NextRequest) {
   const where: Prisma.PricingScenarioWhereInput = { spaceId: resolved.space.id }
   if (target.productIds.length > 0) {
     where.productIds =
-      target.productIds.length === 1 ? { has: target.productIds[0] } : { hasSome: target.productIds }
+      target.productIds.length === 1
+        ? { has: target.productIds[0] }
+        : { hasSome: target.productIds }
   } else if (productId) {
     where.productIds = { has: productId }
   }
@@ -150,6 +160,7 @@ export async function GET(req: NextRequest) {
       channelIds: rowChannelIds,
       channelNames: rowChannelIds.map((id) => channelNameById.get(id) ?? id),
       summary: cardSummary(s.inputSnapshot),
+      variants: cardVariants(s.inputSnapshot),
       updatedAt: s.updatedAt,
       createdAt: s.createdAt,
     }

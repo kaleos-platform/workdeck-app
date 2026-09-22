@@ -112,7 +112,17 @@ const REQUIRED_INVALID = 'ring-2 ring-destructive/50 border-destructive/50'
 const trimStart = (v: string) => v.replace(/^\s+/, '')
 // 셀 공용 텍스트 입력(가로 초과 시 최대 2줄로 감싸짐) 스타일
 const CELL_TEXTAREA =
-  'field-sizing-content min-h-8 max-h-12 text-xs leading-tight px-2 py-1 resize-none md:text-xs shadow-none'
+  'field-sizing-content min-h-8 max-h-16 break-keep text-xs leading-tight px-2 py-1 resize-none md:text-xs shadow-none'
+
+// 가로 스크롤 중에도 행을 식별할 수 있도록 체크박스·받는분 컬럼을 왼쪽에 고정.
+// 아래로 지나가는 컬럼이 비쳐 보이면 안 되므로 배경은 반드시 불투명해야 한다.
+const STICKY_CHECKBOX = 'sticky left-0 bg-background'
+const STICKY_RECIPIENT = 'sticky bg-background'
+// 행 선택 tint(bg-primary/5)는 반투명이라 고정 컬럼에 그대로 쓸 수 없다.
+// 같은 결과색을 불투명하게 합성해 선택 표시를 유지한다.
+const STICKY_SELECTED = 'bg-[color-mix(in_oklab,var(--primary)_5%,var(--background))]'
+// 받는분의 left 오프셋은 체크박스 컬럼(w-10 = 40px) 렌더 여부에 따라 달라진다
+const RECIPIENT_LEFT = { on: 40, off: 0 } as const
 
 export function RegistrationTable({
   rows,
@@ -182,6 +192,10 @@ export function RegistrationTable({
     else onSelectionChange(new Set())
   }
 
+  const stickyRecipientStyle = {
+    left: selectionEnabled ? RECIPIENT_LEFT.on : RECIPIENT_LEFT.off,
+  }
+
   const allSelected = selectionEnabled && rows.length > 0 && selectedIds.size === rows.length
   const someSelected = selectionEnabled && selectedIds.size > 0 && selectedIds.size < rows.length
 
@@ -191,12 +205,12 @@ export function RegistrationTable({
 
   return (
     <div className="space-y-2">
-      <div className="overflow-x-auto rounded-md border">
-        <Table className="[&_td]:px-1 [&_td:first-child]:pl-2 [&_td:last-child]:pr-2 [&_th]:px-1 [&_th:first-child]:pl-2 [&_th:last-child]:pr-2">
+      <div className="rounded-md border">
+        <Table className="min-w-[1800px] table-fixed [&_td]:px-1 [&_td:first-child]:pl-2 [&_td:last-child]:pr-2 [&_th]:px-1 [&_th:first-child]:pl-2 [&_th:last-child]:pr-2">
           <TableHeader>
             <TableRow>
               {selectionEnabled && (
-                <TableHead className="w-10">
+                <TableHead className={cn('w-10', STICKY_CHECKBOX, 'z-30')}>
                   <Checkbox
                     checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                     onCheckedChange={(v) => toggleAll(v === true)}
@@ -204,14 +218,19 @@ export function RegistrationTable({
                   />
                 </TableHead>
               )}
-              <TableHead className="w-[76px]">배송방식</TableHead>
-              <TableHead className="w-[68px]">판매채널</TableHead>
-              <TableHead className="w-[112px]">받는분</TableHead>
+              <TableHead className="w-[92px]">배송방식</TableHead>
+              <TableHead className="w-[124px]">판매채널</TableHead>
+              <TableHead
+                className={cn('w-[112px]', STICKY_RECIPIENT, 'z-30')}
+                style={stickyRecipientStyle}
+              >
+                받는분
+              </TableHead>
               <TableHead className="w-[150px]">전화</TableHead>
-              <TableHead className="min-w-[260px]">주소</TableHead>
+              <TableHead className="w-[260px]">주소</TableHead>
               <TableHead className="w-[80px]">우편번호</TableHead>
               <TableHead className="w-[100px]">배송메시지</TableHead>
-              <TableHead className="min-w-[220px]">상품</TableHead>
+              <TableHead className="w-[240px]">상품</TableHead>
               <TableHead className="w-[64px]">수량</TableHead>
               <TableHead className="w-[120px]">주문일자</TableHead>
               <TableHead className="w-[104px]">주문번호</TableHead>
@@ -260,7 +279,13 @@ export function RegistrationTable({
                     )}
                   >
                     {selectionEnabled && (
-                      <TableCell>
+                      <TableCell
+                        className={cn(
+                          STICKY_CHECKBOX,
+                          'z-20',
+                          selectedIds?.has(row.tempId) && STICKY_SELECTED
+                        )}
+                      >
                         <Checkbox
                           checked={selectedIds?.has(row.tempId) ?? false}
                           onClick={(e: React.MouseEvent) => toggleRow(row.tempId, idx, e.shiftKey)}
@@ -322,7 +347,14 @@ export function RegistrationTable({
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>
+                    <TableCell
+                      className={cn(
+                        STICKY_RECIPIENT,
+                        'z-20',
+                        selectionEnabled && selectedIds?.has(row.tempId) && STICKY_SELECTED
+                      )}
+                      style={stickyRecipientStyle}
+                    >
                       <Textarea
                         rows={1}
                         className={cn(CELL_TEXTAREA, missingRecipient && REQUIRED_INVALID)}

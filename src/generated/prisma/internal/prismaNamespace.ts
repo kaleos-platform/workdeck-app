@@ -11960,6 +11960,7 @@ export const DelShippingMethodScalarFieldEnum = {
   formatConfig: 'formatConfig',
   labelColumns: 'labelColumns',
   defaultSplitMode: 'defaultSplitMode',
+  locationId: 'locationId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

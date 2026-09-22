@@ -55,6 +55,20 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (body?.defaultSplitMode === 'option' || body?.defaultSplitMode === 'order') {
     data.defaultSplitMode = body.defaultSplitMode
   }
+  // 출고 위치 — null이면 해제, 문자열이면 space 소유 검증 후 설정
+  if (body?.locationId === null) {
+    data.locationId = null
+  } else if (typeof body?.locationId === 'string' && body.locationId) {
+    const loc = await prisma.invStorageLocation.findUnique({
+      where: { id: body.locationId },
+      select: { spaceId: true },
+    })
+    if (!loc || loc.spaceId !== resolved.space.id) {
+      return errorResponse('출고 위치를 찾을 수 없습니다', 404)
+    }
+    data.locationId = body.locationId
+  }
+
   if (Array.isArray(body?.labelColumns)) {
     // 유효한 DelFieldMapping 값만 남기고 최대 MAX_LABEL_COLUMNS개로 잘라냄.
     const seen = new Set<string>()

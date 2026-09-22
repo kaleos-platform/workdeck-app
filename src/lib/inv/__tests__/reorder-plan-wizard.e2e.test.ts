@@ -20,9 +20,14 @@ jest.mock('@/lib/api-helpers', () => {
   return { __esModule: true, ...actual, resolveDeckContext: jest.fn() }
 })
 // LLM 우회 — 네트워크 없이 결정론적 rationale.
-jest.mock('@/lib/ai/providers', () => ({
+// 라우트는 워크스페이스 AI 설정(BYOK/워크덱)을 거치는 generateTextForSpace 를 쓴다.
+jest.mock('@/lib/ai/resolve', () => ({
   __esModule: true,
-  generateTextWithFallback: jest.fn(async () => 'e2e rationale'),
+  generateTextForSpace: jest.fn(async () => ({
+    result: { content: 'e2e rationale', latencyMs: 1 },
+    providerName: 'mock',
+    mode: 'WORKDECK',
+  })),
 }))
 
 import { resolveDeckContext } from '@/lib/api-helpers'

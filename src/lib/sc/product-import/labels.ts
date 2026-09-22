@@ -14,6 +14,12 @@ export const PRODUCT_FIELD_LABELS = {
   cautions: '주의사항',
   brand: '브랜드',
   msrp: '권장 소비자가',
+  materials: '소재·구성',
+  customization: '맞춤 제작',
+  ordering: '대량 주문 조건',
+  useCases: '활용 방법',
+  esgEvidence: 'ESG 근거',
+  missingInfo: '추가 확인 필요',
 } as const
 
 export function clampText(v: string, max: number): string {

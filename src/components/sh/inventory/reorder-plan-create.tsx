@@ -42,6 +42,8 @@ type PreviewOption = {
   costPrice: number | null
   currentStock: number // = onHandStock + incomingQty (plannedStock)
   onHandStock: number
+  /** 발주 계산에서 제외된 반품 등급 재고. 재고 현황에는 포함돼 있어 숫자가 다르다. */
+  returnQty?: number
   incomingQty: number
   safetyStockQty: number
   dailyAvgForecast: number
@@ -961,6 +963,14 @@ export function ReorderPlanCreate({ autoOpen = true, initialDemandAdjust }: Prop
                         <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
                           {fmtQty(o.onHandStock)}
                           {o.incomingQty > 0 ? ` / +${fmtQty(o.incomingQty)}` : ' / —'}
+                          {o.returnQty ? (
+                            <div
+                              className="text-[11px] font-normal text-muted-foreground/70"
+                              title="쿠팡 반품 등급 재고 — 반품 전용 리스팅에서만 팔려 정상 수요를 메우지 못하므로 발주 계산에서 제외했습니다. 재고 현황에는 포함됩니다."
+                            >
+                              반품등급 {fmtQty(o.returnQty)} 제외
+                            </div>
+                          ) : null}
                         </TableCell>
                         <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
                           {fmtQty(o.safetyStockQty)}

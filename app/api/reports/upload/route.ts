@@ -3,7 +3,6 @@ import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { createClient } from '@/lib/supabase/server'
 import { processUpload } from '@/lib/upload-processor'
 import { prisma } from '@/lib/prisma'
-import { invalidateCoupangAdsCache } from '@/lib/coupang-ads/cache'
 
 type UploadRequestBody = {
   storagePath: string
@@ -159,8 +158,6 @@ export async function POST(request: NextRequest) {
       .catch((err) => {
         console.error('CollectionRun(file) 생성 실패:', err)
       })
-
-    invalidateCoupangAdsCache(workspace.id)
 
     return NextResponse.json(
       {

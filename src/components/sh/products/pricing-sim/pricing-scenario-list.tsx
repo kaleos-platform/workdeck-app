@@ -1,9 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, Loader2, Plus, Settings2, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, Loader2, Plus, Settings2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -65,6 +65,7 @@ export function PricingScenarioList() {
   const [total, setTotal] = useState(0)
   const [products, setProducts] = useState<ProductOption[]>([])
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settings, setSettings] = useState<PricingFullSettings | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -172,6 +173,15 @@ export function PricingScenarioList() {
     [fetchScenarios]
   )
 
+  const toggleExpanded = useCallback((id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-4">
@@ -249,18 +259,22 @@ export function PricingScenarioList() {
 
       {/* 시나리오 테이블 */}
       <div className="rounded-md border">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>이름</TableHead>
-              <TableHead>상품</TableHead>
-              <TableHead className="text-right">채널</TableHead>
-              <TableHead className="text-right">목표 마진</TableHead>
-              <TableHead className="text-right">소비자가</TableHead>
-              <TableHead className="text-right">판매가</TableHead>
-              <TableHead className="text-right">소비자가 대비 할인율</TableHead>
-              <TableHead>수정일</TableHead>
-              <TableHead className="w-16 text-right">작업</TableHead>
+              <TableHead className="w-[164px]">이름</TableHead>
+              <TableHead className="w-[144px]">상품</TableHead>
+              <TableHead className="w-[132px] text-right">채널</TableHead>
+              <TableHead className="w-[72px] text-right leading-tight whitespace-normal">
+                목표 마진
+              </TableHead>
+              <TableHead className="w-[84px] text-right">소비자가</TableHead>
+              <TableHead className="w-[104px] text-right">판매가</TableHead>
+              <TableHead className="w-[80px] text-right leading-tight whitespace-normal">
+                소비자가 대비 할인율
+              </TableHead>
+              <TableHead className="w-[80px]">수정일</TableHead>
+              <TableHead className="w-11 text-right">작업</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -280,74 +294,143 @@ export function PricingScenarioList() {
               rows.map((row) => {
                 const goDetail = () => router.push(getSellerHubPricingScenarioPath(row.id))
                 const productLabel = row.summary?.productNames?.join(', ') || '—'
+                const variants = row.variants ?? []
+                const expandable = variants.length > 1
+                const expanded = expandable && expandedIds.has(row.id)
                 return (
-                  <TableRow
-                    key={row.id}
-                    onClick={goDetail}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        goDetail()
-                      }
-                    }}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`${row.name} 상세`}
-                    className="cursor-pointer hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none"
-                  >
-                    <TableCell>
-                      <div className="font-medium">{row.name}</div>
-                      {row.memo && <div className="text-xs text-muted-foreground">{row.memo}</div>}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        {row.summary?.mode === 'new' && (
-                          <Badge variant="secondary" className="shrink-0 text-[10px]">
-                            신규 상품
-                          </Badge>
-                        )}
-                        <span className="truncate">{productLabel}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground tabular-nums">
-                      {joinedOrDash(row.channelNames)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {row.summary ? `${row.summary.targetMarginPct}%` : '—'}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {retailText(row.summary)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {salePriceRangeText(row.summary)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {discountRangeText(row.summary)}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(row.updatedAt).toLocaleDateString('ko-KR')}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        disabled={deletingId === row.id}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDelete(row.id, row.name)
-                        }}
-                        aria-label={`${row.name} 삭제`}
-                      >
-                        {deletingId === row.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        )}
-                        <span className="sr-only">삭제</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                  <Fragment key={row.id}>
+                    <TableRow
+                      onClick={goDetail}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          goDetail()
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${row.name} 상세`}
+                      className="cursor-pointer hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none"
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {expandable && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleExpanded(row.id)
+                              }}
+                              className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted"
+                              aria-label={expanded ? '탭 목록 접기' : '탭 목록 펼치기'}
+                            >
+                              {expanded ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </button>
+                          )}
+                          <div className="min-w-0">
+                            <div className="truncate font-medium" title={row.name}>
+                              {row.name}
+                            </div>
+                            {row.memo && (
+                              <div
+                                className="truncate text-xs text-muted-foreground"
+                                title={row.memo}
+                              >
+                                {row.memo}
+                              </div>
+                            )}
+                          </div>
+                          {expandable && (
+                            <Badge variant="outline" className="shrink-0 text-[10px]">
+                              탭 {variants.length}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          {row.summary?.mode === 'new' && (
+                            <Badge variant="secondary" className="shrink-0 text-[10px]">
+                              신규 상품
+                            </Badge>
+                          )}
+                          <span className="truncate" title={productLabel}>
+                            {productLabel}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground tabular-nums">
+                        <span className="block truncate" title={joinedOrDash(row.channelNames)}>
+                          {joinedOrDash(row.channelNames)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {row.summary ? `${row.summary.targetMarginPct}%` : '—'}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {retailText(row.summary)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {salePriceRangeText(row.summary)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {discountRangeText(row.summary)}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date(row.updatedAt).toLocaleDateString('ko-KR')}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={deletingId === row.id}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDelete(row.id, row.name)
+                          }}
+                          aria-label={`${row.name} 삭제`}
+                        >
+                          {deletingId === row.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          )}
+                          <span className="sr-only">삭제</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                    {expanded &&
+                      variants.map((v) => (
+                        <TableRow
+                          key={v.id}
+                          onClick={goDetail}
+                          className="cursor-pointer bg-muted/30 hover:bg-muted/50"
+                        >
+                          <TableCell className="truncate pl-9 text-sm text-muted-foreground">
+                            {v.name}
+                          </TableCell>
+                          <TableCell />
+                          <TableCell />
+                          <TableCell />
+                          <TableCell className="text-right tabular-nums">
+                            {retailText(v.summary)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {salePriceRangeText(v.summary)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {discountRangeText(v.summary)}
+                          </TableCell>
+                          <TableCell />
+                          <TableCell />
+                        </TableRow>
+                      ))}
+                  </Fragment>
                 )
               })
             )}
