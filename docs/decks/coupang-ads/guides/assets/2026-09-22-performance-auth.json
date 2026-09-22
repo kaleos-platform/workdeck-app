@@ -1,0 +1,168 @@
+{
+  "date": "2026-09-22",
+  "commit": "e5459ccc9c548966dbd04c199ec4c53999c47d41",
+  "deploymentId": "dpl_H5uEin1GqDPeNJRxKpWzEi8rUzLR",
+  "method": "각 회차 광고 workspace tag cache 초기화 후 기존 숫자·카드·차트 표시 기준 측정. 신규 배포 직후 표본 포함. platform cold start는 강제하지 않음.",
+  "samples": [
+    [
+      {
+        "screen": "home-first",
+        "ms": 3956,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=110.1, auth_membership;dur=50.2, auth_deck;dur=6.8, auth_workspace;dur=4.1, auth;dur=176.1, catalog_loader;dur=310.4, date_ranges;dur=53.2, campaign_current;dur=9.8, campaign_previous;dur=6.8, summary_loader;dur=12.0, target_summaries;dur=18.6, data;dur=468.3, total;dur=644.9"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 936,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=34.7, auth_membership;dur=31.0, auth_deck;dur=10.2, auth_workspace;dur=5.6, auth;dur=81.6, overview_latest;dur=15.9, overview_ad_types;dur=36.1, overview_current;dur=42.3, overview_previous;dur=57.2, overview_targets;dur=59.7, overview_memos;dur=71.9, overview_meta;dur=77.8, overview_loader;dur=79.4, data;dur=86.2, total;dur=168.5"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 322,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=33.3, auth_membership;dur=6.9, auth_deck;dur=3.6, auth_workspace;dur=3.1, auth;dur=47.0, date_ranges;dur=44.2, target_summaries;dur=8.5, data;dur=69.3, total;dur=116.5"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 650,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=24.5, auth_membership;dur=6.5, auth_deck;dur=3.3, auth_workspace;dur=3.1, auth;dur=37.5, data;dur=5.7, total;dur=43.5"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 1574,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=45.8, auth_membership;dur=56.5, auth_deck;dur=3.2, auth_workspace;dur=3.0, auth;dur=108.6, date_ranges;dur=45.3, campaign_current;dur=6.3, campaign_previous;dur=5.1, summary_loader;dur=9.7, target_summaries;dur=14.9, data;dur=92.9, total;dur=201.8"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 401,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=32.9, auth_membership;dur=6.6, auth_deck;dur=3.2, auth_workspace;dur=3.2, auth;dur=46.0, overview_latest;dur=8.4, overview_ad_types;dur=27.5, overview_current;dur=31.7, overview_previous;dur=36.3, overview_targets;dur=39.3, overview_memos;dur=42.5, overview_meta;dur=45.4, overview_loader;dur=45.8, data;dur=53.4, total;dur=99.7"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 828,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=23.6, auth_membership;dur=6.6, auth_deck;dur=3.6, auth_workspace;dur=3.2, auth;dur=37.2, catalog_loader;dur=56.6, date_ranges;dur=43.1, target_summaries;dur=5.0, data;dur=120.9, total;dur=158.3"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 406,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=36.9, auth_membership;dur=6.8, auth_deck;dur=11.3, auth_workspace;dur=6.9, auth;dur=62.0, overview_latest;dur=16.4, overview_ad_types;dur=34.5, overview_current;dur=39.0, overview_previous;dur=42.9, overview_targets;dur=46.5, overview_memos;dur=59.0, overview_meta;dur=61.7, overview_loader;dur=62.1, data;dur=66.7, total;dur=129.0"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 720,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=23.2, auth_membership;dur=6.3, auth_deck;dur=3.1, auth_workspace;dur=86.5, auth;dur=119.2, catalog_loader;dur=105.9, date_ranges;dur=81.2, campaign_current;dur=6.0, campaign_previous;dur=4.7, summary_loader;dur=10.2, target_summaries;dur=15.6, data;dur=229.6, total;dur=349.1"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 497,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=40.9, auth_membership;dur=6.3, auth_deck;dur=3.3, auth_workspace;dur=3.2, auth;dur=53.8, overview_latest;dur=35.7, overview_ad_types;dur=91.7, overview_current;dur=99.8, overview_previous;dur=141.7, overview_targets;dur=144.8, overview_memos;dur=150.2, overview_meta;dur=152.8, overview_loader;dur=153.2, data;dur=159.0, total;dur=213.1"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 824,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=134.8, auth_membership;dur=7.1, auth_deck;dur=3.7, auth_workspace;dur=3.1, auth;dur=148.7, catalog_loader;dur=314.8, target_summaries;dur=4.0, data;dur=338.2, total;dur=487.1"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 411,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=40.3, auth_membership;dur=6.6, auth_deck;dur=3.5, auth_workspace;dur=3.1, auth;dur=53.5, overview_latest;dur=4.1, overview_ad_types;dur=21.9, overview_current;dur=25.8, overview_previous;dur=29.6, overview_targets;dur=32.5, overview_memos;dur=36.3, overview_meta;dur=39.0, overview_loader;dur=39.4, data;dur=44.6, total;dur=98.4"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 2463,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=193.3, auth_membership;dur=7.8, auth_deck;dur=3.4, auth_workspace;dur=3.1, auth;dur=207.6, catalog_loader;dur=62.3, date_ranges;dur=51.8, campaign_current;dur=4.9, campaign_previous;dur=4.9, summary_loader;dur=8.9, target_summaries;dur=14.2, data;dur=157.4, total;dur=365.2"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 2070,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=25.7, auth_membership;dur=6.7, auth_deck;dur=3.5, auth_workspace;dur=3.3, auth;dur=39.2, overview_latest;dur=4.6, overview_ad_types;dur=23.0, overview_current;dur=27.5, overview_previous;dur=35.8, overview_targets;dur=38.7, overview_memos;dur=43.5, overview_meta;dur=46.2, overview_loader;dur=46.8, data;dur=52.7, total;dur=92.2"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 1320,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=66.2, auth_membership;dur=23.7, auth_deck;dur=2.9, auth_workspace;dur=2.9, auth;dur=95.8, target_summaries;dur=5.9, data;dur=33.1, total;dur=129.2"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 383,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=38.1, auth_membership;dur=6.1, auth_deck;dur=2.9, auth_workspace;dur=2.7, auth;dur=49.8, data;dur=6.6, total;dur=57.2"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 994,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=48.1, auth_membership;dur=30.9, auth_deck;dur=4.7, auth_workspace;dur=4.4, auth;dur=88.2, catalog_loader;dur=688.5, date_ranges;dur=54.6, campaign_current;dur=14.3, campaign_previous;dur=5.6, summary_loader;dur=31.4, target_summaries;dur=37.3, data;dur=832.3, total;dur=920.8"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 626,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=53.2, auth_membership;dur=35.7, auth_deck;dur=11.9, auth_workspace;dur=4.1, auth;dur=105.1, overview_latest;dur=17.1, overview_ad_types;dur=36.9, overview_current;dur=52.0, overview_previous;dur=65.9, overview_targets;dur=69.8, overview_memos;dur=121.2, overview_meta;dur=124.4, overview_loader;dur=126.0, data;dur=134.0, total;dur=239.8"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 1314,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth_user;dur=24.5, auth_membership;dur=6.1, auth_deck;dur=3.2, auth_workspace;dur=3.0, auth;dur=36.8, target_summaries;dur=4.2, data;dur=24.5, total;dur=61.5"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 299,
+        "status": 200,
+        "series": 7,
+        "timing": "auth_user;dur=22.4, auth_membership;dur=6.2, auth_deck;dur=3.2, auth_workspace;dur=2.9, auth;dur=34.9, data;dur=6.2, total;dur=41.3"
+      }
+    ]
+  ]
+}

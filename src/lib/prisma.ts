@@ -2,6 +2,17 @@
 // DATABASE_URL 환경변수에서 연결 정보를 읽음
 import { PrismaClient } from '@/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
+import { Client, type ClientConfig } from 'pg'
+import { recordCoupangAdsTiming } from '@/lib/coupang-ads/server-timing'
+
+// 첫 쿼리에 포함된 신규 연결 수립 시간을 분리한다. SQL이나 연결 문자열은 기록하지 않는다.
+class TimedPgClient extends Client {
+  constructor(config?: ClientConfig) {
+    super(config)
+    const start = performance.now()
+    this.once('connect', () => recordCoupangAdsTiming('db_connect', performance.now() - start))
+  }
+}
 
 type PrismaInstance = InstanceType<typeof PrismaClient>
 
@@ -59,6 +70,7 @@ function createPrismaClient(): PrismaInstance {
         : 10
 
   const adapter = new PrismaPg({
+    Client: TimedPgClient,
     connectionString,
     ssl,
     max,
