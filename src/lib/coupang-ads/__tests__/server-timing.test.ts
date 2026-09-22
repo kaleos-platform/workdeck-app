@@ -53,3 +53,28 @@ test('처리된 실패의 시간도 기록한다', async () => {
   expect(response.headers.get('server-timing')).toContain('data;dur=')
   expect(response.headers.get('server-timing')).not.toContain('private')
 })
+
+test('SSR 측정은 반환값과 오류를 유지하고 수치만 기록한다', async () => {
+  const { withCoupangAdsPageTiming } = await import('../server-timing')
+  const log = jest.spyOn(console, 'info').mockImplementation(() => {})
+  try {
+    const result = await withCoupangAdsPageTiming(async () => {
+      await measureCoupangAds('auth', async () => 'private-user')
+      return 'private-result'
+    })
+    expect(result).toBe('private-result')
+    expect(log).toHaveBeenCalledWith(
+      '[coupang-ads:ssr]',
+      expect.stringMatching(/auth;dur=\d+\.\d, total;dur=\d+\.\d/)
+    )
+    const error = new Error('private-error')
+    await expect(
+      withCoupangAdsPageTiming(async () => {
+        throw error
+      })
+    ).rejects.toBe(error)
+    expect(JSON.stringify(log.mock.calls)).not.toContain('private')
+  } finally {
+    log.mockRestore()
+  }
+})
