@@ -262,6 +262,7 @@ function RailLink({
         <TooltipTrigger asChild>
           <Link
             href={href}
+            prefetch={href === COUPANG_ADS_BASE_PATH ? true : undefined}
             aria-label={label}
             className={cn(
               'group relative flex w-full cursor-pointer items-center justify-center rounded-lg p-3 transition hover:bg-white/10 hover:text-white',
@@ -287,6 +288,7 @@ function RailLink({
   return (
     <Link
       href={href}
+      prefetch={href === COUPANG_ADS_BASE_PATH ? true : undefined}
       className={cn(
         'group flex w-full cursor-pointer items-center justify-start rounded-lg text-sm font-medium transition hover:bg-white/10 hover:text-white',
         size === 'sm' ? 'px-2 py-2' : 'p-3',
@@ -433,6 +435,7 @@ export function Sidebar({
           <>
             <Link
               href={meta.href}
+              prefetch={meta.href === COUPANG_ADS_BASE_PATH ? true : undefined}
               aria-label={`${meta.name} 홈으로 이동`}
               className="flex min-w-0 items-center gap-2"
             >

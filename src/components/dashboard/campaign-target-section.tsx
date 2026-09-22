@@ -24,6 +24,7 @@ import {
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getTodayStrKst } from '@/lib/date-range'
+import { notifyCampaignsChanged } from '@/hooks/use-campaign-navigation'
 
 export type CampaignTarget = {
   id: string
@@ -220,6 +221,7 @@ export function CampaignTargetSection({
         return
       }
 
+      notifyCampaignsChanged()
       await fetchTargets()
       if (mode !== 'budget') await fetchSummary()
       setDialogOpen(false)
@@ -241,6 +243,7 @@ export function CampaignTargetSection({
       method: 'DELETE',
     })
     if (res.ok) {
+      notifyCampaignsChanged()
       await fetchTargets()
       if (mode !== 'budget') await fetchSummary()
       toast.success('삭제되었습니다.')
