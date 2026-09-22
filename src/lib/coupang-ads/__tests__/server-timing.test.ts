@@ -78,3 +78,17 @@ test('SSR 측정은 반환값과 오류를 유지하고 수치만 기록한다',
     log.mockRestore()
   }
 })
+
+test('연결 이벤트 계측도 현재 요청에만 기록하고 잘못된 수치를 제외한다', async () => {
+  const { recordCoupangAdsTiming } = await import('../server-timing')
+  recordCoupangAdsTiming('outside', 10)
+  const response = await withCoupangAdsTiming(async () => {
+    recordCoupangAdsTiming('db_connect', 123.4)
+    recordCoupangAdsTiming('db_connect', 10)
+    recordCoupangAdsTiming('invalid', Number.NaN)
+    recordCoupangAdsTiming('private-value', 5)
+    return new Response()
+  })
+  expect(response.headers.get('server-timing')).toContain('db_connect;dur=133.4')
+  expect(response.headers.get('server-timing')).not.toMatch(/outside|invalid|private/)
+})
