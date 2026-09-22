@@ -94,41 +94,60 @@ export function isoWeekOfYear(ymd: string): number {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
 }
 
-// ─── 증감 비교용 이전 구간 (명시 캘린더 경계, to-date span 정렬) ─────────────
+// ─── 증감 비교용 이전 구간 ───────────────────────────────────────────────────
+
+/** 두 KST 일자의 차이(일). to - from */
+function diffDays(from: string, to: string): number {
+  const [fy, fm, fd] = parseYmd(from)
+  const [ty, tm, td] = parseYmd(to)
+  const a = Date.UTC(fy, fm - 1, fd, 12, 0, 0)
+  const b = Date.UTC(ty, tm - 1, td, 12, 0, 0)
+  return Math.round((b - a) / 86400000)
+}
+
+/** 구간이 걸친 달력 월 수 (2026-09-01~2026-09-21 → 1) */
+function monthSpan(from: string, to: string): number {
+  const [fy, fm] = parseYmd(from)
+  const [ty, tm] = parseYmd(to)
+  return (ty - fy) * 12 + (tm - fm) + 1
+}
 
 /**
  * 선택 구간(current)에 대한 증감 비교 이전 구간.
- * - 일(DoD): 전날 하루
- * - 주(WoW): 지난주 같은 구간(월~동일 요일까지). current span 과 일수 동일.
- * - 월(MoM): 지난달 1일 ~ 지난달 동일 일자(말일 clamp). current span 정렬.
  *
- * 부분기간(to-date) 도 일수를 맞춰 비교한다 (API 자동 prev= from−N일 의 요일/일자
- * 정렬 깨짐 문제를 회피).
+ * - 달력 월 정렬(1일 시작 + 말일 또는 마지막 집계일 종료) → 같은 개월 수만큼 앞.
+ *   말일 종료면 이전 달(들) 전체, 진행중(마지막 집계일) 종료면 같은 일자까지(to-date).
+ * - 달력 주 정렬(월요일 시작 + 일요일 또는 마지막 집계일 종료) → 7일 앞.
+ * - 그 외 임의 구간 → 길이만큼 통째로 시프트. 단일일은 여기서 자연히 전날이 된다.
+ *
+ * 표시 단위(일/주/월 토글)는 버킷 크기일 뿐 비교 기준이 아니므로 인자로 받지 않는다.
+ * 데이터 기준일이 어제(lastClosedDateKst)라 "이번달"은 말일로 끝나지 않는다 →
+ * 마지막 집계일 종료를 달력 경계로 함께 인정하지 않으면 전월 동기 비교가 깨진다.
  */
-export function prevRangeForUnit(unit: SalesUnit, current: DateRange): DateRange {
-  if (unit === '일') {
-    const prev = addDaysYmd(current.from, -1)
-    return { from: prev, to: prev }
-  }
-  if (unit === '주') {
-    return {
-      from: addDaysYmd(current.from, -7),
-      to: addDaysYmd(current.to, -7),
-    }
-  }
-  // 월: 지난달 같은 일수 구간 (1일 ~ 동일 일자, 말일 clamp)
-  const [, , toDay] = parseYmd(current.to)
-  const prevMonthStart = addDaysYmd(startOfMonth(current.from), -1) // 지난달 말일
-  const prevFrom = startOfMonth(prevMonthStart)
-  const [py, pm] = parseYmd(prevFrom)
-  const prevMonthLastDay = Number(endOfMonth(prevFrom).split('-')[2])
-  const clampedDay = Math.min(toDay, prevMonthLastDay)
-  return { from: prevFrom, to: toYmd(py, pm, clampedDay) }
-}
+export function prevRange(current: DateRange): DateRange {
+  // 진행중 구간: 데이터 기준일(어제) 또는 오늘로 끝나면 달력 경계로 인정한다.
+  const openEnds = [lastClosedDateKst(), getTodayStrKst()]
+  const endsAt = (boundary: string) => current.to === boundary || openEnds.includes(current.to)
 
-/** 증감 라벨 (단위 → 비교 약어) */
-export function deltaLabelForUnit(unit: SalesUnit): 'DoD' | 'WoW' | 'MoM' {
-  return unit === '일' ? 'DoD' : unit === '주' ? 'WoW' : 'MoM'
+  // 월 정렬
+  if (current.from === startOfMonth(current.from) && endsAt(endOfMonth(current.to))) {
+    const months = monthSpan(current.from, current.to)
+    const prevFrom = startOfMonth(addMonthsYmd(current.from, -months))
+    const prevTo =
+      current.to === endOfMonth(current.to)
+        ? endOfMonth(addMonthsYmd(prevFrom, months - 1))
+        : addMonthsYmd(current.to, -months)
+    return { from: prevFrom, to: prevTo }
+  }
+
+  // 주 정렬
+  if (current.from === startOfWeekMon(current.from) && endsAt(addDaysYmd(current.from, 6))) {
+    return { from: addDaysYmd(current.from, -7), to: addDaysYmd(current.to, -7) }
+  }
+
+  // 임의 구간: 길이만큼 시프트
+  const span = diffDays(current.from, current.to) + 1
+  return { from: addDaysYmd(current.from, -span), to: addDaysYmd(current.to, -span) }
 }
 
 // ─── 버킷팅 (groupBy=date rows → 단위 버킷) ──────────────────────────────────
