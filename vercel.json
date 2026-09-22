@@ -54,6 +54,10 @@
     {
       "path": "/api/cron/product-source-orphan-sweep",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/coupang-product-sync",
+      "schedule": "0 2 * * *"
     }
   ]
 }

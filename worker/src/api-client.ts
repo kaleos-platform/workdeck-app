@@ -349,6 +349,21 @@ export async function uploadInventory(
   return response.json()
 }
 
+/** 쿠팡 상품 API 수집 결과 적재 — Task 4 extractProductItems() 출력을 그대로 넘긴다.
+ * POST /api/coupang/product-items */
+export async function upsertProductItems(
+  spaceId: string,
+  rows: unknown[]
+): Promise<{ upserted: number }> {
+  const response = await workerFetch('/api/coupang/product-items', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ spaceId, rows }),
+  })
+  const data = await response.json()
+  return { upserted: Number(data?.upserted ?? 0) }
+}
+
 /** 쿠팡 재고 API 로 수집한 행 하나. productId/productName/optionName 은 없다 — 앱이 이력 역산으로 채운다. */
 export type InventoryApiRowPayload = {
   optionId: string
