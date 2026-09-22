@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
       rgSalePrice: true,
       mpSalePrice: true,
       collectedAt: true,
+      sellerProductId: true,
     },
   })
 

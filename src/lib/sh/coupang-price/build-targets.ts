@@ -16,6 +16,7 @@ export type BuildTargetsInput = {
     rgSalePrice: number | null
     mpSalePrice: number | null
     collectedAt: Date
+    sellerProductId: string
   }>
 }
 
@@ -29,6 +30,8 @@ export type PreviewTarget = {
   apMinSalePrice: number
   deltaPct: number | null
   blockedReason: string | null
+  // Wing 딥링크용 — CoupangProductItem.sellerProductId(=vendorInventoryId). 미연결이면 null
+  sellerProductId: string | null
 }
 
 export function buildPreviewTargets(input: BuildTargetsInput): PreviewTarget[] {
@@ -73,6 +76,7 @@ export function buildPreviewTargets(input: BuildTargetsInput): PreviewTarget[] {
       deltaPct:
         currentPrice && currentPrice > 0 ? (targetPrice - currentPrice) / currentPrice : null,
       blockedReason,
+      sellerProductId: item?.sellerProductId ?? null,
     }
   })
 }

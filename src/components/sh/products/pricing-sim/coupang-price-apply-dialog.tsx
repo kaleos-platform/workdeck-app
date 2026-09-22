@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +27,7 @@ import {
 import type { PreviewTarget } from '@/lib/sh/coupang-price/build-targets'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { APPROVALS_PATH } from '@/lib/deck-routes'
+import { wingListingUrl } from '@/lib/coupang/wing-link'
 
 import { CoupangItemPickerDialog } from './coupang-item-picker-dialog'
 
@@ -329,7 +330,22 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                       key={t.listingId}
                       className={t.blockedReason ? 'opacity-60' : undefined}
                     >
-                      <TableCell className="font-medium">{t.listingName}</TableCell>
+                      <TableCell className="font-medium">
+                        <span className="flex items-center gap-1">
+                          {t.listingName}
+                          {t.sellerProductId && (
+                            <a
+                              href={wingListingUrl(t.sellerProductId)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="쿠팡 Wing에서 보기"
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                          )}
+                        </span>
+                      </TableCell>
                       <TableCell className="text-right tabular-nums">
                         {t.currentPrice != null ? `₩${fmt(t.currentPrice)}` : '—'}
                       </TableCell>

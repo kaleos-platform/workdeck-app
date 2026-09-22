@@ -18,6 +18,7 @@ const base = {
       rgSalePrice: 47000,
       mpSalePrice: 47500,
       collectedAt: new Date('2026-09-21T00:00:00Z'),
+      sellerProductId: 'SP-1',
     },
   ],
 }
@@ -30,9 +31,12 @@ test('판매가는 10원 반올림, 하한은 10원 올림', () => {
 
 test('매핑이 없는 리스팅은 vendorItemId 가 null 이고 차단 사유가 붙는다', () => {
   const targets = buildPreviewTargets(base)
+  const l1 = targets.find((t) => t.listingId === 'L1')!
+  expect(l1.sellerProductId).toBe('SP-1')
   const l2 = targets.find((t) => t.listingId === 'L2')!
   expect(l2.vendorItemId).toBeNull()
   expect(l2.blockedReason).toContain('연결')
+  expect(l2.sellerProductId).toBeNull()
 })
 
 test('축에 맞는 현재가를 쓴다 — MP 축은 mpSalePrice', () => {
