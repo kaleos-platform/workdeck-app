@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { cache } from 'react'
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getUser } from '@/hooks/use-user'
@@ -96,7 +97,7 @@ export async function resolveWorkspace() {
 export type SpaceMemberRole = 'OWNER' | 'ADMIN' | 'MEMBER'
 
 // 인증 + Space 멤버십 검증 (Deck 활성화 여부와 무관)
-export async function resolveSpaceContext() {
+export const resolveSpaceContext = cache(async function resolveSpaceContext() {
   const user = await measureCoupangAds('auth_user', getUser)
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
 
@@ -114,7 +115,7 @@ export async function resolveSpaceContext() {
     space: membership.space,
     role: membership.role as SpaceMemberRole,
   }
-}
+})
 
 // 인증 + Space 멤버십 + DeckInstance 활성화 여부 검증
 export async function resolveDeckContext(deckKey = 'coupang-ads') {
