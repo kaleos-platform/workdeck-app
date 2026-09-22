@@ -78,11 +78,25 @@ export async function POST(req: NextRequest) {
       .map((i) => ({ ...i, listingId: i.listingId })),
   })
 
+  // 판매채널 상품이 하나도 없는 옵션 — 이름을 붙여 돌려준다(화면 경고용).
+  const unmatchedOptions = derived.unmatched.length
+    ? await prisma.invProductOption.findMany({
+        // product 릴레이션으로 space 스코프를 건다 — optionIds 는 클라이언트 입력이고,
+        // 다른 space 의 옵션 id 는 정의상 매칭이 없어 그대로 unmatched 에 들어온다.
+        where: { id: { in: derived.unmatched }, product: { spaceId: resolved.space.id } },
+        select: { id: true, name: true },
+      })
+    : []
+
   return NextResponse.json({
     targets,
     // 시그니처가 리스팅 여러 개와 동시에 매칭되면 어느 것인지 사람이 골라야 한다.
     ambiguous: derived.ambiguous.map((ids) =>
       ids.map((id) => ({ id, name: nameById.get(id) ?? '' }))
     ),
+    unmatched: derived.unmatched.map((id) => ({
+      id,
+      name: unmatchedOptions.find((o) => o.id === id)?.name ?? id,
+    })),
   })
 }

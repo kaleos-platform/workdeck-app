@@ -463,24 +463,24 @@ model Space {
   updatedAt DateTime @updatedAt
 
   // ─── Sales Content Deck ───
-  products             Product[]
-  personas             Persona[]
-  brandProfile         BrandProfile?
-  workspaceAiCredits   WorkspaceAiCredit[]
-  imageGenerationLogs  ImageGenerationLog[]
-  textGenerationLogs   TextGenerationLog[]
-  ideations            Ideation[]
-  templates            Template[]
-  salesContentChannels SalesContentChannel[]
-  contents             Content[]
-  contentAssets        ContentAsset[]
-  contentVersions      ContentVersion[]
-  contentDeployments   ContentDeployment[]
-  contentClickEvents   ContentClickEvent[]
-  channelCredentials   ChannelCredential[]
-  salesContentJobs     SalesContentJob[]
-  deploymentMetrics    DeploymentMetric[]
-  improvementRules     ImprovementRule[]
+  products               Product[]
+  personas               Persona[]
+  brandProfile           BrandProfile?
+  workspaceAiCredits     WorkspaceAiCredit[]
+  imageGenerationLogs    ImageGenerationLog[]
+  textGenerationLogs     TextGenerationLog[]
+  ideations              Ideation[]
+  templates              Template[]
+  salesContentChannels   SalesContentChannel[]
+  contents               Content[]
+  contentAssets          ContentAsset[]
+  contentVersions        ContentVersion[]
+  contentDeployments     ContentDeployment[]
+  contentClickEvents     ContentClickEvent[]
+  channelCredentials     ChannelCredential[]
+  salesContentJobs       SalesContentJob[]
+  deploymentMetrics      DeploymentMetric[]
+  improvementRules       ImprovementRule[]
   salesContentOnboarding SalesContentOnboarding?
   scOnboardingResources  ScOnboardingResource[]
 
@@ -794,7 +794,7 @@ model CoupangWriteJob {
   kind        CoupangWriteJobKind
   status      CoupangWriteJobStatus @default(PENDING)
   payload     Json
-  results     Json? // 타깃별 { vendorItemId, observedPrice, ok, error }
+  results     Json? // 타깃별 { listingId, vendorItemId, observedPrice, ok, error }
   error       String?
   attempts    Int                   @default(0)
   claimedAt   DateTime?
@@ -864,9 +864,9 @@ model CoupangBackfillJob {
 
 // 수집 실행 이력
 model CollectionRun {
-  id               String           @id @default(cuid())
+  id               String            @id @default(cuid())
   workspaceId      String
-  status           CollectionStatus @default(PENDING)
+  status           CollectionStatus  @default(PENDING)
   triggeredBy      String
   startedAt        DateTime?
   completedAt      DateTime?
@@ -874,15 +874,15 @@ model CollectionRun {
   uploadId         String?
   // 수동 수집 작업 스코프 — 어떤 작업을 실행할지. 자동(scheduled)은 둘 다 true(전체).
   // 판매(VENDOR)는 수동 수집에서 항상 제외되므로 별도 필드 없음(자동 cron 전용).
-  collectAds       Boolean          @default(true) // 광고 데이터 수집
-  collectInventory Boolean          @default(true) // 재고현황(HEALTH) 수집
+  collectAds       Boolean           @default(true) // 광고 데이터 수집
+  collectInventory Boolean           @default(true) // 재고현황(HEALTH) 수집
   source           CoupangDataSource @default(CRAWL) // 이 실행이 어느 소스에서 수집했는지(사후 판별용)
   // 연결 테스트(probe) 실행 — 실제 수집이 아니라 API 자격·IP allowlist 확인용.
   // 스코프 검사·중복 실행 검사에서 제외되고, 결과는 probeResult 에 기록된다.
-  probeApi         Boolean          @default(false)
+  probeApi         Boolean           @default(false)
   probeResult      Json?
-  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt        DateTime         @default(now())
+  workspace        Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt        DateTime          @default(now())
 
   @@index([workspaceId, status])
   @@index([workspaceId, createdAt])
@@ -1034,17 +1034,17 @@ model CronRun {
 
 // 재고 엑셀 업로드 이력
 model InventoryUpload {
-  id           String   @id @default(cuid())
+  id           String            @id @default(cuid())
   fileName     String
   fileType     String // INVENTORY_HEALTH | VENDOR_ITEM_METRICS
-  uploadedAt   DateTime @default(now())
+  uploadedAt   DateTime          @default(now())
   snapshotDate DateTime // 데이터 기준일
   totalRows    Int?
   insertedRows Int?
   // 이 업로드가 어느 소스에서 왔는지. 완전성 가드(inventory-upload-processor.ts)의
   // baseline 조회가 소스별로 분리되어 있어야 한다 — 크롤링 HEALTH 행과 API 요약 행은
   // 모집단 자체가 달라서 baseline 을 공유하면 안 된다.
-  source CoupangDataSource @default(CRAWL)
+  source       CoupangDataSource @default(CRAWL)
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -1056,7 +1056,7 @@ model InventoryUpload {
 
 // 재고 / 상품 성과 레코드
 model InventoryRecord {
-  id           String   @id @default(cuid())
+  id           String            @id @default(cuid())
   workspaceId  String
   snapshotDate DateTime
   fileType     String // INVENTORY_HEALTH | VENDOR_ITEM_METRICS
@@ -2206,17 +2206,17 @@ model ProductListing {
   status           ProductListingStatus @default(ACTIVE)
   memo             String?
 
-  space             Space                  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  channel           Channel                @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  channelProduct    ChannelProduct?        @relation(fields: [channelProductId], references: [id], onDelete: SetNull)
-  items             ProductListingItem[]
-  aliases           ChannelProductAlias[]
-  delItems          DelOrderItem[]
-  stockMovements    ChannelStockMovement[]
-  reorderPlanSets   ReorderPlanSet[] // 세트 발주 계획에서 이 listing(=세트)을 참조
-  productionRunSets ProductionRunSet[] // 세트 생산차수에서 이 listing(=세트)을 참조
-  keywordLinks      KeywordMasterLink[] // 키워드 마스터 연결 (§24)
-  keywordChanges    KeywordChangeLog[] // §26 변경 이력 (리스팅 단위)
+  space              Space                  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  channel            Channel                @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelProduct     ChannelProduct?        @relation(fields: [channelProductId], references: [id], onDelete: SetNull)
+  items              ProductListingItem[]
+  aliases            ChannelProductAlias[]
+  delItems           DelOrderItem[]
+  stockMovements     ChannelStockMovement[]
+  reorderPlanSets    ReorderPlanSet[] // 세트 발주 계획에서 이 listing(=세트)을 참조
+  productionRunSets  ProductionRunSet[] // 세트 생산차수에서 이 listing(=세트)을 참조
+  keywordLinks       KeywordMasterLink[] // 키워드 마스터 연결 (§24)
+  keywordChanges     KeywordChangeLog[] // §26 변경 이력 (리스팅 단위)
   coupangProductItem CoupangProductItem?
 
   createdAt DateTime @default(now())

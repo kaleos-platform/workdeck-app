@@ -14,28 +14,39 @@ export type ResultLine = { listingName: string; ok: boolean; error: string | nul
 export function buildResultText(args: {
   status: 'SUCCEEDED' | 'PARTIAL' | 'FAILED'
   results: ResultLine[]
+  error?: string | null
 }): string {
   const total = args.results.length
   const failed = args.results.filter((r) => !r.ok)
+  const lines = failed.map((r) => `• ${r.listingName}: ${r.error ?? '알 수 없는 오류'}`)
 
-  if (failed.length === 0) {
-    return `✅ 쿠팡 판매가 반영 완료 — ${total}건 중 ${total}건 반영`
+  // status 를 먼저 본다. 워커가 타깃 루프에 들어가기도 전에 죽으면 results 가 비어 있는데,
+  // failed.length===0 만 보면 "0건 중 0건 반영 ✅" 이라는 거짓 성공이 스레드에 남는다.
+  if (args.status === 'FAILED') {
+    const head =
+      total === 0
+        ? `❌ 쿠팡 판매가 반영 실패 — ${args.error ?? '워커 실행 중 중단'}`
+        : `❌ 쿠팡 판매가 반영 실패 — ${total}건 전부 실패`
+    return [head, ...lines].join('\n')
   }
 
-  const head =
-    args.status === 'FAILED'
-      ? `❌ 쿠팡 판매가 반영 실패 — ${total}건 전부 실패`
-      : `⚠️ 쿠팡 판매가 부분 반영 — ${total}건 중 ${failed.length}건 실패`
+  if (failed.length > 0) {
+    return [`⚠️ 쿠팡 판매가 부분 반영 — ${total}건 중 ${failed.length}건 실패`, ...lines].join('\n')
+  }
 
-  const lines = failed.map((r) => `• ${r.listingName}: ${r.error ?? '알 수 없는 오류'}`)
-  return [head, ...lines].join('\n')
+  // 성공으로 보고됐는데 대상이 0건이면 반영된 것이 없다 — 성공 문구를 쓰지 않는다.
+  if (total === 0) {
+    return `⚠️ 쿠팡 판매가 반영 결과 없음 — ${args.error ?? '반영된 대상이 없습니다'}`
+  }
+
+  return `✅ 쿠팡 판매가 반영 완료 — ${total}건 중 ${total}건 반영`
 }
 
 export async function notifyWriteJobResult(jobId: string): Promise<void> {
   try {
     const job = await prisma.coupangWriteJob.findUnique({
       where: { id: jobId },
-      select: { actionId: true, status: true, results: true, spaceId: true },
+      select: { actionId: true, status: true, results: true, error: true, spaceId: true },
     })
     if (!job?.actionId) return // PRODUCT_SYNC 등 승인과 무관한 잡
 
@@ -60,6 +71,7 @@ export async function notifyWriteJobResult(jobId: string): Promise<void> {
     const text = buildResultText({
       status: job.status as 'SUCCEEDED' | 'PARTIAL' | 'FAILED',
       results: raw.map((r) => ({ listingName: nameOf(r.listingId), ok: r.ok, error: r.error })),
+      error: job.error,
     })
 
     const installation = await prisma.slackInstallation.findUnique({

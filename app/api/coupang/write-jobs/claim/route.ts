@@ -11,12 +11,18 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveCollectionAuth } from '@/lib/collection/resolve-workspace'
+import { errorResponse } from '@/lib/api-helpers'
 
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   const auth = await resolveCollectionAuth(request)
   if ('error' in auth) return auth.error
+  // 세션(Space 멤버)도 통과시키면 안 된다 — 승인된 가격 잡을 RUNNING 으로 뒤집고
+  // attempts 를 올릴 수 있고, 3회면 reap cron 이 영구 FAILED 로 만든다.
+  if (auth.kind !== 'worker') {
+    return errorResponse('워커 전용 엔드포인트입니다', 401)
+  }
 
   const candidate = await prisma.coupangWriteJob.findFirst({
     where: { status: 'PENDING', workspaceId: auth.workspaceId },

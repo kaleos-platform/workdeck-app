@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { runPriceChange } from '../price-change.js'
+import { CoupangApiError } from '../../coupang-api/client.js'
 
 // client 를 최소 stub 으로 대체 — 네트워크를 타지 않는다.
 function stubClient(behaviour: {
@@ -91,4 +92,27 @@ test('현재가 조회가 실패해도 PUT 은 시도한다 — 조회는 감사
   assert.equal(puts.length, 2)
   assert.equal(results[0].observedPrice, null)
   assert.equal(results[0].ok, true)
+})
+
+test('IP 거부면 남은 타깃을 시도하지 않고 중단한다', async () => {
+  const puts: string[] = []
+  const results = await runPriceChange(
+    stubClient({
+      status: () => ({ salePrice: 999 }),
+      put: (id) => {
+        puts.push(id)
+        throw new CoupangApiError('IP_REJECTED', '쿠팡 API IP 거부 (PUT ...)', 401)
+      },
+    }),
+    payload
+  )
+  // 첫 타깃만 PUT 을 시도한다.
+  assert.deepEqual(puts, ['111'])
+  // 건수는 정직하게 유지 — 시도하지 않은 타깃도 실패로 기록한다.
+  assert.equal(results.length, 2)
+  assert.equal(
+    results.every((r) => !r.ok),
+    true
+  )
+  assert.match(results[1].error ?? '', /시도하지 않음/)
 })

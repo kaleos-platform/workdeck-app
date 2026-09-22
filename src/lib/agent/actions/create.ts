@@ -5,7 +5,7 @@ import { getActionDefinition } from './registry'
 import type { PendingActionDraft, PendingActionResult } from './types'
 
 // 승인 만료 기본 72시간.
-const DEFAULT_TTL_MS = 72 * 60 * 60 * 1000
+const DEFAULT_TTL_HOURS = 72
 
 function toResult(action: { id: string; expiresAt: Date }): PendingActionResult {
   return {
@@ -63,9 +63,8 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
     }
   }
 
-  const expiresAt = def.expiryHours
-    ? new Date(Date.now() + def.expiryHours * 60 * 60 * 1000)
-    : new Date(Date.now() + DEFAULT_TTL_MS)
+  // ?? 로 둔다 — truthy 검사면 expiryHours: 0(즉시 만료)이 조용히 72시간이 된다.
+  const expiresAt = new Date(Date.now() + (def.expiryHours ?? DEFAULT_TTL_HOURS) * 60 * 60 * 1000)
 
   try {
     const action = await prisma.agentPendingAction.create({

@@ -10,14 +10,20 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { resolveCollectionAuth } from '@/lib/collection/resolve-workspace'
 import { notifyWriteJobResult } from '@/lib/slack/notify-write-job-result'
 
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest, ctx: { params: Promise<{ jobId: string }> }) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await resolveCollectionAuth(request)
   if ('error' in auth) return auth.error
+  // claim 과 같은 축 — 워커 전용 + workspaceId 스코프. 워커가 잘못된 환경을 가리키면
+  // 다른 워크스페이스 잡을 보고해 덮어쓸 수 있다.
+  if (auth.kind !== 'worker') {
+    return errorResponse('워커 전용 엔드포인트입니다', 401)
+  }
 
   const { jobId } = await ctx.params
   const body = (await request.json()) as {
@@ -27,7 +33,7 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ jobId:
   }
 
   const gate = await prisma.coupangWriteJob.updateMany({
-    where: { id: jobId, status: 'RUNNING' },
+    where: { id: jobId, status: 'RUNNING', workspaceId: auth.workspaceId },
     data: {
       status: body.status,
       results: (body.results ?? []) as unknown as object,

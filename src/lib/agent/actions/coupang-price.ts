@@ -67,8 +67,31 @@ export const coupangPriceChange: ActionDefinition<Params> = {
   // 생성 시점 가드 — space에 쿠팡 워크스페이스가 연결되어 있지 않으면
   // 승인 큐에 올리지 않는다(승인 시점·워커 실행 시점에 실패시키면 사람이
   // 실행 불가능한 액션을 이미 승인한 뒤가 된다).
-  validateCreate: async (ctx) => {
+  validateCreate: async (ctx, p) => {
     await requireCoupangWorkspaceId(ctx.spaceId)
+
+    // 타깃 검증 — 클라이언트가 보낸 vendorItemId 를 그대로 믿지 않는다.
+    // listingId 는 CoupangProductItem 에서 @unique 라 리스팅당 최대 1행이다.
+    // space 소유·리스팅 연결·축(RG/MP) 일치를 모두 여기서 본다. 미리보기와 제출 사이에
+    // 매핑이 바뀐 경우도 여기서 걸린다.
+    const items = await prisma.coupangProductItem.findMany({
+      where: { spaceId: ctx.spaceId, listingId: { in: p.targets.map((t) => t.listingId) } },
+      select: { listingId: true, rgVendorItemId: true, mpVendorItemId: true },
+    })
+    const byListing = new Map(items.map((i) => [i.listingId, i]))
+    for (const t of p.targets) {
+      const item = byListing.get(t.listingId)
+      const linked = item
+        ? p.channelAxis === 'RG'
+          ? item.rgVendorItemId
+          : item.mpVendorItemId
+        : null
+      if (linked !== t.vendorItemId) {
+        throw new Error(
+          `쿠팡 옵션 연결이 올바르지 않습니다(${t.listingName}). 미리보기를 다시 불러온 뒤 시도하세요`
+        )
+      }
+    }
   },
 
   // 승인 시점의 스냅샷 가격. 차단용이 아니라 감사용이다 —

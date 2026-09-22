@@ -19,7 +19,7 @@ export function signatureOf(items: ListingSignature[]): string {
 export function deriveListings(
   group: { optionIds: string[]; quantity: number },
   listings: Array<{ id: string; items: ListingSignature[] }>
-): { matched: string[]; ambiguous: string[][] } {
+): { matched: string[]; ambiguous: string[][]; unmatched: string[] } {
   // 그룹의 각 옵션은 "그 옵션 × quantity" 단일 구성 리스팅에 대응한다.
   const wanted = new Map<string, string>() // signature -> optionId
   for (const optionId of group.optionIds) {
@@ -41,5 +41,13 @@ export function deriveListings(
     if (ids.length === 1) matched.push(ids[0])
     else ambiguous.push([...ids].sort())
   }
-  return { matched: matched.sort(), ambiguous }
+
+  // 리스팅이 하나도 없는 옵션. 이걸 돌려주지 않으면 호출부에서 matched/ambiguous 어디에도
+  // 없는 옵션이 조용히 사라진다(= 반영 대상에서 빠졌는데 화면엔 아무 표시가 없다).
+  const unmatched = [...wanted.entries()]
+    .filter(([sig]) => !bySig.has(sig))
+    .map(([, optionId]) => optionId)
+    .sort()
+
+  return { matched: matched.sort(), ambiguous, unmatched }
 }

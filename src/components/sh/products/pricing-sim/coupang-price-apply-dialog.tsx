@@ -76,6 +76,8 @@ type Props = {
 type PreviewResponse = {
   targets: PreviewTarget[]
   ambiguous: Array<Array<{ id: string; name: string }>>
+  /** 판매채널 상품이 하나도 없는 옵션 — 서버가 직접 계산해 준다 */
+  unmatched: Array<{ id: string; name: string }>
 }
 
 export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
@@ -84,10 +86,10 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   const [loading, setLoading] = useState(false)
   const [targets, setTargets] = useState<PreviewTarget[]>([])
   const [ambiguous, setAmbiguous] = useState<PreviewResponse['ambiguous']>([])
+  const [unmatched, setUnmatched] = useState<PreviewResponse['unmatched']>([])
   const [apActive, setApActive] = useState(true)
   const [pickerListing, setPickerListing] = useState<{ id: string; name: string } | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const [missingOptionNames, setMissingOptionNames] = useState<string[]>([])
 
   const loadPreview = useMemo(
     () => async (t: CoupangApplyTarget) => {
@@ -110,10 +112,12 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
         const preview = data as PreviewResponse
         setTargets(preview.targets)
         setAmbiguous(preview.ambiguous)
+        setUnmatched(preview.unmatched ?? [])
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '미리보기 조회 실패')
         setTargets([])
         setAmbiguous([])
+        setUnmatched([])
       } finally {
         setLoading(false)
       }
@@ -128,57 +132,9 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
     } else {
       setTargets([])
       setAmbiguous([])
-      setMissingOptionNames([])
+      setUnmatched([])
     }
   }, [target, loadPreview])
-
-  // 가격그룹 옵션 중 매칭된 판매채널 상품이 하나도 없는 옵션(matched 도 ambiguous 도 아님)을
-  // UI 경계에서 별도 조회해 이름을 붙인다. deriveListings는 각 옵션당 시그니처 1개 → 리스팅
-  // 0/1/2+개의 bijection이므로, targets+ambiguous에 등장한 리스팅의 구성으로 "커버된 옵션"을
-  // 역산할 수 있다. (deriveListings 자체는 다른 태스크에서 리뷰 중이라 손대지 않는다)
-  useEffect(() => {
-    if (!target || loading) return
-    const accounted = targets.length + ambiguous.length
-    if (accounted >= target.optionIds.length) {
-      setMissingOptionNames([])
-      return
-    }
-    let cancelled = false
-    const resolveMissing = async () => {
-      try {
-        const coveredListingIds = new Set([
-          ...targets.map((t) => t.listingId),
-          ...ambiguous.flat().map((l) => l.id),
-        ])
-        const [listingsRes, productRes] = await Promise.all([
-          fetch(`/api/sh/products/listings?channelId=${target.listingChannelId}&pageSize=100`),
-          fetch(`/api/sh/products/${target.productId}`),
-        ])
-        const listingsData: { data: Array<{ id: string; items: Array<{ optionId: string }> }> } =
-          await listingsRes.json()
-        const productData: { product: { options: Array<{ id: string; name: string }> } } =
-          await productRes.json()
-        if (cancelled) return
-        const coveredOptionIds = new Set<string>()
-        for (const l of listingsData.data ?? []) {
-          if (coveredListingIds.has(l.id) && l.items.length === 1) {
-            coveredOptionIds.add(l.items[0].optionId)
-          }
-        }
-        const nameById = new Map((productData.product?.options ?? []).map((o) => [o.id, o.name]))
-        const missing = target.optionIds
-          .filter((id) => !coveredOptionIds.has(id))
-          .map((id) => nameById.get(id) ?? id)
-        setMissingOptionNames(missing)
-      } catch {
-        if (!cancelled) setMissingOptionNames([])
-      }
-    }
-    void resolveMissing()
-    return () => {
-      cancelled = true
-    }
-  }, [target, targets, ambiguous, loading])
 
   async function handleSubmit() {
     if (!target) return
@@ -196,7 +152,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           actionType: 'seller-hub.coupang-price.change',
-          summary: `${target.channelName} 쿠팡 판매가 반영 — ${writable.length}개 옵션`,
+          summary: `${target.channelName} 쿠팡 판매가 반영 — ${writable.length}개 옵션 ₩${fmt(writable[0].targetPrice)}`,
           params: {
             channelAxis,
             channelId: target.channelId,
@@ -279,10 +235,10 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
             </label>
           </div>
 
-          {missingOptionNames.length > 0 && (
+          {unmatched.length > 0 && (
             <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-              판매채널 상품이 없어 반영할 수 없는 옵션 {missingOptionNames.length}개:{' '}
-              {missingOptionNames.join(', ')}
+              판매채널 상품이 없어 반영할 수 없는 옵션 {unmatched.length}개:{' '}
+              {unmatched.map((o) => o.name).join(', ')}
             </div>
           )}
 

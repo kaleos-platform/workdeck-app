@@ -284,4 +284,35 @@ d('seller-hub.coupang-price.change', () => {
       })
     ).rejects.toThrow(/10원 단위여야 합니다/)
   })
+
+  // 클라이언트가 보낸 vendorItemId 를 서버가 CoupangProductItem 으로 대조한다.
+  test('리스팅에 연결된 것과 다른 vendorItemId 는 액션 생성이 거부된다', async () => {
+    await expect(
+      createPendingAction({
+        spaceId: SPACE_ID,
+        actionType: 'seller-hub.coupang-price.change',
+        params: {
+          ...validParams,
+          targets: [{ ...validParams.targets[0], vendorItemId: '99999999999' }],
+        },
+        summary: 'x',
+        source: 'WEB',
+        requestedBy: USER_ID,
+      })
+    ).rejects.toThrow(/쿠팡 옵션 연결이 올바르지 않습니다/)
+  })
+
+  // MP 축으로 제출하면 RG 축에만 연결된 리스팅은 매칭되지 않아야 한다.
+  test('축이 다르면(MP) RG 연결 리스팅은 거부된다', async () => {
+    await expect(
+      createPendingAction({
+        spaceId: SPACE_ID,
+        actionType: 'seller-hub.coupang-price.change',
+        params: { ...validParams, channelAxis: 'MP' as const },
+        summary: 'x',
+        source: 'WEB',
+        requestedBy: USER_ID,
+      })
+    ).rejects.toThrow(/쿠팡 옵션 연결이 올바르지 않습니다/)
+  })
 })

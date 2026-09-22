@@ -37,4 +37,27 @@ describe('buildResultText', () => {
     })
     expect(text).toContain('실패')
   })
+
+  // 워커가 타깃 루프 전에 죽으면 results 가 비어 있다 — 성공 문구가 나가면 안 된다.
+  test('results 없는 FAILED — 잡 error 를 싣고 실패로 알린다', () => {
+    const text = buildResultText({
+      status: 'FAILED',
+      results: [],
+      error: '쿠팡 API 자격이 등록되어 있지 않습니다',
+    })
+    expect(text).toContain('실패')
+    expect(text).toContain('자격이 등록되어 있지 않습니다')
+    expect(text).not.toContain('✅')
+  })
+
+  test('results 없는 FAILED — error 도 없으면 기본 문구', () => {
+    const text = buildResultText({ status: 'FAILED', results: [] })
+    expect(text).toContain('워커 실행 중 중단')
+  })
+
+  test('대상 0건 SUCCEEDED 는 성공 문구를 쓰지 않는다', () => {
+    const text = buildResultText({ status: 'SUCCEEDED', results: [] })
+    expect(text).not.toContain('✅')
+    expect(text).toContain('결과 없음')
+  })
 })

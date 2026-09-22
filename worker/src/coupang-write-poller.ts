@@ -73,7 +73,15 @@ export function startCoupangWritePoller(): void {
       const message = err instanceof Error ? err.message : String(err)
       console.error('[coupang-write-poller] 잡 실패:', message)
       if (job) {
-        await reportWriteJob(job.id, { status: 'FAILED', error: message }).catch(() => {})
+        // 보고까지 실패하면 잡은 RUNNING 에 남고 reap cron 이 같은 PUT 을 다시 쏜다.
+        // 최소한 흔적은 남긴다.
+        const jobId = job.id
+        await reportWriteJob(jobId, { status: 'FAILED', error: message }).catch((e) =>
+          console.error(
+            `[coupang-write-poller] 실패 보고 전송 실패(job=${jobId}):`,
+            e instanceof Error ? e.message : e
+          )
+        )
       }
     } finally {
       isProcessing = false

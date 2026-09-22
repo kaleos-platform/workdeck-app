@@ -7,7 +7,7 @@
  *
  * 부분 실패는 롤백하지 않는다. 성공한 건 성공으로 두고 건별 결과를 남긴다.
  */
-import type { CoupangApiClient } from '../coupang-api/client.js'
+import { CoupangApiError, type CoupangApiClient } from '../coupang-api/client.js'
 import { changeVendorItemPrice, fetchVendorItemStatus } from '../coupang-api/endpoints.js'
 
 export type PriceTargetResult = {
@@ -35,7 +35,7 @@ export async function runPriceChange(
   const p = payload as Payload
   const results: PriceTargetResult[] = []
 
-  for (const t of p.targets) {
+  for (const [i, t] of p.targets.entries()) {
     let observedPrice: number | null = null
     try {
       const status = await fetchVendorItemStatus(client, t.vendorItemId)
@@ -70,6 +70,21 @@ export async function runPriceChange(
         ok: false,
         error: err instanceof Error ? err.message : String(err),
       })
+      // IP 거부는 이 타깃만의 문제가 아니라 전 스코프가 동시에 죽은 상황이다.
+      // 남은 타깃도 전부 같은 이유로 실패하므로 루프를 끊는다. 시도하지 않은 타깃도
+      // ok:false 로 남긴다 — 빼면 "1건 중 1건 실패"가 되어 알림의 건수가 거짓이 된다.
+      if (err instanceof CoupangApiError && err.reason === 'IP_REJECTED') {
+        for (const rest of p.targets.slice(i + 1)) {
+          results.push({
+            vendorItemId: rest.vendorItemId,
+            listingId: rest.listingId,
+            observedPrice: null,
+            ok: false,
+            error: 'IP 거부로 중단 — 시도하지 않음',
+          })
+        }
+        break
+      }
     }
   }
 
