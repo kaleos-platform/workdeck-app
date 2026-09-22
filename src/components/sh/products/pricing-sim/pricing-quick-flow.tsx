@@ -92,10 +92,12 @@ import { productDisplayName } from '@/lib/sh/product-display'
 import { resolveFirstPriceGroup } from '@/lib/sh/resolve-product-price-group'
 import type { OptionInput } from '@/lib/sh/price-group'
 import { SELLER_HUB_PRICING_SIM_PATH, getSellerHubPricingScenarioPath } from '@/lib/deck-routes'
+import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 
 import { BundleRow, type ResolvedComponent } from './pricing-bundle-row'
 import { ManualProductRow } from './pricing-manual-row'
-import { PricingChannelBoardCard } from './pricing-channel-board-card'
+import { PricingChannelBoardCard, type CoupangApplyInfo } from './pricing-channel-board-card'
+import { CoupangPriceApplyDialog, type CoupangApplyTarget } from './coupang-price-apply-dialog'
 import { type PromotionValue } from './pricing-promotion-card'
 import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
 import { PricingVariantTabs } from './pricing-variant-tabs'
@@ -906,6 +908,40 @@ export function PricingQuickFlow({
   } | null>(null)
   const [creatingChannelId, setCreatingChannelId] = useState<string | null>(null)
 
+  // 쿠팡 판매가 반영 다이얼로그 대상
+  const [coupangApplyTarget, setCoupangApplyTarget] = useState<CoupangApplyTarget | null>(null)
+
+  const handleApplyCoupang = useCallback(
+    (api: ApiCh, info: CoupangApplyInfo) => {
+      if (!canCreate || groupOptionIds.length === 0) {
+        toast.error('상품을 먼저 설정해 주세요')
+        return
+      }
+      setCoupangApplyTarget({
+        channelId: api.id,
+        channelName: api.name,
+        listingChannelId: api.representativeChannelId ?? api.id,
+        externalSource: api.externalSource ?? null,
+        productId: confirmedRows[0].productId,
+        optionIds: groupOptionIds,
+        quantity: createQuantity,
+        salePrice: info.salePriceBeforeDiscount,
+        minMarginPrice: info.recommendedMin,
+        includeVat: live.includeVat,
+        vatRate: live.vatRate,
+        discountRate: info.discountRate,
+        promotionLabel: info.promotionLabel,
+        costPrice: info.costPrice,
+        channelFeePct: info.channelFeePct,
+        shippingCost: info.shippingCost,
+        targetMargin: info.targetMarginPct,
+        minMarginPct: info.minMarginPct,
+        computedMargin: info.computedMargin,
+      })
+    },
+    [canCreate, groupOptionIds, confirmedRows, createQuantity, live.includeVat, live.vatRate]
+  )
+
   const handleCreateForChannel = async (channel: MatrixChannel, price: number) => {
     if (!canCreate || !channel.id || groupOptionIds.length === 0) {
       toast.error('상품을 먼저 설정해 주세요')
@@ -1033,6 +1069,22 @@ export function PricingQuickFlow({
   }
 
   // ── 우측 보드용 채널 + globals ─────────────────────────────────────────────
+  // 쿠팡 채널 판별 — 이름 휴리스틱 대신 externalSource·representativeChannelId만 사용.
+  // RG 채널 자신이거나, 어떤 RG 채널이 대표로 지정한 채널(자체배송 MP)이면 쿠팡이다.
+  const isCoupangChannelId = useCallback(
+    (channelId: string) => {
+      const c = rawChannels.find((rc) => rc.id === channelId)
+      if (!c) return false
+      if (c.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH) return true
+      return rawChannels.some(
+        (rc) =>
+          rc.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH &&
+          rc.representativeChannelId === channelId
+      )
+    },
+    [rawChannels]
+  )
+
   const boardChannels = useMemo(
     () =>
       selectedApiChannels.map((c) => {
@@ -1041,9 +1093,10 @@ export function PricingQuickFlow({
           api: c,
           adPct: ov.adPct,
           channel: apiChToMatrixChannel(c, ov),
+          isCoupang: isCoupangChannelId(c.id),
         }
       }),
-    [selectedApiChannels, overrideOf]
+    [selectedApiChannels, overrideOf, isCoupangChannelId]
   )
 
   // KPI — 권장가 범위 + 소비자가 대비 할인율. 카드와 동일 역산(good) + 소비자가 상한 클램프.
@@ -2380,6 +2433,9 @@ export function PricingQuickFlow({
                   manualPrice={manualPrices[bc.api.id] ?? null}
                   onManualPriceChange={(v) => setChannelManualPrice(bc.api.id, v)}
                   retailCap={effectiveRetail}
+                  isCoupangChannel={bc.isCoupang}
+                  canApplyCoupang={canCreate}
+                  onApplyCoupang={(_ch, info) => handleApplyCoupang(bc.api, info)}
                 />
               ))}
               {mode === 'new' ? (
@@ -2498,6 +2554,12 @@ export function PricingQuickFlow({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 쿠팡 판매가 반영 다이얼로그 */}
+      <CoupangPriceApplyDialog
+        target={coupangApplyTarget}
+        onOpenChange={(v) => !v && setCoupangApplyTarget(null)}
+      />
 
       {/* 시나리오 저장 다이얼로그 */}
       <Dialog open={saveOpen} onOpenChange={(v) => !saving && setSaveOpen(v)}>

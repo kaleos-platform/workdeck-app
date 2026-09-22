@@ -103,6 +103,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
               },
             },
           },
+          coupangProductItem: { select: { sellerProductId: true } },
         },
       },
     },
@@ -252,6 +253,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       availableStock: available,
       autoAvailableStock: available,
       availableByLocation,
+      sellerProductId: l.coupangProductItem?.sellerProductId ?? null,
       items: l.items.map((it) => ({
         optionId: it.optionId,
         optionName: it.option.name,

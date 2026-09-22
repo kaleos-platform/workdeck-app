@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronRight, Plus, Search } from 'lucide-react'
+import { ChevronRight, ExternalLink, Plus, Search } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { SELLER_HUB_LISTING_NEW_PATH, getSellerHubListingPath } from '@/lib/deck-routes'
+import { wingListingUrl } from '@/lib/coupang/wing-link'
 
 type ListingRow = {
   id: string
@@ -40,6 +41,8 @@ type ListingRow = {
   availableStock: number
   itemCount: number
   items: Array<{ optionName: string; productName: string; quantity: number }>
+  /** Wing 딥링크용 — CoupangProductItem.sellerProductId. 미연결이면 null */
+  sellerProductId: string | null
   updatedAt: string
 }
 
@@ -200,9 +203,23 @@ function ListingRowView({ row }: { row: ListingRow }) {
   return (
     <TableRow className="cursor-pointer hover:bg-muted/40">
       <TableCell>
-        <Link href={getSellerHubListingPath(row.id)} className="font-medium hover:underline">
-          {primaryName}
-        </Link>
+        <span className="flex items-center gap-1">
+          <Link href={getSellerHubListingPath(row.id)} className="font-medium hover:underline">
+            {primaryName}
+          </Link>
+          {row.sellerProductId && (
+            <a
+              href={wingListingUrl(row.sellerProductId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="쿠팡 Wing에서 보기"
+              onClick={(e) => e.stopPropagation()}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
+        </span>
         {showSearchHint && (
           <p className="text-xs text-muted-foreground">검색명: {row.searchName}</p>
         )}
