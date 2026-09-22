@@ -26,3 +26,19 @@ export async function withCoupangAdsTiming<T extends Response>(
     return response
   })
 }
+
+// SSR은 응답 헤더를 변경할 수 없어 고정 구간명과 시간만 서버 로그에 기록한다.
+export async function withCoupangAdsPageTiming<T>(handler: () => Promise<T>): Promise<T> {
+  return timings.run(new Map(), async () => {
+    try {
+      return await measureCoupangAds('total', handler)
+    } finally {
+      console.info(
+        '[coupang-ads:ssr]',
+        [...timings.getStore()!]
+          .map(([name, duration]) => `${name};dur=${duration.toFixed(1)}`)
+          .join(', ')
+      )
+    }
+  })
+}
