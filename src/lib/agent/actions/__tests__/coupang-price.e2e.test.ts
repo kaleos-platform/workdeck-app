@@ -207,4 +207,81 @@ d('seller-hub.coupang-price.change', () => {
       })
     ).rejects.toThrow(/쿠팡/)
   })
+
+  // apMinSalePrice가 targetPrice보다 "낮아야" 하는 엄격한 '<' 경계 — 같은 값(=)으로 고정한다.
+  test('apMinSalePrice가 targetPrice와 같으면(경계) 액션 생성이 거부된다', async () => {
+    await expect(
+      createPendingAction({
+        spaceId: SPACE_ID,
+        actionType: 'seller-hub.coupang-price.change',
+        params: {
+          channelAxis: 'RG' as const,
+          channelId: CHANNEL_ID,
+          apActive: true,
+          targets: [
+            {
+              listingId: LISTING_ID,
+              vendorItemId: '96037831212',
+              listingName: '테스트 리스팅',
+              currentPrice: 65790,
+              targetPrice: 66000,
+              apMinSalePrice: 66000,
+            },
+          ],
+          rationale: {
+            costPrice: 30000,
+            channelFeePct: 0.1,
+            shippingCost: 3000,
+            targetMargin: 0.25,
+            computedMargin: 0.27,
+            discountRate: 0,
+            promotionLabel: null,
+            includeVat: true,
+            vatRate: 0.1,
+          },
+        },
+        summary: 'x',
+        source: 'WEB',
+        requestedBy: USER_ID,
+      })
+    ).rejects.toThrow(/자동조정 최저가가 판매가보다 낮아야 합니다/)
+  })
+
+  test('targetPrice가 10원 단위가 아니면 액션 생성이 거부된다', async () => {
+    await expect(
+      createPendingAction({
+        spaceId: SPACE_ID,
+        actionType: 'seller-hub.coupang-price.change',
+        params: {
+          channelAxis: 'RG' as const,
+          channelId: CHANNEL_ID,
+          apActive: true,
+          targets: [
+            {
+              listingId: LISTING_ID,
+              vendorItemId: '96037831212',
+              listingName: '테스트 리스팅',
+              currentPrice: 65790,
+              targetPrice: 66005,
+              apMinSalePrice: 58200,
+            },
+          ],
+          rationale: {
+            costPrice: 30000,
+            channelFeePct: 0.1,
+            shippingCost: 3000,
+            targetMargin: 0.25,
+            computedMargin: 0.27,
+            discountRate: 0,
+            promotionLabel: null,
+            includeVat: true,
+            vatRate: 0.1,
+          },
+        },
+        summary: 'x',
+        source: 'WEB',
+        requestedBy: USER_ID,
+      })
+    ).rejects.toThrow(/10원 단위여야 합니다/)
+  })
 })
