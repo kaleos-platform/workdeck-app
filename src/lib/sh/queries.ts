@@ -944,7 +944,7 @@ export async function queryProductRanking(spaceId: string) {
   // ── 로켓그로스 판매 상품 집합 (부진 오탐 제외용) ──────────────────────────
   // 로켓은 옵션/상품별 주문건수가 없어 상위 랭킹엔 못 쓰지만, 판매량(quantity)으로
   // "이 상품은 로켓에서 팔리고 있다"는 사실은 알 수 있다 → 부진 후보에서 제외.
-  const rocketRows = await loadRocketDailyOptionQty(spaceId, from, to)
+  const { rows: rocketRows } = await loadRocketDailyOptionQty(spaceId, from, to)
   const rocketSoldProductIds = new Set<string>()
   for (const r of rocketRows) {
     if (r.quantity > 0) rocketSoldProductIds.add(r.productId)

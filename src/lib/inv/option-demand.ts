@@ -146,7 +146,7 @@ export async function loadOptionDemand(
   // ───── 로켓그로스: VENDOR → 내부 옵션 (재고차감 동일 매핑) ─────────────────────
   const rocketCh = channels.find((c) => c.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH)
   if (rocketCh) {
-    const rocketRows = await loadRocketDailyOptionQty(spaceId, from, to)
+    const { rows: rocketRows } = await loadRocketDailyOptionQty(spaceId, from, to)
     for (const r of rocketRows) {
       addQty(
         r.date,

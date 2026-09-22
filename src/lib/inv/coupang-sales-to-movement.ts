@@ -18,6 +18,7 @@
 // dated OUTBOUND 는 동시에 발주예측 수요 신호이기도 하다(buildDailySeries/accuracy.ts).
 
 import { prisma } from '@/lib/prisma'
+import { splitRocketBundle } from '@/lib/inv/rocket-bundle-split'
 import { lockStockLevel } from '@/lib/inv/movement-processor'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
@@ -448,7 +449,13 @@ export type RocketOptionQtyRow = {
   productId: string // 내부 InvProduct.id
   productName: string // 상품명 (관리명 우선)
   quantity: number // 구성 옵션 단위 판매량 (1:N 묶음 분해 반영)
+  revenue: number // 구성 옵션 단위 매출(원). 수량과 달리 묶음 내에서 보존 배분된다
 }
+
+/** 내부 옵션에 귀속시키지 못한 로켓 판매 (미매핑 externalCode). */
+export type RocketUnmapped = { quantity: number; revenue: number }
+
+export type RocketOptionSales = { rows: RocketOptionQtyRow[]; unmapped: RocketUnmapped }
 
 /** 옵션 메타 부재(FK 정합 깨짐) 시 묶음용 sentinel 상품 id — 카탈로그 유령 상품 분열 방지. */
 const UNKNOWN_PRODUCT_ID = '__unknown_product__'
@@ -459,18 +466,22 @@ function toKstDateKeyPublic(d: Date): string {
 }
 
 /**
- * 한 Space 의 기간 [from, to] 로켓그로스 일자×내부옵션 판매량을 집계한다(재고 미차감, 조회 전용).
- * 미매핑 externalCode 는 제외된다(sync 의 unmapped 와 동일 — 무음 누락 방지 위해 호출부에서 표기 가능).
+ * 한 Space 의 기간 [from, to] 로켓그로스 일자×내부옵션 판매량·매출을 집계한다(재고 미차감, 조회 전용).
  *
- * @returns 일자×옵션 행 배열. 로켓 미연동(workspace/location 링크 없음)이면 빈 배열.
+ * VENDOR_ITEM_METRICS 의 salesQty30d/revenue30d 는 이름과 달리 30일 누적이 아니라
+ * **해당 snapshotDate 1일치**다 (rocket-revenue.ts 참조).
+ *
+ * @returns rows = 일자×옵션 행, unmapped = 내부 옵션에 못 붙인 잔여(커버리지 표기용).
+ *          로켓 미연동(workspace/location 링크 없음)이면 빈 결과.
  */
 export async function loadRocketDailyOptionQty(
   spaceId: string,
   from: Date,
   to: Date
-): Promise<RocketOptionQtyRow[]> {
+): Promise<RocketOptionSales> {
+  const empty: RocketOptionSales = { rows: [], unmapped: { quantity: 0, revenue: 0 } }
   const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
-  if (!resolved) return []
+  if (!resolved) return empty
   const { workspaceId, locationId } = resolved
 
   // from/to 의 KST 일자를 KST 자정 instant 범위로 정규화 (snapshotDate 저장 형식과 정렬).
@@ -485,9 +496,16 @@ export async function loadRocketDailyOptionQty(
       fulfillmentType: ROCKET_GROWTH_FULFILLMENT,
       snapshotDate: { gte, lt: ltExclusive },
     },
-    select: { snapshotDate: true, productId: true, optionId: true, skuId: true, salesQty30d: true },
+    select: {
+      snapshotDate: true,
+      productId: true,
+      optionId: true,
+      skuId: true,
+      salesQty30d: true,
+      revenue30d: true,
+    },
   })
-  if (records.length === 0) return []
+  if (records.length === 0) return empty
 
   // optionId → skuId 브릿지 (전 기간 최신 inventory_health 스냅샷, 1:1). sync 와 동일.
   const vendorOptionIds = Array.from(
@@ -553,37 +571,45 @@ export async function loadRocketDailyOptionQty(
     })
   )
 
-  // (date, internalOptionId) → qty 합산. 1:N 묶음은 salesQty×item.quantity 로 분해.
+  // (date, internalOptionId) → 합산. 묶음 분해는 splitRocketBundle 이 담당한다
+  // (수량=배수 / 매출=보존 배분 — 산식이 다르므로 절대 한 식으로 합치지 말 것).
   const byKey = new Map<string, RocketOptionQtyRow>()
+  const unmapped: RocketUnmapped = { quantity: 0, revenue: 0 }
+
   for (const r of records) {
     const qty = Math.max(0, r.salesQty30d ?? 0)
-    if (qty <= 0) continue
+    const dailyRevenue = Math.max(0, Number(r.revenue30d ?? 0))
+    if (qty <= 0 && dailyRevenue <= 0) continue
     const code = externalCodeFor(r)
-    if (!code) continue
-    const mapping = mappingByCode.get(code)
-    if (!mapping || mapping.items.length === 0) continue // 미매핑 제외
+    const mapping = code ? mappingByCode.get(code) : undefined
+    if (!mapping || mapping.items.length === 0) {
+      // 미매핑: 버리지 않고 커버리지 산출용으로 남긴다.
+      unmapped.quantity += qty
+      unmapped.revenue += dailyRevenue
+      continue
+    }
     const date = toKstDateKeyPublic(r.snapshotDate)
-    for (const item of mapping.items) {
-      const optQty = qty * item.quantity
-      if (optQty <= 0) continue
-      const key = `${date}|${item.optionId}`
-      const meta = metaByOption.get(item.optionId)
+    for (const split of splitRocketBundle(qty, dailyRevenue, mapping.items)) {
+      const key = `${date}|${split.optionId}`
+      const meta = metaByOption.get(split.optionId)
       // meta 부재(매핑 optionId 가 삭제된 옵션을 가리키는 등 FK 정합 깨짐)는 단일 sentinel
       // 상품으로 묶는다 — optionId 를 productId 로 쓰면 카탈로그가 옵션마다 유령 상품으로 쪼개진다.
       const entry =
         byKey.get(key) ??
         ({
           date,
-          optionId: item.optionId,
+          optionId: split.optionId,
           optionName: meta?.optionName ?? '(미상 옵션)',
           productId: meta?.productId ?? UNKNOWN_PRODUCT_ID,
           productName: meta?.productName ?? '(미상 상품)',
           quantity: 0,
+          revenue: 0,
         } satisfies RocketOptionQtyRow)
-      entry.quantity += optQty
+      entry.quantity += split.quantity
+      entry.revenue += split.revenue
       byKey.set(key, entry)
     }
   }
 
-  return Array.from(byKey.values())
+  return { rows: Array.from(byKey.values()), unmapped }
 }
