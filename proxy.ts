@@ -38,8 +38,17 @@ function getDeckLoginPath(pathname: string): string | null {
 }
 
 export async function proxy(request: NextRequest) {
+  const sessionStarted = performance.now()
   const { supabaseResponse, user } = await updateSession(request)
+  const sessionDuration = performance.now() - sessionStarted
   const { pathname, searchParams } = request.nextUrl
+  if (isPathOrChild(pathname, COUPANG_ADS_BASE_PATH)) {
+    // 세션 내용 없이 Proxy의 세션 갱신 시간만 응답에 기록한다.
+    supabaseResponse.headers.append(
+      'Server-Timing',
+      `proxy_session;dur=${sessionDuration.toFixed(1)}`
+    )
+  }
   const host = normalizeHost(request.headers.get('x-forwarded-host') ?? request.headers.get('host'))
 
   // dev/preview는 marketing/app/admin 오리진이 동일(단일 호스트)해 도메인 분리 로직이 자기 자신을 가리킴 — 프로덕션 분리 도메인에서만 적용
@@ -61,7 +70,9 @@ export async function proxy(request: NextRequest) {
     // rewrite 먼저 하면 layout 의 requireOperator 가 notFound() 를 내 도메인 첫 진입이 404 로 보인다.
     if (pathname === '/') {
       if (!user) {
-        return NextResponse.redirect(buildAdminUrl(`/login?redirectTo=${encodeURIComponent('/admin')}`))
+        return NextResponse.redirect(
+          buildAdminUrl(`/login?redirectTo=${encodeURIComponent('/admin')}`)
+        )
       }
       return NextResponse.rewrite(new URL('/admin', request.url))
     }
@@ -72,7 +83,9 @@ export async function proxy(request: NextRequest) {
 
     if (isPathOrChild(pathname, '/admin') && !user) {
       const redirectTo = getRequestPathWithQuery(request)
-      return NextResponse.redirect(buildAdminUrl(`/login?redirectTo=${encodeURIComponent(redirectTo)}`))
+      return NextResponse.redirect(
+        buildAdminUrl(`/login?redirectTo=${encodeURIComponent(redirectTo)}`)
+      )
     }
 
     return supabaseResponse

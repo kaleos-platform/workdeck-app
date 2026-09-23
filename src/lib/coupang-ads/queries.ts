@@ -228,22 +228,33 @@ export async function queryCampaigns(
   const today = new Date().toISOString().split('T')[0]
   const { campaigns, targetMap } = await loadCampaignCatalog(workspaceId, today)
   const { startDate, endDate } = opts
+  const campaignIds = campaigns.map((campaign) => campaign.id).sort()
   const dateRanges = await cacheCoupangAdsData(
-    'campaign-date-ranges',
+    `campaign-date-ranges-${JSON.stringify(campaignIds)}`,
     { workspaceId },
     async () => {
-      const rows = await measureCoupangAds('date_ranges', () =>
-        prisma.adRecord.groupBy({
-          by: ['campaignId'],
-          where: { workspaceId },
-          _min: { date: true },
-          _max: { date: true },
-        })
+      if (campaigns.length === 0) return []
+      // 목록에서 확인한 캠페인별로 기존 날짜 인덱스의 양 끝만 읽는다.
+      const rows = await measureCoupangAds(
+        'date_ranges',
+        () =>
+          prisma.$queryRaw<
+            Array<{ campaignId: string; minDate: Date | null; maxDate: Date | null }>
+          >`
+          SELECT ids."campaignId",
+            (SELECT date FROM "AdRecord"
+             WHERE "workspaceId" = ${workspaceId} AND "campaignId" = ids."campaignId"
+             ORDER BY date ASC LIMIT 1) AS "minDate",
+            (SELECT date FROM "AdRecord"
+             WHERE "workspaceId" = ${workspaceId} AND "campaignId" = ids."campaignId"
+             ORDER BY date DESC LIMIT 1) AS "maxDate"
+          FROM unnest(${campaignIds}::text[]) AS ids("campaignId")
+        `
       )
       return rows.map((row) => ({
         campaignId: row.campaignId,
-        minDate: row._min.date ? formatDateToYmdKst(row._min.date) : null,
-        maxDate: row._max.date ? formatDateToYmdKst(row._max.date) : null,
+        minDate: row.minDate ? formatDateToYmdKst(row.minDate) : null,
+        maxDate: row.maxDate ? formatDateToYmdKst(row.maxDate) : null,
       }))
     }
   )

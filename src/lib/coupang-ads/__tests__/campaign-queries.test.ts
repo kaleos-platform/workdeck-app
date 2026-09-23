@@ -37,21 +37,13 @@ beforeEach(() => {
   jest.clearAllMocks()
   jest
     .mocked(prisma.$queryRaw)
-    .mockResolvedValue([{ campaignId: 'c1', campaignName: '원본', adType: '매출 최적화' }])
+    .mockImplementation((async (query: TemplateStringsArray) =>
+      query.join('').includes('AS "minDate"')
+        ? [{ campaignId: 'c1', minDate: new Date('2026-09-01'), maxDate: new Date('2026-09-12') }]
+        : [{ campaignId: 'c1', campaignName: '원본', adType: '매출 최적화' }]) as never)
   jest.mocked(prisma.campaignMeta.findMany).mockResolvedValue([])
   jest.mocked(prisma.campaignTarget.findMany).mockResolvedValue([])
-  jest.mocked(prisma.adRecord.groupBy).mockImplementation((async (args: {
-    _min?: unknown
-    by: string[]
-  }) => {
-    if (args._min)
-      return [
-        {
-          campaignId: 'c1',
-          _min: { date: new Date('2026-09-01') },
-          _max: { date: new Date('2026-09-12') },
-        },
-      ] as never
+  jest.mocked(prisma.adRecord.groupBy).mockImplementation((async (args: { by: string[] }) => {
     if (args.by.includes('date'))
       return [
         { campaignId: 'c1', date: new Date('2026-09-06'), _sum: { adCost: 100, revenue1d: 200 } },
@@ -84,7 +76,7 @@ test('workspace·기간별 집계 결과를 분리하고 변경 후 다시 조�
   invalidateCoupangAdsCache('w1')
   jest
     .mocked(prisma.$queryRaw)
-    .mockResolvedValue([{ campaignId: 'c1', campaignName: '수정됨', adType: '매출 최적화' }])
+    .mockResolvedValueOnce([{ campaignId: 'c1', campaignName: '수정됨', adType: '매출 최적화' }])
   expect((await queryCampaigns('w1', period))[0].name).toBe('수정됨')
 })
 
@@ -128,11 +120,45 @@ test('기간이 달라도 전체 날짜 범위는 재사용하고 다른 workspa
   await queryCampaigns('w1', period)
   await queryCampaigns('w1', { ...period, startDate: '2026-09-05' })
   expect(
-    jest.mocked(prisma.adRecord.groupBy).mock.calls.filter(([args]) => args._min)
+    jest
+      .mocked(prisma.$queryRaw)
+      .mock.calls.filter(([query]) => String(query).includes('AS "minDate"'))
   ).toHaveLength(1)
   await queryCampaigns('w2', period)
   invalidateCoupangAdsCache('w1')
   const count = jest.mocked(prisma.adRecord.groupBy).mock.calls.length
+  const rawCount = jest.mocked(prisma.$queryRaw).mock.calls.length
   await queryCampaigns('w2', period)
   expect(prisma.adRecord.groupBy).toHaveBeenCalledTimes(count)
+  expect(prisma.$queryRaw).toHaveBeenCalledTimes(rawCount)
+})
+
+test('무효화와 겹친 옛 목록의 날짜 cache가 새 캠페인 날짜를 가리지 않는다', async () => {
+  await queryCampaigns('w1')
+  // 업로드 무효화 직후 진행 중이던 옛 목록 요청이 날짜 cache만 다시 채운 상태를 재현한다.
+  for (const key of entries.keys()) {
+    if (key.includes('campaign-catalog-')) entries.delete(key)
+  }
+  jest.mocked(prisma.$queryRaw).mockImplementation((async (
+    query: TemplateStringsArray,
+    ...values: unknown[]
+  ) => {
+    if (query.join('').includes('AS "minDate"')) {
+      return (values[2] as string[]).map((campaignId) => ({
+        campaignId,
+        minDate: new Date('2026-09-01'),
+        maxDate: new Date('2026-09-12'),
+      }))
+    }
+    return ['c1', 'c2'].map((campaignId) => ({
+      campaignId,
+      campaignName: campaignId,
+      adType: '매출 최적화',
+    }))
+  }) as never)
+  const campaigns = await queryCampaigns('w1')
+  expect(campaigns.find((campaign) => campaign.id === 'c2')).toMatchObject({
+    minDate: '2026-09-01',
+    maxDate: '2026-09-12',
+  })
 })
