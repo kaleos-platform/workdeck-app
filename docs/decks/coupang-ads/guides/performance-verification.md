@@ -394,3 +394,31 @@ SQL 변경이 상세 지연을 유발했다고 단정할 수 없으며, 초과 �
 후속 후보는 날짜 범위의 전체 이력 `GROUP BY`를 기존 인덱스의 최소/최대 탐색으로 대체하는 것,
 Proxy·함수 초기화·페이지 인증 대기를 분리하는 것이다. 현재 코드 변경·배포·회귀 검증은 완료했으나
 전체 속도 목표 완료로 표시하지 않는다.
+
+### 날짜 범위 집계의 전체 이력 읽기 제거
+
+`queryCampaigns`의 날짜 범위 `GROUP BY`를 catalog에 있는 캠페인별 최소·최대 날짜
+index seek로 교체했다. 기존 `(workspaceId,campaignId,date)` index를 사용하며
+TTL·workspace tag 무효화·응답 날짜 형식은 유지한다. 날짜 cache key에는 정렬한 캠페인 ID 목록을
+포함해 업로드와 겹친 옛 catalog 요청이 신규 캠페인의 날짜를 가리지 않게 한다.
+해당 경쟁 상태의 회귀 테스트는 수정 전 신규 날짜 null로 실패하고 수정 후 통과했다.
+빈 catalog는 SQL을 실행하지 않는다.
+
+[개발 DB 임시 테이블 15만 행/3개 캠페인 비교](assets/2026-09-23-date-bounds.json)에서
+결과 3행이 같았고, 교차 실행 5회의 기존 실행 시간은 63.270~64.420ms, 변경 후는
+0.208~0.248ms였다. root plan local hit/read buffer 합계는 811→24였다.
+이는 합성 데이터 SQL 실행 비교이며 운영 화면 전체 개선율을 의미하지 않는다.
+
+실제 PostgreSQL 회귀 테스트는 날짜·workspace 격리·빈 목록과 buffer 상한을 확인한다.
+기존 쿼리는 1103 buffers로 실패했고 변경 후 통과했다. 이 테스트의 임시 테이블은
+비교 벤치마크와 컬럼 구성이 달라 buffer 수를 동일 기준으로 혼합하지 않는다.
+실제 Prisma client와 adapter의 배열 파라미터 바인딩도 개발 DB에서 확인했다.
+
+페이지 밖의 대기를 구분하려고 layout의 `requireDeckAccess`를 `layout_guard`로 기록하고,
+정상 쿠팡 덱 응답의 `Server-Timing`에 Proxy `updateSession`의 `proxy_session`을 추가했다.
+세션·사용자 정보는 기록하지 않으며 인증 동작은 동일하다. layout/page 시간은 겹칠 수
+있어 합산하지 않는다. Proxy 계측에는 모듈 초기화가 포함되지 않고 별도 redirect 응답에는
+헤더가 붙지 않는다. 운영 배포 후 첫 접속 표본을 포함해 재측정한다.
+
+관련 46 tests, 실제 PostgreSQL 3 tests, lint(0 errors/기존 63 warnings), production build가
+통과했다. 리뷰에서 발견한 cache 입력 누락을 수정했고 재검토에서 추가 필수 수정은 없었다.

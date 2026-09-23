@@ -1,0 +1,72 @@
+{
+  "equivalent": true,
+  "rowCount": 3,
+  "samples": [
+    {
+      "name": "before",
+      "executionMs": 63.527,
+      "localHitBlocks": 811,
+      "localReadBlocks": 0
+    },
+    {
+      "name": "after",
+      "executionMs": 0.208,
+      "localHitBlocks": 24,
+      "localReadBlocks": 0
+    },
+    {
+      "name": "before",
+      "executionMs": 64.42,
+      "localHitBlocks": 811,
+      "localReadBlocks": 0
+    },
+    {
+      "name": "after",
+      "executionMs": 0.218,
+      "localHitBlocks": 24,
+      "localReadBlocks": 0
+    },
+    {
+      "name": "before",
+      "executionMs": 63.948,
+      "localHitBlocks": 811,
+      "localReadBlocks": 0
+    },
+    {
+      "name": "after",
+      "executionMs": 0.248,
+      "localHitBlocks": 24,
+      "localReadBlocks": 0
+    },
+    {
+      "name": "before",
+      "executionMs": 63.27,
+      "localHitBlocks": 811,
+      "localReadBlocks": 0
+    },
+    {
+      "name": "after",
+      "executionMs": 0.225,
+      "localHitBlocks": 24,
+      "localReadBlocks": 0
+    },
+    {
+      "name": "before",
+      "executionMs": 63.903,
+      "localHitBlocks": 811,
+      "localReadBlocks": 0
+    },
+    {
+      "name": "after",
+      "executionMs": 0.245,
+      "localHitBlocks": 24,
+      "localReadBlocks": 0
+    }
+  ],
+  "fixture": {
+    "rows": 150000,
+    "campaigns": 3,
+    "database": "development connection-local temporary table",
+    "index": ["workspaceId", "campaignId", "date"]
+  }
+}
