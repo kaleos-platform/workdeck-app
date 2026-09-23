@@ -36,7 +36,6 @@ type Props = {
   channels: Channel[]
   selection: OptionSelection
   onChange: (next: OptionSelection) => void
-  onUnmatchedClick?: () => void
   loading: boolean
 }
 
@@ -90,7 +89,6 @@ export function ProductRankingTable({
   channels,
   selection,
   onChange,
-  onUnmatchedClick,
   loading,
 }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>('revenue')
@@ -344,17 +342,7 @@ export function ProductRankingTable({
                     <TableCell />
                     <TableCell />
                     <TableCell>
-                      {onUnmatchedClick ? (
-                        <button
-                          type="button"
-                          onClick={onUnmatchedClick}
-                          className="text-left font-medium underline-offset-2 hover:underline"
-                        >
-                          상품 미매칭
-                        </button>
-                      ) : (
-                        <span className="font-medium">상품 미매칭</span>
-                      )}
+                      <span className="font-medium">상품 미매칭</span>
                       <p className="text-xs text-muted-foreground">
                         상품을 알 수 없는 판매 — 합계에는 포함됩니다
                       </p>
