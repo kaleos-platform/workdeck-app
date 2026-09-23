@@ -36,6 +36,7 @@ suite('실제 PostgreSQL 캠페인 목록 조회', () => {
       ('other', 'c0', 'A', '다른 workspace', '2030-01-01')`)
     await client.query('CREATE INDEX ON "AdRecord" ("workspaceId", "campaignId", date)')
     await client.query('CREATE INDEX ON "AdRecord" ("workspaceId", date, "campaignId", "adType")')
+    await client.query('CREATE INDEX ON "AdRecord" ("workspaceId", "campaignId", "adType", date)')
     await client.query('ANALYZE "AdRecord"')
     jest.mocked(prisma.$queryRaw).mockImplementation((async (
       strings: TemplateStringsArray,
@@ -59,11 +60,21 @@ suite('실제 PostgreSQL 캠페인 목록 조회', () => {
       'QUERY PLAN'
     ][0].Plan
     const sortRows: number[] = []
+    let scannedRows = 0
     const visit = (node: Record<string, unknown>) => {
       if (node['Node Type'] === 'Sort') sortRows.push(Number(node['Actual Rows']))
+      if (String(node['Node Type']).includes('Scan') && node['Relation Name'] === 'AdRecord') {
+        scannedRows += Number(node['Actual Rows']) * Number(node['Actual Loops'])
+      }
       for (const child of (node.Plans ?? []) as Record<string, unknown>[]) visit(child)
     }
     visit(plan)
     expect(Math.max(0, ...sortRows)).toBeLessThan(1000)
+    // 캠페인·광고유형 6개를 찾으려고 15만 원본 행을 모두 읽지 않아야 한다.
+    expect(scannedRows).toBeLessThan(1000)
+  })
+
+  test('광고가 없는 workspace는 빈 목록을 반환한다', async () => {
+    expect(await queryCampaignNavigation('empty')).toEqual([])
   })
 })

@@ -1,0 +1,76 @@
+{
+  "equivalent": true,
+  "rowCount": 6,
+  "samples": [
+    {
+      "name": "before",
+      "executionMs": 78.798,
+      "scannedRows": 150006,
+      "localHitBlocks": 106,
+      "localReadBlocks": 1021
+    },
+    {
+      "name": "after",
+      "executionMs": 0.47,
+      "scannedRows": 13,
+      "localHitBlocks": 50,
+      "localReadBlocks": 1
+    },
+    {
+      "name": "before",
+      "executionMs": 78.711,
+      "scannedRows": 150006,
+      "localHitBlocks": 26,
+      "localReadBlocks": 1101
+    },
+    {
+      "name": "after",
+      "executionMs": 0.439,
+      "scannedRows": 13,
+      "localHitBlocks": 50,
+      "localReadBlocks": 1
+    },
+    {
+      "name": "before",
+      "executionMs": 78.275,
+      "scannedRows": 150006,
+      "localHitBlocks": 26,
+      "localReadBlocks": 1101
+    },
+    {
+      "name": "after",
+      "executionMs": 0.453,
+      "scannedRows": 13,
+      "localHitBlocks": 50,
+      "localReadBlocks": 1
+    },
+    {
+      "name": "before",
+      "executionMs": 78.72,
+      "scannedRows": 150006,
+      "localHitBlocks": 26,
+      "localReadBlocks": 1101
+    },
+    {
+      "name": "after",
+      "executionMs": 0.499,
+      "scannedRows": 13,
+      "localHitBlocks": 50,
+      "localReadBlocks": 1
+    },
+    {
+      "name": "before",
+      "executionMs": 78.317,
+      "scannedRows": 150006,
+      "localHitBlocks": 26,
+      "localReadBlocks": 1101
+    },
+    {
+      "name": "after",
+      "executionMs": 0.498,
+      "scannedRows": 13,
+      "localHitBlocks": 50,
+      "localReadBlocks": 1
+    }
+  ]
+}
