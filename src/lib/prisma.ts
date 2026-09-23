@@ -75,14 +75,19 @@ function createPrismaClient(): PrismaInstance {
     ssl,
     max,
   })
-  return new PrismaClient({ adapter })
+  const client = new PrismaClient({ adapter, log: [{ emit: 'event', level: 'query' }] })
+  // SQL과 파라미터는 기록하지 않는다. 연결/풀 대기가 포함될 수 있는 query 이벤트 시간이다.
+  client.$on('query', (event) => recordCoupangAdsTiming('db_query', event.duration))
+  return client
 }
 
 // 지연 초기화: 첫 접근 시에만 PrismaClient 생성
 export const prisma: PrismaInstance = new Proxy({} as PrismaInstance, {
   get(_target, prop) {
     if (!globalForPrisma._prisma) {
+      const start = performance.now()
       globalForPrisma._prisma = createPrismaClient()
+      recordCoupangAdsTiming('prisma_client', performance.now() - start)
     }
     const value = Reflect.get(globalForPrisma._prisma, prop)
     if (typeof value === 'function') {
