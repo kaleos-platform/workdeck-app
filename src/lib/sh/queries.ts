@@ -16,12 +16,7 @@ import { prisma } from '@/lib/prisma'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { loadRocketDailyRevenue, sumRocketDaily } from '@/lib/sh/rocket-revenue'
 import { getTodayStrKst } from '@/lib/date-range'
-import {
-  startOfMonth,
-  prevRangeForUnit,
-  pctChange,
-  last30DaysRange,
-} from '@/lib/sh/sales-analytics'
+import { startOfMonth, prevRange, pctChange, last30DaysRange } from '@/lib/sh/sales-analytics'
 import { healthRatioBySku, statusForSku, type SkuFact, type StatusLabel } from '@/lib/inv/metrics'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 import { productDisplayName } from '@/lib/sh/product-display'
@@ -93,7 +88,7 @@ export async function querySalesSummary(spaceId: string) {
   // ── 기간: 이번달 1일~오늘(MTD) vs 지난달 1일~같은 날 ──────────────────────
   const today = getTodayStrKst()
   const current = { from: startOfMonth(today), to: today }
-  const prev = prevRangeForUnit('월', current)
+  const prev = prevRange(current)
   const recent30 = last30DaysRange()
 
   const curFrom = startOfDayKst(current.from)
@@ -957,7 +952,7 @@ export async function queryProductRanking(spaceId: string) {
   // ── 로켓그로스 판매 상품 집합 (부진 오탐 제외용) ──────────────────────────
   // 로켓은 옵션/상품별 주문건수가 없어 상위 랭킹엔 못 쓰지만, 판매량(quantity)으로
   // "이 상품은 로켓에서 팔리고 있다"는 사실은 알 수 있다 → 부진 후보에서 제외.
-  const rocketRows = await loadRocketDailyOptionQty(spaceId, from, to)
+  const { rows: rocketRows } = await loadRocketDailyOptionQty(spaceId, from, to)
   const rocketSoldProductIds = new Set<string>()
   for (const r of rocketRows) {
     if (r.quantity > 0) rocketSoldProductIds.add(r.productId)

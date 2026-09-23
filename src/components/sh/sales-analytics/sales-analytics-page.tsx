@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   lastClosedDateKst,
   last30DaysRange,
@@ -24,15 +24,16 @@ import {
   resolveOptionSeries,
   type DateRange,
   type SalesUnit,
+  type SalesMetric,
   type OptionSelection,
 } from '@/lib/sh/sales-analytics'
 import { useSalesAnalysis } from '@/hooks/use-sales-analysis'
-import { useOptionSales } from '@/hooks/use-option-sales'
+import { useProductSales } from '@/hooks/use-product-sales'
 import { SalesPivotTable } from './sales-pivot-table'
 import { ChannelRevenueStackedChart } from './channel-revenue-stacked-chart'
 import { OptionQtyLineChart } from './option-qty-line-chart'
 import { OptionPivotTable } from './option-pivot-table'
-import { OptionFilter } from './option-filter'
+import { ProductRankingTable } from './product-ranking-table'
 
 export type Channel = { id: string; name: string; typeName: string }
 
@@ -143,7 +144,10 @@ export function SalesAnalyticsPage() {
   // 상품(옵션) 탭 — 활성 시에만 지연 로드. 공유 컨트롤 바의 채널 유형 필터를 적용해 스코프한다
   // (상품 탭엔 채널 체크박스가 없으므로 유형 통과 채널 = typedChannels 가 데이터 범위).
   const typedChannelIds = useMemo(() => typedChannels.map((c) => c.id), [typedChannels])
-  const optionData = useOptionSales(unit, range, typedChannelIds, tab === 'product')
+  const optionData = useProductSales(unit, range, typedChannelIds, tab === 'product')
+
+  // 상품 탭 표시 지표 — 랭킹/차트/피벗 공통 단일 소스.
+  const [metric, setMetric] = useState<SalesMetric>('revenue')
 
   // 상품(옵션) 필터 선택 — 미선택=전체. 그래프·표 공통 단일 소스.
   const [optionSelection, setOptionSelection] = useState<OptionSelection>({
@@ -203,13 +207,21 @@ export function SalesAnalyticsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">판매분석</h1>
           <p className="text-sm text-muted-foreground">
-            채널별 매출·주문 현황과 일·주·월 단위 증감을 분석합니다
+            채널별·상품별 매출과 판매량 추이를 분석합니다
           </p>
         </div>
         <p className="text-xs text-muted-foreground">데이터 기준일: {dataAsOf}</p>
       </div>
 
-      {/* 컨트롤 바 — 좌: 단위·날짜 / 우: 퀵필터 (높이 절약) */}
+      {/* 채널 / 상품 탭 — 컨트롤 바보다 위에 둔다(아래 두면 탭이 묻혀 인지되지 않음) */}
+      <Tabs value={tab} onValueChange={(v) => setTab(v as SalesTab)}>
+        <TabsList>
+          <TabsTrigger value="channel">채널</TabsTrigger>
+          <TabsTrigger value="product">상품</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* 컨트롤 바 — 좌: 단위·날짜 / 우: 퀵필터 (높이 절약). 두 탭 공유. */}
       <Card>
         <CardContent className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-6">
           {/* 좌측: 유형 + 단위 토글 + 날짜 */}
@@ -283,14 +295,8 @@ export function SalesAnalyticsPage() {
         </CardContent>
       </Card>
 
-      {/* 채널 / 상품 탭 */}
-      <Tabs value={tab} onValueChange={(v) => setTab(v as SalesTab)}>
-        <TabsList>
-          <TabsTrigger value="channel">채널</TabsTrigger>
-          <TabsTrigger value="product">상품</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="channel" className="space-y-6">
+      {tab === 'channel' ? (
+        <div className="space-y-6">
           {/* 차트 */}
           <ChannelRevenueStackedChart
             buckets={data.buckets}
@@ -307,30 +313,54 @@ export function SalesAnalyticsPage() {
             visibleChannels={visibleChannels}
             loading={data.loading}
           />
-        </TabsContent>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* 지표 토글 — 랭킹·차트·피벗이 같은 축을 본다 */}
+          <div className="flex items-center gap-1">
+            <Label className="mr-2 text-xs text-muted-foreground">지표</Label>
+            <Button
+              variant={metric === 'revenue' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setMetric('revenue')}
+            >
+              매출
+            </Button>
+            <Button
+              variant={metric === 'qty' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setMetric('qty')}
+            >
+              수량
+            </Button>
+          </div>
 
-        <TabsContent value="product" className="space-y-6">
-          {/* 상품→옵션 계층 필터 (그래프·표 공통). 미선택=전체. */}
-          <OptionFilter
-            catalog={optionData.catalog}
+          {/* 랭킹 — 상품 탭의 1급 뷰. 체크박스가 아래 차트·피벗 시리즈를 정한다. */}
+          <ProductRankingTable
+            ranking={optionData.ranking}
+            coverage={optionData.coverage}
+            prevPeriod={optionData.prevPeriod}
+            channels={channels}
             selection={optionSelection}
             onChange={setOptionSelection}
-            seriesCount={optionSeries.length}
+            loading={optionData.loading}
           />
 
           <OptionQtyLineChart
             buckets={optionData.buckets}
             series={optionSeries}
+            metric={metric}
             loading={optionData.loading}
           />
 
           <OptionPivotTable
             buckets={optionData.buckets}
             series={optionSeries}
+            metric={metric}
             loading={optionData.loading}
           />
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   )
 }
