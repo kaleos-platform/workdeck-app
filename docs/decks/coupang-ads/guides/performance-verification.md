@@ -422,3 +422,32 @@ TTL·workspace tag 무효화·응답 날짜 형식은 유지한다. 날짜 cache
 
 관련 46 tests, 실제 PostgreSQL 3 tests, lint(0 errors/기존 63 warnings), production build가
 통과했다. 리뷰에서 발견한 cache 입력 누락을 수정했고 재검토에서 추가 필수 수정은 없었다.
+
+### 날짜 범위 최적화 운영 배포 결과
+
+PR #929/#930, main `01cef079`, production `dpl_8gVGGo69J8tdEAKdfR9vgaFKRYxh`의 READY와
+운영 도메인 연결을 확인했다. [5회 원시값](assets/2026-09-23-performance-date-bounds.json)을 보관한다.
+각 cycle 전에 workspace data cache tag를 삭제했으며 플랫폼 cold start를 보장하지는 않는다.
+
+| 흐름        | 5회(ms)                    | 중앙값 | 최댓값 |
+| ----------- | -------------------------- | ------ | ------ |
+| 홈 직접 URL | 3628, 1795, 1619, 329, 278 | 1619   | 3628   |
+| 홈 재진입   | 836, 66, 1333, 221, 118    | 221    | 1333   |
+| 상세 최초   | 1703, 470, 290, 379, 352   | 379    | 1703   |
+| 상세 재진입 | 334, 500, 314, 283, 278    | 314    | 500    |
+
+모든 측정 API는 200이며 KPI가 화면과 일치했다. 비로그인 context는 로그인 이동, KPI API는 401이었다.
+직접 URL 첫 표본의 DOM 조건 충족은 3149.7ms, frame callback은 3160.5ms, responseEnd는
+2833.2ms였다. 3628ms는 기존 load 대기 포함 방식의 값이며 DOM 측정도 3초를 초과했다.
+나머지 직접 URL DOM 표본은 1747.0, 1576.8, 290.9, 240.9ms였다.
+
+Proxy `updateSession`은 첫 표본 325.7ms, 나머지 29.8~36.9ms였다. API 날짜 loader는
+3.6~5.6ms였다. 서버 로그에서 `layout_guard=1323.7/1046.2ms`, 다른 페이지 로그에서
+`auth_membership=774.6ms`, `db_connect=67.4ms`, page total=936.2ms를 확인했다.
+membership 시간에는 Prisma 초기화·대기·쿼리가 함께 포함된다. layout과 page의 겹치는 시간은
+합산하지 않으며 요청별 연계 식별자가 없어 화면 표본과 일대일 대응시키지 않는다.
+
+최신 5회에서 상세 최초/재진입 목표는 충족했다. 홈 직접 URL 3초와 홈 재진입 1초 목표는
+미완료다. 날짜 쿼리 최적화와 별도로 인증·레이아웃/서버 초기화와 RSC 응답 대기를 분리해야 한다.
+추가 네트워크 추적을 시도했지만 Playwright MCP가 `Transport closed`를 반환했고 재시도도
+같아 실행하지 못했다. 위 5회 측정과 비로그인 검증은 연결 종료 전에 완료된 결과다.
