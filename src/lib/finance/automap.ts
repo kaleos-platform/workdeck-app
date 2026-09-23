@@ -120,6 +120,24 @@ const CARD_HINTS: { field: FinField; hints: string[] }[] = [
 ]
 
 /**
+ * 힌트 사전에 걸리는 헤더 인덱스 — "이 컬럼은 거래 데이터로 보인다"는 판정.
+ * autoMapFinHeaders 와 달리 선점(한 필드당 첫 헤더 하나)을 적용하지 않으므로,
+ * 신한 export 의 "적요"·"내용"처럼 같은 필드 힌트에 걸리는 컬럼이 여럿일 때 전부 반환한다.
+ * 미매핑 컬럼 경고용 — No·전체선택 같은 비-데이터 컬럼은 힌트에 안 걸려 조용하다.
+ */
+export function hintedHeaderIndexes(headers: string[], kind: FinKind): number[] {
+  const table = kind === 'CARD' ? CARD_HINTS : BANK_HINTS
+  const normed = headers.map(norm)
+  const out: number[] = []
+  for (let i = 0; i < normed.length; i++) {
+    const h = normed[i]
+    if (!h) continue
+    if (table.some(({ hints }) => hints.some((hint) => h.includes(norm(hint))))) out.push(i)
+  }
+  return out
+}
+
+/**
  * 헤더명 배열 → {headerName, field} 매핑 쌍을 자동 생성한다.
  * 각 필드는 우선순위 순으로, 아직 사용되지 않은 헤더 중 힌트가 포함된 첫 헤더에 바인딩.
  */
