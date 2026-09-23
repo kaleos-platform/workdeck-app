@@ -94,41 +94,60 @@ export function isoWeekOfYear(ymd: string): number {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
 }
 
-// ─── 증감 비교용 이전 구간 (명시 캘린더 경계, to-date span 정렬) ─────────────
+// ─── 증감 비교용 이전 구간 ───────────────────────────────────────────────────
+
+/** 두 KST 일자의 차이(일). to - from */
+function diffDays(from: string, to: string): number {
+  const [fy, fm, fd] = parseYmd(from)
+  const [ty, tm, td] = parseYmd(to)
+  const a = Date.UTC(fy, fm - 1, fd, 12, 0, 0)
+  const b = Date.UTC(ty, tm - 1, td, 12, 0, 0)
+  return Math.round((b - a) / 86400000)
+}
+
+/** 구간이 걸친 달력 월 수 (2026-09-01~2026-09-21 → 1) */
+function monthSpan(from: string, to: string): number {
+  const [fy, fm] = parseYmd(from)
+  const [ty, tm] = parseYmd(to)
+  return (ty - fy) * 12 + (tm - fm) + 1
+}
 
 /**
  * 선택 구간(current)에 대한 증감 비교 이전 구간.
- * - 일(DoD): 전날 하루
- * - 주(WoW): 지난주 같은 구간(월~동일 요일까지). current span 과 일수 동일.
- * - 월(MoM): 지난달 1일 ~ 지난달 동일 일자(말일 clamp). current span 정렬.
  *
- * 부분기간(to-date) 도 일수를 맞춰 비교한다 (API 자동 prev= from−N일 의 요일/일자
- * 정렬 깨짐 문제를 회피).
+ * - 달력 월 정렬(1일 시작 + 말일 또는 마지막 집계일 종료) → 같은 개월 수만큼 앞.
+ *   말일 종료면 이전 달(들) 전체, 진행중(마지막 집계일) 종료면 같은 일자까지(to-date).
+ * - 달력 주 정렬(월요일 시작 + 일요일 또는 마지막 집계일 종료) → 7일 앞.
+ * - 그 외 임의 구간 → 길이만큼 통째로 시프트. 단일일은 여기서 자연히 전날이 된다.
+ *
+ * 표시 단위(일/주/월 토글)는 버킷 크기일 뿐 비교 기준이 아니므로 인자로 받지 않는다.
+ * 데이터 기준일이 어제(lastClosedDateKst)라 "이번달"은 말일로 끝나지 않는다 →
+ * 마지막 집계일 종료를 달력 경계로 함께 인정하지 않으면 전월 동기 비교가 깨진다.
  */
-export function prevRangeForUnit(unit: SalesUnit, current: DateRange): DateRange {
-  if (unit === '일') {
-    const prev = addDaysYmd(current.from, -1)
-    return { from: prev, to: prev }
-  }
-  if (unit === '주') {
-    return {
-      from: addDaysYmd(current.from, -7),
-      to: addDaysYmd(current.to, -7),
-    }
-  }
-  // 월: 지난달 같은 일수 구간 (1일 ~ 동일 일자, 말일 clamp)
-  const [, , toDay] = parseYmd(current.to)
-  const prevMonthStart = addDaysYmd(startOfMonth(current.from), -1) // 지난달 말일
-  const prevFrom = startOfMonth(prevMonthStart)
-  const [py, pm] = parseYmd(prevFrom)
-  const prevMonthLastDay = Number(endOfMonth(prevFrom).split('-')[2])
-  const clampedDay = Math.min(toDay, prevMonthLastDay)
-  return { from: prevFrom, to: toYmd(py, pm, clampedDay) }
-}
+export function prevRange(current: DateRange): DateRange {
+  // 진행중 구간: 데이터 기준일(어제) 또는 오늘로 끝나면 달력 경계로 인정한다.
+  const openEnds = [lastClosedDateKst(), getTodayStrKst()]
+  const endsAt = (boundary: string) => current.to === boundary || openEnds.includes(current.to)
 
-/** 증감 라벨 (단위 → 비교 약어) */
-export function deltaLabelForUnit(unit: SalesUnit): 'DoD' | 'WoW' | 'MoM' {
-  return unit === '일' ? 'DoD' : unit === '주' ? 'WoW' : 'MoM'
+  // 월 정렬
+  if (current.from === startOfMonth(current.from) && endsAt(endOfMonth(current.to))) {
+    const months = monthSpan(current.from, current.to)
+    const prevFrom = startOfMonth(addMonthsYmd(current.from, -months))
+    const prevTo =
+      current.to === endOfMonth(current.to)
+        ? endOfMonth(addMonthsYmd(prevFrom, months - 1))
+        : addMonthsYmd(current.to, -months)
+    return { from: prevFrom, to: prevTo }
+  }
+
+  // 주 정렬
+  if (current.from === startOfWeekMon(current.from) && endsAt(addDaysYmd(current.from, 6))) {
+    return { from: addDaysYmd(current.from, -7), to: addDaysYmd(current.to, -7) }
+  }
+
+  // 임의 구간: 길이만큼 시프트
+  const span = diffDays(current.from, current.to) + 1
+  return { from: addDaysYmd(current.from, -span), to: addDaysYmd(current.to, -span) }
 }
 
 // ─── 버킷팅 (groupBy=date rows → 단위 버킷) ──────────────────────────────────
@@ -285,9 +304,15 @@ export function bucketTotalsFor(
   return { revenue, orderCount }
 }
 
-// ─── 상품(옵션) 단위 판매량 — 채널 버킷팅과 평행 구조 ─────────────────────────
+// ─── 상품(옵션) 단위 판매 — 채널 버킷팅과 평행 구조 ───────────────────────────
 // 판매분석 "상품" 탭 전용. 채널 대신 내부 InvProductOption 을 시리즈로 한다.
-// 수치는 매출(원)이 아니라 판매량(수량)이다.
+// 수량(개)과 매출(원)을 함께 담아 화면에서 지표를 토글한다.
+
+/** 상품 탭이 다루는 지표 축. */
+export type SalesMetric = 'qty' | 'revenue'
+
+/** 수량·매출 쌍. 버킷 한 칸이 두 지표를 동시에 들고 있어야 토글이 재호출 없이 된다. */
+export type OptionMetrics = { qty: number; revenue: number }
 
 export type OptionQtyRow = {
   date: string // YYYY-MM-DD (KST)
@@ -297,14 +322,15 @@ export type OptionQtyRow = {
   productName: string // 상품명 (관리명 우선)
   channelId: string
   quantity: number
+  revenue: number
 }
 
 export type OptionBucket = {
   /** 버킷 키: 일=YYYY-MM-DD, 주=주시작 YYYY-MM-DD, 월=YYYY-MM */
   key: string
   label: string
-  byOption: Record<string, number> // optionId → 수량
-  total: number
+  byOption: Record<string, OptionMetrics> // optionId → 수량·매출
+  total: OptionMetrics
 }
 
 /** groupBy=date 옵션 행을 단위 버킷으로 집계 (채널은 합산, 옵션 grain 유지). */
@@ -315,23 +341,34 @@ export function bucketOptionQty(rows: OptionQtyRow[], unit: SalesUnit): OptionBu
     const key = bucketKey(row.date, unit)
     let bucket = map.get(key)
     if (!bucket) {
-      bucket = { key, label: bucketLabel(key, unit), byOption: {}, total: 0 }
+      bucket = { key, label: bucketLabel(key, unit), byOption: {}, total: { qty: 0, revenue: 0 } }
       map.set(key, bucket)
     }
     const qty = Number(row.quantity ?? 0)
-    bucket.byOption[row.optionId] = (bucket.byOption[row.optionId] ?? 0) + qty
-    bucket.total += qty
+    const revenue = Number(row.revenue ?? 0)
+    const cur = bucket.byOption[row.optionId] ?? { qty: 0, revenue: 0 }
+    cur.qty += qty
+    cur.revenue += revenue
+    bucket.byOption[row.optionId] = cur
+    bucket.total.qty += qty
+    bucket.total.revenue += revenue
   }
   return Array.from(map.values()).sort((a, b) => a.key.localeCompare(b.key))
 }
 
 // ─── 상품→옵션 계층 카탈로그 (필터 목록 — 기간 내 판매 항목만) ────────────────
 
-export type OptionCatalogOption = { optionId: string; optionName: string; qty: number }
+export type OptionCatalogOption = {
+  optionId: string
+  optionName: string
+  qty: number
+  revenue: number
+}
 export type OptionCatalogProduct = {
   productId: string
   productName: string
   qty: number
+  revenue: number
   options: OptionCatalogOption[]
 }
 
@@ -342,29 +379,46 @@ export type OptionCatalogProduct = {
 export function buildOptionCatalog(rows: OptionQtyRow[]): OptionCatalogProduct[] {
   const products = new Map<
     string,
-    { productName: string; qty: number; options: Map<string, OptionCatalogOption> }
+    {
+      productName: string
+      qty: number
+      revenue: number
+      options: Map<string, OptionCatalogOption>
+    }
   >()
   for (const r of rows) {
     const qty = Number(r.quantity ?? 0)
-    if (qty <= 0) continue
+    const revenue = Number(r.revenue ?? 0)
+    if (qty <= 0 && revenue === 0) continue
     let p = products.get(r.productId)
     if (!p) {
-      p = { productName: r.productName, qty: 0, options: new Map() }
+      p = { productName: r.productName, qty: 0, revenue: 0, options: new Map() }
       products.set(r.productId, p)
     }
     p.qty += qty
+    p.revenue += revenue
     const o = p.options.get(r.optionId)
-    if (o) o.qty += qty
-    else p.options.set(r.optionId, { optionId: r.optionId, optionName: r.optionName, qty })
+    if (o) {
+      o.qty += qty
+      o.revenue += revenue
+    } else {
+      p.options.set(r.optionId, {
+        optionId: r.optionId,
+        optionName: r.optionName,
+        qty,
+        revenue,
+      })
+    }
   }
   return Array.from(products.entries())
     .map(([productId, p]) => ({
       productId,
       productName: p.productName,
       qty: p.qty,
-      options: Array.from(p.options.values()).sort((a, b) => b.qty - a.qty),
+      revenue: p.revenue,
+      options: Array.from(p.options.values()).sort((a, b) => b.revenue - a.revenue),
     }))
-    .sort((a, b) => b.qty - a.qty)
+    .sort((a, b) => b.revenue - a.revenue)
 }
 
 // ─── 시리즈 해석 (선택 → 차트 선·표 열) ──────────────────────────────────────
@@ -449,9 +503,196 @@ export function resolveOptionSeries(
   return series.slice(0, MAX_OPTION_SERIES)
 }
 
-/** 버킷 한 칸에서 한 시리즈의 수량(시리즈가 합산하는 옵션들의 합). */
-export function seriesBucketValue(bucket: OptionBucket, series: OptionSeries): number {
+/** 버킷 한 칸에서 한 시리즈의 값(시리즈가 합산하는 옵션들의 합). */
+export function seriesBucketValue(
+  bucket: OptionBucket,
+  series: OptionSeries,
+  metric: SalesMetric = 'qty'
+): number {
   let sum = 0
-  for (const oid of series.optionIds) sum += bucket.byOption[oid] ?? 0
+  for (const oid of series.optionIds) sum += bucket.byOption[oid]?.[metric] ?? 0
   return sum
+}
+
+// ─── 상품 랭킹 (상품 탭 1급 뷰) ───────────────────────────────────────────────
+// 행=상품, 펼치면 채널별·옵션별 내역. 정렬·토글이 재호출 없이 되도록 클라이언트에서 만든다.
+// 서버가 랭킹을 따로 내면 같은 숫자가 두 경로로 생겨 어긋난다.
+
+/** 이전 구간 합계 (비교 전용, 날짜 grain 없음). */
+export type PrevOptionTotal = {
+  optionId: string
+  productId: string
+  quantity: number
+  revenue: number
+}
+
+/** 상품에 귀속시키지 못한 매출 — 랭킹 맨 아래 고정 행이 된다. */
+export type UnmatchedTotals = {
+  revenue: number
+  quantity: number
+  prevRevenue?: number
+  byReason?: Record<string, number>
+}
+
+export type RankingOption = {
+  optionId: string
+  optionName: string
+  quantity: number
+  revenue: number
+  prevQuantity: number
+  prevRevenue: number
+}
+
+export type RankingChannel = {
+  channelId: string
+  quantity: number
+  revenue: number
+}
+
+export type RankingRow = {
+  productId: string
+  productName: string
+  quantity: number
+  revenue: number
+  prevQuantity: number
+  prevRevenue: number
+  /** 총매출(미매칭 포함) 대비 매출 비중 0~1. 총매출 0이면 null. */
+  share: number | null
+  options: RankingOption[]
+  byChannel: RankingChannel[]
+}
+
+export type ProductRanking = {
+  rows: RankingRow[]
+  unmatched: UnmatchedTotals & { share: number | null }
+  /** rows + unmatched. 채널 탭 총매출과 일치해야 한다. */
+  totals: { quantity: number; revenue: number; prevRevenue: number }
+}
+
+/**
+ * 일자×옵션×채널 행 → 상품 단위 랭킹.
+ * 정렬은 호출부(테이블 헤더)가 하고 여기서는 매출 desc 기본 정렬만 한다.
+ */
+export function buildProductRanking(
+  rows: OptionQtyRow[],
+  prevTotals: PrevOptionTotal[],
+  unmatched: UnmatchedTotals
+): ProductRanking {
+  const prevByOption = new Map(prevTotals.map((p) => [p.optionId, p]))
+
+  type Acc = {
+    productName: string
+    quantity: number
+    revenue: number
+    options: Map<string, RankingOption>
+    channels: Map<string, RankingChannel>
+  }
+  const products = new Map<string, Acc>()
+
+  for (const r of rows) {
+    const qty = Number(r.quantity ?? 0)
+    const revenue = Number(r.revenue ?? 0)
+    let p = products.get(r.productId)
+    if (!p) {
+      p = {
+        productName: r.productName,
+        quantity: 0,
+        revenue: 0,
+        options: new Map(),
+        channels: new Map(),
+      }
+      products.set(r.productId, p)
+    }
+    p.quantity += qty
+    p.revenue += revenue
+
+    const opt = p.options.get(r.optionId)
+    if (opt) {
+      opt.quantity += qty
+      opt.revenue += revenue
+    } else {
+      p.options.set(r.optionId, {
+        optionId: r.optionId,
+        optionName: r.optionName,
+        quantity: qty,
+        revenue,
+        prevQuantity: 0,
+        prevRevenue: 0,
+      })
+    }
+
+    const ch = p.channels.get(r.channelId)
+    if (ch) {
+      ch.quantity += qty
+      ch.revenue += revenue
+    } else {
+      p.channels.set(r.channelId, { channelId: r.channelId, quantity: qty, revenue })
+    }
+  }
+
+  // 이전 구간: 이번 구간에 없던 상품/옵션도 행으로 살린다(급감 탐지에 필요).
+  for (const prev of prevTotals) {
+    let p = products.get(prev.productId)
+    if (!p) {
+      p = {
+        productName: '(기간 내 판매 없음)',
+        quantity: 0,
+        revenue: 0,
+        options: new Map(),
+        channels: new Map(),
+      }
+      products.set(prev.productId, p)
+    }
+    const opt = p.options.get(prev.optionId)
+    if (opt) {
+      opt.prevQuantity += prev.quantity
+      opt.prevRevenue += prev.revenue
+    } else {
+      p.options.set(prev.optionId, {
+        optionId: prev.optionId,
+        optionName: '(기간 내 판매 없음)',
+        quantity: 0,
+        revenue: 0,
+        prevQuantity: prev.quantity,
+        prevRevenue: prev.revenue,
+      })
+    }
+  }
+
+  // 옵션에 흩어진 이전 값을 상품 합계로 올린다.
+  const built: RankingRow[] = Array.from(products.entries()).map(([productId, p]) => {
+    const options = Array.from(p.options.values()).map((o) => {
+      const prev = prevByOption.get(o.optionId)
+      return prev ? { ...o, prevQuantity: prev.quantity, prevRevenue: prev.revenue } : o
+    })
+    return {
+      productId,
+      productName: p.productName,
+      quantity: p.quantity,
+      revenue: p.revenue,
+      prevQuantity: options.reduce((a, o) => a + o.prevQuantity, 0),
+      prevRevenue: options.reduce((a, o) => a + o.prevRevenue, 0),
+      share: null,
+      options: options.sort((a, b) => b.revenue - a.revenue || b.quantity - a.quantity),
+      byChannel: Array.from(p.channels.values()).sort((a, b) => b.revenue - a.revenue),
+    }
+  })
+
+  const totalRevenue = built.reduce((a, r) => a + r.revenue, 0) + unmatched.revenue
+  const totalQuantity = built.reduce((a, r) => a + r.quantity, 0) + unmatched.quantity
+  const totalPrevRevenue =
+    built.reduce((a, r) => a + r.prevRevenue, 0) + (unmatched.prevRevenue ?? 0)
+
+  const withShare = built
+    .map((r) => ({ ...r, share: totalRevenue > 0 ? r.revenue / totalRevenue : null }))
+    .sort((a, b) => b.revenue - a.revenue || b.quantity - a.quantity)
+
+  return {
+    rows: withShare,
+    unmatched: {
+      ...unmatched,
+      share: totalRevenue > 0 ? unmatched.revenue / totalRevenue : null,
+    },
+    totals: { quantity: totalQuantity, revenue: totalRevenue, prevRevenue: totalPrevRevenue },
+  }
 }

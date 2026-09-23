@@ -16,12 +16,7 @@ import { prisma } from '@/lib/prisma'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { loadRocketDailyRevenue, sumRocketDaily } from '@/lib/sh/rocket-revenue'
 import { getTodayStrKst } from '@/lib/date-range'
-import {
-  startOfMonth,
-  prevRangeForUnit,
-  pctChange,
-  last30DaysRange,
-} from '@/lib/sh/sales-analytics'
+import { startOfMonth, prevRange, pctChange, last30DaysRange } from '@/lib/sh/sales-analytics'
 import { healthRatioBySku, statusForSku, type SkuFact, type StatusLabel } from '@/lib/inv/metrics'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 import { productDisplayName } from '@/lib/sh/product-display'
@@ -93,7 +88,7 @@ export async function querySalesSummary(spaceId: string) {
   // ── 기간: 이번달 1일~오늘(MTD) vs 지난달 1일~같은 날 ──────────────────────
   const today = getTodayStrKst()
   const current = { from: startOfMonth(today), to: today }
-  const prev = prevRangeForUnit('월', current)
+  const prev = prevRange(current)
   const recent30 = last30DaysRange()
 
   const curFrom = startOfDayKst(current.from)
@@ -305,6 +300,9 @@ export interface QueryStockStatusOptions {
  * 필터(brandId, groupId, productId, q, onlyLow)는 matrix.rows에만 적용.
  * q 는 raw 문자열을 받아 여기서 trim·lowercase 정규화한다(route의 검색 정규화와 동일).
  */
+/** InvReorderConfig 미설정 상품의 기본 리드타임 — schema default(7)와 동일하게 유지. */
+const DEFAULT_LEAD_TIME_DAYS = 7
+
 export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOptions = {}) {
   const brandFilter = opts.brandId ?? null
   const groupFilter = opts.groupId ?? null
@@ -410,6 +408,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           internalName: true,
           code: true,
           brand: { select: { id: true, name: true, logoUrl: true } },
+          // 커버 일수 등급(화면 전용)의 임계 기준 — 발주 계획과 동일한 상품별 리드타임.
+          reorderConfig: { select: { leadTimeDays: true } },
           options: {
             // 삭제된 옵션(생산 차수 등 참조가 있어 soft-delete 된 건)은 제외
             where: { deletedAt: null },
@@ -484,6 +484,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     totalQty: number
     totalValue: number
     incomingQty: number
+    /** 상품별 발주 리드타임(일). 설정 없으면 기본 7. */
+    leadTimeDays: number
     out30d: number
     out90d: number
     byLocation: Record<string, number>
@@ -533,6 +535,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           brandName: p.brand?.name ?? null,
           groupId: g.id,
           groupName: g.name,
+          leadTimeDays: p.reorderConfig?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS,
           costPrice,
           retailPrice: decimalToNumber(o.retailPrice),
           safetyStockQty: o.safetyStockQty,
@@ -949,7 +952,7 @@ export async function queryProductRanking(spaceId: string) {
   // ── 로켓그로스 판매 상품 집합 (부진 오탐 제외용) ──────────────────────────
   // 로켓은 옵션/상품별 주문건수가 없어 상위 랭킹엔 못 쓰지만, 판매량(quantity)으로
   // "이 상품은 로켓에서 팔리고 있다"는 사실은 알 수 있다 → 부진 후보에서 제외.
-  const rocketRows = await loadRocketDailyOptionQty(spaceId, from, to)
+  const { rows: rocketRows } = await loadRocketDailyOptionQty(spaceId, from, to)
   const rocketSoldProductIds = new Set<string>()
   for (const r of rocketRows) {
     if (r.quantity > 0) rocketSoldProductIds.add(r.productId)
