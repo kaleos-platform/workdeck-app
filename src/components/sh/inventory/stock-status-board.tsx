@@ -8,12 +8,15 @@ import { StockStatusLocationTabs } from './stock-status-location-tabs'
 import { StockStatusProducts } from './stock-status-products'
 import { StockStatusToolbar } from './stock-status-toolbar'
 import { StockStatusMatrix } from './stock-status-matrix'
+import { StockStatusSummaryBar } from './stock-status-summary'
 import type { StockStatusResponse } from './stock-status.types'
 import {
   buildStockStatusProducts,
   filterStockStatusProducts,
   scopeStockStatusRows,
   stockStatusDisplayName,
+  summarizeStockStatus,
+  type StockStatusSortMode,
 } from './stock-status-view-model'
 
 const PINNED_PRODUCTS_STORAGE_KEY = 'workdeck.stock-status.pinned-products'
@@ -33,6 +36,7 @@ export function StockStatusBoard() {
   const [data, setData] = useState<StockStatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [productQuery, setProductQuery] = useState('')
+  const [sort, setSort] = useState<StockStatusSortMode>('urgent')
   const [productsCollapsed, setProductsCollapsed] = useState(false)
   const [pinnedProductIds, setPinnedProductIds] = useState<string[]>([])
   const abortRef = useRef<AbortController | null>(null)
@@ -111,7 +115,9 @@ export function StockStatusBoard() {
   )
 
   const handleLocationChange = useCallback(
-    (newLocationId: string | null) => updateParams({ locationId: newLocationId }),
+    (newLocationId: string | null) =>
+      // 위치 탭에서는 등급을 계산하지 않으므로 onlyLow(조치 필요만)가 남으면 모든 행이 걸러진다.
+      updateParams({ locationId: newLocationId, ...(newLocationId ? { onlyLow: null } : {}) }),
     [updateParams]
   )
 
@@ -157,8 +163,9 @@ export function StockStatusBoard() {
         groupId,
         pinnedProductIds,
         query: productQuery,
+        sort,
       }),
-    [brandId, groupId, pinnedProductIds, productQuery, products]
+    [brandId, groupId, pinnedProductIds, productQuery, products, sort]
   )
 
   // 상품별 보기만 지원: 선택이 없거나(초기/필터 변경) 현재 목록에 없으면 첫 상품으로 폴백.
@@ -174,7 +181,7 @@ export function StockStatusBoard() {
     const optionQuery = q.trim().toLowerCase()
     return scopedRows.filter((row) => {
       if (effectiveProductId && row.productId !== effectiveProductId) return false
-      if (onlyLow && row.displayStatus !== 'LOW' && row.displayStatus !== 'OUT') return false
+      if (onlyLow && row.grade !== 'NO_STOCK' && row.grade !== 'RISK') return false
       if (!optionQuery) return true
       return [
         row.optionName,
@@ -186,6 +193,9 @@ export function StockStatusBoard() {
     })
   }, [onlyLow, effectiveProductId, q, scopedRows])
 
+  // 상단 요약 — 필터 전 전체 상품 기준(지금 안 보이는 상품의 위험도 알려야 한다)
+  const summary = useMemo(() => summarizeStockStatus(products), [products])
+
   const selectedProduct = useMemo(
     () => products.find((product) => product.productId === effectiveProductId) ?? null,
     [effectiveProductId, products]
@@ -196,6 +206,14 @@ export function StockStatusBoard() {
   return (
     <div className="space-y-5">
       <StockStatusHeader loading={loading} onRefresh={fetchData} />
+
+      <StockStatusSummaryBar
+        summary={summary}
+        loading={loading && !data}
+        locationScoped={!!locationId}
+        onlyLow={onlyLow}
+        onOnlyLowChange={handleOnlyLowChange}
+      />
 
       <StockStatusLocationTabs
         locations={data?.locations ?? []}
@@ -220,6 +238,7 @@ export function StockStatusBoard() {
           selectedBrandId={brandId}
           selectedGroupId={groupId}
           productQuery={productQuery}
+          sort={sort}
           pinnedProductIds={pinnedProductIds}
           collapsed={productsCollapsed}
           onSelectProduct={handleProductSelect}
@@ -228,6 +247,7 @@ export function StockStatusBoard() {
           onBrandChange={handleBrandChange}
           onGroupChange={handleGroupChange}
           onSearchChange={setProductQuery}
+          onSortChange={setSort}
         />
 
         <div className="min-h-0 min-w-0">

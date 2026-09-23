@@ -24,10 +24,10 @@ const products: StockStatusProductCard[] = [
     out30d: 0,
     currentQty: 0,
     optionCount: 2,
-    okOptionCount: 1,
-    lowOptionCount: 0,
-    outOptionCount: 1,
-    overOptionCount: 0,
+    grade: 'HEALTHY',
+    daysOfCover: 30,
+    noStockOptionCount: 0,
+    riskOptionCount: 0,
     brandId: null,
     brandName: null,
     groupId: 'group-1',
@@ -63,6 +63,7 @@ const rows: StockMatrixRow[] = [
     costPrice: 1000,
     retailPrice: 2000,
     safetyStockQty: 0,
+    leadTimeDays: 7,
     currentQty: 4,
     totalQty: 9,
     totalValue: 4000,
@@ -94,6 +95,7 @@ describe('stock status UI', () => {
         selectedBrandId={null}
         selectedGroupId={null}
         productQuery=""
+        sort="urgent"
         pinnedProductIds={[]}
         collapsed={false}
         onSelectProduct={onSelectProduct}
@@ -102,6 +104,7 @@ describe('stock status UI', () => {
         onBrandChange={jest.fn()}
         onGroupChange={jest.fn()}
         onSearchChange={jest.fn()}
+        onSortChange={jest.fn()}
       />
     )
 
@@ -128,13 +131,18 @@ describe('stock status UI', () => {
     expect(screen.queryByText('최신 재고')).not.toBeInTheDocument()
     expect(screen.queryByRole('columnheader', { name: '상품명' })).not.toBeInTheDocument()
     expect(screen.getAllByText('와펜')).toHaveLength(2)
-    expect(screen.getByText('30일 출고량')).toBeInTheDocument()
-    expect(screen.getByText('90일 출고량')).toBeInTheDocument()
+    // 출고 30일·90일은 한 컬럼으로 합쳐 표 폭을 줄였다
+    expect(screen.getByText('출고 30/90일')).toBeInTheDocument()
     expect(screen.getByText('생산 관리')).toBeInTheDocument()
-    expect(screen.getByText('12')).toBeInTheDocument()
-    expect(screen.getByText('37')).toBeInTheDocument()
+    // 한 셀 안에서 "12 / 37" 로 렌더되므로 셀 단위로 확인한다
+    expect(
+      screen.getByRole('cell', {
+        name: (_, el) => el.textContent?.replace(/\s/g, '') === '12/37',
+      })
+    ).toBeInTheDocument()
     expect(screen.getByText('5')).toBeInTheDocument()
     expect(screen.getByText('9')).toBeInTheDocument()
+    // 입고예정(5)이 있는 행이므로 현재고를 보조 표기한다
     expect(screen.getByText('현재 4')).toBeInTheDocument()
   })
 })
