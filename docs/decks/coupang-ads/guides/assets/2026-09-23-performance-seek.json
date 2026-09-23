@@ -1,0 +1,253 @@
+{
+  "date": "2026-09-23",
+  "commit": "684c63f299c8a960ef98a93638ff83cb1ea814f0",
+  "deployment": "dpl_HxmmiSKbCSCbk7bfubhre8m1XEmN",
+  "method": "Five cycles. Reset workspace Data Cache tag before every cycle. Direct URL home -> detail -> home -> detail. Includes first post-deployment sample. DOM/frame timestamps are Navigation Timing relative; double requestAnimationFrame does not guarantee paint completion. Cache invalidation does not guarantee platform cold start.",
+  "priorDirectDOMObservation": {
+    "method": "Five direct navigations before deployment without explicit cache reset, separate diagnostic run, not a controlled before/after performance comparison.",
+    "samples": [
+      {
+        "loadMs": 3720,
+        "domMs": 3568.7,
+        "frameMs": 3572.5,
+        "responseStart": 158.8,
+        "responseEnd": 2987.4
+      },
+      {
+        "loadMs": 540,
+        "domMs": 523,
+        "frameMs": 543.6,
+        "responseStart": 13.3,
+        "responseEnd": 497
+      },
+      {
+        "loadMs": 1686,
+        "domMs": 1677.8,
+        "frameMs": 1690.6,
+        "responseStart": 6.9,
+        "responseEnd": 1646.9
+      },
+      {
+        "loadMs": 368,
+        "domMs": 360.7,
+        "frameMs": 379.2,
+        "responseStart": 6.5,
+        "responseEnd": 326.8
+      },
+      {
+        "loadMs": 333,
+        "domMs": 325.7,
+        "frameMs": 341.4,
+        "responseStart": 6.6,
+        "responseEnd": 300.4
+      }
+    ]
+  },
+  "samples": [
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 4181,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=128.4, db_connect;dur=30.6, auth_membership;dur=55.7, membership_loop_active;dur=32.4, membership_loop_idle;dur=23.2, auth_deck;dur=7.7, auth_workspace;dur=6.3, auth;dur=199.0, date_ranges;dur=376.7, campaign_current;dur=8.0, campaign_previous;dur=6.1, summary_loader;dur=20.5, target_summaries;dur=29.9, data;dur=482.7, total;dur=682.2"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 928,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=44.4, auth_membership;dur=8.9, membership_loop_active;dur=3.0, membership_loop_idle;dur=5.9, auth_deck;dur=4.7, auth_workspace;dur=3.8, auth;dur=61.9, overview_latest;dur=26.1, overview_ad_types;dur=46.2, overview_current;dur=66.3, overview_previous;dur=96.7, overview_targets;dur=100.8, overview_memos;dur=152.2, overview_meta;dur=156.2, overview_loader;dur=157.8, data;dur=165.4, total;dur=228.0"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 826,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=28.6, auth_membership;dur=7.9, membership_loop_active;dur=1.6, membership_loop_idle;dur=6.3, auth_deck;dur=4.1, auth_workspace;dur=3.8, auth;dur=44.6, campaign_current;dur=7.4, campaign_previous;dur=5.5, target_summaries;dur=5.4, data;dur=39.3, total;dur=84.2"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 1990,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=103.2, db_connect;dur=39.0, auth_membership;dur=545.4, membership_loop_active;dur=526.3, membership_loop_idle;dur=19.0, auth_deck;dur=11.6, auth_workspace;dur=3.7, auth;dur=664.6, data;dur=45.0, total;dur=711.0"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 4056.600000143051,
+        "frameMs": 4069.5,
+        "responseStart": 65,
+        "responseEnd": 3563.5,
+        "load": 4135
+      }
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1208,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=87.3, db_connect;dur=40.8, auth_membership;dur=546.2, membership_loop_active;dur=522.8, membership_loop_idle;dur=23.3, auth_deck;dur=15.3, auth_workspace;dur=4.4, auth;dur=653.9, date_ranges;dur=47.7, campaign_current;dur=8.9, campaign_previous;dur=5.0, summary_loader;dur=12.3, target_summaries;dur=19.3, data;dur=146.9, total;dur=801.6"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 517,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=28.5, auth_membership;dur=72.1, membership_loop_active;dur=2.8, membership_loop_idle;dur=69.3, auth_deck;dur=8.9, auth_workspace;dur=7.6, auth;dur=117.3, overview_latest;dur=27.8, overview_ad_types;dur=47.1, overview_current;dur=62.8, overview_previous;dur=66.4, overview_targets;dur=73.9, overview_memos;dur=77.0, overview_meta;dur=82.7, overview_loader;dur=84.3, data;dur=92.8, total;dur=210.7"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 60,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=25.1, auth_membership;dur=5.7, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.2, auth_deck;dur=2.9, auth_workspace;dur=2.7, auth;dur=36.5, campaign_current;dur=4.8, campaign_previous;dur=4.6, summary_loader;dur=10.3, target_summaries;dur=16.7, data;dur=46.4, total;dur=83.2"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 462,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=26.7, auth_membership;dur=5.7, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.3, auth_deck;dur=2.7, auth_workspace;dur=2.6, auth;dur=37.8, overview_latest;dur=3.8, overview_ad_types;dur=21.3, overview_current;dur=24.6, overview_previous;dur=28.7, overview_targets;dur=31.1, overview_memos;dur=34.1, overview_meta;dur=36.3, overview_loader;dur=36.7, data;dur=43.5, total;dur=81.6"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1165.0999999046326,
+        "frameMs": 1182.6999998092651,
+        "responseStart": 7.199999809265137,
+        "responseEnd": 1144.2999999523163,
+        "load": 1176.2999999523163
+      }
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1406,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=75.9, auth_membership;dur=5.3, membership_loop_active;dur=1.9, membership_loop_idle;dur=3.4, auth_deck;dur=2.5, auth_workspace;dur=2.2, auth;dur=86.1, date_ranges;dur=52.9, campaign_current;dur=7.3, campaign_previous;dur=4.8, summary_loader;dur=11.0, target_summaries;dur=18.4, data;dur=114.6, total;dur=201.0"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 375,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=33.9, auth_membership;dur=7.2, membership_loop_active;dur=2.4, membership_loop_idle;dur=4.8, auth_deck;dur=4.2, auth_workspace;dur=3.8, auth;dur=49.3, overview_latest;dur=13.7, overview_ad_types;dur=31.6, overview_current;dur=35.2, overview_previous;dur=38.8, overview_targets;dur=41.8, overview_memos;dur=45.7, overview_meta;dur=48.1, overview_loader;dur=50.0, data;dur=57.9, total;dur=107.9"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 57,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=29.5, auth_membership;dur=6.2, membership_loop_active;dur=1.6, membership_loop_idle;dur=4.6, auth_deck;dur=2.9, auth_workspace;dur=2.7, auth;dur=41.4, target_summaries;dur=5.1, data;dur=28.2, total;dur=69.8"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 290,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=26.8, auth_membership;dur=5.7, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.3, auth_deck;dur=3.0, auth_workspace;dur=3.2, auth;dur=38.9, data;dur=7.2, total;dur=46.6"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1364.2000000476837,
+        "frameMs": 1381.3999998569489,
+        "responseStart": 7.099999904632568,
+        "responseEnd": 1338.7000000476837,
+        "load": 1370.2999999523163
+      }
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 334,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=33.4, auth_membership;dur=8.4, membership_loop_active;dur=5.3, membership_loop_idle;dur=3.1, auth_deck;dur=3.2, auth_workspace;dur=2.9, auth;dur=48.1, catalog_loader;dur=13.8, date_ranges;dur=51.4, campaign_current;dur=5.9, campaign_previous;dur=5.5, summary_loader;dur=11.7, target_summaries;dur=18.1, data;dur=119.2, total;dur=168.1"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 328,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=30.5, auth_membership;dur=9.5, membership_loop_active;dur=2.2, membership_loop_idle;dur=7.3, auth_deck;dur=3.6, auth_workspace;dur=3.4, auth;dur=47.1, overview_latest;dur=4.7, overview_ad_types;dur=22.8, overview_current;dur=27.2, overview_previous;dur=30.8, overview_targets;dur=33.8, overview_memos;dur=37.0, overview_meta;dur=39.1, overview_loader;dur=39.8, data;dur=46.6, total;dur=94.2"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 323,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=26.8, auth_membership;dur=5.7, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.3, auth_deck;dur=2.9, auth_workspace;dur=3.0, auth;dur=38.5, campaign_current;dur=4.4, campaign_previous;dur=4.6, target_summaries;dur=5.2, data;dur=31.7, total;dur=70.5"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 286,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=27.1, auth_membership;dur=5.6, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.2, auth_deck;dur=2.8, auth_workspace;dur=2.8, auth;dur=38.4, data;dur=6.5, total;dur=45.3"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 294.7999999523163,
+        "frameMs": 306.7000000476837,
+        "responseStart": 7.5,
+        "responseEnd": 284.10000014305115,
+        "load": 300
+      }
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 331,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=44.9, auth_membership;dur=4.7, membership_loop_active;dur=4.7, membership_loop_idle;dur=0.0, auth_deck;dur=6.1, auth_workspace;dur=2.5, auth;dur=58.3, catalog_loader;dur=7.5, date_ranges;dur=49.2, campaign_current;dur=4.3, campaign_previous;dur=4.2, summary_loader;dur=8.0, target_summaries;dur=13.3, data;dur=107.0, total;dur=165.6"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 338,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=27.2, auth_membership;dur=4.9, membership_loop_active;dur=1.5, membership_loop_idle;dur=3.5, auth_deck;dur=2.7, auth_workspace;dur=2.4, auth;dur=37.3, overview_latest;dur=10.6, overview_ad_types;dur=28.8, overview_current;dur=31.8, overview_previous;dur=34.8, overview_targets;dur=36.7, overview_memos;dur=39.1, overview_meta;dur=40.9, overview_loader;dur=42.5, data;dur=48.3, total;dur=86.0"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 212,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=27.5, auth_membership;dur=5.3, membership_loop_active;dur=3.2, membership_loop_idle;dur=2.1, auth_deck;dur=2.4, auth_workspace;dur=2.0, auth;dur=37.3, catalog_loader;dur=7.6, date_ranges;dur=43.3, summary_loader;dur=7.2, target_summaries;dur=11.1, data;dur=78.4, total;dur=115.9"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 323,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=25.0, auth_membership;dur=4.7, membership_loop_active;dur=1.3, membership_loop_idle;dur=3.3, auth_deck;dur=2.3, auth_workspace;dur=2.1, auth;dur=34.1, overview_latest;dur=3.4, overview_ad_types;dur=20.4, overview_current;dur=23.3, overview_previous;dur=26.3, overview_targets;dur=28.2, overview_memos;dur=30.6, overview_meta;dur=32.2, overview_loader;dur=32.7, data;dur=37.5, total;dur=72.0"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 292.5,
+        "frameMs": 307.90000009536743,
+        "responseStart": 6.400000095367432,
+        "responseEnd": 276.7000000476837,
+        "load": 297.40000009536743
+      }
+    }
+  ]
+}
