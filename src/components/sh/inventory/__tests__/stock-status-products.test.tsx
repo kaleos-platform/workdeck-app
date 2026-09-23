@@ -11,10 +11,10 @@ const products: StockStatusProductCard[] = [
     out30d: 0,
     currentQty: 0,
     optionCount: 1,
-    okOptionCount: 1,
-    lowOptionCount: 0,
-    outOptionCount: 0,
-    overOptionCount: 0,
+    grade: 'HEALTHY',
+    daysOfCover: 30,
+    noStockOptionCount: 0,
+    riskOptionCount: 0,
     brandId: 'brand-b',
     brandName: '브랜드B',
     groupId: 'group-b',
@@ -27,10 +27,10 @@ const products: StockStatusProductCard[] = [
     out30d: 0,
     currentQty: 0,
     optionCount: 1,
-    okOptionCount: 0,
-    lowOptionCount: 1,
-    outOptionCount: 0,
-    overOptionCount: 0,
+    grade: 'HEALTHY',
+    daysOfCover: 30,
+    noStockOptionCount: 0,
+    riskOptionCount: 0,
     brandId: 'brand-a',
     brandName: '브랜드A',
     groupId: 'group-a',
@@ -49,6 +49,7 @@ describe('stock status products panel', () => {
         selectedBrandId={null}
         selectedGroupId={null}
         productQuery=""
+        sort="urgent"
         pinnedProductIds={['prod-b']}
         collapsed={false}
         onSelectProduct={jest.fn()}
@@ -57,6 +58,7 @@ describe('stock status products panel', () => {
         onBrandChange={jest.fn()}
         onGroupChange={jest.fn()}
         onSearchChange={jest.fn()}
+        onSortChange={jest.fn()}
       />,
       { wrapper: TooltipProvider }
     )
@@ -75,6 +77,7 @@ describe('stock status products panel', () => {
         selectedBrandId={null}
         selectedGroupId={null}
         productQuery=""
+        sort="urgent"
         pinnedProductIds={['prod-b']}
         collapsed
         onSelectProduct={jest.fn()}
@@ -83,6 +86,7 @@ describe('stock status products panel', () => {
         onBrandChange={jest.fn()}
         onGroupChange={jest.fn()}
         onSearchChange={jest.fn()}
+        onSortChange={jest.fn()}
       />
     )
 
@@ -103,10 +107,10 @@ describe('stock status products panel', () => {
       out30d: 0,
       currentQty: 0,
       optionCount: 1,
-      okOptionCount: 1,
-      lowOptionCount: 0,
-      outOptionCount: 0,
-      overOptionCount: 0,
+      grade: 'HEALTHY' as const,
+      daysOfCover: 30,
+      noStockOptionCount: 0,
+      riskOptionCount: 0,
       brandId: 'b',
       brandName: '브랜드',
       groupId: 'g',
@@ -122,6 +126,7 @@ describe('stock status products panel', () => {
         selectedBrandId={null}
         selectedGroupId={null}
         productQuery=""
+        sort="urgent"
         pinnedProductIds={[]}
         collapsed={false}
         onSelectProduct={jest.fn()}
@@ -130,6 +135,7 @@ describe('stock status products panel', () => {
         onBrandChange={jest.fn()}
         onGroupChange={jest.fn()}
         onSearchChange={jest.fn()}
+        onSortChange={jest.fn()}
       />,
       { wrapper: TooltipProvider }
     )
