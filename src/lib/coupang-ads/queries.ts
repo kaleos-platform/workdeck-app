@@ -128,22 +128,35 @@ async function loadCampaignCatalog(workspaceId: string, today: string) {
     { workspaceId },
     () =>
       measureCoupangAds('catalog_loader', async () => {
-        // 최신 날짜만 집계한 뒤 이름을 읽어 전체 원본 행의 정렬·디스크 임시 파일을 피한다.
+        // 복합 인덱스에서 다음 캠페인·광고유형으로 건너뛰어 전체 이력을 읽지 않는다.
         const [rows, metas, allTargets] = await Promise.all([
           prisma.$queryRaw<Array<{ campaignId: string; campaignName: string; adType: string }>>`
+          WITH RECURSIVE groups AS (
+            (
+              SELECT "campaignId", "adType" FROM "AdRecord"
+              WHERE "workspaceId" = ${workspaceId}
+              ORDER BY "campaignId", "adType"
+              LIMIT 1
+            )
+            UNION ALL
+            SELECT next_group."campaignId", next_group."adType"
+            FROM groups
+            CROSS JOIN LATERAL (
+              SELECT "campaignId", "adType" FROM "AdRecord"
+              WHERE "workspaceId" = ${workspaceId}
+                AND ("campaignId", "adType") > (groups."campaignId", groups."adType")
+              ORDER BY "campaignId", "adType"
+              LIMIT 1
+            ) next_group
+          )
           SELECT groups."campaignId", latest."campaignName", groups."adType"
-          FROM (
-            SELECT "campaignId", "adType", max(date) AS date
-            FROM "AdRecord"
-            WHERE "workspaceId" = ${workspaceId}
-            GROUP BY "campaignId", "adType"
-          ) groups
+          FROM groups
           CROSS JOIN LATERAL (
             SELECT "campaignName" FROM "AdRecord"
             WHERE "workspaceId" = ${workspaceId}
               AND "campaignId" = groups."campaignId"
               AND "adType" = groups."adType"
-              AND date = groups.date
+            ORDER BY date DESC
             LIMIT 1
           ) latest
           ORDER BY groups."campaignId" ASC, groups."adType" ASC

@@ -341,3 +341,28 @@ PR #920/#921, main `bb53cf7e`, production `dpl_33nP7awVPXTSKUwu8cK6E8YEQ21z`의 
 남은 엄격한 완료 조건은 배포 직후를 포함한 직접 URL 진입 3초 이내다.
 후속 진단에서는 Proxy의 세션 갱신과 페이지의 인증 조회, 함수 초기화 시간을 분리해야 한다.
 권한 확인을 생략하거나 검증 없이 인증 방법·유료 실행 자원을 바꾸지 않는다.
+
+### 2026-09-23 직접 접속: 캠페인 목록 전체 이력 읽기 제거
+
+직접 접속의 MutationObserver 측정은 최초 숫자·카드 DOM 조건 충족 3568.7ms,
+다음 두 animation frame 후 3572.5ms, 기존 load 대기 포함 3720ms였다.
+측정 도구의 load 대기만으로 초과를 설명할 수 없다. 같은 실행의 서버 로그에서
+느린 SSR은 `catalog_loader=790.2ms`, `auth_membership=696.0ms`, `total=1936.2ms`였다.
+프레임 콜백은 실제 paint 완료를 보장하지 않으며 전체 요청과 SSR 로그의 일대일 대응도 단정하지 않는다.
+
+기존 catalog SQL은 `GROUP BY campaignId, adType` 때문에 전체 광고 이력을 읽었다.
+기존 `(workspaceId,campaignId,adType,date)` index에서 다음 그룹 키를 찾아 건너뛰는
+recursive CTE와 그룹별 최신 행 조회로 변경했다. [PostgreSQL loose indexscan 설명](https://wiki.postgresql.org/wiki/Loose_indexscan)을 따른다.
+DB schema·index·연결 수·권한·cache TTL 변경은 없다.
+
+개발 DB 연결 전용 임시 테이블 15만 행, 6개 그룹에서 전후 결과가 같았다.
+[실행 계획 5회 원시값](assets/2026-09-23-catalog-seek.json)의 기존 실행 시간은 78.275~78.798ms,
+변경 후는 0.439~0.499ms였다. scan 노드 출력 행 합계(`Actual Rows × Actual Loops`, JSON의 `scannedRows`)는
+150006→13, root plan의 local hit/read buffer 합계는 1127→51이었다.
+출력 행 수는 index 내부 탐색량 전체를 의미하지 않는다. 이 비교는 소수 그룹에 많은 이력이 있는 합성 데이터 기준이며,
+그룹 수가 원본 행 수에 가까우면 반복 index seek가 불리할 수 있다.
+
+실제 PostgreSQL 회귀 테스트는 기존 코드에서 150006행으로 실패하고 변경 후 통과했다.
+최신 이름·광고유형 순서·workspace 격리·빈 목록을 검증했다. 같은 최신 날짜에 이름이 여러 개면
+선택이 비결정적인 기존 동작은 유지한다. 관련 45 tests와 실제 DB 2 tests, lint(0 errors/기존 63 warnings),
+production build가 통과했고 리뷰에서 필수 수정 사항은 없었다. 임시 테이블은 연결 종료로 삭제됐다.
