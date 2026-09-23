@@ -78,6 +78,8 @@ export type StockMatrixRow = {
   costPrice: number | null
   retailPrice: number | null
   safetyStockQty: number
+  /** 상품별 발주 리드타임(일) — 커버 일수 등급 임계의 기준 */
+  leadTimeDays: number
   currentQty: number
   totalQty: number
   totalValue: number

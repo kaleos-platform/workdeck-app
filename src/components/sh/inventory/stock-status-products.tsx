@@ -16,10 +16,13 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import type { StockBrand } from './stock-status.types'
+import { StockGradeMark } from './stock-status-grade'
 import {
   STOCK_STATUS_BRAND_NONE,
+  STOCK_STATUS_SORT_LABEL,
   stockStatusDisplayName,
   type StockStatusProductCard,
+  type StockStatusSortMode,
 } from './stock-status-view-model'
 
 type Props = {
@@ -30,6 +33,7 @@ type Props = {
   selectedBrandId: string | null
   selectedGroupId: string | null
   productQuery: string
+  sort: StockStatusSortMode
   pinnedProductIds: string[]
   collapsed: boolean
   onSelectProduct: (productId: string | null) => void
@@ -38,6 +42,7 @@ type Props = {
   onBrandChange: (brandId: string | null) => void
   onGroupChange: (groupId: string | null) => void
   onSearchChange: (q: string) => void
+  onSortChange: (sort: StockStatusSortMode) => void
 }
 
 const PINNED_LABEL = '고정 상품'
@@ -45,7 +50,6 @@ const PINNED_LABEL = '고정 상품'
 // 그리드 높이를 ~1.4화면(lg:h-[calc(140vh-13rem)])으로 키운 뒤, FHD(1920×1080)에서
 // 좌측 리스트 영역(~1012px)에 카드(~91px)가 내부 스크롤 없이 꽉 차는 10개로 실측해 맞춤.
 export const PRODUCTS_PAGE_SIZE = 10
-type StatusTone = 'out' | 'low' | 'over' | 'ok'
 
 export function StockStatusProducts({
   products,
@@ -55,6 +59,7 @@ export function StockStatusProducts({
   selectedBrandId,
   selectedGroupId,
   productQuery,
+  sort,
   pinnedProductIds,
   collapsed,
   onSelectProduct,
@@ -63,6 +68,7 @@ export function StockStatusProducts({
   onBrandChange,
   onGroupChange,
   onSearchChange,
+  onSortChange,
 }: Props) {
   const pinnedSet = useMemo(() => new Set(pinnedProductIds), [pinnedProductIds])
 
@@ -107,7 +113,7 @@ export function StockStatusProducts({
   const [page, setPage] = useState(1)
 
   // 필터/검색이 바뀌면 1페이지로 리셋 (렌더 중 상태 조정 — React 권장 패턴).
-  const filterKey = `${productQuery}|${selectedBrandId ?? ''}|${selectedGroupId ?? ''}`
+  const filterKey = `${productQuery}|${selectedBrandId ?? ''}|${selectedGroupId ?? ''}|${sort}`
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey)
   if (filterKey !== prevFilterKey) {
     setPrevFilterKey(filterKey)
@@ -238,6 +244,19 @@ export function StockStatusProducts({
             </SelectContent>
           </Select>
         </div>
+
+        <Select value={sort} onValueChange={(value) => onSortChange(value as StockStatusSortMode)}>
+          <SelectTrigger className="h-9 w-full" aria-label="정렬 기준">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(STOCK_STATUS_SORT_LABEL) as StockStatusSortMode[]).map((mode) => (
+              <SelectItem key={mode} value={mode}>
+                {STOCK_STATUS_SORT_LABEL[mode]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </CardHeader>
 
       <CardContent className="min-h-0 flex-1 overflow-y-auto p-2">
@@ -359,11 +378,14 @@ function ProductButton({
             </div>
           </div>
 
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <StatusSticker label="결품" count={product.outOptionCount} tone="out" />
-            <StatusSticker label="부족" count={product.lowOptionCount} tone="low" />
-            <StatusSticker label="과잉" count={product.overOptionCount} tone="over" />
-            <StatusSticker label="정상" count={product.okOptionCount} tone="ok" />
+          <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <StockGradeMark grade={product.grade} daysOfCover={product.daysOfCover} />
+            {/* 등급 라벨이 이미 '위험'을 말하므로 개수는 비율로만 — 같은 단어를 두 번 쓰지 않는다 */}
+            {product.noStockOptionCount + product.riskOptionCount > 0 && (
+              <span className="text-[11px] text-muted-foreground tabular-nums">
+                조치 {product.noStockOptionCount + product.riskOptionCount}/{product.optionCount}
+              </span>
+            )}
           </div>
         </button>
 
@@ -387,26 +409,5 @@ function ProductButton({
         </div>
       </div>
     </div>
-  )
-}
-
-function StatusSticker({ label, count, tone }: { label: string; count: number; tone: StatusTone }) {
-  const toneClass: Record<StatusTone, string> = {
-    out: 'border-red-200 bg-red-50 text-red-700',
-    low: 'border-amber-200 bg-amber-50 text-amber-700',
-    over: 'border-indigo-200 bg-indigo-50 text-indigo-700',
-    ok: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  }
-
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-medium',
-        toneClass[tone]
-      )}
-    >
-      <span>{label}</span>
-      <span className="font-mono tabular-nums">{count > 0 ? count : '—'}</span>
-    </span>
   )
 }
