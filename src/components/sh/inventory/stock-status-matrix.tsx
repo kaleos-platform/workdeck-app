@@ -81,17 +81,17 @@ export function StockStatusMatrix({
             <table className="w-full border-collapse text-sm">
               <thead className="sticky top-0 z-20 bg-muted">
                 <tr className="border-b">
-                  <th className="sticky left-0 z-30 min-w-[200px] border-r bg-muted px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <th className="sticky left-0 z-30 min-w-[170px] border-r bg-muted px-3 py-2 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     옵션
                   </th>
-                  <th className="min-w-[110px] border-l bg-muted px-2 py-2 text-center text-[11px] font-medium text-muted-foreground">
+                  <th className="min-w-[100px] border-l bg-muted px-2 py-2 text-center text-[11px] font-medium text-muted-foreground">
                     <div className="font-semibold text-foreground">출고 30/90일</div>
                     <div className="text-[10px] font-normal text-muted-foreground">판매채널</div>
                   </th>
                   {visibleLocations.map((l) => (
                     <th
                       key={l.id}
-                      className="min-w-[92px] border-l bg-muted px-2 py-2 text-center text-[11px] font-medium text-muted-foreground"
+                      className="w-[84px] max-w-[84px] min-w-[84px] border-l bg-muted px-2 py-2 text-center text-[11px] font-medium text-muted-foreground"
                     >
                       <div className="truncate font-semibold text-foreground" title={l.name}>
                         {l.name}
@@ -116,7 +116,7 @@ export function StockStatusMatrix({
                     </div>
                     <div className="text-[10px] font-normal text-muted-foreground">생산 관리</div>
                   </th>
-                  <th className="sticky right-0 z-30 min-w-[132px] border-l bg-muted px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <th className="sticky right-0 z-30 min-w-[120px] border-l bg-muted px-3 py-2 text-right text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     합계
                   </th>
                 </tr>
@@ -126,12 +126,14 @@ export function StockStatusMatrix({
                   return (
                     <tr key={row.optionId} className="border-b hover:bg-muted/30">
                       <td className="sticky left-0 z-10 border-r bg-card px-3 py-2">
-                        <div className="text-sm font-medium">{row.optionName}</div>
-                        <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                          {row.productInternalName && row.productInternalName !== row.productName
-                            ? `${row.productInternalName} · ${row.productName}`
-                            : row.productName}
-                        </div>
+                        {/* 매트릭스는 항상 한 상품만 보여주고 상품명은 카드 제목에 있다 —
+                            행마다 상품명을 반복하면 옵션 컬럼만 넓어지고 정보는 늘지 않는다. */}
+                        <div className="truncate text-sm font-medium">{row.optionName}</div>
+                        {row.sku && (
+                          <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                            {row.sku}
+                          </div>
+                        )}
                       </td>
                       <td className="border-l px-2 py-2 text-center font-mono text-sm tabular-nums">
                         {row.out30d > 0 || row.out90d > 0 ? (

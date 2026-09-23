@@ -380,11 +380,10 @@ function ProductButton({
 
           <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <StockGradeMark grade={product.grade} daysOfCover={product.daysOfCover} />
-            {(product.noStockOptionCount > 0 || product.riskOptionCount > 0) && (
+            {/* 등급 라벨이 이미 '위험'을 말하므로 개수는 비율로만 — 같은 단어를 두 번 쓰지 않는다 */}
+            {product.noStockOptionCount + product.riskOptionCount > 0 && (
               <span className="text-[11px] text-muted-foreground tabular-nums">
-                {product.noStockOptionCount > 0 && `재고없음 ${product.noStockOptionCount}`}
-                {product.noStockOptionCount > 0 && product.riskOptionCount > 0 && ' · '}
-                {product.riskOptionCount > 0 && `위험 ${product.riskOptionCount}`}
+                조치 {product.noStockOptionCount + product.riskOptionCount}/{product.optionCount}
               </span>
             )}
           </div>

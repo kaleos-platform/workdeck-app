@@ -130,7 +130,9 @@ describe('stock status UI', () => {
     expect(screen.queryByText('옵션별 재고 현황')).not.toBeInTheDocument()
     expect(screen.queryByText('최신 재고')).not.toBeInTheDocument()
     expect(screen.queryByRole('columnheader', { name: '상품명' })).not.toBeInTheDocument()
-    expect(screen.getAllByText('와펜')).toHaveLength(2)
+    // 상품명은 제목에만 — 행 부제는 SKU 로 바꿔 옵션 컬럼 폭을 줄였다
+    expect(screen.getAllByText('와펜')).toHaveLength(1)
+    expect(screen.getByText('SKU-1')).toBeInTheDocument()
     // 출고 30일·90일은 한 컬럼으로 합쳐 표 폭을 줄였다
     expect(screen.getByText('출고 30/90일')).toBeInTheDocument()
     expect(screen.getByText('생산 관리')).toBeInTheDocument()
