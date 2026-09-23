@@ -476,3 +476,39 @@ page total 940.8/1158.7ms도 관측했다. 요청 연계 식별자가 없어 화
 포함되지 않는다. 실제 generated Prisma client/adapter에서 query 이벤트의 ALS 전달을 확인했다.
 `db_query`에는 pool/연결/네트워크 대기가 포함될 수 있고 다른 구간과 중첩된다. SQL·파라미터는
 출력하지 않는다. 이 변경은 원인 분리를 위한 계측이며 속도 개선 완료로 취급하지 않는다.
+
+### 초기화 세부 계측 배포와 Proxy 후속
+
+PR #939/#940(main `73952ecd`), production `dpl_2u9pk2XECEyceRieiJPXz2Zm2ELE` READY 확인.
+71 tests·lint(0 errors/기존63 warnings)·build·typecheck·리뷰를 통과했다.
+[고정 배포 URL과 운영 도메인 각 5회](assets/2026-09-23-performance-init.json)를 보관한다.
+고정 URL은 첫 화면 최대2754ms, 홈 재진입140ms, 상세 최초1076ms, 재진입572ms였으나,
+같은 배포 운영 도메인에서는 홈 재진입1402ms가 다시 관측됐다. 목표 전체 완료로 처리하지 않는다.
+운영 도메인 측정 전후 alias ID가 같았음을 확인했다.
+
+한 API 요청은 `prisma_client=205.0ms`, `auth_membership=605.9ms`,
+요청 전체 `db_query=114.3ms`, `db_connect=39.0ms`였다. 동기 client 생성만도 비용이 있었으며
+멤버십 구간 전체를 SQL 시간으로 볼 수 없다. query 합계와 connect 시간은 중첩될 수 있다.
+layout에서는 `layout_context=562.0/616.4ms`, `layout_entitlement=44.7/179.1ms`도 관측했다.
+서로 다른 요청의 구간을 합산하지 않는다. 개발 비교에서 Sentry 자동 계측 활성화는 큰 차이가 없어
+운영 모니터링 설정은 유지했다.
+
+운영 도메인 5번째 직접 접속의 Proxy 세션 갱신은799.8ms였다. 실제 세션을 메모리에서만 사용한
+조회 비교에서 getUser는85.8/118.3/506.0/97.9/110.7ms, getClaims는96.9/2.7/0.7/0.6/1.4ms였다.
+이는 로컬 네트워크 비교이며 운영 개선율을 보장하지 않는다.
+
+후속 변경은 Proxy의 쿠팡 홈 exact 및 `/d/coupang-ads/campaigns/[^/]+` exact만
+`getClaims`로 서명·만료를 검증하고 갱신한다. 다른 경로는 getUser를 유지한다.
+서버의 getUser·workspace·deck·구독 검사는 그대로다. [Supabase 공식 설명](https://supabase.com/docs/guides/auth/server-side/advanced-guide)에 따르면
+getClaims만으로 서버 세션 폐기를 확인할 수 없으므로 이 최종 서버 검사를 대체하지 않는다.
+[공식 Proxy 예제](https://github.com/supabase/supabase/blob/master/examples/auth/nextjs/lib/supabase/proxy.ts)에 맞춰
+갱신 쿠키를 downstream 요청과 브라우저 응답에 전달하며 redirect/rewrite에서도 보존한다.
+
+17개 인증 경계 테스트의 red/green을 확인했다. 실제 개발용 일회용 Auth 계정으로 저장된 세션의
+만료 시각을 과거로 설정해 refresh를 유도하고, request override·response cookie·downstream
+getUser를 검증했다. 변조 JWT는 거부됐다. 계정 삭제 후 서명상 유효한 JWT는 getClaims를 통과해도
+getUser에서 차단됐다. 테스트 계정은 삭제했다. 실제 JWT의 exp를 서명 없이 바꾼 시험은 아니다.
+리뷰에서 발견한 admin rewrite의 request cookie 전달 누락도 회귀 테스트와 함께 수정했다.
+
+Proxy 후속 관련105 tests, lint(0 errors/기존63 warnings), production build가 통과했다.
+리뷰 재확인에서 추가 필수 수정은 없었다.
