@@ -3,6 +3,7 @@ import { getUser } from '@/hooks/use-user'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { SETTINGS_BILLING_PATH } from '@/lib/deck-routes'
 import { canUseDeck } from './entitlement'
+import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 
 /**
  * deck 레이아웃 공통 진입 가드.
@@ -14,13 +15,15 @@ import { canUseDeck } from './entitlement'
  * 모달이 바로 열리게 한다 — 사용자가 왜 막혔는지 알고 곧장 해결할 수 있다.
  */
 export async function requireDeckAccess(deckAppId: string): Promise<{ spaceName: string }> {
-  const user = await getUser()
+  const user = await measureCoupangAds('layout_user', getUser)
   if (!user) redirect('/login')
 
-  const resolved = await resolveDeckContext(deckAppId)
+  const resolved = await measureCoupangAds('layout_context', () => resolveDeckContext(deckAppId))
   if ('error' in resolved) redirect('/my-deck')
 
-  if (!(await canUseDeck(resolved.space.id, deckAppId))) {
+  if (
+    !(await measureCoupangAds('layout_entitlement', () => canUseDeck(resolved.space.id, deckAppId)))
+  ) {
     redirect(`${SETTINGS_BILLING_PATH}?subscribe=${encodeURIComponent(deckAppId)}`)
   }
 
