@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { validateProductionCostTargets } from '@/lib/sh/production-run-costs'
 import { productionRunPatchSchema } from '@/lib/sh/schemas'
 
 // 입고 완료(STOCKED_IN)는 옵션×위치 분배로 INBOUND 를 만들어야 성립한다.
@@ -87,6 +88,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         note: c.note,
         sortOrder: c.sortOrder,
         category: c.category,
+        targetProductId: c.targetProductId,
         vatIncluded: c.vatIncluded,
       })),
       createdAt: run.createdAt.toISOString(),
@@ -103,7 +105,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const existing = await prisma.productionRun.findFirst({
     where: { id: runId, spaceId: resolved.space.id },
-    select: { id: true, costMode: true, status: true },
+    select: {
+      id: true,
+      costMode: true,
+      status: true,
+      items: {
+        select: { option: { select: { product: { select: { id: true } } } } },
+      },
+      costs: { select: { category: true, targetProductId: true } },
+    },
   })
   if (!existing) return errorResponse('생산 발주를 찾을 수 없습니다', 404)
 
@@ -119,17 +129,24 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return errorResponse(STOCK_IN_VIA_TRANSITION_MSG, 400)
   }
 
+  let effectiveProductIds = new Set(existing.items.map((item) => item.option.product.id))
+
   // items 변경 시 옵션 소속 검증
   if (input.items) {
     const optionIds = input.items.map((it) => it.optionId)
     const validOptions = await prisma.invProductOption.findMany({
       where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
-      select: { id: true },
+      select: { id: true, product: { select: { id: true } } },
     })
     if (validOptions.length !== optionIds.length) {
       return errorResponse('일부 옵션을 찾을 수 없습니다', 400)
     }
+    effectiveProductIds = new Set(validOptions.map((option) => option.product.id))
   }
+
+  const effectiveCosts = input.costs ?? existing.costs
+  const costTargetError = validateProductionCostTargets(effectiveCosts, effectiveProductIds)
+  if (costTargetError) return errorResponse(costTargetError, 400)
 
   // brandId 처리 — key 존재 여부로 "명시적 변경" vs "변경 없음" 구분
   let resolvedBrandId: string | null | undefined = undefined // undefined = 변경 없음
@@ -197,6 +214,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         note?: string
         sortOrder: number
         category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'MARKETING' | 'OTHER'
+        targetProductId: string | null
         vatIncluded: boolean
       }>
     | undefined = undefined
@@ -213,8 +231,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       amount: (c.spec ?? 1) * c.quantity * c.unitPrice,
       note: c.note,
       sortOrder: c.sortOrder ?? i,
-      category: c.category ?? 'OTHER',
-      vatIncluded: c.vatIncluded ?? true,
+      category: c.category,
+      targetProductId: c.category === 'MARKETING' ? (c.targetProductId ?? null) : null,
+      vatIncluded: c.vatIncluded,
     }))
     if (effectiveCostMode === 'BREAKDOWN') {
       computedTotalCost = costsData.reduce((s, c) => s + c.amount, 0)

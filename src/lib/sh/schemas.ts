@@ -528,33 +528,8 @@ export type ProductionRunInput = z.infer<typeof productionRunSchema>
 export const productionRunPatchSchema = productionRunSchema.partial().extend({
   // POST에서 default('TOTAL')이 있어 partial()만으로는 undefined가 아닌 TOTAL이 됨 — 명시 제거
   costMode: z.enum(['TOTAL', 'BREAKDOWN']).optional(),
-  // costs.category에도 default('OTHER') 존재하므로 costs 배열 전체를 재정의
-  costs: z
-    .array(
-      z.object({
-        itemName: z.string().trim().min(1).max(100),
-        description: z
-          .string()
-          .trim()
-          .max(500)
-          .optional()
-          .transform((v) => (v?.length ? v : undefined)),
-        spec: z.coerce.number().positive().max(99_999_999).optional(),
-        quantity: z.coerce.number().positive().max(99_999_999).default(1),
-        unitPrice: z.coerce.number().min(0).max(99_999_999),
-        note: z
-          .string()
-          .trim()
-          .max(200)
-          .optional()
-          .transform((v) => (v?.length ? v : undefined)),
-        sortOrder: z.number().int().min(0).optional(),
-        category: z.enum(['MATERIAL', 'LABOR', 'PACKAGING', 'LOGISTICS', 'OTHER']).optional(),
-        vatIncluded: z.coerce.boolean().optional(),
-      })
-    )
-    .max(50)
-    .optional(),
+  // costs 배열 자체의 default만 제거하고 비용 행 계약은 POST와 공유
+  costs: z.array(productionRunCostSchema).max(50).optional(),
   // 단계별 일자 — 사용자가 수정 가능. 빈 문자열은 null 로 치환, undefined 는 변경 없음.
   orderedConfirmedAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),
   stockedInAt: z.preprocess((v) => (v === '' ? null : v), z.string().nullable()).optional(),

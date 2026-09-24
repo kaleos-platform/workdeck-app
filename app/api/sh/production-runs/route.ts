@@ -3,6 +3,7 @@ import { Prisma } from '@/generated/prisma/client'
 
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { validateProductionCostTargets } from '@/lib/sh/production-run-costs'
 import { productionRunSchema } from '@/lib/sh/schemas'
 import {
   buildProductionStatusTabs,
@@ -223,11 +224,15 @@ export async function POST(req: NextRequest) {
   const optionIds = input.items.map((it) => it.optionId)
   const validOptions = await prisma.invProductOption.findMany({
     where: { id: { in: optionIds }, product: { spaceId: resolved.space.id } },
-    select: { id: true, product: { select: { brandId: true } } },
+    select: { id: true, product: { select: { id: true, brandId: true } } },
   })
   if (validOptions.length !== optionIds.length) {
     return errorResponse('일부 옵션을 찾을 수 없습니다', 400)
   }
+
+  const productIds = new Set(validOptions.map((option) => option.product.id))
+  const costTargetError = validateProductionCostTargets(input.costs ?? [], productIds)
+  if (costTargetError) return errorResponse(costTargetError, 400)
 
   // brandId 처리 — 명시되지 않으면 옵션들의 distinct brandId가 1개면 자동 추정
   let resolvedBrandId: string | null | undefined = undefined
@@ -265,6 +270,7 @@ export async function POST(req: NextRequest) {
     note?: string
     sortOrder: number
     category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'MARKETING' | 'OTHER'
+    targetProductId: string | null
     vatIncluded: boolean
   }> = (input.costs ?? []).map((c, i) => ({
     itemName: c.itemName,
@@ -276,6 +282,7 @@ export async function POST(req: NextRequest) {
     note: c.note,
     sortOrder: c.sortOrder ?? i,
     category: c.category,
+    targetProductId: c.category === 'MARKETING' ? (c.targetProductId ?? null) : null,
     vatIncluded: c.vatIncluded,
   }))
   const finalTotalCost: number | undefined =
