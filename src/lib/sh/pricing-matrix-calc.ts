@@ -38,6 +38,8 @@ export type MatrixChannel = {
 /** 번들 구성 컴포넌트 (단일 SKU 원가·소비자가 기준가 기여) */
 export type BundleComponent = {
   costPrice: number // 원 (won)
+  productionUnitCost?: number // 개당 생산원가 (표시용)
+  marketingUnitCost?: number // 개당 초기 마케팅비 (표시용)
   retailPrice: number // 원 — 컴포넌트 소비자가 기준가 기여분
   quantity: number // 번들 내 이 컴포넌트 수량
 }
@@ -122,6 +124,8 @@ export type MatrixCell = {
   finalPrice: number // 최종 판매가 (프로모션 적용 후, 원)
   revenue: number // 유효 매출 (= 공급가 = finalPrice / (1+VAT), 마진 분모)
   cogs: number // 번들 원가 Σ(costPrice × quantity) (원)
+  productionCogs: number // 번들 생산원가 (표시용)
+  marketingCogs: number // 번들 초기 마케팅비 (표시용)
   vat: number // 부가세 (= finalPrice − 공급가, includeVat=false 이면 0)
   fee: number // 채널수수료 + 결제수수료 합산 (원)
   channelFee: number // 채널 수수료 (원, 판매가 기준)
@@ -190,6 +194,17 @@ function bundleSetCost(bundle: MatrixBundle): number {
       0
     )
   )
+}
+
+/** 번들 총원가를 보존한 표시용 생산원가·초기 마케팅비 구성 */
+function bundleCostBreakdown(bundle: MatrixBundle) {
+  const cogs = bundleSetCost(bundle)
+  const rawMarketingCogs = bundle.components.reduce((sum, component) => {
+    const quantity = Math.max(1, Math.round(n(component.quantity)))
+    return sum + n(component.marketingUnitCost) * quantity
+  }, 0)
+  const marketingCogs = Math.min(cogs, Math.max(0, r2(rawMarketingCogs)))
+  return { productionCogs: r2(cogs - marketingCogs), marketingCogs }
 }
 
 /** 번들 총 개수: Σ quantity (perUnitProfit 기준) */
@@ -289,6 +304,7 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
 
   // 10. 번들 원가: Σ(component.costPrice × quantity)
   const setCost = bundleSetCost(bundle)
+  const { productionCogs, marketingCogs } = bundleCostBreakdown(bundle)
 
   // 11. 반품 — 처리비만 비용 반영(매출 차감 없음). returnCost = 처리비 × 반품율.
   const returnCost =
@@ -313,6 +329,8 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
     finalPrice,
     revenue: effectiveRevenue,
     cogs: setCost,
+    productionCogs,
+    marketingCogs,
     vat,
     fee,
     channelFee,

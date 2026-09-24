@@ -200,6 +200,124 @@ describe('gross-basis 0% 할인 셀 수작업 검증', () => {
   })
 })
 
+describe('원가 구성 분리', () => {
+  test('생산원가와 초기 마케팅비를 수량 기준으로 분리하되 총원가는 유지', () => {
+    const bundle: MatrixBundle = {
+      components: [
+        {
+          costPrice: 13000,
+          productionUnitCost: 10000,
+          marketingUnitCost: 3000,
+          retailPrice: 40000,
+          quantity: 2,
+        },
+      ],
+      packagingCost: 0,
+      salePrice: 40000,
+    }
+
+    const cell = calculateMatrix(makeInputs(bundle)).cells[0]
+
+    expect(cell.productionCogs).toBe(20000)
+    expect(cell.marketingCogs).toBe(6000)
+    expect(cell.cogs).toBe(26000)
+    expect(cell.totalCost).toBe(
+      cell.cogs +
+        cell.fee +
+        cell.adCost +
+        cell.shipping +
+        cell.packaging +
+        cell.operating +
+        cell.returnCost
+    )
+  })
+
+  test('구성 필드가 없는 레거시 컴포넌트는 전체 원가를 생산원가로 표시', () => {
+    const cell = calculateMatrix(makeInputs(makeBundle(13000, 40000, 2, 0))).cells[0]
+
+    expect(cell.productionCogs).toBe(cell.cogs)
+    expect(cell.marketingCogs).toBe(0)
+  })
+
+  test('구성 필드 추가 여부는 모든 셀과 추천가 계산 결과를 바꾸지 않음', () => {
+    const legacyBundle: MatrixBundle = {
+      components: [
+        { costPrice: 13000, retailPrice: 40000, quantity: 2 },
+        { costPrice: 2500, retailPrice: 10000, quantity: 1 },
+      ],
+      packagingCost: 1000,
+      salePrice: 50000,
+    }
+    const breakdownBundle: MatrixBundle = {
+      ...legacyBundle,
+      components: [
+        {
+          costPrice: 13000,
+          productionUnitCost: 10000,
+          marketingUnitCost: 3000,
+          retailPrice: 40000,
+          quantity: 2,
+        },
+        {
+          costPrice: 2500,
+          productionUnitCost: 1500,
+          marketingUnitCost: 1000,
+          retailPrice: 10000,
+          quantity: 1,
+        },
+      ],
+    }
+
+    const legacy = calculateMatrix(makeInputs(legacyBundle))
+    const breakdown = calculateMatrix(makeInputs(breakdownBundle))
+
+    expect(breakdown.cells).toHaveLength(20)
+    breakdown.cells.forEach((cell, index) => {
+      expect({
+        cogs: cell.cogs,
+        totalCost: cell.totalCost,
+        netProfit: cell.netProfit,
+        margin: cell.margin,
+      }).toEqual({
+        cogs: legacy.cells[index].cogs,
+        totalCost: legacy.cells[index].totalCost,
+        netProfit: legacy.cells[index].netProfit,
+        margin: legacy.cells[index].margin,
+      })
+    })
+    expect(breakdown.recommendedRetail).toEqual(legacy.recommendedRetail)
+    expect(breakdown.maxDiscountForMinMargin).toBe(legacy.maxDiscountForMinMargin)
+    expect(breakdown.targetAchievableUnderPromotion).toBe(legacy.targetAchievableUnderPromotion)
+  })
+
+  test('마케팅비는 유효한 양수만 반영하고 총원가를 넘지 않도록 제한', () => {
+    const cellFor = (marketingUnitCost: number, quantity: number) =>
+      calculateMatrix(
+        makeInputs({
+          components: [{ costPrice: 1000, retailPrice: 40000, marketingUnitCost, quantity }],
+          packagingCost: 0,
+          salePrice: 40000,
+        })
+      ).cells[0]
+
+    expect(cellFor(-100, 2)).toMatchObject({
+      cogs: 2000,
+      productionCogs: 2000,
+      marketingCogs: 0,
+    })
+    expect(cellFor(Number.NaN, 2)).toMatchObject({
+      cogs: 2000,
+      productionCogs: 2000,
+      marketingCogs: 0,
+    })
+    expect(cellFor(5000, 1.6)).toMatchObject({
+      cogs: 2000,
+      productionCogs: 0,
+      marketingCogs: 2000,
+    })
+  })
+})
+
 // ─── Test 3: 무료배송 임계값 step function — 솔버 브랜치 일관성 ─────────────
 
 describe('무료배송 임계값 브랜치 일관성', () => {
