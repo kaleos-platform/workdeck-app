@@ -267,4 +267,26 @@ describe('생산 차수 원가 입력', () => {
       await screen.findByText('실제 입고수량이 0개라 원가를 배분할 수 없습니다')
     ).toBeInTheDocument()
   })
+
+  test('TOTAL과 BREAKDOWN 테이블의 식별 header를 가로 스크롤에서 고정한다', async () => {
+    const user = userEvent.setup()
+    mockEditFetch()
+    renderEdit()
+
+    await screen.findByDisplayValue('체험단')
+    expect(screen.getByRole('columnheader', { name: '항목명 *' })).toHaveClass(
+      'sticky',
+      'left-0',
+      'z-20',
+      'bg-background'
+    )
+
+    await user.click(screen.getByRole('tab', { name: '세부 항목 입력' }))
+    expect(screen.getByRole('columnheader', { name: '비용항목 *' })).toHaveClass(
+      'sticky',
+      'left-0',
+      'z-20',
+      'bg-background'
+    )
+  })
 })

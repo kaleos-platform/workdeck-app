@@ -1264,7 +1264,7 @@ export function ProductionRunFormDialog({
                         <table className="w-full min-w-[772px] table-fixed text-sm">
                           <thead>
                             <tr className="border-b text-xs text-muted-foreground">
-                              <th className="w-[190px] pr-2 pb-1.5 text-left font-medium">
+                              <th className="sticky left-0 z-20 w-[190px] bg-background pr-2 pb-1.5 text-left font-medium">
                                 항목명 *
                               </th>
                               <th className="w-[130px] pr-2 pb-1.5 text-left font-medium">분류</th>
@@ -1364,7 +1364,7 @@ export function ProductionRunFormDialog({
                         <table className="w-full min-w-[1200px] table-fixed text-sm">
                           <thead>
                             <tr className="border-b text-xs text-muted-foreground">
-                              <th className="w-[160px] pr-2 pb-1.5 text-left font-medium">
+                              <th className="sticky left-0 z-20 w-[160px] bg-background pr-2 pb-1.5 text-left font-medium">
                                 비용항목 *
                               </th>
                               <th className="w-[130px] pr-2 pb-1.5 text-left font-medium">분류</th>
