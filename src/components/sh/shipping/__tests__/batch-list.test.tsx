@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { BatchList } from '../batch-list'
 
 jest.mock('sonner', () => ({ toast: { error: jest.fn(), success: jest.fn() } }))
@@ -11,6 +11,13 @@ const batch = {
   source: 'MANUAL',
   createdAt: '2026-09-19T12:00:00.000Z',
   completedAt: '2026-09-21T14:00:00.000Z',
+}
+
+const longImportBatch = {
+  ...batch,
+  id: 'long-import',
+  label: '아주 긴 이전 배송 묶음 라벨 '.repeat(20).trim(),
+  source: 'IMPORT',
 }
 
 function mockBatches(data: (typeof batch)[] = [batch]) {
@@ -101,6 +108,30 @@ describe('BatchList', () => {
     const row = (await screen.findByText('완료일 라벨')).closest('tr')
     expect(row).toHaveTextContent(/2026.*09.*21/)
     expect(row).not.toHaveTextContent(/2026.*09.*19/)
+  })
+
+  test.each([
+    ['일반 라벨', batch],
+    ['긴 IMPORT 라벨', longImportBatch],
+  ])('%s에서도 3열 식별 셀과 수량·삭제 열을 보존한다', async (_name, item) => {
+    mockBatches([item])
+    render(<BatchList onSelect={jest.fn()} />)
+
+    const label = await screen.findByText(item.label)
+    const table = screen.getByRole('table')
+    const row = label.closest('tr') as HTMLTableRowElement
+    const cells = within(row).getAllByRole('cell')
+    expect(table).toHaveClass('table-fixed')
+    expect(within(table).getAllByRole('columnheader')).toHaveLength(3)
+    expect(cells).toHaveLength(3)
+    expect(cells[0]).toHaveClass('min-w-0')
+    expect(label).toHaveClass('truncate')
+    expect(label).toHaveAttribute('title', item.label)
+    expect(cells[1]).toHaveTextContent('2')
+    expect(within(cells[2]).getByRole('button', { name: '배송 묶음 삭제' })).toBeInTheDocument()
+    if (item.source === 'IMPORT') {
+      expect(within(cells[0]).getByText('이전')).toHaveClass('shrink-0')
+    }
   })
 
   test('접기 버튼을 누르면 onCollapse를 호출한다', async () => {

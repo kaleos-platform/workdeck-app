@@ -235,25 +235,24 @@ export function BatchList({ onSelect, selectedBatchId, onCollapse }: BatchListPr
 
       {/* 배송 묶음 테이블 */}
       <div className="max-h-[220px] overflow-y-auto rounded-md border 2xl:max-h-[calc(100vh-260px)]">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader className="sticky top-0 z-10 bg-background shadow-sm">
             <TableRow>
-              <TableHead className="text-xs">날짜</TableHead>
-              <TableHead className="text-xs">라벨</TableHead>
-              <TableHead className="text-right text-xs">주문 수</TableHead>
+              <TableHead className="min-w-0 text-xs">배송 묶음</TableHead>
+              <TableHead className="w-14 text-right text-xs">주문 수</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={4} className="py-8 text-center text-xs text-muted-foreground">
+                <TableCell colSpan={3} className="py-8 text-center text-xs text-muted-foreground">
                   로딩 중...
                 </TableCell>
               </TableRow>
             ) : batches.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="py-8 text-center text-xs text-muted-foreground">
+                <TableCell colSpan={3} className="py-8 text-center text-xs text-muted-foreground">
                   완료된 배송 묶음이 없습니다
                 </TableCell>
               </TableRow>
@@ -266,20 +265,22 @@ export function BatchList({ onSelect, selectedBatchId, onCollapse }: BatchListPr
                   }`}
                   onClick={() => onSelect(batch.id)}
                 >
-                  <TableCell className="text-xs">
-                    {formatDate(batch.completedAt ?? batch.createdAt)}
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    <span className="flex items-center gap-1.5">
+                  <TableCell className="min-w-0 text-xs">
+                    <span className="block truncate text-muted-foreground">
+                      {formatDate(batch.completedAt ?? batch.createdAt)}
+                    </span>
+                    <span className="flex min-w-0 items-center gap-1.5">
                       {batch.source === 'IMPORT' && (
                         <Badge
                           variant="outline"
-                          className="border-amber-300 bg-amber-50 text-[10px] text-amber-700"
+                          className="shrink-0 border-amber-300 bg-amber-50 text-[10px] text-amber-700"
                         >
                           이전
                         </Badge>
                       )}
-                      {batch.label || <span className="text-muted-foreground">-</span>}
+                      <span className="block min-w-0 truncate" title={batch.label ?? undefined}>
+                        {batch.label || <span className="text-muted-foreground">-</span>}
+                      </span>
                     </span>
                   </TableCell>
                   <TableCell className="text-right text-xs">
@@ -287,7 +288,7 @@ export function BatchList({ onSelect, selectedBatchId, onCollapse }: BatchListPr
                       {batch.orderCount}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="p-1 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
