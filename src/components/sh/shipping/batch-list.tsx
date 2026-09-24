@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState, type Ref } from 'react'
 import { toast } from 'sonner'
 import { ChevronLeft, Trash2 } from 'lucide-react'
-import { getDaysAgoStrKst, getTodayStrKst } from '@/lib/date-range'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,14 +34,12 @@ interface Batch {
 }
 
 interface BatchListProps {
+  dateFrom: string
+  dateTo: string
   onSelect: (batchId: string | null) => void
   selectedBatchId?: string | null
   onCollapse?: () => void
   collapseButtonRef?: Ref<HTMLButtonElement>
-}
-
-function toDateStr(d: Date) {
-  return d.toISOString().split('T')[0]
 }
 
 function formatDate(dateStr: string) {
@@ -55,6 +52,8 @@ function formatDate(dateStr: string) {
 }
 
 export function BatchList({
+  dateFrom,
+  dateTo,
   onSelect,
   selectedBatchId,
   onCollapse,
@@ -66,10 +65,6 @@ export function BatchList({
   const [refreshVersion, setRefreshVersion] = useState(0)
   const requestId = useRef(0)
 
-  // 기본 7일
-  const [dateFrom, setDateFrom] = useState(() => getDaysAgoStrKst(7))
-  const [dateTo, setDateTo] = useState(getTodayStrKst)
-  const [activePreset, setActivePreset] = useState<string>('7d')
   const range = `${dateFrom}|${dateTo}`
 
   // 삭제 확인 다이얼로그 (라벨 타이핑 확인으로 실수 방지)
@@ -145,99 +140,22 @@ export function BatchList({
     }
   }
 
-  // 기간 프리셋
-  function applyPreset(preset: string) {
-    const today = getTodayStrKst()
-    const [year, month] = today.split('-').map(Number)
-    let from: string
-    let to = today
-
-    switch (preset) {
-      case '7d':
-        from = getDaysAgoStrKst(7)
-        break
-      case '30d':
-        from = getDaysAgoStrKst(30)
-        break
-      case 'thisMonth':
-        from = toDateStr(new Date(Date.UTC(year, month - 1, 1)))
-        break
-      case 'lastMonth':
-        from = toDateStr(new Date(Date.UTC(year, month - 2, 1)))
-        to = toDateStr(new Date(Date.UTC(year, month - 1, 0)))
-        break
-      default:
-        return
-    }
-    setDateFrom(from)
-    setDateTo(to)
-    setActivePreset(preset)
-  }
-
-  const presets = [
-    { key: '7d', label: '7일' },
-    { key: '30d', label: '30일' },
-    { key: 'thisMonth', label: '이번달' },
-    { key: 'lastMonth', label: '지난달' },
-  ]
-
   return (
     <div className="space-y-3">
-      {/* 필터 바: 제목 · 프리셋 · 날짜 */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex w-full items-center justify-between gap-2">
-          <h2 className="shrink-0 text-sm font-semibold">완료된 배송 묶음</h2>
-          {onCollapse && (
-            <Button
-              ref={collapseButtonRef}
-              variant="ghost"
-              size="icon"
-              className="hidden h-7 w-7 2xl:inline-flex"
-              onClick={onCollapse}
-              aria-label="배송 묶음 접기"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
-        <div className="flex flex-wrap gap-1">
-          {presets.map((p) => (
-            <Button
-              key={p.key}
-              variant={activePreset === p.key ? 'default' : 'outline'}
-              size="sm"
-              className="h-8 px-1.5 text-xs"
-              onClick={() => applyPreset(p.key)}
-            >
-              {p.label}
-            </Button>
-          ))}
-        </div>
-
-        <div className="flex w-full min-w-0 items-center gap-1">
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => {
-              setDateFrom(e.target.value)
-              setActivePreset('')
-            }}
-            className="h-8 min-w-0 flex-1 px-1 text-xs"
-            placeholder="시작일"
-          />
-          <span className="text-xs text-muted-foreground">–</span>
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => {
-              setDateTo(e.target.value)
-              setActivePreset('')
-            }}
-            className="h-8 min-w-0 flex-1 px-1 text-xs"
-            placeholder="종료일"
-          />
-        </div>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="shrink-0 text-sm font-semibold">완료된 배송 묶음</h2>
+        {onCollapse && (
+          <Button
+            ref={collapseButtonRef}
+            variant="ghost"
+            size="icon"
+            className="hidden h-7 w-7 2xl:inline-flex"
+            onClick={onCollapse}
+            aria-label="배송 묶음 접기"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* 배송 묶음 테이블 */}
