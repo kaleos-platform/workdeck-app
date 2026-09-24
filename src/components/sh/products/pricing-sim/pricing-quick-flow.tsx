@@ -1124,9 +1124,10 @@ export function PricingQuickFlow({
         globals: buildGlobals(live, bc.adPct),
         thresholds: tierThresholds,
       })
-      const promoPrice = Math.round(pm.cells[0]?.finalPrice ?? effective)
-      if (promoPrice !== Math.round(effective)) hasPromo = true
-      finalPrices.push(promoPrice)
+      const promoPrice = pm.cells[0]?.finalPrice ?? effective
+      // 카드 promoApplied 와 같은 기준(미반올림 비교)이어야 두 화면 표시가 어긋나지 않는다
+      if (promoPrice !== effective) hasPromo = true
+      finalPrices.push(Math.round(promoPrice))
     }
     const min = prices.length ? Math.min(...prices) : null
     const max = prices.length ? Math.max(...prices) : null
