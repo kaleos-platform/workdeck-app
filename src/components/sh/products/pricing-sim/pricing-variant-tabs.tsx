@@ -120,10 +120,15 @@ function SortableVariantTab({
   const [draft, setDraft] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   // 편집 중엔 드래그 비활성 — 입력 중 Space/Enter가 KeyboardSensor 드래그를 시작하지 않도록
-  const { setNodeRef, transform, transition, attributes, listeners, isDragging } = useSortable({
-    id: tab.id,
-    disabled: editing,
-  })
+  const {
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    attributes,
+    listeners,
+    isDragging,
+  } = useSortable({ id: tab.id, disabled: editing })
 
   useEffect(() => {
     if (editing) inputRef.current?.focus()
@@ -140,7 +145,12 @@ function SortableVariantTab({
 
   return (
     <div
-      ref={setNodeRef}
+      // 탭 자신을 activator로 등록 — 안쪽 이름·⋯ 버튼에서 버블된 Enter/Space는 키보드 드래그를
+      // 시작하지 않는다(미등록 시 버튼 클릭이 삼켜짐). 포인터 드래그는 탭 어디서든 동작.
+      ref={(node) => {
+        setNodeRef(node)
+        setActivatorNodeRef(node)
+      }}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       {...attributes}
       {...listeners}
