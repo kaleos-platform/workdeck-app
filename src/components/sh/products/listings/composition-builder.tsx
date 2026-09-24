@@ -14,7 +14,7 @@ import { productDisplayName } from '@/lib/sh/product-display'
 import {
   attributeValuesOf,
   buildBackedValueSet,
-  buildMultiProductGroups,
+  buildMultiProductBundleGroups,
   buildSimpleCompositionGroups,
   cartesianFromAttrState,
   diagnoseComposition,
@@ -225,7 +225,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
         }
         setMultiPicks(
           Object.fromEntries(
-            details.map((d) => [d.id, { optionIds: d.options.map((o) => o.id), quantity: 1 }])
+            details.map((d) => [d.id, { optionIds: d.options.map((o) => o.id), quantities: [1] }])
           )
         )
         setMultiProducts(details)
@@ -365,7 +365,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
 
   function commitMulti() {
     if (!multiProducts) return
-    const groups = buildMultiProductGroups(multiPicksToInput(multiProducts, multiPicks))
+    const groups = buildMultiProductBundleGroups(multiPicksToInput(multiProducts, multiPicks))
     if (groups.length === 0) {
       toast.error('구성할 옵션을 1개 이상 선택하세요')
       return
@@ -599,9 +599,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
               <MultiProductSettings
                 products={multiProducts}
                 picks={multiPicks}
-                onChange={(productId, next) =>
-                  setMultiPicks((prev) => ({ ...prev, [productId]: next }))
-                }
+                onPicksChange={setMultiPicks}
               />
               <div className="flex justify-end border-t pt-3">
                 <Button type="button" onClick={handleCommit} disabled={disabled}>
@@ -1196,57 +1194,69 @@ function ProductSearchPane({ onPick }: { onPick: (rows: ProductRow[]) => void })
 }
 
 // ─── 여러 상품 조합 ─────────────────────────────────────────────────────────
-type MultiPickState = { optionIds: string[]; quantity: number }
+/** quantities[i] = 묶음 i 에 들어갈 이 상품 수량 (0 = 그 묶음에서 제외). 모든 상품의 길이가 같다. */
+type MultiPickState = { optionIds: string[]; quantities: number[] }
 
 function multiPicksToInput(products: ProductDetail[], picks: Record<string, MultiPickState>) {
   return products.map((p) => {
     const pick = picks[p.id]
     const ids = new Set(pick?.optionIds ?? [])
-    return { options: p.options.filter((o) => ids.has(o.id)), quantity: pick?.quantity ?? 1 }
+    return {
+      label: productDisplayName(p),
+      options: p.options.filter((o) => ids.has(o.id)),
+      quantities: pick?.quantities ?? [1],
+    }
   })
 }
 
 function MultiProductSettings({
   products,
   picks,
-  onChange,
+  onPicksChange,
 }: {
   products: ProductDetail[]
   picks: Record<string, MultiPickState>
-  onChange: (productId: string, next: MultiPickState) => void
+  onPicksChange: (next: Record<string, MultiPickState>) => void
 }) {
   const groups = useMemo(
-    () => buildMultiProductGroups(multiPicksToInput(products, picks)),
+    () => buildMultiProductBundleGroups(multiPicksToInput(products, picks)),
     [products, picks]
   )
   const samples = groups
     .slice(0, 3)
     .map((g) => g.items.map((it) => `${it.optionName || '기본'}×${it.quantity}`).join(' + '))
+  const pickOf = (id: string): MultiPickState => picks[id] ?? { optionIds: [], quantities: [1] }
+  const bundleCount = Math.max(1, ...products.map((p) => pickOf(p.id).quantities.length))
+
+  function patch(id: string, next: Partial<MultiPickState>) {
+    onPicksChange({ ...picks, [id]: { ...pickOf(id), ...next } })
+  }
+  function mapAll(fn: (q: number[]) => number[]) {
+    onPicksChange(
+      Object.fromEntries(
+        products.map((p) => [p.id, { ...pickOf(p.id), quantities: fn(pickOf(p.id).quantities) }])
+      )
+    )
+  }
+  function setQty(id: string, bundleIdx: number, qty: number) {
+    const quantities = [...pickOf(id).quantities]
+    quantities[bundleIdx] = Math.max(0, qty)
+    patch(id, { quantities })
+  }
 
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        상품마다 넣을 옵션과 수량을 고르세요. 상품끼리 옵션을 하나씩 조합해 판매 옵션이 자동으로
-        나뉘어 생성됩니다.
+        상품마다 넣을 옵션을 고르고, 아래 묶음에서 상품별 수량을 정하세요. 묶음 1개가 판매 옵션
+        1개이며, 옵션을 여러 개 고른 상품은 옵션마다 판매 옵션이 나뉘어 생성됩니다.
       </p>
       {products.map((p) => {
-        const pick = picks[p.id] ?? { optionIds: [], quantity: 1 }
+        const pick = pickOf(p.id)
         return (
           <div key={p.id} className="space-y-2 rounded-md border bg-background p-3">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">상품</Badge>
               <p className="min-w-0 flex-1 truncate text-sm font-medium">{productDisplayName(p)}</p>
-              <span className="text-xs text-muted-foreground">수량</span>
-              <Input
-                type="number"
-                min={1}
-                max={999}
-                value={pick.quantity}
-                onChange={(e) =>
-                  onChange(p.id, { ...pick, quantity: Math.max(1, Number(e.target.value || 1)) })
-                }
-                className="h-7 w-20"
-              />
             </div>
             {p.options.length === 0 ? (
               <p className="text-xs text-amber-700 dark:text-amber-400">
@@ -1266,8 +1276,7 @@ function MultiProductSettings({
                       <Checkbox
                         checked={checked}
                         onCheckedChange={(c) =>
-                          onChange(p.id, {
-                            ...pick,
+                          patch(p.id, {
                             optionIds:
                               c === true
                                 ? [...pick.optionIds, o.id]
@@ -1287,6 +1296,73 @@ function MultiProductSettings({
           </div>
         )
       })}
+
+      <div className="space-y-2 rounded-md border bg-background p-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">묶음 ({bundleCount}개) · 상품별 수량</Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => mapAll((q) => [...q, 1])}
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            묶음 추가
+          </Button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-muted-foreground">
+                <th className="w-16 py-1 text-left font-normal">묶음</th>
+                {products.map((p) => (
+                  <th key={p.id} className="max-w-32 truncate px-1 py-1 text-left font-normal">
+                    {productDisplayName(p)}
+                  </th>
+                ))}
+                <th className="w-8" />
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: bundleCount }, (_, b) => (
+                <tr key={b}>
+                  <td className="py-1">#{b + 1}</td>
+                  {products.map((p) => (
+                    <td key={p.id} className="px-1 py-1">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={999}
+                        value={pickOf(p.id).quantities[b] ?? 0}
+                        onChange={(e) => setQty(p.id, b, Number(e.target.value || 0))}
+                        className="h-7 w-20"
+                        aria-label={`묶음 ${b + 1} ${productDisplayName(p)} 수량`}
+                      />
+                    </td>
+                  ))}
+                  <td>
+                    {bundleCount > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => mapAll((q) => q.filter((_, i) => i !== b))}
+                        aria-label={`묶음 ${b + 1} 제거`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-[11px] text-muted-foreground">수량 0 = 그 묶음에서 제외</p>
+      </div>
+
       <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
         <strong className="text-foreground">{groups.length}</strong>개의 판매 옵션이 생성됩니다
         {samples.length > 0 && (

@@ -5,6 +5,7 @@ import {
   buildBackedValueSet,
   pruneUnbackedAttributes,
   buildMultiProductGroups,
+  buildMultiProductBundleGroups,
 } from '../composition-builder-utils'
 
 describe('buildSimpleCompositionGroups', () => {
@@ -249,5 +250,37 @@ describe('buildMultiProductGroups', () => {
     ])
     // 펼쳐지는 상품(옵션 2개)의 옵션명만 접미사로
     expect(groups.map((g) => g.suffixParts)).toEqual([['50ml'], ['100ml']])
+  })
+})
+
+describe('buildMultiProductBundleGroups', () => {
+  it('makes one listing per bundle, skipping zero-quantity products', () => {
+    const groups = buildMultiProductBundleGroups([
+      { label: '크림', options: [option('c', {})], quantities: [1, 1, 0] },
+      { label: '패드', options: [option('p', {})], quantities: [1, 2, 3] },
+    ])
+    expect(groups.map((g) => g.items.map((it) => `${it.optionId}x${it.quantity}`))).toEqual([
+      ['cx1', 'px1'],
+      ['cx1', 'px2'],
+      ['px3'],
+    ])
+    expect(groups.map((g) => g.suffixParts)).toEqual([
+      ['크림×1 + 패드×1'],
+      ['크림×1 + 패드×2'],
+      ['패드×3'],
+    ])
+  })
+
+  it('adds no bundle suffix with a single bundle and drops all-zero bundles', () => {
+    expect(
+      buildMultiProductBundleGroups([
+        { label: '크림', options: [option('c', {})], quantities: [2] },
+      ]).map((g) => g.suffixParts)
+    ).toEqual([[]])
+    expect(
+      buildMultiProductBundleGroups([
+        { label: '크림', options: [option('c', {})], quantities: [0] },
+      ])
+    ).toEqual([])
   })
 })
