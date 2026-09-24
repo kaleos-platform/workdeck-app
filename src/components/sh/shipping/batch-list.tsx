@@ -46,6 +46,7 @@ function toDateStr(d: Date) {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('ko-KR', {
+    timeZone: 'Asia/Seoul',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -56,6 +57,7 @@ export function BatchList({ onSelect, selectedBatchId, onCollapse }: BatchListPr
   const [batches, setBatches] = useState<Batch[]>([])
   const [loadedRange, setLoadedRange] = useState('')
   const [loading, setLoading] = useState(false)
+  const [refreshVersion, setRefreshVersion] = useState(0)
   const requestId = useRef(0)
 
   // 기본 7일
@@ -86,6 +88,8 @@ export function BatchList({ onSelect, selectedBatchId, onCollapse }: BatchListPr
       setLoadedRange(`${dateFrom}|${dateTo}`)
     } catch (err) {
       if (currentRequest === requestId.current) {
+        setBatches([])
+        setLoadedRange(`${dateFrom}|${dateTo}`)
         toast.error(err instanceof Error ? err.message : '배송 묶음 목록 조회 실패')
       }
     } finally {
@@ -95,7 +99,7 @@ export function BatchList({ onSelect, selectedBatchId, onCollapse }: BatchListPr
 
   useEffect(() => {
     fetchBatches()
-  }, [fetchBatches])
+  }, [fetchBatches, refreshVersion])
 
   useEffect(() => {
     if (
@@ -127,7 +131,7 @@ export function BatchList({ onSelect, selectedBatchId, onCollapse }: BatchListPr
       )
       setDeleteTarget(null)
       setConfirmText('')
-      fetchBatches()
+      setRefreshVersion((version) => version + 1)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '배송 묶음 삭제 실패')
     } finally {

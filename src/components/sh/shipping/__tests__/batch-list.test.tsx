@@ -10,7 +10,7 @@ const batch = {
   status: 'COMPLETED',
   source: 'MANUAL',
   createdAt: '2026-09-19T12:00:00.000Z',
-  completedAt: '2026-09-21T12:00:00.000Z',
+  completedAt: '2026-09-21T14:00:00.000Z',
 }
 
 function mockBatches(data: (typeof batch)[] = [batch]) {
@@ -141,5 +141,67 @@ describe('BatchList', () => {
     const url = new URL(String(fetchMock.mock.calls[2][0]), 'http://localhost')
     expect(url.searchParams.get('from')).toBe('2026-09-20')
     expect(url.searchParams.get('to')).toBe('2026-09-23')
+  })
+
+  test('새 기간 조회가 실패하면 이전 행을 숨기고 선택을 해제한다', async () => {
+    const fetchMock = jest
+      .fn<Promise<Response>, [RequestInfo | URL]>()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [batch] }),
+      } as Partial<Response> as Response)
+      .mockResolvedValueOnce({ ok: false } as Response)
+    global.fetch = fetchMock as typeof fetch
+    const onSelect = jest.fn()
+    render(<BatchList onSelect={onSelect} selectedBatchId="batch-1" />)
+
+    await screen.findByText('완료일 라벨')
+    fireEvent.click(screen.getByRole('button', { name: '30일' }))
+
+    await waitFor(() => expect(onSelect).toHaveBeenCalledWith(null))
+    expect(screen.queryByText('완료일 라벨')).not.toBeInTheDocument()
+  })
+
+  test('삭제 대기 중 기간을 바꾸면 삭제 후 현재 기간을 다시 조회한다', async () => {
+    let resolveDelete!: (response: Response) => void
+    const fetchMock = jest.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === 'DELETE') {
+        return new Promise<Response>((resolve) => {
+          resolveDelete = resolve
+        })
+      }
+      const from = new URL(String(input), 'http://localhost').searchParams.get('from')
+      return {
+        ok: true,
+        json: async () => ({ data: from === '2026-09-17' ? [batch] : [] }),
+      } as Partial<Response> as Response
+    })
+    global.fetch = fetchMock as typeof fetch
+    render(<BatchList onSelect={jest.fn()} />)
+
+    await screen.findByText('완료일 라벨')
+    fireEvent.click(screen.getByRole('button', { name: '배송 묶음 삭제' }))
+    fireEvent.change(screen.getByPlaceholderText('완료일 라벨'), {
+      target: { value: '완료일 라벨' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '삭제' }))
+    await waitFor(() =>
+      expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(true)
+    )
+
+    fireEvent.change(screen.getByPlaceholderText('시작일'), {
+      target: { value: '2026-08-25' },
+    })
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => !init).length).toBe(2))
+
+    await act(async () => {
+      resolveDelete({ ok: true, json: async () => ({}) } as Partial<Response> as Response)
+    })
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => !init).length).toBe(3))
+    const getUrls = fetchMock.mock.calls
+      .filter(([, init]) => !init)
+      .map(([input]) => new URL(String(input), 'http://localhost'))
+    expect(getUrls[2].searchParams.get('from')).toBe('2026-08-25')
+    expect(screen.queryByText('완료일 라벨')).not.toBeInTheDocument()
   })
 })
