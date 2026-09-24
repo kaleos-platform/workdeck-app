@@ -34,6 +34,22 @@ import {
 
 type CostMode = 'TOTAL' | 'BREAKDOWN'
 
+type CostCategory = 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'MARKETING' | 'OTHER'
+
+type CostTarget = {
+  category: CostCategory
+  targetProductId: string | null
+}
+
+const COST_CATEGORY_LABEL: Record<CostCategory, string> = {
+  MATERIAL: '원재료',
+  LABOR: '인건비',
+  PACKAGING: '포장',
+  LOGISTICS: '물류',
+  MARKETING: '마케팅',
+  OTHER: '기타',
+}
+
 type OptionItem = {
   optionId: string
   optionName: string
@@ -46,7 +62,7 @@ type OptionItem = {
   stockedInQty: number | null
 }
 
-type CostRow = {
+type CostRow = CostTarget & {
   /** 클라이언트 전용 key */
   _key: string
   itemName: string
@@ -58,7 +74,7 @@ type CostRow = {
   vatIncluded: boolean
 }
 
-type TotalCostItem = {
+type TotalCostItem = CostTarget & {
   _key: string
   itemName: string
   amount: string
@@ -107,6 +123,8 @@ type RunDetail = {
       note: string | null
       sortOrder: number
       vatIncluded: boolean
+      category: CostCategory
+      targetProductId: string | null
     }>
   }
 }
@@ -126,15 +144,16 @@ function fmtKRW(n: number) {
 const MAX_VISIBLE = 3
 
 function TotalCostPreview({ totalCost, items }: { totalCost: number; items: OptionItem[] }) {
-  const totalQty = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0)
+  const effectiveQty = (item: OptionItem) => Math.max(0, item.stockedInQty ?? item.quantity)
+  const totalQty = items.reduce((s, i) => s + effectiveQty(i), 0)
   const hasInput = totalCost > 0 && totalQty > 0
 
   const lines = items
-    .filter((i) => Number(i.quantity) > 0)
+    .filter((i) => effectiveQty(i) > 0)
     .map((i) => ({
       optionName: i.optionName,
-      quantity: Number(i.quantity),
-      cost: totalQty > 0 ? (totalCost / totalQty) * Number(i.quantity) : 0,
+      quantity: effectiveQty(i),
+      cost: totalQty > 0 ? (totalCost / totalQty) * effectiveQty(i) : 0,
     }))
 
   const avgUnitCost = totalQty > 0 ? totalCost / totalQty : 0
@@ -150,7 +169,7 @@ function TotalCostPreview({ totalCost, items }: { totalCost: number; items: Opti
       {!hasInput ? (
         <p className="text-muted-foreground">
           {totalQty === 0
-            ? '옵션 수량을 입력하면 단가가 표시됩니다'
+            ? '실제 입고수량이 0개라 원가를 배분할 수 없습니다'
             : '총원가를 입력하면 단가가 표시됩니다'}
         </p>
       ) : (
@@ -240,6 +259,8 @@ function newCostRow(): CostRow {
     unitPrice: '',
     note: '',
     vatIncluded: true,
+    category: 'OTHER',
+    targetProductId: null,
   }
 }
 
@@ -249,7 +270,55 @@ function newTotalCostItem(): TotalCostItem {
     itemName: '',
     amount: '',
     vatIncluded: true,
+    category: 'OTHER',
+    targetProductId: null,
   }
+}
+
+type ProductChoice = { productId: string; productName: string }
+
+function uniqueProducts(items: OptionItem[]): ProductChoice[] {
+  return Array.from(
+    items
+      .reduce((products, item) => {
+        if (!products.has(item.productId)) {
+          products.set(item.productId, {
+            productId: item.productId,
+            productName: item.productName,
+          })
+        }
+        return products
+      }, new Map<string, ProductChoice>())
+      .values()
+  )
+}
+
+function marketingTargetError(row: CostTarget, productIds: Set<string>) {
+  if (row.category !== 'MARKETING') return null
+  if (!row.targetProductId) return '마케팅 비용의 대상 상품을 선택하세요'
+  if (!productIds.has(row.targetProductId)) {
+    return '마케팅 비용의 대상 상품이 생산 차수에 포함되어 있지 않습니다'
+  }
+  return null
+}
+
+function CostSummary({ production, marketing }: { production: number; marketing: number }) {
+  return (
+    <dl className="flex items-center justify-end gap-4 text-xs text-muted-foreground tabular-nums">
+      <div className="flex items-center gap-1.5">
+        <dt>생산비</dt>
+        <dd className="font-medium text-foreground">{fmtKRW(production)}</dd>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <dt>초기 마케팅비</dt>
+        <dd className="font-medium text-foreground">{fmtKRW(marketing)}</dd>
+      </div>
+      <div className="flex items-center gap-1.5 border-l pl-4">
+        <dt>총 반영 원가</dt>
+        <dd className="text-sm font-semibold text-foreground">{fmtKRW(production + marketing)}</dd>
+      </div>
+    </dl>
+  )
 }
 
 // YYYY-MM-DD
@@ -390,6 +459,8 @@ export function ProductionRunFormDialog({
 
           // costMode
           setCostMode(r.costMode)
+          const loadedProducts = uniqueProducts(r.items.map((it) => ({ ...it, totalStock: 0 })))
+          const singleProductId = loadedProducts.length === 1 ? loadedProducts[0].productId : null
 
           if (r.costMode === 'TOTAL') {
             if (r.costs.length > 0) {
@@ -399,6 +470,11 @@ export function ProductionRunFormDialog({
                   itemName: c.itemName,
                   amount: String(c.unitPrice),
                   vatIncluded: c.vatIncluded ?? true,
+                  category: c.category ?? 'OTHER',
+                  targetProductId:
+                    c.category === 'MARKETING' && !c.targetProductId
+                      ? singleProductId
+                      : c.targetProductId,
                 }))
               )
             } else if (r.totalCost != null && r.totalCost > 0) {
@@ -408,6 +484,8 @@ export function ProductionRunFormDialog({
                   itemName: '총 원가',
                   amount: String(r.totalCost),
                   vatIncluded: true,
+                  category: 'OTHER',
+                  targetProductId: null,
                 },
               ])
             } else {
@@ -427,6 +505,11 @@ export function ProductionRunFormDialog({
                   unitPrice: String(c.unitPrice),
                   note: c.note ?? '',
                   vatIncluded: c.vatIncluded ?? true,
+                  category: c.category ?? 'OTHER',
+                  targetProductId:
+                    c.category === 'MARKETING' && !c.targetProductId
+                      ? singleProductId
+                      : c.targetProductId,
                 }))
               )
             } else {
@@ -491,6 +574,26 @@ export function ProductionRunFormDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, runId])
 
+  const productChoices = uniqueProducts(optionItems)
+  const singleProductId = productChoices.length === 1 ? productChoices[0].productId : null
+
+  useEffect(() => {
+    if (!singleProductId) return
+
+    const fillEmptyMarketingTarget = <T extends CostTarget>(rows: T[]) => {
+      let changed = false
+      const next = rows.map((row) => {
+        if (row.category !== 'MARKETING' || row.targetProductId) return row
+        changed = true
+        return { ...row, targetProductId: singleProductId }
+      })
+      return changed ? next : rows
+    }
+
+    setTotalCostItems(fillEmptyMarketingTarget)
+    setCostRows(fillEmptyMarketingTarget)
+  }, [singleProductId])
+
   // ── 옵션 피커에서 상품 단위 픽업 (해당 상품의 전체 옵션 교체)
   function handlePickProduct(productId: string, opts: PickedOption[]) {
     setOptionItems((prev) => {
@@ -544,6 +647,23 @@ export function ProductionRunFormDialog({
     setTotalCostItems((prev) => prev.map((r) => (r._key === key ? { ...r, [field]: val } : r)))
   }
 
+  function updateTotalCostTarget(key: string, target: Partial<CostTarget>) {
+    setTotalCostItems((prev) =>
+      prev.map((row) => {
+        if (row._key !== key) return row
+        const category = target.category ?? row.category
+        return {
+          ...row,
+          ...target,
+          targetProductId:
+            category === 'MARKETING'
+              ? (target.targetProductId ?? row.targetProductId ?? singleProductId)
+              : null,
+        }
+      })
+    )
+  }
+
   function toggleTotalCostVat(key: string, val: boolean) {
     setTotalCostItems((prev) => prev.map((r) => (r._key === key ? { ...r, vatIncluded: val } : r)))
   }
@@ -565,6 +685,23 @@ export function ProductionRunFormDialog({
     setCostRows((prev) => prev.map((r) => (r._key === key ? { ...r, [field]: val } : r)))
   }
 
+  function updateCostTarget(key: string, target: Partial<CostTarget>) {
+    setCostRows((prev) =>
+      prev.map((row) => {
+        if (row._key !== key) return row
+        const category = target.category ?? row.category
+        return {
+          ...row,
+          ...target,
+          targetProductId:
+            category === 'MARKETING'
+              ? (target.targetProductId ?? row.targetProductId ?? singleProductId)
+              : null,
+        }
+      })
+    )
+  }
+
   function toggleCostRowVat(key: string, val: boolean) {
     setCostRows((prev) => prev.map((r) => (r._key === key ? { ...r, vatIncluded: val } : r)))
   }
@@ -572,6 +709,14 @@ export function ProductionRunFormDialog({
   // ── 합계
   const breakdownTotal = costRows.reduce((s, r) => s + calcRowAmount(r), 0)
   const totalCostSum = totalCostItems.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0)
+  const breakdownMarketingTotal = costRows.reduce(
+    (sum, row) => sum + (row.category === 'MARKETING' ? calcRowAmount(row) : 0),
+    0
+  )
+  const totalMarketingSum = totalCostItems.reduce(
+    (sum, row) => sum + (row.category === 'MARKETING' ? parseFloat(row.amount) || 0 : 0),
+    0
+  )
 
   // ── 입고완료 차수면 발주/입고/차이 컬럼 표시 (입고는 표시 전용)
   const showStockCols = status === 'STOCKED_IN'
@@ -634,6 +779,16 @@ export function ProductionRunFormDialog({
       }
     }
 
+    const validProductIds = new Set(validItems.map((item) => item.productId))
+    const activeCosts = costMode === 'TOTAL' ? totalCostItems : costRows
+    for (const row of activeCosts) {
+      const error = marketingTargetError(row, validProductIds)
+      if (error) {
+        toast.error(error)
+        return
+      }
+    }
+
     // body 구성
     const body: Record<string, unknown> = {
       runNo: runNo.trim(),
@@ -668,6 +823,8 @@ export function ProductionRunFormDialog({
         unitPrice: parseFloat(r.amount),
         sortOrder: i,
         vatIncluded: r.vatIncluded,
+        category: r.category,
+        targetProductId: r.category === 'MARKETING' ? r.targetProductId : null,
       }))
     } else {
       // BREAKDOWN: totalCost는 서버가 계산 — 미전송
@@ -680,6 +837,8 @@ export function ProductionRunFormDialog({
         note: r.note.trim() || undefined,
         sortOrder: i,
         vatIncluded: r.vatIncluded,
+        category: r.category,
+        targetProductId: r.category === 'MARKETING' ? r.targetProductId : null,
       }))
     }
 
@@ -705,6 +864,73 @@ export function ProductionRunFormDialog({
     }
   }
 
+  const currentProductIds = new Set(productChoices.map((product) => product.productId))
+
+  function renderCostTargetCells(row: CostTarget, update: (target: Partial<CostTarget>) => void) {
+    const error = marketingTargetError(row, currentProductIds)
+    const selectedProduct = productChoices.find(
+      (product) => product.productId === row.targetProductId
+    )
+    const staleTarget = Boolean(row.targetProductId && !currentProductIds.has(row.targetProductId))
+
+    return (
+      <>
+        <td className="py-1.5 pr-2 align-top">
+          <Select
+            value={row.category}
+            onValueChange={(category) => update({ category: category as CostCategory })}
+          >
+            <SelectTrigger size="sm" className="w-full" aria-label="비용 분류">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.entries(COST_CATEGORY_LABEL) as Array<[CostCategory, string]>).map(
+                ([category, label]) => (
+                  <SelectItem key={category} value={category}>
+                    {label}
+                  </SelectItem>
+                )
+              )}
+            </SelectContent>
+          </Select>
+        </td>
+        <td className="py-1.5 pr-2 align-top">
+          {row.category === 'MARKETING' ? (
+            <div className="space-y-1">
+              <Select
+                value={row.targetProductId ?? ''}
+                onValueChange={(targetProductId) => update({ targetProductId })}
+                disabled={productChoices.length === 1 && !staleTarget}
+              >
+                <SelectTrigger
+                  size="sm"
+                  className="w-full"
+                  aria-label="대상 상품"
+                  aria-invalid={error ? true : undefined}
+                >
+                  <SelectValue placeholder="대상 상품 선택">
+                    {selectedProduct?.productName ??
+                      (row.targetProductId ? '삭제된 상품' : undefined)}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {productChoices.map((product) => (
+                    <SelectItem key={product.productId} value={product.productId}>
+                      {product.productName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {error && <p className="text-[11px] leading-tight text-destructive">{error}</p>}
+            </div>
+          ) : (
+            <span className="inline-block py-1.5 text-xs text-muted-foreground">—</span>
+          )}
+        </td>
+      </>
+    )
+  }
+
   // ── 상품별 그룹핑
   const productGroups = Array.from(
     optionItems.reduce((map, it) => {
@@ -726,7 +952,10 @@ export function ProductionRunFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="flex max-h-[90vh] max-w-3xl flex-col overflow-hidden">
+        <DialogContent
+          className="flex max-h-[90vh] max-w-3xl flex-col overflow-hidden"
+          aria-describedby={undefined}
+        >
           <DialogHeader>
             <DialogTitle>{isEdit ? '차수 수정' : '차수 추가'}</DialogTitle>
           </DialogHeader>
@@ -1032,23 +1261,29 @@ export function ProductionRunFormDialog({
                       </p>
                     ) : (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full min-w-[772px] table-fixed text-sm">
                           <thead>
                             <tr className="border-b text-xs text-muted-foreground">
-                              <th className="pr-2 pb-1.5 text-left font-medium">항목명 *</th>
-                              <th className="w-40 pr-2 pb-1.5 text-right font-medium">
+                              <th className="w-[190px] pr-2 pb-1.5 text-left font-medium">
+                                항목명 *
+                              </th>
+                              <th className="w-[130px] pr-2 pb-1.5 text-left font-medium">분류</th>
+                              <th className="w-[180px] pr-2 pb-1.5 text-left font-medium">
+                                대상 상품
+                              </th>
+                              <th className="w-[140px] pr-2 pb-1.5 text-right font-medium">
                                 금액 (₩) *
                               </th>
-                              <th className="w-24 pr-2 pb-1.5 text-center font-medium">
+                              <th className="w-[96px] pr-2 pb-1.5 text-center font-medium">
                                 <VatColumnHeader />
                               </th>
-                              <th className="w-7 pb-1.5" />
+                              <th className="w-[36px] pb-1.5" />
                             </tr>
                           </thead>
                           <tbody className="divide-y">
                             {totalCostItems.map((row) => (
                               <tr key={row._key}>
-                                <td className="py-1.5 pr-2">
+                                <td className="sticky left-0 z-10 bg-background py-1.5 pr-2 align-top">
                                   <Input
                                     value={row.itemName}
                                     onChange={(e) =>
@@ -1058,6 +1293,9 @@ export function ProductionRunFormDialog({
                                     className="h-7 text-sm"
                                   />
                                 </td>
+                                {renderCostTargetCells(row, (target) =>
+                                  updateTotalCostTarget(row._key, target)
+                                )}
                                 <td className="py-1.5 pr-2">
                                   <Input
                                     type="number"
@@ -1085,6 +1323,7 @@ export function ProductionRunFormDialog({
                                     variant="ghost"
                                     size="icon"
                                     className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                    aria-label={`${row.itemName || '원가 항목'} 삭제`}
                                     onClick={() => removeTotalCostItem(row._key)}
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
@@ -1103,9 +1342,10 @@ export function ProductionRunFormDialog({
                         항목 추가
                       </Button>
                       {totalCostItems.length > 0 && (
-                        <p className="text-sm font-medium">
-                          총 원가 <span className="text-base">{fmtKRW(totalCostSum)}</span>
-                        </p>
+                        <CostSummary
+                          production={totalCostSum - totalMarketingSum}
+                          marketing={totalMarketingSum}
+                        />
                       )}
                     </div>
 
@@ -1121,20 +1361,30 @@ export function ProductionRunFormDialog({
                       </p>
                     ) : (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full min-w-[1200px] table-fixed text-sm">
                           <thead>
                             <tr className="border-b text-xs text-muted-foreground">
-                              <th className="pr-2 pb-1.5 text-left font-medium">비용항목 *</th>
-                              <th className="pr-2 pb-1.5 text-left font-medium">상세</th>
-                              <th className="w-16 pr-2 pb-1.5 text-right font-medium">규격</th>
-                              <th className="w-16 pr-2 pb-1.5 text-right font-medium">수량 *</th>
-                              <th className="w-24 pr-2 pb-1.5 text-right font-medium">단가 *</th>
-                              <th className="w-24 pr-2 pb-1.5 text-right font-medium">금액</th>
-                              <th className="w-20 pr-2 pb-1.5 text-left font-medium">비고</th>
-                              <th className="w-24 pr-2 pb-1.5 text-center font-medium">
+                              <th className="w-[160px] pr-2 pb-1.5 text-left font-medium">
+                                비용항목 *
+                              </th>
+                              <th className="w-[130px] pr-2 pb-1.5 text-left font-medium">분류</th>
+                              <th className="w-[180px] pr-2 pb-1.5 text-left font-medium">
+                                대상 상품
+                              </th>
+                              <th className="w-[150px] pr-2 pb-1.5 text-left font-medium">상세</th>
+                              <th className="w-[70px] pr-2 pb-1.5 text-right font-medium">규격</th>
+                              <th className="w-[70px] pr-2 pb-1.5 text-right font-medium">
+                                수량 *
+                              </th>
+                              <th className="w-[110px] pr-2 pb-1.5 text-right font-medium">
+                                단가 *
+                              </th>
+                              <th className="w-[110px] pr-2 pb-1.5 text-right font-medium">금액</th>
+                              <th className="w-[90px] pr-2 pb-1.5 text-left font-medium">비고</th>
+                              <th className="w-[94px] pr-2 pb-1.5 text-center font-medium">
                                 <VatColumnHeader />
                               </th>
-                              <th className="w-7 pb-1.5" />
+                              <th className="w-[36px] pb-1.5" />
                             </tr>
                           </thead>
                           <tbody className="divide-y">
@@ -1142,7 +1392,7 @@ export function ProductionRunFormDialog({
                               const amount = calcRowAmount(row)
                               return (
                                 <tr key={row._key}>
-                                  <td className="py-1.5 pr-2">
+                                  <td className="sticky left-0 z-10 bg-background py-1.5 pr-2 align-top">
                                     <Input
                                       value={row.itemName}
                                       onChange={(e) =>
@@ -1152,6 +1402,9 @@ export function ProductionRunFormDialog({
                                       className="h-7 text-sm"
                                     />
                                   </td>
+                                  {renderCostTargetCells(row, (target) =>
+                                    updateCostTarget(row._key, target)
+                                  )}
                                   <td className="py-1.5 pr-2">
                                     <Input
                                       value={row.description}
@@ -1226,6 +1479,7 @@ export function ProductionRunFormDialog({
                                       variant="ghost"
                                       size="icon"
                                       className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                      aria-label={`${row.itemName || '원가 항목'} 삭제`}
                                       onClick={() => removeCostRow(row._key)}
                                     >
                                       <Trash2 className="h-3.5 w-3.5" />
@@ -1245,9 +1499,10 @@ export function ProductionRunFormDialog({
                         항목 추가
                       </Button>
                       {costRows.length > 0 && (
-                        <p className="text-sm font-medium">
-                          합계 <span className="text-base">{fmtKRW(breakdownTotal)}</span>
-                        </p>
+                        <CostSummary
+                          production={breakdownTotal - breakdownMarketingTotal}
+                          marketing={breakdownMarketingTotal}
+                        />
                       )}
                     </div>
                   </TabsContent>
