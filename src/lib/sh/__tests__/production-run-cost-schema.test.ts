@@ -1,4 +1,4 @@
-import { productionRunCostSchema } from '@/lib/sh/schemas'
+import { productionRunCostSchema, productionRunPatchSchema } from '@/lib/sh/schemas'
 
 const baseInput = {
   itemName: '체험단',
@@ -86,5 +86,36 @@ describe('productionRunCostSchema', () => {
     })
 
     expect(result.success).toBe(false)
+  })
+})
+
+describe('productionRunPatchSchema costs', () => {
+  test('costs를 전달하지 않으면 undefined를 유지한다', () => {
+    expect(productionRunPatchSchema.parse({}).costs).toBeUndefined()
+  })
+
+  test('비용 분류와 VAT 여부를 전달하지 않으면 기본값을 적용한다', () => {
+    const result = productionRunPatchSchema.parse({ costs: [baseInput] })
+
+    expect(result.costs?.[0]).toMatchObject({ category: 'OTHER', vatIncluded: true })
+  })
+
+  test.each([null, 'product-12345678', ''])(
+    '비마케팅 비용의 대상 상품 ID %p를 제거한다',
+    (targetProductId) => {
+      const result = productionRunPatchSchema.parse({
+        costs: [{ ...baseInput, category: 'MATERIAL', targetProductId }],
+      })
+
+      expect(result.costs?.[0].targetProductId).toBeUndefined()
+    }
+  )
+
+  test('마케팅 비용의 대상 상품 ID를 보존한다', () => {
+    const result = productionRunPatchSchema.parse({
+      costs: [{ ...baseInput, category: 'MARKETING', targetProductId: 'product-12345678' }],
+    })
+
+    expect(result.costs?.[0].targetProductId).toBe('product-12345678')
   })
 })
