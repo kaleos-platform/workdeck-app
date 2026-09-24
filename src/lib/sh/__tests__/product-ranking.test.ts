@@ -90,3 +90,55 @@ describe('buildProductRanking', () => {
     expect(r.unmatched.share).toBeNull()
   })
 })
+
+describe('buildProductRanking — 직전 구간에만 있던 항목의 이름', () => {
+  it('prevTotals 가 실어온 이름을 쓴다', () => {
+    const r = buildProductRanking(
+      [row({ productId: 'p1', revenue: 1000 })],
+      [
+        {
+          optionId: 'oX',
+          productId: 'pGone',
+          quantity: 5,
+          revenue: 5000,
+          productName: '단종된 상품',
+          optionName: '블랙 / L',
+        },
+      ],
+      NONE
+    )
+    const gone = r.rows.find((x) => x.productId === 'pGone')!
+    expect(gone.productName).toBe('단종된 상품')
+    expect(gone.options[0].optionName).toBe('블랙 / L')
+    expect(gone.prevRevenue).toBe(5000)
+  })
+
+  it('이름이 없으면 placeholder 로 떨어지되 "판매 없음" 문구를 쓰지 않는다', () => {
+    const r = buildProductRanking(
+      [row({ productId: 'p1' })],
+      [{ optionId: 'oX', productId: 'pGone', quantity: 1, revenue: 100 }],
+      NONE
+    )
+    const gone = r.rows.find((x) => x.productId === 'pGone')!
+    expect(gone.productName).toBe('(이름 미상)')
+  })
+
+  it('현재 구간에도 있는 상품은 현재 이름이 유지된다', () => {
+    const r = buildProductRanking(
+      [row({ productId: 'p1', productName: '현재 이름', optionId: 'o1' })],
+      [
+        {
+          optionId: 'o1',
+          productId: 'p1',
+          quantity: 1,
+          revenue: 500,
+          productName: '예전 이름',
+          optionName: '예전 옵션',
+        },
+      ],
+      NONE
+    )
+    expect(r.rows[0].productName).toBe('현재 이름')
+    expect(r.rows[0].prevRevenue).toBe(500)
+  })
+})
