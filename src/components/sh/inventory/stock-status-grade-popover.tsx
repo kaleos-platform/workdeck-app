@@ -27,9 +27,10 @@ type Props = {
   onSaved: () => void
 }
 
+// '30' 은 폴백 동작이 auto 와 같아 선택지에서 뺐다(고르면 아무 변화가 없어 오해를 준다).
+// 과거에 저장된 30 값은 readStockGradeSettings 가 그대로 읽고 auto 와 동일하게 동작한다.
 const AVG_WINDOW_LABEL: Record<string, string> = {
   auto: '30일 우선 (없으면 90일)',
-  '30': '30일 기준',
   '90': '90일 기준',
 }
 
@@ -154,7 +155,7 @@ export function StockStatusGradePopover({ settings, onSaved }: Props) {
           <div className="space-y-1">
             <Label className="text-xs">일평균 기준 기간</Label>
             <Select
-              value={String(draft.avgWindow)}
+              value={draft.avgWindow === 90 ? '90' : 'auto'}
               onValueChange={(v) =>
                 setDraft((d) => ({
                   ...d,

@@ -168,15 +168,21 @@ export function StockStatusBoard() {
     })
   }, [])
 
-  const handleToggleLocation = useCallback((locationId: string) => {
-    setHiddenLocationIds((current) => {
-      const next = current.includes(locationId)
-        ? current.filter((id) => id !== locationId)
-        : [...current, locationId]
-      window.localStorage.setItem(HIDDEN_LOCATIONS_STORAGE_KEY, JSON.stringify(next))
-      return next
-    })
-  }, [])
+  const handleToggleLocation = useCallback(
+    (locationId: string) => {
+      setHiddenLocationIds((current) => {
+        const toggled = current.includes(locationId)
+          ? current.filter((id) => id !== locationId)
+          : [...current, locationId]
+        // 삭제·비활성된 위치 ID 가 계속 쌓이지 않도록 저장 시점에 현재 목록과 교집합만 남긴다.
+        const alive = new Set((data?.locations ?? []).map((l) => l.id))
+        const next = toggled.filter((id) => alive.has(id))
+        window.localStorage.setItem(HIDDEN_LOCATIONS_STORAGE_KEY, JSON.stringify(next))
+        return next
+      })
+    },
+    [data?.locations]
+  )
 
   const handleShowAllLocations = useCallback(() => {
     setHiddenLocationIds([])
