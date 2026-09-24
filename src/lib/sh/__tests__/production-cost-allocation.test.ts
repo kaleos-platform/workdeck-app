@@ -109,6 +109,30 @@ describe('calculateProductUnitCosts', () => {
     })
   })
 
+  test('마케팅 비용만 있는 차수는 totalCost를 생산비로 fallback하지 않는다', () => {
+    const result = calculateProductUnitCosts([
+      run({
+        totalCost: 500_000,
+        items: [{ productId: 'p1', quantity: 10, stockedInQty: 10 }],
+        costs: [
+          {
+            amount: 1_000,
+            vatIncluded: false,
+            category: 'MARKETING',
+            targetProductId: 'p1',
+          },
+        ],
+      }),
+    ])
+
+    expect(result.get('p1')).toEqual({
+      productionUnitCost: 0,
+      marketingUnitCost: 100,
+      totalUnitCost: 100,
+      runCount: 1,
+    })
+  })
+
   test('동일 상품의 여러 option item을 합산한다', () => {
     const result = calculateProductUnitCosts([
       run({
@@ -178,6 +202,28 @@ describe('calculateProductUnitCosts', () => {
     ])
 
     expect(result.get('p1')?.marketingUnitCost).toBe(700)
+    expect(result.get('p2')?.marketingUnitCost).toBe(0)
+  })
+
+  test('입고수량이 0인 대상 상품에는 마케팅비를 배분하지 않는다', () => {
+    const result = calculateProductUnitCosts([
+      run({
+        items: [
+          { productId: 'p1', quantity: 10, stockedInQty: 0 },
+          { productId: 'p2', quantity: 10, stockedInQty: 10 },
+        ],
+        costs: [
+          {
+            amount: 1_000,
+            vatIncluded: false,
+            category: 'MARKETING',
+            targetProductId: 'p1',
+          },
+        ],
+      }),
+    ])
+
+    expect(result.has('p1')).toBe(false)
     expect(result.get('p2')?.marketingUnitCost).toBe(0)
   })
 

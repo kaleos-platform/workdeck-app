@@ -93,7 +93,10 @@ export async function GET(
         marketingUnitCost: linkedCost?.marketingUnitCost ?? 0,
       }
     }),
-    productionCost,
+    // 기존 UI와의 하위 호환을 위해 합산 단가 alias를 유지한다.
+    productionCost: productionCost
+      ? { ...productionCost, unitCost: productionCost.totalUnitCost }
+      : null,
     useProductionCost: product.useProductionCost,
   })
 }

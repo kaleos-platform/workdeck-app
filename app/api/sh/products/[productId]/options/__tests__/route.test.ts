@@ -129,6 +129,7 @@ describe('GET /api/sh/products/[productId]/options', () => {
     expect(body.productionCost.productionUnitCost).toBeCloseTo(10_000, 10)
     expect(body.productionCost.marketingUnitCost).toBeCloseTo(3_000, 10)
     expect(body.productionCost.totalUnitCost).toBeCloseTo(13_000, 10)
+    expect(body.productionCost.unitCost).toBe(body.productionCost.totalUnitCost)
     expect(body.productionCost.runCount).toBe(1)
     expect(body.options[0]).toEqual(
       expect.objectContaining({
@@ -168,6 +169,31 @@ describe('GET /api/sh/products/[productId]/options', () => {
       expect.objectContaining({
         effectiveCostPrice: 9_000,
         productionUnitCost: 9_000,
+        marketingUnitCost: 0,
+      })
+    )
+  })
+
+  test('수동 원가와 생산 차수 결과가 모두 없으면 null을 유지한다', async () => {
+    const prisma = ensureMocks()
+    prisma.invProduct.findFirst.mockResolvedValue({ id: 'p1', useProductionCost: true })
+    prisma.invProductOption.findMany.mockResolvedValue([
+      {
+        id: 'o1',
+        name: 'A',
+        costPrice: null,
+        costVatIncluded: true,
+      },
+    ])
+
+    const response = await callGet()
+    const body = await response.json()
+
+    expect(body.productionCost).toBeNull()
+    expect(body.options[0]).toEqual(
+      expect.objectContaining({
+        effectiveCostPrice: null,
+        productionUnitCost: null,
         marketingUnitCost: 0,
       })
     )
