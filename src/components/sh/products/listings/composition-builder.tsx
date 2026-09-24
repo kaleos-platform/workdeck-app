@@ -15,7 +15,6 @@ import {
   attributeValuesOf,
   buildBackedValueSet,
   buildMultiProductBundleGroups,
-  buildSimpleCompositionGroups,
   cartesianFromAttrState,
   diagnoseComposition,
   findMatchingOption,
@@ -183,9 +182,6 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState<BuilderMode>('simple')
 
-  // simple 모드
-  const [setQuantities, setSetQuantities] = useState<number[]>([1])
-
   // advanced 모드
   const [attrState, setAttrState] = useState<Record<string, AttrState>>({})
   const [bundles, setBundles] = useState<Bundle[]>([{ id: 'b1', valueQuantities: {} }])
@@ -197,7 +193,6 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
   useEffect(() => {
     if (!product) {
       setAttrState({})
-      setSetQuantities([1])
       setBundles([{ id: 'b1', valueQuantities: {} }])
       setMode('simple')
       return
@@ -219,16 +214,14 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
     const load = async () => {
       try {
         const details = await Promise.all(rows.map((r) => fetchProductDetail(r.id)))
-        if (details.length === 1) {
-          setProduct(details[0])
-          return
-        }
+        // 옵션·세트 선택 상태는 상품 수와 무관하게 공통 (상품 1개의 "수량 세트만 구성"도 같은 UI)
         setMultiPicks(
           Object.fromEntries(
             details.map((d) => [d.id, { optionIds: d.options.map((o) => o.id), quantities: [1] }])
           )
         )
-        setMultiProducts(details)
+        if (details.length === 1) setProduct(details[0])
+        else setMultiProducts(details)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '상품 조회 실패')
       } finally {
@@ -305,19 +298,6 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
     )
   }
 
-  function toggleValue(attrName: string, value: string, on: boolean) {
-    setAttrState((prev) => {
-      const current = prev[attrName] ?? { enabled: true, valueQuantities: {} }
-      const valueQuantities = { ...current.valueQuantities }
-      if (on) {
-        valueQuantities[value] = valueQuantities[value] ?? 1
-      } else {
-        delete valueQuantities[value]
-      }
-      return { ...prev, [attrName]: { ...current, valueQuantities } }
-    })
-  }
-
   function emit(groups: BuiltGroup[]) {
     if (!product) return
     const ctx: ProductContext = {
@@ -376,22 +356,10 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
 
   function commitSimple() {
     if (!product) return
-    const groups = buildSimpleCompositionGroups({ product, attrState, setQuantities })
+    const groups = buildMultiProductBundleGroups(multiPicksToInput([product], multiPicks))
     if (groups.length === 0) {
-      const attrs = product.optionAttributes ?? []
-      const diag = diagnoseComposition(product, cartesianFromAttrState(attrs, attrState))
-      toast.error(
-        diag.message || '생성 가능한 옵션 조합이 없습니다. 상품 옵션의 속성값을 확인해 주세요'
-      )
+      toast.error('구성할 옵션을 1개 이상 선택하세요')
       return
-    }
-    // PARTIAL — 일부 조합만 backed: backed 조합으로 진행하되 누락을 경고
-    const diag = diagnoseComposition(
-      product,
-      cartesianFromAttrState(product.optionAttributes ?? [], attrState)
-    )
-    if (diag.caseType === 'PARTIAL') {
-      toast.warning(diag.message)
     }
     emit(groups)
   }
@@ -623,23 +591,10 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
                   </TabsList>
 
                   <TabsContent value="simple" className="mt-3">
-                    <SimpleModeSettings
-                      product={product}
-                      setQuantities={setQuantities}
-                      onAddBundle={() => setSetQuantities((prev) => [...prev, 1])}
-                      onRemoveBundle={(idx) =>
-                        setSetQuantities((prev) =>
-                          prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
-                        )
-                      }
-                      onUpdateBundleQty={(idx, q) =>
-                        setSetQuantities((prev) =>
-                          prev.map((x, i) => (i === idx ? Math.max(1, q) : x))
-                        )
-                      }
-                      attrState={attrState}
-                      onToggleAttr={toggleAttr}
-                      onToggleValue={toggleValue}
+                    <MultiProductSettings
+                      products={[product]}
+                      picks={multiPicks}
+                      onPicksChange={setMultiPicks}
                     />
                   </TabsContent>
 
@@ -1252,10 +1207,14 @@ function MultiProductSettings({
         const pick = pickOf(p.id)
         return (
           <div key={p.id} className="space-y-2 rounded-md border bg-background p-3">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">상품</Badge>
-              <p className="min-w-0 flex-1 truncate text-sm font-medium">{productDisplayName(p)}</p>
-            </div>
+            {products.length > 1 && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">상품</Badge>
+                <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                  {productDisplayName(p)}
+                </p>
+              </div>
+            )}
             {p.options.length === 0 ? (
               <p className="text-xs text-amber-700 dark:text-amber-400">
                 옵션이 없는 상품이라 조합에서 제외됩니다
@@ -1432,118 +1391,6 @@ function SelectedProductHeader({ product }: { product: ProductDetail }) {
           {product.brand?.name ?? '브랜드 없음'} · 옵션 {product.options.length}개
         </p>
       </div>
-    </div>
-  )
-}
-
-// ─── Simple 모드 ─────────────────────────────────────────────────────────────
-function SimpleModeSettings({
-  product,
-  setQuantities,
-  onAddBundle,
-  onRemoveBundle,
-  onUpdateBundleQty,
-  attrState,
-  onToggleAttr,
-  onToggleValue,
-}: {
-  product: ProductDetail
-  setQuantities: number[]
-  onAddBundle: () => void
-  onRemoveBundle: (idx: number) => void
-  onUpdateBundleQty: (idx: number, qty: number) => void
-  attrState: Record<string, AttrState>
-  onToggleAttr: (name: string, enabled: boolean) => void
-  onToggleValue: (attrName: string, value: string, on: boolean) => void
-}) {
-  const attrs = useMemo(() => product.optionAttributes ?? [], [product.optionAttributes])
-  // 정의 cartesian(전체 선택 조합) + 뒷받침 진단을 단일 source로 계산
-  const allCombos = useMemo(
-    () =>
-      attrs.length === 0
-        ? product.options.length > 0
-          ? [{} as Record<string, string>]
-          : []
-        : cartesianFromAttrState(attrs, attrState),
-    [attrs, attrState, product.options.length]
-  )
-  const diag = useMemo(() => diagnoseComposition(product, allCombos), [product, allCombos])
-  // 옵션 행이 실제 보유한 (속성, 값) 집합 — 인라인 배지용
-  const backedValueSet = useMemo(() => buildBackedValueSet(product.options), [product.options])
-
-  // 미리보기는 실제 생성 결과(뒷받침되는 조합만)에서 — false confidence 방지
-  const previewGroups = buildSimpleCompositionGroups({ product, attrState, setQuantities })
-
-  return (
-    <div className="space-y-3">
-      {attrs.length > 0 && diag.caseType !== 'OK' && (
-        <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-300">
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <span>{diag.message}</span>
-        </div>
-      )}
-      {attrs.length > 0 && (
-        <div className="space-y-2 rounded-md border bg-background p-3">
-          <div className="text-xs font-medium">옵션 선택 (선택 안 하면 전체)</div>
-          <div className="space-y-2">
-            {attrs.map((attr) => {
-              const state = attrState[attr.name] ?? { enabled: false, valueQuantities: {} }
-              return (
-                <div key={attr.name} className="rounded-md border p-2">
-                  <label className="flex cursor-pointer items-center gap-2 text-xs">
-                    <Checkbox
-                      checked={state.enabled}
-                      onCheckedChange={(v) => onToggleAttr(attr.name, v === true)}
-                    />
-                    <span className="font-medium">{attr.name}</span>
-                    <span className="text-muted-foreground">(값 {attr.values.length}개)</span>
-                  </label>
-                  {state.enabled && (
-                    <div className="mt-2 flex flex-wrap gap-1.5 pl-6">
-                      {attributeValuesOf(attr).map((value) => {
-                        const checked = state.valueQuantities[value] !== undefined
-                        const unbacked = !backedValueSet.has(`${attr.name.trim()} ${value}`)
-                        return (
-                          <label
-                            key={value}
-                            className={`inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs ${
-                              checked ? 'border-primary bg-primary/10' : 'hover:bg-muted'
-                            }`}
-                          >
-                            <Checkbox
-                              checked={checked}
-                              onCheckedChange={(c) => onToggleValue(attr.name, value, c === true)}
-                            />
-                            <span>{value}</span>
-                            {unbacked && (
-                              <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 text-[10px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
-                                <AlertTriangle className="h-2.5 w-2.5" />
-                                옵션 없음
-                              </span>
-                            )}
-                          </label>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      <SetTable
-        columns={['수량']}
-        rows={setQuantities.map((q) => [q])}
-        min={1}
-        onAdd={onAddBundle}
-        onRemove={onRemoveBundle}
-        onChange={(r, _c, q) => onUpdateBundleQty(r, q)}
-        hint="선택한 옵션마다 세트 수만큼 판매 옵션이 생성됩니다"
-      />
-
-      <PreviewSummary groups={previewGroups} />
     </div>
   )
 }
