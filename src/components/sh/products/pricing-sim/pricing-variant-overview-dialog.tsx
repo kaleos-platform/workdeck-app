@@ -36,6 +36,8 @@ export type OverviewVariantRow = {
   name: string
   cost: number | null
   retail: number | null
+  /** 선택된 판매채널 수 (시뮬 대상에서 빠져 표에 안 나오는 채널 포함) */
+  selectedCount: number
   channels: OverviewChannelRow[]
 }
 
@@ -122,7 +124,11 @@ export function PricingVariantOverviewDialog({
                     >
                       {variantCells}
                       <TableCell colSpan={7} className="text-muted-foreground">
-                        {v.cost == null ? '상품 미선택' : '판매채널 없음'}
+                        {v.cost == null
+                          ? '상품 미선택'
+                          : v.selectedCount > 0
+                            ? '선택한 판매채널이 시뮬레이션 대상에서 제외됨'
+                            : '판매채널 없음'}
                       </TableCell>
                     </TableRow>
                   )

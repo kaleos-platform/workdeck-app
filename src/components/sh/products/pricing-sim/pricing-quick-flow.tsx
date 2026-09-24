@@ -831,27 +831,69 @@ export function PricingQuickFlow({
     if (!id) return
 
     const fresh = candidates.find((c) => c.id === id)
-    // 비활성화·판매채널 해제·시뮬레이션 미사용으로 바뀌면 시뮬 대상에서 제외
+    const without = <T,>(rec: Record<string, T> | undefined) => {
+      if (!rec || !(id in rec)) return rec
+      const next = { ...rec }
+      delete next[id]
+      return next
+    }
+    // 비활성화·판매채널 해제·시뮬레이션 미사용으로 바뀌면 시뮬 대상에서 제외 — 채널은 조합별이라
+    // 활성 조합(라이브 상태)뿐 아니라 보관된 비활성 조합에서도 함께 뺀다.
     if (!fresh || fresh.useSimulation === false) {
-      if (selectedChannelIds.includes(id)) {
-        removeChannel(id)
+      const inInactive = variants.some(
+        (v) => v.id !== activeVariantId && v.data?.selectedChannelIds?.includes(id)
+      )
+      if (selectedChannelIds.includes(id)) removeChannel(id)
+      if (inInactive) {
+        setVariants((prev) =>
+          prev.map((v) =>
+            v.id === activeVariantId || !v.data
+              ? v
+              : {
+                  ...v,
+                  data: {
+                    ...v.data,
+                    selectedChannelIds: v.data.selectedChannelIds?.filter((c) => c !== id),
+                    chOverrides: without(v.data.chOverrides),
+                    manualPrices: without(v.data.manualPrices),
+                    chPromotions: without(v.data.chPromotions),
+                  },
+                }
+          )
+        )
+      }
+      if (selectedChannelIds.includes(id) || inInactive) {
         toast.info('시뮬레이션 대상에서 제외되어 채널 목록에서 빠졌습니다')
       }
       return
     }
 
-    setChOverrides((prev) => {
-      const cur = prev[id]
-      // 선택했던 수수료 카테고리가 남아있으면 유지, 없어졌으면 '기본'으로 폴백
+    // 채널 마스터 변경분으로 재시드 — 선택했던 수수료 카테고리가 남아있으면 유지, 없으면 '기본'.
+    // applyAdCost는 채널 마스터가 아니라 시뮬 전용 토글(seedOverride가 항상 false) —
+    // 사용자가 켜둔 상태를 재시드로 꺼버리지 않는다.
+    const reseed = (cur: { feeCategory?: string; applyAdCost: boolean } | undefined) => {
       const keepCategory =
         cur && fresh.feeRates.some((f) => f.categoryName === cur.feeCategory)
-          ? cur.feeCategory
+          ? (cur.feeCategory ?? '기본')
           : '기본'
       const seeded = seedOverride(fresh, settings, keepCategory)
-      // applyAdCost는 채널 마스터가 아니라 시뮬 전용 토글(seedOverride가 항상 false) —
-      // 사용자가 켜둔 상태를 재시드로 꺼버리지 않는다.
-      return { ...prev, [id]: { ...seeded, applyAdCost: cur?.applyAdCost ?? seeded.applyAdCost } }
-    })
+      return { ...seeded, applyAdCost: cur?.applyAdCost ?? seeded.applyAdCost }
+    }
+    setChOverrides((prev) => ({ ...prev, [id]: reseed(prev[id]) }))
+    // 이 채널을 쓰는 비활성 조합에도 같은 마스터값을 반영
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === activeVariantId || !v.data?.chOverrides?.[id]
+          ? v
+          : {
+              ...v,
+              data: {
+                ...v.data,
+                chOverrides: { ...v.data.chOverrides, [id]: reseed(v.data.chOverrides[id]) },
+              },
+            }
+      )
+    )
     toast.success('채널 정보를 반영했습니다. 시뮬레이션 조정값은 채널 기준값으로 초기화됩니다')
   }
 
@@ -1261,6 +1303,7 @@ export function PricingQuickFlow({
     setSelectedChannelIds(v.selectedChannelIds ?? [])
     setChOverrides(restoreOverrides(v.chOverrides ?? {}))
     setExpandedChannels(new Set())
+    setChannelPickerId('')
   }, [])
 
   // ── 옵션 조합(탭) 조작 ────────────────────────────────────────────────────
@@ -1366,7 +1409,13 @@ export function PricingQuickFlow({
       const cost = rows.length ? rows.reduce((t, r) => t + r.costPrice * r.quantity, 0) : null
       const retailSum = rows.reduce((t, r) => t + r.retailPrice * r.quantity, 0)
       const retail = data.retailOverride ?? (retailSum > 0 ? retailSum : null)
-      const base = { variantId: v.id, name: v.name, cost, retail }
+      const base = {
+        variantId: v.id,
+        name: v.name,
+        cost,
+        retail,
+        selectedCount: data.selectedChannelIds?.length ?? 0,
+      }
       if (rows.length === 0) return { ...base, channels: [] }
       const bundle: MatrixBundle = {
         components: rows.map((r) => ({
