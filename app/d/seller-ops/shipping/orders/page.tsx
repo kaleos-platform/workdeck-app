@@ -108,6 +108,7 @@ export default function ShippingOrdersPage() {
                 key={preset.key}
                 type="button"
                 variant={activePreset === preset.key ? 'default' : 'outline'}
+                aria-pressed={activePreset === preset.key}
                 size="sm"
                 className="h-9 px-2 text-xs"
                 onClick={() => applyPreset(preset.key)}
