@@ -1,5 +1,3 @@
-import test from 'node:test'
-import assert from 'node:assert/strict'
 import { CoupangApiClient } from '../client.js'
 
 // paginate() 가 페이징 토큰을 어떤 쿼리 이름으로 보내는지 고정한다.
@@ -25,9 +23,9 @@ test('paginate — 기본 토큰 이름은 nextToken', async () => {
     { vendorId: 'A1' },
     (r) => ({ items: r.data, nextToken: r.nextToken })
   )
-  assert.deepEqual(items, ['a', 'b'])
-  assert.equal(calls[1].nextToken, 't1')
-  assert.equal(calls[1].token, undefined)
+  expect(items).toStrictEqual(['a', 'b'])
+  expect(calls[1].nextToken).toBe('t1')
+  expect(calls[1].token).toBeUndefined()
 })
 
 test('paginate — tokenParam 지정 시 그 이름으로 보낸다 (정산 = token)', async () => {
@@ -39,8 +37,8 @@ test('paginate — tokenParam 지정 시 그 이름으로 보낸다 (정산 = to
     undefined,
     'token'
   )
-  assert.equal(calls[1].token, 't1')
-  assert.equal(calls[1].nextToken, undefined)
+  expect(calls[1].token).toBe('t1')
+  expect(calls[1].nextToken).toBeUndefined()
 })
 
 test('paginate — 첫 페이지 토큰은 빈 문자열 (정산은 누락 시 400)', async () => {
@@ -52,5 +50,5 @@ test('paginate — 첫 페이지 토큰은 빈 문자열 (정산은 누락 시 4
     undefined,
     'token'
   )
-  assert.equal(calls[0].token, '')
+  expect(calls[0].token).toBe('')
 })

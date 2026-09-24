@@ -5,7 +5,7 @@
  */
 
 import { normalizeExtracted } from '@/lib/sh/product-extract'
-import { PRODUCT_DESCRIPTION_MAX } from '@/lib/sh/constants'
+import { PRODUCT_DESCRIPTION_MAX, PRODUCT_FEATURES_MAX_ITEMS } from '@/lib/sh/constants'
 
 describe('normalizeExtracted', () => {
   it('description을 PRODUCT_DESCRIPTION_MAX로 클램프하고 truncatedFields에 기록한다', () => {
@@ -63,15 +63,15 @@ describe('normalizeExtracted', () => {
     expect(out.truncatedFields).toContain('features')
   })
 
-  it('배열을 20개로 캡하고 truncatedFields에 기록한다', () => {
-    const many = Array.from({ length: 25 }, (_, i) => `item-${i}`)
+  it('features 배열을 상한으로 캡하고 truncatedFields에 기록한다', () => {
+    const many = Array.from({ length: PRODUCT_FEATURES_MAX_ITEMS + 5 }, (_, i) => `item-${i}`)
     const out = normalizeExtracted({
       description: null,
       features: many,
       certifications: [],
       confidence: 1,
     })
-    expect(out.features).toHaveLength(20)
+    expect(out.features).toHaveLength(PRODUCT_FEATURES_MAX_ITEMS)
     expect(out.truncatedFields).toContain('features')
   })
 
