@@ -174,6 +174,16 @@ function TotalCostPreview({
     }
     return amounts
   }, new Map<string, number>())
+  const hasUnallocatableMarketing =
+    isStockedIn &&
+    costItems.some(
+      (row) =>
+        row.category === 'MARKETING' &&
+        (parseFloat(row.amount) || 0) > 0 &&
+        row.targetProductId !== null &&
+        productQty.has(row.targetProductId) &&
+        (productQty.get(row.targetProductId) ?? 0) <= 0
+    )
   const productionUnit = totalQty > 0 ? productionAmount / totalQty : 0
 
   const lines = items
@@ -198,7 +208,11 @@ function TotalCostPreview({
     <div className="space-y-1 rounded-md bg-muted/50 p-3 text-xs">
       <p className="font-medium text-muted-foreground">전체 평균 단가 (자동 계산)</p>
 
-      {!hasInput ? (
+      {hasUnallocatableMarketing ? (
+        <p className="text-muted-foreground">
+          대상 상품의 실제 입고수량이 0개라 마케팅비를 배분할 수 없습니다
+        </p>
+      ) : !hasInput ? (
         <p className="text-muted-foreground">
           {totalQty === 0
             ? isStockedIn
@@ -209,7 +223,7 @@ function TotalCostPreview({
       ) : (
         <>
           <p className="font-semibold text-foreground">
-            {fmtKRW(Math.round(avgUnitCost))} / 옵션{' '}
+            {fmtKRW(Math.round(avgUnitCost))} / 개{' '}
             <span className="font-normal text-muted-foreground">
               (총 반영 원가 {fmtKRW(totalCost)} ÷ 총수량 {totalQty.toLocaleString('ko-KR')}개)
             </span>
