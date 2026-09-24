@@ -15,6 +15,7 @@ import {
   RotateCcw,
   Save,
   Settings2,
+  Table2,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -99,6 +100,12 @@ import { PricingChannelBoardCard } from './pricing-channel-board-card'
 import { type PromotionValue } from './pricing-promotion-card'
 import { PricingDefaultsDialog, type PricingFullSettings } from './pricing-defaults-dialog'
 import { PricingVariantTabs } from './pricing-variant-tabs'
+import {
+  PricingVariantOverviewDialog,
+  type OverviewVariantRow,
+} from './pricing-variant-overview-dialog'
+import { promoLabel } from './pricing-channel-board-card'
+import { computeChannelPrice } from '@/lib/sh/pricing-channel-price'
 import { mapPricingSettings } from '@/lib/sh/pricing-settings'
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
@@ -394,6 +401,13 @@ let _variantSeq = 0
 function nextVariantId(): string {
   return `variant-${++_variantSeq}`
 }
+/** 복원한 탭 id 뒤로 카운터를 올린다 — 새로고침 후 카운터가 1부터라 새 탭이 복원 탭 id와 겹치던 문제 방지 */
+function reserveVariantIds(ids: string[]): void {
+  for (const id of ids) {
+    const n = Number(/^variant-(\d+)$/.exec(id)?.[1])
+    if (n > _variantSeq) _variantSeq = n
+  }
+}
 
 /** 비활성 탭인데 아직 직렬화된 data가 없을 때(보관값 없음) 쓰는 빈 탭 — 방어적 기본값 */
 function emptyVariant(id: string, name: string): PricingVariant {
@@ -413,6 +427,23 @@ function emptyVariant(id: string, name: string): PricingVariant {
       mode: 'existing',
     },
   }
+}
+
+/** 스냅샷 채널 override → 라이브 ChOverride (구 스냅샷 누락 필드 기본값, 값 동결 복원 — 재시딩 금지) */
+function restoreOverrides(snap: Record<string, SnapChOverride>): Record<string, ChOverride> {
+  const out: Record<string, ChOverride> = {}
+  for (const [id, o] of Object.entries(snap)) {
+    out[id] = {
+      ...o,
+      feeCategory: o.feeCategory ?? '기본',
+      freeShipping: o.freeShipping ?? false,
+      freeShippingThreshold: o.freeShippingThreshold ?? null,
+      // VAT 포함 여부 미기록이면 false(기본값=미포함)
+      vatIncludedInFee: o.vatIncludedInFee ?? false,
+      paymentFeeVatIncluded: o.paymentFeeVatIncluded ?? false,
+    }
+  }
+  return out
 }
 
 /** %/₩ suffix 입력 (설정 다이얼로그 패턴 재사용) */
@@ -800,27 +831,69 @@ export function PricingQuickFlow({
     if (!id) return
 
     const fresh = candidates.find((c) => c.id === id)
-    // 비활성화·판매채널 해제·시뮬레이션 미사용으로 바뀌면 시뮬 대상에서 제외
+    const without = <T,>(rec: Record<string, T> | undefined) => {
+      if (!rec || !(id in rec)) return rec
+      const next = { ...rec }
+      delete next[id]
+      return next
+    }
+    // 비활성화·판매채널 해제·시뮬레이션 미사용으로 바뀌면 시뮬 대상에서 제외 — 채널은 조합별이라
+    // 활성 조합(라이브 상태)뿐 아니라 보관된 비활성 조합에서도 함께 뺀다.
     if (!fresh || fresh.useSimulation === false) {
-      if (selectedChannelIds.includes(id)) {
-        removeChannel(id)
+      const inInactive = variants.some(
+        (v) => v.id !== activeVariantId && v.data?.selectedChannelIds?.includes(id)
+      )
+      if (selectedChannelIds.includes(id)) removeChannel(id)
+      if (inInactive) {
+        setVariants((prev) =>
+          prev.map((v) =>
+            v.id === activeVariantId || !v.data
+              ? v
+              : {
+                  ...v,
+                  data: {
+                    ...v.data,
+                    selectedChannelIds: v.data.selectedChannelIds?.filter((c) => c !== id),
+                    chOverrides: without(v.data.chOverrides),
+                    manualPrices: without(v.data.manualPrices),
+                    chPromotions: without(v.data.chPromotions),
+                  },
+                }
+          )
+        )
+      }
+      if (selectedChannelIds.includes(id) || inInactive) {
         toast.info('시뮬레이션 대상에서 제외되어 채널 목록에서 빠졌습니다')
       }
       return
     }
 
-    setChOverrides((prev) => {
-      const cur = prev[id]
-      // 선택했던 수수료 카테고리가 남아있으면 유지, 없어졌으면 '기본'으로 폴백
+    // 채널 마스터 변경분으로 재시드 — 선택했던 수수료 카테고리가 남아있으면 유지, 없으면 '기본'.
+    // applyAdCost는 채널 마스터가 아니라 시뮬 전용 토글(seedOverride가 항상 false) —
+    // 사용자가 켜둔 상태를 재시드로 꺼버리지 않는다.
+    const reseed = (cur: { feeCategory?: string; applyAdCost: boolean } | undefined) => {
       const keepCategory =
         cur && fresh.feeRates.some((f) => f.categoryName === cur.feeCategory)
-          ? cur.feeCategory
+          ? (cur.feeCategory ?? '기본')
           : '기본'
       const seeded = seedOverride(fresh, settings, keepCategory)
-      // applyAdCost는 채널 마스터가 아니라 시뮬 전용 토글(seedOverride가 항상 false) —
-      // 사용자가 켜둔 상태를 재시드로 꺼버리지 않는다.
-      return { ...prev, [id]: { ...seeded, applyAdCost: cur?.applyAdCost ?? seeded.applyAdCost } }
-    })
+      return { ...seeded, applyAdCost: cur?.applyAdCost ?? seeded.applyAdCost }
+    }
+    setChOverrides((prev) => ({ ...prev, [id]: reseed(prev[id]) }))
+    // 이 채널을 쓰는 비활성 조합에도 같은 마스터값을 반영
+    setVariants((prev) =>
+      prev.map((v) =>
+        v.id === activeVariantId || !v.data?.chOverrides?.[id]
+          ? v
+          : {
+              ...v,
+              data: {
+                ...v.data,
+                chOverrides: { ...v.data.chOverrides, [id]: reseed(v.data.chOverrides[id]) },
+              },
+            }
+      )
+    )
     toast.success('채널 정보를 반영했습니다. 시뮬레이션 조정값은 채널 기준값으로 초기화됩니다')
   }
 
@@ -1090,34 +1163,50 @@ export function PricingQuickFlow({
     if (!matrixBundle || boardChannels.length === 0) return null
     const retailCap = effectiveRetail
     const prices: number[] = []
+    const finalPrices: number[] = []
+    let hasPromo = false
     for (const bc of boardChannels) {
-      const adless = { ...bc.channel, applyAdCost: false }
-      const m = calculateMatrix({
-        bundle: { ...matrixBundle, salePrice: 0 },
-        channel: adless,
-        promotion: { type: 'NONE', value: 0 },
+      const r = computeChannelPrice({
+        bundle: matrixBundle,
+        channel: bc.channel,
+        promotion: toMatrixPromotion(promotionOf(bc.api.id)),
         globals: buildGlobals(live, bc.adPct),
         thresholds: tierThresholds,
+        snap,
+        retailCap,
+        manualPrice: manualPrices[bc.api.id] ?? null,
       })
-      const raw = m.recommendedRetail.good
-      const recommended = raw != null && snap ? snapPrice(raw, 'end900') : raw
-      const autoPrice =
-        recommended != null && retailCap != null ? Math.min(recommended, retailCap) : recommended
-      const manual = manualPrices[bc.api.id]
-      const clampedManual =
-        manual != null && retailCap != null ? Math.min(manual, retailCap) : manual
-      const effective = clampedManual ?? autoPrice
-      if (effective != null) prices.push(Math.round(effective))
+      if (r.effectivePrice == null) continue
+      prices.push(Math.round(r.effectivePrice))
+      // 프로모션 적용가 — 카드 promoApplied 와 같은 기준(미반올림 비교)
+      const promoPrice = r.promo?.cells[0]?.finalPrice ?? r.effectivePrice
+      if (promoPrice !== r.effectivePrice) hasPromo = true
+      finalPrices.push(Math.round(promoPrice))
     }
     const min = prices.length ? Math.min(...prices) : null
     const max = prices.length ? Math.max(...prices) : null
     // 소비자가 대비 할인율(판매가 기준). 낮은 판매가=높은 할인.
-    const discountMax =
-      retailCap != null && min != null ? Math.max(0, (retailCap - min) / retailCap) : null
-    const discountMin =
-      retailCap != null && max != null ? Math.max(0, (retailCap - max) / retailCap) : null
-    return { min, max, discountMin, discountMax }
-  }, [matrixBundle, boardChannels, live, tierThresholds, snap, effectiveRetail, manualPrices])
+    const discountOf = (price: number | null) =>
+      retailCap != null && price != null ? Math.max(0, (retailCap - price) / retailCap) : null
+    const discountMax = discountOf(min)
+    const discountMin = discountOf(max)
+    // 프로모션 적용 후 최종 할인율 범위 — 실제로 가격을 낮춘 채널이 하나라도 있을 때만
+    const finalDiscountMax =
+      hasPromo && finalPrices.length ? discountOf(Math.min(...finalPrices)) : null
+    const finalDiscountMin =
+      hasPromo && finalPrices.length ? discountOf(Math.max(...finalPrices)) : null
+    return { min, max, discountMin, discountMax, finalDiscountMin, finalDiscountMax }
+  }, [
+    matrixBundle,
+    boardChannels,
+    live,
+    tierThresholds,
+    snap,
+    effectiveRetail,
+    manualPrices,
+    promotionOf,
+    toMatrixPromotion,
+  ])
 
   // ── 스냅샷 직렬화 / 복원 ───────────────────────────────────────────────────
   // 선택 상품(대표 = 첫 확정행). 번들이면 productIds에 전부 담아 구성 상품 모두 조회 대상.
@@ -1141,7 +1230,11 @@ export function PricingQuickFlow({
   const buildVariant = useCallback((): PricingVariant => {
     const snapManualPrices: Record<string, number | null> = {}
     const snapPromotions: Record<string, PromotionValue> = {}
+    const snapChOverrides: Record<string, SnapChOverride> = {}
     for (const id of selectedChannelIds) {
+      // 판매채널·채널 비용 override는 조합별 — 선택 채널 것만 담는다
+      const c = allChannels.find((ch) => ch.id === id)
+      if (c) snapChOverrides[id] = overrideOf(c)
       // 선택 채널의 수동 판매가만 담는다(제거된 채널의 stale 값 배제)
       if (manualPrices[id] != null) snapManualPrices[id] = manualPrices[id]
       // 선택 채널의 프로모션(NONE 아님)만 담는다
@@ -1172,9 +1265,13 @@ export function PricingQuickFlow({
       manualPrices: snapManualPrices,
       retailOverride,
       chPromotions: snapPromotions,
+      selectedChannelIds,
+      chOverrides: snapChOverrides,
       summary,
     }
   }, [
+    allChannels,
+    overrideOf,
     activeVariantId,
     activeVariantName,
     mode,
@@ -1191,7 +1288,7 @@ export function PricingQuickFlow({
     chPromotions,
   ])
 
-  /** 탭 data를 활성 탭("라이브 상태") setter에 적용 — 공통 상태(live/selectedChannelIds/chOverrides/snap)는 건드리지 않는다 */
+  /** 탭 data를 활성 탭("라이브 상태") setter에 적용 — 공통 상태(live/snap)는 건드리지 않는다 */
   const applyVariant = useCallback((v: PricingVariant) => {
     setMode(v.mode)
     setRows(
@@ -1203,7 +1300,10 @@ export function PricingQuickFlow({
     setManualPrices(v.manualPrices ?? {})
     setRetailOverride(v.retailOverride ?? null)
     setChPromotions(v.chPromotions ?? {})
+    setSelectedChannelIds(v.selectedChannelIds ?? [])
+    setChOverrides(restoreOverrides(v.chOverrides ?? {}))
     setExpandedChannels(new Set())
+    setChannelPickerId('')
   }, [])
 
   // ── 옵션 조합(탭) 조작 ────────────────────────────────────────────────────
@@ -1233,7 +1333,12 @@ export function PricingQuickFlow({
       { id, name, data: null },
     ])
     setActiveVariantId(id)
-    applyVariant(emptyVariant(id, name))
+    // 새 조합은 현재 조합의 판매채널·채널 비용 설정을 복사해 시작(판매가·프로모션은 비움)
+    applyVariant({
+      ...emptyVariant(id, name),
+      selectedChannelIds: current.selectedChannelIds,
+      chOverrides: current.chOverrides,
+    })
   }, [activeVariantId, buildVariant, variants, applyVariant])
 
   const duplicateVariant = useCallback(
@@ -1282,63 +1387,139 @@ export function PricingQuickFlow({
     setVariants((prev) => prev.map((v) => (v.id === id ? { ...v, name: trimmed } : v)))
   }, [])
 
+  // 탭 순서 변경 — 순서는 variants 배열 순서 그대로 스냅샷에 저장된다
+  const reorderVariants = useCallback((fromId: string, toId: string) => {
+    setVariants((prev) => {
+      const from = prev.findIndex((v) => v.id === fromId)
+      const to = prev.findIndex((v) => v.id === toId)
+      return from === -1 || to === -1 ? prev : arrayMove(prev, from, to)
+    })
+  }, [])
+
+  // ── 조합 한눈에 보기 ──────────────────────────────────────────────────────
+  // 활성 탭은 라이브 상태(buildVariant), 비활성 탭은 보관 data로 채널별 가격을 계산한다.
+  // 채널 보드 카드와 같은 computeChannelPrice를 써서 숫자가 어긋나지 않는다. 열려 있을 때만 계산.
+  const [overviewOpen, setOverviewOpen] = useState(false)
+  const overviewRows = useMemo<OverviewVariantRow[]>(() => {
+    if (!overviewOpen) return []
+    const activeData = buildVariant()
+    return variants.map((v) => {
+      const data = v.id === activeVariantId ? activeData : (v.data ?? emptyVariant(v.id, v.name))
+      const rows = data.rows
+      const cost = rows.length ? rows.reduce((t, r) => t + r.costPrice * r.quantity, 0) : null
+      const retailSum = rows.reduce((t, r) => t + r.retailPrice * r.quantity, 0)
+      const retail = data.retailOverride ?? (retailSum > 0 ? retailSum : null)
+      const base = {
+        variantId: v.id,
+        name: v.name,
+        cost,
+        retail,
+        selectedCount: data.selectedChannelIds?.length ?? 0,
+      }
+      if (rows.length === 0) return { ...base, channels: [] }
+      const bundle: MatrixBundle = {
+        components: rows.map((r) => ({
+          costPrice: r.costPrice,
+          retailPrice: r.retailPrice,
+          quantity: r.quantity,
+        })),
+        packagingCost: 0,
+        salePrice: 0,
+      }
+      const overrides = restoreOverrides(data.chOverrides ?? {})
+      const discountOf = (p: number) => (retail != null ? Math.max(0, (retail - p) / retail) : null)
+      const channels = (data.selectedChannelIds ?? []).flatMap((id) => {
+        const api = simChannels.find((c) => c.id === id)
+        if (!api) return []
+        const ov = overrides[id] ?? seedOverride(api, settings)
+        const promo = data.chPromotions?.[id] ?? { type: 'NONE' as const, value: 0 }
+        const r = computeChannelPrice({
+          bundle,
+          channel: apiChToMatrixChannel(api, ov),
+          promotion: toMatrixPromotion(promo),
+          globals: buildGlobals(live, ov.adPct),
+          thresholds: tierThresholds,
+          snap,
+          retailCap: retail,
+          manualPrice: data.manualPrices?.[id] ?? null,
+        })
+        const headCell = r.headline?.cells[0] ?? null
+        const promoCell = r.promo?.cells[0] ?? null
+        const promoApplied =
+          promoCell != null && headCell != null && promoCell.finalPrice !== headCell.finalPrice
+        const shown = promoApplied ? promoCell : headCell
+        return [
+          {
+            channelId: id,
+            channelName: api.name,
+            price: r.effectivePrice,
+            promoPrice: promoApplied ? promoCell.finalPrice : null,
+            discount: r.effectivePrice != null ? discountOf(r.effectivePrice) : null,
+            finalDiscount: promoApplied ? discountOf(promoCell.finalPrice) : null,
+            promotion: promoLabel(promo),
+            roasPct: ov.applyAdCost && ov.adPct > 0 ? Math.round(100 / ov.adPct) : null,
+            margin: shown?.margin ?? null,
+            marginAmount: shown?.netProfit ?? null,
+            tier: shown?.tier ?? null,
+          },
+        ]
+      })
+      return { ...base, channels }
+    })
+  }, [
+    overviewOpen,
+    buildVariant,
+    variants,
+    activeVariantId,
+    simChannels,
+    settings,
+    live,
+    tierThresholds,
+    snap,
+    toMatrixPromotion,
+  ])
+
   const buildSnapshot = useCallback((): PricingSimSnapshot => {
-    const snapChOverrides: Record<string, SnapChOverride> = {}
-    for (const id of selectedChannelIds) {
-      const c = allChannels.find((ch) => ch.id === id)
-      if (c) snapChOverrides[id] = overrideOf(c)
-    }
     const activeVariant = buildVariant()
     const allVariants = variants.map((v) =>
       v.id === activeVariantId ? activeVariant : (v.data ?? emptyVariant(v.id, v.name))
     )
+    // 최상위 채널 = 전 탭 합집합(첫 등장 순) — 목록 채널 필터(pricing-scenario-query)·하위호환용.
+    // override 병합은 활성 탭 값이 우선.
+    const unionChannelIds: string[] = []
+    const mergedOverrides: Record<string, SnapChOverride> = {}
+    for (const v of [...allVariants.filter((x) => x !== activeVariant), activeVariant]) {
+      Object.assign(mergedOverrides, v.chOverrides)
+    }
+    for (const v of allVariants) {
+      for (const id of v.selectedChannelIds ?? []) {
+        if (!unionChannelIds.includes(id)) unionChannelIds.push(id)
+      }
+    }
     const summary = buildRepresentativeSummary(allVariants, {
-      channelCount: selectedChannelIds.length,
+      channelCount: unionChannelIds.length,
       targetMarginPct: Math.round(live.targetMargin * 100),
     })
     return {
       v: 2,
       live,
-      selectedChannelIds,
-      chOverrides: snapChOverrides,
+      selectedChannelIds: unionChannelIds,
+      chOverrides: mergedOverrides,
       snap,
       activeVariantId,
       variants: allVariants,
       summary,
     }
-  }, [
-    selectedChannelIds,
-    allChannels,
-    overrideOf,
-    buildVariant,
-    variants,
-    activeVariantId,
-    live,
-    snap,
-  ])
+  }, [buildVariant, variants, activeVariantId, live, snap])
 
   const applySnapshot = useCallback(
     (s: PricingSimSnapshot) => {
       // 초기 settings 로드가 아직이면, 뒤늦게 도착할 리셋 1회를 건너뛰도록 arm
       if (!settingsLoadedRef.current) skipNextLiveResetRef.current = true
       setLive(s.live)
-      setSelectedChannelIds(s.selectedChannelIds)
-      // 구 스냅샷 호환 — 무료배송 필드 기본값 채움
-      const restoredOverrides: Record<string, ChOverride> = {}
-      for (const [id, o] of Object.entries(s.chOverrides)) {
-        restoredOverrides[id] = {
-          ...o,
-          // 구 스냅샷 호환 — 카테고리 미기록이면 '기본'. feePct·feeCategory 동결 복원(재시딩 금지)
-          feeCategory: o.feeCategory ?? '기본',
-          freeShipping: o.freeShipping ?? false,
-          freeShippingThreshold: o.freeShippingThreshold ?? null,
-          // 구 스냅샷 호환 — VAT 포함 여부 미기록이면 false(기본값=미포함)
-          vatIncludedInFee: o.vatIncludedInFee ?? false,
-          paymentFeeVatIncluded: o.paymentFeeVatIncluded ?? false,
-        }
-      }
-      setChOverrides(restoredOverrides)
+      // 판매채널·채널 override는 탭별 — 아래 applyVariant가 활성 탭 값으로 복원
       setSnap(s.snap)
+      reserveVariantIds(s.variants.map((v) => v.id))
       setVariants(s.variants.map((v) => ({ id: v.id, name: v.name, data: v })))
       setActiveVariantId(s.activeVariantId)
       const active = s.variants.find((v) => v.id === s.activeVariantId) ?? s.variants[0]
@@ -1772,6 +1953,25 @@ export function PricingQuickFlow({
         onRename={renameVariant}
         onRemove={removeVariant}
         onDuplicate={duplicateVariant}
+        onReorder={reorderVariants}
+        extra={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setOverviewOpen(true)}
+            className="ml-auto h-8 shrink-0 gap-1"
+          >
+            <Table2 className="h-3.5 w-3.5" /> 한번에 확인하기
+          </Button>
+        }
+      />
+      <PricingVariantOverviewDialog
+        open={overviewOpen}
+        onOpenChange={setOverviewOpen}
+        rows={overviewRows}
+        activeVariantId={activeVariantId}
+        onSelectVariant={switchVariant}
       />
 
       {/* ── KPI 스트립 (순서: 원가매입 → 소비자가 → 판매가 → 할인율) ── */}
@@ -1798,28 +1998,20 @@ export function PricingQuickFlow({
                 })()
               : undefined
           }
-          tooltip={
-            confirmedRows.length > 0 ? (
-              <div className="space-y-1">
-                <p className="font-medium">원가 항목별 (원가율)</p>
-                {confirmedRows.map((r, i) => {
+          breakdown={
+            confirmedRows.length > 1 ? (
+              <ComponentBreakdown
+                items={confirmedRows.map((r) => {
                   const cost = r.costPrice * r.quantity
                   const retail = r.retailPrice * r.quantity
-                  const pct = retail > 0 ? Math.round((cost / retail) * 100) : null
-                  return (
-                    <p key={i} className="flex justify-between gap-3 tabular-nums">
-                      <span className="truncate text-muted-foreground">
-                        {r.productName}
-                        {r.quantity > 1 ? ` ×${r.quantity}` : ''}
-                      </span>
-                      <span>
-                        ₩{fmt(cost)}
-                        {pct != null && <span className="text-muted-foreground"> ({pct}%)</span>}
-                      </span>
-                    </p>
-                  )
+                  return {
+                    name: r.productName,
+                    quantity: r.quantity,
+                    amount: cost,
+                    note: retail > 0 ? `${Math.round((cost / retail) * 100)}%` : undefined,
+                  }
                 })}
-              </div>
+              />
             ) : undefined
           }
         />
@@ -1831,6 +2023,17 @@ export function PricingQuickFlow({
           onChange={setRetailOverride}
           canApply={retailApplyTarget != null}
           onApply={() => setRetailApplyOpen(true)}
+          breakdown={
+            confirmedRows.length > 1 ? (
+              <ComponentBreakdown
+                items={confirmedRows.map((r) => ({
+                  name: r.productName,
+                  quantity: r.quantity,
+                  amount: r.retailPrice * r.quantity,
+                }))}
+              />
+            ) : undefined
+          }
         />
         <KpiCell
           label="판매가"
@@ -1852,7 +2055,18 @@ export function PricingQuickFlow({
                 : `${Math.round(setPriceRange.discountMin * 100)}~${Math.round(setPriceRange.discountMax * 100)}%`
               : '—'
           }
-          tooltip="현재 설정된 판매가 기준 소비자가 대비 할인율입니다."
+          sub={
+            setPriceRange &&
+            setPriceRange.finalDiscountMin != null &&
+            setPriceRange.finalDiscountMax != null
+              ? `프로모션 최종 ${
+                  setPriceRange.finalDiscountMin === setPriceRange.finalDiscountMax
+                    ? `${Math.round(setPriceRange.finalDiscountMax * 100)}%`
+                    : `${Math.round(setPriceRange.finalDiscountMin * 100)}~${Math.round(setPriceRange.finalDiscountMax * 100)}%`
+                }`
+              : undefined
+          }
+          tooltip="현재 설정된 판매가 기준 소비자가 대비 할인율입니다. 프로모션이 적용된 채널이 있으면 적용 후 최종 할인율을 아래에 함께 표시합니다."
         />
       </div>
 
@@ -2294,8 +2508,8 @@ export function PricingQuickFlow({
               </Select>
             )}
             <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
-              채널에 설정된 값에서 시작합니다. ▾를 눌러 이 시뮬레이션에만 적용할 값으로 변경할 수
-              있습니다.
+              판매채널과 채널별 설정은 조합마다 따로 관리됩니다. 채널에 설정된 값에서 시작하며, ▾를
+              눌러 이 조합에만 적용할 값으로 변경할 수 있습니다.
             </p>
           </StepCard>
           {/* 다중 수수료 카테고리 채널 추가 — 카테고리 선택 Dialog */}
@@ -2584,6 +2798,7 @@ function KpiCell({
   accent,
   tooltip,
   valueRight,
+  breakdown,
 }: {
   label: string
   value: string
@@ -2593,6 +2808,8 @@ function KpiCell({
   tooltip?: React.ReactNode
   /** 값 우측 인라인 배지 (예: 원가율) */
   valueRight?: React.ReactNode
+  /** 값 아래 상세 목록 (예: 구성 상품별 원가) */
+  breakdown?: React.ReactNode
 }) {
   const valueEl = (
     <p
@@ -2624,7 +2841,32 @@ function KpiCell({
         {valueRight}
       </div>
       {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
+      {breakdown}
     </div>
+  )
+}
+
+/** KPI 카드 하단 구성 상품별 금액 목록 (구성 상품 2개 이상일 때) */
+function ComponentBreakdown({
+  items,
+}: {
+  items: Array<{ name: string; quantity: number; amount: number; note?: string }>
+}) {
+  return (
+    <ul className="mt-1.5 space-y-0.5 border-t border-[var(--ps-border)] pt-1.5 text-[11px] tabular-nums">
+      {items.map((it, i) => (
+        <li key={i} className="flex justify-between gap-2">
+          <span className="truncate text-muted-foreground" title={it.name}>
+            {it.name}
+            {it.quantity > 1 ? ` ×${it.quantity}` : ''}
+          </span>
+          <span className="shrink-0">
+            ₩{fmt(it.amount)}
+            {it.note && <span className="text-muted-foreground"> ({it.note})</span>}
+          </span>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -2640,6 +2882,7 @@ function RetailKpiCell({
   onChange,
   canApply,
   onApply,
+  breakdown,
 }: {
   /** 상품 기본 소비자가 (Σ 컴포넌트). null=미입력 */
   base: number | null
@@ -2653,6 +2896,8 @@ function RetailKpiCell({
   /** 조정한 소비자가를 상품에 되쓸 수 있는지 (단일 구성 상품만) */
   canApply: boolean
   onApply: () => void
+  /** 값 아래 구성 상품별 기본 소비자가 목록 */
+  breakdown?: React.ReactNode
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
@@ -2736,6 +2981,7 @@ function RetailKpiCell({
       {override != null && base != null && (
         <p className="text-[10px] text-muted-foreground tabular-nums">기본 ₩{fmt(base)}</p>
       )}
+      {breakdown}
     </div>
   )
 }
