@@ -1160,6 +1160,7 @@ model InvProduct {
   keywordLinks     KeywordMasterLink[]
   keywordChanges   KeywordChangeLog[] // §26 변경 이력 (상품 단위)
   extractionJobs   ProductExtractionJob[]
+  targetedProductionCosts ProductionRunCost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1868,6 +1869,7 @@ enum ProductionCostCategory {
   LABOR // 인건비/봉제
   PACKAGING // 포장
   LOGISTICS // 물류
+  MARKETING // 마케팅
   OTHER // 기타
 }
 
@@ -1941,6 +1943,7 @@ model ProductionRunSet {
 model ProductionRunCost {
   id          String                 @id @default(cuid())
   runId       String
+  targetProductId String?
   itemName    String // 비용 항목 (필수)
   description String? // 상세 내용
   category    ProductionCostCategory @default(OTHER) // 비용 분류
@@ -1953,8 +1956,10 @@ model ProductionRunCost {
   vatIncluded Boolean                @default(true) // 입력 금액에 VAT 포함(공제가능 과세매입) 여부. Phase 2 매입세액 공제용
 
   run ProductionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  targetProduct InvProduct?   @relation(fields: [targetProductId], references: [id], onDelete: Restrict)
 
   @@index([runId])
+  @@index([targetProductId])
 }
 
 // 가격 시뮬레이션 시나리오

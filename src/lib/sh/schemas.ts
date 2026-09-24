@@ -423,29 +423,54 @@ export type ProductListingPatchInput = z.infer<typeof productListingPatchSchema>
 
 // ─── 생산 발주 (ProductionRun) ───────────────────────────────────────────────
 
-export const productionRunCostSchema = z.object({
-  itemName: z.string().trim().min(1).max(100),
-  description: z
-    .string()
-    .trim()
-    .max(500)
-    .optional()
-    .transform((v) => (v?.length ? v : undefined)),
-  spec: z.coerce.number().positive().max(99_999_999).optional(),
-  quantity: z.coerce.number().positive().max(99_999_999).default(1),
-  unitPrice: z.coerce.number().min(0).max(99_999_999),
-  note: z
-    .string()
-    .trim()
-    .max(200)
-    .optional()
-    .transform((v) => (v?.length ? v : undefined)),
-  sortOrder: z.number().int().min(0).optional(),
-  // 비용 분류 — 기본값 OTHER
-  category: z.enum(['MATERIAL', 'LABOR', 'PACKAGING', 'LOGISTICS', 'OTHER']).default('OTHER'),
-  // VAT 포함(공제가능 과세매입) 여부 — 기본 true
-  vatIncluded: z.coerce.boolean().default(true),
-})
+export const productionCostCategorySchema = z.enum([
+  'MATERIAL',
+  'LABOR',
+  'PACKAGING',
+  'LOGISTICS',
+  'MARKETING',
+  'OTHER',
+])
+
+export const productionRunCostSchema = z
+  .object({
+    itemName: z.string().trim().min(1).max(100),
+    description: z
+      .string()
+      .trim()
+      .max(500)
+      .optional()
+      .transform((v) => (v?.length ? v : undefined)),
+    spec: z.coerce.number().positive().max(99_999_999).optional(),
+    quantity: z.coerce.number().positive().max(99_999_999).default(1),
+    unitPrice: z.coerce.number().min(0).max(99_999_999),
+    note: z
+      .string()
+      .trim()
+      .max(200)
+      .optional()
+      .transform((v) => (v?.length ? v : undefined)),
+    sortOrder: z.number().int().min(0).optional(),
+    // 비용 분류 — 기본값 OTHER
+    category: productionCostCategorySchema.default('OTHER'),
+    targetProductId: idLike.optional(),
+    // VAT 포함(공제가능 과세매입) 여부 — 기본 true
+    vatIncluded: z.coerce.boolean().default(true),
+  })
+  .transform((value, ctx) => {
+    if (value.category === 'MARKETING' && !value.targetProductId) {
+      ctx.addIssue({
+        code: 'custom',
+        message: '마케팅 비용의 대상 상품을 선택하세요',
+        path: ['targetProductId'],
+      })
+    }
+
+    return {
+      ...value,
+      targetProductId: value.category === 'MARKETING' ? value.targetProductId : undefined,
+    }
+  })
 export type ProductionRunCostInput = z.infer<typeof productionRunCostSchema>
 
 export const productionRunItemSchema = z.object({
