@@ -66,6 +66,8 @@ function makeV2Snapshot(): PricingSimSnapshot {
     mode: v1.mode ?? 'existing',
     rows: v1.rows,
     bundleNameInput: v1.bundleNameInput,
+    selectedChannelIds: v1.selectedChannelIds,
+    chOverrides: v1.chOverrides,
     summary: v1.summary,
   }
   return {
@@ -93,6 +95,29 @@ describe('pricing-scenario-snapshot', () => {
     expect(parsed!.selectedChannelIds).toEqual(v1.selectedChannelIds)
     expect(parsed!.chOverrides).toEqual(v1.chOverrides)
     expect(parsed!.summary).toEqual(v1.summary)
+    // v1의 공통 채널이 탭 채널로 옮겨진다
+    expect(parsed!.variants[0].selectedChannelIds).toEqual(v1.selectedChannelIds)
+    expect(parsed!.variants[0].chOverrides).toEqual(v1.chOverrides)
+  })
+
+  it('탭별 채널이 없는 구 v2는 시나리오 공통 채널·override로 채운다', () => {
+    const legacy = makeV2Snapshot()
+    delete legacy.variants[0].selectedChannelIds
+    delete legacy.variants[0].chOverrides
+    const parsed = parseSnapshot(JSON.parse(JSON.stringify(legacy)))
+    expect(parsed!.variants[0].selectedChannelIds).toEqual(['ch-1', 'ch-2'])
+    expect(parsed!.variants[0].chOverrides).toEqual(legacy.chOverrides)
+  })
+
+  it('탭별 채널이 있으면 공통 값 대신 탭 값을 쓴다', () => {
+    const base = makeV2Snapshot()
+    const snapshot: PricingSimSnapshot = {
+      ...base,
+      variants: [{ ...base.variants[0], selectedChannelIds: ['ch-2'], chOverrides: {} }],
+    }
+    const parsed = parseSnapshot(JSON.parse(JSON.stringify(snapshot)))
+    expect(parsed!.variants[0].selectedChannelIds).toEqual(['ch-2'])
+    expect(parsed!.variants[0].chOverrides).toEqual({})
   })
 
   it('v1 변환 시 bundleNameInput이 없으면 탭 이름은 "조합 1"', () => {
@@ -149,6 +174,8 @@ describe('pricing-scenario-snapshot', () => {
       manualPrices: { 'ch-1': 19900 },
       retailOverride: 25000,
       chPromotions: { 'ch-1': { type: 'FLAT', value: 1000 } },
+      selectedChannelIds: ['ch-1'],
+      chOverrides: {},
       summary: {
         productNames: ['상품 B'],
         channelCount: 2,
