@@ -5,6 +5,7 @@ import { Pencil, X } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { formatCostBreakdown } from '@/lib/sh/cost'
 
 import { PricingProductPickerDialog } from './pricing-product-picker-dialog'
 
@@ -98,8 +99,11 @@ export function BundleRow({ rowId, rowIndex, resolved, onChange, onRemove, showR
               resolved.marketingUnitCost != null &&
               resolved.marketingUnitCost > 0 && (
                 <p className="text-[10px] text-muted-foreground tabular-nums">
-                  생산원가 {fmt(resolved.productionUnitCost)}원 + 초기 마케팅비{' '}
-                  {fmt(resolved.marketingUnitCost)}원 = 공급원가 {fmt(resolved.costPrice)}원
+                  {formatCostBreakdown(
+                    resolved.productionUnitCost,
+                    resolved.marketingUnitCost,
+                    resolved.costPrice
+                  )}
                 </p>
               )}
           </div>

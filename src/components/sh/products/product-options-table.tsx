@@ -38,7 +38,7 @@ import {
   normalizeOptionAttributes,
   type AttrCodeSpec,
 } from '@/lib/sh/option-code'
-import { costExVat, SUPPLY_VAT_RATE } from '@/lib/sh/cost'
+import { costExVat, formatCostBreakdown, SUPPLY_VAT_RATE } from '@/lib/sh/cost'
 
 type OptionRow = {
   id: string
@@ -90,16 +90,6 @@ type OptionDraft = {
 
 function rowToString(v: number | string | null): string {
   return v != null ? String(v) : ''
-}
-
-function formatWon(value: number): string {
-  return `${Math.round(value).toLocaleString('ko-KR')}원`
-}
-
-function formatCostBreakdown(cost: ProductionCostInfo): string {
-  return `생산원가 ${formatWon(cost.productionUnitCost)} + 초기 마케팅비 ${formatWon(
-    cost.marketingUnitCost
-  )} = 공급원가 ${formatWon(cost.totalUnitCost)}`
 }
 
 export function ProductOptionsTable({
@@ -563,7 +553,14 @@ export function ProductOptionsTable({
   // 생산차수 원가 연동 ON + 완료 차수 존재 → 공급원가 입력 잠금(파생 표시)
   const costLocked = useProductionCost && productionCost != null
   const derivedCostStr = costLocked ? String(Math.round(productionCost.totalUnitCost)) : null
-  const costBreakdown = productionCost ? formatCostBreakdown(productionCost) : null
+  const costBreakdown = productionCost
+    ? formatCostBreakdown(
+        productionCost.productionUnitCost,
+        productionCost.marketingUnitCost,
+        productionCost.totalUnitCost
+      )
+    : null
+  const linkedCostBreakdown = costLocked ? costBreakdown : null
 
   const allChecked = options.length > 0 && selected.size === options.length
   const attrNames = attributes.map((a) => a.name)
@@ -672,8 +669,12 @@ export function ProductOptionsTable({
                         </button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        {costBreakdown && <p className="font-medium">{costBreakdown}</p>}
-                        <p className={costBreakdown ? 'mt-1 text-muted-foreground' : undefined}>
+                        {linkedCostBreakdown && (
+                          <p className="font-medium">{linkedCostBreakdown}</p>
+                        )}
+                        <p
+                          className={linkedCostBreakdown ? 'mt-1 text-muted-foreground' : undefined}
+                        >
                           상품 생산에 발생된 금액 합계. VAT 제외 금액으로 관리됩니다 — &lsquo;VAT
                           포함&rsquo; 체크 시 입력값÷1.1이 적용됩니다.
                         </p>

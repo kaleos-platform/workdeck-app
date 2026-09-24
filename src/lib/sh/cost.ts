@@ -13,3 +13,20 @@ export function costExVat(amount: number | null | undefined, vatIncluded: boolea
   const v = Number(amount) || 0
   return vatIncluded ? v / (1 + SUPPLY_VAT_RATE) : v
 }
+
+/** 원 단위 표시에서 구성 항목의 합이 표시 총액과 일치하도록 반올림 오차를 보정한다. */
+export function formatCostBreakdown(
+  productionUnitCost: number,
+  marketingUnitCost: number,
+  totalUnitCost: number
+): string {
+  const production = Math.round(productionUnitCost)
+  const marketing = Math.round(marketingUnitCost)
+  const total = Math.round(totalUnitCost)
+  // 각 항을 따로 반올림할 때 생기는 잔여 원은 마케팅 항목에 반영한다.
+  const roundingDelta = total - production - marketing
+  const adjustedMarketing = marketing + roundingDelta
+  const won = (value: number) => `${value.toLocaleString('ko-KR')}원`
+
+  return `생산원가 ${won(production)} + 초기 마케팅비 ${won(adjustedMarketing)} = 공급원가 ${won(total)}`
+}

@@ -57,3 +57,14 @@ test('초기 마케팅비가 0이면 보조 표시를 생략한다', () => {
 
   expect(screen.queryByText(/초기 마케팅비/)).not.toBeInTheDocument()
 })
+
+test('보조 원가 구성의 표시 정수 합계를 총원가 표시값과 맞춘다', () => {
+  renderRow({
+    ...component,
+    costPrice: 66.666,
+    productionUnitCost: 33.333,
+    marketingUnitCost: 33.333,
+  })
+
+  expect(screen.getByText('생산원가 33원 + 초기 마케팅비 34원 = 공급원가 67원')).toBeInTheDocument()
+})
