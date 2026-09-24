@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -39,6 +40,13 @@ export type Channel = { id: string; name: string; typeName: string }
 
 const UNITS: SalesUnit[] = ['일', '주', '월']
 const ALL_TYPES = 'ALL'
+
+/**
+ * 판매 실적으로 보지 않는 상품 그룹 — 기본 제외.
+ * 부자재·체험단 발송분이 여기 묶여 있어 랭킹 상위를 차지하면 실제 상품이 가려진다.
+ * 그룹 이름이 바뀌면 조용히 "제외 없음"이 될 뿐이라 화면에서 바로 알아챌 수 있다.
+ */
+const DEFAULT_EXCLUDED_GROUP_NAMES = ['배송 부자재']
 
 // ─── 퀵필터 (기간만 변경 — 표시 단위와 독립) ─────────────────────────────────
 type QuickFilter = { label: string; range: () => DateRange }
@@ -144,10 +152,20 @@ export function SalesAnalyticsPage() {
   // 상품(옵션) 탭 — 활성 시에만 지연 로드. 공유 컨트롤 바의 채널 유형 필터를 적용해 스코프한다
   // (상품 탭엔 채널 체크박스가 없으므로 유형 통과 채널 = typedChannels 가 데이터 범위).
   const typedChannelIds = useMemo(() => typedChannels.map((c) => c.id), [typedChannels])
-  const optionData = useProductSales(unit, range, typedChannelIds, tab === 'product')
-
   // 상품 탭 표시 지표 — 랭킹/차트/피벗 공통 단일 소스.
   const [metric, setMetric] = useState<SalesMetric>('revenue')
+
+  // 제외 상품 그룹 — null = 아직 손대지 않음(기본 제외 적용). 배열이면 사용자 선택.
+  const [excludedGroupIds, setExcludedGroupIds] = useState<string[] | null>(null)
+
+  const optionData = useProductSales(
+    unit,
+    range,
+    typedChannelIds,
+    tab === 'product',
+    excludedGroupIds,
+    DEFAULT_EXCLUDED_GROUP_NAMES
+  )
 
   // 상품(옵션) 필터 선택 — 미선택=전체. 그래프·표 공통 단일 소스.
   const [optionSelection, setOptionSelection] = useState<OptionSelection>({
@@ -335,9 +353,39 @@ export function SalesAnalyticsPage() {
             </Button>
           </div>
 
+          {/* 상품 그룹 필터 — 부자재·체험단은 기본 제외, 체크하면 다시 포함 */}
+          {optionData.groups.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Label className="text-xs text-muted-foreground">상품 그룹</Label>
+              {optionData.groups.map((g) => {
+                const on = !optionData.excludedGroupIds.includes(g.id)
+                return (
+                  <label
+                    key={g.id}
+                    className="flex cursor-pointer items-center gap-1.5 text-xs select-none"
+                  >
+                    <Checkbox
+                      checked={on}
+                      onCheckedChange={() =>
+                        setExcludedGroupIds(
+                          on
+                            ? [...optionData.excludedGroupIds, g.id]
+                            : optionData.excludedGroupIds.filter((id) => id !== g.id)
+                        )
+                      }
+                    />
+                    <span className={on ? '' : 'text-muted-foreground'}>{g.name}</span>
+                  </label>
+                )
+              })}
+            </div>
+          )}
+
           {/* 랭킹 — 상품 탭의 1급 뷰. 체크박스가 아래 차트·피벗 시리즈를 정한다. */}
           <ProductRankingTable
             ranking={optionData.ranking}
+            excludedRevenue={optionData.excludedRevenue}
+            excludedLabel={optionData.excludedLabel}
             coverage={optionData.coverage}
             prevPeriod={optionData.prevPeriod}
             channels={channels}

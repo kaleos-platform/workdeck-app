@@ -24,6 +24,8 @@ export type ProductSalesRow = {
   optionName: string
   productId: string
   productName: string // 관리명 우선
+  productGroupId: string | null
+  productGroupName: string | null
   channelId: string
   quantity: number
   revenue: number
@@ -70,6 +72,8 @@ type OptionMeta = {
   optionName: string
   productId: string
   productName: string
+  productGroupId: string | null
+  productGroupName: string | null
 }
 
 type SelectedOption = {
@@ -77,7 +81,12 @@ type SelectedOption = {
   name: string
   deletedAt: Date | null
   productId: string
-  product: { name: string; internalName: string | null; status: string }
+  product: {
+    name: string
+    internalName: string | null
+    status: string
+    group: { id: string; name: string } | null
+  }
 }
 
 /** 상품명은 관리명(internalName) 우선. */
@@ -88,6 +97,8 @@ function metaOf(o: SelectedOption): OptionMeta {
     optionName: o.name,
     productId: o.productId,
     productName: internal && internal.length > 0 ? internal : o.product.name,
+    productGroupId: o.product.group?.id ?? null,
+    productGroupName: o.product.group?.name ?? null,
   }
 }
 
@@ -101,7 +112,14 @@ const OPTION_SELECT = {
   name: true,
   deletedAt: true,
   productId: true,
-  product: { select: { name: true, internalName: true, status: true } },
+  product: {
+    select: {
+      name: true,
+      internalName: true,
+      status: true,
+      group: { select: { id: true, name: true } },
+    },
+  },
 } as const
 
 /**
@@ -255,6 +273,9 @@ export async function loadProductSales(
         })
       : []
     const excludedIds = new Set(options.filter(isExcluded).map((o) => o.id))
+    const rocketGroupByOption = new Map(
+      options.map((o) => [o.id, o.product.group ?? null] as const)
+    )
 
     for (const r of rocketRows) {
       coverage.totalRevenue += r.revenue
@@ -272,6 +293,8 @@ export async function loadProductSales(
           optionName: r.optionName,
           productId: r.productId,
           productName: r.productName,
+          productGroupId: rocketGroupByOption.get(r.optionId)?.id ?? null,
+          productGroupName: rocketGroupByOption.get(r.optionId)?.name ?? null,
         },
         rocketCh.id,
         r.quantity,

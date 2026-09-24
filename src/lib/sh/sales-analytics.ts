@@ -320,6 +320,9 @@ export type OptionQtyRow = {
   optionName: string // 옵션명 (InvProductOption.name)
   productId: string // 내부 InvProduct.id
   productName: string // 상품명 (관리명 우선)
+  /** 상품 그룹(카테고리). 부자재·체험단 같은 비판매 그룹을 걸러내는 축. */
+  productGroupId: string | null
+  productGroupName: string | null
   channelId: string
   quantity: number
   revenue: number
@@ -367,6 +370,7 @@ export type OptionCatalogOption = {
 export type OptionCatalogProduct = {
   productId: string
   productName: string
+  productGroupId: string | null
   qty: number
   revenue: number
   options: OptionCatalogOption[]
@@ -381,6 +385,7 @@ export function buildOptionCatalog(rows: OptionQtyRow[]): OptionCatalogProduct[]
     string,
     {
       productName: string
+      groupId: string | null
       qty: number
       revenue: number
       options: Map<string, OptionCatalogOption>
@@ -392,7 +397,13 @@ export function buildOptionCatalog(rows: OptionQtyRow[]): OptionCatalogProduct[]
     if (qty <= 0 && revenue === 0) continue
     let p = products.get(r.productId)
     if (!p) {
-      p = { productName: r.productName, qty: 0, revenue: 0, options: new Map() }
+      p = {
+        productName: r.productName,
+        groupId: r.productGroupId,
+        qty: 0,
+        revenue: 0,
+        options: new Map(),
+      }
       products.set(r.productId, p)
     }
     p.qty += qty
@@ -414,6 +425,7 @@ export function buildOptionCatalog(rows: OptionQtyRow[]): OptionCatalogProduct[]
     .map(([productId, p]) => ({
       productId,
       productName: p.productName,
+      productGroupId: p.groupId,
       qty: p.qty,
       revenue: p.revenue,
       options: Array.from(p.options.values()).sort((a, b) => b.revenue - a.revenue),
@@ -522,6 +534,7 @@ export function seriesBucketValue(
 export type PrevOptionTotal = {
   optionId: string
   productId: string
+  productGroupId?: string | null
   quantity: number
   revenue: number
   /** 이번 구간에 판매가 없어 현재 행이 없는 상품/옵션의 이름 표시용. */
@@ -555,6 +568,8 @@ export type RankingChannel = {
 export type RankingRow = {
   productId: string
   productName: string
+  productGroupId: string | null
+  productGroupName: string | null
   quantity: number
   revenue: number
   prevQuantity: number
@@ -585,6 +600,8 @@ export function buildProductRanking(
 
   type Acc = {
     productName: string
+    groupId: string | null
+    groupName: string | null
     quantity: number
     revenue: number
     options: Map<string, RankingOption>
@@ -599,6 +616,8 @@ export function buildProductRanking(
     if (!p) {
       p = {
         productName: r.productName,
+        groupId: r.productGroupId,
+        groupName: r.productGroupName,
         quantity: 0,
         revenue: 0,
         options: new Map(),
@@ -640,6 +659,8 @@ export function buildProductRanking(
     if (!p) {
       p = {
         productName: prev.productName ?? '(이름 미상)',
+        groupId: prev.productGroupId ?? null,
+        groupName: null,
         quantity: 0,
         revenue: 0,
         options: new Map(),
@@ -674,6 +695,8 @@ export function buildProductRanking(
     return {
       productId,
       productName: p.productName,
+      productGroupId: p.groupId,
+      productGroupName: p.groupName,
       quantity: p.quantity,
       revenue: p.revenue,
       prevQuantity: options.reduce((a, o) => a + o.prevQuantity, 0),
