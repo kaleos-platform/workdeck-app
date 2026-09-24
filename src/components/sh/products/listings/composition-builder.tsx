@@ -109,7 +109,7 @@ export type ProductContext = {
   brandName: string | null
 }
 
-/** 최상위 모드: bulk = 상품 옵션 펼치기(1개=속성 기반, 2개+=상품 간 조합), manual = 여러 옵션 직접 묶기 */
+/** 최상위 모드: bulk = 상품 선택하기(상품 1개+ 선택 → 옵션·세트 구성), manual = 옵션 직접 생성 */
 type TopLevelMode = 'bulk' | 'manual'
 
 /** manual 모드의 행 하나 */
@@ -525,8 +525,8 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
         <Label className="text-xs text-muted-foreground">구성 방식</Label>
         <Tabs value={topMode} onValueChange={(v) => setTopMode(v as TopLevelMode)}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="bulk">상품 옵션 펼치기</TabsTrigger>
-            <TabsTrigger value="manual">여러 옵션 직접 묶기</TabsTrigger>
+            <TabsTrigger value="bulk">상품 선택하기</TabsTrigger>
+            <TabsTrigger value="manual">옵션 직접 생성</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>

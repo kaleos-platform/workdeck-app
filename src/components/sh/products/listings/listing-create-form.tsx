@@ -870,7 +870,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                   disabled={saving}
                 >
                   <Unlink className="mr-1 h-4 w-4" />
-                  직접 묶기 추가
+                  옵션 직접 생성
                 </Button>
                 <Button
                   type="button"
@@ -927,11 +927,11 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {appendBuilderMode === 'manual' ? '직접 묶기 추가' : '다른 상품 추가'}
+              {appendBuilderMode === 'manual' ? '옵션 직접 생성' : '다른 상품 추가'}
             </DialogTitle>
             <DialogDescription>
               {appendBuilderMode === 'manual'
-                ? '여러 상품을 직접 묶어 추가합니다. 각 행에 이름과 구성 옵션을 직접 입력하세요.'
+                ? '판매 옵션을 직접 만들어 추가합니다. 각 행에 이름과 구성 옵션을 직접 입력하세요.'
                 : '기존 구성에 다른 상품의 옵션을 추가합니다. 중복 구성은 자동으로 제외됩니다.'}
             </DialogDescription>
           </DialogHeader>
