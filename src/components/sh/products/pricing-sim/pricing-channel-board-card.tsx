@@ -297,6 +297,13 @@ export function PricingChannelBoardCard({
                 title="소비자가 대비 할인율"
               >
                 −{Math.round(Math.max(0, (retailCap - cell.finalPrice) / retailCap) * 100)}%
+                {/* 프로모션 적용 시 최종 할인율 병기 (판매가 취소선→프로모가와 같은 문법) */}
+                {promoApplied && promoCell != null && (
+                  <span title="프로모션 적용 후 최종 할인율">
+                    {' → −'}
+                    {Math.round(Math.max(0, (retailCap - promoCell.finalPrice) / retailCap) * 100)}%
+                  </span>
+                )}
               </span>
             )}
           </div>

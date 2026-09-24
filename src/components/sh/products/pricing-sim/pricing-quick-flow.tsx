@@ -1090,6 +1090,8 @@ export function PricingQuickFlow({
     if (!matrixBundle || boardChannels.length === 0) return null
     const retailCap = effectiveRetail
     const prices: number[] = []
+    const finalPrices: number[] = []
+    let hasPromo = false
     for (const bc of boardChannels) {
       const adless = { ...bc.channel, applyAdCost: false }
       const m = calculateMatrix({
@@ -1107,17 +1109,49 @@ export function PricingQuickFlow({
       const clampedManual =
         manual != null && retailCap != null ? Math.min(manual, retailCap) : manual
       const effective = clampedManual ?? autoPrice
-      if (effective != null) prices.push(Math.round(effective))
+      if (effective == null) continue
+      prices.push(Math.round(effective))
+      // 프로모션 적용가 — 보드 카드 promoCell 과 동일 계산. 미설정이면 판매가 그대로.
+      const promo = promotionOf(bc.api.id)
+      if (promo.type === 'NONE') {
+        finalPrices.push(Math.round(effective))
+        continue
+      }
+      const pm = calculateMatrix({
+        bundle: { ...matrixBundle, salePrice: effective },
+        channel: bc.channel,
+        promotion: toMatrixPromotion(promo),
+        globals: buildGlobals(live, bc.adPct),
+        thresholds: tierThresholds,
+      })
+      const promoPrice = Math.round(pm.cells[0]?.finalPrice ?? effective)
+      if (promoPrice !== Math.round(effective)) hasPromo = true
+      finalPrices.push(promoPrice)
     }
     const min = prices.length ? Math.min(...prices) : null
     const max = prices.length ? Math.max(...prices) : null
     // 소비자가 대비 할인율(판매가 기준). 낮은 판매가=높은 할인.
-    const discountMax =
-      retailCap != null && min != null ? Math.max(0, (retailCap - min) / retailCap) : null
-    const discountMin =
-      retailCap != null && max != null ? Math.max(0, (retailCap - max) / retailCap) : null
-    return { min, max, discountMin, discountMax }
-  }, [matrixBundle, boardChannels, live, tierThresholds, snap, effectiveRetail, manualPrices])
+    const discountOf = (price: number | null) =>
+      retailCap != null && price != null ? Math.max(0, (retailCap - price) / retailCap) : null
+    const discountMax = discountOf(min)
+    const discountMin = discountOf(max)
+    // 프로모션 적용 후 최종 할인율 범위 — 실제로 가격을 낮춘 채널이 하나라도 있을 때만
+    const finalDiscountMax =
+      hasPromo && finalPrices.length ? discountOf(Math.min(...finalPrices)) : null
+    const finalDiscountMin =
+      hasPromo && finalPrices.length ? discountOf(Math.max(...finalPrices)) : null
+    return { min, max, discountMin, discountMax, finalDiscountMin, finalDiscountMax }
+  }, [
+    matrixBundle,
+    boardChannels,
+    live,
+    tierThresholds,
+    snap,
+    effectiveRetail,
+    manualPrices,
+    promotionOf,
+    toMatrixPromotion,
+  ])
 
   // ── 스냅샷 직렬화 / 복원 ───────────────────────────────────────────────────
   // 선택 상품(대표 = 첫 확정행). 번들이면 productIds에 전부 담아 구성 상품 모두 조회 대상.
@@ -1280,6 +1314,15 @@ export function PricingQuickFlow({
     const trimmed = name.trim()
     if (!trimmed) return
     setVariants((prev) => prev.map((v) => (v.id === id ? { ...v, name: trimmed } : v)))
+  }, [])
+
+  // 탭 순서 변경 — 순서는 variants 배열 순서 그대로 스냅샷에 저장된다
+  const reorderVariants = useCallback((fromId: string, toId: string) => {
+    setVariants((prev) => {
+      const from = prev.findIndex((v) => v.id === fromId)
+      const to = prev.findIndex((v) => v.id === toId)
+      return from === -1 || to === -1 ? prev : arrayMove(prev, from, to)
+    })
   }, [])
 
   const buildSnapshot = useCallback((): PricingSimSnapshot => {
@@ -1772,6 +1815,7 @@ export function PricingQuickFlow({
         onRename={renameVariant}
         onRemove={removeVariant}
         onDuplicate={duplicateVariant}
+        onReorder={reorderVariants}
       />
 
       {/* ── KPI 스트립 (순서: 원가매입 → 소비자가 → 판매가 → 할인율) ── */}
@@ -1798,28 +1842,20 @@ export function PricingQuickFlow({
                 })()
               : undefined
           }
-          tooltip={
-            confirmedRows.length > 0 ? (
-              <div className="space-y-1">
-                <p className="font-medium">원가 항목별 (원가율)</p>
-                {confirmedRows.map((r, i) => {
+          breakdown={
+            confirmedRows.length > 1 ? (
+              <ComponentBreakdown
+                items={confirmedRows.map((r) => {
                   const cost = r.costPrice * r.quantity
                   const retail = r.retailPrice * r.quantity
-                  const pct = retail > 0 ? Math.round((cost / retail) * 100) : null
-                  return (
-                    <p key={i} className="flex justify-between gap-3 tabular-nums">
-                      <span className="truncate text-muted-foreground">
-                        {r.productName}
-                        {r.quantity > 1 ? ` ×${r.quantity}` : ''}
-                      </span>
-                      <span>
-                        ₩{fmt(cost)}
-                        {pct != null && <span className="text-muted-foreground"> ({pct}%)</span>}
-                      </span>
-                    </p>
-                  )
+                  return {
+                    name: r.productName,
+                    quantity: r.quantity,
+                    amount: cost,
+                    note: retail > 0 ? `${Math.round((cost / retail) * 100)}%` : undefined,
+                  }
                 })}
-              </div>
+              />
             ) : undefined
           }
         />
@@ -1831,6 +1867,17 @@ export function PricingQuickFlow({
           onChange={setRetailOverride}
           canApply={retailApplyTarget != null}
           onApply={() => setRetailApplyOpen(true)}
+          breakdown={
+            confirmedRows.length > 1 ? (
+              <ComponentBreakdown
+                items={confirmedRows.map((r) => ({
+                  name: r.productName,
+                  quantity: r.quantity,
+                  amount: r.retailPrice * r.quantity,
+                }))}
+              />
+            ) : undefined
+          }
         />
         <KpiCell
           label="판매가"
@@ -1852,7 +1899,18 @@ export function PricingQuickFlow({
                 : `${Math.round(setPriceRange.discountMin * 100)}~${Math.round(setPriceRange.discountMax * 100)}%`
               : '—'
           }
-          tooltip="현재 설정된 판매가 기준 소비자가 대비 할인율입니다."
+          sub={
+            setPriceRange &&
+            setPriceRange.finalDiscountMin != null &&
+            setPriceRange.finalDiscountMax != null
+              ? `프로모션 최종 ${
+                  setPriceRange.finalDiscountMin === setPriceRange.finalDiscountMax
+                    ? `${Math.round(setPriceRange.finalDiscountMax * 100)}%`
+                    : `${Math.round(setPriceRange.finalDiscountMin * 100)}~${Math.round(setPriceRange.finalDiscountMax * 100)}%`
+                }`
+              : undefined
+          }
+          tooltip="현재 설정된 판매가 기준 소비자가 대비 할인율입니다. 프로모션이 적용된 채널이 있으면 적용 후 최종 할인율을 아래에 함께 표시합니다."
         />
       </div>
 
@@ -2584,6 +2642,7 @@ function KpiCell({
   accent,
   tooltip,
   valueRight,
+  breakdown,
 }: {
   label: string
   value: string
@@ -2593,6 +2652,8 @@ function KpiCell({
   tooltip?: React.ReactNode
   /** 값 우측 인라인 배지 (예: 원가율) */
   valueRight?: React.ReactNode
+  /** 값 아래 상세 목록 (예: 구성 상품별 원가) */
+  breakdown?: React.ReactNode
 }) {
   const valueEl = (
     <p
@@ -2624,7 +2685,32 @@ function KpiCell({
         {valueRight}
       </div>
       {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
+      {breakdown}
     </div>
+  )
+}
+
+/** KPI 카드 하단 구성 상품별 금액 목록 (구성 상품 2개 이상일 때) */
+function ComponentBreakdown({
+  items,
+}: {
+  items: Array<{ name: string; quantity: number; amount: number; note?: string }>
+}) {
+  return (
+    <ul className="mt-1.5 space-y-0.5 border-t border-[var(--ps-border)] pt-1.5 text-[11px] tabular-nums">
+      {items.map((it, i) => (
+        <li key={i} className="flex justify-between gap-2">
+          <span className="truncate text-muted-foreground" title={it.name}>
+            {it.name}
+            {it.quantity > 1 ? ` ×${it.quantity}` : ''}
+          </span>
+          <span className="shrink-0">
+            ₩{fmt(it.amount)}
+            {it.note && <span className="text-muted-foreground"> ({it.note})</span>}
+          </span>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -2640,6 +2726,7 @@ function RetailKpiCell({
   onChange,
   canApply,
   onApply,
+  breakdown,
 }: {
   /** 상품 기본 소비자가 (Σ 컴포넌트). null=미입력 */
   base: number | null
@@ -2653,6 +2740,8 @@ function RetailKpiCell({
   /** 조정한 소비자가를 상품에 되쓸 수 있는지 (단일 구성 상품만) */
   canApply: boolean
   onApply: () => void
+  /** 값 아래 구성 상품별 기본 소비자가 목록 */
+  breakdown?: React.ReactNode
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
@@ -2736,6 +2825,7 @@ function RetailKpiCell({
       {override != null && base != null && (
         <p className="text-[10px] text-muted-foreground tabular-nums">기본 ₩{fmt(base)}</p>
       )}
+      {breakdown}
     </div>
   )
 }
