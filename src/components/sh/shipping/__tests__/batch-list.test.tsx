@@ -170,15 +170,23 @@ describe('BatchList', () => {
     const url = new URL(String(fetchMock.mock.calls[1][0]), 'http://localhost')
     expect(url.searchParams.get('from')).toBe('2026-08-25')
     expect(url.searchParams.get('to')).toBe('2026-09-24')
+
+    rerender(<BatchList dateFrom="2026-08-25" dateTo="2026-09-23" onSelect={onSelect} />)
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3))
+    const nextUrl = new URL(String(fetchMock.mock.calls[2][0]), 'http://localhost')
+    expect(nextUrl.searchParams.get('from')).toBe('2026-08-25')
+    expect(nextUrl.searchParams.get('to')).toBe('2026-09-23')
   })
 
   test('배송 묶음 패널에는 기간 컨트롤을 렌더링하지 않는다', async () => {
     mockBatches()
-    renderBatchList()
+    const { container } = renderBatchList()
 
     await screen.findByText('완료일 라벨')
     expect(screen.queryByRole('button', { name: '7일' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('배송 묶음 시작일')).not.toBeInTheDocument()
+    expect(container.querySelector('input[type="date"]')).toBeNull()
   })
 
   test('새 기간 조회가 실패하면 이전 행을 숨기고 선택을 해제한다', async () => {
