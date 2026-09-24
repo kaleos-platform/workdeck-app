@@ -6,6 +6,8 @@ const row = (o: Partial<OptionQtyRow>): OptionQtyRow => ({
   optionName: '옵션1',
   productId: 'p1',
   productName: '상품1',
+  productGroupId: 'g1',
+  productGroupName: '그룹1',
   channelId: 'c1',
   quantity: 1,
   revenue: 1000,

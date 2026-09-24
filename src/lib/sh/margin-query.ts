@@ -159,6 +159,16 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
   // FIXED 배송비 배분용: 채널 → (옵션 → 매출)
   const fixedShipRevenueByChannel = new Map<string, Map<string, number>>()
   for (const row of sales.rows) {
+    // 배송비 분모는 **조회 스코프와 무관하게** 채널 전체 매출이어야 한다.
+    // 스코프 안쪽만 모으면 productIds 를 좁혔을 때 채널 주문 전체의 배송비가
+    // 그 상품에 통째로 얹힌다.
+    const ch = channelById.get(row.channelId)
+    if (ch && !ch.externalSource && ch.shippingFeeType === 'FIXED') {
+      const cur = fixedShipRevenueByChannel.get(row.channelId) ?? new Map<string, number>()
+      cur.set(row.optionId, (cur.get(row.optionId) ?? 0) + row.revenue)
+      fixedShipRevenueByChannel.set(row.channelId, cur)
+    }
+
     if (!optionIdSet.has(row.optionId)) {
       outOfScopeRevenue += row.revenue
       continue
@@ -169,12 +179,6 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
       commissionFee: row.revenue * feePctOf(row.channelId),
       shippingCost: percentShippingOf(row.channelId, row.revenue),
     })
-    const ch = channelById.get(row.channelId)
-    if (ch && !ch.externalSource && ch.shippingFeeType === 'FIXED') {
-      const cur = fixedShipRevenueByChannel.get(row.channelId) ?? new Map<string, number>()
-      cur.set(row.optionId, (cur.get(row.optionId) ?? 0) + row.revenue)
-      fixedShipRevenueByChannel.set(row.channelId, cur)
-    }
   }
 
   // ── 배송비(FIXED) — 채널별 주문 건수 × 배송비를 매출 비중으로 배분 ────
@@ -194,6 +198,7 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
       if (!byOption || byOption.size === 0) continue
       const revSum = [...byOption.values()].reduce((a, v) => a + v, 0)
       for (const [optionId, rev] of byOption) {
+        if (!optionIdSet.has(optionId)) continue // 분모엔 넣되 배분은 스코프 안쪽만
         const share = revSum > 0 ? rev / revSum : 1 / byOption.size
         bump(optionId, { shippingCost: total * share })
       }
@@ -261,14 +266,23 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
         productsByCampaign.set(m.campaignId, arr)
       }
 
-      // 상품별 (옵션 → 현재까지 집계된 매출) 인덱스
+      // 상품별 (옵션 → 매출) 인덱스. 배송비와 같은 이유로 **스코프와 무관하게**
+      // 전체 매출로 만든다. acc(스코프 안쪽)로 만들면 productIds 를 좁혔을 때
+      // 캠페인 광고비 전액이 그 상품에 얹힌다.
       const revenueByProduct = new Map<string, { optionId: string; revenue: number }[]>()
-      for (const [optionId, a] of acc) {
-        const opt = optionById.get(optionId)
-        if (!opt) continue
-        const arr = revenueByProduct.get(opt.product.id) ?? []
-        arr.push({ optionId, revenue: a.revenue })
-        revenueByProduct.set(opt.product.id, arr)
+      const revenueByOptionAll = new Map<string, { productId: string; revenue: number }>()
+      for (const row of sales.rows) {
+        const cur = revenueByOptionAll.get(row.optionId) ?? {
+          productId: row.productId,
+          revenue: 0,
+        }
+        cur.revenue += row.revenue
+        revenueByOptionAll.set(row.optionId, cur)
+      }
+      for (const [optionId, v] of revenueByOptionAll) {
+        const arr = revenueByProduct.get(v.productId) ?? []
+        arr.push({ optionId, revenue: v.revenue })
+        revenueByProduct.set(v.productId, arr)
       }
 
       for (const [campaignId, amount] of leftoverByCampaign) {
@@ -291,6 +305,7 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
           if (optRows.length === 0) continue // 매출 근거 없는 상품 → unallocated 로 남음
 
           for (const row of optRows) {
+            if (!optionIdSet.has(row.optionId)) continue // 분모엔 넣되 배분은 스코프 안쪽만
             const optShare = optTotal > 0 ? row.revenue / optTotal : 1 / optRows.length
             const part = productAd * optShare
             bump(row.optionId, { adCost: part })

@@ -116,7 +116,7 @@ const sellerHubGetProductOptionsTool: ToolDefinition = {
 const sellerHubGetProductMarginTool: ToolDefinition = {
   name: 'sellerhub_get_product_margin',
   description:
-    '기간(from~to, YYYY-MM-DD KST)의 SKU/옵션 단위 공헌이익을 반환합니다. 옵션별 revenue·cogs·shippingCost·packagingCost·commissionFee·adCost·contributionProfit·contributionMarginRatio를 계산합니다. 매출은 직접배송(DelOrder)과 쿠팡 로켓그로스 두 경로를 합산하고, 광고비는 외부 옵션ID 브리지 → 캠페인↔상품 매핑 순으로 귀속합니다. 귀속에 실패한 금액은 옵션에 배분하지 않고 summary.unattributedRevenue·unallocatedAdCost로 분리하며, coverage에 경로별 귀속률을 함께 반환하니 수치 해석 시 반드시 확인하세요. productIds/optionIds/channel로 좁히고 page/pageSize(기본 50)로 페이지네이션합니다.',
+    '기간(from~to, YYYY-MM-DD KST)의 SKU/옵션 단위 공헌이익을 반환합니다. 옵션별 revenue·cogs·shippingCost·packagingCost·commissionFee·adCost·contributionProfit·contributionMarginRatio를 계산합니다. 매출·수량은 판매분석 상품 랭킹과 동일한 집계(loadProductSales)를 쓰므로 두 화면 숫자가 일치합니다. 직접배송(DelOrder)과 쿠팡 로켓그로스를 합산하고, 광고비는 외부 옵션ID 브리지 → 캠페인↔상품 매핑 순으로 귀속합니다. 귀속에 실패한 금액은 옵션에 배분하지 않고 summary.unattributedRevenue·unallocatedAdCost로 분리하며, coverage에 경로별 귀속률을 함께 반환하니 수치 해석 시 반드시 확인하세요. 배송비는 FIXED 채널의 경우 주문 1건당 부과를 매출 비중으로 배분하며 로켓그로스는 0입니다(쿠팡 배송). productIds/optionIds/channel로 좁혀도 옵션별 비용은 달라지지 않습니다. page/pageSize(기본 50)로 페이지네이션합니다.',
   inputSchema: {
     from: z.string(),
     to: z.string(),

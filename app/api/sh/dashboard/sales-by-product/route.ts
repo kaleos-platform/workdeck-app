@@ -93,6 +93,7 @@ export async function GET(req: NextRequest) {
     {
       optionId: string
       productId: string
+      productGroupId: string | null
       productName: string
       optionName: string
       quantity: number
@@ -103,6 +104,7 @@ export async function GET(req: NextRequest) {
     const entry = prevMap.get(r.optionId) ?? {
       optionId: r.optionId,
       productId: r.productId,
+      productGroupId: r.productGroupId,
       productName: r.productName,
       optionName: r.optionName,
       quantity: 0,
