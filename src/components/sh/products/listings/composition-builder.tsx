@@ -450,7 +450,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
       )
     )
     if (validBundles.length === 0) {
-      toast.error('묶음마다 수량을 지정할 값을 1개 이상 선택하세요')
+      toast.error('세트마다 수량을 지정할 값을 1개 이상 선택하세요')
       return
     }
 
@@ -1194,7 +1194,7 @@ function ProductSearchPane({ onPick }: { onPick: (rows: ProductRow[]) => void })
 }
 
 // ─── 여러 상품 조합 ─────────────────────────────────────────────────────────
-/** quantities[i] = 묶음 i 에 들어갈 이 상품 수량 (0 = 그 묶음에서 제외). 모든 상품의 길이가 같다. */
+/** quantities[i] = 세트 i 에 들어갈 이 상품 수량 (0 = 그 세트에서 제외). 모든 상품의 길이가 같다. */
 type MultiPickState = { optionIds: string[]; quantities: number[] }
 
 function multiPicksToInput(products: ProductDetail[], picks: Record<string, MultiPickState>) {
@@ -1222,9 +1222,6 @@ function MultiProductSettings({
     () => buildMultiProductBundleGroups(multiPicksToInput(products, picks)),
     [products, picks]
   )
-  const samples = groups
-    .slice(0, 3)
-    .map((g) => g.items.map((it) => `${it.optionName || '기본'}×${it.quantity}`).join(' + '))
   const pickOf = (id: string): MultiPickState => picks[id] ?? { optionIds: [], quantities: [1] }
   const bundleCount = Math.max(1, ...products.map((p) => pickOf(p.id).quantities.length))
 
@@ -1247,9 +1244,10 @@ function MultiProductSettings({
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        상품마다 넣을 옵션을 고르고, 아래 묶음에서 상품별 수량을 정하세요. 묶음 1개가 판매 옵션
-        1개이며, 옵션을 여러 개 고른 상품은 옵션마다 판매 옵션이 나뉘어 생성됩니다.
+        옵션을 고르고 세트별 수량을 정하세요. 세트 1개가 판매 옵션 1개이며, 옵션을 여러 개 고른
+        상품은 옵션마다 판매 옵션이 나뉘어 생성됩니다.
       </p>
+      <div className="text-xs font-medium">옵션 선택</div>
       {products.map((p) => {
         const pick = pickOf(p.id)
         return (
@@ -1297,84 +1295,132 @@ function MultiProductSettings({
         )
       })}
 
-      <div className="space-y-2 rounded-md border bg-background p-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs">묶음 ({bundleCount}개) · 상품별 수량</Label>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs"
-            onClick={() => mapAll((q) => [...q, 1])}
-          >
-            <Plus className="mr-1 h-3.5 w-3.5" />
-            묶음 추가
-          </Button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-muted-foreground">
-                <th className="w-16 py-1 text-left font-normal">묶음</th>
-                {products.map((p) => (
-                  <th key={p.id} className="max-w-32 truncate px-1 py-1 text-left font-normal">
-                    {productDisplayName(p)}
-                  </th>
-                ))}
-                <th className="w-8" />
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: bundleCount }, (_, b) => (
-                <tr key={b}>
-                  <td className="py-1">#{b + 1}</td>
-                  {products.map((p) => (
-                    <td key={p.id} className="px-1 py-1">
-                      <Input
-                        type="number"
-                        min={0}
-                        max={999}
-                        value={pickOf(p.id).quantities[b] ?? 0}
-                        onChange={(e) => setQty(p.id, b, Number(e.target.value || 0))}
-                        className="h-7 w-20"
-                        aria-label={`묶음 ${b + 1} ${productDisplayName(p)} 수량`}
-                      />
-                    </td>
-                  ))}
-                  <td>
-                    {bundleCount > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                        onClick={() => mapAll((q) => q.filter((_, i) => i !== b))}
-                        aria-label={`묶음 ${b + 1} 제거`}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-[11px] text-muted-foreground">수량 0 = 그 묶음에서 제외</p>
-      </div>
-
-      <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-        <strong className="text-foreground">{groups.length}</strong>개의 판매 옵션이 생성됩니다
-        {samples.length > 0 && (
-          <span className="mt-0.5 block">
-            예: {samples.join(', ')}
-            {groups.length > samples.length && ` 외 ${groups.length - samples.length}개`}
-          </span>
+      <SetTable
+        columns={products.map((p) => productDisplayName(p))}
+        rows={Array.from({ length: bundleCount }, (_, b) =>
+          products.map((p) => pickOf(p.id).quantities[b] ?? 0)
         )}
-      </div>
+        min={0}
+        onAdd={() => mapAll((q) => [...q, 1])}
+        onRemove={(b) => mapAll((q) => q.filter((_, i) => i !== b))}
+        onChange={(b, col, qty) => setQty(products[col].id, b, qty)}
+        hint="수량 0 = 그 세트에서 제외"
+      />
+
+      <PreviewSummary groups={groups} />
     </div>
   )
 }
+
+/**
+ * 세트 구성 표 — 단일 상품(수량 세트)·여러 상품이 같은 UX 를 쓰도록 공통화.
+ * 행 = 세트 1개(= 판매 옵션 1개), 열 = 상품별 수량.
+ */
+function SetTable({
+  columns,
+  rows,
+  min,
+  onAdd,
+  onRemove,
+  onChange,
+  hint,
+}: {
+  columns: string[]
+  rows: number[][]
+  min: number
+  onAdd: () => void
+  onRemove: (row: number) => void
+  onChange: (row: number, col: number, qty: number) => void
+  hint?: string
+}) {
+  return (
+    <div className="space-y-2 rounded-md border bg-background p-3">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">세트 구성 ({rows.length}개)</Label>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={onAdd}
+        >
+          <Plus className="mr-1 h-3.5 w-3.5" />
+          세트 추가
+        </Button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="text-muted-foreground">
+              <th className="w-16 py-1 text-left font-normal">세트</th>
+              {columns.map((c, i) => (
+                <th key={i} className="max-w-32 truncate px-1 py-1 text-left font-normal">
+                  {c}
+                </th>
+              ))}
+              <th className="w-8" />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, r) => (
+              <tr key={r}>
+                <td className="py-1">#{r + 1}</td>
+                {row.map((qty, c) => (
+                  <td key={c} className="px-1 py-1">
+                    <Input
+                      type="number"
+                      min={min}
+                      max={999}
+                      value={qty}
+                      onChange={(e) => onChange(r, c, Math.max(min, Number(e.target.value || min)))}
+                      className="h-7 w-20"
+                      aria-label={`세트 ${r + 1} ${columns[c]}`}
+                    />
+                  </td>
+                ))}
+                <td>
+                  {rows.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => onRemove(r)}
+                      aria-label={`세트 ${r + 1} 제거`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+    </div>
+  )
+}
+
+/** 생성될 판매 옵션 수 + 예시(`옵션×수량 + …`) — 모든 구성 방식 공통 */
+function PreviewSummary({ groups }: { groups: ItemGroupLike[] }) {
+  const samples = groups
+    .slice(0, 3)
+    .map((g) => g.items.map((it) => `${it.optionName || '기본'}×${it.quantity}`).join(' + '))
+  return (
+    <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+      <strong className="text-foreground">{groups.length}</strong>개의 판매 옵션이 생성됩니다
+      {samples.length > 0 && (
+        <span className="mt-0.5 block">
+          예: {samples.join(', ')}
+          {groups.length > samples.length && ` 외 ${groups.length - samples.length}개`}
+        </span>
+      )}
+    </div>
+  )
+}
+
+type ItemGroupLike = { items: Array<{ optionName: string; quantity: number }> }
 
 function SelectedProductHeader({ product }: { product: ProductDetail }) {
   return (
@@ -1411,8 +1457,6 @@ function SimpleModeSettings({
   onToggleValue: (attrName: string, value: string, on: boolean) => void
 }) {
   const attrs = useMemo(() => product.optionAttributes ?? [], [product.optionAttributes])
-  const bundleCount = setQuantities.length
-
   // 정의 cartesian(전체 선택 조합) + 뒷받침 진단을 단일 source로 계산
   const allCombos = useMemo(
     () =>
@@ -1427,71 +1471,19 @@ function SimpleModeSettings({
   // 옵션 행이 실제 보유한 (속성, 값) 집합 — 인라인 배지용
   const backedValueSet = useMemo(() => buildBackedValueSet(product.options), [product.options])
 
+  // 미리보기는 실제 생성 결과(뒷받침되는 조합만)에서 — false confidence 방지
   const previewGroups = buildSimpleCompositionGroups({ product, attrState, setQuantities })
-  const comboCount = diag.backedCombos.length
-  const totalListings = previewGroups.length
-
-  // 예시는 정의가 아니라 "뒷받침되는" 조합에서만 — false confidence 방지
-  const samples = diag.backedCombos.slice(0, 3).map((c) =>
-    attrs
-      .map((a) => c[a.name])
-      .filter(Boolean)
-      .join(' / ')
-  )
 
   return (
-    <div className="space-y-3 rounded-md border bg-background p-3">
+    <div className="space-y-3">
       {attrs.length > 0 && diag.caseType !== 'OK' && (
         <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-300">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>{diag.message}</span>
         </div>
       )}
-      <div className="space-y-1.5">
-        <Label>세트 수량</Label>
-        <div className="space-y-1.5">
-          {setQuantities.map((q, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <Input
-                type="number"
-                min={1}
-                max={999}
-                value={q}
-                onChange={(e) => onUpdateBundleQty(idx, Math.max(1, Number(e.target.value || 1)))}
-                className="h-9 w-24"
-              />
-              <span className="text-xs text-muted-foreground">
-                {idx === 0 ? '선택한 옵션 조합마다 이 수량이 적용됩니다' : `번들 세트 ${idx + 1}`}
-              </span>
-              {bundleCount > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="ml-auto h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                  onClick={() => onRemoveBundle(idx)}
-                  aria-label="세트 수량 제거"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-            onClick={onAddBundle}
-          >
-            <Plus className="mr-1 h-3.5 w-3.5" />
-            번들세트 추가
-          </Button>
-        </div>
-      </div>
-
       {attrs.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-2 rounded-md border bg-background p-3">
           <div className="text-xs font-medium">옵션 선택 (선택 안 하면 전체)</div>
           <div className="space-y-2">
             {attrs.map((attr) => {
@@ -1541,18 +1533,17 @@ function SimpleModeSettings({
         </div>
       )}
 
-      <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-        <strong className="text-foreground">{totalListings}</strong>개의 판매 옵션이 생성됩니다 ·{' '}
-        {bundleCount > 1
-          ? `옵션 조합 ${comboCount}개 × 세트 수량 ${bundleCount}종 (${setQuantities.join(', ')})`
-          : `각 판매 옵션 = 1 옵션 × ${setQuantities[0]} 수량`}
-        {samples.length > 0 && (
-          <span className="mt-0.5 block">
-            예: {samples.join(', ')}
-            {comboCount > samples.length && ` 외 ${comboCount - samples.length}개`}
-          </span>
-        )}
-      </div>
+      <SetTable
+        columns={['수량']}
+        rows={setQuantities.map((q) => [q])}
+        min={1}
+        onAdd={onAddBundle}
+        onRemove={onRemoveBundle}
+        onChange={(r, _c, q) => onUpdateBundleQty(r, q)}
+        hint="선택한 옵션마다 세트 수만큼 판매 옵션이 생성됩니다"
+      />
+
+      <PreviewSummary groups={previewGroups} />
     </div>
   )
 }
@@ -1600,7 +1591,7 @@ function BundlesEditor({
       <div className="space-y-2">
         <Label className="text-xs">수량 지정 속성</Label>
         <p className="text-xs text-muted-foreground">
-          선택한 속성은 묶음별로 값·수량을 지정합니다. 선택 안 된 속성은 모든 값에 기본 적용되어
+          선택한 속성은 세트별로 값·수량을 지정합니다. 선택 안 된 속성은 모든 값에 기본 적용되어
           판매 옵션이 자동으로 나뉘어 생성됩니다
         </p>
         <div className="flex flex-wrap gap-2">
@@ -1625,11 +1616,11 @@ function BundlesEditor({
         </div>
       </div>
 
-      {/* 2) 묶음 카드 */}
+      {/* 2) 세트 카드 */}
       {selectedAttrs.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs">묶음 ({bundles.length}개)</Label>
+            <Label className="text-xs">세트 구성 ({bundles.length}개)</Label>
             <Button
               type="button"
               variant="ghost"
@@ -1638,7 +1629,7 @@ function BundlesEditor({
               onClick={onAddBundle}
             >
               <Plus className="mr-1 h-3.5 w-3.5" />
-              묶음 추가
+              세트 추가
             </Button>
           </div>
           <div className="space-y-2">
@@ -1646,7 +1637,7 @@ function BundlesEditor({
               <div key={bundle.id} className="rounded-md border bg-background px-3 py-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary">묶음 #{idx + 1}</Badge>
+                    <Badge variant="secondary">세트 #{idx + 1}</Badge>
                     <span className="text-xs text-muted-foreground">
                       {bundleSummary(bundle) || '값을 선택하세요'}
                     </span>
@@ -1658,7 +1649,7 @@ function BundlesEditor({
                       size="sm"
                       className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                       onClick={() => onRemoveBundle(bundle.id)}
-                      aria-label="묶음 제거"
+                      aria-label="세트 제거"
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -1754,7 +1745,7 @@ function AdvancedPreview({
           )}
         </>
       ) : (
-        <span>수량 지정 속성을 선택하고 묶음마다 값을 1개 이상 골라야 미리 보기가 표시됩니다</span>
+        <span>수량 지정 속성을 선택하고 세트마다 값을 1개 이상 골라야 미리 보기가 표시됩니다</span>
       )}
     </div>
   )
