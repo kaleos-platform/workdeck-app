@@ -94,6 +94,8 @@ export function useProductSales(
         const prevTotals: PrevOptionTotal[] = (res?.prevTotals ?? []).map((p: PrevOptionTotal) => ({
           optionId: p.optionId,
           productId: p.productId,
+          productName: p.productName,
+          optionName: p.optionName,
           quantity: Number(p.quantity ?? 0),
           revenue: Number(p.revenue ?? 0),
         }))

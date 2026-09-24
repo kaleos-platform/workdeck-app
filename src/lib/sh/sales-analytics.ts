@@ -524,6 +524,9 @@ export type PrevOptionTotal = {
   productId: string
   quantity: number
   revenue: number
+  /** 이번 구간에 판매가 없어 현재 행이 없는 상품/옵션의 이름 표시용. */
+  productName?: string
+  optionName?: string
 }
 
 /** 상품에 귀속시키지 못한 매출 — 랭킹 맨 아래 고정 행이 된다. */
@@ -631,17 +634,20 @@ export function buildProductRanking(
   }
 
   // 이전 구간: 이번 구간에 없던 상품/옵션도 행으로 살린다(급감 탐지에 필요).
+  // 이름은 prevTotals 가 실어온 값을 쓴다 — 없으면 상품을 못 알아보는 행이 생긴다.
   for (const prev of prevTotals) {
     let p = products.get(prev.productId)
     if (!p) {
       p = {
-        productName: '(기간 내 판매 없음)',
+        productName: prev.productName ?? '(이름 미상)',
         quantity: 0,
         revenue: 0,
         options: new Map(),
         channels: new Map(),
       }
       products.set(prev.productId, p)
+    } else if (!p.productName && prev.productName) {
+      p.productName = prev.productName
     }
     const opt = p.options.get(prev.optionId)
     if (opt) {
@@ -650,7 +656,7 @@ export function buildProductRanking(
     } else {
       p.options.set(prev.optionId, {
         optionId: prev.optionId,
-        optionName: '(기간 내 판매 없음)',
+        optionName: prev.optionName ?? '(이름 미상)',
         quantity: 0,
         revenue: 0,
         prevQuantity: prev.quantity,
