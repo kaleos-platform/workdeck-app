@@ -36,7 +36,7 @@ export function OrderSearchBar({ value, onChange }: Props) {
   }, [local, value, onChange])
 
   return (
-    <div className="relative max-w-md">
+    <div className="relative w-full">
       <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
       <Input
         value={local}
