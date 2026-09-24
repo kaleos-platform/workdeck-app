@@ -57,6 +57,38 @@ function DeltaCell({ cur, prev }: { cur: number; prev: number }) {
   )
 }
 
+/**
+ * 미매칭 사유별 내역.
+ * "상품을 알 수 없음"과 "단종·삭제라 제외"는 성격이 완전히 달라서 한 줄로 뭉치면
+ * 사용자가 매칭 작업이 남은 줄 오해한다. 0원인 사유는 감춘다.
+ */
+const REASON_LABELS: Record<string, string> = {
+  directUnmatched: '상품 미연결',
+  directExcluded: '단종·삭제 상품',
+  rocketUnmapped: '로켓 외부코드 미매핑',
+  rocketExcluded: '로켓 단종·삭제 상품',
+}
+
+function UnmatchedReasons({ byReason }: { byReason?: Record<string, number> }) {
+  const parts = Object.entries(byReason ?? {})
+    .filter(([, v]) => v !== 0)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+  // whitespace-normal 필수 — TableCell 기본이 nowrap 이라 부제가 옆 열을 침범한다.
+  if (parts.length === 0) {
+    return <p className="text-xs whitespace-normal text-muted-foreground">합계에는 포함됩니다</p>
+  }
+  return (
+    <p className="text-xs whitespace-normal text-muted-foreground">
+      {parts.map(([k, v], i) => (
+        <span key={k}>
+          {i > 0 && ' · '}
+          {REASON_LABELS[k] ?? k} {formatKRW(v)}
+        </span>
+      ))}
+    </p>
+  )
+}
+
 function SortHead({
   k,
   sortKey,
@@ -343,9 +375,7 @@ export function ProductRankingTable({
                     <TableCell />
                     <TableCell>
                       <span className="font-medium">상품 미매칭</span>
-                      <p className="text-xs text-muted-foreground">
-                        상품을 알 수 없는 판매 — 합계에는 포함됩니다
-                      </p>
+                      <UnmatchedReasons byReason={ranking.unmatched.byReason} />
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {qty(ranking.unmatched.quantity)}
