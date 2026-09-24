@@ -28,7 +28,7 @@ describe('OrderSearchResults', () => {
               address: '서울특별시 중구 세종대로 110',
               orderNumber: 'ORDER-20260923-1',
               orderDate: '2026-09-23T03:00:00.000Z',
-              paymentAmount: 28000,
+              paymentAmount: '28000',
               postalCode: '04524',
               deliveryMessage: null,
               memo: '문 앞에 놓아주세요',
