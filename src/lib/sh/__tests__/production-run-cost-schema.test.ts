@@ -45,4 +45,46 @@ describe('productionRunCostSchema', () => {
 
     expect(result.targetProductId).toBeUndefined()
   })
+
+  test.each([null, ''])(
+    'MARKETING 이외 비용은 빈 대상 상품 ID %p를 제거한다',
+    (targetProductId) => {
+      const result = productionRunCostSchema.parse({
+        ...baseInput,
+        category: 'MATERIAL',
+        targetProductId,
+      })
+
+      expect(result.targetProductId).toBeUndefined()
+    }
+  )
+
+  test.each([null, ''])('MARKETING 비용은 빈 대상 상품 ID %p를 거부한다', (targetProductId) => {
+    const result = productionRunCostSchema.safeParse({
+      ...baseInput,
+      category: 'MARKETING',
+      targetProductId,
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues).toContainEqual(
+        expect.objectContaining({
+          code: 'custom',
+          message: '마케팅 비용의 대상 상품을 선택하세요',
+          path: ['targetProductId'],
+        })
+      )
+    }
+  })
+
+  test('MARKETING 이외 비용도 유효하지 않은 non-empty 대상 상품 ID는 거부한다', () => {
+    const result = productionRunCostSchema.safeParse({
+      ...baseInput,
+      category: 'MATERIAL',
+      targetProductId: 'short',
+    })
+
+    expect(result.success).toBe(false)
+  })
 })

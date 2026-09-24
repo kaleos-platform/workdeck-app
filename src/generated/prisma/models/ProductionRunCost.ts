@@ -45,6 +45,7 @@ export type ProductionRunCostSumAggregateOutputType = {
 export type ProductionRunCostMinAggregateOutputType = {
   id: string | null
   runId: string | null
+  targetProductId: string | null
   itemName: string | null
   description: string | null
   category: $Enums.ProductionCostCategory | null
@@ -60,6 +61,7 @@ export type ProductionRunCostMinAggregateOutputType = {
 export type ProductionRunCostMaxAggregateOutputType = {
   id: string | null
   runId: string | null
+  targetProductId: string | null
   itemName: string | null
   description: string | null
   category: $Enums.ProductionCostCategory | null
@@ -75,6 +77,7 @@ export type ProductionRunCostMaxAggregateOutputType = {
 export type ProductionRunCostCountAggregateOutputType = {
   id: number
   runId: number
+  targetProductId: number
   itemName: number
   description: number
   category: number
@@ -108,6 +111,7 @@ export type ProductionRunCostSumAggregateInputType = {
 export type ProductionRunCostMinAggregateInputType = {
   id?: true
   runId?: true
+  targetProductId?: true
   itemName?: true
   description?: true
   category?: true
@@ -123,6 +127,7 @@ export type ProductionRunCostMinAggregateInputType = {
 export type ProductionRunCostMaxAggregateInputType = {
   id?: true
   runId?: true
+  targetProductId?: true
   itemName?: true
   description?: true
   category?: true
@@ -138,6 +143,7 @@ export type ProductionRunCostMaxAggregateInputType = {
 export type ProductionRunCostCountAggregateInputType = {
   id?: true
   runId?: true
+  targetProductId?: true
   itemName?: true
   description?: true
   category?: true
@@ -240,6 +246,7 @@ export type ProductionRunCostGroupByArgs<ExtArgs extends runtime.Types.Extension
 export type ProductionRunCostGroupByOutputType = {
   id: string
   runId: string
+  targetProductId: string | null
   itemName: string
   description: string | null
   category: $Enums.ProductionCostCategory
@@ -278,6 +285,7 @@ export type ProductionRunCostWhereInput = {
   NOT?: Prisma.ProductionRunCostWhereInput | Prisma.ProductionRunCostWhereInput[]
   id?: Prisma.StringFilter<"ProductionRunCost"> | string
   runId?: Prisma.StringFilter<"ProductionRunCost"> | string
+  targetProductId?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
   itemName?: Prisma.StringFilter<"ProductionRunCost"> | string
   description?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
   category?: Prisma.EnumProductionCostCategoryFilter<"ProductionRunCost"> | $Enums.ProductionCostCategory
@@ -289,11 +297,13 @@ export type ProductionRunCostWhereInput = {
   sortOrder?: Prisma.IntFilter<"ProductionRunCost"> | number
   vatIncluded?: Prisma.BoolFilter<"ProductionRunCost"> | boolean
   run?: Prisma.XOR<Prisma.ProductionRunScalarRelationFilter, Prisma.ProductionRunWhereInput>
+  targetProduct?: Prisma.XOR<Prisma.InvProductNullableScalarRelationFilter, Prisma.InvProductWhereInput> | null
 }
 
 export type ProductionRunCostOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   runId?: Prisma.SortOrder
+  targetProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrder
@@ -305,6 +315,7 @@ export type ProductionRunCostOrderByWithRelationInput = {
   sortOrder?: Prisma.SortOrder
   vatIncluded?: Prisma.SortOrder
   run?: Prisma.ProductionRunOrderByWithRelationInput
+  targetProduct?: Prisma.InvProductOrderByWithRelationInput
 }
 
 export type ProductionRunCostWhereUniqueInput = Prisma.AtLeast<{
@@ -313,6 +324,7 @@ export type ProductionRunCostWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ProductionRunCostWhereInput[]
   NOT?: Prisma.ProductionRunCostWhereInput | Prisma.ProductionRunCostWhereInput[]
   runId?: Prisma.StringFilter<"ProductionRunCost"> | string
+  targetProductId?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
   itemName?: Prisma.StringFilter<"ProductionRunCost"> | string
   description?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
   category?: Prisma.EnumProductionCostCategoryFilter<"ProductionRunCost"> | $Enums.ProductionCostCategory
@@ -324,11 +336,13 @@ export type ProductionRunCostWhereUniqueInput = Prisma.AtLeast<{
   sortOrder?: Prisma.IntFilter<"ProductionRunCost"> | number
   vatIncluded?: Prisma.BoolFilter<"ProductionRunCost"> | boolean
   run?: Prisma.XOR<Prisma.ProductionRunScalarRelationFilter, Prisma.ProductionRunWhereInput>
+  targetProduct?: Prisma.XOR<Prisma.InvProductNullableScalarRelationFilter, Prisma.InvProductWhereInput> | null
 }, "id">
 
 export type ProductionRunCostOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   runId?: Prisma.SortOrder
+  targetProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrder
@@ -352,6 +366,7 @@ export type ProductionRunCostScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ProductionRunCostScalarWhereWithAggregatesInput | Prisma.ProductionRunCostScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"ProductionRunCost"> | string
   runId?: Prisma.StringWithAggregatesFilter<"ProductionRunCost"> | string
+  targetProductId?: Prisma.StringNullableWithAggregatesFilter<"ProductionRunCost"> | string | null
   itemName?: Prisma.StringWithAggregatesFilter<"ProductionRunCost"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"ProductionRunCost"> | string | null
   category?: Prisma.EnumProductionCostCategoryWithAggregatesFilter<"ProductionRunCost"> | $Enums.ProductionCostCategory
@@ -377,11 +392,13 @@ export type ProductionRunCostCreateInput = {
   sortOrder?: number
   vatIncluded?: boolean
   run: Prisma.ProductionRunCreateNestedOneWithoutCostsInput
+  targetProduct?: Prisma.InvProductCreateNestedOneWithoutTargetedProductionCostsInput
 }
 
 export type ProductionRunCostUncheckedCreateInput = {
   id?: string
   runId: string
+  targetProductId?: string | null
   itemName: string
   description?: string | null
   category?: $Enums.ProductionCostCategory
@@ -407,11 +424,13 @@ export type ProductionRunCostUpdateInput = {
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
   run?: Prisma.ProductionRunUpdateOneRequiredWithoutCostsNestedInput
+  targetProduct?: Prisma.InvProductUpdateOneWithoutTargetedProductionCostsNestedInput
 }
 
 export type ProductionRunCostUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
@@ -427,6 +446,7 @@ export type ProductionRunCostUncheckedUpdateInput = {
 export type ProductionRunCostCreateManyInput = {
   id?: string
   runId: string
+  targetProductId?: string | null
   itemName: string
   description?: string | null
   category?: $Enums.ProductionCostCategory
@@ -456,6 +476,7 @@ export type ProductionRunCostUpdateManyMutationInput = {
 export type ProductionRunCostUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   runId?: Prisma.StringFieldUpdateOperationsInput | string
+  targetProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
@@ -481,6 +502,7 @@ export type ProductionRunCostOrderByRelationAggregateInput = {
 export type ProductionRunCostCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   runId?: Prisma.SortOrder
+  targetProductId?: Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrder
   category?: Prisma.SortOrder
@@ -504,6 +526,7 @@ export type ProductionRunCostAvgOrderByAggregateInput = {
 export type ProductionRunCostMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   runId?: Prisma.SortOrder
+  targetProductId?: Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrder
   category?: Prisma.SortOrder
@@ -519,6 +542,7 @@ export type ProductionRunCostMaxOrderByAggregateInput = {
 export type ProductionRunCostMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   runId?: Prisma.SortOrder
+  targetProductId?: Prisma.SortOrder
   itemName?: Prisma.SortOrder
   description?: Prisma.SortOrder
   category?: Prisma.SortOrder
@@ -537,6 +561,48 @@ export type ProductionRunCostSumOrderByAggregateInput = {
   unitPrice?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
+}
+
+export type ProductionRunCostCreateNestedManyWithoutTargetProductInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCostCreateWithoutTargetProductInput, Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput> | Prisma.ProductionRunCostCreateWithoutTargetProductInput[] | Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput[]
+  connectOrCreate?: Prisma.ProductionRunCostCreateOrConnectWithoutTargetProductInput | Prisma.ProductionRunCostCreateOrConnectWithoutTargetProductInput[]
+  createMany?: Prisma.ProductionRunCostCreateManyTargetProductInputEnvelope
+  connect?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+}
+
+export type ProductionRunCostUncheckedCreateNestedManyWithoutTargetProductInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCostCreateWithoutTargetProductInput, Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput> | Prisma.ProductionRunCostCreateWithoutTargetProductInput[] | Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput[]
+  connectOrCreate?: Prisma.ProductionRunCostCreateOrConnectWithoutTargetProductInput | Prisma.ProductionRunCostCreateOrConnectWithoutTargetProductInput[]
+  createMany?: Prisma.ProductionRunCostCreateManyTargetProductInputEnvelope
+  connect?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+}
+
+export type ProductionRunCostUpdateManyWithoutTargetProductNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCostCreateWithoutTargetProductInput, Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput> | Prisma.ProductionRunCostCreateWithoutTargetProductInput[] | Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput[]
+  connectOrCreate?: Prisma.ProductionRunCostCreateOrConnectWithoutTargetProductInput | Prisma.ProductionRunCostCreateOrConnectWithoutTargetProductInput[]
+  upsert?: Prisma.ProductionRunCostUpsertWithWhereUniqueWithoutTargetProductInput | Prisma.ProductionRunCostUpsertWithWhereUniqueWithoutTargetProductInput[]
+  createMany?: Prisma.ProductionRunCostCreateManyTargetProductInputEnvelope
+  set?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+  disconnect?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+  delete?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+  connect?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+  update?: Prisma.ProductionRunCostUpdateWithWhereUniqueWithoutTargetProductInput | Prisma.ProductionRunCostUpdateWithWhereUniqueWithoutTargetProductInput[]
+  updateMany?: Prisma.ProductionRunCostUpdateManyWithWhereWithoutTargetProductInput | Prisma.ProductionRunCostUpdateManyWithWhereWithoutTargetProductInput[]
+  deleteMany?: Prisma.ProductionRunCostScalarWhereInput | Prisma.ProductionRunCostScalarWhereInput[]
+}
+
+export type ProductionRunCostUncheckedUpdateManyWithoutTargetProductNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductionRunCostCreateWithoutTargetProductInput, Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput> | Prisma.ProductionRunCostCreateWithoutTargetProductInput[] | Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput[]
+  connectOrCreate?: Prisma.ProductionRunCostCreateOrConnectWithoutTargetProductInput | Prisma.ProductionRunCostCreateOrConnectWithoutTargetProductInput[]
+  upsert?: Prisma.ProductionRunCostUpsertWithWhereUniqueWithoutTargetProductInput | Prisma.ProductionRunCostUpsertWithWhereUniqueWithoutTargetProductInput[]
+  createMany?: Prisma.ProductionRunCostCreateManyTargetProductInputEnvelope
+  set?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+  disconnect?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+  delete?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+  connect?: Prisma.ProductionRunCostWhereUniqueInput | Prisma.ProductionRunCostWhereUniqueInput[]
+  update?: Prisma.ProductionRunCostUpdateWithWhereUniqueWithoutTargetProductInput | Prisma.ProductionRunCostUpdateWithWhereUniqueWithoutTargetProductInput[]
+  updateMany?: Prisma.ProductionRunCostUpdateManyWithWhereWithoutTargetProductInput | Prisma.ProductionRunCostUpdateManyWithWhereWithoutTargetProductInput[]
+  deleteMany?: Prisma.ProductionRunCostScalarWhereInput | Prisma.ProductionRunCostScalarWhereInput[]
 }
 
 export type ProductionRunCostCreateNestedManyWithoutRunInput = {
@@ -585,8 +651,24 @@ export type EnumProductionCostCategoryFieldUpdateOperationsInput = {
   set?: $Enums.ProductionCostCategory
 }
 
-export type ProductionRunCostCreateWithoutRunInput = {
+export type ProductionRunCostCreateWithoutTargetProductInput = {
   id?: string
+  itemName: string
+  description?: string | null
+  category?: $Enums.ProductionCostCategory
+  spec?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  note?: string | null
+  sortOrder?: number
+  vatIncluded?: boolean
+  run: Prisma.ProductionRunCreateNestedOneWithoutCostsInput
+}
+
+export type ProductionRunCostUncheckedCreateWithoutTargetProductInput = {
+  id?: string
+  runId: string
   itemName: string
   description?: string | null
   category?: $Enums.ProductionCostCategory
@@ -599,8 +681,69 @@ export type ProductionRunCostCreateWithoutRunInput = {
   vatIncluded?: boolean
 }
 
+export type ProductionRunCostCreateOrConnectWithoutTargetProductInput = {
+  where: Prisma.ProductionRunCostWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductionRunCostCreateWithoutTargetProductInput, Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput>
+}
+
+export type ProductionRunCostCreateManyTargetProductInputEnvelope = {
+  data: Prisma.ProductionRunCostCreateManyTargetProductInput | Prisma.ProductionRunCostCreateManyTargetProductInput[]
+  skipDuplicates?: boolean
+}
+
+export type ProductionRunCostUpsertWithWhereUniqueWithoutTargetProductInput = {
+  where: Prisma.ProductionRunCostWhereUniqueInput
+  update: Prisma.XOR<Prisma.ProductionRunCostUpdateWithoutTargetProductInput, Prisma.ProductionRunCostUncheckedUpdateWithoutTargetProductInput>
+  create: Prisma.XOR<Prisma.ProductionRunCostCreateWithoutTargetProductInput, Prisma.ProductionRunCostUncheckedCreateWithoutTargetProductInput>
+}
+
+export type ProductionRunCostUpdateWithWhereUniqueWithoutTargetProductInput = {
+  where: Prisma.ProductionRunCostWhereUniqueInput
+  data: Prisma.XOR<Prisma.ProductionRunCostUpdateWithoutTargetProductInput, Prisma.ProductionRunCostUncheckedUpdateWithoutTargetProductInput>
+}
+
+export type ProductionRunCostUpdateManyWithWhereWithoutTargetProductInput = {
+  where: Prisma.ProductionRunCostScalarWhereInput
+  data: Prisma.XOR<Prisma.ProductionRunCostUpdateManyMutationInput, Prisma.ProductionRunCostUncheckedUpdateManyWithoutTargetProductInput>
+}
+
+export type ProductionRunCostScalarWhereInput = {
+  AND?: Prisma.ProductionRunCostScalarWhereInput | Prisma.ProductionRunCostScalarWhereInput[]
+  OR?: Prisma.ProductionRunCostScalarWhereInput[]
+  NOT?: Prisma.ProductionRunCostScalarWhereInput | Prisma.ProductionRunCostScalarWhereInput[]
+  id?: Prisma.StringFilter<"ProductionRunCost"> | string
+  runId?: Prisma.StringFilter<"ProductionRunCost"> | string
+  targetProductId?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
+  itemName?: Prisma.StringFilter<"ProductionRunCost"> | string
+  description?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
+  category?: Prisma.EnumProductionCostCategoryFilter<"ProductionRunCost"> | $Enums.ProductionCostCategory
+  spec?: Prisma.DecimalNullableFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  quantity?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  unitPrice?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  amount?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  note?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
+  sortOrder?: Prisma.IntFilter<"ProductionRunCost"> | number
+  vatIncluded?: Prisma.BoolFilter<"ProductionRunCost"> | boolean
+}
+
+export type ProductionRunCostCreateWithoutRunInput = {
+  id?: string
+  itemName: string
+  description?: string | null
+  category?: $Enums.ProductionCostCategory
+  spec?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  note?: string | null
+  sortOrder?: number
+  vatIncluded?: boolean
+  targetProduct?: Prisma.InvProductCreateNestedOneWithoutTargetedProductionCostsInput
+}
+
 export type ProductionRunCostUncheckedCreateWithoutRunInput = {
   id?: string
+  targetProductId?: string | null
   itemName: string
   description?: string | null
   category?: $Enums.ProductionCostCategory
@@ -639,26 +782,69 @@ export type ProductionRunCostUpdateManyWithWhereWithoutRunInput = {
   data: Prisma.XOR<Prisma.ProductionRunCostUpdateManyMutationInput, Prisma.ProductionRunCostUncheckedUpdateManyWithoutRunInput>
 }
 
-export type ProductionRunCostScalarWhereInput = {
-  AND?: Prisma.ProductionRunCostScalarWhereInput | Prisma.ProductionRunCostScalarWhereInput[]
-  OR?: Prisma.ProductionRunCostScalarWhereInput[]
-  NOT?: Prisma.ProductionRunCostScalarWhereInput | Prisma.ProductionRunCostScalarWhereInput[]
-  id?: Prisma.StringFilter<"ProductionRunCost"> | string
-  runId?: Prisma.StringFilter<"ProductionRunCost"> | string
-  itemName?: Prisma.StringFilter<"ProductionRunCost"> | string
-  description?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
-  category?: Prisma.EnumProductionCostCategoryFilter<"ProductionRunCost"> | $Enums.ProductionCostCategory
-  spec?: Prisma.DecimalNullableFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  quantity?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  unitPrice?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  amount?: Prisma.DecimalFilter<"ProductionRunCost"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  note?: Prisma.StringNullableFilter<"ProductionRunCost"> | string | null
-  sortOrder?: Prisma.IntFilter<"ProductionRunCost"> | number
-  vatIncluded?: Prisma.BoolFilter<"ProductionRunCost"> | boolean
+export type ProductionRunCostCreateManyTargetProductInput = {
+  id?: string
+  runId: string
+  itemName: string
+  description?: string | null
+  category?: $Enums.ProductionCostCategory
+  spec?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  unitPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  note?: string | null
+  sortOrder?: number
+  vatIncluded?: boolean
+}
+
+export type ProductionRunCostUpdateWithoutTargetProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  itemName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
+  spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  run?: Prisma.ProductionRunUpdateOneRequiredWithoutCostsNestedInput
+}
+
+export type ProductionRunCostUncheckedUpdateWithoutTargetProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  runId?: Prisma.StringFieldUpdateOperationsInput | string
+  itemName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
+  spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+}
+
+export type ProductionRunCostUncheckedUpdateManyWithoutTargetProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  runId?: Prisma.StringFieldUpdateOperationsInput | string
+  itemName?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
+  spec?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  unitPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProductionRunCostCreateManyRunInput = {
   id?: string
+  targetProductId?: string | null
   itemName: string
   description?: string | null
   category?: $Enums.ProductionCostCategory
@@ -683,10 +869,12 @@ export type ProductionRunCostUpdateWithoutRunInput = {
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   vatIncluded?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  targetProduct?: Prisma.InvProductUpdateOneWithoutTargetedProductionCostsNestedInput
 }
 
 export type ProductionRunCostUncheckedUpdateWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  targetProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
@@ -701,6 +889,7 @@ export type ProductionRunCostUncheckedUpdateWithoutRunInput = {
 
 export type ProductionRunCostUncheckedUpdateManyWithoutRunInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  targetProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   itemName?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.EnumProductionCostCategoryFieldUpdateOperationsInput | $Enums.ProductionCostCategory
@@ -718,6 +907,7 @@ export type ProductionRunCostUncheckedUpdateManyWithoutRunInput = {
 export type ProductionRunCostSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   runId?: boolean
+  targetProductId?: boolean
   itemName?: boolean
   description?: boolean
   category?: boolean
@@ -729,11 +919,13 @@ export type ProductionRunCostSelect<ExtArgs extends runtime.Types.Extensions.Int
   sortOrder?: boolean
   vatIncluded?: boolean
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
+  targetProduct?: boolean | Prisma.ProductionRunCost$targetProductArgs<ExtArgs>
 }, ExtArgs["result"]["productionRunCost"]>
 
 export type ProductionRunCostSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   runId?: boolean
+  targetProductId?: boolean
   itemName?: boolean
   description?: boolean
   category?: boolean
@@ -745,11 +937,13 @@ export type ProductionRunCostSelectCreateManyAndReturn<ExtArgs extends runtime.T
   sortOrder?: boolean
   vatIncluded?: boolean
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
+  targetProduct?: boolean | Prisma.ProductionRunCost$targetProductArgs<ExtArgs>
 }, ExtArgs["result"]["productionRunCost"]>
 
 export type ProductionRunCostSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   runId?: boolean
+  targetProductId?: boolean
   itemName?: boolean
   description?: boolean
   category?: boolean
@@ -761,11 +955,13 @@ export type ProductionRunCostSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   sortOrder?: boolean
   vatIncluded?: boolean
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
+  targetProduct?: boolean | Prisma.ProductionRunCost$targetProductArgs<ExtArgs>
 }, ExtArgs["result"]["productionRunCost"]>
 
 export type ProductionRunCostSelectScalar = {
   id?: boolean
   runId?: boolean
+  targetProductId?: boolean
   itemName?: boolean
   description?: boolean
   category?: boolean
@@ -778,25 +974,30 @@ export type ProductionRunCostSelectScalar = {
   vatIncluded?: boolean
 }
 
-export type ProductionRunCostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "itemName" | "description" | "category" | "spec" | "quantity" | "unitPrice" | "amount" | "note" | "sortOrder" | "vatIncluded", ExtArgs["result"]["productionRunCost"]>
+export type ProductionRunCostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "runId" | "targetProductId" | "itemName" | "description" | "category" | "spec" | "quantity" | "unitPrice" | "amount" | "note" | "sortOrder" | "vatIncluded", ExtArgs["result"]["productionRunCost"]>
 export type ProductionRunCostInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
+  targetProduct?: boolean | Prisma.ProductionRunCost$targetProductArgs<ExtArgs>
 }
 export type ProductionRunCostIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
+  targetProduct?: boolean | Prisma.ProductionRunCost$targetProductArgs<ExtArgs>
 }
 export type ProductionRunCostIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   run?: boolean | Prisma.ProductionRunDefaultArgs<ExtArgs>
+  targetProduct?: boolean | Prisma.ProductionRunCost$targetProductArgs<ExtArgs>
 }
 
 export type $ProductionRunCostPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ProductionRunCost"
   objects: {
     run: Prisma.$ProductionRunPayload<ExtArgs>
+    targetProduct: Prisma.$InvProductPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     runId: string
+    targetProductId: string | null
     itemName: string
     description: string | null
     category: $Enums.ProductionCostCategory
@@ -1202,6 +1403,7 @@ readonly fields: ProductionRunCostFieldRefs;
 export interface Prisma__ProductionRunCostClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   run<T extends Prisma.ProductionRunDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRunDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductionRunClient<runtime.Types.Result.GetResult<Prisma.$ProductionRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  targetProduct<T extends Prisma.ProductionRunCost$targetProductArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductionRunCost$targetProductArgs<ExtArgs>>): Prisma.Prisma__InvProductClient<runtime.Types.Result.GetResult<Prisma.$InvProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1233,6 +1435,7 @@ export interface Prisma__ProductionRunCostClient<T, Null = never, ExtArgs extend
 export interface ProductionRunCostFieldRefs {
   readonly id: Prisma.FieldRef<"ProductionRunCost", 'String'>
   readonly runId: Prisma.FieldRef<"ProductionRunCost", 'String'>
+  readonly targetProductId: Prisma.FieldRef<"ProductionRunCost", 'String'>
   readonly itemName: Prisma.FieldRef<"ProductionRunCost", 'String'>
   readonly description: Prisma.FieldRef<"ProductionRunCost", 'String'>
   readonly category: Prisma.FieldRef<"ProductionRunCost", 'ProductionCostCategory'>
@@ -1636,6 +1839,25 @@ export type ProductionRunCostDeleteManyArgs<ExtArgs extends runtime.Types.Extens
    * Limit how many ProductionRunCosts to delete.
    */
   limit?: number
+}
+
+/**
+ * ProductionRunCost.targetProduct
+ */
+export type ProductionRunCost$targetProductArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvProduct
+   */
+  select?: Prisma.InvProductSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvProduct
+   */
+  omit?: Prisma.InvProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvProductInclude<ExtArgs> | null
+  where?: Prisma.InvProductWhereInput
 }
 
 /**

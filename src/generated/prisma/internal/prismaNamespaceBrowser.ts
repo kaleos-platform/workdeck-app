@@ -1321,6 +1321,7 @@ export type ProductionRunSetScalarFieldEnum = (typeof ProductionRunSetScalarFiel
 export const ProductionRunCostScalarFieldEnum = {
   id: 'id',
   runId: 'runId',
+  targetProductId: 'targetProductId',
   itemName: 'itemName',
   description: 'description',
   category: 'category',

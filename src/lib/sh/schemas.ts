@@ -453,22 +453,27 @@ export const productionRunCostSchema = z
     sortOrder: z.number().int().min(0).optional(),
     // 비용 분류 — 기본값 OTHER
     category: productionCostCategorySchema.default('OTHER'),
-    targetProductId: idLike.optional(),
+    targetProductId: z.preprocess((v) => (v === '' ? undefined : v), idLike.nullish()),
     // VAT 포함(공제가능 과세매입) 여부 — 기본 true
     vatIncluded: z.coerce.boolean().default(true),
   })
   .transform((value, ctx) => {
-    if (value.category === 'MARKETING' && !value.targetProductId) {
-      ctx.addIssue({
-        code: 'custom',
-        message: '마케팅 비용의 대상 상품을 선택하세요',
-        path: ['targetProductId'],
-      })
+    if (value.category === 'MARKETING') {
+      if (!value.targetProductId) {
+        ctx.addIssue({
+          code: 'custom',
+          message: '마케팅 비용의 대상 상품을 선택하세요',
+          path: ['targetProductId'],
+        })
+        return z.NEVER
+      }
+
+      return value
     }
 
     return {
       ...value,
-      targetProductId: value.category === 'MARKETING' ? value.targetProductId : undefined,
+      targetProductId: undefined,
     }
   })
 export type ProductionRunCostInput = z.infer<typeof productionRunCostSchema>

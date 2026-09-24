@@ -196,7 +196,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         amount: number
         note?: string
         sortOrder: number
-        category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'OTHER'
+        category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'MARKETING' | 'OTHER'
         vatIncluded: boolean
       }>
     | undefined = undefined

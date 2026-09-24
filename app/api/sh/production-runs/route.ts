@@ -264,7 +264,7 @@ export async function POST(req: NextRequest) {
     amount: number
     note?: string
     sortOrder: number
-    category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'OTHER'
+    category: 'MATERIAL' | 'LABOR' | 'PACKAGING' | 'LOGISTICS' | 'MARKETING' | 'OTHER'
     vatIncluded: boolean
   }> = (input.costs ?? []).map((c, i) => ({
     itemName: c.itemName,

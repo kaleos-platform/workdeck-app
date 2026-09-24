@@ -301,6 +301,7 @@ export const ProductionCostCategory = {
   LABOR: 'LABOR',
   PACKAGING: 'PACKAGING',
   LOGISTICS: 'LOGISTICS',
+  MARKETING: 'MARKETING',
   OTHER: 'OTHER'
 } as const
 
