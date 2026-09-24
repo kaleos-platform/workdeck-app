@@ -1,5 +1,9 @@
 // Stock Status API 응답 타입 — `/api/sh/inventory/stock-status`
 
+import type { StockGradeSettings } from '@/lib/sh/stock-grade-settings'
+
+export type { StockGradeSettings }
+
 export type LocationType = 'OWN' | 'THIRD_PARTY' | 'STORE'
 export type SkuStatus = 'OK' | 'LOW' | 'OUT' | 'OVER'
 
@@ -97,6 +101,8 @@ export type StockMatrixRow = {
 }
 
 export type StockStatusResponse = {
+  /** 화면 등급 임계 설정 — 서버가 InvSettings.preferences 에서 읽어 함께 내려준다 */
+  gradeSettings: StockGradeSettings
   snapshotAt: string
   kpis: StockKpis
   overallHealth: HealthDistribution

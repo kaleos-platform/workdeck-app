@@ -1,4 +1,8 @@
-import type { StockMatrixRow } from './stock-status.types'
+import {
+  DEFAULT_STOCK_GRADE_SETTINGS,
+  type StockGradeSettings,
+} from '@/lib/sh/stock-grade-settings'
+import type { StockLocation, StockMatrixRow } from './stock-status.types'
 
 /**
  * 화면 전용 재고 등급 — 커버 일수(재고 ÷ 일평균 출고)를 상품별 리드타임과 비교한다.
@@ -36,10 +40,18 @@ export type StockGradeResult = {
 }
 
 /**
- * 일평균 출고 — 최근 30일 우선, 없으면 90일 평균으로 폴백.
- * out30d/out90d 는 `channelId != null` OUTBOUND 만 집계되므로 부자재·포장재는 항상 0이다.
+ * 일평균 출고 — 설정된 기준 기간을 먼저 보고, 그 기간 출고가 0이면 더 긴 기간으로 폴백한다.
+ * 폴백을 두는 이유: 30일 고정으로 두면 계절성 상품이 비수기에 '출고없음'으로 빠져
+ * 조치 목록에서 사라진다. out30d/out90d 는 `channelId != null` OUTBOUND 만 집계되므로
+ * 부자재·포장재는 어느 기간이든 0이다.
  */
-export function dailyAvgOutbound(out30d: number, out90d: number): number {
+export function dailyAvgOutbound(
+  out30d: number,
+  out90d: number,
+  avgWindow: StockGradeSettings['avgWindow'] = 'auto'
+): number {
+  if (avgWindow === 90) return out90d > 0 ? out90d / 90 : 0
+  // 'auto' 와 30 은 같은 동작 — 30일을 먼저 보고 없으면 90일로 폴백한다.
   if (out30d > 0) return out30d / 30
   if (out90d > 0) return out90d / 90
   return 0
@@ -49,18 +61,24 @@ export function gradeStock(
   qty: number,
   out30d: number,
   out90d: number,
-  leadTimeDays: number
+  leadTimeDays: number,
+  settings: StockGradeSettings = DEFAULT_STOCK_GRADE_SETTINGS,
+  safetyStockQty = 0
 ): StockGradeResult {
-  const avg = dailyAvgOutbound(out30d, out90d)
+  const avg = dailyAvgOutbound(out30d, out90d, settings.avgWindow)
   // 출고 이력이 없으면 커버 일수를 만들 수 없다. 재고 0 이어도 '품절'이 아니라 '미입고'다.
   if (avg <= 0) return { grade: 'NO_OUTBOUND', daysOfCover: null }
+  // 재고없음 판정은 **실재고 기준**이다. 안전재고를 빼고 판정하면 재고가 남아 있는데도
+  // '재고없음'이 되어 요약의 재고없음 카운트가 부풀고 음수 경고와도 어긋난다.
   if (qty <= 0) return { grade: 'NO_STOCK', daysOfCover: 0 }
 
-  const daysOfCover = qty / avg
+  // 안전재고 반영은 분자에만 — 안전재고를 건드리지 않고 버틸 수 있는 일수가 된다.
+  const usableQty = settings.applySafetyStock ? Math.max(0, qty - safetyStockQty) : qty
+  const daysOfCover = usableQty / avg
   // 리드타임 0(즉시 조달)이면 위험 구간이 사라지므로 최소 1일로 본다.
   const lead = Math.max(1, leadTimeDays)
-  if (daysOfCover < lead) return { grade: 'RISK', daysOfCover }
-  if (daysOfCover < lead * 2) return { grade: 'REORDER', daysOfCover }
+  if (daysOfCover < lead * settings.riskMultiplier) return { grade: 'RISK', daysOfCover }
+  if (daysOfCover < lead * settings.reorderMultiplier) return { grade: 'REORDER', daysOfCover }
   return { grade: 'HEALTHY', daysOfCover }
 }
 
@@ -153,7 +171,8 @@ export const STOCK_STATUS_BRAND_NONE = '__none__'
 
 export function scopeStockStatusRows(
   rows: StockMatrixRow[],
-  locationId: string | null
+  locationId: string | null,
+  settings: StockGradeSettings = DEFAULT_STOCK_GRADE_SETTINGS
 ): StockStatusRowView[] {
   if (!locationId) {
     return rows.map((row) => {
@@ -161,7 +180,9 @@ export function scopeStockStatusRows(
         row.totalQty,
         row.out30d,
         row.out90d,
-        row.leadTimeDays
+        row.leadTimeDays,
+        settings,
+        row.safetyStockQty
       )
       return {
         ...row,
@@ -192,9 +213,10 @@ export function scopeStockStatusRows(
 
 export function buildStockStatusProducts(
   rows: StockMatrixRow[],
-  locationId: string | null
+  locationId: string | null,
+  settings: StockGradeSettings = DEFAULT_STOCK_GRADE_SETTINGS
 ): StockStatusProductCard[] {
-  const scoped = scopeStockStatusRows(rows, locationId)
+  const scoped = scopeStockStatusRows(rows, locationId, settings)
   const productMap = new Map<string, StockStatusProductCard>()
 
   for (const row of scoped) {
@@ -294,4 +316,23 @@ export function summarizeStockStatus(products: StockStatusProductCard[]): StockS
     noStockOptionCount += product.noStockOptionCount
   }
   return { riskProductCount, reorderProductCount, noStockOptionCount }
+}
+
+/**
+ * 표에 그릴 위치 컬럼 — 위치 탭 선택이 우선이고, 그 다음 사용자가 숨긴 위치를 뺀다.
+ * 숨김은 **표시 전용**이다: 합계(totalQty)·등급·엑셀 export 는 전 위치 기준을 유지한다.
+ * 저장된 hiddenIds 에는 삭제·비활성된 위치가 남아 있을 수 있어 현재 목록과 교집합만 쓴다.
+ */
+export function resolveVisibleLocations(
+  locations: StockLocation[],
+  hiddenLocationIds: string[] | Set<string>,
+  selectedLocationId: string | null
+): StockLocation[] {
+  if (selectedLocationId) {
+    return locations.filter((l) => l.id === selectedLocationId)
+  }
+  const hidden = hiddenLocationIds instanceof Set ? hiddenLocationIds : new Set(hiddenLocationIds)
+  const visible = locations.filter((l) => !hidden.has(l.id))
+  // 전부 숨겨진 상태(설정 꼬임·위치 삭제)면 위치 컬럼 없는 표가 되므로 전체로 되돌린다.
+  return visible.length > 0 ? visible : locations
 }
