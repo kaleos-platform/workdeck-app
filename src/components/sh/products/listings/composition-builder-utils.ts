@@ -318,3 +318,58 @@ export function buildSimpleCompositionGroups(params: {
 
   return groups
 }
+
+/**
+ * 실제 옵션 행이 없는 속성값을 정의에서 제거한다 — 옵션을 지워도 optionAttributes 정의엔 값이 남아
+ * 빌더에 "옵션 없음" 칩이 뜨던 문제. 한 값도 뒷받침되지 않는 속성은 진단 메시지(KEY/VALUE_MISMATCH)를
+ * 위해 원본 그대로 둔다.
+ */
+export function pruneUnbackedAttributes(
+  attrs: BuilderAttributeDef[],
+  options: BuilderOptionRow[]
+): BuilderAttributeDef[] {
+  const backed = buildBackedValueSet(options)
+  return attrs.map((attr) => {
+    const kept = attr.values.filter((v) =>
+      backed.has(`${attr.name.trim()} ${attrValueOf(v).trim()}`)
+    )
+    return kept.length > 0 ? { ...attr, values: kept } : attr
+  })
+}
+
+/** 여러 상품 조합의 상품 1개 — 고른 옵션들과 판매 옵션 1개당 들어갈 수량 */
+export type MultiProductPick = {
+  options: BuilderOptionRow[]
+  quantity: number
+}
+
+/**
+ * 상품 간 cartesian — 상품마다 고른 옵션 1개씩 뽑아 판매 옵션 1개를 만든다.
+ * 이름 접미사는 옵션을 2개 이상 고른(펼쳐지는) 상품의 옵션명만 붙인다. 옵션을 안 고른 상품은 제외.
+ */
+export function buildMultiProductGroups(picks: MultiProductPick[]): BuilderBuiltGroup[] {
+  const active = picks.filter((p) => p.options.length > 0)
+  if (active.length === 0) return []
+  let groups: BuilderBuiltGroup[] = [{ suffixParts: [], items: [] }]
+  for (const pick of active) {
+    const quantity = Math.max(1, pick.quantity)
+    const expands = pick.options.length > 1
+    groups = groups.flatMap((g) =>
+      pick.options.map((opt) => ({
+        suffixParts: expands ? [...g.suffixParts, opt.name] : g.suffixParts,
+        items: [
+          ...g.items,
+          {
+            optionId: opt.id,
+            optionName: opt.name,
+            sku: opt.sku,
+            quantity,
+            retailPrice: opt.retailPrice,
+            attributeValues: opt.attributeValues,
+          },
+        ],
+      }))
+    )
+  }
+  return groups
+}

@@ -19,12 +19,18 @@ export async function GET(
       options: {
         where: { deletedAt: null },
         orderBy: { name: 'asc' },
+        include: { stockLevels: { select: { quantity: true } } },
       },
     },
   })
   if (!product) return errorResponse('상품을 찾을 수 없습니다', 404)
 
-  return NextResponse.json({ product })
+  // 옵션별 전 위치 재고 합계(totalStock)를 붙이고 원시 stockLevels 는 응답에서 뺀다
+  const options = product.options.map(({ stockLevels, ...o }) => ({
+    ...o,
+    totalStock: stockLevels.reduce((sum, s) => sum + s.quantity, 0),
+  }))
+  return NextResponse.json({ product: { ...product, options } })
 }
 
 export async function PATCH(

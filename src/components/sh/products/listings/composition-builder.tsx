@@ -14,18 +14,20 @@ import { productDisplayName } from '@/lib/sh/product-display'
 import {
   attributeValuesOf,
   buildBackedValueSet,
+  buildMultiProductGroups,
   buildSimpleCompositionGroups,
   cartesianFromAttrState,
   diagnoseComposition,
   findMatchingOption,
+  pruneUnbackedAttributes,
 } from './composition-builder-utils'
 
 /**
  * 판매채널 상품 구성 빌더.
  *
  * 단계별 UX:
- * 1) 상품 1개 선택
- * 2) 모드 선택
+ * 1) 상품 선택 — 2개 이상이면 MultiProductSettings(상품 간 cartesian)로 분기
+ * 2) 모드 선택 (상품 1개일 때)
  *    - simple(수량 세트만 구성): 세트 수량 N 지정 → 모든 속성 cartesian으로 펼쳐 listing N개 생성
  *      (각 listing은 1옵션 × N수량)
  *    - advanced(옵션 선택 구성): 속성 체크 + 값별 수량 지정. 선택 안 된 속성은 모든 값 펼침
@@ -48,6 +50,7 @@ type OptionRow = {
   sku: string | null
   retailPrice: number | null
   attributeValues: Record<string, string>
+  totalStock: number
 }
 
 type ProductDetail = {
@@ -83,6 +86,9 @@ export type ItemEntry = {
   quantity: number
   retailPrice: number | null
   attributeValues: Record<string, string>
+  /** manual 모드 표시용 — 어느 상품 옵션인지·재고 연결 확인 */
+  productName?: string
+  totalStock?: number
 }
 
 export type BuiltGroup = {
@@ -104,7 +110,7 @@ export type ProductContext = {
   brandName: string | null
 }
 
-/** 최상위 모드: bulk = 기존 단일 상품 옵션 펼치기, manual = 여러 옵션 직접 묶기 */
+/** 최상위 모드: bulk = 상품 옵션 펼치기(1개=속성 기반, 2개+=상품 간 조합), manual = 여러 옵션 직접 묶기 */
 type TopLevelMode = 'bulk' | 'manual'
 
 /** manual 모드의 행 하나 */
@@ -122,6 +128,50 @@ type Props = {
   disabled?: boolean
   /** 최초 진입 모드. 기본값 'bulk' */
   initialMode?: TopLevelMode
+}
+
+/** 상품 상세 조회 → ProductDetail. 옵션이 없는 속성값은 정의에서 제거한다(pruneUnbackedAttributes). */
+async function fetchProductDetail(productId: string): Promise<ProductDetail> {
+  const res = await fetch(`/api/sh/products/${productId}`)
+  if (!res.ok) throw new Error('상품 조회 실패')
+  const data: {
+    product: {
+      id: string
+      name: string
+      internalName: string | null
+      msrp?: string | number | null
+      optionAttributes: AttributeDef[] | null
+      brand: { id: string; name: string } | null
+      options: Array<{
+        id: string
+        name: string
+        sku: string | null
+        retailPrice?: string | number | null
+        attributeValues: Record<string, string> | null
+        totalStock?: number
+      }>
+    }
+  } = await res.json()
+  const prod = data.product
+  const productMsrp = prod.msrp != null ? Number(prod.msrp) : null
+  const options: OptionRow[] = prod.options.map((o) => ({
+    id: o.id,
+    name: o.name,
+    sku: o.sku,
+    retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
+    attributeValues: o.attributeValues ?? {},
+    totalStock: o.totalStock ?? 0,
+  }))
+  return {
+    id: prod.id,
+    name: prod.name,
+    internalName: prod.internalName,
+    optionAttributes: Array.isArray(prod.optionAttributes)
+      ? pruneUnbackedAttributes(prod.optionAttributes, options)
+      : null,
+    brand: prod.brand,
+    options,
+  }
 }
 
 export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }: Props) {
@@ -160,45 +210,25 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
     setBundles([{ id: `b-${Date.now()}`, valueQuantities: {} }])
   }, [product])
 
-  function handlePickProduct(p: ProductRow) {
+  // 여러 상품 조합 (2개 이상 선택 시)
+  const [multiProducts, setMultiProducts] = useState<ProductDetail[] | null>(null)
+  const [multiPicks, setMultiPicks] = useState<Record<string, MultiPickState>>({})
+
+  function handlePickProducts(rows: ProductRow[]) {
     setLoading(true)
     const load = async () => {
       try {
-        const res = await fetch(`/api/sh/products/${p.id}`)
-        if (!res.ok) throw new Error('상품 조회 실패')
-        const data: {
-          product: {
-            id: string
-            name: string
-            internalName: string | null
-            msrp?: string | number | null
-            optionAttributes: AttributeDef[] | null
-            brand: { id: string; name: string } | null
-            options: Array<{
-              id: string
-              name: string
-              sku: string | null
-              retailPrice?: string | number | null
-              attributeValues: Record<string, string> | null
-            }>
-          }
-        } = await res.json()
-        const prod = data.product
-        const productMsrp = prod.msrp != null ? Number(prod.msrp) : null
-        setProduct({
-          id: prod.id,
-          name: prod.name,
-          internalName: prod.internalName,
-          optionAttributes: Array.isArray(prod.optionAttributes) ? prod.optionAttributes : null,
-          brand: prod.brand,
-          options: prod.options.map((o) => ({
-            id: o.id,
-            name: o.name,
-            sku: o.sku,
-            retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
-            attributeValues: o.attributeValues ?? {},
-          })),
-        })
+        const details = await Promise.all(rows.map((r) => fetchProductDetail(r.id)))
+        if (details.length === 1) {
+          setProduct(details[0])
+          return
+        }
+        setMultiPicks(
+          Object.fromEntries(
+            details.map((d) => [d.id, { optionIds: d.options.map((o) => o.id), quantity: 1 }])
+          )
+        )
+        setMultiProducts(details)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '상품 조회 실패')
       } finally {
@@ -206,6 +236,12 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
       }
     }
     void load()
+  }
+
+  function resetProductSelection() {
+    setProduct(null)
+    setMultiProducts(null)
+    setMultiPicks({})
   }
 
   function toggleAttr(name: string, enabled: boolean) {
@@ -298,6 +334,10 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
       commitManual()
       return
     }
+    if (multiProducts) {
+      commitMulti()
+      return
+    }
     if (!product) return
     if (mode === 'simple') commitSimple()
     else commitAdvanced()
@@ -320,6 +360,17 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
       },
     }))
     // manual 모드는 ProductContext 없이 null로 커밋
+    onCommit(null, groups)
+  }
+
+  function commitMulti() {
+    if (!multiProducts) return
+    const groups = buildMultiProductGroups(multiPicksToInput(multiProducts, multiPicks))
+    if (groups.length === 0) {
+      toast.error('구성할 옵션을 1개 이상 선택하세요')
+      return
+    }
+    // 여러 상품 구성은 단일 ProductContext가 없다 — manual 모드와 동일하게 null
     onCommit(null, groups)
   }
 
@@ -506,7 +557,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
         <Label className="text-xs text-muted-foreground">구성 방식</Label>
         <Tabs value={topMode} onValueChange={(v) => setTopMode(v as TopLevelMode)}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="bulk">한 상품의 옵션 펼치기</TabsTrigger>
+            <TabsTrigger value="bulk">상품 옵션 펼치기</TabsTrigger>
             <TabsTrigger value="manual">여러 옵션 직접 묶기</TabsTrigger>
           </TabsList>
         </Tabs>
@@ -524,13 +575,15 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
         /* ── bulk 모드 (기존) ── */
         <>
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">{product ? '구성 설정' : '1) 상품 선택'}</h3>
-            {product && (
+            <h3 className="text-sm font-semibold">
+              {product || multiProducts ? '구성 설정' : '1) 상품 선택'}
+            </h3>
+            {(product || multiProducts) && (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => setProduct(null)}
+                onClick={resetProductSelection}
                 disabled={disabled || loading}
               >
                 <ChevronLeft className="mr-1 h-4 w-4" />
@@ -539,10 +592,26 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
             )}
           </div>
 
-          {!product ? (
-            <ProductSearchPane onPick={handlePickProduct} />
-          ) : loading ? (
+          {loading ? (
             <p className="text-sm text-muted-foreground">불러오는 중...</p>
+          ) : multiProducts ? (
+            <div className="space-y-5">
+              <MultiProductSettings
+                products={multiProducts}
+                picks={multiPicks}
+                onChange={(productId, next) =>
+                  setMultiPicks((prev) => ({ ...prev, [productId]: next }))
+                }
+              />
+              <div className="flex justify-end border-t pt-3">
+                <Button type="button" onClick={handleCommit} disabled={disabled}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  추가하기
+                </Button>
+              </div>
+            </div>
+          ) : !product ? (
+            <ProductSearchPane onPick={handlePickProducts} />
           ) : (
             <div className="space-y-5">
               <SelectedProductHeader product={product} />
@@ -644,7 +713,7 @@ function ManualModeEditor({
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
         각 행이 판매 옵션 1개가 됩니다. 행마다 여러 상품의 옵션을 섞어 구성할 수 있습니다. 이름을
-        비우면 생성 시 검색명을 그대로 사용합니다.
+        비우면 생성 시 검색명을 그대로 사용합니다. 추가한 옵션은 해당 상품 옵션의 재고와 연결됩니다.
       </p>
 
       {rows.length === 0 ? (
@@ -736,41 +805,7 @@ function ManualRowEditor({
   async function pickOptionProduct(p: ProductRow) {
     setOptionLoading(true)
     try {
-      const res = await fetch(`/api/sh/products/${p.id}`)
-      if (!res.ok) throw new Error('상품 조회 실패')
-      const data: {
-        product: {
-          id: string
-          name: string
-          internalName: string | null
-          msrp?: string | number | null
-          optionAttributes: AttributeDef[] | null
-          brand: { id: string; name: string } | null
-          options: Array<{
-            id: string
-            name: string
-            sku: string | null
-            retailPrice?: string | number | null
-            attributeValues: Record<string, string> | null
-          }>
-        }
-      } = await res.json()
-      const prod = data.product
-      const productMsrp = prod.msrp != null ? Number(prod.msrp) : null
-      setOptionProduct({
-        id: prod.id,
-        name: prod.name,
-        internalName: prod.internalName,
-        optionAttributes: Array.isArray(prod.optionAttributes) ? prod.optionAttributes : null,
-        brand: prod.brand,
-        options: prod.options.map((o) => ({
-          id: o.id,
-          name: o.name,
-          sku: o.sku,
-          retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
-          attributeValues: o.attributeValues ?? {},
-        })),
-      })
+      setOptionProduct(await fetchProductDetail(p.id))
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '상품 조회 실패')
     } finally {
@@ -786,6 +821,8 @@ function ManualRowEditor({
       quantity: 1,
       retailPrice: opt.retailPrice,
       attributeValues: opt.attributeValues,
+      productName: optionProduct ? productDisplayName(optionProduct) : undefined,
+      totalStock: opt.totalStock,
     }
     onUpdate({ items: [...row.items, newItem] })
     setOptionPickerOpen(false)
@@ -876,7 +913,19 @@ function ManualRowEditor({
                 key={it.optionId}
                 className="flex items-center gap-2 rounded border bg-muted/30 px-2 py-1.5"
               >
-                <span className="flex-1 text-xs">{it.optionName}</span>
+                <div className="min-w-0 flex-1 text-xs">
+                  <p className="truncate">
+                    {it.productName && (
+                      <span className="text-muted-foreground">{it.productName} · </span>
+                    )}
+                    {it.optionName}
+                  </p>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {it.sku ? `SKU ${it.sku}` : 'SKU 없음'}
+                    {it.totalStock !== undefined &&
+                      ` · 재고 ${it.totalStock.toLocaleString('ko-KR')}`}
+                  </p>
+                </div>
                 <span className="text-xs text-muted-foreground">수량</span>
                 <Input
                   type="number"
@@ -1035,8 +1084,20 @@ function ManualRowEditor({
 }
 
 // ─── 하위: 상품 검색 ─────────────────────────────────────────────────────────
-function ProductSearchPane({ onPick }: { onPick: (p: ProductRow) => void }) {
+function ProductSearchPane({ onPick }: { onPick: (rows: ProductRow[]) => void }) {
   const [query, setQuery] = useState('')
+  // 검색어를 바꿔도 선택이 유지되도록 id → row 로 보관 (선택 순서 = 삽입 순서)
+  const [picked, setPicked] = useState<Map<string, ProductRow>>(new Map())
+
+  function togglePick(p: ProductRow) {
+    setPicked((prev) => {
+      const next = new Map(prev)
+      if (next.has(p.id)) next.delete(p.id)
+      else next.set(p.id, p)
+      return next
+    })
+  }
+
   const [debounced, setDebounced] = useState('')
   const [results, setResults] = useState<ProductRow[]>([])
   const [loading, setLoading] = useState(false)
@@ -1094,12 +1155,13 @@ function ProductSearchPane({ onPick }: { onPick: (p: ProductRow) => void }) {
           <ul className="divide-y">
             {results.map((p) => (
               <li key={p.id}>
-                <button
-                  type="button"
-                  onClick={() => onPick(p)}
-                  className="w-full px-4 py-2.5 text-left transition hover:bg-muted/60"
-                >
-                  <div className="flex items-start justify-between gap-3">
+                <label className="flex w-full cursor-pointer items-start gap-3 px-4 py-2.5 transition hover:bg-muted/60">
+                  <Checkbox
+                    className="mt-0.5"
+                    checked={picked.has(p.id)}
+                    onCheckedChange={() => togglePick(p)}
+                  />
+                  <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium">{productDisplayName(p)}</p>
                       <p className="text-xs text-muted-foreground">
@@ -1108,10 +1170,130 @@ function ProductSearchPane({ onPick }: { onPick: (p: ProductRow) => void }) {
                       </p>
                     </div>
                   </div>
-                </button>
+                </label>
               </li>
             ))}
           </ul>
+        )}
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <p className="min-w-0 truncate text-xs text-muted-foreground">
+          {picked.size === 0
+            ? '상품을 선택하세요. 2개 이상 고르면 상품끼리 조합해 구성합니다'
+            : Array.from(picked.values()).map(productDisplayName).join(', ')}
+        </p>
+        <Button
+          type="button"
+          size="sm"
+          disabled={picked.size === 0}
+          onClick={() => onPick(Array.from(picked.values()))}
+        >
+          다음 ({picked.size}개)
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+// ─── 여러 상품 조합 ─────────────────────────────────────────────────────────
+type MultiPickState = { optionIds: string[]; quantity: number }
+
+function multiPicksToInput(products: ProductDetail[], picks: Record<string, MultiPickState>) {
+  return products.map((p) => {
+    const pick = picks[p.id]
+    const ids = new Set(pick?.optionIds ?? [])
+    return { options: p.options.filter((o) => ids.has(o.id)), quantity: pick?.quantity ?? 1 }
+  })
+}
+
+function MultiProductSettings({
+  products,
+  picks,
+  onChange,
+}: {
+  products: ProductDetail[]
+  picks: Record<string, MultiPickState>
+  onChange: (productId: string, next: MultiPickState) => void
+}) {
+  const groups = useMemo(
+    () => buildMultiProductGroups(multiPicksToInput(products, picks)),
+    [products, picks]
+  )
+  const samples = groups
+    .slice(0, 3)
+    .map((g) => g.items.map((it) => `${it.optionName || '기본'}×${it.quantity}`).join(' + '))
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">
+        상품마다 넣을 옵션과 수량을 고르세요. 상품끼리 옵션을 하나씩 조합해 판매 옵션이 자동으로
+        나뉘어 생성됩니다.
+      </p>
+      {products.map((p) => {
+        const pick = picks[p.id] ?? { optionIds: [], quantity: 1 }
+        return (
+          <div key={p.id} className="space-y-2 rounded-md border bg-background p-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">상품</Badge>
+              <p className="min-w-0 flex-1 truncate text-sm font-medium">{productDisplayName(p)}</p>
+              <span className="text-xs text-muted-foreground">수량</span>
+              <Input
+                type="number"
+                min={1}
+                max={999}
+                value={pick.quantity}
+                onChange={(e) =>
+                  onChange(p.id, { ...pick, quantity: Math.max(1, Number(e.target.value || 1)) })
+                }
+                className="h-7 w-20"
+              />
+            </div>
+            {p.options.length === 0 ? (
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                옵션이 없는 상품이라 조합에서 제외됩니다
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {p.options.map((o) => {
+                  const checked = pick.optionIds.includes(o.id)
+                  return (
+                    <label
+                      key={o.id}
+                      className={`inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs ${
+                        checked ? 'border-primary bg-primary/10' : 'hover:bg-muted'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(c) =>
+                          onChange(p.id, {
+                            ...pick,
+                            optionIds:
+                              c === true
+                                ? [...pick.optionIds, o.id]
+                                : pick.optionIds.filter((id) => id !== o.id),
+                          })
+                        }
+                      />
+                      <span>{o.name || '기본'}</span>
+                      <span className="text-muted-foreground">
+                        재고 {o.totalStock.toLocaleString('ko-KR')}
+                      </span>
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )
+      })}
+      <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+        <strong className="text-foreground">{groups.length}</strong>개의 판매 옵션이 생성됩니다
+        {samples.length > 0 && (
+          <span className="mt-0.5 block">
+            예: {samples.join(', ')}
+            {groups.length > samples.length && ` 외 ${groups.length - samples.length}개`}
+          </span>
         )}
       </div>
     </div>
