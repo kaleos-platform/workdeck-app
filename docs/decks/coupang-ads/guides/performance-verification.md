@@ -549,3 +549,69 @@ API401을 재확인했다. 따라서 이 시점 브라우저 timeout의 원인�
 
 관련105 tests·lint·build·typecheck·리뷰와 실제 DEV 세션 refresh/폐기 검증은 통과했다.
 테스트 계정은 삭제했다. 전체 성능 목표 완료로 처리하지 않는다.
+
+### 2026-09-24 요청 단위 추적 및 초기화 비교
+
+[원시값과 요청별 연결 로그](assets/2026-09-24-performance-followup.json)를 기록했다.
+이번 작업은 진단과 E2E 측정 보완이며 앱 속도 개선 코드를 새로 배포하지 않았다.
+운영 도메인 측정 전후 배포는 `dpl_2YXDbM24eBTbJuQnfoScHCtApyng`로 같았다.
+고정 비교 배포는 기존 인증 개선 commit `be8a87c9`의 `dpl_GcUBaPyaQ2jVcS8ZnSK3DGeytcdH`다.
+
+- 고정 배포 첫 홈은4164ms(load 대기 포함), 데이터 DOM3432.5ms였다. 이후 홈은295~1082ms.
+  같은5회에서 상세 재진입1936ms도 관측해 이전 상세1초 판정을 안정적 보장으로 취급하지 않는다.
+- 응답의 `x-vercel-id` 마지막 구간과 Vercel 로그의 `id`를 연결할 수 있음을 확인했다.
+  첫 홈 request `t25fj-1790226099378-425f6236c77d`는 responseEnd3383.093ms,
+  layout_guard1205.2ms(layout_user153.7/context845.2/entitlement206.1)였다.
+  나머지 시간을 전부 cold start라고 단정하지 않는다. 플랫폼 시작·렌더링·전송 등 미계측 구간이 남는다.
+- 홈 RSC request `g4hh2-1790226106124-c1d3a4f452da`는 responseEnd819.263ms와
+  SSR total726.1ms가 연결됐다. auth_membership586.4ms 안에 prisma_client189.8ms가 포함됐다.
+  다른 RSC `g4hh2-1790226112848-015ec90965ec`도 responseEnd866.55ms,
+  total792.5ms, membership602.1ms, prisma_client194.3ms였다.
+  광고 데이터 집계만이 남은 지연의 원인은 아니다. warm RSC는 total105.7~114.5ms였다.
+- 상세 재진입1936ms의 overview API는 responseEnd1772.516ms, 내부 total772.3ms,
+  auth_membership625.7ms, prisma_client192.5ms, data31.5ms였다.
+  내부 total과 브라우저 시간 차이를 인증/SQL 시간으로 합산하지 않는다.
+
+첫 홈에서 미방문 메뉴·캠페인 prefetch34개를 관측해, 불필요한 prefetch를 브라우저에서 차단하는
+A/B 실험을5쌍 수행했다. 양쪽 모두 request interception을 사용했고 실제 앱 코드는 바꾸지 않았다.
+차단군에서도 상세 진입1630ms가 발생했으며 홈 재진입 중앙값은 차단 전74ms/후80ms였다.
+일관된 지연 개선 근거가 없어 prefetch 정책을 변경하지 않았다. 차단 실험의 요청 수는 시도 수이며
+abort된 요청도 포함한다. cold start를 통제한 실험은 아니다.
+
+Prisma7.4.1과7.10.0을 동일 schema/small compiler, pool1, 새 로컬 프로세스, DEV 읽기 쿼리로
+각5회 교차 비교했다. 초기 조회 중앙값158.5/155.4ms, client 생성18.9/18.3ms였다.
+첫7.4.1 표본400.3ms에는 연결183.3ms가 포함됐으며 제외하지 않았다. import/transpile 시간은
+측정 시작 전이다. 운영 CPU 환경과 다르며 유의미한 개선을 입증하지 못해 의존성은 유지했다.
+임시 경로에만 client를 생성했고 DB schema·운영 데이터·프로젝트 lockfile은 변경하지 않았다.
+
+E2E 첫 `page.goto`는 `waitUntil: 'commit'`으로 바꿔 이미지 등 전체 load가 데이터 표시 시간을
+부풀리지 않게 했다. Chromium 합성 페이지에서 이미지 응답을 보류한 상태로 데이터26ms,
+당시 loadEventEnd0, 이미지 해제 후 load 완료를 확인했다. 이 변경으로 과거 표본을 재분류하지 않는다.
+기존 samples attachment 배열은 유지하고 별도 `coupang-ads-performance-requests.json`에
+완료/실패 요청의 path·timing·Server-Timing·x-vercel-id만 남긴다. 쿠키·본문·query는 제외한다.
+수집 실패를 즉시 처리해 원래 테스트 오류와 attachment 저장을 가리지 않으며 실패 수를 판정에 포함한다.
+
+수정한 실제 측정 callback을 로그인된 CDP 세션으로 실행했다(비밀번호 로그인과 일반 Playwright
+runner 제외). 5회 모두 API/숫자 검사와 임계값을 통과했고 요청 수집 실패0건이었다.
+
+| 흐름         | 5회(ms, 반올림)                | 최댓값 |
+| ------------ | ------------------------------ | -----: |
+| 첫 홈 데이터 | 1565 / 1208 / 1073 / 223 / 210 |   1565 |
+| 홈 재진입    | 155 / 405 / 145 / 393 / 147    |    405 |
+| 상세 진입    | 341 / 364 / 288 / 308 / 345    |    364 |
+| 상세 재진입  | 338 / 261 / 277 / 267 / 291    |    338 |
+
+이 warm 결과로 앞선 초기화 초과 표본을 취소하지 않는다. eslint·전체 lint(기존 warnings)·typecheck와
+독립 리뷰를 통과했다. 운영 코드 변경이 없어 production build는 이번 E2E 수정에 대해 다시 실행하지 않았다.
+
+#### 다음 비교 실험의 범위
+
+프로젝트 설정 조회 결과 Fluid Compute=true, region=icn1, Function CPU=Standard였다.
+[공식 CPU/메모리 문서](https://vercel.com/docs/functions/configuring-functions/memory)에 따르면
+Standard는2GB/1vCPU, Performance는4GB/2vCPU이며 프로젝트의 향후 모든 배포에 적용된다.
+`vercel.json`으로 특정 쿠팡 함수만 memory를 변경할 수는 없다.
+
+다음 후보는 같은 코드로 Standard/Performance 배포를 비교하는 실험이다. 초기화가 포함된 첫 요청과
+각5회 재진입, API 값·인증 차단, CPU/메모리 사용량을 함께 비교하고 개선이 없으면 Standard로 복원한다.
+성능 향상과 총비용 감소를 미리 보장하지 않는다. 메모리 용량 증가와 프로젝트 전체 적용 범위 때문에
+이 설정 변경은 별도 확인 후 진행하며, 현재 운영 설정은 변경하지 않았다.
