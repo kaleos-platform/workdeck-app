@@ -198,13 +198,18 @@ function bundleSetCost(bundle: MatrixBundle): number {
 
 /** 번들 총원가를 보존한 표시용 생산원가·초기 마케팅비 구성 */
 function bundleCostBreakdown(bundle: MatrixBundle) {
-  const cogs = bundleSetCost(bundle)
-  const rawMarketingCogs = bundle.components.reduce((sum, component) => {
-    const quantity = Math.max(1, Math.round(n(component.quantity)))
-    return sum + n(component.marketingUnitCost) * quantity
-  }, 0)
-  const marketingCogs = Math.min(cogs, Math.max(0, r2(rawMarketingCogs)))
-  return { productionCogs: r2(cogs - marketingCogs), marketingCogs }
+  const totals = bundle.components.reduce(
+    (sum, component) => {
+      const quantity = Math.max(1, Math.round(n(component.quantity)))
+      sum.cogs += n(component.costPrice) * quantity
+      sum.marketingCogs += Math.max(0, n(component.marketingUnitCost)) * quantity
+      return sum
+    },
+    { cogs: 0, marketingCogs: 0 }
+  )
+  const cogs = r2(totals.cogs)
+  const marketingCogs = Math.min(cogs, Math.max(0, r2(totals.marketingCogs)))
+  return { cogs, productionCogs: r2(cogs - marketingCogs), marketingCogs }
 }
 
 /** 번들 총 개수: Σ quantity (perUnitProfit 기준) */
@@ -303,8 +308,7 @@ function calcCell(discountRate: number, inputs: MatrixInputs): MatrixCell {
   }
 
   // 10. 번들 원가: Σ(component.costPrice × quantity)
-  const setCost = bundleSetCost(bundle)
-  const { productionCogs, marketingCogs } = bundleCostBreakdown(bundle)
+  const { cogs: setCost, productionCogs, marketingCogs } = bundleCostBreakdown(bundle)
 
   // 11. 반품 — 처리비만 비용 반영(매출 차감 없음). returnCost = 처리비 × 반품율.
   const returnCost =

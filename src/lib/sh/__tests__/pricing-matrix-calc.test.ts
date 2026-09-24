@@ -316,6 +316,50 @@ describe('원가 구성 분리', () => {
       marketingCogs: 2000,
     })
   })
+
+  test('잘못된 음수 마케팅비가 다른 컴포넌트의 양수 마케팅비를 상쇄하지 않음', () => {
+    const bundle: MatrixBundle = {
+      components: [
+        { costPrice: 1000, retailPrice: 10000, marketingUnitCost: -100, quantity: 1 },
+        { costPrice: 1000, retailPrice: 10000, marketingUnitCost: 500, quantity: 1 },
+      ],
+      packagingCost: 0,
+      salePrice: 20000,
+    }
+
+    expect(calculateMatrix(makeInputs(bundle)).cells[0].marketingCogs).toBe(500)
+  })
+
+  test('소수 원가와 반올림 수량에서도 원가 구성 합계가 모든 셀의 cogs와 일치', () => {
+    const bundle: MatrixBundle = {
+      components: [
+        { costPrice: 10.005, retailPrice: 100, marketingUnitCost: 1.005, quantity: 1.6 },
+        { costPrice: 5.555, retailPrice: 100, marketingUnitCost: 0.335, quantity: 2.4 },
+      ],
+      packagingCost: 0,
+      salePrice: 200,
+    }
+
+    const cells = calculateMatrix(makeInputs(bundle)).cells
+
+    expect(cells[0]).toMatchObject({
+      cogs: 31.12,
+      productionCogs: 28.44,
+      marketingCogs: 2.68,
+    })
+    cells.forEach((cell) => {
+      expect({
+        productionCogs: cell.productionCogs,
+        marketingCogs: cell.marketingCogs,
+      }).toEqual({
+        productionCogs: cells[0].productionCogs,
+        marketingCogs: cells[0].marketingCogs,
+      })
+      expect(Math.round(cell.productionCogs * 100) + Math.round(cell.marketingCogs * 100)).toBe(
+        Math.round(cell.cogs * 100)
+      )
+    })
+  })
 })
 
 // ─── Test 3: 무료배송 임계값 step function — 솔버 브랜치 일관성 ─────────────
