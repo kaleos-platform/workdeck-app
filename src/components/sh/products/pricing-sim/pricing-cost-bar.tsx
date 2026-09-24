@@ -9,7 +9,8 @@ import type { MatrixCell } from '@/lib/sh/pricing-matrix-calc'
 // 색상은 스크린샷 시안 팔레트. 마진이 음수면 별도 처리.
 
 type SegmentKey =
-  | 'cogs'
+  | 'productionCogs'
+  | 'marketingCogs'
   | 'channelFee'
   | 'adCost'
   | 'shipping'
@@ -29,14 +30,20 @@ type SegmentDef = {
 }
 
 // 표시 순서 = 레전드 순서.
-// 색은 seller-ops 컨벤션 따름: 원가=slate(중립), 비용군=amber 그라데이션(비용=amber),
-// VAT=slate 연회색(세금=중립), 마진=emerald(success). emerald/amber/slate 3색계.
+// 색은 seller-ops 컨벤션 따름: 생산원가=slate(중립), 초기 마케팅비=rose(보조 비용),
+// 비용군=amber 그라데이션, VAT=slate 연회색(세금=중립), 마진=emerald(success).
 const SEGMENTS: SegmentDef[] = [
   {
-    key: 'cogs',
-    label: '원가',
+    key: 'productionCogs',
+    label: '생산원가',
     color: '#334155', // slate-700 (원가 = 큰 중립 덩어리)
     note: '공급원가(VAT 제외 기준). VAT 포함 매입은 매입세액을 제외한 금액으로 마진 계산.',
+  },
+  {
+    key: 'marketingCogs',
+    label: '초기 마케팅비',
+    color: '#f43f5e', // rose-500 (생산원가·일반 비용군과 구분)
+    note: '최초 생산 시 발생한 리뷰·체험단·인플루언서 비용의 개당 배분액.',
   },
   { key: 'channelFee', label: '채널수수료', color: '#b45309' }, // amber-700
   { key: 'adCost', label: '광고비', color: '#d97706' }, // amber-600
@@ -91,7 +98,8 @@ export function PricingCostBar({ cell, discount = 0, basePrice, showLegend = tru
   const { base, segments } = useMemo(() => {
     const promoDiscount = Math.max(0, discount)
     const values: Record<SegmentKey, number> = {
-      cogs: cell.cogs,
+      productionCogs: cell.productionCogs,
+      marketingCogs: cell.marketingCogs,
       channelFee: cell.channelFee,
       adCost: cell.adCost,
       shipping: cell.shipping,
@@ -138,6 +146,9 @@ export function PricingCostBar({ cell, discount = 0, basePrice, showLegend = tru
                 <TooltipTrigger asChild>
                   <div
                     className="h-full cursor-default"
+                    role="img"
+                    tabIndex={0}
+                    aria-label={`${s.label} ${fmt(s.value)}원`}
                     style={{ width: `${s.widthPct}%`, backgroundColor: s.color }}
                   />
                 </TooltipTrigger>

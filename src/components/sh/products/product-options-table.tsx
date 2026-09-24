@@ -60,6 +60,9 @@ type ProductResp = {
 
 /** 완료(입고완료) 생산 차수 가중평균 단가 — options API가 계산해 내려줌 */
 type ProductionCostInfo = {
+  productionUnitCost: number
+  marketingUnitCost: number
+  totalUnitCost: number
   unitCost: number
   runCount: number
 }
@@ -87,6 +90,16 @@ type OptionDraft = {
 
 function rowToString(v: number | string | null): string {
   return v != null ? String(v) : ''
+}
+
+function formatWon(value: number): string {
+  return `${Math.round(value).toLocaleString('ko-KR')}원`
+}
+
+function formatCostBreakdown(cost: ProductionCostInfo): string {
+  return `생산원가 ${formatWon(cost.productionUnitCost)} + 초기 마케팅비 ${formatWon(
+    cost.marketingUnitCost
+  )} = 공급원가 ${formatWon(cost.totalUnitCost)}`
 }
 
 export function ProductOptionsTable({
@@ -549,7 +562,8 @@ export function ProductOptionsTable({
 
   // 생산차수 원가 연동 ON + 완료 차수 존재 → 공급원가 입력 잠금(파생 표시)
   const costLocked = useProductionCost && productionCost != null
-  const derivedCostStr = costLocked ? String(Math.round(productionCost.unitCost)) : null
+  const derivedCostStr = costLocked ? String(Math.round(productionCost.totalUnitCost)) : null
+  const costBreakdown = productionCost ? formatCostBreakdown(productionCost) : null
 
   const allChecked = options.length > 0 && selected.size === options.length
   const attrNames = attributes.map((a) => a.name)
@@ -559,7 +573,7 @@ export function ProductOptionsTable({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">옵션 ({options.length})</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <Switch
             id="use-production-cost"
             checked={useProductionCost}
@@ -574,9 +588,7 @@ export function ProductOptionsTable({
           </Label>
           <span className="text-xs text-muted-foreground">
             {productionCost != null
-              ? `완료 ${productionCost.runCount}개 차수 가중평균 ${Math.round(
-                  productionCost.unitCost
-                ).toLocaleString('ko-KR')}원`
+              ? `완료 ${productionCost.runCount}개 차수 가중평균 · ${costBreakdown}`
               : '완료(입고완료)된 생산 차수가 없습니다'}
           </span>
         </div>
@@ -651,13 +663,20 @@ export function ProductOptionsTable({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="cursor-help text-muted-foreground">
+                        <button
+                          type="button"
+                          aria-label="공급원가 구성 안내"
+                          className="cursor-help text-muted-foreground"
+                        >
                           <Info className="h-3.5 w-3.5" />
-                        </span>
+                        </button>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        상품 생산에 발생된 금액 합계. VAT 제외 금액으로 관리됩니다 — &lsquo;VAT
-                        포함&rsquo; 체크 시 입력값÷1.1이 적용됩니다.
+                      <TooltipContent className="max-w-xs">
+                        {costBreakdown && <p className="font-medium">{costBreakdown}</p>}
+                        <p className={costBreakdown ? 'mt-1 text-muted-foreground' : undefined}>
+                          상품 생산에 발생된 금액 합계. VAT 제외 금액으로 관리됩니다 — &lsquo;VAT
+                          포함&rsquo; 체크 시 입력값÷1.1이 적용됩니다.
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

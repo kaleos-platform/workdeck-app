@@ -94,6 +94,14 @@ export function BundleRow({ rowId, rowIndex, resolved, onChange, onRemove, showR
                 </Badge>
               )}
             </div>
+            {resolved.productionUnitCost != null &&
+              resolved.marketingUnitCost != null &&
+              resolved.marketingUnitCost > 0 && (
+                <p className="text-[10px] text-muted-foreground tabular-nums">
+                  생산원가 {fmt(resolved.productionUnitCost)}원 + 초기 마케팅비{' '}
+                  {fmt(resolved.marketingUnitCost)}원 = 공급원가 {fmt(resolved.costPrice)}원
+                </p>
+              )}
           </div>
           <Button
             type="button"
