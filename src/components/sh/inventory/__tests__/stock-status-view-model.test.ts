@@ -1,11 +1,14 @@
+import { DEFAULT_STOCK_GRADE_SETTINGS } from '@/lib/sh/stock-grade-settings'
 import {
   buildStockStatusProducts,
   filterStockStatusProducts,
   gradeStock,
+  resolveVisibleLocations,
   scopeStockStatusRows,
   stockStatusDisplayName,
   summarizeStockStatus,
 } from '../stock-status-view-model'
+import type { StockLocation } from '../stock-status.types'
 import type { StockMatrixRow } from '../stock-status.types'
 
 const rows: StockMatrixRow[] = [
@@ -218,5 +221,84 @@ describe('stock status view model', () => {
 
     expect(summary.riskProductCount).toBe(1)
     expect(summary.noStockOptionCount).toBe(1)
+  })
+
+  describe('등급 설정', () => {
+    const settings = (patch: Partial<typeof DEFAULT_STOCK_GRADE_SETTINGS>) => ({
+      ...DEFAULT_STOCK_GRADE_SETTINGS,
+      ...patch,
+    })
+
+    it('안전재고 반영은 분자에만 — 재고가 안전재고보다 적어도 재고없음이 아니다', () => {
+      // 재고 5 · 안전재고 10 · 일평균 1 → 커버 0일이지만 실재고는 남아 있다
+      const result = gradeStock(5, 30, 90, 7, settings({ applySafetyStock: true }), 10)
+      expect(result.grade).toBe('RISK')
+      expect(result.grade).not.toBe('NO_STOCK')
+      expect(result.daysOfCover).toBe(0)
+    })
+
+    it('안전재고를 끄면 실재고 기준으로 커버 일수를 계산한다', () => {
+      const result = gradeStock(5, 30, 90, 7, settings({ applySafetyStock: false }), 10)
+      expect(result.daysOfCover).toBeCloseTo(5)
+    })
+
+    it('일평균 90일 고정이면 30일 출고를 쓰지 않는다', () => {
+      // 30일 300개(일평균 10) vs 90일 90개(일평균 1) → 90일 고정이면 커버가 길어진다
+      const auto = gradeStock(100, 300, 390, 7, settings({ avgWindow: 'auto' }))
+      const fixed90 = gradeStock(100, 300, 390, 7, settings({ avgWindow: 90 }))
+      expect(auto.daysOfCover).toBeCloseTo(10)
+      expect(fixed90.daysOfCover).toBeCloseTo(100 / (390 / 90))
+    })
+
+    it('30일 기준이어도 30일 출고가 없으면 90일 평균으로 폴백한다', () => {
+      const result = gradeStock(30, 0, 90, 7, settings({ avgWindow: 30 }))
+      expect(result.grade).not.toBe('NO_OUTBOUND')
+      expect(result.daysOfCover).toBeCloseTo(30)
+    })
+
+    it('배수를 바꾸면 등급 경계가 함께 움직인다', () => {
+      // 일평균 1 · 재고 10 = 10일치, 리드타임 7
+      expect(gradeStock(10, 30, 90, 7).grade).toBe('REORDER')
+      expect(gradeStock(10, 30, 90, 7, settings({ riskMultiplier: 1.5 })).grade).toBe('RISK')
+      expect(
+        gradeStock(10, 30, 90, 7, settings({ riskMultiplier: 0.5, reorderMultiplier: 1 })).grade
+      ).toBe('HEALTHY')
+    })
+
+    it('경계값은 미만(<)이다 — 정확히 임계면 다음 등급', () => {
+      // 일평균 1 · 재고 7 = 7일치 = 리드타임 × 1 → 위험이 아니라 발주시기
+      expect(gradeStock(7, 30, 90, 7).grade).toBe('REORDER')
+      // 14일치 = 리드타임 × 2 → 여유
+      expect(gradeStock(14, 30, 90, 7).grade).toBe('HEALTHY')
+    })
+  })
+
+  describe('위치 컬럼 표시', () => {
+    const locations = [
+      { id: 'loc-1', name: '3PL' },
+      { id: 'loc-2', name: '사무실' },
+      { id: 'loc-3', name: '로켓그로스' },
+    ] as StockLocation[]
+
+    it('숨긴 위치를 제외한다', () => {
+      expect(resolveVisibleLocations(locations, ['loc-2'], null).map((l) => l.id)).toEqual([
+        'loc-1',
+        'loc-3',
+      ])
+    })
+
+    it('삭제된 위치 ID 가 저장돼 있어도 무시된다', () => {
+      expect(resolveVisibleLocations(locations, ['gone'], null)).toHaveLength(3)
+    })
+
+    it('전부 숨겨지면 전체로 되돌린다 (위치 컬럼 없는 표 방지)', () => {
+      expect(resolveVisibleLocations(locations, ['loc-1', 'loc-2', 'loc-3'], null)).toHaveLength(3)
+    })
+
+    it('위치 탭 선택이 숨김 설정보다 우선한다', () => {
+      expect(resolveVisibleLocations(locations, ['loc-2'], 'loc-2').map((l) => l.id)).toEqual([
+        'loc-2',
+      ])
+    })
   })
 })

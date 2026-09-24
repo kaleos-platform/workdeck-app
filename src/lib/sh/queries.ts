@@ -21,6 +21,7 @@ import { healthRatioBySku, statusForSku, type SkuFact, type StatusLabel } from '
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 import { productDisplayName } from '@/lib/sh/product-display'
 import { loadRocketDailyOptionQty } from '@/lib/inv/coupang-sales-to-movement'
+import { readStockGradeSettings } from '@/lib/sh/stock-grade-settings'
 
 // ────────────────────────────────────────────────────────────────────────────
 // sales-summary
@@ -300,9 +301,6 @@ export interface QueryStockStatusOptions {
  * 필터(brandId, groupId, productId, q, onlyLow)는 matrix.rows에만 적용.
  * q 는 raw 문자열을 받아 여기서 trim·lowercase 정규화한다(route의 검색 정규화와 동일).
  */
-/** InvReorderConfig 미설정 상품의 기본 리드타임 — schema default(7)와 동일하게 유지. */
-const DEFAULT_LEAD_TIME_DAYS = 7
-
 export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOptions = {}) {
   const brandFilter = opts.brandId ?? null
   const groupFilter = opts.groupId ?? null
@@ -313,6 +311,14 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
   const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000)
   const since30d = new Date(Date.now() - 30 * 24 * 3600 * 1000)
   const since90d = new Date(Date.now() - 90 * 24 * 3600 * 1000)
+
+  // 등급 설정(화면 전용) — 응답에 실어 보내 클라이언트가 따로 fetch 하지 않게 한다.
+  // 별도 fetch 로 두면 재고 데이터만 먼저 도착한 프레임에 잘못된 등급이 한 번 그려진다.
+  const settingsRow = await prisma.invSettings.findUnique({
+    where: { spaceId },
+    select: { preferences: true },
+  })
+  const gradeSettings = readStockGradeSettings(settingsRow?.preferences)
 
   // 위치 목록 (type 포함)
   const locations = await prisma.invStorageLocation.findMany({
@@ -535,7 +541,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           brandName: p.brand?.name ?? null,
           groupId: g.id,
           groupName: g.name,
-          leadTimeDays: p.reorderConfig?.leadTimeDays ?? DEFAULT_LEAD_TIME_DAYS,
+          leadTimeDays: p.reorderConfig?.leadTimeDays ?? gradeSettings.defaultLeadTimeDays,
           costPrice,
           retailPrice: decimalToNumber(o.retailPrice),
           safetyStockQty: o.safetyStockQty,
@@ -791,6 +797,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     locations: locationsResp,
     products,
     matrix: { rows: filteredRows },
+    gradeSettings,
     // legacy (PR-2에서 제거)
     groups: legacyShaped,
   }

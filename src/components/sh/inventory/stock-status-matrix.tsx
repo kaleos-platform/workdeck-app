@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { LOCATION_TYPE_LABEL, type StockLocation } from './stock-status.types'
 import { StockStatusExportButton } from './stock-status-export'
 import { StockGradeMark } from './stock-status-grade'
-import type { StockStatusRowView } from './stock-status-view-model'
+import { resolveVisibleLocations, type StockStatusRowView } from './stock-status-view-model'
 
 type Props = {
   rows: StockStatusRowView[]
@@ -19,7 +19,13 @@ type Props = {
   selectedProductName?: string | null
   /** 공식 상품명 — 관리명과 다를 때만 병기 */
   selectedProductOfficialName?: string | null
+  /** 사용자가 화면에서 숨긴 위치 — 합계·등급·엑셀에는 영향 없음 */
+  hiddenLocationIds?: string[]
   toolbar?: ReactNode
+  /** 위치 컬럼 선택 UI — 위치 탭 선택 중에는 board 가 넘기지 않는다 */
+  locationPicker?: ReactNode
+  /** 등급 기준 안내·편집 팝오버 */
+  gradeInfo?: ReactNode
 }
 
 const KRW = new Intl.NumberFormat('ko-KR')
@@ -32,13 +38,19 @@ export function StockStatusMatrix({
   selectedLocationId,
   selectedProductName,
   selectedProductOfficialName,
+  hiddenLocationIds,
   toolbar,
+  locationPicker,
+  gradeInfo,
 }: Props) {
   const capped = rows.length > ROW_CAP
   const displayRows = capped ? rows.slice(0, ROW_CAP) : rows
-  const visibleLocations = selectedLocationId
-    ? locations.filter((l) => l.id === selectedLocationId)
-    : locations
+  const visibleLocations = resolveVisibleLocations(
+    locations,
+    hiddenLocationIds ?? [],
+    selectedLocationId ?? null
+  )
+  const hiddenCount = locations.length - visibleLocations.length
 
   return (
     <Card className="flex h-full min-h-0 flex-col overflow-hidden">
@@ -54,10 +66,15 @@ export function StockStatusMatrix({
             )}
         </CardTitle>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          {toolbar}
+          <div className="flex flex-wrap items-center gap-2">
+            {toolbar}
+            {locationPicker}
+            {gradeInfo}
+          </div>
           <div className="flex items-center gap-3">
             <div className="text-xs text-muted-foreground">
               {KRW.format(rows.length)}건{capped && ` · 상위 ${ROW_CAP}건만 표시`}
+              {hiddenCount > 0 && ` · 위치 ${hiddenCount}곳 숨김(합계는 전체 기준)`}
             </div>
             <StockStatusExportButton
               rows={rows}
