@@ -3,6 +3,8 @@ import {
   diagnoseComposition,
   cartesianFromAttrState,
   buildBackedValueSet,
+  pruneUnbackedAttributes,
+  buildMultiProductGroups,
 } from '../composition-builder-utils'
 
 describe('buildSimpleCompositionGroups', () => {
@@ -211,3 +213,41 @@ function option(id: string, attributeValues: Record<string, string>) {
     attributeValues,
   }
 }
+
+describe('pruneUnbackedAttributes', () => {
+  it('drops definition values without a backing option', () => {
+    const attrs = pruneUnbackedAttributes(
+      [{ name: '구성', values: ['1매', '5매', { value: '20매' }, '60매'] }],
+      [option('o60', { 구성: '60매' })]
+    )
+    expect(attrs[0].values).toEqual(['60매'])
+  })
+
+  it('keeps an attribute untouched when none of its values are backed', () => {
+    const attrs = pruneUnbackedAttributes(
+      [{ name: '구성', values: ['1매', '5매'] }],
+      [option('o60', { 구성: '60매' })]
+    )
+    expect(attrs[0].values).toEqual(['1매', '5매'])
+  })
+})
+
+describe('buildMultiProductGroups', () => {
+  it('expands a cartesian across products with per-product quantity', () => {
+    const groups = buildMultiProductGroups([
+      {
+        options: [option('c50', { 용량: '50ml' }), option('c100', { 용량: '100ml' })],
+        quantity: 1,
+      },
+      { options: [option('p60', {})], quantity: 2 },
+      { options: [], quantity: 1 },
+    ])
+    expect(groups).toHaveLength(2)
+    expect(groups.map((g) => g.items.map((it) => `${it.optionId}x${it.quantity}`))).toEqual([
+      ['c50x1', 'p60x2'],
+      ['c100x1', 'p60x2'],
+    ])
+    // 펼쳐지는 상품(옵션 2개)의 옵션명만 접미사로
+    expect(groups.map((g) => g.suffixParts)).toEqual([['50ml'], ['100ml']])
+  })
+})
