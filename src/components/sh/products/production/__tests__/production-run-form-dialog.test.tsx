@@ -366,6 +366,24 @@ describe('생산 차수 원가 입력', () => {
     expect(within(preview).queryByText(/(총 반영 원가|상품 B 기본 ×)/)).not.toBeInTheDocument()
   })
 
+  test('전체 실제 입고수량이 0이면 대상별 경고보다 전체 0 경고를 우선한다', async () => {
+    mockEditFetch(
+      detail('TOTAL', {
+        status: 'STOCKED_IN',
+        items: products.map((item) => ({ ...item, stockedInQty: 0 })),
+      })
+    )
+    renderEdit()
+
+    const preview = (await screen.findByText('전체 평균 단가 (자동 계산)')).parentElement!
+    expect(
+      within(preview).getByText('실제 입고수량이 0개라 원가를 배분할 수 없습니다')
+    ).toBeInTheDocument()
+    expect(
+      within(preview).queryByText('대상 상품의 실제 입고수량이 0개라 마케팅비를 배분할 수 없습니다')
+    ).not.toBeInTheDocument()
+  })
+
   test('TOTAL과 BREAKDOWN 테이블의 식별 header를 가로 스크롤에서 고정한다', async () => {
     const user = userEvent.setup()
     mockEditFetch()

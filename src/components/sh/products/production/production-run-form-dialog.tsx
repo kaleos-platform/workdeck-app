@@ -176,6 +176,7 @@ function TotalCostPreview({
   }, new Map<string, number>())
   const hasUnallocatableMarketing =
     isStockedIn &&
+    totalQty > 0 &&
     costItems.some(
       (row) =>
         row.category === 'MARKETING' &&
