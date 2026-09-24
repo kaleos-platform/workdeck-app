@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type Ref } from 'react'
 import { toast } from 'sonner'
 import { ChevronLeft, Trash2 } from 'lucide-react'
 import { getDaysAgoStrKst, getTodayStrKst } from '@/lib/date-range'
@@ -38,6 +38,7 @@ interface BatchListProps {
   onSelect: (batchId: string | null) => void
   selectedBatchId?: string | null
   onCollapse?: () => void
+  collapseButtonRef?: Ref<HTMLButtonElement>
 }
 
 function toDateStr(d: Date) {
@@ -53,7 +54,12 @@ function formatDate(dateStr: string) {
   })
 }
 
-export function BatchList({ onSelect, selectedBatchId, onCollapse }: BatchListProps) {
+export function BatchList({
+  onSelect,
+  selectedBatchId,
+  onCollapse,
+  collapseButtonRef,
+}: BatchListProps) {
   const [batches, setBatches] = useState<Batch[]>([])
   const [loadedRange, setLoadedRange] = useState('')
   const [loading, setLoading] = useState(false)
@@ -183,6 +189,7 @@ export function BatchList({ onSelect, selectedBatchId, onCollapse }: BatchListPr
           <h2 className="shrink-0 text-sm font-semibold">완료된 배송 묶음</h2>
           {onCollapse && (
             <Button
+              ref={collapseButtonRef}
               variant="ghost"
               size="icon"
               className="hidden h-7 w-7 2xl:inline-flex"

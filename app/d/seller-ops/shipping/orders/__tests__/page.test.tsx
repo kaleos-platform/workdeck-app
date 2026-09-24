@@ -1,16 +1,21 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
+import type { Ref } from 'react'
 import ShippingOrdersPage from '../page'
 
 jest.mock('@/components/sh/shipping/batch-list', () => ({
   BatchList: ({
     onSelect,
     onCollapse,
+    collapseButtonRef,
   }: {
     onSelect: (batchId: string) => void
     onCollapse: () => void
+    collapseButtonRef?: Ref<HTMLButtonElement>
   }) => (
     <div>
-      <button onClick={onCollapse}>배송 묶음 접기</button>
+      <button ref={collapseButtonRef} onClick={onCollapse}>
+        배송 묶음 접기
+      </button>
       <button onClick={() => onSelect('batch-1')}>배송 묶음 선택</button>
     </div>
   ),
@@ -72,5 +77,20 @@ describe('ShippingOrdersPage', () => {
 
     expect(screen.getByText('주문 목록: batch-1')).toBeInTheDocument()
     expect(screen.queryByText('배송 묶음을 선택하세요')).not.toBeInTheDocument()
+  })
+
+  test('접기와 펼치기 후 새 버튼으로 keyboard focus를 옮긴다', async () => {
+    await act(async () => {
+      render(<ShippingOrdersPage />)
+    })
+
+    const collapseButton = screen.getByRole('button', { name: '배송 묶음 접기' })
+    collapseButton.focus()
+    fireEvent.click(collapseButton)
+    const expandButton = screen.getByRole('button', { name: '배송 묶음 펼치기' })
+    expect(expandButton).toHaveFocus()
+
+    fireEvent.click(expandButton)
+    expect(screen.getByRole('button', { name: '배송 묶음 접기' })).toHaveFocus()
   })
 })

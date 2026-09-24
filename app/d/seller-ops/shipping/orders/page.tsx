@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BatchList } from '@/components/sh/shipping/batch-list'
@@ -18,6 +18,9 @@ const MIN_QUERY_LENGTH = 2
 export default function ShippingOrdersPage() {
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null)
   const [batchPanelCollapsed, setBatchPanelCollapsed] = useState(false)
+  const collapseButtonRef = useRef<HTMLButtonElement>(null)
+  const expandButtonRef = useRef<HTMLButtonElement>(null)
+  const focusAfterToggleRef = useRef(false)
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -32,6 +35,18 @@ export default function ShippingOrdersPage() {
       .then((data) => setChannels(data.channels ?? []))
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!focusAfterToggleRef.current) return
+    const targetButtonRef = batchPanelCollapsed ? expandButtonRef : collapseButtonRef
+    targetButtonRef.current?.focus()
+    focusAfterToggleRef.current = false
+  }, [batchPanelCollapsed])
+
+  function toggleBatchPanel() {
+    focusAfterToggleRef.current = true
+    setBatchPanelCollapsed((collapsed) => !collapsed)
+  }
 
   const isSearching = searchQuery.trim().length >= MIN_QUERY_LENGTH
 
@@ -61,15 +76,17 @@ export default function ShippingOrdersPage() {
             <BatchList
               onSelect={setSelectedBatchId}
               selectedBatchId={selectedBatchId}
-              onCollapse={() => setBatchPanelCollapsed(true)}
+              onCollapse={toggleBatchPanel}
+              collapseButtonRef={collapseButtonRef}
             />
           </div>
           {batchPanelCollapsed && (
             <div className="hidden justify-center 2xl:flex">
               <Button
+                ref={expandButtonRef}
                 variant="outline"
                 size="icon"
-                onClick={() => setBatchPanelCollapsed(false)}
+                onClick={toggleBatchPanel}
                 aria-label="배송 묶음 펼치기"
               >
                 <ChevronRight className="h-4 w-4" />

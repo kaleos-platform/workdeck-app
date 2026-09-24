@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { createRef } from 'react'
 import { BatchList } from '../batch-list'
 
 jest.mock('sonner', () => ({ toast: { error: jest.fn(), success: jest.fn() } }))
@@ -144,6 +145,21 @@ describe('BatchList', () => {
     expect(button).toHaveClass('hidden', '2xl:inline-flex')
     fireEvent.click(button)
     expect(onCollapse).toHaveBeenCalledTimes(1)
+  })
+
+  test('접기 버튼 ref를 실제 버튼에 연결한다', async () => {
+    mockBatches()
+    const collapseButtonRef = createRef<HTMLButtonElement>()
+    render(
+      <BatchList
+        onSelect={jest.fn()}
+        onCollapse={jest.fn()}
+        collapseButtonRef={collapseButtonRef}
+      />
+    )
+
+    await screen.findByText('완료일 라벨')
+    expect(collapseButtonRef.current).toBe(screen.getByRole('button', { name: '배송 묶음 접기' }))
   })
 
   test('기간이 바뀌면 서버에서 새 기간을 조회한다', async () => {
