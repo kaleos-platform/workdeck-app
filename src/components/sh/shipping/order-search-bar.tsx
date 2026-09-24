@@ -11,7 +11,7 @@ type Props = {
 }
 
 /**
- * 배송 데이터 전체 검색바 (받는분·주문번호·전화·주소).
+ * 배송 데이터 전체 검색바 (받는분·주문번호·전화·주소·결제금액).
  *
  * IME-safe debounce — 한글 입력 조합 중 끊김/리마운트를 막기 위해
  * 로컬 상태를 두고 300ms 디바운스로만 부모에 반영한다.
@@ -41,7 +41,7 @@ export function OrderSearchBar({ value, onChange }: Props) {
       <Input
         value={local}
         onChange={(e) => setLocal(e.target.value)}
-        placeholder="받는분·주문번호·전화·주소 검색"
+        placeholder="받는분·주문번호·전화·주소·결제금액 검색"
         className="h-9 w-full pr-8 pl-8"
         aria-label="배송 데이터 검색"
       />
