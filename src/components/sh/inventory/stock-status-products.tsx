@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Pin, PinOff, Search } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -46,10 +46,6 @@ type Props = {
 }
 
 const PINNED_LABEL = '고정 상품'
-// 고정 상품을 제외한 일반 상품 목록의 페이지당 표시 개수.
-// 그리드 높이를 ~1.4화면(lg:h-[calc(140vh-13rem)])으로 키운 뒤, FHD(1920×1080)에서
-// 좌측 리스트 영역(~1012px)에 카드(~91px)가 내부 스크롤 없이 꽉 차는 10개로 실측해 맞춤.
-export const PRODUCTS_PAGE_SIZE = 10
 
 export function StockStatusProducts({
   products,
@@ -107,28 +103,6 @@ export function StockStatusProducts({
   const normalProducts = useMemo(
     () => products.filter((product) => !pinnedSet.has(product.productId)),
     [pinnedSet, products]
-  )
-
-  // 일반 상품만 페이지네이션 (고정 상품은 항상 상단 노출).
-  const [page, setPage] = useState(1)
-
-  // 필터/검색이 바뀌면 1페이지로 리셋 (렌더 중 상태 조정 — React 권장 패턴).
-  const filterKey = `${productQuery}|${selectedBrandId ?? ''}|${selectedGroupId ?? ''}|${sort}`
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey)
-  if (filterKey !== prevFilterKey) {
-    setPrevFilterKey(filterKey)
-    setPage(1)
-  }
-
-  const totalPages = Math.max(1, Math.ceil(normalProducts.length / PRODUCTS_PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const pagedNormalProducts = useMemo(
-    () =>
-      normalProducts.slice(
-        (currentPage - 1) * PRODUCTS_PAGE_SIZE,
-        currentPage * PRODUCTS_PAGE_SIZE
-      ),
-    [normalProducts, currentPage]
   )
 
   if (collapsed) {
@@ -296,7 +270,7 @@ export function StockStatusProducts({
             )}
 
             <div className="space-y-1.5">
-              {pagedNormalProducts.map((product) => (
+              {normalProducts.map((product) => (
                 <ProductButton
                   key={product.productId}
                   product={product}
@@ -310,32 +284,6 @@ export function StockStatusProducts({
           </div>
         )}
       </CardContent>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {currentPage} / {totalPages}
-          </span>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="xs"
-              disabled={currentPage <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              이전
-            </Button>
-            <Button
-              variant="outline"
-              size="xs"
-              disabled={currentPage >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              다음
-            </Button>
-          </div>
-        </div>
-      )}
     </Card>
   )
 }
