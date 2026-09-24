@@ -87,14 +87,24 @@ export async function GET(req: NextRequest) {
   ])
 
   // 이전 구간은 날짜 grain 불필요 — 옵션 단위 합계만 내려보낸다.
+  // 이름도 함께 내려보낸다 — 이번 구간에 판매가 없는 상품은 이것 말고는 이름 출처가 없다.
   const prevMap = new Map<
     string,
-    { optionId: string; productId: string; quantity: number; revenue: number }
+    {
+      optionId: string
+      productId: string
+      productName: string
+      optionName: string
+      quantity: number
+      revenue: number
+    }
   >()
   for (const r of previous.rows) {
     const entry = prevMap.get(r.optionId) ?? {
       optionId: r.optionId,
       productId: r.productId,
+      productName: r.productName,
+      optionName: r.optionName,
       quantity: 0,
       revenue: 0,
     }
