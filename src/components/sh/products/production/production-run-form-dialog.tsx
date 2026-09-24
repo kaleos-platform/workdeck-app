@@ -143,18 +143,50 @@ function fmtKRW(n: number) {
 
 const MAX_VISIBLE = 3
 
-function TotalCostPreview({ totalCost, items }: { totalCost: number; items: OptionItem[] }) {
+function TotalCostPreview({
+  totalCost,
+  costItems,
+  items,
+  isStockedIn,
+}: {
+  totalCost: number
+  costItems: TotalCostItem[]
+  items: OptionItem[]
+  isStockedIn: boolean
+}) {
   const effectiveQty = (item: OptionItem) => Math.max(0, item.stockedInQty ?? item.quantity)
   const totalQty = items.reduce((s, i) => s + effectiveQty(i), 0)
   const hasInput = totalCost > 0 && totalQty > 0
+  const productionAmount = costItems.reduce(
+    (sum, row) => sum + (row.category === 'MARKETING' ? 0 : parseFloat(row.amount) || 0),
+    0
+  )
+  const productQty = items.reduce((quantities, item) => {
+    quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + effectiveQty(item))
+    return quantities
+  }, new Map<string, number>())
+  const marketingAmount = costItems.reduce((amounts, row) => {
+    if (row.category === 'MARKETING' && row.targetProductId) {
+      amounts.set(
+        row.targetProductId,
+        (amounts.get(row.targetProductId) ?? 0) + (parseFloat(row.amount) || 0)
+      )
+    }
+    return amounts
+  }, new Map<string, number>())
+  const productionUnit = totalQty > 0 ? productionAmount / totalQty : 0
 
   const lines = items
     .filter((i) => effectiveQty(i) > 0)
-    .map((i) => ({
-      optionName: i.optionName,
-      quantity: effectiveQty(i),
-      cost: totalQty > 0 ? (totalCost / totalQty) * effectiveQty(i) : 0,
-    }))
+    .map((i) => {
+      const targetQty = productQty.get(i.productId) ?? 0
+      const marketingUnit = targetQty > 0 ? (marketingAmount.get(i.productId) ?? 0) / targetQty : 0
+      return {
+        optionName: i.optionName,
+        quantity: effectiveQty(i),
+        cost: (productionUnit + marketingUnit) * effectiveQty(i),
+      }
+    })
 
   const avgUnitCost = totalQty > 0 ? totalCost / totalQty : 0
   const [expanded, setExpanded] = useState(false)
@@ -164,12 +196,14 @@ function TotalCostPreview({ totalCost, items }: { totalCost: number; items: Opti
 
   return (
     <div className="space-y-1 rounded-md bg-muted/50 p-3 text-xs">
-      <p className="font-medium text-muted-foreground">옵션별 평균 단가 (자동 계산)</p>
+      <p className="font-medium text-muted-foreground">전체 평균 단가 (자동 계산)</p>
 
       {!hasInput ? (
         <p className="text-muted-foreground">
           {totalQty === 0
-            ? '실제 입고수량이 0개라 원가를 배분할 수 없습니다'
+            ? isStockedIn
+              ? '실제 입고수량이 0개라 원가를 배분할 수 없습니다'
+              : '옵션 수량을 입력하면 단가가 표시됩니다'
             : '총원가를 입력하면 단가가 표시됩니다'}
         </p>
       ) : (
@@ -177,7 +211,7 @@ function TotalCostPreview({ totalCost, items }: { totalCost: number; items: Opti
           <p className="font-semibold text-foreground">
             {fmtKRW(Math.round(avgUnitCost))} / 옵션{' '}
             <span className="font-normal text-muted-foreground">
-              (총원가 {fmtKRW(totalCost)} ÷ 총수량 {totalQty.toLocaleString('ko-KR')}개)
+              (총 반영 원가 {fmtKRW(totalCost)} ÷ 총수량 {totalQty.toLocaleString('ko-KR')}개)
             </span>
           </p>
           {lines.length > 0 && (
@@ -218,9 +252,13 @@ function VatColumnHeader() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="cursor-help text-muted-foreground">
+            <button
+              type="button"
+              aria-label="VAT 포함 안내"
+              className="inline-flex cursor-help text-muted-foreground"
+            >
               <Info className="h-3 w-3" />
-            </span>
+            </button>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs text-left">
             <p className="mb-1 font-medium">
@@ -304,7 +342,7 @@ function marketingTargetError(row: CostTarget, productIds: Set<string>) {
 
 function CostSummary({ production, marketing }: { production: number; marketing: number }) {
   return (
-    <dl className="flex items-center justify-end gap-4 text-xs text-muted-foreground tabular-nums">
+    <dl className="grid w-full grid-cols-1 gap-2 text-xs text-muted-foreground tabular-nums sm:w-auto sm:grid-cols-3 sm:gap-4">
       <div className="flex items-center gap-1.5">
         <dt>생산비</dt>
         <dd className="font-medium text-foreground">{fmtKRW(production)}</dd>
@@ -313,7 +351,7 @@ function CostSummary({ production, marketing }: { production: number; marketing:
         <dt>초기 마케팅비</dt>
         <dd className="font-medium text-foreground">{fmtKRW(marketing)}</dd>
       </div>
-      <div className="flex items-center gap-1.5 border-l pl-4">
+      <div className="flex items-center gap-1.5 sm:border-l sm:pl-4">
         <dt>총 반영 원가</dt>
         <dd className="text-sm font-semibold text-foreground">{fmtKRW(production + marketing)}</dd>
       </div>
@@ -864,7 +902,9 @@ export function ProductionRunFormDialog({
     }
   }
 
-  const currentProductIds = new Set(productChoices.map((product) => product.productId))
+  const currentProductIds = new Set(
+    optionItems.filter((item) => item.quantity > 0).map((item) => item.productId)
+  )
 
   function renderCostTargetCells(row: CostTarget, update: (target: Partial<CostTarget>) => void) {
     const error = marketingTargetError(row, currentProductIds)
@@ -1336,7 +1376,7 @@ export function ProductionRunFormDialog({
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <Button type="button" variant="outline" size="sm" onClick={addTotalCostItem}>
                         <Plus className="mr-1 h-3.5 w-3.5" />
                         항목 추가
@@ -1350,7 +1390,12 @@ export function ProductionRunFormDialog({
                     </div>
 
                     {/* ── 옵션별 평균 단가 미리보기 ── */}
-                    <TotalCostPreview totalCost={totalCostSum} items={optionItems} />
+                    <TotalCostPreview
+                      totalCost={totalCostSum}
+                      costItems={totalCostItems}
+                      items={optionItems}
+                      isStockedIn={status === 'STOCKED_IN'}
+                    />
                   </TabsContent>
 
                   {/* BREAKDOWN 탭 */}
@@ -1493,7 +1538,7 @@ export function ProductionRunFormDialog({
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <Button type="button" variant="outline" size="sm" onClick={addCostRow}>
                         <Plus className="mr-1 h-3.5 w-3.5" />
                         항목 추가

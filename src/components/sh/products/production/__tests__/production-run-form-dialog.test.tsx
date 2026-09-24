@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { ProductionRunFormDialog, type PrefillItem } from '../production-run-form-dialog'
@@ -247,6 +247,64 @@ describe('생산 차수 원가 입력', () => {
     expect(payload.costs[0].targetProductId).toBeNull()
   })
 
+  test('마케팅 비용을 대상 상품의 옵션에만 배분한다', async () => {
+    mockEditFetch(
+      detail('TOTAL', {
+        totalCost: 4_500_000,
+        costs: [
+          {
+            ...detail().run.costs[0],
+            id: 'c-production',
+            itemName: '생산비',
+            unitPrice: 1_500_000,
+            amount: 1_500_000,
+            category: 'OTHER',
+            targetProductId: null,
+          },
+          {
+            ...detail().run.costs[0],
+            id: 'c-marketing',
+            itemName: '체험단',
+            unitPrice: 3_000_000,
+            amount: 3_000_000,
+          },
+        ],
+      })
+    )
+    renderEdit()
+
+    const productALine = (await screen.findByText('상품 A 기본 × 1,000개')).closest('div')!
+    const productBLine = screen.getByText('상품 B 기본 × 500개').closest('div')!
+    expect(within(productALine).getByText('₩4,000,000')).toBeInTheDocument()
+    expect(within(productBLine).getByText('₩500,000')).toBeInTheDocument()
+    expect(screen.getByText('전체 평균 단가 (자동 계산)')).toBeInTheDocument()
+  })
+
+  test('마케팅 대상 상품의 유효 수량이 0이면 즉시 invalid 상태를 보여준다', async () => {
+    const user = userEvent.setup()
+    mockEditFetch()
+    renderEdit()
+
+    await screen.findByDisplayValue('체험단')
+    const productAQuantity = screen.getByDisplayValue('1000')
+    await user.clear(productAQuantity)
+    await user.type(productAQuantity, '0')
+
+    expect(
+      screen.getByText('마케팅 비용의 대상 상품이 생산 차수에 포함되어 있지 않습니다')
+    ).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: '대상 상품' })).toHaveAttribute(
+      'aria-invalid',
+      'true'
+    )
+
+    await choose(user, '대상 상품', '상품 B')
+    expect(
+      screen.queryByText('마케팅 비용의 대상 상품이 생산 차수에 포함되어 있지 않습니다')
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: '대상 상품' })).not.toHaveAttribute('aria-invalid')
+  })
+
   test('입고완료 실제 수량이 0이면 계획 수량으로 fallback하지 않는다', async () => {
     mockEditFetch(
       detail('TOTAL', {
@@ -266,6 +324,27 @@ describe('생산 차수 원가 입력', () => {
     expect(
       await screen.findByText('실제 입고수량이 0개라 원가를 배분할 수 없습니다')
     ).toBeInTheDocument()
+  })
+
+  test('계획 상태의 수량이 0이면 옵션 수량 입력을 안내한다', async () => {
+    mockEditFetch(
+      detail('TOTAL', {
+        items: products.map((item) => ({ ...item, quantity: 0 })),
+        costs: [
+          {
+            ...detail().run.costs[0],
+            category: 'OTHER',
+            targetProductId: null,
+          },
+        ],
+      })
+    )
+    renderEdit()
+
+    expect(await screen.findByText('옵션 수량을 입력하면 단가가 표시됩니다')).toBeInTheDocument()
+    expect(
+      screen.queryByText('실제 입고수량이 0개라 원가를 배분할 수 없습니다')
+    ).not.toBeInTheDocument()
   })
 
   test('TOTAL과 BREAKDOWN 테이블의 식별 header를 가로 스크롤에서 고정한다', async () => {
