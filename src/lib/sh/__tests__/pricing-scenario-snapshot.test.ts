@@ -138,6 +138,30 @@ describe('pricing-scenario-snapshot', () => {
     expect(roundTripped).toEqual(original)
   })
 
+  it('v2 rows의 원가 구성을 JSON round-trip으로 보존한다', () => {
+    const original = makeV2Snapshot()
+    original.variants[0].rows[0].productionUnitCost = 10000
+    original.variants[0].rows[0].marketingUnitCost = 3000
+
+    const parsed = parseSnapshot(JSON.parse(JSON.stringify(original)))
+
+    expect(parsed?.variants[0].rows[0]).toMatchObject({
+      costPrice: 5000,
+      productionUnitCost: 10000,
+      marketingUnitCost: 3000,
+    })
+  })
+
+  it('원가 구성이 없는 기존 v2와 v1은 undefined를 유지한다', () => {
+    const v2 = parseSnapshot(JSON.parse(JSON.stringify(makeV2Snapshot())))
+    const v1 = parseSnapshot(JSON.parse(JSON.stringify(makeV1Snapshot())))
+
+    expect(v2?.variants[0].rows[0].productionUnitCost).toBeUndefined()
+    expect(v2?.variants[0].rows[0].marketingUnitCost).toBeUndefined()
+    expect(v1?.variants[0].rows[0].productionUnitCost).toBeUndefined()
+    expect(v1?.variants[0].rows[0].marketingUnitCost).toBeUndefined()
+  })
+
   it('v2 다중 탭 round-trip', () => {
     const base = makeV2Snapshot()
     const second: PricingVariant = {

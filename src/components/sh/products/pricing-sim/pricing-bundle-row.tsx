@@ -19,6 +19,8 @@ export type ResolvedComponent = {
   /** 가격 그룹에 속한 전체 옵션 ID — 채널 상품 일괄 생성에 사용 */
   optionIds: string[]
   costPrice: number
+  productionUnitCost?: number
+  marketingUnitCost?: number
   retailPrice: number
   quantity: number
 }

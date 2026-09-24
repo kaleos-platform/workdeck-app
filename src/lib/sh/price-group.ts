@@ -7,6 +7,8 @@ export type OptionInput = {
   optionId: string
   optionName: string
   costPrice: number | null
+  productionUnitCost?: number
+  marketingUnitCost?: number
   retailPrice: number | null
   attributeValues?: Record<string, string> | null // e.g. {"사이즈":"L","색상":"파랑"}
   sizeLabel?: string | null
@@ -15,6 +17,8 @@ export type OptionInput = {
 export type PriceGroup = {
   key: string // 정규화된 식별 키 (float equality 회피)
   costPrice: number | null
+  productionUnitCost?: number
+  marketingUnitCost?: number
   retailPrice: number | null
   sharedLabel: string // e.g. "26,000원 (L)"
   optionIds: string[] // 이 그룹의 모든 optionId (입력 순서 유지)
@@ -136,6 +140,8 @@ export function groupOptionsByPrice(options: OptionInput[]): PriceGroup[] {
     result.push({
       key: entry.key,
       costPrice: entry.costPrice,
+      productionUnitCost: entry.members[0].productionUnitCost,
+      marketingUnitCost: entry.members[0].marketingUnitCost,
       retailPrice: entry.retailPrice,
       sharedLabel,
       optionIds: entry.members.map((m) => m.optionId),

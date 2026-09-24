@@ -6,6 +6,8 @@ export type ResolvedPriceGroup = {
   optionId: string // 대표 옵션
   optionIds: string[] // 그룹 전체 옵션
   costPrice: number
+  productionUnitCost?: number
+  marketingUnitCost?: number
   retailPrice: number
 }
 
@@ -22,6 +24,8 @@ export function resolveFirstPriceGroup(options: OptionInput[]): ResolvedPriceGro
     optionId: chosen.representativeOptionId,
     optionIds: chosen.optionIds,
     costPrice: chosen.costPrice ?? 0,
+    productionUnitCost: chosen.productionUnitCost,
+    marketingUnitCost: chosen.marketingUnitCost,
     retailPrice: chosen.retailPrice ?? 0,
   }
 }

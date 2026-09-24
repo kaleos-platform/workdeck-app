@@ -52,6 +52,8 @@ type ApiProductOption = {
   costPrice: string | number | null
   /** 생산차수 원가 연동 시 파생 원가 (아니면 costPrice와 동일) */
   effectiveCostPrice?: string | number | null
+  productionUnitCost?: string | number | null
+  marketingUnitCost?: string | number | null
   retailPrice: string | number | null
   sizeLabel: string | null
   attributeValues: Record<string, string> | null
@@ -118,6 +120,8 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
           (o.effectiveCostPrice ?? o.costPrice) != null
             ? Number(o.effectiveCostPrice ?? o.costPrice)
             : null,
+        productionUnitCost: o.productionUnitCost != null ? Number(o.productionUnitCost) : undefined,
+        marketingUnitCost: o.marketingUnitCost != null ? Number(o.marketingUnitCost) : undefined,
         retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
         attributeValues: o.attributeValues,
         sizeLabel: o.sizeLabel,
@@ -242,6 +246,8 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
       optionId: selectedGroup.representativeOptionId,
       optionIds: selectedGroup.optionIds,
       costPrice: selectedGroup.costPrice ?? 0,
+      productionUnitCost: selectedGroup.productionUnitCost,
+      marketingUnitCost: selectedGroup.marketingUnitCost,
       retailPrice: selectedGroup.retailPrice ?? 0,
       quantity: Math.max(1, quantity),
     })

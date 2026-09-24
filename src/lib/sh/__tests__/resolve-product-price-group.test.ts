@@ -36,4 +36,26 @@ describe('resolveFirstPriceGroup', () => {
     expect(r?.costPrice).toBe(0)
     expect(r?.retailPrice).toBe(9000)
   })
+
+  it('선택한 가격 그룹의 원가 구성을 전달한다', () => {
+    const options: OptionInput[] = [
+      {
+        ...opt('a', 13000, 30000),
+        productionUnitCost: 10000,
+        marketingUnitCost: 3000,
+      },
+    ]
+
+    expect(resolveFirstPriceGroup(options)).toMatchObject({
+      productionUnitCost: 10000,
+      marketingUnitCost: 3000,
+    })
+  })
+
+  it('레거시 입력은 원가 구성을 undefined로 유지한다', () => {
+    const resolved = resolveFirstPriceGroup([opt('a', 5000, 12000)])
+
+    expect(resolved?.productionUnitCost).toBeUndefined()
+    expect(resolved?.marketingUnitCost).toBeUndefined()
+  })
 })

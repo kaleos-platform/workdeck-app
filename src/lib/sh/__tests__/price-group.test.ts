@@ -175,3 +175,53 @@ describe('groupOptionsByPrice — sizeLabel 폴백', () => {
     expect(groups[0].sharedLabel).toContain('L')
   })
 })
+
+describe('groupOptionsByPrice — 원가 구성', () => {
+  test('그룹에 생산원가와 마케팅비를 보존한다', () => {
+    const groups = groupOptionsByPrice([
+      {
+        optionId: 'a',
+        optionName: 'A',
+        costPrice: 13000,
+        productionUnitCost: 10000,
+        marketingUnitCost: 3000,
+        retailPrice: 30000,
+      },
+    ])
+
+    expect(groups[0]).toMatchObject({
+      key: '13000|30000',
+      productionUnitCost: 10000,
+      marketingUnitCost: 3000,
+    })
+  })
+
+  test('구성값이 달라도 가격 그룹은 나누지 않고 첫 멤버 값을 쓴다', () => {
+    const groups = groupOptionsByPrice([
+      {
+        optionId: 'first',
+        optionName: '첫 옵션',
+        costPrice: 13000,
+        productionUnitCost: 10000,
+        marketingUnitCost: 3000,
+        retailPrice: 30000,
+      },
+      {
+        optionId: 'second',
+        optionName: '둘째 옵션',
+        costPrice: 13000,
+        productionUnitCost: 11000,
+        marketingUnitCost: 2000,
+        retailPrice: 30000,
+      },
+    ])
+
+    expect(groups).toHaveLength(1)
+    expect(groups[0]).toMatchObject({
+      key: '13000|30000',
+      optionIds: ['first', 'second'],
+      productionUnitCost: 10000,
+      marketingUnitCost: 3000,
+    })
+  })
+})

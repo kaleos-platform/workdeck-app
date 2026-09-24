@@ -655,6 +655,8 @@ export function PricingQuickFlow({
     return {
       components: confirmedRows.map((r) => ({
         costPrice: r.costPrice,
+        productionUnitCost: r.productionUnitCost ?? r.costPrice,
+        marketingUnitCost: r.marketingUnitCost ?? 0,
         retailPrice: r.retailPrice,
         quantity: r.quantity,
       })),
@@ -1391,6 +1393,8 @@ export function PricingQuickFlow({
             costPrice: string | number | null
             /** 생산차수 원가 연동 시 파생 원가 (아니면 costPrice와 동일) */
             effectiveCostPrice?: string | number | null
+            productionUnitCost?: string | number | null
+            marketingUnitCost?: string | number | null
             retailPrice: string | number | null
             attributeValues?: Record<string, string> | null
             sizeLabel?: string | null
@@ -1403,6 +1407,9 @@ export function PricingQuickFlow({
             (o.effectiveCostPrice ?? o.costPrice) != null
               ? Number(o.effectiveCostPrice ?? o.costPrice)
               : null,
+          productionUnitCost:
+            o.productionUnitCost != null ? Number(o.productionUnitCost) : undefined,
+          marketingUnitCost: o.marketingUnitCost != null ? Number(o.marketingUnitCost) : undefined,
           retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
           attributeValues: o.attributeValues ?? null,
           sizeLabel: o.sizeLabel ?? null,
@@ -1423,6 +1430,8 @@ export function PricingQuickFlow({
               optionId: grp.optionId,
               optionIds: grp.optionIds,
               costPrice: grp.costPrice,
+              productionUnitCost: grp.productionUnitCost,
+              marketingUnitCost: grp.marketingUnitCost,
               retailPrice: grp.retailPrice,
               quantity: 1,
             },
