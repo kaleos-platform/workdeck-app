@@ -31,6 +31,9 @@ type SortKey = 'revenue' | 'quantity' | 'delta' | 'share'
 
 type Props = {
   ranking: ProductRanking | null
+  /** 그룹 필터로 랭킹에서 빠진 금액 — 채널 탭 총매출과의 차이를 설명한다. */
+  excludedRevenue?: number
+  excludedLabel?: string | null
   coverage: SalesCoverage | null
   prevPeriod: DateRange | null
   channels: Channel[]
@@ -116,6 +119,8 @@ function SortHead({
 
 export function ProductRankingTable({
   ranking,
+  excludedRevenue = 0,
+  excludedLabel = null,
   coverage,
   prevPeriod,
   channels,
@@ -204,6 +209,7 @@ export function ProductRankingTable({
                   귀속 {formatKRW(coverage.attributedRevenue)} / 전체{' '}
                   {formatKRW(coverage.totalRevenue)}
                 </div>
+                <div className="text-muted-foreground">그룹 필터와 무관한 전체 기준입니다</div>
                 <div className="mt-1 text-muted-foreground">
                   직접배송{' '}
                   {coverage.direct.revenueTotal > 0
@@ -220,6 +226,11 @@ export function ProductRankingTable({
           {prevPeriod && (
             <span className="text-xs text-muted-foreground">
               증감 기준 vs {prevPeriod.from} ~ {prevPeriod.to}
+            </span>
+          )}
+          {excludedRevenue !== 0 && excludedLabel && (
+            <span className="text-xs text-muted-foreground">
+              · {excludedLabel} 제외 중 {formatKRW(excludedRevenue)}
             </span>
           )}
         </div>
