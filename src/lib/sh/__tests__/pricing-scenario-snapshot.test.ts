@@ -132,6 +132,19 @@ describe('pricing-scenario-snapshot', () => {
     expect(parsed!.variants[0].chPromotions).toBeUndefined()
   })
 
+  it('원가 구성이 있는 v1 rows를 v2 변환 후에도 보존한다', () => {
+    const v1 = makeV1Snapshot()
+    v1.rows[0].productionUnitCost = 10000
+    v1.rows[0].marketingUnitCost = 3000
+
+    const parsed = parseSnapshot(JSON.parse(JSON.stringify(v1)))
+
+    expect(parsed?.variants[0].rows[0]).toMatchObject({
+      productionUnitCost: 10000,
+      marketingUnitCost: 3000,
+    })
+  })
+
   it('v2 스냅샷이 JSON round-trip으로 보존된다', () => {
     const original = makeV2Snapshot()
     const roundTripped = parseSnapshot(JSON.parse(JSON.stringify(original)))

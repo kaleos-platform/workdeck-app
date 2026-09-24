@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -23,7 +23,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-import { groupOptionsByPrice, type PriceGroup } from '@/lib/sh/price-group'
+import {
+  groupOptionsByPrice,
+  toOptionInput,
+  type ApiPriceOptionInput,
+  type PriceGroup,
+} from '@/lib/sh/price-group'
 import { productDisplayName } from '@/lib/sh/product-display'
 import type { ResolvedComponent } from './pricing-bundle-row'
 
@@ -45,18 +50,8 @@ type PricingOptionRaw = {
 }
 
 // /api/sh/products/[productId]/options 응답 형태
-type ApiProductOption = {
-  id: string
-  name: string
+type ApiProductOption = ApiPriceOptionInput & {
   sku: string | null
-  costPrice: string | number | null
-  /** 생산차수 원가 연동 시 파생 원가 (아니면 costPrice와 동일) */
-  effectiveCostPrice?: string | number | null
-  productionUnitCost?: string | number | null
-  marketingUnitCost?: string | number | null
-  retailPrice: string | number | null
-  sizeLabel: string | null
-  attributeValues: Record<string, string> | null
   totalStock: number
 }
 
@@ -104,37 +99,29 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
   const [groupsLoading, setGroupsLoading] = useState(false)
   const [selectedGroupKey, setSelectedGroupKey] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
+  const groupRequestGeneration = useRef(0)
 
   // ── 상품 → 가격 그룹 로드 ────────────────────────────────────────────────
   const loadGroups = useCallback(async (productId: string): Promise<PriceGroup[]> => {
+    const generation = ++groupRequestGeneration.current
     setGroupsLoading(true)
     try {
       const res = await fetch(`/api/sh/products/${productId}/options`)
       if (!res.ok) throw new Error('옵션 조회 실패')
       const data: { options: ApiProductOption[] } = await res.json()
       const options = data.options ?? []
-      const converted = options.map((o) => ({
-        optionId: o.id,
-        optionName: o.name,
-        costPrice:
-          (o.effectiveCostPrice ?? o.costPrice) != null
-            ? Number(o.effectiveCostPrice ?? o.costPrice)
-            : null,
-        productionUnitCost: o.productionUnitCost != null ? Number(o.productionUnitCost) : undefined,
-        marketingUnitCost: o.marketingUnitCost != null ? Number(o.marketingUnitCost) : undefined,
-        retailPrice: o.retailPrice != null ? Number(o.retailPrice) : null,
-        attributeValues: o.attributeValues,
-        sizeLabel: o.sizeLabel,
-      }))
+      const converted = options.map(toOptionInput)
       const groups = groupOptionsByPrice(converted)
+      if (generation !== groupRequestGeneration.current) return []
       setPriceGroups(groups)
       return groups
     } catch (err) {
+      if (generation !== groupRequestGeneration.current) return []
       toast.error(err instanceof Error ? err.message : '옵션 조회 실패')
       setPriceGroups([])
       return []
     } finally {
-      setGroupsLoading(false)
+      if (generation === groupRequestGeneration.current) setGroupsLoading(false)
     }
   }, [])
 
@@ -163,6 +150,9 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
       setPriceGroups([])
       setSelectedGroupKey('')
       setQuantity(1)
+    }
+    return () => {
+      groupRequestGeneration.current += 1
     }
   }, [open, initial, loadGroups])
 
@@ -326,9 +316,11 @@ export function PricingProductPickerDialog({ open, onOpenChange, onConfirm, init
                 size="sm"
                 className="-ml-2 w-fit"
                 onClick={() => {
+                  groupRequestGeneration.current += 1
                   setSelectedProduct(null)
                   setPriceGroups([])
                   setSelectedGroupKey('')
+                  setGroupsLoading(false)
                 }}
               >
                 <ArrowLeft className="mr-1 h-4 w-4" />

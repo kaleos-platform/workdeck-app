@@ -44,6 +44,15 @@ export type BundleComponent = {
   quantity: number // 번들 내 이 컴포넌트 수량
 }
 
+/** 스냅샷·수동 입력을 표시용 원가 구성이 있는 번들 컴포넌트로 변환한다. */
+export function toBundleComponent(component: BundleComponent): BundleComponent {
+  return {
+    ...component,
+    productionUnitCost: component.productionUnitCost ?? component.costPrice,
+    marketingUnitCost: component.marketingUnitCost ?? 0,
+  }
+}
+
 /**
  * 번들 입력 — 단일 옵션 또는 복수 컴포넌트 묶음을 표현한다.
  *

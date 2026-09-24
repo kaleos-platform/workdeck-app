@@ -14,6 +14,18 @@ export type OptionInput = {
   sizeLabel?: string | null
 }
 
+export type ApiPriceOptionInput = {
+  id: string
+  name: string
+  costPrice?: string | number | null
+  effectiveCostPrice?: string | number | null
+  productionUnitCost?: string | number | null
+  marketingUnitCost?: string | number | null
+  retailPrice?: string | number | null
+  attributeValues?: Record<string, string> | null
+  sizeLabel?: string | null
+}
+
 export type PriceGroup = {
   key: string // 정규화된 식별 키 (float equality 회피)
   costPrice: number | null
@@ -29,6 +41,12 @@ export type PriceGroup = {
 // ─── 내부 헬퍼 ─────────────────────────────────────────────────────────────────
 
 /** 가격(원)을 정수 원으로 정규화. null → "null" 토큰 */
+function finiteNumber(value: string | number | null | undefined): number | undefined {
+  if (value == null || (typeof value === 'string' && value.trim() === '')) return undefined
+  const number = Number(value)
+  return Number.isFinite(number) ? number : undefined
+}
+
 function priceToken(v: number | null): string {
   if (v === null) return 'null'
   return String(Math.round(v))
@@ -106,6 +124,22 @@ function makeSharedLabel(
  * - null costPrice 또는 retailPrice 는 독립 그룹으로 분리 (priceUndefined=true)
  * - 입력 순서를 그룹 및 optionIds 내에서 유지
  */
+/** 옵션 API 응답의 가격 필드를 유한한 숫자로 정규화한다. */
+export function toOptionInput(option: ApiPriceOptionInput): OptionInput {
+  const costSource = option.effectiveCostPrice ?? option.costPrice
+  return {
+    optionId: option.id,
+    optionName: option.name,
+    costPrice: finiteNumber(costSource) ?? null,
+    productionUnitCost: finiteNumber(option.productionUnitCost),
+    marketingUnitCost: finiteNumber(option.marketingUnitCost),
+    retailPrice: finiteNumber(option.retailPrice) ?? null,
+    attributeValues: option.attributeValues,
+    sizeLabel: option.sizeLabel,
+  }
+}
+
+/** 원가·소매가 조합이 동일한 옵션을 입력 순서대로 그룹화한다. */
 export function groupOptionsByPrice(options: OptionInput[]): PriceGroup[] {
   // key → { group building state } 순서 보존 맵
   const groupMap = new Map<

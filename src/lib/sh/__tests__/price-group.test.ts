@@ -1,7 +1,7 @@
 // @jest-environment node
 // groupOptionsByPrice 단위 테스트
 
-import { groupOptionsByPrice, type OptionInput } from '../price-group'
+import { groupOptionsByPrice, toOptionInput, type OptionInput } from '../price-group'
 
 // ─── 베개커버 예시: 사이즈 2가지, 색상 4가지 ──────────────────────────────────
 
@@ -222,6 +222,71 @@ describe('groupOptionsByPrice — 원가 구성', () => {
       optionIds: ['first', 'second'],
       productionUnitCost: 10000,
       marketingUnitCost: 3000,
+    })
+  })
+})
+
+describe('toOptionInput', () => {
+  test('API 문자열 숫자와 옵션 속성을 정규화한다', () => {
+    expect(
+      toOptionInput({
+        id: 'opt-1',
+        name: 'L / 블랙',
+        costPrice: '14000',
+        effectiveCostPrice: '13000',
+        productionUnitCost: '10000',
+        marketingUnitCost: '3000',
+        retailPrice: '30000',
+        attributeValues: { 사이즈: 'L' },
+        sizeLabel: 'L',
+      })
+    ).toEqual({
+      optionId: 'opt-1',
+      optionName: 'L / 블랙',
+      costPrice: 13000,
+      productionUnitCost: 10000,
+      marketingUnitCost: 3000,
+      retailPrice: 30000,
+      attributeValues: { 사이즈: 'L' },
+      sizeLabel: 'L',
+    })
+  })
+
+  test('null·invalid·NaN·Infinity를 필수 가격 null과 optional undefined로 정규화한다', () => {
+    const inputs = [null, undefined, 'invalid', Number.NaN, Number.POSITIVE_INFINITY]
+
+    for (const value of inputs) {
+      const result = toOptionInput({
+        id: 'opt',
+        name: '옵션',
+        costPrice: value,
+        productionUnitCost: value,
+        marketingUnitCost: value,
+        retailPrice: value,
+      })
+      expect(result.costPrice).toBeNull()
+      expect(result.retailPrice).toBeNull()
+      expect(result.productionUnitCost).toBeUndefined()
+      expect(result.marketingUnitCost).toBeUndefined()
+    }
+  })
+
+  test('0은 유효한 가격과 원가 구성으로 보존한다', () => {
+    expect(
+      toOptionInput({
+        id: 'opt',
+        name: '옵션',
+        costPrice: 10,
+        effectiveCostPrice: 0,
+        productionUnitCost: 0,
+        marketingUnitCost: 0,
+        retailPrice: 0,
+      })
+    ).toMatchObject({
+      costPrice: 0,
+      productionUnitCost: 0,
+      marketingUnitCost: 0,
+      retailPrice: 0,
     })
   })
 })

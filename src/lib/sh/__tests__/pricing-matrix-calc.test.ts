@@ -5,6 +5,7 @@ import {
   calculateMatrix,
   optionToBundle,
   suggestFeasibility,
+  toBundleComponent,
   type MatrixBundle,
   type MatrixChannel,
   type MatrixPromotion,
@@ -201,6 +202,34 @@ describe('gross-basis 0% 할인 셀 수작업 검증', () => {
 })
 
 describe('원가 구성 분리', () => {
+  test('bundle component adapter는 원가 구성을 보존한다', () => {
+    expect(
+      toBundleComponent({
+        costPrice: 13000,
+        productionUnitCost: 10000,
+        marketingUnitCost: 3000,
+        retailPrice: 30000,
+        quantity: 2,
+      })
+    ).toEqual({
+      costPrice: 13000,
+      productionUnitCost: 10000,
+      marketingUnitCost: 3000,
+      retailPrice: 30000,
+      quantity: 2,
+    })
+  })
+
+  test('bundle component adapter는 레거시·수동 입력에서 생산원가와 마케팅비를 폴백한다', () => {
+    expect(toBundleComponent({ costPrice: 13000, retailPrice: 30000, quantity: 1 })).toEqual({
+      costPrice: 13000,
+      productionUnitCost: 13000,
+      marketingUnitCost: 0,
+      retailPrice: 30000,
+      quantity: 1,
+    })
+  })
+
   test('생산원가와 초기 마케팅비를 수량 기준으로 분리하되 총원가는 유지', () => {
     const bundle: MatrixBundle = {
       components: [
