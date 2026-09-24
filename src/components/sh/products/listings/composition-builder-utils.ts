@@ -66,7 +66,6 @@ export function findMatchingOption(
 
 /**
  * attrState 기반 cartesian — 활성 속성은 선택값만, 미활성은 전체 값.
- * SimpleModeSettings의 effectiveCombos / buildSimpleCompositionGroups의 combos 생성 로직을 단일화.
  */
 export function cartesianFromAttrState(
   attrs: BuilderAttributeDef[],
@@ -258,67 +257,6 @@ export function diagnoseComposition(
   }
 }
 
-export function buildSimpleCompositionGroups(params: {
-  product: BuilderProductDetail
-  attrState: Record<string, BuilderAttrState>
-  setQuantities: number[]
-}): BuilderBuiltGroup[] {
-  const { product, attrState } = params
-  const attrs = product.optionAttributes ?? []
-  const qtys = params.setQuantities.map((q) => Math.max(1, q))
-  const includeQtySuffix = qtys.length > 1
-
-  if (attrs.length === 0) {
-    const defaultOpt = product.options[0]
-    if (!defaultOpt) return []
-    return qtys.map((q) => ({
-      suffixParts: includeQtySuffix ? [`${q}개`] : [],
-      items: [
-        {
-          optionId: defaultOpt.id,
-          optionName: defaultOpt.name,
-          sku: defaultOpt.sku,
-          quantity: q,
-          retailPrice: defaultOpt.retailPrice,
-          attributeValues: defaultOpt.attributeValues,
-        },
-      ],
-    }))
-  }
-
-  const combos = attrs.reduce<Array<Record<string, string>>>((acc, attr) => {
-    const state = attrState[attr.name]
-    const selectedVals = state?.enabled ? Object.keys(state.valueQuantities) : []
-    const vals = selectedVals.length > 0 ? selectedVals : attributeValuesOf(attr)
-    if (acc.length === 0) return vals.map((v) => ({ [attr.name]: v }))
-    return acc.flatMap((prev) => vals.map((v) => ({ ...prev, [attr.name]: v })))
-  }, [])
-
-  const groups: BuilderBuiltGroup[] = []
-  for (const combo of combos) {
-    const opt = findMatchingOption(product.options, combo)
-    if (!opt) continue
-    const baseParts = attrs.map((a) => combo[a.name]).filter(Boolean)
-    for (const q of qtys) {
-      groups.push({
-        suffixParts: includeQtySuffix ? [...baseParts, `${q}개`] : baseParts,
-        items: [
-          {
-            optionId: opt.id,
-            optionName: opt.name,
-            sku: opt.sku,
-            quantity: q,
-            retailPrice: opt.retailPrice,
-            attributeValues: opt.attributeValues,
-          },
-        ],
-      })
-    }
-  }
-
-  return groups
-}
-
 /**
  * 실제 옵션 행이 없는 속성값을 정의에서 제거한다 — 옵션을 지워도 optionAttributes 정의엔 값이 남아
  * 빌더에 "옵션 없음" 칩이 뜨던 문제. 한 값도 뒷받침되지 않는 속성은 진단 메시지(KEY/VALUE_MISMATCH)를
@@ -394,7 +332,11 @@ export function buildMultiProductBundleGroups(
     const picks = products
       .map((p) => ({ label: p.label, options: p.options, quantity: p.quantities[b] ?? 0 }))
       .filter((p) => p.quantity > 0 && p.options.length > 0)
-    const summary = picks.map((p) => `${p.label}×${p.quantity}`).join(' + ')
+    // 상품 1개면 기존 단일 상품 세트 이름 규칙(`N개`)을 유지
+    const summary =
+      products.length === 1
+        ? `${picks[0]?.quantity ?? 0}개`
+        : picks.map((p) => `${p.label}×${p.quantity}`).join(' + ')
     for (const g of buildMultiProductGroups(picks)) {
       groups.push(bundleCount > 1 ? { ...g, suffixParts: [...g.suffixParts, summary] } : g)
     }
