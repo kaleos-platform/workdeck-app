@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { PRODUCTS_PAGE_SIZE, StockStatusProducts } from '../stock-status-products'
+import { StockStatusProducts } from '../stock-status-products'
 import type { StockStatusProductCard } from '../stock-status-view-model'
 
 const products: StockStatusProductCard[] = [
@@ -11,10 +11,10 @@ const products: StockStatusProductCard[] = [
     out30d: 0,
     currentQty: 0,
     optionCount: 1,
-    okOptionCount: 1,
-    lowOptionCount: 0,
-    outOptionCount: 0,
-    overOptionCount: 0,
+    grade: 'HEALTHY',
+    daysOfCover: 30,
+    noStockOptionCount: 0,
+    riskOptionCount: 0,
     brandId: 'brand-b',
     brandName: '브랜드B',
     groupId: 'group-b',
@@ -27,10 +27,10 @@ const products: StockStatusProductCard[] = [
     out30d: 0,
     currentQty: 0,
     optionCount: 1,
-    okOptionCount: 0,
-    lowOptionCount: 1,
-    outOptionCount: 0,
-    overOptionCount: 0,
+    grade: 'HEALTHY',
+    daysOfCover: 30,
+    noStockOptionCount: 0,
+    riskOptionCount: 0,
     brandId: 'brand-a',
     brandName: '브랜드A',
     groupId: 'group-a',
@@ -49,6 +49,7 @@ describe('stock status products panel', () => {
         selectedBrandId={null}
         selectedGroupId={null}
         productQuery=""
+        sort="urgent"
         pinnedProductIds={['prod-b']}
         collapsed={false}
         onSelectProduct={jest.fn()}
@@ -57,6 +58,7 @@ describe('stock status products panel', () => {
         onBrandChange={jest.fn()}
         onGroupChange={jest.fn()}
         onSearchChange={jest.fn()}
+        onSortChange={jest.fn()}
       />,
       { wrapper: TooltipProvider }
     )
@@ -75,6 +77,7 @@ describe('stock status products panel', () => {
         selectedBrandId={null}
         selectedGroupId={null}
         productQuery=""
+        sort="urgent"
         pinnedProductIds={['prod-b']}
         collapsed
         onSelectProduct={jest.fn()}
@@ -83,6 +86,7 @@ describe('stock status products panel', () => {
         onBrandChange={jest.fn()}
         onGroupChange={jest.fn()}
         onSearchChange={jest.fn()}
+        onSortChange={jest.fn()}
       />
     )
 
@@ -92,10 +96,8 @@ describe('stock status products panel', () => {
     expect(screen.queryByPlaceholderText('상품 검색')).not.toBeInTheDocument()
   })
 
-  it('일반 상품이 페이지 크기를 넘으면 페이지네이션으로 나뉜다', () => {
-    // 페이지 크기 + 2개 → 정확히 2페이지(1페이지 가득 + 2페이지에 2개)
-    const total = PRODUCTS_PAGE_SIZE + 2
-    const firstOnPage2 = `상품 ${String(PRODUCTS_PAGE_SIZE).padStart(2, '0')}`
+  it('상품이 많아도 페이지 나눔 없이 전부 렌더한다 (내부 스크롤)', () => {
+    const total = 12
     const many: StockStatusProductCard[] = Array.from({ length: total }, (_, i) => ({
       productId: `p-${i}`,
       productName: `상품 ${String(i).padStart(2, '0')}`,
@@ -103,10 +105,10 @@ describe('stock status products panel', () => {
       out30d: 0,
       currentQty: 0,
       optionCount: 1,
-      okOptionCount: 1,
-      lowOptionCount: 0,
-      outOptionCount: 0,
-      overOptionCount: 0,
+      grade: 'HEALTHY' as const,
+      daysOfCover: 30,
+      noStockOptionCount: 0,
+      riskOptionCount: 0,
       brandId: 'b',
       brandName: '브랜드',
       groupId: 'g',
@@ -122,6 +124,7 @@ describe('stock status products panel', () => {
         selectedBrandId={null}
         selectedGroupId={null}
         productQuery=""
+        sort="urgent"
         pinnedProductIds={[]}
         collapsed={false}
         onSelectProduct={jest.fn()}
@@ -130,19 +133,15 @@ describe('stock status products panel', () => {
         onBrandChange={jest.fn()}
         onGroupChange={jest.fn()}
         onSearchChange={jest.fn()}
+        onSortChange={jest.fn()}
       />,
       { wrapper: TooltipProvider }
     )
 
-    // 1페이지엔 상품 00, 2페이지 첫 항목은 보이지 않음
-    expect(screen.getByText('1 / 2')).toBeInTheDocument()
+    // 첫 항목과 11번째 이후 항목이 동시에 렌더된다 (과거 페이지 크기 10 경계)
     expect(screen.getByText('상품 00')).toBeInTheDocument()
-    expect(screen.queryByText(firstOnPage2)).not.toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: '다음' }))
-
-    expect(screen.getByText('2 / 2')).toBeInTheDocument()
-    expect(screen.getByText(firstOnPage2)).toBeInTheDocument()
-    expect(screen.queryByText('상품 00')).not.toBeInTheDocument()
+    expect(screen.getByText('상품 10')).toBeInTheDocument()
+    expect(screen.getByText('상품 11')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '다음' })).not.toBeInTheDocument()
   })
 })

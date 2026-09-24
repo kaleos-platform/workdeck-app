@@ -1,0 +1,854 @@
+{
+  "commit": "73952ecd23faf19a8cdb935b02730acce9773324",
+  "deployment": "dpl_2u9pk2XECEyceRieiJPXz2Zm2ELE",
+  "fixedUrl": "https://workdeck-9f0s05o9i-eddysangwon-gmailcoms-projects.vercel.app",
+  "fixedCycles": [
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 2754,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=689.9, db_query;dur=176.5, auth_membership;dur=10.4, membership_loop_active;dur=2.2, membership_loop_idle;dur=8.2, auth_deck;dur=4.9, auth_workspace;dur=4.9, auth;dur=710.2, date_ranges;dur=16.1, campaign_current;dur=8.8, campaign_previous;dur=79.8, summary_loader;dur=47.7, target_summaries;dur=70.0, data;dur=197.5, total;dur=908.0"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 1076,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=90.4, db_query;dur=928.4, auth_membership;dur=29.0, membership_loop_active;dur=18.8, membership_loop_idle;dur=10.1, auth_deck;dur=4.9, auth_workspace;dur=4.7, auth;dur=129.1, overview_latest;dur=12.8, overview_ad_types;dur=133.7, overview_current;dur=139.3, overview_previous;dur=152.7, overview_targets;dur=157.4, overview_memos;dur=163.2, overview_meta;dur=168.7, overview_loader;dur=170.3, data;dur=176.9, total;dur=307.2"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 71,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=23.0, db_query;dur=28.1, auth_membership;dur=16.7, membership_loop_active;dur=3.0, membership_loop_idle;dur=13.7, auth_deck;dur=8.3, auth_workspace;dur=4.6, auth;dur=52.7, target_summaries;dur=5.1, data;dur=21.8, total;dur=74.8"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 572,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=29.6, db_query;dur=17.7, auth_membership;dur=9.6, membership_loop_active;dur=1.4, membership_loop_idle;dur=8.2, auth_deck;dur=4.8, auth_workspace;dur=4.6, auth;dur=48.7, data;dur=4.6, total;dur=53.6"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 2639.9000000953674,
+        "responseEnd": 1904.4000000953674,
+        "load": 2683.4000000953674,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 34.9
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1915,
+          "finishedAt": 1933,
+          "startAt": 7.991943359375,
+          "responseStart": 1897.619,
+          "responseEnd": 1903.568,
+          "serverTiming": "proxy_session;dur=34.9"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3215,
+          "finishedAt": 3217,
+          "startAt": 3111.5380859375,
+          "responseStart": 97.961,
+          "responseEnd": 98.938,
+          "serverTiming": "proxy_session;dur=32.4"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 4556,
+          "finishedAt": 4557,
+          "startAt": 4461.706787109375,
+          "responseStart": 91.934,
+          "responseEnd": 92.725,
+          "serverTiming": "proxy_session;dur=33.4"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 5076,
+          "finishedAt": 8077,
+          "startAt": 4945.239013671875,
+          "responseStart": 129.055,
+          "responseEnd": 252.384,
+          "serverTiming": "proxy_session;dur=53.3"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1258,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=89.9, db_query;dur=53.9, auth_membership;dur=9.9, membership_loop_active;dur=1.9, membership_loop_idle;dur=8.0, auth_deck;dur=5.0, auth_workspace;dur=4.8, auth;dur=109.8, date_ranges;dur=5.7, campaign_current;dur=7.6, campaign_previous;dur=6.9, summary_loader;dur=13.4, target_summaries;dur=18.7, data;dur=66.4, total;dur=176.5"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 461,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=31.1, db_query;dur=314.0, auth_membership;dur=9.6, membership_loop_active;dur=1.4, membership_loop_idle;dur=8.2, auth_deck;dur=5.3, auth_workspace;dur=5.0, auth;dur=51.2, overview_latest;dur=10.5, overview_ad_types;dur=32.5, overview_current;dur=37.8, overview_previous;dur=43.4, overview_targets;dur=52.5, overview_memos;dur=60.1, overview_meta;dur=67.1, overview_loader;dur=67.7, data;dur=74.8, total;dur=126.4"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 72,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=27.5, db_query;dur=31.4, auth_membership;dur=6.0, membership_loop_active;dur=1.6, membership_loop_idle;dur=4.4, auth_deck;dur=2.9, auth_workspace;dur=2.8, auth;dur=39.3, catalog_loader;dur=9.2, date_ranges;dur=3.9, target_summaries;dur=4.9, data;dur=38.9, total;dur=78.4"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 488,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=26.4, db_query;dur=11.0, auth_membership;dur=6.0, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.5, auth_deck;dur=3.3, auth_workspace;dur=3.0, auth;dur=38.9, data;dur=6.1, total;dur=45.7"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1205.9000000953674,
+        "responseEnd": 1179,
+        "load": 1218,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 98.9
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1187,
+          "finishedAt": 1226,
+          "startAt": 9.033203125,
+          "responseStart": 1174.091,
+          "responseEnd": 1178.135,
+          "serverTiming": "proxy_session;dur=98.9"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1713,
+          "finishedAt": 1714,
+          "startAt": 1608.8740234375,
+          "responseStart": 102.353,
+          "responseEnd": 103.316,
+          "serverTiming": "proxy_session;dur=42.7"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2023,
+          "finishedAt": 5024,
+          "startAt": 1930.057861328125,
+          "responseStart": 90.244,
+          "responseEnd": 93.005,
+          "serverTiming": "proxy_session;dur=25.8"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2362,
+          "finishedAt": 5362,
+          "startAt": 2270.077880859375,
+          "responseStart": 89.526,
+          "responseEnd": 214.695,
+          "serverTiming": "proxy_session;dur=39.6"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1427,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=96.4, prisma_client;dur=205.0, db_connect;dur=39.0, db_query;dur=114.3, auth_membership;dur=605.9, membership_loop_active;dur=586.7, membership_loop_idle;dur=19.2, auth_deck;dur=6.2, auth_workspace;dur=4.2, auth;dur=713.0, catalog_loader;dur=16.4, date_ranges;dur=4.3, campaign_current;dur=10.6, campaign_previous;dur=5.8, summary_loader;dur=12.8, target_summaries;dur=19.9, data;dur=115.7, total;dur=829.3"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 461,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=46.9, db_query;dur=205.4, auth_membership;dur=6.3, membership_loop_active;dur=1.9, membership_loop_idle;dur=4.4, auth_deck;dur=3.2, auth_workspace;dur=3.0, auth;dur=59.5, overview_latest;dur=11.9, overview_ad_types;dur=29.6, overview_current;dur=33.4, overview_previous;dur=37.0, overview_targets;dur=40.0, overview_memos;dur=43.6, overview_meta;dur=45.9, overview_loader;dur=47.5, data;dur=64.3, total;dur=124.4"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 71,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=33.9, db_query;dur=14.7, auth_membership;dur=6.6, membership_loop_active;dur=2.1, membership_loop_idle;dur=4.5, auth_deck;dur=3.2, auth_workspace;dur=3.1, auth;dur=46.9, date_ranges;dur=3.8, target_summaries;dur=10.1, data;dur=35.1, total;dur=82.3"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 353,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=40.9, db_query;dur=181.4, auth_membership;dur=6.3, membership_loop_active;dur=1.7, membership_loop_idle;dur=4.6, auth_deck;dur=3.2, auth_workspace;dur=2.8, auth;dur=53.3, overview_latest;dur=3.8, overview_ad_types;dur=21.0, overview_current;dur=24.4, overview_previous;dur=27.8, overview_targets;dur=30.3, overview_memos;dur=33.8, overview_meta;dur=35.8, overview_loader;dur=36.2, data;dur=42.8, total;dur=96.4"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1384.5999999046326,
+        "responseEnd": 1364.1999998092651,
+        "load": 1391.1999998092651,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 37.8
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1362,
+          "finishedAt": 1396,
+          "startAt": 6.607177734375,
+          "responseStart": 1353.502,
+          "responseEnd": 1363.546,
+          "serverTiming": "proxy_session;dur=37.8"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1694,
+          "finishedAt": 1695,
+          "startAt": 1628.885986328125,
+          "responseStart": 63.621,
+          "responseEnd": 64.52,
+          "serverTiming": "proxy_session;dur=35.6"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1848,
+          "finishedAt": 1849,
+          "startAt": 1789.1259765625,
+          "responseStart": 57.646,
+          "responseEnd": 58.791,
+          "serverTiming": "proxy_session;dur=24.7"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3382,
+          "finishedAt": 6384,
+          "startAt": 3310.684814453125,
+          "responseStart": 70.717,
+          "responseEnd": 278.626,
+          "serverTiming": "proxy_session;dur=32.1"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 380,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=39.3, db_query;dur=53.5, auth_membership;dur=6.3, membership_loop_active;dur=1.6, membership_loop_idle;dur=4.7, auth_deck;dur=3.3, auth_workspace;dur=3.0, auth;dur=52.0, catalog_loader;dur=9.6, date_ranges;dur=3.5, campaign_current;dur=5.5, campaign_previous;dur=4.5, summary_loader;dur=8.9, target_summaries;dur=14.3, data;dur=65.4, total;dur=117.6"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 412,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=30.0, db_query;dur=214.9, auth_membership;dur=6.5, membership_loop_active;dur=1.8, membership_loop_idle;dur=4.7, auth_deck;dur=3.2, auth_workspace;dur=2.9, auth;dur=42.7, overview_latest;dur=11.0, overview_ad_types;dur=30.1, overview_current;dur=34.0, overview_previous;dur=37.8, overview_targets;dur=40.5, overview_memos;dur=43.4, overview_meta;dur=45.8, overview_loader;dur=47.5, data;dur=55.0, total;dur=98.3"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 120,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=28.7, db_query;dur=55.4, auth_membership;dur=6.1, membership_loop_active;dur=1.7, membership_loop_idle;dur=4.4, auth_deck;dur=3.4, auth_workspace;dur=3.2, auth;dur=41.6, catalog_loader;dur=10.0, date_ranges;dur=3.4, campaign_current;dur=4.8, campaign_previous;dur=5.0, summary_loader;dur=10.0, target_summaries;dur=15.0, data;dur=54.9, total;dur=96.8"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 373,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=27.7, db_query;dur=190.0, auth_membership;dur=6.0, membership_loop_active;dur=1.7, membership_loop_idle;dur=4.3, auth_deck;dur=3.1, auth_workspace;dur=3.1, auth;dur=40.1, overview_latest;dur=4.6, overview_ad_types;dur=22.3, overview_current;dur=26.1, overview_previous;dur=29.8, overview_targets;dur=32.6, overview_memos;dur=35.7, overview_meta;dur=38.4, overview_loader;dur=39.1, data;dur=46.0, total;dur=86.5"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 332.09999990463257,
+        "responseEnd": 303.7999999523163,
+        "load": 338.7999999523163,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 47.5
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 311,
+          "finishedAt": 344,
+          "startAt": 8.10791015625,
+          "responseStart": 300.254,
+          "responseEnd": 303.228,
+          "serverTiming": "proxy_session;dur=47.5"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 823,
+          "finishedAt": 824,
+          "startAt": 725.015869140625,
+          "responseStart": 97.427,
+          "responseEnd": 97.887,
+          "serverTiming": "proxy_session;dur=42.3"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1073,
+          "finishedAt": 4074,
+          "startAt": 1009.4140625,
+          "responseStart": 63.041,
+          "responseEnd": 224.507,
+          "serverTiming": "proxy_session;dur=30.2"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 357,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=40.8, db_query;dur=58.4, auth_membership;dur=5.7, membership_loop_active;dur=1.8, membership_loop_idle;dur=3.9, auth_deck;dur=3.0, auth_workspace;dur=2.9, auth;dur=52.6, catalog_loader;dur=13.0, date_ranges;dur=4.0, campaign_current;dur=7.9, campaign_previous;dur=4.5, summary_loader;dur=11.8, target_summaries;dur=17.7, data;dur=75.7, total;dur=128.6"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 325,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=29.1, db_query;dur=187.3, auth_membership;dur=5.7, membership_loop_active;dur=1.3, membership_loop_idle;dur=4.4, auth_deck;dur=2.8, auth_workspace;dur=3.1, auth;dur=40.8, overview_latest;dur=3.7, overview_ad_types;dur=21.9, overview_current;dur=25.6, overview_previous;dur=29.2, overview_targets;dur=31.7, overview_memos;dur=34.4, overview_meta;dur=36.6, overview_loader;dur=37.0, data;dur=42.7, total;dur=83.7"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 140,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=27.5, db_query;dur=10.0, auth_membership;dur=5.6, membership_loop_active;dur=1.3, membership_loop_idle;dur=4.4, auth_deck;dur=2.8, auth_workspace;dur=2.7, auth;dur=38.7, target_summaries;dur=4.9, data;dur=26.3, total;dur=65.3"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 300,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=30.4, db_query;dur=10.1, auth_membership;dur=5.7, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.3, auth_deck;dur=2.8, auth_workspace;dur=2.6, auth;dur=41.7, data;dur=4.8, total;dur=46.8"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 309,
+        "responseEnd": 282.60000014305115,
+        "load": 315,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 44.7
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 288,
+          "finishedAt": 318,
+          "startAt": 6.555908203125,
+          "responseStart": 278.852,
+          "responseEnd": 281.942,
+          "serverTiming": "proxy_session;dur=44.7"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 569,
+          "finishedAt": 3571,
+          "startAt": 512.434814453125,
+          "responseStart": 55.953,
+          "responseEnd": 57.928,
+          "serverTiming": "proxy_session;dur=29.0"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 909,
+          "finishedAt": 3911,
+          "startAt": 837.538818359375,
+          "responseStart": 70.565,
+          "responseEnd": 186.714,
+          "serverTiming": "proxy_session;dur=30.8"
+        }
+      ]
+    }
+  ],
+  "productionDomainCycles": [
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1846,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=48.0, db_query;dur=75.3, auth_membership;dur=8.3, membership_loop_active;dur=3.1, membership_loop_idle;dur=5.2, auth_deck;dur=4.2, auth_workspace;dur=2.7, auth;dur=63.3, catalog_loader;dur=16.2, date_ranges;dur=4.5, campaign_current;dur=4.6, campaign_previous;dur=4.3, summary_loader;dur=9.0, target_summaries;dur=15.6, data;dur=65.8, total;dur=129.4"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 901,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=38.2, db_query;dur=1444.0, auth_membership;dur=5.4, membership_loop_active;dur=1.4, membership_loop_idle;dur=3.9, auth_deck;dur=2.6, auth_workspace;dur=2.5, auth;dur=48.9, overview_latest;dur=74.2, overview_ad_types;dur=242.3, overview_current;dur=245.6, overview_previous;dur=255.7, overview_targets;dur=258.3, overview_memos;dur=263.9, overview_meta;dur=266.8, overview_loader;dur=284.0, data;dur=289.5, total;dur=339.1"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 1402,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=102.5, db_connect;dur=16.6, db_query;dur=26.3, auth_membership;dur=23.0, membership_loop_active;dur=6.5, membership_loop_idle;dur=16.5, auth_deck;dur=2.6, auth_workspace;dur=2.5, auth;dur=130.8, target_summaries;dur=5.2, data;dur=27.4, total;dur=158.4"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 465,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=30.6, db_query;dur=172.4, auth_membership;dur=5.3, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.0, auth_deck;dur=2.7, auth_workspace;dur=2.4, auth;dur=41.0, overview_latest;dur=3.8, overview_ad_types;dur=20.9, overview_current;dur=23.9, overview_previous;dur=26.9, overview_targets;dur=29.3, overview_memos;dur=31.8, overview_meta;dur=33.7, overview_loader;dur=34.1, data;dur=40.7, total;dur=82.0"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1615.5,
+        "responseEnd": 1490.2999999523163,
+        "load": 1644,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 35.4
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1492,
+          "finishedAt": 1532,
+          "startAt": 7.772216796875,
+          "responseStart": 1480.374,
+          "responseEnd": 1489.764,
+          "serverTiming": "proxy_session;dur=35.4"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3052,
+          "finishedAt": 3053,
+          "startAt": 2951.73193359375,
+          "responseStart": 97.41,
+          "responseEnd": 98.332,
+          "serverTiming": "proxy_session;dur=32.1"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3153,
+          "finishedAt": 6153,
+          "startAt": 3052.68408203125,
+          "responseStart": 91.587,
+          "responseEnd": 820.24,
+          "serverTiming": "proxy_session;dur=25.3"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3153,
+          "finishedAt": 6154,
+          "startAt": 3023.72900390625,
+          "responseStart": 125.83,
+          "responseEnd": 873.872,
+          "serverTiming": "proxy_session;dur=39.9"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1461,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=24.6, db_query;dur=44.5, auth_membership;dur=14.2, membership_loop_active;dur=7.9, membership_loop_idle;dur=6.2, auth_deck;dur=4.7, auth_workspace;dur=4.3, auth;dur=47.8, date_ranges;dur=4.3, campaign_current;dur=4.5, campaign_previous;dur=4.6, summary_loader;dur=8.6, target_summaries;dur=15.1, data;dur=50.2, total;dur=98.3"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 547,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=24.9, db_query;dur=185.3, auth_membership;dur=5.3, membership_loop_active;dur=1.5, membership_loop_idle;dur=3.8, auth_deck;dur=2.6, auth_workspace;dur=2.7, auth;dur=35.7, overview_latest;dur=4.1, overview_ad_types;dur=22.2, overview_current;dur=25.7, overview_previous;dur=29.2, overview_targets;dur=31.8, overview_memos;dur=34.8, overview_meta;dur=36.8, overview_loader;dur=37.3, data;dur=43.0, total;dur=79.0"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 378,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=29.0, db_query;dur=26.8, auth_membership;dur=5.6, membership_loop_active;dur=1.6, membership_loop_idle;dur=4.1, auth_deck;dur=2.9, auth_workspace;dur=2.7, auth;dur=40.3, catalog_loader;dur=8.8, target_summaries;dur=5.8, data;dur=29.1, total;dur=69.6"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 448,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=26.6, db_query;dur=177.6, auth_membership;dur=5.6, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.1, auth_deck;dur=2.8, auth_workspace;dur=2.6, auth;dur=37.7, overview_latest;dur=3.5, overview_ad_types;dur=21.1, overview_current;dur=24.2, overview_previous;dur=27.6, overview_targets;dur=30.0, overview_memos;dur=32.5, overview_meta;dur=34.5, overview_loader;dur=34.8, data;dur=40.9, total;dur=78.8"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1346.5,
+        "responseEnd": 1308.8999998569489,
+        "load": 1360.8999998569489,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 28.2
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1320,
+          "finishedAt": 1360,
+          "startAt": 8.597900390625,
+          "responseStart": 1302.889,
+          "responseEnd": 1307.79,
+          "serverTiming": "proxy_session;dur=28.2"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2158,
+          "finishedAt": 2166,
+          "startAt": 2017.15283203125,
+          "responseStart": 84.767,
+          "responseEnd": 85.999,
+          "serverTiming": "proxy_session;dur=26.2"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2382,
+          "finishedAt": 5385,
+          "startAt": 2193.968994140625,
+          "responseStart": 180.75,
+          "responseEnd": 275.804,
+          "serverTiming": "proxy_session;dur=27.8"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1376,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=24.3, db_query;dur=30.1, auth_membership;dur=5.2, membership_loop_active;dur=1.3, membership_loop_idle;dur=3.9, auth_deck;dur=2.5, auth_workspace;dur=2.5, auth;dur=34.6, date_ranges;dur=3.2, campaign_current;dur=6.1, campaign_previous;dur=4.3, summary_loader;dur=9.5, target_summaries;dur=14.3, data;dur=43.1, total;dur=78.1"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 470,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=25.3, db_query;dur=173.5, auth_membership;dur=5.9, membership_loop_active;dur=1.8, membership_loop_idle;dur=4.1, auth_deck;dur=2.7, auth_workspace;dur=2.5, auth;dur=36.5, overview_latest;dur=3.7, overview_ad_types;dur=20.9, overview_current;dur=24.0, overview_previous;dur=27.0, overview_targets;dur=29.2, overview_memos;dur=31.6, overview_meta;dur=33.7, overview_loader;dur=34.1, data;dur=40.1, total;dur=76.9"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 872,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=33.0, db_query;dur=25.3, auth_membership;dur=5.7, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.2, auth_deck;dur=2.7, auth_workspace;dur=2.4, auth;dur=43.9, catalog_loader;dur=8.1, target_summaries;dur=4.9, data;dur=31.7, total;dur=75.7"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 404,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=24.9, db_query;dur=9.5, auth_membership;dur=5.4, membership_loop_active;dur=1.5, membership_loop_idle;dur=3.9, auth_deck;dur=2.6, auth_workspace;dur=2.6, auth;dur=35.5, data;dur=5.5, total;dur=41.2"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1277,
+        "responseEnd": 1240.8999998569489,
+        "load": 1283.5999999046326,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 42.1
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1248,
+          "finishedAt": 1289,
+          "startAt": 9.539794921875,
+          "responseStart": 1235.072,
+          "responseEnd": 1239.781,
+          "serverTiming": "proxy_session;dur=42.1"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1821,
+          "finishedAt": 1823,
+          "startAt": 1732.615966796875,
+          "responseStart": 84.147,
+          "responseEnd": 85.414,
+          "serverTiming": "proxy_session;dur=50.7"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2262,
+          "finishedAt": 5263,
+          "startAt": 2091.862060546875,
+          "responseStart": 146.671,
+          "responseEnd": 834.68,
+          "serverTiming": "proxy_session;dur=28.6"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 434,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=56.6, db_query;dur=46.0, auth_membership;dur=5.5, membership_loop_active;dur=1.6, membership_loop_idle;dur=3.9, auth_deck;dur=2.6, auth_workspace;dur=2.3, auth;dur=67.0, catalog_loader;dur=8.4, date_ranges;dur=4.4, campaign_current;dur=4.3, campaign_previous;dur=4.0, summary_loader;dur=7.5, target_summaries;dur=13.4, data;dur=57.5, total;dur=124.7"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 540,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=30.1, db_query;dur=244.5, auth_membership;dur=9.2, membership_loop_active;dur=2.1, membership_loop_idle;dur=7.1, auth_deck;dur=4.7, auth_workspace;dur=4.6, auth;dur=48.8, overview_latest;dur=6.5, overview_ad_types;dur=26.5, overview_current;dur=31.6, overview_previous;dur=37.1, overview_targets;dur=41.7, overview_memos;dur=45.7, overview_meta;dur=49.4, overview_loader;dur=50.1, data;dur=56.3, total;dur=105.6"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 281,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=27.2, db_query;dur=21.3, auth_membership;dur=9.1, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.5, auth_deck;dur=4.5, auth_workspace;dur=4.7, auth;dur=45.7, date_ranges;dur=5.5, target_summaries;dur=12.0, data;dur=35.5, total;dur=81.4"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 460,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=30.5, db_query;dur=234.8, auth_membership;dur=9.2, membership_loop_active;dur=1.8, membership_loop_idle;dur=7.4, auth_deck;dur=4.6, auth_workspace;dur=4.5, auth;dur=48.8, overview_latest;dur=5.5, overview_ad_types;dur=24.8, overview_current;dur=29.9, overview_previous;dur=35.0, overview_targets;dur=39.2, overview_memos;dur=43.7, overview_meta;dur=47.4, overview_loader;dur=47.9, data;dur=53.3, total;dur=102.4"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 329.5,
+        "responseEnd": 296.59999990463257,
+        "load": 335.2999999523163,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 40.6
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 303,
+          "finishedAt": 339,
+          "startAt": 8.859130859375,
+          "responseStart": 292.637,
+          "responseEnd": 295.693,
+          "serverTiming": "proxy_session;dur=40.6"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 636,
+          "finishedAt": 3637,
+          "startAt": 571.047119140625,
+          "responseStart": 63.716,
+          "responseEnd": 66.093,
+          "serverTiming": "proxy_session;dur=24.7"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1295,
+          "finishedAt": 4297,
+          "startAt": 1192.436279296875,
+          "responseStart": 99.544,
+          "responseEnd": 239.812,
+          "serverTiming": "proxy_session;dur=33.9"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1787,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=49.5, db_connect;dur=18.0, db_query;dur=168.7, auth_membership;dur=24.3, membership_loop_active;dur=6.4, membership_loop_idle;dur=18.0, auth_deck;dur=3.2, auth_workspace;dur=2.9, auth;dur=80.0, date_ranges;dur=100.3, campaign_current;dur=9.4, campaign_previous;dur=5.0, summary_loader;dur=20.0, target_summaries;dur=25.3, data;dur=165.1, total;dur=245.4"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 738,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=24.8, db_query;dur=1247.5, auth_membership;dur=11.0, membership_loop_active;dur=1.6, membership_loop_idle;dur=9.4, auth_deck;dur=5.1, auth_workspace;dur=4.3, auth;dur=45.2, overview_latest;dur=5.6, overview_ad_types;dur=187.9, overview_current;dur=192.4, overview_previous;dur=204.5, overview_targets;dur=207.6, overview_memos;dur=218.0, overview_meta;dur=220.4, overview_loader;dur=221.0, data;dur=226.9, total;dur=272.5"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 107,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=27.8, db_query;dur=34.7, auth_membership;dur=6.3, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.7, auth_deck;dur=3.1, auth_workspace;dur=3.0, auth;dur=40.3, date_ranges;dur=3.4, campaign_current;dur=5.4, campaign_previous;dur=4.6, summary_loader;dur=8.9, target_summaries;dur=13.5, data;dur=41.0, total;dur=81.5"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 526,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=30.1, db_query;dur=10.9, auth_membership;dur=6.2, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.7, auth_deck;dur=3.0, auth_workspace;dur=3.1, auth;dur=42.5, data;dur=5.5, total;dur=48.3"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1672,
+        "responseEnd": 1634.0999999046326,
+        "load": 1680.0999999046326,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 799.8
+          }
+        ]
+      },
+      "homeNetwork": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1641,
+          "finishedAt": 1683,
+          "startAt": 7.436767578125,
+          "responseStart": 1630.69,
+          "responseEnd": 1633.359,
+          "serverTiming": "proxy_session;dur=799.8"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2389,
+          "finishedAt": 2403,
+          "startAt": 2270.739990234375,
+          "responseStart": 113.592,
+          "responseEnd": 114.705,
+          "serverTiming": "proxy_session;dur=46.5"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2702,
+          "finishedAt": 5704,
+          "startAt": 2598.93603515625,
+          "responseStart": 100.922,
+          "responseEnd": 333.543,
+          "serverTiming": "proxy_session;dur=45.0"
+        }
+      ]
+    }
+  ],
+  "condition": "각 cycle 전 workspace tag 삭제, fixedCycles에 배포 후 첫 고정URL접속 포함. productionDomainCycles 전후 alias ID 동일. 두 세션의 브라우저 캐시 조건은 다름."
+}

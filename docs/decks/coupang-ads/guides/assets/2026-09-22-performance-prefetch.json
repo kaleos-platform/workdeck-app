@@ -1,0 +1,580 @@
+{
+  "date": "2026-09-22",
+  "before": {
+    "commit": "95dabb87e0bf6154d111ca1a7e195fff2bf8f42c",
+    "deployment": "dpl_DTiim8NwEvAgUx1auQ3wQdzEqxH7",
+    "cycles": [
+      [
+        {
+          "screen": "home-first",
+          "ms": 1849,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=46.2, db_connect;dur=19.3, auth_membership;dur=25.7, membership_loop_active;dur=4.8, membership_loop_idle;dur=20.9, auth_deck;dur=3.2, auth_workspace;dur=2.8, auth;dur=78.0, catalog_loader;dur=177.3, date_ranges;dur=56.8, campaign_current;dur=6.7, campaign_previous;dur=4.7, summary_loader;dur=12.0, target_summaries;dur=19.5, data;dur=298.0, total;dur=376.1"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 388,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=34.5, auth_membership;dur=11.1, membership_loop_active;dur=1.6, membership_loop_idle;dur=9.5, auth_deck;dur=5.6, auth_workspace;dur=3.7, auth;dur=55.0, overview_latest;dur=14.5, overview_ad_types;dur=33.2, overview_current;dur=39.7, overview_previous;dur=52.3, overview_targets;dur=55.2, overview_memos;dur=64.5, overview_meta;dur=70.8, overview_loader;dur=72.4, data;dur=78.4, total;dur=133.8"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 1325,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=27.5, auth_membership;dur=5.8, membership_loop_active;dur=1.2, membership_loop_idle;dur=4.6, auth_deck;dur=2.9, auth_workspace;dur=2.8, auth;dur=39.0, campaign_current;dur=4.6, campaign_previous;dur=4.2, target_summaries;dur=6.0, data;dur=32.4, total;dur=71.6"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 644,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=33.6, auth_membership;dur=8.5, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.1, auth_deck;dur=3.0, auth_workspace;dur=2.9, auth;dur=48.1, data;dur=7.0, total;dur=55.4"
+        }
+      ],
+      [
+        {
+          "screen": "home-first",
+          "ms": 507,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=35.6, auth_membership;dur=5.7, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.4, auth_deck;dur=2.8, auth_workspace;dur=2.8, auth;dur=47.0, catalog_loader;dur=111.1, date_ranges;dur=49.4, campaign_current;dur=4.7, campaign_previous;dur=4.4, summary_loader;dur=8.5, target_summaries;dur=15.5, data;dur=204.6, total;dur=251.8"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 332,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=34.2, auth_membership;dur=6.2, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.7, auth_deck;dur=3.0, auth_workspace;dur=3.1, auth;dur=46.6, overview_latest;dur=5.5, overview_ad_types;dur=24.2, overview_current;dur=28.9, overview_previous;dur=32.6, overview_targets;dur=35.4, overview_memos;dur=40.9, overview_meta;dur=43.2, overview_loader;dur=43.7, data;dur=50.8, total;dur=97.7"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 321,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=34.2, auth_membership;dur=5.4, membership_loop_active;dur=1.1, membership_loop_idle;dur=4.3, auth_deck;dur=2.8, auth_workspace;dur=2.5, auth;dur=45.0, catalog_loader;dur=50.8, date_ranges;dur=41.5, campaign_current;dur=4.5, campaign_previous;dur=4.1, summary_loader;dur=7.8, target_summaries;dur=12.6, data;dur=132.7, total;dur=177.8"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 560,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=31.0, auth_membership;dur=5.7, membership_loop_active;dur=1.1, membership_loop_idle;dur=4.6, auth_deck;dur=2.8, auth_workspace;dur=2.5, auth;dur=42.1, overview_latest;dur=3.4, overview_ad_types;dur=20.6, overview_current;dur=24.0, overview_previous;dur=27.3, overview_targets;dur=29.7, overview_memos;dur=32.5, overview_meta;dur=34.9, overview_loader;dur=35.3, data;dur=40.6, total;dur=82.9"
+        }
+      ],
+      [
+        {
+          "screen": "home-first",
+          "ms": 1335,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=21.3, auth_membership;dur=5.8, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.4, auth_deck;dur=2.9, auth_workspace;dur=2.8, auth;dur=32.9, catalog_loader;dur=69.8, date_ranges;dur=65.3, campaign_current;dur=4.5, campaign_previous;dur=4.3, summary_loader;dur=7.9, target_summaries;dur=12.5, data;dur=179.7, total;dur=212.8"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 357,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=29.1, auth_membership;dur=6.2, membership_loop_active;dur=1.1, membership_loop_idle;dur=5.1, auth_deck;dur=2.9, auth_workspace;dur=2.9, auth;dur=41.3, overview_latest;dur=3.6, overview_ad_types;dur=21.6, overview_current;dur=25.0, overview_previous;dur=28.5, overview_targets;dur=31.0, overview_memos;dur=33.6, overview_meta;dur=35.8, overview_loader;dur=36.2, data;dur=42.2, total;dur=83.7"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 323,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=21.9, auth_membership;dur=5.4, membership_loop_active;dur=1.2, membership_loop_idle;dur=4.2, auth_deck;dur=2.7, auth_workspace;dur=2.9, auth;dur=32.9, catalog_loader;dur=51.4, campaign_current;dur=4.6, campaign_previous;dur=4.2, summary_loader;dur=8.9, target_summaries;dur=14.0, data;dur=94.2, total;dur=127.3"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 267,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=23.9, auth_membership;dur=6.1, membership_loop_active;dur=1.2, membership_loop_idle;dur=4.9, auth_deck;dur=3.2, auth_workspace;dur=3.1, auth;dur=36.4, data;dur=5.7, total;dur=42.5"
+        }
+      ],
+      [
+        {
+          "screen": "home-first",
+          "ms": 344,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=33.4, auth_membership;dur=5.4, membership_loop_active;dur=1.1, membership_loop_idle;dur=4.3, auth_deck;dur=2.7, auth_workspace;dur=2.6, auth;dur=44.3, catalog_loader;dur=96.7, date_ranges;dur=47.2, campaign_current;dur=4.4, campaign_previous;dur=4.2, summary_loader;dur=9.1, target_summaries;dur=13.6, data;dur=181.9, total;dur=226.3"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 327,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=21.9, auth_membership;dur=5.8, membership_loop_active;dur=1.1, membership_loop_idle;dur=4.7, auth_deck;dur=2.9, auth_workspace;dur=2.8, auth;dur=33.5, overview_latest;dur=3.9, overview_ad_types;dur=23.0, overview_current;dur=26.5, overview_previous;dur=30.2, overview_targets;dur=32.9, overview_memos;dur=35.8, overview_meta;dur=38.2, overview_loader;dur=38.6, data;dur=44.8, total;dur=78.5"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 322,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=23.0, auth_membership;dur=5.9, membership_loop_active;dur=1.6, membership_loop_idle;dur=4.3, auth_deck;dur=3.1, auth_workspace;dur=3.0, auth;dur=35.2, catalog_loader;dur=52.5, date_ranges;dur=44.1, campaign_current;dur=6.0, campaign_previous;dur=4.6, summary_loader;dur=11.9, target_summaries;dur=18.1, data;dur=147.7, total;dur=183.1"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 518,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=42.7, auth_membership;dur=6.2, membership_loop_active;dur=1.8, membership_loop_idle;dur=4.4, auth_deck;dur=2.9, auth_workspace;dur=2.7, auth;dur=54.5, overview_latest;dur=10.5, overview_ad_types;dur=28.0, overview_current;dur=31.3, overview_previous;dur=34.7, overview_targets;dur=37.5, overview_memos;dur=40.3, overview_meta;dur=42.7, overview_loader;dur=44.2, data;dur=50.3, total;dur=105.4"
+        }
+      ],
+      [
+        {
+          "screen": "home-first",
+          "ms": 1623,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=46.6, auth_membership;dur=147.1, membership_loop_active;dur=4.3, membership_loop_idle;dur=142.8, auth_deck;dur=2.8, auth_workspace;dur=2.7, auth;dur=199.3, date_ranges;dur=384.5, campaign_current;dur=4.5, campaign_previous;dur=4.2, summary_loader;dur=7.9, target_summaries;dur=12.9, data;dur=425.5, total;dur=625.1"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 637,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=24.4, auth_membership;dur=5.4, membership_loop_active;dur=1.1, membership_loop_idle;dur=4.3, auth_deck;dur=2.8, auth_workspace;dur=2.6, auth;dur=35.3, overview_latest;dur=3.5, overview_ad_types;dur=21.5, overview_current;dur=24.8, overview_previous;dur=28.4, overview_targets;dur=30.9, overview_memos;dur=33.4, overview_meta;dur=35.7, overview_loader;dur=36.1, data;dur=42.2, total;dur=77.7"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 322,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=22.3, auth_membership;dur=5.8, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.4, auth_deck;dur=3.0, auth_workspace;dur=2.7, auth;dur=33.9, catalog_loader;dur=52.0, summary_loader;dur=7.9, target_summaries;dur=12.6, data;dur=83.9, total;dur=117.9"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 465,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=23.3, auth_membership;dur=6.1, membership_loop_active;dur=2.7, membership_loop_idle;dur=3.4, auth_deck;dur=2.7, auth_workspace;dur=2.5, auth;dur=34.7, overview_latest;dur=3.5, overview_ad_types;dur=20.7, overview_current;dur=23.8, overview_previous;dur=27.0, overview_targets;dur=29.4, overview_memos;dur=31.9, overview_meta;dur=34.0, overview_loader;dur=34.3, data;dur=39.5, total;dur=74.3"
+        }
+      ]
+    ],
+    "myDeckEntry": [
+      {
+        "ms": 970
+      },
+      {
+        "ms": 1010
+      },
+      {
+        "ms": 1204
+      },
+      {
+        "ms": 413
+      },
+      {
+        "ms": 333
+      }
+    ]
+  },
+  "after": {
+    "commit": "bb53cf7e73c94bdbc877c8b27d41b1b059ba69d7",
+    "deployment": "dpl_33nP7awVPXTSKUwu8cK6E8YEQ21z",
+    "cycles": [
+      [
+        {
+          "screen": "home-first",
+          "ms": 4417,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=111.3, auth_membership;dur=19.5, membership_loop_active;dur=10.1, membership_loop_idle;dur=9.3, auth_deck;dur=8.8, auth_workspace;dur=6.3, auth;dur=146.7, catalog_loader;dur=80.7, date_ranges;dur=117.0, campaign_current;dur=8.7, campaign_previous;dur=6.5, summary_loader;dur=16.7, target_summaries;dur=23.9, data;dur=309.1, total;dur=456.5"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 2344,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=41.1, auth_membership;dur=8.0, membership_loop_active;dur=8.0, membership_loop_idle;dur=0.0, auth_deck;dur=3.6, auth_workspace;dur=3.6, auth;dur=56.5, overview_latest;dur=16.3, overview_ad_types;dur=35.2, overview_current;dur=39.8, overview_previous;dur=50.5, overview_targets;dur=53.8, overview_memos;dur=57.3, overview_meta;dur=60.3, overview_loader;dur=62.2, data;dur=74.3, total;dur=131.4"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 834,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=31.2, auth_membership;dur=217.2, membership_loop_active;dur=63.8, membership_loop_idle;dur=153.4, auth_deck;dur=5.7, auth_workspace;dur=6.1, auth;dur=260.3, target_summaries;dur=5.3, data;dur=29.0, total;dur=289.5"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 326,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=24.0, auth_membership;dur=7.0, membership_loop_active;dur=1.7, membership_loop_idle;dur=5.3, auth_deck;dur=3.5, auth_workspace;dur=4.1, auth;dur=38.7, data;dur=6.8, total;dur=45.9"
+        }
+      ],
+      [
+        {
+          "screen": "home-first",
+          "ms": 1302,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=100.0, auth_membership;dur=15.1, membership_loop_active;dur=2.3, membership_loop_idle;dur=12.9, auth_deck;dur=9.2, auth_workspace;dur=5.8, auth;dur=130.4, catalog_loader;dur=60.0, date_ranges;dur=50.7, campaign_current;dur=7.2, campaign_previous;dur=6.4, summary_loader;dur=12.9, target_summaries;dur=18.5, data;dur=171.2, total;dur=302.0"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 561,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=36.8, auth_membership;dur=9.8, membership_loop_active;dur=1.8, membership_loop_idle;dur=8.0, auth_deck;dur=4.9, auth_workspace;dur=5.0, auth;dur=56.6, overview_latest;dur=13.2, overview_ad_types;dur=32.8, overview_current;dur=38.4, overview_previous;dur=43.7, overview_targets;dur=48.2, overview_memos;dur=53.3, overview_meta;dur=57.4, overview_loader;dur=59.0, data;dur=65.7, total;dur=122.9"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 71,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=31.9, auth_membership;dur=10.2, membership_loop_active;dur=1.7, membership_loop_idle;dur=8.5, auth_deck;dur=5.2, auth_workspace;dur=4.8, auth;dur=52.2, catalog_loader;dur=62.2, date_ranges;dur=44.1, campaign_current;dur=6.4, campaign_previous;dur=6.2, summary_loader;dur=12.5, target_summaries;dur=16.8, data;dur=152.5, total;dur=205.0"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 360,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=24.8, auth_membership;dur=9.6, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.9, auth_deck;dur=4.9, auth_workspace;dur=4.6, auth;dur=44.0, data;dur=6.7, total;dur=51.1"
+        }
+      ],
+      [
+        {
+          "screen": "home-first",
+          "ms": 615,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=108.1, db_connect;dur=39.1, auth_membership;dur=581.9, membership_loop_active;dur=565.6, membership_loop_idle;dur=16.2, auth_deck;dur=6.5, auth_workspace;dur=6.8, auth;dur=704.1, date_ranges;dur=58.6, campaign_current;dur=9.2, campaign_previous;dur=4.5, summary_loader;dur=12.4, target_summaries;dur=18.8, data;dur=165.5, total;dur=870.4"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 363,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=32.8, auth_membership;dur=6.2, membership_loop_active;dur=2.2, membership_loop_idle;dur=4.0, auth_deck;dur=3.3, auth_workspace;dur=2.9, auth;dur=45.4, overview_latest;dur=10.8, overview_ad_types;dur=41.5, overview_current;dur=45.4, overview_previous;dur=50.1, overview_targets;dur=52.9, overview_memos;dur=55.9, overview_meta;dur=58.7, overview_loader;dur=60.3, data;dur=67.4, total;dur=113.4"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 61,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=26.8, auth_membership;dur=5.5, membership_loop_active;dur=1.7, membership_loop_idle;dur=3.8, auth_deck;dur=2.8, auth_workspace;dur=2.5, auth;dur=37.7, target_summaries;dur=4.0, data;dur=19.6, total;dur=57.6"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 365,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=33.9, auth_membership;dur=7.1, membership_loop_active;dur=1.9, membership_loop_idle;dur=5.1, auth_deck;dur=3.8, auth_workspace;dur=3.5, auth;dur=48.3, overview_latest;dur=11.6, overview_ad_types;dur=30.1, overview_current;dur=33.9, overview_previous;dur=37.6, overview_targets;dur=40.8, overview_memos;dur=44.3, overview_meta;dur=47.2, overview_loader;dur=48.9, data;dur=55.9, total;dur=104.9"
+        }
+      ],
+      [
+        {
+          "screen": "home-first",
+          "ms": 1270,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=27.4, auth_membership;dur=7.1, membership_loop_active;dur=2.0, membership_loop_idle;dur=5.1, auth_deck;dur=3.3, auth_workspace;dur=3.0, auth;dur=40.9, catalog_loader;dur=68.6, date_ranges;dur=57.0, campaign_current;dur=10.6, campaign_previous;dur=4.7, summary_loader;dur=12.8, target_summaries;dur=18.6, data;dur=181.5, total;dur=222.8"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 350,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=21.8, auth_membership;dur=7.0, membership_loop_active;dur=1.6, membership_loop_idle;dur=5.4, auth_deck;dur=3.6, auth_workspace;dur=3.4, auth;dur=35.9, overview_latest;dur=4.6, overview_ad_types;dur=23.1, overview_current;dur=27.0, overview_previous;dur=30.9, overview_targets;dur=34.5, overview_memos;dur=37.8, overview_meta;dur=40.5, overview_loader;dur=41.0, data;dur=47.3, total;dur=83.5"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 319,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=28.5, auth_membership;dur=8.7, membership_loop_active;dur=4.7, membership_loop_idle;dur=3.9, auth_deck;dur=3.8, auth_workspace;dur=3.6, auth;dur=44.6, summary_loader;dur=9.7, target_summaries;dur=16.1, data;dur=32.2, total;dur=77.2"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 284,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=36.7, auth_membership;dur=7.1, membership_loop_active;dur=1.7, membership_loop_idle;dur=5.3, auth_deck;dur=3.4, auth_workspace;dur=3.4, auth;dur=50.7, data;dur=6.7, total;dur=57.8"
+        }
+      ],
+      [
+        {
+          "screen": "home-first",
+          "ms": 425,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=85.1, auth_membership;dur=7.6, membership_loop_active;dur=2.4, membership_loop_idle;dur=5.2, auth_deck;dur=4.0, auth_workspace;dur=3.6, auth;dur=100.6, catalog_loader;dur=100.7, date_ranges;dur=53.4, campaign_current;dur=6.7, campaign_previous;dur=5.0, summary_loader;dur=21.7, target_summaries;dur=29.1, data;dur=244.6, total;dur=345.5"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 367,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=36.1, auth_membership;dur=6.9, membership_loop_active;dur=1.8, membership_loop_idle;dur=5.1, auth_deck;dur=3.3, auth_workspace;dur=3.1, auth;dur=49.8, overview_latest;dur=10.8, overview_ad_types;dur=29.2, overview_current;dur=33.4, overview_previous;dur=37.1, overview_targets;dur=40.0, overview_memos;dur=43.2, overview_meta;dur=46.0, overview_loader;dur=47.4, data;dur=53.6, total;dur=103.9"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 58,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-15", "2026-09-21"],
+          "timing": "auth_user;dur=22.8, auth_membership;dur=6.7, membership_loop_active;dur=1.4, membership_loop_idle;dur=5.3, auth_deck;dur=3.4, auth_workspace;dur=3.1, auth;dur=36.1, campaign_current;dur=4.8, campaign_previous;dur=4.8, target_summaries;dur=5.3, data;dur=30.7, total;dur=67.0"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 316,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=30.7, auth_membership;dur=6.8, membership_loop_active;dur=1.4, membership_loop_idle;dur=5.4, auth_deck;dur=3.5, auth_workspace;dur=3.3, auth;dur=44.4, data;dur=5.8, total;dur=50.6"
+        }
+      ]
+    ],
+    "myDeckEntry": [
+      {
+        "ms": 129
+      },
+      {
+        "ms": 945
+      },
+      {
+        "ms": 72
+      },
+      {
+        "ms": 70
+      },
+      {
+        "ms": 343
+      }
+    ]
+  },
+  "method": {
+    "cycles": "Five cycles with workspace Data Cache tag reset before each. Direct home URL -> detail -> home -> detail. Includes first post-deployment direct URL sample. Cache reset does not guarantee platform cold start. Locator observation includes polling overhead.",
+    "myDeckEntry": "Five separate cycles. Open My Deck, wait until entry link is visible, dwell 1000ms, then measure from click until campaign card has data. Dwell time is excluded and identical before/after; prefetch is not necessarily complete. Not directly comparable with direct URL navigation."
+  },
+  "rscTransport": [
+    {
+      "start": 1790085615974,
+      "events": [
+        {
+          "event": "request",
+          "ms": 43
+        },
+        {
+          "event": "headers",
+          "ms": 252,
+          "status": 200
+        },
+        {
+          "event": "data",
+          "ms": 292,
+          "bytes": 1075
+        },
+        {
+          "event": "data",
+          "ms": 299,
+          "bytes": 710
+        },
+        {
+          "event": "data",
+          "ms": 1079,
+          "bytes": 6270
+        }
+      ],
+      "domMs": 1092
+    },
+    {
+      "start": 1790085618257,
+      "events": [
+        {
+          "event": "request",
+          "ms": 35
+        },
+        {
+          "event": "headers",
+          "ms": 216,
+          "status": 200
+        },
+        {
+          "event": "data",
+          "ms": 229,
+          "bytes": 1785
+        },
+        {
+          "event": "data",
+          "ms": 291,
+          "bytes": 6270
+        }
+      ],
+      "domMs": 300
+    },
+    {
+      "start": 1790085620991,
+      "events": [
+        {
+          "event": "request",
+          "ms": 30
+        },
+        {
+          "event": "headers",
+          "ms": 139,
+          "status": 200
+        },
+        {
+          "event": "data",
+          "ms": 186,
+          "bytes": 1785
+        },
+        {
+          "event": "data",
+          "ms": 852,
+          "bytes": 6270
+        }
+      ],
+      "domMs": 862
+    },
+    {
+      "start": 1790085623481,
+      "events": [
+        {
+          "event": "request",
+          "ms": 38
+        },
+        {
+          "event": "headers",
+          "ms": 142,
+          "status": 200
+        },
+        {
+          "event": "data",
+          "ms": 149,
+          "bytes": 1785
+        },
+        {
+          "event": "data",
+          "ms": 244,
+          "bytes": 6270
+        }
+      ],
+      "domMs": 253
+    },
+    {
+      "start": 1790085624551,
+      "events": [
+        {
+          "event": "request",
+          "ms": 35
+        },
+        {
+          "event": "headers",
+          "ms": 108,
+          "status": 200
+        },
+        {
+          "event": "data",
+          "ms": 155,
+          "bytes": 1785
+        },
+        {
+          "event": "data",
+          "ms": 939,
+          "bytes": 6270
+        }
+      ],
+      "domMs": 949
+    },
+    {
+      "start": 1790085626758,
+      "events": [
+        {
+          "event": "request",
+          "ms": 29
+        },
+        {
+          "event": "headers",
+          "ms": 103,
+          "status": 200
+        },
+        {
+          "event": "data",
+          "ms": 113,
+          "bytes": 1785
+        },
+        {
+          "event": "data",
+          "ms": 195,
+          "bytes": 6270
+        }
+      ],
+      "domMs": 203
+    },
+    {
+      "start": 1790085627602,
+      "events": [
+        {
+          "event": "request",
+          "ms": 31
+        },
+        {
+          "event": "headers",
+          "ms": 98,
+          "status": 200
+        },
+        {
+          "event": "data",
+          "ms": 103,
+          "bytes": 1785
+        },
+        {
+          "event": "data",
+          "ms": 177,
+          "bytes": 6270
+        }
+      ],
+      "domMs": 185
+    },
+    {
+      "start": 1790085628597,
+      "events": [
+        {
+          "event": "request",
+          "ms": 37
+        },
+        {
+          "event": "headers",
+          "ms": 98,
+          "status": 200
+        },
+        {
+          "event": "data",
+          "ms": 109,
+          "bytes": 1785
+        },
+        {
+          "event": "data",
+          "ms": 169,
+          "bytes": 6270
+        }
+      ],
+      "domMs": 177
+    }
+  ]
+}

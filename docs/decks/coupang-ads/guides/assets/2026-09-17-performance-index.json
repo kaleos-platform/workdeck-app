@@ -1,0 +1,754 @@
+{
+  "deployment": "dpl_8jy1Aequ1EgcJQq1vGpbJLcmR2Em",
+  "commit": "a889238a6486e0b55d025f8ae191fb1d872ea651",
+  "method": "각 회차 전 로그인 workspace 광고 tag cache 초기화. Server-Timing loader 실행 확인. production cold start를 강제로 재현하지 않음.",
+  "period": {
+    "from": "2026-09-10",
+    "to": "2026-09-16"
+  },
+  "samples": [
+    {
+      "i": 0,
+      "kind": "home-document",
+      "ms": 5695,
+      "status": 200,
+      "timing": "auth;dur=864.4, date_ranges;dur=53.6, campaign_current;dur=12.5, campaign_previous;dur=7.2, summary_loader;dur=31.5, target_summaries;dur=40.2, data;dur=197.0, total;dur=1062.4",
+      "kpi": "auth;dur=702.9, kpi_current;dur=44.5, kpi_previous;dur=15.3, kpi_loader;dur=60.5, data;dur=172.9, total;dur=908.9"
+    },
+    {
+      "i": 0,
+      "kind": "detail-entry",
+      "ms": 818,
+      "status": 200,
+      "timing": "auth;dur=73.0, overview_latest;dur=27.5, overview_ad_types;dur=46.9, overview_current;dur=67.2, overview_previous;dur=86.9, overview_targets;dur=91.7, overview_memos;dur=108.0, overview_meta;dur=112.2, overview_loader;dur=113.9, data;dur=123.5, total;dur=197.2"
+    },
+    {
+      "i": 0,
+      "kind": "home-revisit",
+      "ms": 1333,
+      "status": 200,
+      "timing": "auth;dur=58.8, target_summaries;dur=13.0, data;dur=50.9, total;dur=110.4",
+      "kpi": "auth;dur=43.1, data;dur=6.4, total;dur=50.0"
+    },
+    {
+      "i": 0,
+      "kind": "detail-revisit",
+      "ms": 473,
+      "status": 200,
+      "timing": "auth;dur=52.6, data;dur=6.8, total;dur=60.1"
+    },
+    {
+      "i": 1,
+      "kind": "home-document",
+      "ms": 3356,
+      "status": 200,
+      "timing": "auth;dur=480.5, catalog_loader;dur=449.3, date_ranges;dur=77.4, campaign_current;dur=15.3, campaign_previous;dur=6.1, summary_loader;dur=18.9, target_summaries;dur=24.9, data;dur=601.7, total;dur=1082.4",
+      "kpi": "auth;dur=471.9, kpi_current;dur=421.7, kpi_previous;dur=65.4, kpi_loader;dur=487.3, data;dur=492.7, total;dur=964.8",
+      "navigation": {
+        "responseStart": 7,
+        "responseEnd": 1996,
+        "dom": 2041,
+        "api": [
+          {
+            "path": "/api/campaigns",
+            "start": 2053,
+            "ms": 1191,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 715.2,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 6.4,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 722,
+                "description": ""
+              }
+            ]
+          },
+          {
+            "path": "/api/campaigns",
+            "start": 2053,
+            "ms": 1286,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 480.5,
+                "description": ""
+              },
+              {
+                "name": "catalog_loader",
+                "duration": 449.3,
+                "description": ""
+              },
+              {
+                "name": "date_ranges",
+                "duration": 77.4,
+                "description": ""
+              },
+              {
+                "name": "campaign_current",
+                "duration": 15.3,
+                "description": ""
+              },
+              {
+                "name": "campaign_previous",
+                "duration": 6.1,
+                "description": ""
+              },
+              {
+                "name": "summary_loader",
+                "duration": 18.9,
+                "description": ""
+              },
+              {
+                "name": "target_summaries",
+                "duration": 24.9,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 601.7,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 1082.4,
+                "description": ""
+              }
+            ]
+          },
+          {
+            "path": "/api/dashboard/kpi",
+            "start": 2053,
+            "ms": 1248,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 471.9,
+                "description": ""
+              },
+              {
+                "name": "kpi_current",
+                "duration": 421.7,
+                "description": ""
+              },
+              {
+                "name": "kpi_previous",
+                "duration": 65.4,
+                "description": ""
+              },
+              {
+                "name": "kpi_loader",
+                "duration": 487.3,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 492.7,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 964.8,
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "i": 1,
+      "kind": "detail-entry",
+      "ms": 475,
+      "status": 200,
+      "timing": "auth;dur=59.1, overview_latest;dur=21.3, overview_ad_types;dur=61.1, overview_current;dur=61.8, overview_previous;dur=103.6, overview_targets;dur=108.4, overview_memos;dur=113.4, overview_meta;dur=117.3, overview_loader;dur=118.9, data;dur=125.4, total;dur=185.1"
+    },
+    {
+      "i": 1,
+      "kind": "home-revisit",
+      "ms": 1197,
+      "status": 200,
+      "timing": "auth;dur=58.9, date_ranges;dur=51.0, campaign_current;dur=4.9, campaign_previous;dur=4.6, target_summaries;dur=6.4, data;dur=89.5, total;dur=148.7",
+      "kpi": "auth;dur=41.6, data;dur=5.0, total;dur=46.8",
+      "navigation": null
+    },
+    {
+      "i": 1,
+      "kind": "detail-revisit",
+      "ms": 381,
+      "status": 200,
+      "timing": "auth;dur=36.4, data;dur=6.1, total;dur=43.1"
+    },
+    {
+      "i": 2,
+      "kind": "home-document",
+      "ms": 8022,
+      "status": 200,
+      "timing": "auth;dur=192.6, catalog_loader;dur=3346.8, date_ranges;dur=401.5, campaign_current;dur=363.7, campaign_previous;dur=6.9, summary_loader;dur=49.7, target_summaries;dur=55.7, data;dur=4199.3, total;dur=4392.2",
+      "kpi": "auth;dur=66.0, kpi_current;dur=3519.5, kpi_previous;dur=584.7, kpi_loader;dur=4104.3, data;dur=4115.2, total;dur=4181.5",
+      "navigation": {
+        "responseStart": 7,
+        "responseEnd": 1972,
+        "dom": 2007,
+        "api": [
+          {
+            "path": "/api/campaigns",
+            "start": 2019,
+            "ms": 5295,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 705.9,
+                "description": ""
+              },
+              {
+                "name": "catalog_loader",
+                "duration": 2871.3,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 2881.5,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 3587.7,
+                "description": ""
+              }
+            ]
+          },
+          {
+            "path": "/api/campaigns",
+            "start": 2020,
+            "ms": 5970,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 192.6,
+                "description": ""
+              },
+              {
+                "name": "catalog_loader",
+                "duration": 3346.8,
+                "description": ""
+              },
+              {
+                "name": "date_ranges",
+                "duration": 401.5,
+                "description": ""
+              },
+              {
+                "name": "campaign_current",
+                "duration": 363.7,
+                "description": ""
+              },
+              {
+                "name": "campaign_previous",
+                "duration": 6.9,
+                "description": ""
+              },
+              {
+                "name": "summary_loader",
+                "duration": 49.7,
+                "description": ""
+              },
+              {
+                "name": "target_summaries",
+                "duration": 55.7,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 4199.3,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 4392.2,
+                "description": ""
+              }
+            ]
+          },
+          {
+            "path": "/api/dashboard/kpi",
+            "start": 2020,
+            "ms": 5891,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 66,
+                "description": ""
+              },
+              {
+                "name": "kpi_current",
+                "duration": 3519.5,
+                "description": ""
+              },
+              {
+                "name": "kpi_previous",
+                "duration": 584.7,
+                "description": ""
+              },
+              {
+                "name": "kpi_loader",
+                "duration": 4104.3,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 4115.2,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 4181.5,
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "i": 2,
+      "kind": "detail-entry",
+      "ms": 1954,
+      "status": 200,
+      "timing": "auth;dur=322.3, overview_latest;dur=131.4, overview_ad_types;dur=486.8, overview_current;dur=537.3, overview_previous;dur=602.0, overview_targets;dur=606.0, overview_memos;dur=612.6, overview_meta;dur=616.9, overview_loader;dur=617.5, data;dur=624.5, total;dur=947.3"
+    },
+    {
+      "i": 2,
+      "kind": "home-revisit",
+      "ms": 1190,
+      "status": 200,
+      "timing": "auth;dur=46.8, target_summaries;dur=4.9, data;dur=24.2, total;dur=71.3",
+      "kpi": "auth;dur=62.0, data;dur=5.4, total;dur=67.7",
+      "navigation": null
+    },
+    {
+      "i": 2,
+      "kind": "detail-revisit",
+      "ms": 291,
+      "status": 200,
+      "timing": "auth;dur=39.9, data;dur=5.9, total;dur=46.1"
+    },
+    {
+      "i": 3,
+      "kind": "home-document",
+      "ms": 2066,
+      "status": 200,
+      "timing": "auth;dur=240.1, catalog_loader;dur=465.1, date_ranges;dur=87.0, campaign_current;dur=28.4, campaign_previous;dur=6.0, summary_loader;dur=15.3, target_summaries;dur=21.1, data;dur=634.7, total;dur=875.0",
+      "kpi": "auth;dur=264.6, kpi_current;dur=505.7, kpi_previous;dur=80.8, kpi_loader;dur=586.6, data;dur=596.9, total;dur=861.7",
+      "navigation": {
+        "responseStart": 7,
+        "responseEnd": 881,
+        "dom": 913,
+        "api": [
+          {
+            "path": "/api/campaigns",
+            "start": 926,
+            "ms": 968,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 264.5,
+                "description": ""
+              },
+              {
+                "name": "catalog_loader",
+                "duration": 447.6,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 458.6,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 723.3,
+                "description": ""
+              }
+            ]
+          },
+          {
+            "path": "/api/campaigns",
+            "start": 927,
+            "ms": 1129,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 240.1,
+                "description": ""
+              },
+              {
+                "name": "catalog_loader",
+                "duration": 465.1,
+                "description": ""
+              },
+              {
+                "name": "date_ranges",
+                "duration": 87,
+                "description": ""
+              },
+              {
+                "name": "campaign_current",
+                "duration": 28.4,
+                "description": ""
+              },
+              {
+                "name": "campaign_previous",
+                "duration": 6,
+                "description": ""
+              },
+              {
+                "name": "summary_loader",
+                "duration": 15.3,
+                "description": ""
+              },
+              {
+                "name": "target_summaries",
+                "duration": 21.1,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 634.7,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 875,
+                "description": ""
+              }
+            ]
+          },
+          {
+            "path": "/api/dashboard/kpi",
+            "start": 927,
+            "ms": 1097,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 264.6,
+                "description": ""
+              },
+              {
+                "name": "kpi_current",
+                "duration": 505.7,
+                "description": ""
+              },
+              {
+                "name": "kpi_previous",
+                "duration": 80.8,
+                "description": ""
+              },
+              {
+                "name": "kpi_loader",
+                "duration": 586.6,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 596.9,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 861.7,
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "i": 3,
+      "kind": "detail-entry",
+      "ms": 376,
+      "status": 200,
+      "timing": "auth;dur=47.8, overview_latest;dur=7.9, overview_ad_types;dur=27.2, overview_current;dur=36.5, overview_previous;dur=51.3, overview_targets;dur=55.5, overview_memos;dur=62.7, overview_meta;dur=67.3, overview_loader;dur=67.8, data;dur=73.9, total;dur=122.1"
+    },
+    {
+      "i": 3,
+      "kind": "home-revisit",
+      "ms": 1113,
+      "status": 200,
+      "timing": "auth;dur=43.1, target_summaries;dur=5.3, data;dur=23.7, total;dur=67.0",
+      "kpi": "auth;dur=46.2, data;dur=5.6, total;dur=52.0",
+      "navigation": null
+    },
+    {
+      "i": 3,
+      "kind": "detail-revisit",
+      "ms": 424,
+      "status": 200,
+      "timing": "auth;dur=42.3, data;dur=6.4, total;dur=49.0"
+    },
+    {
+      "i": 4,
+      "kind": "home-document",
+      "ms": 2501,
+      "status": 200,
+      "timing": "auth;dur=411.6, date_ranges;dur=74.2, campaign_current;dur=21.8, campaign_previous;dur=4.3, summary_loader;dur=7.8, target_summaries;dur=13.5, data;dur=132.9, total;dur=544.7",
+      "kpi": "auth;dur=425.6, kpi_current;dur=31.4, kpi_previous;dur=76.1, kpi_loader;dur=107.7, data;dur=112.7, total;dur=538.5",
+      "navigation": {
+        "responseStart": 7,
+        "responseEnd": 1438,
+        "dom": 1473,
+        "api": [
+          {
+            "path": "/api/campaigns",
+            "start": 1486,
+            "ms": 842,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 310.3,
+                "description": ""
+              },
+              {
+                "name": "catalog_loader",
+                "duration": 357.7,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 367.7,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 678.2,
+                "description": ""
+              }
+            ]
+          },
+          {
+            "path": "/api/campaigns",
+            "start": 1486,
+            "ms": 992,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 411.6,
+                "description": ""
+              },
+              {
+                "name": "date_ranges",
+                "duration": 74.2,
+                "description": ""
+              },
+              {
+                "name": "campaign_current",
+                "duration": 21.8,
+                "description": ""
+              },
+              {
+                "name": "campaign_previous",
+                "duration": 4.3,
+                "description": ""
+              },
+              {
+                "name": "summary_loader",
+                "duration": 7.8,
+                "description": ""
+              },
+              {
+                "name": "target_summaries",
+                "duration": 13.5,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 132.9,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 544.7,
+                "description": ""
+              }
+            ]
+          },
+          {
+            "path": "/api/dashboard/kpi",
+            "start": 1486,
+            "ms": 972,
+            "timing": [
+              {
+                "name": "auth",
+                "duration": 425.6,
+                "description": ""
+              },
+              {
+                "name": "kpi_current",
+                "duration": 31.4,
+                "description": ""
+              },
+              {
+                "name": "kpi_previous",
+                "duration": 76.1,
+                "description": ""
+              },
+              {
+                "name": "kpi_loader",
+                "duration": 107.7,
+                "description": ""
+              },
+              {
+                "name": "data",
+                "duration": 112.7,
+                "description": ""
+              },
+              {
+                "name": "total",
+                "duration": 538.5,
+                "description": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "i": 4,
+      "kind": "detail-entry",
+      "ms": 404,
+      "status": 200,
+      "timing": "auth;dur=45.5, overview_latest;dur=7.1, overview_ad_types;dur=24.0, overview_current;dur=39.2, overview_previous;dur=51.1, overview_targets;dur=53.5, overview_memos;dur=57.4, overview_meta;dur=60.2, overview_loader;dur=60.8, data;dur=66.9, total;dur=112.7"
+    },
+    {
+      "i": 4,
+      "kind": "home-revisit",
+      "ms": 427,
+      "status": 200,
+      "timing": "auth;dur=46.7, summary_loader;dur=7.9, target_summaries;dur=13.0, data;dur=29.6, total;dur=76.5",
+      "kpi": "auth;dur=87.4, data;dur=9.2, total;dur=97.0",
+      "navigation": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "start": 39,
+          "duration": 188,
+          "end": 227,
+          "type": "fetch"
+        },
+        {
+          "path": "/monitoring",
+          "rsc": false,
+          "start": 230,
+          "duration": 93,
+          "end": 323,
+          "type": "fetch"
+        },
+        {
+          "path": "/monitoring",
+          "rsc": false,
+          "start": 230,
+          "duration": 98,
+          "end": 328,
+          "type": "fetch"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "start": 236,
+          "duration": 156,
+          "end": 392,
+          "type": "fetch"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "start": 236,
+          "duration": 179,
+          "end": 416,
+          "type": "fetch"
+        }
+      ]
+    },
+    {
+      "i": 4,
+      "kind": "detail-revisit",
+      "ms": 550,
+      "status": 200,
+      "timing": "auth;dur=37.3, data;dur=5.9, total;dur=43.6"
+    }
+  ],
+  "interimAfterMigrationBeforeAlias": [
+    [
+      {
+        "i": 0,
+        "kind": "home-document",
+        "ms": 5652,
+        "status": 200,
+        "timing": "auth;dur=89.2, catalog_loader;dur=1064.7, date_ranges;dur=54.6, campaign_current;dur=7.1, campaign_previous;dur=6.2, summary_loader;dur=16.1, target_summaries;dur=23.3, data;dur=1187.3, total;dur=1276.8",
+        "kpi": "auth;dur=98.5, kpi_current;dur=298.3, kpi_previous;dur=773.2, kpi_loader;dur=1072.0, data;dur=1083.9, total;dur=1182.7"
+      },
+      {
+        "i": 0,
+        "kind": "detail-entry",
+        "ms": 530,
+        "status": 200,
+        "timing": "auth;dur=50.0, overview_latest;dur=16.4, overview_ad_types;dur=35.0, overview_current;dur=56.5, overview_previous;dur=94.3, overview_targets;dur=95.0, overview_memos;dur=123.7, overview_meta;dur=134.5, overview_loader;dur=136.2, data;dur=142.5, total;dur=193.0"
+      },
+      {
+        "i": 0,
+        "kind": "home-revisit",
+        "ms": 336,
+        "status": 200,
+        "timing": "auth;dur=40.1, campaign_current;dur=5.2, campaign_previous;dur=5.5, target_summaries;dur=6.7, data;dur=34.3, total;dur=74.7",
+        "kpi": "auth;dur=58.1, data;dur=5.3, total;dur=63.7"
+      },
+      {
+        "i": 0,
+        "kind": "detail-revisit",
+        "ms": 503,
+        "status": 200,
+        "timing": "auth;dur=37.4, overview_latest;dur=4.3, overview_ad_types;dur=21.5, overview_current;dur=25.6, overview_previous;dur=29.5, overview_targets;dur=32.5, overview_memos;dur=36.6, overview_meta;dur=39.2, overview_loader;dur=39.8, data;dur=46.3, total;dur=84.0"
+      }
+    ],
+    [
+      {
+        "i": 0,
+        "kind": "home-document",
+        "ms": 2497,
+        "status": 200,
+        "timing": "auth;dur=212.7, catalog_loader;dur=334.9, date_ranges;dur=48.1, campaign_current;dur=27.8, campaign_previous;dur=71.7, summary_loader;dur=14.0, target_summaries;dur=24.7, data;dur=540.5, total;dur=753.4",
+        "kpi": "auth;dur=431.3, kpi_current;dur=76.2, kpi_previous;dur=18.4, kpi_loader;dur=94.7, data;dur=106.9, total;dur=538.4"
+      },
+      {
+        "i": 0,
+        "kind": "detail-entry",
+        "ms": 463,
+        "status": 200,
+        "timing": "auth;dur=74.3, overview_latest;dur=11.7, overview_ad_types;dur=29.4, overview_current;dur=37.7, overview_previous;dur=47.2, overview_targets;dur=50.6, overview_memos;dur=56.3, overview_meta;dur=59.7, overview_loader;dur=61.2, data;dur=68.3, total;dur=142.9"
+      },
+      {
+        "i": 0,
+        "kind": "home-revisit",
+        "ms": 513,
+        "status": 200,
+        "timing": "auth;dur=89.4, date_ranges;dur=41.9, target_summaries;dur=9.5, data;dur=80.8, total;dur=170.4",
+        "kpi": "auth;dur=61.1, data;dur=6.0, total;dur=67.3"
+      },
+      {
+        "i": 0,
+        "kind": "detail-revisit",
+        "ms": 396,
+        "status": 200,
+        "timing": "auth;dur=37.1, data;dur=6.6, total;dur=44.0"
+      }
+    ]
+  ]
+}

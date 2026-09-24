@@ -38,7 +38,30 @@ function getDeckLoginPath(pathname: string): string | null {
 }
 
 export async function proxy(request: NextRequest) {
-  const { supabaseResponse, user } = await updateSession(request)
+  const sessionStarted = performance.now()
+  const { supabaseResponse, authenticated } = await updateSession(request)
+  const sessionDuration = performance.now() - sessionStarted
+  const { pathname } = request.nextUrl
+  if (isPathOrChild(pathname, COUPANG_ADS_BASE_PATH)) {
+    // 세션 내용 없이 Proxy의 세션 갱신 시간만 응답에 기록한다.
+    supabaseResponse.headers.append(
+      'Server-Timing',
+      `proxy_session;dur=${sessionDuration.toFixed(1)}`
+    )
+  }
+  const response = routeRequest(request, authenticated, supabaseResponse)
+  if (response !== supabaseResponse) {
+    // redirect/rewrite 응답에서도 세션 갱신·삭제 쿠키를 보존한다.
+    for (const cookie of supabaseResponse.cookies.getAll()) response.cookies.set(cookie)
+  }
+  return response
+}
+
+function routeRequest(
+  request: NextRequest,
+  authenticated: boolean,
+  supabaseResponse: NextResponse
+) {
   const { pathname, searchParams } = request.nextUrl
   const host = normalizeHost(request.headers.get('x-forwarded-host') ?? request.headers.get('host'))
 
@@ -60,19 +83,25 @@ export async function proxy(request: NextRequest) {
     // 루트는 /admin 으로 rewrite. 단 비로그인이면 rewrite 대신 로그인으로 보낸다 —
     // rewrite 먼저 하면 layout 의 requireOperator 가 notFound() 를 내 도메인 첫 진입이 404 로 보인다.
     if (pathname === '/') {
-      if (!user) {
-        return NextResponse.redirect(buildAdminUrl(`/login?redirectTo=${encodeURIComponent('/admin')}`))
+      if (!authenticated) {
+        return NextResponse.redirect(
+          buildAdminUrl(`/login?redirectTo=${encodeURIComponent('/admin')}`)
+        )
       }
-      return NextResponse.rewrite(new URL('/admin', request.url))
+      return NextResponse.rewrite(new URL('/admin', request.url), {
+        request: { headers: request.headers },
+      })
     }
 
     if (!isAllowed) {
       return NextResponse.redirect(buildAdminUrl('/admin'))
     }
 
-    if (isPathOrChild(pathname, '/admin') && !user) {
+    if (isPathOrChild(pathname, '/admin') && !authenticated) {
       const redirectTo = getRequestPathWithQuery(request)
-      return NextResponse.redirect(buildAdminUrl(`/login?redirectTo=${encodeURIComponent(redirectTo)}`))
+      return NextResponse.redirect(
+        buildAdminUrl(`/login?redirectTo=${encodeURIComponent(redirectTo)}`)
+      )
     }
 
     return supabaseResponse
@@ -137,7 +166,7 @@ export async function proxy(request: NextRequest) {
     isDeckLoginRoute || authOnlyRoutes.some((route) => isPathOrChild(pathname, route))
 
   // 보호된 라우트인데 로그인 안 되어 있으면 로그인 페이지로 이동
-  if (isProtectedRoute && !user) {
+  if (isProtectedRoute && !authenticated) {
     if (isDeckEntryRoute) {
       const deckPath = getDeckEntryPath(pathname)
       if (deckPath) {
@@ -150,7 +179,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // 이미 로그인했는데 비로그인 전용 페이지 접근하면 목적지로 이동
-  if (isAuthOnlyRoute && user) {
+  if (isAuthOnlyRoute && authenticated) {
     if (isDeckLoginRoute) {
       const deckPath = getDeckLoginPath(pathname)
       if (deckPath) {

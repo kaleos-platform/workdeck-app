@@ -39,6 +39,8 @@ import { AccountRegisterDialog } from './account-register-dialog'
 import {
   NONE_ACCOUNT,
   findMatchedAccount,
+  duplicateColumnFields,
+  unmappedDataColumns,
   isMappingDirty,
   isMappingValid,
   type Account,
@@ -479,6 +481,30 @@ export function FileItemCard({
             </p>
           )}
 
+          {/* 미매핑 데이터 컬럼 경고 — 값이 있는데 어디에도 안 실려 통째로 버려진다 */}
+          {(() => {
+            const unmapped = unmappedDataColumns(
+              item.mapping,
+              preview.preview.headers,
+              preview.preview.emptyColumns,
+              item.kind
+            )
+            return unmapped.length === 0 ? null : (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                {unmapped.map((i) => `"${preview.preview.headers[i]}"`).join(' · ')} 컬럼에 값이
+                있지만 어떤 필드에도 매핑되지 않았습니다 — 저장되지 않습니다
+              </p>
+            )
+          })()}
+
+          {/* 동일 컬럼 이중 매핑 경고 — 같은 값이 두 필드에 저장된다 */}
+          {duplicateColumnFields(item.mapping, item.kind).map(({ colIdx, labels }) => (
+            <p key={colIdx} className="text-xs text-amber-600 dark:text-amber-400">
+              &quot;{preview.preview.headers[colIdx]}&quot; 컬럼이 {labels.join(' · ')}에 동시에
+              매핑돼 있습니다 — 같은 값이 두 필드에 저장됩니다
+            </p>
+          ))}
+
           {/* 이 규칙 기억 / 갱신 */}
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -498,8 +524,7 @@ export function FileItemCard({
             </div>
             {!item.savePreset && mappingDirty && (
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                수정한 컬럼 매핑이 저장되지 않습니다 — 다음 업로드에는 기존 규칙이 그대로
-                적용됩니다
+                수정한 컬럼 매핑이 저장되지 않습니다 — 다음 업로드에는 기존 규칙이 그대로 적용됩니다
               </p>
             )}
             {item.savePreset && (

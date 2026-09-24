@@ -3,6 +3,8 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+  // 서버리스 첫 조회에서 불러오는 query compiler 크기를 줄인다.
+  compilerBuild = "small"
 }
 
 datasource db {
@@ -307,6 +309,7 @@ model AdRecord {
   @@unique([workspaceId, date, campaignId, adType, keyword, adGroup, optionId])
   @@index([workspaceId, campaignId])
   @@index([workspaceId, campaignId, date])
+  @@index([workspaceId, campaignId, adType, date])
   @@index([workspaceId, date])
 }
 

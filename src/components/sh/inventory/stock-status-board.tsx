@@ -7,16 +7,24 @@ import { StockStatusHeader } from './stock-status-header'
 import { StockStatusLocationTabs } from './stock-status-location-tabs'
 import { StockStatusProducts } from './stock-status-products'
 import { StockStatusToolbar } from './stock-status-toolbar'
+import { StockStatusGradePopover } from './stock-status-grade-popover'
+import { StockStatusLocationPicker } from './stock-status-location-picker'
 import { StockStatusMatrix } from './stock-status-matrix'
+import { StockStatusSummaryBar } from './stock-status-summary'
+import { DEFAULT_STOCK_GRADE_SETTINGS } from '@/lib/sh/stock-grade-settings'
 import type { StockStatusResponse } from './stock-status.types'
 import {
   buildStockStatusProducts,
   filterStockStatusProducts,
   scopeStockStatusRows,
   stockStatusDisplayName,
+  summarizeStockStatus,
+  type StockStatusSortMode,
 } from './stock-status-view-model'
 
 const PINNED_PRODUCTS_STORAGE_KEY = 'workdeck.stock-status.pinned-products'
+// 숨긴 위치 ID 를 저장한다(보이는 ID 를 저장하면 새로 만든 위치가 기본 숨김이 된다).
+const HIDDEN_LOCATIONS_STORAGE_KEY = 'workdeck.stock-status.hidden-locations'
 
 export function StockStatusBoard() {
   const router = useRouter()
@@ -33,8 +41,10 @@ export function StockStatusBoard() {
   const [data, setData] = useState<StockStatusResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [productQuery, setProductQuery] = useState('')
+  const [sort, setSort] = useState<StockStatusSortMode>('urgent')
   const [productsCollapsed, setProductsCollapsed] = useState(false)
   const [pinnedProductIds, setPinnedProductIds] = useState<string[]>([])
+  const [hiddenLocationIds, setHiddenLocationIds] = useState<string[]>([])
   const abortRef = useRef<AbortController | null>(null)
 
   const fetchData = useCallback(async () => {
@@ -75,6 +85,20 @@ export function StockStatusBoard() {
     }
   }, [])
 
+  // mount 후에 읽는다 — 렌더 중 localStorage 접근은 SSR 결과와 어긋나 hydration 오류가 난다.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(HIDDEN_LOCATIONS_STORAGE_KEY)
+      if (!raw) return
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        setHiddenLocationIds(parsed.filter((item): item is string => typeof item === 'string'))
+      }
+    } catch {
+      setHiddenLocationIds([])
+    }
+  }, [])
+
   const updateParams = useCallback(
     (mut: Record<string, string | null>) => {
       const next = new URLSearchParams(searchParams.toString())
@@ -111,7 +135,9 @@ export function StockStatusBoard() {
   )
 
   const handleLocationChange = useCallback(
-    (newLocationId: string | null) => updateParams({ locationId: newLocationId }),
+    (newLocationId: string | null) =>
+      // 위치 탭에서는 등급을 계산하지 않으므로 onlyLow(조치 필요만)가 남으면 모든 행이 걸러진다.
+      updateParams({ locationId: newLocationId, ...(newLocationId ? { onlyLow: null } : {}) }),
     [updateParams]
   )
 
@@ -142,12 +168,38 @@ export function StockStatusBoard() {
     })
   }, [])
 
+  const handleToggleLocation = useCallback(
+    (locationId: string) => {
+      setHiddenLocationIds((current) => {
+        const toggled = current.includes(locationId)
+          ? current.filter((id) => id !== locationId)
+          : [...current, locationId]
+        // 삭제·비활성된 위치 ID 가 계속 쌓이지 않도록 저장 시점에 현재 목록과 교집합만 남긴다.
+        const alive = new Set((data?.locations ?? []).map((l) => l.id))
+        const next = toggled.filter((id) => alive.has(id))
+        window.localStorage.setItem(HIDDEN_LOCATIONS_STORAGE_KEY, JSON.stringify(next))
+        return next
+      })
+    },
+    [data?.locations]
+  )
+
+  const handleShowAllLocations = useCallback(() => {
+    setHiddenLocationIds([])
+    window.localStorage.setItem(HIDDEN_LOCATIONS_STORAGE_KEY, JSON.stringify([]))
+  }, [])
+
   const allRows = useMemo(() => data?.matrix.rows ?? [], [data?.matrix.rows])
-  const scopedRows = useMemo(() => scopeStockStatusRows(allRows, locationId), [allRows, locationId])
+  // 설정은 재고 응답에 함께 실려 온다 — 따로 fetch 하면 한쪽만 도착한 프레임에 잘못된 등급이 그려진다.
+  const gradeSettings = data?.gradeSettings ?? DEFAULT_STOCK_GRADE_SETTINGS
+  const scopedRows = useMemo(
+    () => scopeStockStatusRows(allRows, locationId, gradeSettings),
+    [allRows, locationId, gradeSettings]
+  )
 
   const products = useMemo(
-    () => buildStockStatusProducts(allRows, locationId),
-    [allRows, locationId]
+    () => buildStockStatusProducts(allRows, locationId, gradeSettings),
+    [allRows, locationId, gradeSettings]
   )
 
   const visibleProducts = useMemo(
@@ -157,8 +209,9 @@ export function StockStatusBoard() {
         groupId,
         pinnedProductIds,
         query: productQuery,
+        sort,
       }),
-    [brandId, groupId, pinnedProductIds, productQuery, products]
+    [brandId, groupId, pinnedProductIds, productQuery, products, sort]
   )
 
   // 상품별 보기만 지원: 선택이 없거나(초기/필터 변경) 현재 목록에 없으면 첫 상품으로 폴백.
@@ -174,7 +227,7 @@ export function StockStatusBoard() {
     const optionQuery = q.trim().toLowerCase()
     return scopedRows.filter((row) => {
       if (effectiveProductId && row.productId !== effectiveProductId) return false
-      if (onlyLow && row.displayStatus !== 'LOW' && row.displayStatus !== 'OUT') return false
+      if (onlyLow && row.grade !== 'NO_STOCK' && row.grade !== 'RISK') return false
       if (!optionQuery) return true
       return [
         row.optionName,
@@ -186,6 +239,9 @@ export function StockStatusBoard() {
     })
   }, [onlyLow, effectiveProductId, q, scopedRows])
 
+  // 상단 요약 — 필터 전 전체 상품 기준(지금 안 보이는 상품의 위험도 알려야 한다)
+  const summary = useMemo(() => summarizeStockStatus(products), [products])
+
   const selectedProduct = useMemo(
     () => products.find((product) => product.productId === effectiveProductId) ?? null,
     [effectiveProductId, products]
@@ -196,6 +252,14 @@ export function StockStatusBoard() {
   return (
     <div className="space-y-5">
       <StockStatusHeader loading={loading} onRefresh={fetchData} />
+
+      <StockStatusSummaryBar
+        summary={summary}
+        loading={loading && !data}
+        locationScoped={!!locationId}
+        onlyLow={onlyLow}
+        onOnlyLowChange={handleOnlyLowChange}
+      />
 
       <StockStatusLocationTabs
         locations={data?.locations ?? []}
@@ -209,7 +273,9 @@ export function StockStatusBoard() {
           productsCollapsed
             ? 'lg:grid-cols-[28px_minmax(0,1fr)]'
             : 'lg:grid-cols-[360px_minmax(0,1fr)]',
-          'lg:h-[calc(140vh-13rem)]',
+          // 좌: 상품 목록, 우: 옵션 표 — 둘 다 한 화면에 고정하고 각자 내부 스크롤한다.
+          // 페이지 자체는 스크롤되지 않아 목록이 항상 보인다(과거 1.4화면 + 페이지네이션 대체).
+          'lg:h-[calc(100vh-13rem)]',
         ].join(' ')}
       >
         <StockStatusProducts
@@ -220,6 +286,7 @@ export function StockStatusBoard() {
           selectedBrandId={brandId}
           selectedGroupId={groupId}
           productQuery={productQuery}
+          sort={sort}
           pinnedProductIds={pinnedProductIds}
           collapsed={productsCollapsed}
           onSelectProduct={handleProductSelect}
@@ -228,6 +295,7 @@ export function StockStatusBoard() {
           onBrandChange={handleBrandChange}
           onGroupChange={handleGroupChange}
           onSearchChange={setProductQuery}
+          onSortChange={setSort}
         />
 
         <div className="min-h-0 min-w-0">
@@ -239,6 +307,19 @@ export function StockStatusBoard() {
               selectedLocationId={locationId}
               selectedProductName={selectedProductName}
               selectedProductOfficialName={selectedProductOfficialName}
+              hiddenLocationIds={hiddenLocationIds}
+              gradeInfo={<StockStatusGradePopover settings={gradeSettings} onSaved={fetchData} />}
+              locationPicker={
+                // 위치 탭을 고르면 컬럼이 이미 1개라 선택 UI 가 모순된다.
+                locationId ? null : (
+                  <StockStatusLocationPicker
+                    locations={data?.locations ?? []}
+                    hiddenLocationIds={hiddenLocationIds}
+                    onToggleLocation={handleToggleLocation}
+                    onShowAll={handleShowAllLocations}
+                  />
+                )
+              }
               toolbar={
                 <StockStatusToolbar
                   q={q}

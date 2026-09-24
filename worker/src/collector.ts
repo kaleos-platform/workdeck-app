@@ -189,7 +189,7 @@ async function performLogin(page: Page, credentials: CollectorCredentials): Prom
 
   // wing "로그인하기" 버튼 클릭
   const wingBtn = page.locator('a:has-text("로그인하기"), button:has-text("로그인하기")').first()
-  if (await wingBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await wingBtn.isVisible().catch(() => false)) {
     console.log('  → wing 로그인 선택')
     await wingBtn.click()
     await page.waitForLoadState('domcontentloaded', { timeout: DEFAULT_TIMEOUT })
@@ -200,7 +200,7 @@ async function performLogin(page: Page, credentials: CollectorCredentials): Prom
   const idSelectors = ['input[name="username"]', 'input[name="id"]', 'input[type="text"]']
   for (const sel of idSelectors) {
     const el = page.locator(sel).first()
-    if (await el.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await el.isVisible().catch(() => false)) {
       await el.fill(credentials.loginId)
       console.log(`  → ID 입력 (${sel})`)
       break
@@ -254,7 +254,7 @@ async function setDateRange(page: Page, dateFrom: string, dateTo: string): Promi
   if (
     await dailyRadio
       .first()
-      .isVisible({ timeout: 3000 })
+      .isVisible()
       .catch(() => false)
   ) {
     await dailyRadio.first().click()
@@ -442,7 +442,7 @@ async function selectCampaigns(page: Page): Promise<void> {
   if (
     await campaignBtn
       .first()
-      .isVisible({ timeout: 5000 })
+      .isVisible()
       .catch(() => false)
   ) {
     await campaignBtn.first().click()
@@ -464,7 +464,7 @@ async function selectCampaigns(page: Page): Promise<void> {
       if (
         await selectAllCb
           .first()
-          .isVisible({ timeout: 2000 })
+          .isVisible()
           .catch(() => false)
       ) {
         await selectAllCb.first().click()
@@ -496,7 +496,7 @@ async function selectCampaigns(page: Page): Promise<void> {
 
     // "확인" 버튼 클릭하여 캠페인 선택 확정
     const confirmBtn = page.locator('button:has-text("확인")').first()
-    if (await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    if (await confirmBtn.isVisible().catch(() => false)) {
       await confirmBtn.click()
       await page.waitForTimeout(1000)
       console.log('  → "확인" 클릭 — 캠페인 선택 확정')
@@ -520,7 +520,7 @@ async function configureReportOptions(page: Page): Promise<void> {
   // 정확한 셀렉터: #ad-reporting-app .panel-options .form-item .space-left label
   const exactLabel = page.locator('#ad-reporting-app .panel-options .space-left label')
 
-  if (await exactLabel.isVisible({ timeout: 3000 }).catch(() => false)) {
+  if (await exactLabel.isVisible().catch(() => false)) {
     // 체크박스 상태 확인
     const checkbox = exactLabel.locator('input[type="checkbox"]')
     const isChecked = await checkbox.isChecked().catch(() => false)
@@ -535,7 +535,7 @@ async function configureReportOptions(page: Page): Promise<void> {
   } else {
     // fallback: 텍스트로 찾기
     const fallbackLabel = page.locator('label:has-text("클릭이 발생한 키워드")')
-    if (await fallbackLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (await fallbackLabel.isVisible().catch(() => false)) {
       const cb = fallbackLabel.locator('input[type="checkbox"]')
       if (await cb.isChecked().catch(() => false)) {
         await fallbackLabel.click()
@@ -555,7 +555,7 @@ async function configureReportOptions(page: Page): Promise<void> {
   if (
     await structureOptions
       .first()
-      .isVisible({ timeout: 2000 })
+      .isVisible()
       .catch(() => false)
   ) {
     await structureOptions.first().click()
@@ -595,7 +595,7 @@ async function waitForNewReport(page: Page, dateFrom: string, dateTo: string): P
 
   // "보고서 내역" 탭으로 이동
   const historyTab = page.locator('text=보고서 내역').first()
-  if (await historyTab.isVisible({ timeout: 5000 }).catch(() => false)) {
+  if (await historyTab.isVisible().catch(() => false)) {
     await historyTab.click()
     await page.waitForTimeout(2000)
     console.log('  → "보고서 내역" 탭 클릭')
@@ -742,7 +742,7 @@ async function downloadReport(
     .nth(targetBtnIndex)
   console.log(`  → 다운로드 버튼 인덱스: ${targetBtnIndex}`)
 
-  if (!(await downloadBtn.isVisible({ timeout: 10000 }).catch(() => false))) {
+  if (!(await downloadBtn.isVisible().catch(() => false))) {
     await saveScreenshot(page, 'no-download-button')
     throw new Error('"다운로드" 버튼을 찾을 수 없습니다')
   }

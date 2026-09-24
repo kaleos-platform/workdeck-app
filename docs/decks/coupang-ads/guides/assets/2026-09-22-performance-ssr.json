@@ -1,0 +1,332 @@
+{
+  "date": "2026-09-22",
+  "period": ["2026-09-15", "2026-09-21"],
+  "beforeCommit": "92947799995e3cd7a384360ba0eed9c3537d427a",
+  "afterCommit": "b24478452f8d6bc4392975cf19a263a067a82f46",
+  "deploymentId": "dpl_3iKxNEEfx4DyuEAUVGYUr5Xg6qjm",
+  "method": "회차 전 workspace 광고 tag cache 초기화; platform cold start 강제 아님. 초기 숫자 및 카드 표시 후 API 정확성 검사. Server-Timing은 백그라운드 API이며 SSR 전체 시간 아님.",
+  "before": [
+    [
+      {
+        "screen": "home-first",
+        "ms": 1487,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=127.5, catalog_loader;dur=340.4, date_ranges;dur=48.3, campaign_current;dur=8.4, campaign_previous;dur=6.4, summary_loader;dur=13.7, target_summaries;dur=20.7, data;dur=454.1, total;dur=581.8"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 351,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=44.2, overview_latest;dur=12.0, overview_ad_types;dur=31.5, overview_current;dur=38.6, overview_previous;dur=43.5, overview_targets;dur=47.8, overview_memos;dur=54.0, overview_meta;dur=57.9, overview_loader;dur=59.5, data;dur=64.3, total;dur=109.1"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 1324,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=48.2, date_ranges;dur=47.6, campaign_current;dur=5.9, campaign_previous;dur=6.0, target_summaries;dur=6.1, data;dur=82.6, total;dur=131.0"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 359,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=49.7, overview_latest;dur=8.1, overview_ad_types;dur=27.2, overview_current;dur=42.0, overview_previous;dur=47.1, overview_targets;dur=52.0, overview_memos;dur=57.4, overview_meta;dur=61.3, overview_loader;dur=61.8, data;dur=66.1, total;dur=116.2"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 1759,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=124.6, catalog_loader;dur=362.9, date_ranges;dur=58.8, campaign_current;dur=7.9, campaign_previous;dur=6.3, summary_loader;dur=15.4, target_summaries;dur=20.6, data;dur=528.3, total;dur=653.3"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 526,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=45.1, overview_latest;dur=12.5, overview_ad_types;dur=47.9, overview_current;dur=54.2, overview_previous;dur=67.7, overview_targets;dur=72.1, overview_memos;dur=78.8, overview_meta;dur=82.8, overview_loader;dur=88.4, data;dur=93.4, total;dur=139.1"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 835,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=80.7, catalog_loader;dur=70.7, date_ranges;dur=45.2, campaign_current;dur=6.3, campaign_previous;dur=5.8, summary_loader;dur=11.0, target_summaries;dur=15.8, data;dur=158.1, total;dur=239.1"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 523,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=53.7, overview_latest;dur=5.9, overview_ad_types;dur=25.6, overview_current;dur=30.7, overview_previous;dur=35.7, overview_targets;dur=39.6, overview_memos;dur=43.9, overview_meta;dur=47.9, overview_loader;dur=48.6, data;dur=53.1, total;dur=107.2"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 1062,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=55.8, catalog_loader;dur=63.5, date_ranges;dur=52.3, campaign_current;dur=8.5, campaign_previous;dur=9.6, summary_loader;dur=11.3, target_summaries;dur=17.3, data;dur=166.8, total;dur=222.8"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 320,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=50.1, overview_latest;dur=5.2, overview_ad_types;dur=24.3, overview_current;dur=29.3, overview_previous;dur=34.4, overview_targets;dur=38.9, overview_memos;dur=43.8, overview_meta;dur=47.3, overview_loader;dur=47.7, data;dur=52.8, total;dur=103.2"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 1336,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=44.0, catalog_loader;dur=60.1, date_ranges;dur=44.5, summary_loader;dur=17.0, target_summaries;dur=40.4, data;dur=169.6, total;dur=213.9"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 379,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=52.5, overview_latest;dur=5.5, overview_ad_types;dur=24.4, overview_current;dur=29.6, overview_previous;dur=34.7, overview_targets;dur=38.9, overview_memos;dur=43.4, overview_meta;dur=47.3, overview_loader;dur=47.7, data;dur=52.7, total;dur=105.5"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 1121,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=119.6, date_ranges;dur=48.0, campaign_current;dur=9.6, campaign_previous;dur=4.4, summary_loader;dur=11.3, target_summaries;dur=16.4, data;dur=99.8, total;dur=219.6"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 477,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=61.0, overview_latest;dur=8.6, overview_ad_types;dur=25.8, overview_current;dur=29.4, overview_previous;dur=34.2, overview_targets;dur=47.3, overview_memos;dur=53.0, overview_meta;dur=55.3, overview_loader;dur=56.5, data;dur=63.2, total;dur=124.8"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 838,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=60.2, catalog_loader;dur=74.4, date_ranges;dur=58.0, campaign_current;dur=6.0, campaign_previous;dur=5.8, target_summaries;dur=4.4, data;dur=166.8, total;dur=227.2"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 295,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=50.3, data;dur=5.5, total;dur=56.1"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 2627,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=343.8, catalog_loader;dur=802.3, date_ranges;dur=74.7, campaign_current;dur=5.7, campaign_previous;dur=4.5, summary_loader;dur=9.3, target_summaries;dur=14.4, data;dur=928.1, total;dur=1272.1"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 306,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=47.3, overview_latest;dur=4.5, overview_ad_types;dur=23.6, overview_current;dur=27.3, overview_previous;dur=33.4, overview_targets;dur=36.2, overview_memos;dur=41.7, overview_meta;dur=44.0, overview_loader;dur=44.4, data;dur=50.7, total;dur=98.2"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 814,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=44.8, date_ranges;dur=57.4, target_summaries;dur=9.4, data;dur=82.2, total;dur=127.2"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 283,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=36.0, data;dur=5.9, total;dur=42.2"
+      }
+    ]
+  ],
+  "after": [
+    [
+      {
+        "screen": "home-first",
+        "ms": 4824,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=132.2, catalog_loader;dur=119.8, date_ranges;dur=52.8, campaign_current;dur=7.5, campaign_previous;dur=5.9, summary_loader;dur=15.8, target_summaries;dur=22.5, data;dur=253.5, total;dur=386.0"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 1454,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=66.1, overview_latest;dur=28.3, overview_ad_types;dur=48.1, overview_current;dur=54.3, overview_previous;dur=66.2, overview_targets;dur=70.7, overview_memos;dur=79.4, overview_meta;dur=84.0, overview_loader;dur=86.1, data;dur=98.5, total;dur=165.2"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 1315,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=150.8, target_summaries;dur=6.8, data;dur=25.5, total;dur=176.6"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 936,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=61.6, data;dur=9.5, total;dur=71.8"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 1579,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=126.8, catalog_loader;dur=71.1, date_ranges;dur=49.9, campaign_current;dur=7.1, campaign_previous;dur=6.3, summary_loader;dur=15.1, target_summaries;dur=21.4, data;dur=188.5, total;dur=315.7"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 514,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=65.7, overview_latest;dur=6.5, overview_ad_types;dur=26.8, overview_current;dur=32.6, overview_previous;dur=39.4, overview_targets;dur=43.7, overview_memos;dur=52.7, overview_meta;dur=56.7, overview_loader;dur=57.3, data;dur=63.1, total;dur=129.2"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 322,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=52.5, target_summaries;dur=5.4, data;dur=26.4, total;dur=79.1"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 348,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=44.1, overview_latest;dur=9.9, overview_ad_types;dur=29.6, overview_current;dur=34.7, overview_previous;dur=39.6, overview_targets;dur=43.6, overview_memos;dur=47.9, overview_meta;dur=51.4, overview_loader;dur=53.0, data;dur=58.5, total;dur=103.0"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 1464,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=52.2, catalog_loader;dur=80.1, date_ranges;dur=81.4, campaign_current;dur=7.3, campaign_previous;dur=6.1, summary_loader;dur=12.7, target_summaries;dur=19.4, data;dur=225.3, total;dur=277.7"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 396,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=46.2, overview_latest;dur=6.4, overview_ad_types;dur=26.9, overview_current;dur=31.8, overview_previous;dur=36.6, overview_targets;dur=40.9, overview_memos;dur=49.6, overview_meta;dur=53.5, overview_loader;dur=54.0, data;dur=60.2, total;dur=106.9"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 1329,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=59.3, catalog_loader;dur=61.0, target_summaries;dur=5.9, data;dur=82.8, total;dur=142.4"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 399,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=67.4, overview_latest;dur=6.1, overview_ad_types;dur=25.3, overview_current;dur=30.2, overview_previous;dur=35.3, overview_targets;dur=39.4, overview_memos;dur=43.7, overview_meta;dur=47.3, overview_loader;dur=47.7, data;dur=53.1, total;dur=120.8"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 444,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=83.0, catalog_loader;dur=57.4, date_ranges;dur=51.0, campaign_current;dur=5.8, campaign_previous;dur=6.1, summary_loader;dur=11.1, target_summaries;dur=17.2, data;dur=165.5, total;dur=248.8"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 412,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=45.9, overview_latest;dur=27.7, overview_ad_types;dur=47.5, overview_current;dur=52.9, overview_previous;dur=51.5, overview_targets;dur=55.9, overview_memos;dur=60.8, overview_meta;dur=71.5, overview_loader;dur=73.5, data;dur=81.1, total;dur=127.7"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 328,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=42.2, catalog_loader;dur=166.5, campaign_current;dur=6.5, campaign_previous;dur=6.1, target_summaries;dur=5.3, data;dur=199.6, total;dur=242.1"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 818,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=261.4, data;dur=5.4, total;dur=267.1"
+      }
+    ],
+    [
+      {
+        "screen": "home-first",
+        "ms": 1883,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=97.6, catalog_loader;dur=71.2, date_ranges;dur=61.1, campaign_current;dur=11.8, campaign_previous;dur=6.5, summary_loader;dur=24.1, target_summaries;dur=30.7, data;dur=211.4, total;dur=309.3"
+      },
+      {
+        "screen": "detail-first",
+        "ms": 334,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=52.2, overview_latest;dur=5.6, overview_ad_types;dur=25.3, overview_current;dur=32.7, overview_previous;dur=37.9, overview_targets;dur=42.4, overview_memos;dur=48.3, overview_meta;dur=52.3, overview_loader;dur=52.8, data;dur=58.1, total;dur=110.6"
+      },
+      {
+        "screen": "home-revisit",
+        "ms": 844,
+        "status": [200, 200],
+        "correct": true,
+        "period": ["2026-09-15", "2026-09-21"],
+        "timing": "auth;dur=43.9, target_summaries;dur=4.2, data;dur=24.2, total;dur=68.4"
+      },
+      {
+        "screen": "detail-revisit",
+        "ms": 280,
+        "status": 200,
+        "series": 7,
+        "timing": "auth;dur=41.6, data;dur=6.5, total;dur=48.6"
+      }
+    ]
+  ]
+}

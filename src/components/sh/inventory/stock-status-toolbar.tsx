@@ -56,7 +56,7 @@ export function StockStatusToolbar({
           variant={onlyLow ? 'default' : 'outline'}
           onClick={() => onOnlyLowChange(!onlyLow)}
         >
-          부족·결품만
+          조치 필요만
         </Button>
         {hasFilters && (
           <Button size="sm" variant="ghost" onClick={onClearFilters}>

@@ -3,6 +3,8 @@
  */
 import {
   defaultPresetName,
+  duplicateColumnFields,
+  unmappedDataColumns,
   findOverlappingFileIds,
   isMappingDirty,
   isMappingValid,
@@ -289,5 +291,57 @@ describe('isMappingDirty', () => {
 
   it('기억된 규칙이 없으면 항상 false', () => {
     expect(isMappingDirty({ txnDate: [0] }, HEADERS, null)).toBe(false)
+  })
+})
+
+describe('duplicateColumnFields — 동일 컬럼 이중 매핑 경고', () => {
+  test('같은 컬럼이 description·counterparty 양쪽에 매핑되면 잡아낸다', () => {
+    const dups = duplicateColumnFields({ description: [6], counterparty: [6] }, 'BANK')
+    expect(dups).toHaveLength(1)
+    expect(dups[0].colIdx).toBe(6)
+    expect(dups[0].labels).toEqual(['적요/내용', '상대/의뢰인'])
+  })
+
+  test('description 다중 컬럼 결합은 중복이 아니다', () => {
+    expect(duplicateColumnFields({ description: [2, 6], counterparty: [7] }, 'BANK')).toEqual([])
+  })
+
+  test('빈 매핑은 빈 배열', () => {
+    expect(duplicateColumnFields({}, 'BANK')).toEqual([])
+  })
+})
+
+describe('unmappedDataColumns — 값 있는 미매핑 컬럼 경고', () => {
+  // prod 사고 재현: 신한 export 는 "적요"(거래구분)와 "내용"(상대방)이 별도 컬럼인데,
+  // 프리셋이 "내용"만 두 필드에 매핑하고 "적요"를 통째로 빠뜨려 578건에서 거래구분이 소실됐다.
+  const SHINHAN = ['No', '전체선택', '거래일시', '적요', '입금액', '출금액', '내용', '잔액']
+
+  test('잘못된 프리셋(내용 이중 매핑, 적요 미매핑)에서 적요 컬럼을 잡아낸다', () => {
+    const mapping = {
+      txnDate: [2],
+      deposit: [4],
+      withdrawal: [5],
+      description: [6],
+      counterparty: [6],
+      balanceAfter: [7],
+    }
+    expect(unmappedDataColumns(mapping, SHINHAN, [], 'BANK')).toEqual([3])
+  })
+
+  test('올바른 매핑이면 경고 없음 — No·전체선택은 힌트에 안 걸린다', () => {
+    const mapping = {
+      txnDate: [2],
+      description: [3],
+      deposit: [4],
+      withdrawal: [5],
+      counterparty: [6],
+      balanceAfter: [7],
+    }
+    expect(unmappedDataColumns(mapping, SHINHAN, [], 'BANK')).toEqual([])
+  })
+
+  test('빈 컬럼은 경고하지 않는다', () => {
+    const mapping = { txnDate: [2], description: [3], deposit: [4], withdrawal: [5] }
+    expect(unmappedDataColumns(mapping, SHINHAN, [6, 7], 'BANK')).toEqual([])
   })
 })

@@ -2,22 +2,60 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { UploadCloud } from 'lucide-react'
-import { getUser } from '@/hooks/use-user'
+import { resolveWorkspace } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { DashboardClient } from '@/components/dashboard/dashboard-client'
+import { DashboardClient, type InitialDashboardData } from '@/components/dashboard/dashboard-client'
 import { COUPANG_ADS_UPLOAD_PATH } from '@/lib/deck-routes'
+import { getDaysAgoStrKst } from '@/lib/date-range'
+import { queryCampaigns, queryKpi } from '@/lib/coupang-ads/queries'
+import { measureCoupangAds, withCoupangAdsPageTiming } from '@/lib/coupang-ads/server-timing'
 
-export default async function CoupangAdsHomePage() {
-  const user = await getUser()
-  if (!user) redirect('/login')
+async function renderHomePage() {
+  const resolved = await measureCoupangAds('auth', resolveWorkspace)
+  if (resolved.error) {
+    if (resolved.error.status === 401) redirect('/login')
+    if (resolved.error.status === 404) redirect('/workspace-setup')
+    redirect('/my-deck')
+  }
 
-  const workspace = await prisma.workspace.findUnique({
-    where: { ownerId: user.id },
-    select: { id: true, name: true },
-  })
+  const workspace = await measureCoupangAds('workspace', () =>
+    prisma.workspace.findUnique({
+      where: { id: resolved.workspace.id },
+      select: { id: true, name: true },
+    })
+  )
   if (!workspace) redirect('/workspace-setup')
 
-  const hasData = (await prisma.adRecord.count({ where: { workspaceId: workspace.id } })) > 0
+  const from = getDaysAgoStrKst(7)
+  const to = getDaysAgoStrKst(1)
+  let initialData: InitialDashboardData | undefined
+  try {
+    const [kpi, campaigns] = await Promise.all([
+      measureCoupangAds('kpi', () => queryKpi(workspace.id, { startDate: from, endDate: to })),
+      measureCoupangAds('campaigns', () =>
+        queryCampaigns(workspace.id, { startDate: from, endDate: to })
+      ),
+    ])
+    initialData = {
+      from,
+      to,
+      kpi,
+      campaigns: campaigns.filter(
+        (campaign): campaign is typeof campaign & InitialDashboardData['campaigns'][number] =>
+          'metrics' in campaign && 'prevMetrics' in campaign
+      ),
+    }
+  } catch {
+    // 서버 초기 조회 실패는 기존 클라이언트 조회로 재시도한다.
+  }
+  const hasData = initialData
+    ? initialData.campaigns.length > 0
+    : Boolean(
+        await prisma.adRecord.findFirst({
+          where: { workspaceId: workspace.id },
+          select: { id: true },
+        })
+      )
 
   return (
     <div className="space-y-8">
@@ -36,7 +74,11 @@ export default async function CoupangAdsHomePage() {
         </Link>
       </div>
 
-      <DashboardClient hasData={hasData} />
+      <DashboardClient hasData={hasData} initialData={initialData} />
     </div>
   )
+}
+
+export default function CoupangAdsHomePage() {
+  return withCoupangAdsPageTiming(renderHomePage)
 }

@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { prisma } from '@/lib/prisma'
+import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 import {
   calculateCTR,
   calculateCVR,
@@ -145,82 +146,96 @@ export async function loadCampaignOverview(
 
   const [latestRecord, adTypeRows, meta, currentGroups, previousGroups, targetRows, memoRows] =
     await Promise.all([
-      prisma.adRecord.findFirst({
-        where: { workspaceId: input.workspaceId, campaignId: input.campaignId },
-        orderBy: { date: 'desc' },
-        select: { campaignName: true },
-      }),
-      prisma.adRecord.groupBy({
-        by: ['adType'],
-        where: { workspaceId: input.workspaceId, campaignId: input.campaignId },
-      }),
-      prisma.campaignMeta.findUnique({
-        where: {
-          workspaceId_campaignId: {
+      measureCoupangAds('overview_latest', () =>
+        prisma.adRecord.findFirst({
+          where: { workspaceId: input.workspaceId, campaignId: input.campaignId },
+          orderBy: { date: 'desc' },
+          select: { campaignName: true },
+        })
+      ),
+      measureCoupangAds('overview_ad_types', () =>
+        prisma.adRecord.groupBy({
+          by: ['adType'],
+          where: { workspaceId: input.workspaceId, campaignId: input.campaignId },
+        })
+      ),
+      measureCoupangAds('overview_meta', () =>
+        prisma.campaignMeta.findUnique({
+          where: {
+            workspaceId_campaignId: {
+              workspaceId: input.workspaceId,
+              campaignId: input.campaignId,
+            },
+          },
+          select: { displayName: true, isCustomName: true },
+        })
+      ),
+      measureCoupangAds('overview_current', () =>
+        prisma.adRecord.groupBy({
+          by: ['date'],
+          where: {
             workspaceId: input.workspaceId,
             campaignId: input.campaignId,
+            date: { gte: currentFrom, lte: currentTo },
+            ...adTypeFilter,
           },
-        },
-        select: { displayName: true, isCustomName: true },
-      }),
-      prisma.adRecord.groupBy({
-        by: ['date'],
-        where: {
-          workspaceId: input.workspaceId,
-          campaignId: input.campaignId,
-          date: { gte: currentFrom, lte: currentTo },
-          ...adTypeFilter,
-        },
-        _sum: {
-          adCost: true,
-          clicks: true,
-          impressions: true,
-          orders1d: true,
-          revenue1d: true,
-          engagements: true,
-        },
-        orderBy: { date: 'asc' },
-      }),
-      prisma.adRecord.groupBy({
-        by: ['date'],
-        where: {
-          workspaceId: input.workspaceId,
-          campaignId: input.campaignId,
-          date: { gte: previous.from, lte: previous.to },
-          ...adTypeFilter,
-        },
-        _sum: {
-          adCost: true,
-          clicks: true,
-          impressions: true,
-          orders1d: true,
-          revenue1d: true,
-          engagements: true,
-        },
-        orderBy: { date: 'asc' },
-      }),
-      prisma.campaignTarget.findMany({
-        where: { workspaceId: input.workspaceId, campaignId: input.campaignId },
-        orderBy: { effectiveDate: 'desc' },
-        select: {
-          id: true,
-          campaignId: true,
-          effectiveDate: true,
-          dailyBudget: true,
-          targetRoas: true,
-        },
-      }),
-      prisma.dailyMemo.findMany({
-        where: { workspaceId: input.workspaceId, campaignId: input.campaignId },
-        orderBy: { date: 'desc' },
-        select: {
-          id: true,
-          campaignId: true,
-          date: true,
-          content: true,
-          updatedAt: true,
-        },
-      }),
+          _sum: {
+            adCost: true,
+            clicks: true,
+            impressions: true,
+            orders1d: true,
+            revenue1d: true,
+            engagements: true,
+          },
+          orderBy: { date: 'asc' },
+        })
+      ),
+      measureCoupangAds('overview_previous', () =>
+        prisma.adRecord.groupBy({
+          by: ['date'],
+          where: {
+            workspaceId: input.workspaceId,
+            campaignId: input.campaignId,
+            date: { gte: previous.from, lte: previous.to },
+            ...adTypeFilter,
+          },
+          _sum: {
+            adCost: true,
+            clicks: true,
+            impressions: true,
+            orders1d: true,
+            revenue1d: true,
+            engagements: true,
+          },
+          orderBy: { date: 'asc' },
+        })
+      ),
+      measureCoupangAds('overview_targets', () =>
+        prisma.campaignTarget.findMany({
+          where: { workspaceId: input.workspaceId, campaignId: input.campaignId },
+          orderBy: { effectiveDate: 'desc' },
+          select: {
+            id: true,
+            campaignId: true,
+            effectiveDate: true,
+            dailyBudget: true,
+            targetRoas: true,
+          },
+        })
+      ),
+      measureCoupangAds('overview_memos', () =>
+        prisma.dailyMemo.findMany({
+          where: { workspaceId: input.workspaceId, campaignId: input.campaignId },
+          orderBy: { date: 'desc' },
+          select: {
+            id: true,
+            campaignId: true,
+            date: true,
+            content: true,
+            updatedAt: true,
+          },
+        })
+      ),
     ])
 
   if (!latestRecord) throw new Error('CAMPAIGN_NOT_FOUND')
@@ -254,5 +269,7 @@ export async function loadCampaignOverview(
 }
 
 export function getCachedCampaignOverview(input: CampaignOverviewInput): Promise<CampaignOverview> {
-  return cacheCoupangAdsData('overview', input, () => loadCampaignOverview(input))
+  return cacheCoupangAdsData('overview', input, () =>
+    measureCoupangAds('overview_loader', () => loadCampaignOverview(input))
+  )
 }

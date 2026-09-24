@@ -16,16 +16,12 @@ import { prisma } from '@/lib/prisma'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { loadRocketDailyRevenue, sumRocketDaily } from '@/lib/sh/rocket-revenue'
 import { getTodayStrKst } from '@/lib/date-range'
-import {
-  startOfMonth,
-  prevRangeForUnit,
-  pctChange,
-  last30DaysRange,
-} from '@/lib/sh/sales-analytics'
+import { startOfMonth, prevRange, pctChange, last30DaysRange } from '@/lib/sh/sales-analytics'
 import { healthRatioBySku, statusForSku, type SkuFact, type StatusLabel } from '@/lib/inv/metrics'
 import { plannedStockQty, sumIncomingProductionQtyByOption } from '@/lib/inv/planned-stock'
 import { productDisplayName } from '@/lib/sh/product-display'
 import { loadRocketDailyOptionQty } from '@/lib/inv/coupang-sales-to-movement'
+import { readStockGradeSettings } from '@/lib/sh/stock-grade-settings'
 
 // ────────────────────────────────────────────────────────────────────────────
 // sales-summary
@@ -93,7 +89,7 @@ export async function querySalesSummary(spaceId: string) {
   // ── 기간: 이번달 1일~오늘(MTD) vs 지난달 1일~같은 날 ──────────────────────
   const today = getTodayStrKst()
   const current = { from: startOfMonth(today), to: today }
-  const prev = prevRangeForUnit('월', current)
+  const prev = prevRange(current)
   const recent30 = last30DaysRange()
 
   const curFrom = startOfDayKst(current.from)
@@ -316,6 +312,14 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
   const since30d = new Date(Date.now() - 30 * 24 * 3600 * 1000)
   const since90d = new Date(Date.now() - 90 * 24 * 3600 * 1000)
 
+  // 등급 설정(화면 전용) — 응답에 실어 보내 클라이언트가 따로 fetch 하지 않게 한다.
+  // 별도 fetch 로 두면 재고 데이터만 먼저 도착한 프레임에 잘못된 등급이 한 번 그려진다.
+  const settingsRow = await prisma.invSettings.findUnique({
+    where: { spaceId },
+    select: { preferences: true },
+  })
+  const gradeSettings = readStockGradeSettings(settingsRow?.preferences)
+
   // 위치 목록 (type 포함)
   const locations = await prisma.invStorageLocation.findMany({
     where: { spaceId, isActive: true },
@@ -410,6 +414,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           internalName: true,
           code: true,
           brand: { select: { id: true, name: true, logoUrl: true } },
+          // 커버 일수 등급(화면 전용)의 임계 기준 — 발주 계획과 동일한 상품별 리드타임.
+          reorderConfig: { select: { leadTimeDays: true } },
           options: {
             // 삭제된 옵션(생산 차수 등 참조가 있어 soft-delete 된 건)은 제외
             where: { deletedAt: null },
@@ -484,6 +490,8 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     totalQty: number
     totalValue: number
     incomingQty: number
+    /** 상품별 발주 리드타임(일). 설정 없으면 기본 7. */
+    leadTimeDays: number
     out30d: number
     out90d: number
     byLocation: Record<string, number>
@@ -533,6 +541,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
           brandName: p.brand?.name ?? null,
           groupId: g.id,
           groupName: g.name,
+          leadTimeDays: p.reorderConfig?.leadTimeDays ?? gradeSettings.defaultLeadTimeDays,
           costPrice,
           retailPrice: decimalToNumber(o.retailPrice),
           safetyStockQty: o.safetyStockQty,
@@ -788,6 +797,7 @@ export async function queryStockStatus(spaceId: string, opts: QueryStockStatusOp
     locations: locationsResp,
     products,
     matrix: { rows: filteredRows },
+    gradeSettings,
     // legacy (PR-2에서 제거)
     groups: legacyShaped,
   }
@@ -949,7 +959,7 @@ export async function queryProductRanking(spaceId: string) {
   // ── 로켓그로스 판매 상품 집합 (부진 오탐 제외용) ──────────────────────────
   // 로켓은 옵션/상품별 주문건수가 없어 상위 랭킹엔 못 쓰지만, 판매량(quantity)으로
   // "이 상품은 로켓에서 팔리고 있다"는 사실은 알 수 있다 → 부진 후보에서 제외.
-  const rocketRows = await loadRocketDailyOptionQty(spaceId, from, to)
+  const { rows: rocketRows } = await loadRocketDailyOptionQty(spaceId, from, to)
   const rocketSoldProductIds = new Set<string>()
   for (const r of rocketRows) {
     if (r.quantity > 0) rocketSoldProductIds.add(r.productId)

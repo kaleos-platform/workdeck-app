@@ -44,6 +44,10 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
+import {
+  useCampaignNavigation,
+  type NavigationCampaign as Campaign,
+} from '@/hooks/use-campaign-navigation'
 import { useSidebarCollapsed } from '@/hooks/use-sidebar-collapsed'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -108,14 +112,6 @@ import {
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
-
-type Campaign = {
-  id: string
-  name: string
-  displayName: string
-  isCustomName: boolean
-  adTypes: string[]
-}
 
 type SidebarProps = {
   workspaceName: string
@@ -266,6 +262,7 @@ function RailLink({
         <TooltipTrigger asChild>
           <Link
             href={href}
+            prefetch={href === COUPANG_ADS_BASE_PATH ? true : undefined}
             aria-label={label}
             className={cn(
               'group relative flex w-full cursor-pointer items-center justify-center rounded-lg p-3 transition hover:bg-white/10 hover:text-white',
@@ -291,6 +288,7 @@ function RailLink({
   return (
     <Link
       href={href}
+      prefetch={href === COUPANG_ADS_BASE_PATH ? true : undefined}
       className={cn(
         'group flex w-full cursor-pointer items-center justify-start rounded-lg text-sm font-medium transition hover:bg-white/10 hover:text-white',
         size === 'sm' ? 'px-2 py-2' : 'p-3',
@@ -318,11 +316,11 @@ export function Sidebar({
   const pathname = usePathname()
   const { signOut } = useAuth()
   const { collapsed, toggle, expand, mounted } = useSidebarCollapsed()
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [collapsedAdTypes, setCollapsedAdTypes] = useState<Set<string>>(new Set())
   const [pendingApprovalCount, setPendingApprovalCount] = useState(0)
   const isWorkdeckSidebar = variant === 'workdeck'
   const isCoupangSidebar = variant === 'coupang-ads'
+  const campaigns = useCampaignNavigation(isCoupangSidebar)
   const isSellerHubSidebar = variant === 'seller-hub'
   const isSalesContentSidebar = variant === 'sales-content'
   const isFinanceSidebar = variant === 'finance'
@@ -330,15 +328,6 @@ export function Sidebar({
   const isMyDeckMode = mode === 'my-deck'
   const meta = DECK_META[variant]
   const BrandIcon = meta.icon
-
-  useEffect(() => {
-    if (!isCoupangSidebar) return
-
-    fetch('/api/campaigns')
-      .then((r) => (r.ok ? r.json() : []))
-      .then((list: Campaign[]) => setCampaigns(list))
-      .catch(() => {})
-  }, [pathname, isCoupangSidebar])
 
   // 승인 대기 카운트 — workdeck 허브(My Deck 홈)에서만 가볍게 조회.
   // 네비게이션(pathname)뿐 아니라 승인/거부 후에도 갱신되도록 커스텀 이벤트를 구독한다
@@ -446,6 +435,7 @@ export function Sidebar({
           <>
             <Link
               href={meta.href}
+              prefetch={meta.href === COUPANG_ADS_BASE_PATH ? true : undefined}
               aria-label={`${meta.name} 홈으로 이동`}
               className="flex min-w-0 items-center gap-2"
             >

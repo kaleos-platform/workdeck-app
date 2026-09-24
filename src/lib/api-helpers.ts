@@ -1,8 +1,10 @@
 import crypto from 'node:crypto'
+import { cache } from 'react'
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
+import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 
 // 에러 응답 생성 헬퍼 — extra 필드를 병합해 추가 정보를 포함할 수 있음
 export function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
@@ -70,10 +72,12 @@ export async function resolveWorkspace() {
   const user = 'error' in deckContext ? await getUser() : deckContext.user
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
 
-  const workspace = await prisma.workspace.findUnique({
-    where: { ownerId: user.id },
-    select: { id: true },
-  })
+  const workspace = await measureCoupangAds('auth_workspace', () =>
+    prisma.workspace.findUnique({
+      where: { ownerId: user.id },
+      select: { id: true },
+    })
+  )
   if (!workspace) return { error: errorResponse('워크스페이스가 없습니다', 404) }
 
   if ('error' in deckContext) {
@@ -93,15 +97,17 @@ export async function resolveWorkspace() {
 export type SpaceMemberRole = 'OWNER' | 'ADMIN' | 'MEMBER'
 
 // 인증 + Space 멤버십 검증 (Deck 활성화 여부와 무관)
-export async function resolveSpaceContext() {
-  const user = await getUser()
+export const resolveSpaceContext = cache(async function resolveSpaceContext() {
+  const user = await measureCoupangAds('auth_user', getUser)
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
 
-  const membership = await prisma.spaceMember.findFirst({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'asc' }, // 결정적 최고참 멤버십
-    include: { space: { select: { id: true, name: true } } },
-  })
+  const membership = await measureCoupangAds('auth_membership', () =>
+    prisma.spaceMember.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'asc' }, // 결정적 최고참 멤버십
+      include: { space: { select: { id: true, name: true } } },
+    })
+  )
   if (!membership) return { error: errorResponse('공간이 없습니다', 404) }
 
   return {
@@ -109,16 +115,18 @@ export async function resolveSpaceContext() {
     space: membership.space,
     role: membership.role as SpaceMemberRole,
   }
-}
+})
 
 // 인증 + Space 멤버십 + DeckInstance 활성화 여부 검증
 export async function resolveDeckContext(deckKey = 'coupang-ads') {
   const resolved = await resolveSpaceContext()
   if ('error' in resolved) return resolved
 
-  const deckInstance = await prisma.deckInstance.findUnique({
-    where: { spaceId_deckAppId: { spaceId: resolved.space.id, deckAppId: deckKey } },
-  })
+  const deckInstance = await measureCoupangAds('auth_deck', () =>
+    prisma.deckInstance.findUnique({
+      where: { spaceId_deckAppId: { spaceId: resolved.space.id, deckAppId: deckKey } },
+    })
+  )
   if (!deckInstance?.isActive) return { error: errorResponse('카드가 활성화되지 않았습니다', 403) }
 
   return resolved
