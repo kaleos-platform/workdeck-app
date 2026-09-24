@@ -1,5 +1,3 @@
-import { test } from 'node:test'
-import assert from 'node:assert/strict'
 import {
   extractVendorItemIds,
   extractOptionIdentities,
@@ -16,7 +14,7 @@ test('extractVendorItemIds — 평면 items[].vendorItemId 만 있는 경우', (
     sellerProductId: 111,
     items: [{ vendorItemId: 1001 }, { vendorItemId: 1002 }],
   }
-  assert.deepEqual(extractVendorItemIds(detail).sort(), ['1001', '1002'])
+  expect(extractVendorItemIds(detail).sort()).toStrictEqual(['1001', '1002'])
 })
 
 test('extractVendorItemIds — 로켓그로스 중첩(rocketGrowthItemData)만 있는 경우 — 평면 필드는 없음', () => {
@@ -28,7 +26,7 @@ test('extractVendorItemIds — 로켓그로스 중첩(rocketGrowthItemData)만 �
     ],
   }
   // 평면 vendorItemId 만 읽었다면 여기서 0건이 나왔을 것 — 그게 실측에서 재현된 함정.
-  assert.deepEqual(extractVendorItemIds(detail).sort(), ['2001', '2002'])
+  expect(extractVendorItemIds(detail).sort()).toStrictEqual(['2001', '2002'])
 })
 
 test('extractVendorItemIds — 마켓플레이스 중첩(marketplaceItemData)만 있는 경우', () => {
@@ -36,7 +34,7 @@ test('extractVendorItemIds — 마켓플레이스 중첩(marketplaceItemData)만
     sellerProductId: 333,
     items: [{ marketplaceItemData: { vendorItemId: 3001 } }],
   }
-  assert.deepEqual(extractVendorItemIds(detail), ['3001'])
+  expect(extractVendorItemIds(detail)).toStrictEqual(['3001'])
 })
 
 test('extractVendorItemIds — 동시운영(평면+로켓그로스+마켓플레이스 셋 다) 는 dedup 하여 합집합', () => {
@@ -50,12 +48,12 @@ test('extractVendorItemIds — 동시운영(평면+로켓그로스+마켓플레�
       },
     ],
   }
-  assert.deepEqual(extractVendorItemIds(detail).sort(), ['4001', '4002'])
+  expect(extractVendorItemIds(detail).sort()).toStrictEqual(['4001', '4002'])
 })
 
 test('extractVendorItemIds — items 비어있으면 빈 배열', () => {
   const detail: SellerProductDetail = { sellerProductId: 555, items: [] }
-  assert.deepEqual(extractVendorItemIds(detail), [])
+  expect(extractVendorItemIds(detail)).toStrictEqual([])
 })
 
 test('extractVendorItemIds — rocketGrowthItemData/marketplaceItemData 가 null 이어도 안전', () => {
@@ -63,7 +61,7 @@ test('extractVendorItemIds — rocketGrowthItemData/marketplaceItemData 가 null
     sellerProductId: 666,
     items: [{ vendorItemId: 6001, rocketGrowthItemData: null, marketplaceItemData: null }],
   }
-  assert.deepEqual(extractVendorItemIds(detail), ['6001'])
+  expect(extractVendorItemIds(detail)).toStrictEqual(['6001'])
 })
 
 // team-lead 반려 후: productName 플레이스홀더 대신 이력 역산으로 채우기로 하면서,
@@ -77,13 +75,12 @@ test('extractOptionIdentities — 평면 vendorItemId + itemName 페어링', () 
       { vendorItemId: 1002, itemName: '블루 M' },
     ],
   }
-  assert.deepEqual(
-    extractOptionIdentities(detail).sort((a, b) => a.optionId.localeCompare(b.optionId)),
-    [
-      { optionId: '1001', optionName: '레드 S' },
-      { optionId: '1002', optionName: '블루 M' },
-    ]
-  )
+  expect(
+    extractOptionIdentities(detail).sort((a, b) => a.optionId.localeCompare(b.optionId))
+  ).toStrictEqual([
+    { optionId: '1001', optionName: '레드 S' },
+    { optionId: '1002', optionName: '블루 M' },
+  ])
 })
 
 test('extractOptionIdentities — 로켓그로스 중첩 vendorItemId 도 같은 item 의 itemName 을 쓴다', () => {
@@ -91,7 +88,9 @@ test('extractOptionIdentities — 로켓그로스 중첩 vendorItemId 도 같은
     sellerProductId: 222,
     items: [{ rocketGrowthItemData: { vendorItemId: 2001 }, itemName: '누드 3P S' }],
   }
-  assert.deepEqual(extractOptionIdentities(detail), [{ optionId: '2001', optionName: '누드 3P S' }])
+  expect(extractOptionIdentities(detail)).toStrictEqual([
+    { optionId: '2001', optionName: '누드 3P S' },
+  ])
 })
 
 test('extractOptionIdentities — itemName 이 없으면 optionName null', () => {
@@ -99,7 +98,7 @@ test('extractOptionIdentities — itemName 이 없으면 optionName null', () =>
     sellerProductId: 333,
     items: [{ vendorItemId: 3001 }],
   }
-  assert.deepEqual(extractOptionIdentities(detail), [{ optionId: '3001', optionName: null }])
+  expect(extractOptionIdentities(detail)).toStrictEqual([{ optionId: '3001', optionName: null }])
 })
 
 test('extractOptionIdentities — 동시운영(평면+로켓그로스+마켓플레이스) 는 같은 optionName 을 공유하며 dedup', () => {
@@ -114,13 +113,12 @@ test('extractOptionIdentities — 동시운영(평면+로켓그로스+마켓플�
       },
     ],
   }
-  assert.deepEqual(
-    extractOptionIdentities(detail).sort((a, b) => a.optionId.localeCompare(b.optionId)),
-    [
-      { optionId: '4001', optionName: '공용 옵션' },
-      { optionId: '4002', optionName: '공용 옵션' },
-    ]
-  )
+  expect(
+    extractOptionIdentities(detail).sort((a, b) => a.optionId.localeCompare(b.optionId))
+  ).toStrictEqual([
+    { optionId: '4001', optionName: '공용 옵션' },
+    { optionId: '4002', optionName: '공용 옵션' },
+  ])
 })
 
 // ─── extractInventoryQuantities ────────────────────────────────────────────────
@@ -135,21 +133,20 @@ test('extractInventoryQuantities — 실측 응답 형태(중첩)에서 수량�
     salesCountMap: { SALES_COUNT_LAST_THIRTY_DAYS: 24 },
     inventoryDetails: { totalOrderableQuantity: 27 },
   }
-  assert.deepEqual(extractInventoryQuantities(item), {
+  expect(extractInventoryQuantities(item)).toStrictEqual({
     orderableQuantity: 27,
     salesQty30d: 24,
   })
 })
 
 test('extractInventoryQuantities — 중첩 객체가 없으면 null (0 으로 뭉개지 않는다)', () => {
-  assert.deepEqual(
+  expect(
     extractInventoryQuantities({
       vendorId: 'A',
       vendorItemId: 1,
       externalSkuId: null,
-    }),
-    { orderableQuantity: null, salesQty30d: null }
-  )
+    })
+  ).toStrictEqual({ orderableQuantity: null, salesQty30d: null })
 })
 
 test('extractInventoryQuantities — 재고 0 은 null 이 아니라 0 으로 보존된다', () => {
@@ -160,6 +157,6 @@ test('extractInventoryQuantities — 재고 0 은 null 이 아니라 0 으로 �
     inventoryDetails: { totalOrderableQuantity: 0 },
     salesCountMap: { SALES_COUNT_LAST_THIRTY_DAYS: 0 },
   })
-  assert.equal(r.orderableQuantity, 0)
-  assert.equal(r.salesQty30d, 0)
+  expect(r.orderableQuantity).toBe(0)
+  expect(r.salesQty30d).toBe(0)
 })

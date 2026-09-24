@@ -1,4 +1,5 @@
 import { productExtractApplySchema, productExtractRequestSchema, productSchema } from '../schemas'
+import { PRODUCT_FEATURES_MAX_ITEMS } from '../constants'
 
 // PATCH 라우트는 productSchema.partial() 로 파싱한다 (app/api/sh/products/[productId]/route.ts)
 const patchSchema = productSchema.partial()
@@ -36,13 +37,17 @@ describe('productSchema — description clear/skip', () => {
 })
 
 describe('productSchema — features/certifications 상한', () => {
-  it('features 21개는 실패', () => {
-    const r = patchSchema.safeParse({ features: Array.from({ length: 21 }, (_, i) => `f${i}`) })
+  it('features 상한 초과는 실패', () => {
+    const r = patchSchema.safeParse({
+      features: Array.from({ length: PRODUCT_FEATURES_MAX_ITEMS + 1 }, (_, i) => `f${i}`),
+    })
     expect(r.success).toBe(false)
   })
 
-  it('features 20개는 성공', () => {
-    const r = patchSchema.safeParse({ features: Array.from({ length: 20 }, (_, i) => `f${i}`) })
+  it('features 상한까지는 성공', () => {
+    const r = patchSchema.safeParse({
+      features: Array.from({ length: PRODUCT_FEATURES_MAX_ITEMS }, (_, i) => `f${i}`),
+    })
     expect(r.success).toBe(true)
   })
 

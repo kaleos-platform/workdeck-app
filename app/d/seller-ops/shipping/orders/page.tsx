@@ -1,10 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { BatchList } from '@/components/sh/shipping/batch-list'
 import { OrderDetailTable } from '@/components/sh/shipping/order-detail-table'
 import { OrderSearchBar } from '@/components/sh/shipping/order-search-bar'
 import { OrderSearchResults } from '@/components/sh/shipping/order-search-results'
+import { cn } from '@/lib/utils'
 
 type ShippingMethod = { id: string; name: string; defaultSplitMode?: 'order' | 'option' }
 type Channel = { id: string; name: string }
@@ -14,6 +17,10 @@ const MIN_QUERY_LENGTH = 2
 
 export default function ShippingOrdersPage() {
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null)
+  const [batchPanelCollapsed, setBatchPanelCollapsed] = useState(false)
+  const collapseButtonRef = useRef<HTMLButtonElement>(null)
+  const expandButtonRef = useRef<HTMLButtonElement>(null)
+  const focusAfterToggleRef = useRef(false)
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -28,6 +35,18 @@ export default function ShippingOrdersPage() {
       .then((data) => setChannels(data.channels ?? []))
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!focusAfterToggleRef.current) return
+    const targetButtonRef = batchPanelCollapsed ? expandButtonRef : collapseButtonRef
+    targetButtonRef.current?.focus()
+    focusAfterToggleRef.current = false
+  }, [batchPanelCollapsed])
+
+  function toggleBatchPanel() {
+    focusAfterToggleRef.current = true
+    setBatchPanelCollapsed((collapsed) => !collapsed)
+  }
 
   const isSearching = searchQuery.trim().length >= MIN_QUERY_LENGTH
 
@@ -44,20 +63,46 @@ export default function ShippingOrdersPage() {
           channels={channels}
         />
       ) : (
-        <>
-          <div className="rounded-lg border bg-card p-3">
-            <BatchList onSelect={setSelectedBatchId} selectedBatchId={selectedBatchId} />
+        <section
+          aria-label="배송 데이터 작업 영역"
+          className={cn(
+            'space-y-4 2xl:grid 2xl:gap-4 2xl:space-y-0',
+            batchPanelCollapsed
+              ? '2xl:grid-cols-[44px_minmax(0,1fr)]'
+              : '2xl:grid-cols-[280px_minmax(0,1fr)]'
+          )}
+        >
+          <div className={cn('rounded-lg border bg-card p-3', batchPanelCollapsed && '2xl:hidden')}>
+            <BatchList
+              onSelect={setSelectedBatchId}
+              selectedBatchId={selectedBatchId}
+              onCollapse={toggleBatchPanel}
+              collapseButtonRef={collapseButtonRef}
+            />
           </div>
+          {batchPanelCollapsed && (
+            <div className="hidden justify-center 2xl:flex">
+              <Button
+                ref={expandButtonRef}
+                variant="outline"
+                size="icon"
+                onClick={toggleBatchPanel}
+                aria-label="배송 묶음 펼치기"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
           <div className="min-w-0">
             {selectedBatchId ? (
               <OrderDetailTable batchId={selectedBatchId} shippingMethods={shippingMethods} />
             ) : (
               <div className="rounded-lg border border-dashed p-12 text-center text-sm text-muted-foreground">
-                위 목록에서 배송 묶음을 선택하세요
+                배송 묶음을 선택하세요
               </div>
             )}
           </div>
-        </>
+        </section>
       )}
     </div>
   )
