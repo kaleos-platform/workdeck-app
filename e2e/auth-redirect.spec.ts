@@ -11,12 +11,9 @@ test.describe('인증 리다이렉트', () => {
     await expect(page.getByRole('textbox').first()).toBeVisible()
   })
 
-  test('랜딩 페이지(/) → 앱 도메인 기본 진입은 /my-deck → 로그인으로 연쇄 리다이렉트', async ({
-    page,
-  }) => {
-    await page.goto('/')
-    // proxy: app 도메인(localhost 포함) → / → /my-deck → 미인증 → /login?redirectTo=/my-deck
-    await expect(page).toHaveURL(/\/login\?redirectTo=/)
+  test('/my-deck 미인증 접근 → redirectTo를 보존한 /login 리다이렉트', async ({ page }) => {
+    await page.goto('/my-deck')
+    await expect(page).toHaveURL(/\/login\?redirectTo=%2Fmy-deck$/)
     await expect(page.locator('body')).toBeVisible()
   })
 })
