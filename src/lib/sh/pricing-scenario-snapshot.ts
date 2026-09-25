@@ -4,9 +4,11 @@
 // 서버(API)·클라이언트(시뮬 화면)·임시저장(localStorage)이 모두 이 타입을 공유한다.
 // 정규화 테이블(PricingScenarioItem/Channel) 대신 이 JSON 스냅샷이 복원의 단일 소스다.
 //
-// v2: 옵션 조합(탭) 여러 개를 한 시나리오에 담는다. 판매채널 선택·채널 override·
-// 시뮬 설정(live)·snap은 시나리오 공통, 상품 구성(rows)·수동 판매가·소비자가 override·
-// 프로모션은 탭(variant)별. v1(구 단일 탭)은 읽기 시 탭 1개로 변환해 항상 v2로 다룬다.
+// v2: 옵션 조합(탭) 여러 개를 한 시나리오에 담는다. 시뮬 설정(live)·snap은 시나리오 공통,
+// 상품 구성(rows)·판매채널 선택·채널 override·수동 판매가·소비자가 override·프로모션은
+// 탭(variant)별. v1(구 단일 탭)은 읽기 시 탭 1개로 변환해 항상 v2로 다룬다.
+// 탭별 채널(selectedChannelIds/chOverrides)이 없는 구 v2는 파싱 시 시나리오 공통 값으로 채운다.
+// 최상위 selectedChannelIds/chOverrides는 탭 합집합으로 계속 기록(목록 채널 필터·하위호환).
 
 import type { ResolvedComponent } from '@/components/sh/products/pricing-sim/pricing-bundle-row'
 import type { PromotionValue } from '@/components/sh/products/pricing-sim/pricing-promotion-card'
@@ -79,6 +81,10 @@ export type PricingVariant = {
   retailOverride?: number | null
   /** 채널별 프로모션. 미설정=프로모션 없음(NONE) */
   chPromotions?: Record<string, PromotionValue>
+  /** 탭별 판매채널 선택(순서 유지). parseSnapshot 후엔 항상 존재(구 스냅샷은 공통 값 폴백) */
+  selectedChannelIds?: string[]
+  /** 탭별 채널 비용 override. parseSnapshot 후엔 항상 존재(구 스냅샷은 공통 값 폴백) */
+  chOverrides?: Record<string, SnapChOverride>
   /** 탭별 요약 (내역/탭 바 표시용) */
   summary: PricingSimSummary
 }
@@ -88,9 +94,9 @@ export type PricingSimSnapshot = {
   v: 2
   /** 공통 라이브 시뮬 설정 (전 채널 공통) */
   live: SnapLiveSim
-  /** 공통 판매채널 선택 */
+  /** 전 탭 판매채널 합집합 (목록 채널 필터·하위호환용. 편집 기준은 탭별 값) */
   selectedChannelIds: string[]
-  /** 공통 채널별 비용 override */
+  /** 전 탭 채널 비용 override 병합 (하위호환용. 편집 기준은 탭별 값) */
   chOverrides: Record<string, SnapChOverride>
   /** 공통 …900 스냅 토글 */
   snap: boolean
@@ -191,6 +197,8 @@ function v1ToV2(v1: PricingSimSnapshotV1): PricingSimSnapshot {
     manualPrices: v1.manualPrices,
     retailOverride: v1.retailOverride,
     chPromotions,
+    selectedChannelIds: v1.selectedChannelIds,
+    chOverrides: v1.chOverrides,
     summary: v1.summary,
   }
 
@@ -226,6 +234,13 @@ function parseVariant(raw: unknown): PricingVariant | null {
       typeof v.chPromotions === 'object' && v.chPromotions !== null
         ? (v.chPromotions as Record<string, PromotionValue>)
         : undefined,
+    selectedChannelIds: Array.isArray(v.selectedChannelIds)
+      ? (v.selectedChannelIds as string[])
+      : undefined,
+    chOverrides:
+      typeof v.chOverrides === 'object' && v.chOverrides !== null
+        ? (v.chOverrides as Record<string, SnapChOverride>)
+        : undefined,
     summary: (v.summary as PricingSimSummary) ?? defaultSummary(),
   }
 }
@@ -236,7 +251,17 @@ function parseV2(o: Record<string, unknown>): PricingSimSnapshot | null {
   if (typeof o.chOverrides !== 'object' || o.chOverrides === null) return null
   if (!Array.isArray(o.variants)) return null
 
-  const variants = o.variants.map(parseVariant).filter((v): v is PricingVariant => v !== null)
+  const commonChannelIds = o.selectedChannelIds as string[]
+  const commonOverrides = o.chOverrides as Record<string, SnapChOverride>
+  // 탭별 채널이 없는 구 v2(채널 공통 시절) → 시나리오 공통 값으로 채워 항상 탭별로 다룬다
+  const variants = o.variants
+    .map(parseVariant)
+    .filter((v): v is PricingVariant => v !== null)
+    .map((v) => ({
+      ...v,
+      selectedChannelIds: v.selectedChannelIds ?? commonChannelIds,
+      chOverrides: v.chOverrides ?? commonOverrides,
+    }))
   if (variants.length === 0) return null
 
   const activeVariantId =
@@ -247,15 +272,15 @@ function parseV2(o: Record<string, unknown>): PricingSimSnapshot | null {
   return {
     v: 2,
     live: o.live as SnapLiveSim,
-    selectedChannelIds: o.selectedChannelIds as string[],
-    chOverrides: o.chOverrides as Record<string, SnapChOverride>,
+    selectedChannelIds: commonChannelIds,
+    chOverrides: commonOverrides,
     snap: o.snap !== false,
     activeVariantId,
     variants,
     summary:
       (o.summary as PricingSimSummary) ??
       buildRepresentativeSummary(variants, {
-        channelCount: (o.selectedChannelIds as string[]).length,
+        channelCount: commonChannelIds.length,
         targetMarginPct: variants[0].summary.targetMarginPct,
       }),
   }

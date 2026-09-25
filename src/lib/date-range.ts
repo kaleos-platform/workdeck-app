@@ -28,3 +28,12 @@ export function isYmdDateString(value: string): boolean {
 export function formatDateToYmdKst(date: Date): string {
   return new Date(date.getTime() + 9 * 60 * 60 * 1000).toISOString().split('T')[0]
 }
+
+export function parseYmdDateKst(value: string): Date | null {
+  if (!isYmdDateString(value)) return null
+
+  const date = new Date(`${value}T00:00:00+09:00`)
+  if (Number.isNaN(date.getTime()) || formatDateToYmdKst(date) !== value) return null
+
+  return date
+}

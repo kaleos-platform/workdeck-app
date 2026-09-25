@@ -451,3 +451,167 @@ membership 시간에는 Prisma 초기화·대기·쿼리가 함께 포함된다.
 미완료다. 날짜 쿼리 최적화와 별도로 인증·레이아웃/서버 초기화와 RSC 응답 대기를 분리해야 한다.
 추가 네트워크 추적을 시도했지만 Playwright MCP가 `Transport closed`를 반환했고 재시도도
 같아 실행하지 못했다. 위 5회 측정과 비로그인 검증은 연결 종료 전에 완료된 결과다.
+
+### CDP 연결 복구 후 진단
+
+Playwright MCP 연결 대신 기존 Chrome의 CDP에 연결해 로그인 확인 후 측정을 재개했다.
+브라우저 세션이 달라 이전 측정과 엄격한 전후 비교로 취급하지 않는다.
+[5회 cache hit/5회 cache reset 원시값과 요청 타이밍](assets/2026-09-23-cdp-diagnostic.json)을 보관한다.
+cache reset 조건의 홈 직접 URL은 1836/1596/1324/405/615ms, 홈 재진입은
+1338/118/616/1339/316ms였다. 상세 최초는 366~830ms, 재진입은 298~623ms였다.
+모든 KPI 비교가 일치했다. 정상 세션이라고 재진입 목표 초과가 사라지지는 않았다.
+
+느린 홈 재진입의 RSC 요청 두 개는 Proxy 34.3/24.4ms, 요청 시작부터 responseEnd까지
+948.730/939.563ms였다. 서버 데이터 전송이 계속되는 구간이 확인됐지만 이것만으로
+정확한 서버 하위 원인을 단정하지 않는다. 별도로 조회한 7c0369af 배포 SSR 로그의 membership 703.2/905.0ms,
+page total 940.8/1158.7ms도 관측했다. 요청 연계 식별자가 없어 화면 표본과 일대일 대응은 아니다.
+또한 CDP 측정 동안 운영 도메인 배포를 고정 검증하지 않았고 다른 main 배포가 병행됐다.
+따라서 이 값들은 단일 배포의 완료 판정이나 전후 비교에 사용하지 않는다.
+
+개발 DB 새 프로세스의 멤버십 ORM/raw SQL 비교에서 첫 조회 차이는 대부분 수십 ms였다.
+공통 인증을 SQL로 바꾸는 것만으로 운영 지연이 사라진다는 근거는 부족해 적용하지 않았다.
+
+후속 계측은 `prisma_client`(동기 client 생성), `db_query`(Prisma query 이벤트 시간 합계),
+`layout_user/context/entitlement`로 나눈다. client 생성에는 첫 query compiler 초기화 전체가
+포함되지 않는다. 실제 generated Prisma client/adapter에서 query 이벤트의 ALS 전달을 확인했다.
+`db_query`에는 pool/연결/네트워크 대기가 포함될 수 있고 다른 구간과 중첩된다. SQL·파라미터는
+출력하지 않는다. 이 변경은 원인 분리를 위한 계측이며 속도 개선 완료로 취급하지 않는다.
+
+### 초기화 세부 계측 배포와 Proxy 후속
+
+PR #939/#940(main `73952ecd`), production `dpl_2u9pk2XECEyceRieiJPXz2Zm2ELE` READY 확인.
+71 tests·lint(0 errors/기존63 warnings)·build·typecheck·리뷰를 통과했다.
+[고정 배포 URL과 운영 도메인 각 5회](assets/2026-09-23-performance-init.json)를 보관한다.
+고정 URL은 첫 화면 최대2754ms, 홈 재진입140ms, 상세 최초1076ms, 재진입572ms였으나,
+같은 배포 운영 도메인에서는 홈 재진입1402ms가 다시 관측됐다. 목표 전체 완료로 처리하지 않는다.
+운영 도메인 측정 전후 alias ID가 같았음을 확인했다.
+
+한 API 요청은 `prisma_client=205.0ms`, `auth_membership=605.9ms`,
+요청 전체 `db_query=114.3ms`, `db_connect=39.0ms`였다. 동기 client 생성만도 비용이 있었으며
+멤버십 구간 전체를 SQL 시간으로 볼 수 없다. query 합계와 connect 시간은 중첩될 수 있다.
+layout에서는 `layout_context=562.0/616.4ms`, `layout_entitlement=44.7/179.1ms`도 관측했다.
+서로 다른 요청의 구간을 합산하지 않는다. 개발 비교에서 Sentry 자동 계측 활성화는 큰 차이가 없어
+운영 모니터링 설정은 유지했다.
+
+운영 도메인 5번째 직접 접속의 Proxy 세션 갱신은799.8ms였다. 실제 세션을 메모리에서만 사용한
+조회 비교에서 getUser는85.8/118.3/506.0/97.9/110.7ms, getClaims는96.9/2.7/0.7/0.6/1.4ms였다.
+이는 로컬 네트워크 비교이며 운영 개선율을 보장하지 않는다.
+
+후속 변경은 Proxy의 쿠팡 홈 exact 및 `/d/coupang-ads/campaigns/[^/]+` exact만
+`getClaims`로 서명·만료를 검증하고 갱신한다. 다른 경로는 getUser를 유지한다.
+서버의 getUser·workspace·deck·구독 검사는 그대로다. [Supabase 공식 설명](https://supabase.com/docs/guides/auth/server-side/advanced-guide)에 따르면
+getClaims만으로 서버 세션 폐기를 확인할 수 없으므로 이 최종 서버 검사를 대체하지 않는다.
+[공식 Proxy 예제](https://github.com/supabase/supabase/blob/master/examples/auth/nextjs/lib/supabase/proxy.ts)에 맞춰
+갱신 쿠키를 downstream 요청과 브라우저 응답에 전달하며 redirect/rewrite에서도 보존한다.
+
+17개 인증 경계 테스트의 red/green을 확인했다. 실제 개발용 일회용 Auth 계정으로 저장된 세션의
+만료 시각을 과거로 설정해 refresh를 유도하고, request override·response cookie·downstream
+getUser를 검증했다. 변조 JWT는 거부됐다. 계정 삭제 후 서명상 유효한 JWT는 getClaims를 통과해도
+getUser에서 차단됐다. 테스트 계정은 삭제했다. 실제 JWT의 exp를 서명 없이 바꾼 시험은 아니다.
+리뷰에서 발견한 admin rewrite의 request cookie 전달 누락도 회귀 테스트와 함께 수정했다.
+
+Proxy 후속 관련105 tests, lint(0 errors/기존63 warnings), production build가 통과했다.
+리뷰 재확인에서 추가 필수 수정은 없었다.
+
+### Proxy 인증 개선 운영 결과 (2026-09-23)
+
+PR #941/#942, main `be8a87c9`, production `dpl_GcUBaPyaQ2jVcS8ZnSK3DGeytcdH` READY.
+[전체 10회 원시값과 인증 확인](assets/2026-09-23-performance-claims.json)을 보관한다.
+운영 도메인 측정 전후 alias는 모두 이 배포였다. 매 회 workspace cache tag를 초기화했으며,
+플랫폼 cold start를 강제한 것은 아니다. 기간은 2026-09-16~22다.
+
+| 흐름         | 운영 도메인 5회(ms)           | 중앙값 | 최댓값 |
+| ------------ | ----------------------------- | -----: | -----: |
+| 홈 직접 진입 | 878 / 2840 / 1577 / 396 / 441 |    878 |   2840 |
+| 홈 재진입    | 141 / 112 / 1416 / 1425 / 864 |    864 |   1425 |
+| 상세 진입    | 593 / 2729 / 647 / 482 / 466  |    593 |   2729 |
+| 상세 재진입  | 384 / 595 / 415 / 384 / 446   |    415 |    595 |
+
+고정 배포 URL의 홈 직접 진입은3221/1338/381/392/1532ms, 재진입829/61/87/856/67ms였다.
+상세 진입1289/407/368/358/342ms, 재진입556/300/349/322/346ms였다.
+첫3221ms는 `page.goto`의 load 대기를 포함한다. 같은 요청 KPI·캠페인 카드의 DOM 표시 시점은
+2727.4ms였다. 두 지표를 혼용하지 않으며, 이전 load 기반 기준의 초과 표본도 유지한다.
+실제 paint 시점을 측정한 것은 아니다. 모든 측정의 API는200이고 홈 KPI 비교는 일치했다.
+
+고정 URL 첫 Proxy는318.5ms, 이후1.8~3.9ms였다. 운영 도메인 직접 진입은2.8~4.8ms였다.
+홈 재진입 초과 두 회의 RSC는 Proxy2.8/4.6ms, responseEnd892.965/910.079ms였다.
+Proxy 중복 네트워크 조회는 줄었지만 홈 재진입1초 목표는 미완료다.
+SSR 로그에는 `prisma_client=171.9/200.1ms`, `auth_membership=565.8/620.3ms`,
+`layout_context=513.0/572.1/633.7ms`도 남았다. 화면 요청과 일대일 연결되지 않으므로
+이 수치를 해당 초과 표본의 확정 원인으로 단정하지 않는다. 다음 조사는 서버 초기화 및
+레이아웃 구간과 브라우저 RSC 요청을 연결하는 데 집중한다.
+
+비로그인 브라우저에서 쿠팡 전용 `/d/coupang-ads/login` 화면을 확인했고 API는401이었다.
+초기 검증 스크립트의 `/login` exact 기대값은 전용 로그인 경로를 고려하지 못해 실패했다.
+후속 브라우저 이동 두 번은30초/20초 timeout이 발생했고 캐시 초기화 CLI도 지연됐다.
+이것들을 성공 표본으로 처리하지 않았다. 별도 HTTP 검증에서는307→전용 로그인200(본문 확인),
+API401을 재확인했다. 따라서 이 시점 브라우저 timeout의 원인은 확정하지 않는다.
+
+관련105 tests·lint·build·typecheck·리뷰와 실제 DEV 세션 refresh/폐기 검증은 통과했다.
+테스트 계정은 삭제했다. 전체 성능 목표 완료로 처리하지 않는다.
+
+### 2026-09-24 요청 단위 추적 및 초기화 비교
+
+[원시값과 요청별 연결 로그](assets/2026-09-24-performance-followup.json)를 기록했다.
+이번 작업은 진단과 E2E 측정 보완이며 앱 속도 개선 코드를 새로 배포하지 않았다.
+운영 도메인 측정 전후 배포는 `dpl_2YXDbM24eBTbJuQnfoScHCtApyng`로 같았다.
+고정 비교 배포는 기존 인증 개선 commit `be8a87c9`의 `dpl_GcUBaPyaQ2jVcS8ZnSK3DGeytcdH`다.
+
+- 고정 배포 첫 홈은4164ms(load 대기 포함), 데이터 DOM3432.5ms였다. 이후 홈은295~1082ms.
+  같은5회에서 상세 재진입1936ms도 관측해 이전 상세1초 판정을 안정적 보장으로 취급하지 않는다.
+- 응답의 `x-vercel-id` 마지막 구간과 Vercel 로그의 `id`를 연결할 수 있음을 확인했다.
+  첫 홈 request `t25fj-1790226099378-425f6236c77d`는 responseEnd3383.093ms,
+  layout_guard1205.2ms(layout_user153.7/context845.2/entitlement206.1)였다.
+  나머지 시간을 전부 cold start라고 단정하지 않는다. 플랫폼 시작·렌더링·전송 등 미계측 구간이 남는다.
+- 홈 RSC request `g4hh2-1790226106124-c1d3a4f452da`는 responseEnd819.263ms와
+  SSR total726.1ms가 연결됐다. auth_membership586.4ms 안에 prisma_client189.8ms가 포함됐다.
+  다른 RSC `g4hh2-1790226112848-015ec90965ec`도 responseEnd866.55ms,
+  total792.5ms, membership602.1ms, prisma_client194.3ms였다.
+  광고 데이터 집계만이 남은 지연의 원인은 아니다. warm RSC는 total105.7~114.5ms였다.
+- 상세 재진입1936ms의 overview API는 responseEnd1772.516ms, 내부 total772.3ms,
+  auth_membership625.7ms, prisma_client192.5ms, data31.5ms였다.
+  내부 total과 브라우저 시간 차이를 인증/SQL 시간으로 합산하지 않는다.
+
+첫 홈에서 미방문 메뉴·캠페인 prefetch34개를 관측해, 불필요한 prefetch를 브라우저에서 차단하는
+A/B 실험을5쌍 수행했다. 양쪽 모두 request interception을 사용했고 실제 앱 코드는 바꾸지 않았다.
+차단군에서도 상세 진입1630ms가 발생했으며 홈 재진입 중앙값은 차단 전74ms/후80ms였다.
+일관된 지연 개선 근거가 없어 prefetch 정책을 변경하지 않았다. 차단 실험의 요청 수는 시도 수이며
+abort된 요청도 포함한다. cold start를 통제한 실험은 아니다.
+
+Prisma7.4.1과7.10.0을 동일 schema/small compiler, pool1, 새 로컬 프로세스, DEV 읽기 쿼리로
+각5회 교차 비교했다. 초기 조회 중앙값158.5/155.4ms, client 생성18.9/18.3ms였다.
+첫7.4.1 표본400.3ms에는 연결183.3ms가 포함됐으며 제외하지 않았다. import/transpile 시간은
+측정 시작 전이다. 운영 CPU 환경과 다르며 유의미한 개선을 입증하지 못해 의존성은 유지했다.
+임시 경로에만 client를 생성했고 DB schema·운영 데이터·프로젝트 lockfile은 변경하지 않았다.
+
+E2E 첫 `page.goto`는 `waitUntil: 'commit'`으로 바꿔 이미지 등 전체 load가 데이터 표시 시간을
+부풀리지 않게 했다. Chromium 합성 페이지에서 이미지 응답을 보류한 상태로 데이터26ms,
+당시 loadEventEnd0, 이미지 해제 후 load 완료를 확인했다. 이 변경으로 과거 표본을 재분류하지 않는다.
+기존 samples attachment 배열은 유지하고 별도 `coupang-ads-performance-requests.json`에
+완료/실패 요청의 path·timing·Server-Timing·x-vercel-id만 남긴다. 쿠키·본문·query는 제외한다.
+수집 실패를 즉시 처리해 원래 테스트 오류와 attachment 저장을 가리지 않으며 실패 수를 판정에 포함한다.
+
+수정한 실제 측정 callback을 로그인된 CDP 세션으로 실행했다(비밀번호 로그인과 일반 Playwright
+runner 제외). 5회 모두 API/숫자 검사와 임계값을 통과했고 요청 수집 실패0건이었다.
+
+| 흐름         | 5회(ms, 반올림)                | 최댓값 |
+| ------------ | ------------------------------ | -----: |
+| 첫 홈 데이터 | 1565 / 1208 / 1073 / 223 / 210 |   1565 |
+| 홈 재진입    | 155 / 405 / 145 / 393 / 147    |    405 |
+| 상세 진입    | 341 / 364 / 288 / 308 / 345    |    364 |
+| 상세 재진입  | 338 / 261 / 277 / 267 / 291    |    338 |
+
+이 warm 결과로 앞선 초기화 초과 표본을 취소하지 않는다. eslint·전체 lint(기존 warnings)·typecheck와
+독립 리뷰를 통과했다. 운영 코드 변경이 없어 production build는 이번 E2E 수정에 대해 다시 실행하지 않았다.
+
+#### 다음 비교 실험의 범위
+
+프로젝트 설정 조회 결과 Fluid Compute=true, region=icn1, Function CPU=Standard였다.
+[공식 CPU/메모리 문서](https://vercel.com/docs/functions/configuring-functions/memory)에 따르면
+Standard는2GB/1vCPU, Performance는4GB/2vCPU이며 프로젝트의 향후 모든 배포에 적용된다.
+`vercel.json`으로 특정 쿠팡 함수만 memory를 변경할 수는 없다.
+
+다음 후보는 같은 코드로 Standard/Performance 배포를 비교하는 실험이다. 초기화가 포함된 첫 요청과
+각5회 재진입, API 값·인증 차단, CPU/메모리 사용량을 함께 비교하고 개선이 없으면 Standard로 복원한다.
+성능 향상과 총비용 감소를 미리 보장하지 않는다. 메모리 용량 증가와 프로젝트 전체 적용 범위 때문에
+이 설정 변경은 별도 확인 후 진행하며, 현재 운영 설정은 변경하지 않았다.

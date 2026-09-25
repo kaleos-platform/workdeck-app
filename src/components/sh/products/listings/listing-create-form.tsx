@@ -819,7 +819,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">구성 옵션</CardTitle>
-            <CardDescription>묶음에 포함할 상품과 옵션을 선택합니다</CardDescription>
+            <CardDescription>세트에 포함할 상품과 옵션을 선택합니다</CardDescription>
           </CardHeader>
           <CardContent>
             <button
@@ -832,7 +832,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                 <Layers className="h-5 w-5" />
                 구성 만들기
               </div>
-              <span className="text-xs">상품과 속성을 단계별로 선택해 묶음 구성을 만듭니다</span>
+              <span className="text-xs">상품과 옵션을 단계별로 선택해 세트 구성을 만듭니다</span>
               <span className="mt-2 inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground">
                 <Plus className="h-3.5 w-3.5" />
                 시작
@@ -870,7 +870,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
                   disabled={saving}
                 >
                   <Unlink className="mr-1 h-4 w-4" />
-                  직접 묶기 추가
+                  옵션 직접 생성
                 </Button>
                 <Button
                   type="button"
@@ -909,7 +909,7 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
           <DialogHeader>
             <DialogTitle>판매채널 상품 구성 만들기</DialogTitle>
             <DialogDescription>
-              상품과 속성을 선택해 묶음 구성을 만듭니다. 여러 조합이 나오면 판매 옵션이 자동으로
+              상품과 옵션을 선택해 세트 구성을 만듭니다. 여러 조합이 나오면 판매 옵션이 자동으로
               분할 생성됩니다.
             </DialogDescription>
           </DialogHeader>
@@ -927,11 +927,11 @@ export function ListingCreateForm({ defaultChannelId }: Props) {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {appendBuilderMode === 'manual' ? '직접 묶기 추가' : '다른 상품 추가'}
+              {appendBuilderMode === 'manual' ? '옵션 직접 생성' : '다른 상품 추가'}
             </DialogTitle>
             <DialogDescription>
               {appendBuilderMode === 'manual'
-                ? '여러 상품을 직접 묶어 추가합니다. 각 행에 이름과 구성 옵션을 직접 입력하세요.'
+                ? '판매 옵션을 직접 만들어 추가합니다. 각 행에 이름과 구성 옵션을 직접 입력하세요.'
                 : '기존 구성에 다른 상품의 옵션을 추가합니다. 중복 구성은 자동으로 제외됩니다.'}
             </DialogDescription>
           </DialogHeader>

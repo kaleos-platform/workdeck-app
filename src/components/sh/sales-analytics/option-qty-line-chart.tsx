@@ -12,18 +12,28 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { seriesBucketValue, type OptionBucket, type OptionSeries } from '@/lib/sh/sales-analytics'
+import {
+  formatKRW,
+  seriesBucketValue,
+  type OptionBucket,
+  type OptionSeries,
+  type SalesMetric,
+} from '@/lib/sh/sales-analytics'
 
 type Props = {
   buckets: OptionBucket[]
   /** 차트 선 = 해석된 시리즈 (미선택=전체 1선, 선택 시 항목별 선). page 가 단일 소스. */
   series: OptionSeries[]
+  /** 표시 지표 — 수량(개) / 매출(원). 랭킹 테이블과 같은 토글을 공유한다. */
+  metric: SalesMetric
   loading: boolean
 }
 
 type ChartRow = { label: string; [seriesId: string]: string | number }
 
-const formatQty = (n: number) => `${n.toLocaleString('ko-KR')}개`
+const formatQty = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}개`
+const formatMetric = (n: number, metric: SalesMetric) =>
+  metric === 'revenue' ? formatKRW(n) : formatQty(n)
 
 /**
  * 시리즈당 1행 툴팁.
@@ -35,11 +45,13 @@ function OptionTooltip({
   payload,
   label,
   series,
+  metric,
 }: {
   active?: boolean
   payload?: { payload: ChartRow }[]
   label?: string
   series: OptionSeries[]
+  metric: SalesMetric
 }) {
   if (!active || !payload?.length) return null
   const row = payload[0].payload
@@ -61,28 +73,28 @@ function OptionTooltip({
               />
               <span className="text-muted-foreground">{r.s.name}</span>
             </span>
-            <span>{formatQty(r.qty)}</span>
+            <span>{formatMetric(r.qty, metric)}</span>
           </p>
         ))}
       </div>
       {series.length > 1 && (
         <p className="flex justify-between gap-3 border-t pt-1 tabular-nums">
           <span className="text-muted-foreground">합계</span>
-          <span className="font-semibold">{formatQty(total)}</span>
+          <span className="font-semibold">{formatMetric(total, metric)}</span>
         </p>
       )}
     </div>
   )
 }
 
-export function OptionQtyLineChart({ buckets, series, loading }: Props) {
+export function OptionQtyLineChart({ buckets, series, metric, loading }: Props) {
   const chartData = useMemo<ChartRow[]>(() => {
     return buckets.map((b) => {
       const row: ChartRow = { label: b.label }
-      for (const s of series) row[s.id] = seriesBucketValue(b, s)
+      for (const s of series) row[s.id] = seriesBucketValue(b, s, metric)
       return row
     })
-  }, [buckets, series])
+  }, [buckets, series, metric])
 
   const nameById = useMemo(() => {
     const m = new Map<string, string>()
@@ -93,7 +105,9 @@ export function OptionQtyLineChart({ buckets, series, loading }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>상품(옵션)별 판매량 추이</CardTitle>
+        <CardTitle>
+          {metric === 'revenue' ? '상품(옵션)별 매출 추이' : '상품(옵션)별 판매량 추이'}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -102,7 +116,7 @@ export function OptionQtyLineChart({ buckets, series, loading }: Props) {
           </div>
         ) : chartData.length === 0 || series.length === 0 ? (
           <div className="flex h-72 items-center justify-center text-sm text-muted-foreground">
-            해당 기간에 판매량 데이터가 없습니다
+            해당 기간에 표시할 데이터가 없습니다
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={320}>
@@ -116,7 +130,7 @@ export function OptionQtyLineChart({ buckets, series, loading }: Props) {
               <Tooltip
                 allowEscapeViewBox={{ x: false, y: false }}
                 wrapperStyle={{ zIndex: 50 }}
-                content={(<OptionTooltip series={series} />) as never}
+                content={(<OptionTooltip series={series} metric={metric} />) as never}
               />
               {/* 상품 탭은 Legend 가 유일한 색↔시리즈 단서라 유지한다.
                   단 시리즈가 많으면 줄바꿈이 무한정 늘어나 플롯을 침범하므로 높이를 묶는다. */}

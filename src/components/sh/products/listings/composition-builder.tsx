@@ -14,18 +14,19 @@ import { productDisplayName } from '@/lib/sh/product-display'
 import {
   attributeValuesOf,
   buildBackedValueSet,
-  buildSimpleCompositionGroups,
+  buildMultiProductBundleGroups,
   cartesianFromAttrState,
   diagnoseComposition,
   findMatchingOption,
+  pruneUnbackedAttributes,
 } from './composition-builder-utils'
 
 /**
  * 판매채널 상품 구성 빌더.
  *
  * 단계별 UX:
- * 1) 상품 1개 선택
- * 2) 모드 선택
+ * 1) 상품 선택 — 2개 이상이면 MultiProductSettings(상품 간 cartesian)로 분기
+ * 2) 모드 선택 (상품 1개일 때)
  *    - simple(수량 세트만 구성): 세트 수량 N 지정 → 모든 속성 cartesian으로 펼쳐 listing N개 생성
  *      (각 listing은 1옵션 × N수량)
  *    - advanced(옵션 선택 구성): 속성 체크 + 값별 수량 지정. 선택 안 된 속성은 모든 값 펼침
@@ -48,6 +49,7 @@ type OptionRow = {
   sku: string | null
   retailPrice: number | null
   attributeValues: Record<string, string>
+  totalStock: number
 }
 
 type ProductDetail = {
@@ -83,6 +85,9 @@ export type ItemEntry = {
   quantity: number
   retailPrice: number | null
   attributeValues: Record<string, string>
+  /** manual 모드 표시용 — 어느 상품 옵션인지·재고 연결 확인 */
+  productName?: string
+  totalStock?: number
 }
 
 export type BuiltGroup = {
@@ -104,7 +109,7 @@ export type ProductContext = {
   brandName: string | null
 }
 
-/** 최상위 모드: bulk = 기존 단일 상품 옵션 펼치기, manual = 여러 옵션 직접 묶기 */
+/** 최상위 모드: bulk = 상품 선택하기(상품 1개+ 선택 → 옵션·세트 구성), manual = 옵션 직접 생성 */
 type TopLevelMode = 'bulk' | 'manual'
 
 /** manual 모드의 행 하나 */
@@ -124,6 +129,50 @@ type Props = {
   initialMode?: TopLevelMode
 }
 
+/** 상품 상세 조회 → ProductDetail. 옵션이 없는 속성값은 정의에서 제거한다(pruneUnbackedAttributes). */
+async function fetchProductDetail(productId: string): Promise<ProductDetail> {
+  const res = await fetch(`/api/sh/products/${productId}`)
+  if (!res.ok) throw new Error('상품 조회 실패')
+  const data: {
+    product: {
+      id: string
+      name: string
+      internalName: string | null
+      msrp?: string | number | null
+      optionAttributes: AttributeDef[] | null
+      brand: { id: string; name: string } | null
+      options: Array<{
+        id: string
+        name: string
+        sku: string | null
+        retailPrice?: string | number | null
+        attributeValues: Record<string, string> | null
+        totalStock?: number
+      }>
+    }
+  } = await res.json()
+  const prod = data.product
+  const productMsrp = prod.msrp != null ? Number(prod.msrp) : null
+  const options: OptionRow[] = prod.options.map((o) => ({
+    id: o.id,
+    name: o.name,
+    sku: o.sku,
+    retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
+    attributeValues: o.attributeValues ?? {},
+    totalStock: o.totalStock ?? 0,
+  }))
+  return {
+    id: prod.id,
+    name: prod.name,
+    internalName: prod.internalName,
+    optionAttributes: Array.isArray(prod.optionAttributes)
+      ? pruneUnbackedAttributes(prod.optionAttributes, options)
+      : null,
+    brand: prod.brand,
+    options,
+  }
+}
+
 export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }: Props) {
   // 최상위 모드 토글: bulk(기존) vs manual(새)
   const [topMode, setTopMode] = useState<TopLevelMode>(initialMode)
@@ -132,9 +181,6 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
   const [product, setProduct] = useState<ProductDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [mode, setMode] = useState<BuilderMode>('simple')
-
-  // simple 모드
-  const [setQuantities, setSetQuantities] = useState<number[]>([1])
 
   // advanced 모드
   const [attrState, setAttrState] = useState<Record<string, AttrState>>({})
@@ -147,7 +193,6 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
   useEffect(() => {
     if (!product) {
       setAttrState({})
-      setSetQuantities([1])
       setBundles([{ id: 'b1', valueQuantities: {} }])
       setMode('simple')
       return
@@ -160,45 +205,23 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
     setBundles([{ id: `b-${Date.now()}`, valueQuantities: {} }])
   }, [product])
 
-  function handlePickProduct(p: ProductRow) {
+  // 여러 상품 조합 (2개 이상 선택 시)
+  const [multiProducts, setMultiProducts] = useState<ProductDetail[] | null>(null)
+  const [multiPicks, setMultiPicks] = useState<Record<string, MultiPickState>>({})
+
+  function handlePickProducts(rows: ProductRow[]) {
     setLoading(true)
     const load = async () => {
       try {
-        const res = await fetch(`/api/sh/products/${p.id}`)
-        if (!res.ok) throw new Error('상품 조회 실패')
-        const data: {
-          product: {
-            id: string
-            name: string
-            internalName: string | null
-            msrp?: string | number | null
-            optionAttributes: AttributeDef[] | null
-            brand: { id: string; name: string } | null
-            options: Array<{
-              id: string
-              name: string
-              sku: string | null
-              retailPrice?: string | number | null
-              attributeValues: Record<string, string> | null
-            }>
-          }
-        } = await res.json()
-        const prod = data.product
-        const productMsrp = prod.msrp != null ? Number(prod.msrp) : null
-        setProduct({
-          id: prod.id,
-          name: prod.name,
-          internalName: prod.internalName,
-          optionAttributes: Array.isArray(prod.optionAttributes) ? prod.optionAttributes : null,
-          brand: prod.brand,
-          options: prod.options.map((o) => ({
-            id: o.id,
-            name: o.name,
-            sku: o.sku,
-            retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
-            attributeValues: o.attributeValues ?? {},
-          })),
-        })
+        const details = await Promise.all(rows.map((r) => fetchProductDetail(r.id)))
+        // 옵션·세트 선택 상태는 상품 수와 무관하게 공통 (상품 1개의 "수량 세트만 구성"도 같은 UI)
+        setMultiPicks(
+          Object.fromEntries(
+            details.map((d) => [d.id, { optionIds: d.options.map((o) => o.id), quantities: [1] }])
+          )
+        )
+        if (details.length === 1) setProduct(details[0])
+        else setMultiProducts(details)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '상품 조회 실패')
       } finally {
@@ -206,6 +229,12 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
       }
     }
     void load()
+  }
+
+  function resetProductSelection() {
+    setProduct(null)
+    setMultiProducts(null)
+    setMultiPicks({})
   }
 
   function toggleAttr(name: string, enabled: boolean) {
@@ -269,19 +298,6 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
     )
   }
 
-  function toggleValue(attrName: string, value: string, on: boolean) {
-    setAttrState((prev) => {
-      const current = prev[attrName] ?? { enabled: true, valueQuantities: {} }
-      const valueQuantities = { ...current.valueQuantities }
-      if (on) {
-        valueQuantities[value] = valueQuantities[value] ?? 1
-      } else {
-        delete valueQuantities[value]
-      }
-      return { ...prev, [attrName]: { ...current, valueQuantities } }
-    })
-  }
-
   function emit(groups: BuiltGroup[]) {
     if (!product) return
     const ctx: ProductContext = {
@@ -296,6 +312,10 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
   function handleCommit() {
     if (topMode === 'manual') {
       commitManual()
+      return
+    }
+    if (multiProducts) {
+      commitMulti()
       return
     }
     if (!product) return
@@ -323,24 +343,23 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
     onCommit(null, groups)
   }
 
-  function commitSimple() {
-    if (!product) return
-    const groups = buildSimpleCompositionGroups({ product, attrState, setQuantities })
+  function commitMulti() {
+    if (!multiProducts) return
+    const groups = buildMultiProductBundleGroups(multiPicksToInput(multiProducts, multiPicks))
     if (groups.length === 0) {
-      const attrs = product.optionAttributes ?? []
-      const diag = diagnoseComposition(product, cartesianFromAttrState(attrs, attrState))
-      toast.error(
-        diag.message || '생성 가능한 옵션 조합이 없습니다. 상품 옵션의 속성값을 확인해 주세요'
-      )
+      toast.error('구성할 옵션을 1개 이상 선택하세요')
       return
     }
-    // PARTIAL — 일부 조합만 backed: backed 조합으로 진행하되 누락을 경고
-    const diag = diagnoseComposition(
-      product,
-      cartesianFromAttrState(product.optionAttributes ?? [], attrState)
-    )
-    if (diag.caseType === 'PARTIAL') {
-      toast.warning(diag.message)
+    // 여러 상품 구성은 단일 ProductContext가 없다 — manual 모드와 동일하게 null
+    onCommit(null, groups)
+  }
+
+  function commitSimple() {
+    if (!product) return
+    const groups = buildMultiProductBundleGroups(multiPicksToInput([product], multiPicks))
+    if (groups.length === 0) {
+      toast.error('구성할 옵션을 1개 이상 선택하세요')
+      return
     }
     emit(groups)
   }
@@ -399,7 +418,7 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
       )
     )
     if (validBundles.length === 0) {
-      toast.error('묶음마다 수량을 지정할 값을 1개 이상 선택하세요')
+      toast.error('세트마다 수량을 지정할 값을 1개 이상 선택하세요')
       return
     }
 
@@ -506,8 +525,8 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
         <Label className="text-xs text-muted-foreground">구성 방식</Label>
         <Tabs value={topMode} onValueChange={(v) => setTopMode(v as TopLevelMode)}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="bulk">한 상품의 옵션 펼치기</TabsTrigger>
-            <TabsTrigger value="manual">여러 옵션 직접 묶기</TabsTrigger>
+            <TabsTrigger value="bulk">상품 선택하기</TabsTrigger>
+            <TabsTrigger value="manual">옵션 직접 생성</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -524,13 +543,15 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
         /* ── bulk 모드 (기존) ── */
         <>
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">{product ? '구성 설정' : '1) 상품 선택'}</h3>
-            {product && (
+            <h3 className="text-sm font-semibold">
+              {product || multiProducts ? '구성 설정' : '1) 상품 선택'}
+            </h3>
+            {(product || multiProducts) && (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => setProduct(null)}
+                onClick={resetProductSelection}
                 disabled={disabled || loading}
               >
                 <ChevronLeft className="mr-1 h-4 w-4" />
@@ -539,10 +560,24 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
             )}
           </div>
 
-          {!product ? (
-            <ProductSearchPane onPick={handlePickProduct} />
-          ) : loading ? (
+          {loading ? (
             <p className="text-sm text-muted-foreground">불러오는 중...</p>
+          ) : multiProducts ? (
+            <div className="space-y-5">
+              <MultiProductSettings
+                products={multiProducts}
+                picks={multiPicks}
+                onPicksChange={setMultiPicks}
+              />
+              <div className="flex justify-end border-t pt-3">
+                <Button type="button" onClick={handleCommit} disabled={disabled}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  추가하기
+                </Button>
+              </div>
+            </div>
+          ) : !product ? (
+            <ProductSearchPane onPick={handlePickProducts} />
           ) : (
             <div className="space-y-5">
               <SelectedProductHeader product={product} />
@@ -556,23 +591,10 @@ export function CompositionBuilder({ onCommit, disabled, initialMode = 'bulk' }:
                   </TabsList>
 
                   <TabsContent value="simple" className="mt-3">
-                    <SimpleModeSettings
-                      product={product}
-                      setQuantities={setQuantities}
-                      onAddBundle={() => setSetQuantities((prev) => [...prev, 1])}
-                      onRemoveBundle={(idx) =>
-                        setSetQuantities((prev) =>
-                          prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
-                        )
-                      }
-                      onUpdateBundleQty={(idx, q) =>
-                        setSetQuantities((prev) =>
-                          prev.map((x, i) => (i === idx ? Math.max(1, q) : x))
-                        )
-                      }
-                      attrState={attrState}
-                      onToggleAttr={toggleAttr}
-                      onToggleValue={toggleValue}
+                    <MultiProductSettings
+                      products={[product]}
+                      picks={multiPicks}
+                      onPicksChange={setMultiPicks}
                     />
                   </TabsContent>
 
@@ -644,7 +666,7 @@ function ManualModeEditor({
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
         각 행이 판매 옵션 1개가 됩니다. 행마다 여러 상품의 옵션을 섞어 구성할 수 있습니다. 이름을
-        비우면 생성 시 검색명을 그대로 사용합니다.
+        비우면 생성 시 검색명을 그대로 사용합니다. 추가한 옵션은 해당 상품 옵션의 재고와 연결됩니다.
       </p>
 
       {rows.length === 0 ? (
@@ -736,41 +758,7 @@ function ManualRowEditor({
   async function pickOptionProduct(p: ProductRow) {
     setOptionLoading(true)
     try {
-      const res = await fetch(`/api/sh/products/${p.id}`)
-      if (!res.ok) throw new Error('상품 조회 실패')
-      const data: {
-        product: {
-          id: string
-          name: string
-          internalName: string | null
-          msrp?: string | number | null
-          optionAttributes: AttributeDef[] | null
-          brand: { id: string; name: string } | null
-          options: Array<{
-            id: string
-            name: string
-            sku: string | null
-            retailPrice?: string | number | null
-            attributeValues: Record<string, string> | null
-          }>
-        }
-      } = await res.json()
-      const prod = data.product
-      const productMsrp = prod.msrp != null ? Number(prod.msrp) : null
-      setOptionProduct({
-        id: prod.id,
-        name: prod.name,
-        internalName: prod.internalName,
-        optionAttributes: Array.isArray(prod.optionAttributes) ? prod.optionAttributes : null,
-        brand: prod.brand,
-        options: prod.options.map((o) => ({
-          id: o.id,
-          name: o.name,
-          sku: o.sku,
-          retailPrice: o.retailPrice != null ? Number(o.retailPrice) : productMsrp,
-          attributeValues: o.attributeValues ?? {},
-        })),
-      })
+      setOptionProduct(await fetchProductDetail(p.id))
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '상품 조회 실패')
     } finally {
@@ -786,6 +774,8 @@ function ManualRowEditor({
       quantity: 1,
       retailPrice: opt.retailPrice,
       attributeValues: opt.attributeValues,
+      productName: optionProduct ? productDisplayName(optionProduct) : undefined,
+      totalStock: opt.totalStock,
     }
     onUpdate({ items: [...row.items, newItem] })
     setOptionPickerOpen(false)
@@ -876,7 +866,19 @@ function ManualRowEditor({
                 key={it.optionId}
                 className="flex items-center gap-2 rounded border bg-muted/30 px-2 py-1.5"
               >
-                <span className="flex-1 text-xs">{it.optionName}</span>
+                <div className="min-w-0 flex-1 text-xs">
+                  <p className="truncate">
+                    {it.productName && (
+                      <span className="text-muted-foreground">{it.productName} · </span>
+                    )}
+                    {it.optionName}
+                  </p>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {it.sku ? `SKU ${it.sku}` : 'SKU 없음'}
+                    {it.totalStock !== undefined &&
+                      ` · 재고 ${it.totalStock.toLocaleString('ko-KR')}`}
+                  </p>
+                </div>
                 <span className="text-xs text-muted-foreground">수량</span>
                 <Input
                   type="number"
@@ -1035,8 +1037,20 @@ function ManualRowEditor({
 }
 
 // ─── 하위: 상품 검색 ─────────────────────────────────────────────────────────
-function ProductSearchPane({ onPick }: { onPick: (p: ProductRow) => void }) {
+function ProductSearchPane({ onPick }: { onPick: (rows: ProductRow[]) => void }) {
   const [query, setQuery] = useState('')
+  // 검색어를 바꿔도 선택이 유지되도록 id → row 로 보관 (선택 순서 = 삽입 순서)
+  const [picked, setPicked] = useState<Map<string, ProductRow>>(new Map())
+
+  function togglePick(p: ProductRow) {
+    setPicked((prev) => {
+      const next = new Map(prev)
+      if (next.has(p.id)) next.delete(p.id)
+      else next.set(p.id, p)
+      return next
+    })
+  }
+
   const [debounced, setDebounced] = useState('')
   const [results, setResults] = useState<ProductRow[]>([])
   const [loading, setLoading] = useState(false)
@@ -1094,12 +1108,13 @@ function ProductSearchPane({ onPick }: { onPick: (p: ProductRow) => void }) {
           <ul className="divide-y">
             {results.map((p) => (
               <li key={p.id}>
-                <button
-                  type="button"
-                  onClick={() => onPick(p)}
-                  className="w-full px-4 py-2.5 text-left transition hover:bg-muted/60"
-                >
-                  <div className="flex items-start justify-between gap-3">
+                <label className="flex w-full cursor-pointer items-start gap-3 px-4 py-2.5 transition hover:bg-muted/60">
+                  <Checkbox
+                    className="mt-0.5"
+                    checked={picked.has(p.id)}
+                    onCheckedChange={() => togglePick(p)}
+                  />
+                  <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium">{productDisplayName(p)}</p>
                       <p className="text-xs text-muted-foreground">
@@ -1108,15 +1123,263 @@ function ProductSearchPane({ onPick }: { onPick: (p: ProductRow) => void }) {
                       </p>
                     </div>
                   </div>
-                </button>
+                </label>
               </li>
             ))}
           </ul>
         )}
       </div>
+      <div className="flex items-center justify-between gap-2">
+        <p className="min-w-0 truncate text-xs text-muted-foreground">
+          {picked.size === 0
+            ? '상품을 선택하세요. 2개 이상 고르면 상품끼리 조합해 구성합니다'
+            : Array.from(picked.values()).map(productDisplayName).join(', ')}
+        </p>
+        <Button
+          type="button"
+          size="sm"
+          disabled={picked.size === 0}
+          onClick={() => onPick(Array.from(picked.values()))}
+        >
+          다음 ({picked.size}개)
+        </Button>
+      </div>
     </div>
   )
 }
+
+// ─── 여러 상품 조합 ─────────────────────────────────────────────────────────
+/** quantities[i] = 세트 i 에 들어갈 이 상품 수량 (0 = 그 세트에서 제외). 모든 상품의 길이가 같다. */
+type MultiPickState = { optionIds: string[]; quantities: number[] }
+
+function multiPicksToInput(products: ProductDetail[], picks: Record<string, MultiPickState>) {
+  return products.map((p) => {
+    const pick = picks[p.id]
+    const ids = new Set(pick?.optionIds ?? [])
+    return {
+      label: productDisplayName(p),
+      options: p.options.filter((o) => ids.has(o.id)),
+      quantities: pick?.quantities ?? [1],
+    }
+  })
+}
+
+function MultiProductSettings({
+  products,
+  picks,
+  onPicksChange,
+}: {
+  products: ProductDetail[]
+  picks: Record<string, MultiPickState>
+  onPicksChange: (next: Record<string, MultiPickState>) => void
+}) {
+  const groups = useMemo(
+    () => buildMultiProductBundleGroups(multiPicksToInput(products, picks)),
+    [products, picks]
+  )
+  const pickOf = (id: string): MultiPickState => picks[id] ?? { optionIds: [], quantities: [1] }
+  const bundleCount = Math.max(1, ...products.map((p) => pickOf(p.id).quantities.length))
+
+  function patch(id: string, next: Partial<MultiPickState>) {
+    onPicksChange({ ...picks, [id]: { ...pickOf(id), ...next } })
+  }
+  function mapAll(fn: (q: number[]) => number[]) {
+    onPicksChange(
+      Object.fromEntries(
+        products.map((p) => [p.id, { ...pickOf(p.id), quantities: fn(pickOf(p.id).quantities) }])
+      )
+    )
+  }
+  function setQty(id: string, bundleIdx: number, qty: number) {
+    const quantities = [...pickOf(id).quantities]
+    quantities[bundleIdx] = Math.max(0, qty)
+    patch(id, { quantities })
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">
+        옵션을 고르고 세트별 수량을 정하세요. 세트 1개가 판매 옵션 1개이며, 옵션을 여러 개 고른
+        상품은 옵션마다 판매 옵션이 나뉘어 생성됩니다.
+      </p>
+      <div className="text-xs font-medium">옵션 선택</div>
+      {products.map((p) => {
+        const pick = pickOf(p.id)
+        return (
+          <div key={p.id} className="space-y-2 rounded-md border bg-background p-3">
+            {products.length > 1 && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">상품</Badge>
+                <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                  {productDisplayName(p)}
+                </p>
+              </div>
+            )}
+            {p.options.length === 0 ? (
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                옵션이 없는 상품이라 조합에서 제외됩니다
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {p.options.map((o) => {
+                  const checked = pick.optionIds.includes(o.id)
+                  return (
+                    <label
+                      key={o.id}
+                      className={`inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs ${
+                        checked ? 'border-primary bg-primary/10' : 'hover:bg-muted'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(c) =>
+                          patch(p.id, {
+                            optionIds:
+                              c === true
+                                ? [...pick.optionIds, o.id]
+                                : pick.optionIds.filter((id) => id !== o.id),
+                          })
+                        }
+                      />
+                      <span>{o.name || '기본'}</span>
+                      <span className="text-muted-foreground">
+                        재고 {o.totalStock.toLocaleString('ko-KR')}
+                      </span>
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )
+      })}
+
+      <SetTable
+        columns={products.map((p) => productDisplayName(p))}
+        rows={Array.from({ length: bundleCount }, (_, b) =>
+          products.map((p) => pickOf(p.id).quantities[b] ?? 0)
+        )}
+        min={0}
+        onAdd={() => mapAll((q) => [...q, 1])}
+        onRemove={(b) => mapAll((q) => q.filter((_, i) => i !== b))}
+        onChange={(b, col, qty) => setQty(products[col].id, b, qty)}
+        hint="수량 0 = 그 세트에서 제외"
+      />
+
+      <PreviewSummary groups={groups} />
+    </div>
+  )
+}
+
+/**
+ * 세트 구성 표 — 단일 상품(수량 세트)·여러 상품이 같은 UX 를 쓰도록 공통화.
+ * 행 = 세트 1개(= 판매 옵션 1개), 열 = 상품별 수량.
+ */
+function SetTable({
+  columns,
+  rows,
+  min,
+  onAdd,
+  onRemove,
+  onChange,
+  hint,
+}: {
+  columns: string[]
+  rows: number[][]
+  min: number
+  onAdd: () => void
+  onRemove: (row: number) => void
+  onChange: (row: number, col: number, qty: number) => void
+  hint?: string
+}) {
+  return (
+    <div className="space-y-2 rounded-md border bg-background p-3">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">세트 구성 ({rows.length}개)</Label>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={onAdd}
+        >
+          <Plus className="mr-1 h-3.5 w-3.5" />
+          세트 추가
+        </Button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="text-muted-foreground">
+              <th className="w-16 py-1 text-left font-normal">세트</th>
+              {columns.map((c, i) => (
+                <th key={i} className="max-w-32 truncate px-1 py-1 text-left font-normal">
+                  {c}
+                </th>
+              ))}
+              <th className="w-8" />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, r) => (
+              <tr key={r}>
+                <td className="py-1">#{r + 1}</td>
+                {row.map((qty, c) => (
+                  <td key={c} className="px-1 py-1">
+                    <Input
+                      type="number"
+                      min={min}
+                      max={999}
+                      value={qty}
+                      onChange={(e) => onChange(r, c, Math.max(min, Number(e.target.value || min)))}
+                      className="h-7 w-20"
+                      aria-label={`세트 ${r + 1} ${columns[c]}`}
+                    />
+                  </td>
+                ))}
+                <td>
+                  {rows.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => onRemove(r)}
+                      aria-label={`세트 ${r + 1} 제거`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+    </div>
+  )
+}
+
+/** 생성될 판매 옵션 수 + 예시(`옵션×수량 + …`) — 모든 구성 방식 공통 */
+function PreviewSummary({ groups }: { groups: ItemGroupLike[] }) {
+  const samples = groups
+    .slice(0, 3)
+    .map((g) => g.items.map((it) => `${it.optionName || '기본'}×${it.quantity}`).join(' + '))
+  return (
+    <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+      <strong className="text-foreground">{groups.length}</strong>개의 판매 옵션이 생성됩니다
+      {samples.length > 0 && (
+        <span className="mt-0.5 block">
+          예: {samples.join(', ')}
+          {groups.length > samples.length && ` 외 ${groups.length - samples.length}개`}
+        </span>
+      )}
+    </div>
+  )
+}
+
+type ItemGroupLike = { items: Array<{ optionName: string; quantity: number }> }
 
 function SelectedProductHeader({ product }: { product: ProductDetail }) {
   return (
@@ -1127,173 +1390,6 @@ function SelectedProductHeader({ product }: { product: ProductDetail }) {
         <p className="truncate text-xs text-muted-foreground">
           {product.brand?.name ?? '브랜드 없음'} · 옵션 {product.options.length}개
         </p>
-      </div>
-    </div>
-  )
-}
-
-// ─── Simple 모드 ─────────────────────────────────────────────────────────────
-function SimpleModeSettings({
-  product,
-  setQuantities,
-  onAddBundle,
-  onRemoveBundle,
-  onUpdateBundleQty,
-  attrState,
-  onToggleAttr,
-  onToggleValue,
-}: {
-  product: ProductDetail
-  setQuantities: number[]
-  onAddBundle: () => void
-  onRemoveBundle: (idx: number) => void
-  onUpdateBundleQty: (idx: number, qty: number) => void
-  attrState: Record<string, AttrState>
-  onToggleAttr: (name: string, enabled: boolean) => void
-  onToggleValue: (attrName: string, value: string, on: boolean) => void
-}) {
-  const attrs = useMemo(() => product.optionAttributes ?? [], [product.optionAttributes])
-  const bundleCount = setQuantities.length
-
-  // 정의 cartesian(전체 선택 조합) + 뒷받침 진단을 단일 source로 계산
-  const allCombos = useMemo(
-    () =>
-      attrs.length === 0
-        ? product.options.length > 0
-          ? [{} as Record<string, string>]
-          : []
-        : cartesianFromAttrState(attrs, attrState),
-    [attrs, attrState, product.options.length]
-  )
-  const diag = useMemo(() => diagnoseComposition(product, allCombos), [product, allCombos])
-  // 옵션 행이 실제 보유한 (속성, 값) 집합 — 인라인 배지용
-  const backedValueSet = useMemo(() => buildBackedValueSet(product.options), [product.options])
-
-  const previewGroups = buildSimpleCompositionGroups({ product, attrState, setQuantities })
-  const comboCount = diag.backedCombos.length
-  const totalListings = previewGroups.length
-
-  // 예시는 정의가 아니라 "뒷받침되는" 조합에서만 — false confidence 방지
-  const samples = diag.backedCombos.slice(0, 3).map((c) =>
-    attrs
-      .map((a) => c[a.name])
-      .filter(Boolean)
-      .join(' / ')
-  )
-
-  return (
-    <div className="space-y-3 rounded-md border bg-background p-3">
-      {attrs.length > 0 && diag.caseType !== 'OK' && (
-        <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-300">
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <span>{diag.message}</span>
-        </div>
-      )}
-      <div className="space-y-1.5">
-        <Label>세트 수량</Label>
-        <div className="space-y-1.5">
-          {setQuantities.map((q, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <Input
-                type="number"
-                min={1}
-                max={999}
-                value={q}
-                onChange={(e) => onUpdateBundleQty(idx, Math.max(1, Number(e.target.value || 1)))}
-                className="h-9 w-24"
-              />
-              <span className="text-xs text-muted-foreground">
-                {idx === 0 ? '선택한 옵션 조합마다 이 수량이 적용됩니다' : `번들 세트 ${idx + 1}`}
-              </span>
-              {bundleCount > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="ml-auto h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                  onClick={() => onRemoveBundle(idx)}
-                  aria-label="세트 수량 제거"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-            onClick={onAddBundle}
-          >
-            <Plus className="mr-1 h-3.5 w-3.5" />
-            번들세트 추가
-          </Button>
-        </div>
-      </div>
-
-      {attrs.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-xs font-medium">옵션 선택 (선택 안 하면 전체)</div>
-          <div className="space-y-2">
-            {attrs.map((attr) => {
-              const state = attrState[attr.name] ?? { enabled: false, valueQuantities: {} }
-              return (
-                <div key={attr.name} className="rounded-md border p-2">
-                  <label className="flex cursor-pointer items-center gap-2 text-xs">
-                    <Checkbox
-                      checked={state.enabled}
-                      onCheckedChange={(v) => onToggleAttr(attr.name, v === true)}
-                    />
-                    <span className="font-medium">{attr.name}</span>
-                    <span className="text-muted-foreground">(값 {attr.values.length}개)</span>
-                  </label>
-                  {state.enabled && (
-                    <div className="mt-2 flex flex-wrap gap-1.5 pl-6">
-                      {attributeValuesOf(attr).map((value) => {
-                        const checked = state.valueQuantities[value] !== undefined
-                        const unbacked = !backedValueSet.has(`${attr.name.trim()} ${value}`)
-                        return (
-                          <label
-                            key={value}
-                            className={`inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs ${
-                              checked ? 'border-primary bg-primary/10' : 'hover:bg-muted'
-                            }`}
-                          >
-                            <Checkbox
-                              checked={checked}
-                              onCheckedChange={(c) => onToggleValue(attr.name, value, c === true)}
-                            />
-                            <span>{value}</span>
-                            {unbacked && (
-                              <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 text-[10px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
-                                <AlertTriangle className="h-2.5 w-2.5" />
-                                옵션 없음
-                              </span>
-                            )}
-                          </label>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-        <strong className="text-foreground">{totalListings}</strong>개의 판매 옵션이 생성됩니다 ·{' '}
-        {bundleCount > 1
-          ? `옵션 조합 ${comboCount}개 × 세트 수량 ${bundleCount}종 (${setQuantities.join(', ')})`
-          : `각 판매 옵션 = 1 옵션 × ${setQuantities[0]} 수량`}
-        {samples.length > 0 && (
-          <span className="mt-0.5 block">
-            예: {samples.join(', ')}
-            {comboCount > samples.length && ` 외 ${comboCount - samples.length}개`}
-          </span>
-        )}
       </div>
     </div>
   )
@@ -1342,7 +1438,7 @@ function BundlesEditor({
       <div className="space-y-2">
         <Label className="text-xs">수량 지정 속성</Label>
         <p className="text-xs text-muted-foreground">
-          선택한 속성은 묶음별로 값·수량을 지정합니다. 선택 안 된 속성은 모든 값에 기본 적용되어
+          선택한 속성은 세트별로 값·수량을 지정합니다. 선택 안 된 속성은 모든 값에 기본 적용되어
           판매 옵션이 자동으로 나뉘어 생성됩니다
         </p>
         <div className="flex flex-wrap gap-2">
@@ -1367,11 +1463,11 @@ function BundlesEditor({
         </div>
       </div>
 
-      {/* 2) 묶음 카드 */}
+      {/* 2) 세트 카드 */}
       {selectedAttrs.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs">묶음 ({bundles.length}개)</Label>
+            <Label className="text-xs">세트 구성 ({bundles.length}개)</Label>
             <Button
               type="button"
               variant="ghost"
@@ -1380,7 +1476,7 @@ function BundlesEditor({
               onClick={onAddBundle}
             >
               <Plus className="mr-1 h-3.5 w-3.5" />
-              묶음 추가
+              세트 추가
             </Button>
           </div>
           <div className="space-y-2">
@@ -1388,7 +1484,7 @@ function BundlesEditor({
               <div key={bundle.id} className="rounded-md border bg-background px-3 py-3">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary">묶음 #{idx + 1}</Badge>
+                    <Badge variant="secondary">세트 #{idx + 1}</Badge>
                     <span className="text-xs text-muted-foreground">
                       {bundleSummary(bundle) || '값을 선택하세요'}
                     </span>
@@ -1400,7 +1496,7 @@ function BundlesEditor({
                       size="sm"
                       className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                       onClick={() => onRemoveBundle(bundle.id)}
-                      aria-label="묶음 제거"
+                      aria-label="세트 제거"
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -1496,7 +1592,7 @@ function AdvancedPreview({
           )}
         </>
       ) : (
-        <span>수량 지정 속성을 선택하고 묶음마다 값을 1개 이상 골라야 미리 보기가 표시됩니다</span>
+        <span>수량 지정 속성을 선택하고 세트마다 값을 1개 이상 골라야 미리 보기가 표시됩니다</span>
       )}
     </div>
   )

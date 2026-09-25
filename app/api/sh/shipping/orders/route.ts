@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { encryptOrderPii, decryptPii } from '@/lib/del/encryption'
 import { maskName, maskPhone, maskAddress } from '@/lib/del/pii-masker'
 import { MAX_ITEMS_PER_ORDER } from '@/lib/sh/shipping-constants'
+import { matchesPaymentAmount } from '@/lib/sh/order-search'
 
 // 검색 입력 제약 — oracle 마찰 완화
 const MIN_QUERY_LENGTH = 2
@@ -15,7 +16,7 @@ const MAX_LIMIT = 200
 /**
  * GET /api/sh/shipping/orders?q=<검색어>&limit=<n>
  *
- * 전체 데이터(묶음 무관, COMPLETED만)를 받는분·주문번호·전화·주소로 검색한다.
+ * 전체 데이터(묶음 무관, COMPLETED만)를 받는분·주문번호·전화·주소·결제금액으로 검색한다.
  * 받는분/전화/주소는 암호화 PII(row별 IV, 비결정적)라 DB 검색이 불가능하므로
  * COMPLETED 주문 전량을 fetch한 뒤 메모리에서 복호화-후-필터한다. (prod 79건 규모)
  * 결과는 항상 마스킹하며, 평문은 응답에 포함하지 않는다.
@@ -106,11 +107,12 @@ export async function GET(req: NextRequest) {
       phoneVal = decryptPii(o.phoneEnc, o.phoneIv)
       addr = decryptPii(o.addressEnc, o.addressIv)
     } catch {
-      // 개별 row 복호화 실패(데이터 손상) — PII 매칭만 제외하고 orderNumber 매칭은 유지.
+      // 개별 row 복호화 실패(데이터 손상) — PII 매칭만 제외하고 주문번호·결제금액 매칭은 유지.
       piiOk = false
     }
 
     const orderNumberMatch = !!o.orderNumber && o.orderNumber.toLowerCase().includes(qLower)
+    const paymentAmountMatch = matchesPaymentAmount(o.paymentAmount, q)
     let piiMatch = false
     if (piiOk) {
       const phoneDigits = phoneVal.replace(/\D/g, '')
@@ -120,7 +122,7 @@ export async function GET(req: NextRequest) {
         (phoneSearchable && phoneDigits.includes(qDigits))
     }
 
-    if (!orderNumberMatch && !piiMatch) continue
+    if (!orderNumberMatch && !piiMatch && !paymentAmountMatch) continue
 
     matched.push({
       id: o.id,

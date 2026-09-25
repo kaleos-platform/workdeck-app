@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@/generated/prisma/client'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { validateStockGradeSettings } from '@/lib/sh/stock-grade-settings'
 
 type SettingsResponse = {
   defaultLocationId: string | null
@@ -59,6 +60,7 @@ export async function PATCH(req: NextRequest) {
     defaultLocationId?: string | null
     slackWebhookUrl?: string | null
     preferences?: Record<string, unknown>
+    gradeSettings?: unknown
   }
 
   const data: {
@@ -100,16 +102,39 @@ export async function PATCH(req: NextRequest) {
     }
   }
 
+  // preferences 는 여러 기능이 공유하는 JSON 이라 **항상 기존 값에 병합**한다.
+  // 통째로 교체하면 다른 화면이 저장해둔 키가 조용히 사라진다(lost update).
+  let preferencesPatch: Record<string, unknown> | undefined
+
   if ('preferences' in body) {
     if (
       body.preferences &&
       typeof body.preferences === 'object' &&
       !Array.isArray(body.preferences)
     ) {
-      data.preferences = body.preferences
+      preferencesPatch = { ...body.preferences }
     } else {
       return errorResponse('preferences 형식이 올바르지 않습니다', 400)
     }
+  }
+
+  // 등급 설정은 재고 현황 화면의 계산에 직접 들어가므로 여기서 값 범위를 검증한다.
+  if ('gradeSettings' in body) {
+    const parsed = validateStockGradeSettings(body.gradeSettings)
+    if (!parsed.ok) return errorResponse(parsed.message, 400)
+    preferencesPatch = { ...(preferencesPatch ?? {}), ...parsed.patch }
+  }
+
+  if (preferencesPatch) {
+    const existing = await prisma.invSettings.findUnique({
+      where: { spaceId: resolved.space.id },
+      select: { preferences: true },
+    })
+    const current =
+      existing?.preferences && typeof existing.preferences === 'object'
+        ? (existing.preferences as Record<string, unknown>)
+        : {}
+    data.preferences = { ...current, ...preferencesPatch }
   }
 
   const updated = await prisma.invSettings.upsert({

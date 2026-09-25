@@ -1,0 +1,5346 @@
+{
+  "commit": null,
+  "deployment": null,
+  "notes": [
+    "CDP로 대체 Chrome 연결. 기존 MCP와 브라우저 세션이 다름.",
+    "warm은 cache reset 없음, cacheMiss는 각 cycle 전에 workspace tag 삭제. 플랫폼 cold start를 보장하지 않음.",
+    "network.finishedAt은 response.finished 3초 상한을 포함할 수 있어 네트워크 전송 완료 지표로 쓰지 않음. request.timing.responseEnd를 사용.",
+    "운영 도메인 배포를 측정 전후 고정 검증하지 않았다. 병행 main 배포가 있어 단일 배포 결과로 취급하지 않는다."
+  ],
+  "warm": [
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 855,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=85.2, auth_membership;dur=215.9, membership_loop_active;dur=3.8, membership_loop_idle;dur=211.9, auth_deck;dur=3.8, auth_workspace;dur=5.1, auth;dur=310.6, target_summaries;dur=4.1, data;dur=44.1, total;dur=355.1"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 331,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=29.9, auth_membership;dur=7.9, membership_loop_active;dur=1.6, membership_loop_idle;dur=6.3, auth_deck;dur=3.2, auth_workspace;dur=3.2, auth;dur=44.3, data;dur=6.1, total;dur=51.0"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 321,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=29.9, auth_membership;dur=9.5, membership_loop_active;dur=1.8, membership_loop_idle;dur=7.7, auth_deck;dur=4.7, auth_workspace;dur=4.4, auth;dur=48.6, target_summaries;dur=4.5, data;dur=22.3, total;dur=71.2"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 339,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=26.9, auth_membership;dur=9.1, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.5, auth_deck;dur=4.6, auth_workspace;dur=4.7, auth;dur=45.6, data;dur=5.7, total;dur=51.9"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 784.1000001430511,
+        "responseEnd": 746.6000001430511,
+        "load": 793.5,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 308.4
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 754,
+          "finishedAt": 795,
+          "startAt": 9.873046875,
+          "responseStart": 742.139,
+          "responseEnd": 744.934,
+          "serverTiming": "proxy_session;dur=308.4"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1175,
+          "finishedAt": 1175,
+          "startAt": 816.06396484375,
+          "responseStart": 356.527,
+          "responseEnd": 357.398,
+          "serverTiming": "auth_user;dur=62.6, auth_membership;dur=9.6, membership_loop_active;dur=9.4, membership_loop_idle;dur=0.0, auth_deck;dur=9.9, auth_workspace;dur=6.5, auth;dur=89.1, data;dur=65.4, total;dur=154.9"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1197,
+          "finishedAt": 1198,
+          "startAt": 815.51904296875,
+          "responseStart": 379.872,
+          "responseEnd": 380.766,
+          "serverTiming": "auth_user;dur=42.0, db_connect;dur=26.2, auth_membership;dur=41.0, membership_loop_active;dur=8.9, membership_loop_idle;dur=32.1, auth_deck;dur=4.9, auth_workspace;dur=5.5, auth;dur=93.7, data;dur=11.2, total;dur=105.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1229,
+          "finishedAt": 1230,
+          "startAt": 826.47509765625,
+          "responseStart": 401.212,
+          "responseEnd": 402.382,
+          "serverTiming": "proxy_session;dur=60.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1253,
+          "finishedAt": 1254,
+          "startAt": 825.9140625,
+          "responseStart": 424.479,
+          "responseEnd": 425.436,
+          "serverTiming": "proxy_session;dur=190.0"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1412,
+          "finishedAt": 1413,
+          "startAt": 815.906005859375,
+          "responseStart": 594.332,
+          "responseEnd": 595.407,
+          "serverTiming": "auth_user;dur=85.2, auth_membership;dur=215.9, membership_loop_active;dur=3.8, membership_loop_idle;dur=211.9, auth_deck;dur=3.8, auth_workspace;dur=5.1, auth;dur=310.6, target_summaries;dur=4.1, data;dur=44.1, total;dur=355.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1435,
+          "finishedAt": 1435,
+          "startAt": 1230.26708984375,
+          "responseStart": 188.794,
+          "responseEnd": 189.784,
+          "serverTiming": "proxy_session;dur=26.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1435,
+          "finishedAt": 1436,
+          "startAt": 1253.81005859375,
+          "responseStart": 165.515,
+          "responseEnd": 166.553,
+          "serverTiming": "proxy_session;dur=25.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1496,
+          "finishedAt": 1497,
+          "startAt": 1421.81201171875,
+          "responseStart": 73.189,
+          "responseEnd": 74.112,
+          "serverTiming": "proxy_session;dur=26.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1547,
+          "finishedAt": 1562,
+          "startAt": 1459.194091796875,
+          "responseStart": 75.011,
+          "responseEnd": 76.606,
+          "serverTiming": "proxy_session;dur=27.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1579,
+          "finishedAt": 1580,
+          "startAt": 1497.2021484375,
+          "responseStart": 69.443,
+          "responseEnd": 70.372,
+          "serverTiming": "proxy_session;dur=25.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1593,
+          "finishedAt": 1594,
+          "startAt": 1520.745849609375,
+          "responseStart": 70.462,
+          "responseEnd": 71.295,
+          "serverTiming": "proxy_session;dur=27.5"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1652,
+          "finishedAt": 1652,
+          "startAt": 1576.664794921875,
+          "responseStart": 74.546,
+          "responseEnd": 75.119,
+          "serverTiming": "proxy_session;dur=25.1"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1676,
+          "finishedAt": 1676,
+          "startAt": 1593.664794921875,
+          "responseStart": 80.915,
+          "responseEnd": 81.654,
+          "serverTiming": "proxy_session;dur=37.0"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1716,
+          "finishedAt": 1717,
+          "startAt": 1652.473876953125,
+          "responseStart": 62.564,
+          "responseEnd": 62.992,
+          "serverTiming": "proxy_session;dur=27.0"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1722,
+          "finishedAt": 1723,
+          "startAt": 1572.15771484375,
+          "responseStart": 148.572,
+          "responseEnd": 149.58,
+          "serverTiming": "auth_user;dur=29.9, auth_membership;dur=7.9, membership_loop_active;dur=1.6, membership_loop_idle;dur=6.3, auth_deck;dur=3.2, auth_workspace;dur=3.2, auth;dur=44.3, data;dur=6.1, total;dur=51.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1782,
+          "finishedAt": 1783,
+          "startAt": 826.712890625,
+          "responseStart": 954.572,
+          "responseEnd": 955.947,
+          "serverTiming": "proxy_session;dur=90.7"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1785,
+          "finishedAt": 1786,
+          "startAt": 1716.89697265625,
+          "responseStart": 68.232,
+          "responseEnd": 68.834,
+          "serverTiming": "proxy_session;dur=28.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1815,
+          "finishedAt": 1815,
+          "startAt": 825.739990234375,
+          "responseStart": 983.262,
+          "responseEnd": 983.888,
+          "serverTiming": "proxy_session;dur=55.4"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1853,
+          "finishedAt": 1853,
+          "startAt": 1782.865966796875,
+          "responseStart": 68.978,
+          "responseEnd": 69.473,
+          "serverTiming": "proxy_session;dur=25.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2046,
+          "finishedAt": 2047,
+          "startAt": 1938.876220703125,
+          "responseStart": 105.26,
+          "responseEnd": 106.03,
+          "serverTiming": "proxy_session;dur=25.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2133,
+          "finishedAt": 2134,
+          "startAt": 2046.8818359375,
+          "responseStart": 85.494,
+          "responseEnd": 86.072,
+          "serverTiming": "proxy_session;dur=28.3"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2161,
+          "finishedAt": 2161,
+          "startAt": 2020.779052734375,
+          "responseStart": 138.041,
+          "responseEnd": 140.306,
+          "serverTiming": "auth_user;dur=33.0, auth_membership;dur=6.9, membership_loop_active;dur=1.6, membership_loop_idle;dur=5.3, auth_deck;dur=3.6, auth_workspace;dur=3.4, auth;dur=47.1, data;dur=5.7, total;dur=53.1"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2184,
+          "finishedAt": 2185,
+          "startAt": 2020.091064453125,
+          "responseStart": 160.295,
+          "responseEnd": 161.9,
+          "serverTiming": "auth_user;dur=29.9, auth_membership;dur=9.5, membership_loop_active;dur=1.8, membership_loop_idle;dur=7.7, auth_deck;dur=4.7, auth_workspace;dur=4.4, auth;dur=48.6, target_summaries;dur=4.5, data;dur=22.3, total;dur=71.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2205,
+          "finishedAt": 2206,
+          "startAt": 2104.7861328125,
+          "responseStart": 99.378,
+          "responseEnd": 100.009,
+          "serverTiming": "proxy_session;dur=25.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2215,
+          "finishedAt": 2216,
+          "startAt": 2098.5732421875,
+          "responseStart": 114.826,
+          "responseEnd": 115.65,
+          "serverTiming": "proxy_session;dur=27.7"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2230,
+          "finishedAt": 2232,
+          "startAt": 2134.159912109375,
+          "responseStart": 94.151,
+          "responseEnd": 94.89,
+          "serverTiming": "proxy_session;dur=24.3"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2301,
+          "finishedAt": 2302,
+          "startAt": 2231.5009765625,
+          "responseStart": 68.722,
+          "responseEnd": 70.148,
+          "serverTiming": "proxy_session;dur=22.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2331,
+          "finishedAt": 2332,
+          "startAt": 2238.2880859375,
+          "responseStart": 92.33,
+          "responseEnd": 93.376,
+          "serverTiming": "proxy_session;dur=46.9"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2352,
+          "finishedAt": 2352,
+          "startAt": 2275.347900390625,
+          "responseStart": 75.237,
+          "responseEnd": 75.729,
+          "serverTiming": "proxy_session;dur=39.8"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2380,
+          "finishedAt": 2381,
+          "startAt": 2286.582275390625,
+          "responseStart": 93.021,
+          "responseEnd": 93.436,
+          "serverTiming": "proxy_session;dur=28.4"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2434,
+          "finishedAt": 2434,
+          "startAt": 2261.2958984375,
+          "responseStart": 171.66,
+          "responseEnd": 172.209,
+          "serverTiming": "proxy_session;dur=29.8"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2486,
+          "finishedAt": 2487,
+          "startAt": 2340.301025390625,
+          "responseStart": 144.65,
+          "responseEnd": 145.923,
+          "serverTiming": "auth_user;dur=26.9, auth_membership;dur=9.1, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.5, auth_deck;dur=4.6, auth_workspace;dur=4.7, auth;dur=45.6, data;dur=5.7, total;dur=51.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1519,
+          "finishedAt": 4519,
+          "startAt": 1421.01513671875,
+          "responseStart": 86.57,
+          "responseEnd": 99.132,
+          "serverTiming": "proxy_session;dur=34.6"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1840,
+          "finishedAt": 4840,
+          "startAt": 1765.587158203125,
+          "responseStart": 73.632,
+          "responseEnd": 74.823,
+          "serverTiming": "proxy_session;dur=24.6"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1869,
+          "finishedAt": 4870,
+          "startAt": 1800.907958984375,
+          "responseStart": 67.764,
+          "responseEnd": 206.389,
+          "serverTiming": "proxy_session;dur=22.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1924,
+          "finishedAt": 4925,
+          "startAt": 1786.673095703125,
+          "responseStart": 136.565,
+          "responseEnd": 151.798,
+          "serverTiming": "proxy_session;dur=26.4"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2024,
+          "finishedAt": 5024,
+          "startAt": 1853.2939453125,
+          "responseStart": 168.159,
+          "responseEnd": 250.952,
+          "serverTiming": "proxy_session;dur=25.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2084,
+          "finishedAt": 5085,
+          "startAt": 1815.050048828125,
+          "responseStart": 268.265,
+          "responseEnd": 283.053,
+          "serverTiming": "proxy_session;dur=27.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2094,
+          "finishedAt": 5095,
+          "startAt": 1840.35791015625,
+          "responseStart": 252.526,
+          "responseEnd": 274.239,
+          "serverTiming": "proxy_session;dur=25.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2183,
+          "finishedAt": 5184,
+          "startAt": 2115.1640625,
+          "responseStart": 64.53,
+          "responseEnd": 67.935,
+          "serverTiming": "proxy_session;dur=21.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2260,
+          "finishedAt": 5262,
+          "startAt": 2183.884765625,
+          "responseStart": 75.821,
+          "responseEnd": 77.253,
+          "serverTiming": "proxy_session;dur=28.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2275,
+          "finishedAt": 5276,
+          "startAt": 2206.223876953125,
+          "responseStart": 67.799,
+          "responseEnd": 69.001,
+          "serverTiming": "proxy_session;dur=26.0"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 294,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=41.4, auth_membership;dur=8.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.0, auth_deck;dur=4.6, auth_workspace;dur=4.2, auth;dur=58.8, target_summaries;dur=5.1, data;dur=35.7, total;dur=94.8"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 332,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=25.0, auth_membership;dur=8.6, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.1, auth_deck;dur=4.3, auth_workspace;dur=4.0, auth;dur=42.1, data;dur=7.3, total;dur=50.1"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 316,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=25.3, auth_membership;dur=8.8, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.2, auth_deck;dur=4.3, auth_workspace;dur=4.3, auth;dur=42.8, target_summaries;dur=3.8, data;dur=20.4, total;dur=63.4"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 372,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=29.4, auth_membership;dur=8.4, membership_loop_active;dur=1.5, membership_loop_idle;dur=6.9, auth_deck;dur=4.2, auth_workspace;dur=4.0, auth;dur=46.1, data;dur=6.8, total;dur=53.4"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 245.20000004768372,
+        "responseEnd": 216.70000004768372,
+        "load": 252.20000004768372,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 25.2
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 217,
+          "finishedAt": 254,
+          "startAt": 4.782958984375,
+          "responseStart": 210.606,
+          "responseEnd": 216.144,
+          "serverTiming": "proxy_session;dur=25.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 339,
+          "finishedAt": 339,
+          "startAt": 278.89892578125,
+          "responseStart": 59.044,
+          "responseEnd": 59.775,
+          "serverTiming": "proxy_session;dur=27.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 347,
+          "finishedAt": 348,
+          "startAt": 278.72900390625,
+          "responseStart": 68.514,
+          "responseEnd": 69.016,
+          "serverTiming": "proxy_session;dur=23.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 370,
+          "finishedAt": 370,
+          "startAt": 279.343994140625,
+          "responseStart": 89.888,
+          "responseEnd": 90.595,
+          "serverTiming": "proxy_session;dur=22.3"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 377,
+          "finishedAt": 377,
+          "startAt": 269.27880859375,
+          "responseStart": 107.367,
+          "responseEnd": 107.756,
+          "serverTiming": "auth_user;dur=25.8, auth_membership;dur=8.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.0, auth_deck;dur=4.2, auth_workspace;dur=4.3, auth;dur=43.0, data;dur=4.6, total;dur=47.8"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 406,
+          "finishedAt": 406,
+          "startAt": 268.6669921875,
+          "responseStart": 136.051,
+          "responseEnd": 136.668,
+          "serverTiming": "auth_user;dur=34.3, auth_membership;dur=7.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=6.0, auth_deck;dur=3.3, auth_workspace;dur=3.1, auth;dur=48.4, data;dur=5.4, total;dur=54.1"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 426,
+          "finishedAt": 427,
+          "startAt": 348.15380859375,
+          "responseStart": 76.901,
+          "responseEnd": 77.321,
+          "serverTiming": "proxy_session;dur=29.3"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 454,
+          "finishedAt": 454,
+          "startAt": 370.2412109375,
+          "responseStart": 82.438,
+          "responseEnd": 82.866,
+          "serverTiming": "proxy_session;dur=49.0"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 460,
+          "finishedAt": 460,
+          "startAt": 269.02294921875,
+          "responseStart": 190.202,
+          "responseEnd": 190.722,
+          "serverTiming": "auth_user;dur=41.4, auth_membership;dur=8.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.0, auth_deck;dur=4.6, auth_workspace;dur=4.2, auth;dur=58.8, target_summaries;dur=5.1, data;dur=35.7, total;dur=94.8"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 465,
+          "finishedAt": 466,
+          "startAt": 381.837890625,
+          "responseStart": 82.889,
+          "responseEnd": 83.503,
+          "serverTiming": "proxy_session;dur=37.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 505,
+          "finishedAt": 506,
+          "startAt": 426.657958984375,
+          "responseStart": 77.544,
+          "responseEnd": 78.296,
+          "serverTiming": "proxy_session;dur=27.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 517,
+          "finishedAt": 519,
+          "startAt": 416.52490234375,
+          "responseStart": 99.286,
+          "responseEnd": 99.851,
+          "serverTiming": "proxy_session;dur=43.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 527,
+          "finishedAt": 528,
+          "startAt": 454.08203125,
+          "responseStart": 71.342,
+          "responseEnd": 71.781,
+          "serverTiming": "proxy_session;dur=22.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 542,
+          "finishedAt": 543,
+          "startAt": 469.47900390625,
+          "responseStart": 70.695,
+          "responseEnd": 71.408,
+          "serverTiming": "proxy_session;dur=27.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 552,
+          "finishedAt": 553,
+          "startAt": 465.77587890625,
+          "responseStart": 84.121,
+          "responseEnd": 84.563,
+          "serverTiming": "proxy_session;dur=28.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 596,
+          "finishedAt": 599,
+          "startAt": 472.287109375,
+          "responseStart": 122.744,
+          "responseEnd": 123.499,
+          "serverTiming": "proxy_session;dur=22.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 611,
+          "finishedAt": 611,
+          "startAt": 517.557861328125,
+          "responseStart": 83.888,
+          "responseEnd": 84.54,
+          "serverTiming": "proxy_session;dur=31.4"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 619,
+          "finishedAt": 619,
+          "startAt": 542.2919921875,
+          "responseStart": 76.253,
+          "responseEnd": 76.675,
+          "serverTiming": "proxy_session;dur=25.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 662,
+          "finishedAt": 662,
+          "startAt": 526.93701171875,
+          "responseStart": 134.286,
+          "responseEnd": 134.828,
+          "serverTiming": "proxy_session;dur=29.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 731,
+          "finishedAt": 731,
+          "startAt": 619.6728515625,
+          "responseStart": 110.583,
+          "responseEnd": 111.004,
+          "serverTiming": "proxy_session;dur=23.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 755,
+          "finishedAt": 755,
+          "startAt": 685.8330078125,
+          "responseStart": 68.864,
+          "responseEnd": 69.236,
+          "serverTiming": "proxy_session;dur=25.1"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 759,
+          "finishedAt": 760,
+          "startAt": 607.467041015625,
+          "responseStart": 150.861,
+          "responseEnd": 151.764,
+          "serverTiming": "auth_user;dur=25.0, auth_membership;dur=8.6, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.1, auth_deck;dur=4.3, auth_workspace;dur=4.0, auth;dur=42.1, data;dur=7.3, total;dur=50.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 792,
+          "finishedAt": 792,
+          "startAt": 717.954833984375,
+          "responseStart": 71.337,
+          "responseEnd": 71.858,
+          "serverTiming": "proxy_session;dur=26.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 814,
+          "finishedAt": 814,
+          "startAt": 731.305908203125,
+          "responseStart": 81.908,
+          "responseEnd": 82.28,
+          "serverTiming": "proxy_session;dur=28.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 836,
+          "finishedAt": 836,
+          "startAt": 743.013916015625,
+          "responseStart": 78.707,
+          "responseEnd": 79.316,
+          "serverTiming": "proxy_session;dur=27.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 837,
+          "finishedAt": 838,
+          "startAt": 755.660888671875,
+          "responseStart": 80.216,
+          "responseEnd": 80.775,
+          "serverTiming": "proxy_session;dur=24.8"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 897,
+          "finishedAt": 898,
+          "startAt": 814.390869140625,
+          "responseStart": 82.725,
+          "responseEnd": 83.206,
+          "serverTiming": "proxy_session;dur=25.8"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1058,
+          "finishedAt": 1058,
+          "startAt": 875.595947265625,
+          "responseStart": 181.178,
+          "responseEnd": 181.579,
+          "serverTiming": "proxy_session;dur=22.5"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1076,
+          "finishedAt": 1088,
+          "startAt": 898.119140625,
+          "responseStart": 176.582,
+          "responseEnd": 177.136,
+          "serverTiming": "proxy_session;dur=20.9"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1204,
+          "finishedAt": 1204,
+          "startAt": 980.143798828125,
+          "responseStart": 221.575,
+          "responseEnd": 222.363,
+          "serverTiming": "proxy_session;dur=26.8"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1215,
+          "finishedAt": 1216,
+          "startAt": 1086.3359375,
+          "responseStart": 127.286,
+          "responseEnd": 128.212,
+          "serverTiming": "auth_user;dur=24.1, auth_membership;dur=6.7, membership_loop_active;dur=1.7, membership_loop_idle;dur=5.0, auth_deck;dur=3.3, auth_workspace;dur=3.2, auth;dur=37.5, data;dur=4.7, total;dur=42.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1220,
+          "finishedAt": 1221,
+          "startAt": 1090.45703125,
+          "responseStart": 127.729,
+          "responseEnd": 128.739,
+          "serverTiming": "proxy_session;dur=25.6"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1233,
+          "finishedAt": 1234,
+          "startAt": 1085.9501953125,
+          "responseStart": 144.746,
+          "responseEnd": 145.578,
+          "serverTiming": "auth_user;dur=25.3, auth_membership;dur=8.8, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.2, auth_deck;dur=4.3, auth_workspace;dur=4.3, auth;dur=42.8, target_summaries;dur=3.8, data;dur=20.4, total;dur=63.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1413,
+          "finishedAt": 1413,
+          "startAt": 1277.39208984375,
+          "responseStart": 132.826,
+          "responseEnd": 134.718,
+          "serverTiming": "proxy_session;dur=23.2"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1566,
+          "finishedAt": 1567,
+          "startAt": 1430.9560546875,
+          "responseStart": 133.026,
+          "responseEnd": 134.99,
+          "serverTiming": "auth_user;dur=29.4, auth_membership;dur=8.4, membership_loop_active;dur=1.5, membership_loop_idle;dur=6.9, auth_deck;dur=4.2, auth_workspace;dur=4.0, auth;dur=46.1, data;dur=6.8, total;dur=53.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 380,
+          "finishedAt": 3380,
+          "startAt": 279.19482421875,
+          "responseStart": 100.704,
+          "responseEnd": 102.76,
+          "serverTiming": "proxy_session;dur=44.7"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 635,
+          "finishedAt": 3636,
+          "startAt": 552.180908203125,
+          "responseStart": 82.095,
+          "responseEnd": 83.53,
+          "serverTiming": "proxy_session;dur=27.7"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 685,
+          "finishedAt": 3686,
+          "startAt": 611.47705078125,
+          "responseStart": 72.853,
+          "responseEnd": 74.275,
+          "serverTiming": "proxy_session;dur=25.5"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 706,
+          "finishedAt": 3707,
+          "startAt": 635.916748046875,
+          "responseStart": 69.289,
+          "responseEnd": 81.406,
+          "serverTiming": "proxy_session;dur=32.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 742,
+          "finishedAt": 3743,
+          "startAt": 662.2958984375,
+          "responseStart": 79.604,
+          "responseEnd": 80.602,
+          "serverTiming": "proxy_session;dur=25.6"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 911,
+          "finishedAt": 3912,
+          "startAt": 820.68896484375,
+          "responseStart": 89.499,
+          "responseEnd": 255.59,
+          "serverTiming": "proxy_session;dur=29.9"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 971,
+          "finishedAt": 3973,
+          "startAt": 837.616943359375,
+          "responseStart": 133.079,
+          "responseEnd": 142.147,
+          "serverTiming": "proxy_session;dur=31.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1232,
+          "finishedAt": 4233,
+          "startAt": 1090.10693359375,
+          "responseStart": 137.943,
+          "responseEnd": 140.969,
+          "serverTiming": "proxy_session;dur=42.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1241,
+          "finishedAt": 4243,
+          "startAt": 1089.885009765625,
+          "responseStart": 150.175,
+          "responseEnd": 152.313,
+          "serverTiming": "proxy_session;dur=52.8"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 257,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=43.8, auth_membership;dur=9.2, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.8, auth_deck;dur=4.9, auth_workspace;dur=4.2, auth;dur=62.3, target_summaries;dur=4.4, data;dur=31.6, total;dur=94.2"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 281,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=28.3, auth_membership;dur=8.9, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.2, auth_deck;dur=4.1, auth_workspace;dur=4.2, auth;dur=45.7, data;dur=7.3, total;dur=53.4"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 322,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=26.5, auth_membership;dur=8.6, membership_loop_active;dur=1.6, membership_loop_idle;dur=7.0, auth_deck;dur=4.4, auth_workspace;dur=4.4, auth;dur=44.0, target_summaries;dur=4.2, data;dur=21.4, total;dur=65.6"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 331,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=27.9, auth_membership;dur=8.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.0, auth_deck;dur=4.5, auth_workspace;dur=4.1, auth;dur=45.2, data;dur=6.0, total;dur=51.5"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 209.39999985694885,
+        "responseEnd": 173.59999990463257,
+        "load": 215.79999995231628,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 25.8
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 181,
+          "finishedAt": 225,
+          "startAt": 6.099853515625,
+          "responseStart": 170.477,
+          "responseEnd": 172.946,
+          "serverTiming": "proxy_session;dur=25.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 312,
+          "finishedAt": 312,
+          "startAt": 241.93310546875,
+          "responseStart": 69.283,
+          "responseEnd": 70.076,
+          "serverTiming": "proxy_session;dur=26.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 326,
+          "finishedAt": 326,
+          "startAt": 241.569091796875,
+          "responseStart": 83.784,
+          "responseEnd": 84.292,
+          "serverTiming": "proxy_session;dur=29.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 345,
+          "finishedAt": 345,
+          "startAt": 242.06298828125,
+          "responseStart": 102.196,
+          "responseEnd": 103.03,
+          "serverTiming": "proxy_session;dur=25.6"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 361,
+          "finishedAt": 362,
+          "startAt": 233.003173828125,
+          "responseStart": 127.89,
+          "responseEnd": 128.446,
+          "serverTiming": "auth_user;dur=25.1, auth_membership;dur=8.4, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.0, auth_deck;dur=4.3, auth_workspace;dur=4.4, auth;dur=42.3, data;dur=6.4, total;dur=48.9"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 373,
+          "finishedAt": 373,
+          "startAt": 232.369873046875,
+          "responseStart": 138.84,
+          "responseEnd": 139.578,
+          "serverTiming": "auth_user;dur=26.6, auth_membership;dur=6.4, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.9, auth_deck;dur=3.4, auth_workspace;dur=3.5, auth;dur=40.0, data;dur=5.7, total;dur=46.0"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 400,
+          "finishedAt": 400,
+          "startAt": 326.52587890625,
+          "responseStart": 72.341,
+          "responseEnd": 72.901,
+          "serverTiming": "proxy_session;dur=21.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 409,
+          "finishedAt": 409,
+          "startAt": 312.492919921875,
+          "responseStart": 95.97,
+          "responseEnd": 96.353,
+          "serverTiming": "proxy_session;dur=43.8"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 425,
+          "finishedAt": 426,
+          "startAt": 232.68603515625,
+          "responseStart": 191.323,
+          "responseEnd": 192.209,
+          "serverTiming": "auth_user;dur=43.8, auth_membership;dur=9.2, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.8, auth_deck;dur=4.9, auth_workspace;dur=4.2, auth;dur=62.3, target_summaries;dur=4.4, data;dur=31.6, total;dur=94.2"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 427,
+          "finishedAt": 428,
+          "startAt": 345.469970703125,
+          "responseStart": 81.065,
+          "responseEnd": 81.412,
+          "serverTiming": "proxy_session;dur=26.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 483,
+          "finishedAt": 484,
+          "startAt": 409.6259765625,
+          "responseStart": 66.093,
+          "responseEnd": 66.649,
+          "serverTiming": "proxy_session;dur=24.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 508,
+          "finishedAt": 509,
+          "startAt": 427.636962890625,
+          "responseStart": 79.442,
+          "responseEnd": 79.966,
+          "serverTiming": "proxy_session;dur=24.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 518,
+          "finishedAt": 518,
+          "startAt": 442.73486328125,
+          "responseStart": 73.395,
+          "responseEnd": 74.111,
+          "serverTiming": "proxy_session;dur=27.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 527,
+          "finishedAt": 532,
+          "startAt": 445.465087890625,
+          "responseStart": 80.972,
+          "responseEnd": 81.53,
+          "serverTiming": "proxy_session;dur=26.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 569,
+          "finishedAt": 570,
+          "startAt": 481.450927734375,
+          "responseStart": 81.903,
+          "responseEnd": 82.641,
+          "serverTiming": "proxy_session;dur=25.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 598,
+          "finishedAt": 598,
+          "startAt": 518.094970703125,
+          "responseStart": 78.073,
+          "responseEnd": 78.598,
+          "serverTiming": "proxy_session;dur=28.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 610,
+          "finishedAt": 611,
+          "startAt": 508.93408203125,
+          "responseStart": 100.409,
+          "responseEnd": 100.775,
+          "serverTiming": "proxy_session;dur=26.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 658,
+          "finishedAt": 658,
+          "startAt": 564.47998046875,
+          "responseStart": 92.602,
+          "responseEnd": 93.176,
+          "serverTiming": "proxy_session;dur=23.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 671,
+          "finishedAt": 672,
+          "startAt": 598.1298828125,
+          "responseStart": 72.321,
+          "responseEnd": 72.738,
+          "serverTiming": "proxy_session;dur=25.5"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 679,
+          "finishedAt": 679,
+          "startAt": 542.818115234375,
+          "responseStart": 135.415,
+          "responseEnd": 136.42,
+          "serverTiming": "auth_user;dur=28.3, auth_membership;dur=8.9, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.2, auth_deck;dur=4.1, auth_workspace;dur=4.2, auth;dur=45.7, data;dur=7.3, total;dur=53.4"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 706,
+          "finishedAt": 710,
+          "startAt": 610.72802734375,
+          "responseStart": 76.027,
+          "responseEnd": 76.953,
+          "serverTiming": "proxy_session;dur=24.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 725,
+          "finishedAt": 725,
+          "startAt": 400.341064453125,
+          "responseStart": 324.239,
+          "responseEnd": 324.698,
+          "serverTiming": "proxy_session;dur=30.0"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 741,
+          "finishedAt": 742,
+          "startAt": 658.362060546875,
+          "responseStart": 80.312,
+          "responseEnd": 80.97,
+          "serverTiming": "proxy_session;dur=39.6"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 795,
+          "finishedAt": 795,
+          "startAt": 708.949951171875,
+          "responseStart": 84.98,
+          "responseEnd": 85.435,
+          "serverTiming": "proxy_session;dur=29.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 834,
+          "finishedAt": 834,
+          "startAt": 728.37890625,
+          "responseStart": 104.619,
+          "responseEnd": 105.004,
+          "serverTiming": "proxy_session;dur=24.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 931,
+          "finishedAt": 931,
+          "startAt": 846.306884765625,
+          "responseStart": 84.578,
+          "responseEnd": 85.062,
+          "serverTiming": "proxy_session;dur=37.1"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1043,
+          "finishedAt": 1043,
+          "startAt": 965.449951171875,
+          "responseStart": 76.905,
+          "responseEnd": 77.249,
+          "serverTiming": "proxy_session;dur=30.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1058,
+          "finishedAt": 1059,
+          "startAt": 990.3271484375,
+          "responseStart": 65.216,
+          "responseEnd": 65.774,
+          "serverTiming": "proxy_session;dur=29.1"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1097,
+          "finishedAt": 1097,
+          "startAt": 964.7119140625,
+          "responseStart": 131.143,
+          "responseEnd": 132.042,
+          "serverTiming": "auth_user;dur=29.5, auth_membership;dur=6.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=5.0, auth_deck;dur=3.3, auth_workspace;dur=3.1, auth;dur=42.6, data;dur=5.4, total;dur=48.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1104,
+          "finishedAt": 1104,
+          "startAt": 1032.9970703125,
+          "responseStart": 70.085,
+          "responseEnd": 70.73,
+          "serverTiming": "proxy_session;dur=23.4"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1117,
+          "finishedAt": 1117,
+          "startAt": 964.55126953125,
+          "responseStart": 151.208,
+          "responseEnd": 152.285,
+          "serverTiming": "auth_user;dur=26.5, auth_membership;dur=8.6, membership_loop_active;dur=1.6, membership_loop_idle;dur=7.0, auth_deck;dur=4.4, auth_workspace;dur=4.4, auth;dur=44.0, target_summaries;dur=4.2, data;dur=21.4, total;dur=65.6"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1138,
+          "finishedAt": 1138,
+          "startAt": 1058.947998046875,
+          "responseStart": 77.662,
+          "responseEnd": 78.526,
+          "serverTiming": "proxy_session;dur=22.9"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1412,
+          "finishedAt": 1413,
+          "startAt": 1278.51904296875,
+          "responseStart": 131.957,
+          "responseEnd": 133.39,
+          "serverTiming": "auth_user;dur=27.9, auth_membership;dur=8.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.0, auth_deck;dur=4.5, auth_workspace;dur=4.1, auth;dur=45.2, data;dur=6.0, total;dur=51.5"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 728,
+          "finishedAt": 3728,
+          "startAt": 671.656982421875,
+          "responseStart": 55.873,
+          "responseEnd": 56.655,
+          "serverTiming": "proxy_session;dur=26.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 803,
+          "finishedAt": 3804,
+          "startAt": 725.60107421875,
+          "responseStart": 76.459,
+          "responseEnd": 78.059,
+          "serverTiming": "proxy_session;dur=27.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 845,
+          "finishedAt": 3846,
+          "startAt": 741.755859375,
+          "responseStart": 102.903,
+          "responseEnd": 104.519,
+          "serverTiming": "proxy_session;dur=25.4"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 861,
+          "finishedAt": 3862,
+          "startAt": 745.9189453125,
+          "responseStart": 115.047,
+          "responseEnd": 212.348,
+          "serverTiming": "proxy_session;dur=23.8"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 884,
+          "finishedAt": 3885,
+          "startAt": 795.143798828125,
+          "responseStart": 86.211,
+          "responseEnd": 170.252,
+          "serverTiming": "proxy_session;dur=23.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 902,
+          "finishedAt": 3903,
+          "startAt": 803.926025390625,
+          "responseStart": 97.794,
+          "responseEnd": 99.695,
+          "serverTiming": "proxy_session;dur=23.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 983,
+          "finishedAt": 3984,
+          "startAt": 834.199951171875,
+          "responseStart": 148.585,
+          "responseEnd": 174.061,
+          "serverTiming": "proxy_session;dur=36.8"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 990,
+          "finishedAt": 3991,
+          "startAt": 931.718994140625,
+          "responseStart": 57.363,
+          "responseEnd": 58.269,
+          "serverTiming": "proxy_session;dur=25.2"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1031,
+          "finishedAt": 4032,
+          "startAt": 969.593017578125,
+          "responseStart": 61.21,
+          "responseEnd": 63.168,
+          "serverTiming": "proxy_session;dur=22.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1079,
+          "finishedAt": 4080,
+          "startAt": 1008.39306640625,
+          "responseStart": 69.412,
+          "responseEnd": 71.292,
+          "serverTiming": "proxy_session;dur=28.8"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1133,
+          "finishedAt": 4134,
+          "startAt": 1043.52392578125,
+          "responseStart": 88.8,
+          "responseEnd": 90.543,
+          "serverTiming": "proxy_session;dur=24.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1263,
+          "finishedAt": 4264,
+          "startAt": 1166.863037109375,
+          "responseStart": 95.5,
+          "responseEnd": 98.59,
+          "serverTiming": "proxy_session;dur=34.4"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 228,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=67.1, auth_membership;dur=8.9, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.4, auth_deck;dur=4.3, auth_workspace;dur=4.3, auth;dur=84.7, target_summaries;dur=3.5, data;dur=31.6, total;dur=116.5"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 382,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=26.3, auth_membership;dur=8.6, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.1, auth_deck;dur=4.7, auth_workspace;dur=4.2, auth;dur=43.9, data;dur=6.6, total;dur=50.9"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 218,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=23.8, auth_membership;dur=6.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=5.0, auth_deck;dur=3.3, auth_workspace;dur=3.3, auth;dur=37.0, target_summaries;dur=4.8, data;dur=25.7, total;dur=63.0"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 309,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=26.9, auth_membership;dur=6.7, membership_loop_active;dur=1.4, membership_loop_idle;dur=5.3, auth_deck;dur=3.5, auth_workspace;dur=3.1, auth;dur=40.4, data;dur=4.6, total;dur=45.3"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 187.40000009536743,
+        "responseEnd": 163.70000004768372,
+        "load": 192.20000004768372,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 24.4
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 167,
+          "finishedAt": 196,
+          "startAt": 6.44091796875,
+          "responseStart": 159.764,
+          "responseEnd": 163.075,
+          "serverTiming": "proxy_session;dur=24.4"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 333,
+          "finishedAt": 333,
+          "startAt": 205.788818359375,
+          "responseStart": 126.452,
+          "responseEnd": 127.182,
+          "serverTiming": "auth_user;dur=28.3, auth_membership;dur=9.1, membership_loop_active;dur=1.3, membership_loop_idle;dur=7.8, auth_deck;dur=4.5, auth_workspace;dur=4.1, auth;dur=46.1, data;dur=6.3, total;dur=52.6"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 342,
+          "finishedAt": 342,
+          "startAt": 206.2021484375,
+          "responseStart": 134.978,
+          "responseEnd": 135.424,
+          "serverTiming": "auth_user;dur=28.8, auth_membership;dur=6.5, membership_loop_active;dur=1.4, membership_loop_idle;dur=5.1, auth_deck;dur=3.6, auth_workspace;dur=3.3, auth;dur=42.3, data;dur=5.1, total;dur=47.6"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 351,
+          "finishedAt": 351,
+          "startAt": 286.898193359375,
+          "responseStart": 63.69,
+          "responseEnd": 63.996,
+          "serverTiming": "proxy_session;dur=27.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 353,
+          "finishedAt": 353,
+          "startAt": 283.218994140625,
+          "responseStart": 69.629,
+          "responseEnd": 69.972,
+          "serverTiming": "proxy_session;dur=23.2"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 362,
+          "finishedAt": 362,
+          "startAt": 298.64111328125,
+          "responseStart": 62.751,
+          "responseEnd": 63.115,
+          "serverTiming": "proxy_session;dur=23.2"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 412,
+          "finishedAt": 412,
+          "startAt": 205.972900390625,
+          "responseStart": 205.228,
+          "responseEnd": 205.69,
+          "serverTiming": "auth_user;dur=67.1, auth_membership;dur=8.9, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.4, auth_deck;dur=4.3, auth_workspace;dur=4.3, auth;dur=84.7, target_summaries;dur=3.5, data;dur=31.6, total;dur=116.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 424,
+          "finishedAt": 424,
+          "startAt": 213.555908203125,
+          "responseStart": 208.821,
+          "responseEnd": 209.61,
+          "serverTiming": "proxy_session;dur=96.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 425,
+          "finishedAt": 426,
+          "startAt": 353.589111328125,
+          "responseStart": 71.278,
+          "responseEnd": 71.638,
+          "serverTiming": "proxy_session;dur=22.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 442,
+          "finishedAt": 443,
+          "startAt": 351.5859375,
+          "responseStart": 89.474,
+          "responseEnd": 90.118,
+          "serverTiming": "proxy_session;dur=26.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 444,
+          "finishedAt": 456,
+          "startAt": 362.21484375,
+          "responseStart": 80.752,
+          "responseEnd": 81.026,
+          "serverTiming": "proxy_session;dur=25.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 509,
+          "finishedAt": 509,
+          "startAt": 425.80810546875,
+          "responseStart": 81.758,
+          "responseEnd": 82.204,
+          "serverTiming": "proxy_session;dur=23.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 511,
+          "finishedAt": 511,
+          "startAt": 442.797119140625,
+          "responseStart": 67.362,
+          "responseEnd": 67.981,
+          "serverTiming": "proxy_session;dur=25.0"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 611,
+          "finishedAt": 612,
+          "startAt": 509.150146484375,
+          "responseStart": 101.953,
+          "responseEnd": 102.462,
+          "serverTiming": "proxy_session;dur=57.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 612,
+          "finishedAt": 612,
+          "startAt": 444.876953125,
+          "responseStart": 166.484,
+          "responseEnd": 166.964,
+          "serverTiming": "proxy_session;dur=40.0"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 623,
+          "finishedAt": 624,
+          "startAt": 545.580810546875,
+          "responseStart": 75.764,
+          "responseEnd": 76.384,
+          "serverTiming": "proxy_session;dur=26.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 739,
+          "finishedAt": 741,
+          "startAt": 663.508056640625,
+          "responseStart": 74.54,
+          "responseEnd": 75.035,
+          "serverTiming": "proxy_session;dur=30.3"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 753,
+          "finishedAt": 754,
+          "startAt": 620.864990234375,
+          "responseStart": 131.182,
+          "responseEnd": 132.053,
+          "serverTiming": "auth_user;dur=26.3, auth_membership;dur=8.6, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.1, auth_deck;dur=4.7, auth_workspace;dur=4.2, auth;dur=43.9, data;dur=6.6, total;dur=50.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 791,
+          "finishedAt": 797,
+          "startAt": 691.93896484375,
+          "responseStart": 66.749,
+          "responseEnd": 68.974,
+          "serverTiming": "proxy_session;dur=33.5"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 792,
+          "finishedAt": 797,
+          "startAt": 709.23779296875,
+          "responseStart": 58.9,
+          "responseEnd": 59.583,
+          "serverTiming": "proxy_session;dur=22.3"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 862,
+          "finishedAt": 862,
+          "startAt": 794.493896484375,
+          "responseStart": 66.475,
+          "responseEnd": 67.14,
+          "serverTiming": "proxy_session;dur=28.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1055,
+          "finishedAt": 1055,
+          "startAt": 983.1328125,
+          "responseStart": 70.821,
+          "responseEnd": 71.566,
+          "serverTiming": "proxy_session;dur=24.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1098,
+          "finishedAt": 1099,
+          "startAt": 982.847900390625,
+          "responseStart": 114.026,
+          "responseEnd": 114.647,
+          "serverTiming": "proxy_session;dur=35.6"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1104,
+          "finishedAt": 1104,
+          "startAt": 980.22802734375,
+          "responseStart": 122.64,
+          "responseEnd": 123.34,
+          "serverTiming": "auth_user;dur=25.9, auth_membership;dur=8.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.0, auth_deck;dur=4.2, auth_workspace;dur=4.1, auth;dur=42.8, data;dur=6.1, total;dur=49.1"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1128,
+          "finishedAt": 1128,
+          "startAt": 979.927978515625,
+          "responseStart": 146.503,
+          "responseEnd": 147.223,
+          "serverTiming": "auth_user;dur=23.8, auth_membership;dur=6.5, membership_loop_active;dur=1.5, membership_loop_idle;dur=5.0, auth_deck;dur=3.3, auth_workspace;dur=3.3, auth;dur=37.0, target_summaries;dur=4.8, data;dur=25.7, total;dur=63.0"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1385,
+          "finishedAt": 1386,
+          "startAt": 1258.194091796875,
+          "responseStart": 124.988,
+          "responseEnd": 128.284,
+          "serverTiming": "auth_user;dur=26.9, auth_membership;dur=6.7, membership_loop_active;dur=1.4, membership_loop_idle;dur=5.3, auth_deck;dur=3.5, auth_workspace;dur=3.1, auth;dur=40.4, data;dur=4.6, total;dur=45.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 284,
+          "finishedAt": 3285,
+          "startAt": 213.30419921875,
+          "responseStart": 70.661,
+          "responseEnd": 73.669,
+          "serverTiming": "proxy_session;dur=28.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 298,
+          "finishedAt": 3300,
+          "startAt": 213.668212890625,
+          "responseStart": 84.349,
+          "responseEnd": 85.247,
+          "serverTiming": "proxy_session;dur=35.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 497,
+          "finishedAt": 3498,
+          "startAt": 423.73388671875,
+          "responseStart": 72.356,
+          "responseEnd": 73.418,
+          "serverTiming": "proxy_session;dur=27.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 523,
+          "finishedAt": 3524,
+          "startAt": 447.375,
+          "responseStart": 74.717,
+          "responseEnd": 76.597,
+          "serverTiming": "proxy_session;dur=24.3"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 545,
+          "finishedAt": 3546,
+          "startAt": 443.744873046875,
+          "responseStart": 100.334,
+          "responseEnd": 101.489,
+          "serverTiming": "proxy_session;dur=48.5"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 595,
+          "finishedAt": 3596,
+          "startAt": 511.155029296875,
+          "responseStart": 83.411,
+          "responseEnd": 85.01,
+          "serverTiming": "proxy_session;dur=26.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 663,
+          "finishedAt": 3663,
+          "startAt": 596.387939453125,
+          "responseStart": 65.691,
+          "responseEnd": 66.777,
+          "serverTiming": "proxy_session;dur=22.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 690,
+          "finishedAt": 3690,
+          "startAt": 612.079833984375,
+          "responseStart": 76.925,
+          "responseEnd": 79.124,
+          "serverTiming": "proxy_session;dur=25.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 692,
+          "finishedAt": 3692,
+          "startAt": 623.646728515625,
+          "responseStart": 68.468,
+          "responseEnd": 72.617,
+          "serverTiming": "proxy_session;dur=32.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 708,
+          "finishedAt": 3709,
+          "startAt": 612.52294921875,
+          "responseStart": 94.009,
+          "responseEnd": 96.27,
+          "serverTiming": "proxy_session;dur=29.9"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 803,
+          "finishedAt": 3804,
+          "startAt": 740.203857421875,
+          "responseStart": 62.454,
+          "responseEnd": 65.524,
+          "serverTiming": "proxy_session;dur=25.8"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 864,
+          "finishedAt": 3864,
+          "startAt": 796.05810546875,
+          "responseStart": 67.971,
+          "responseEnd": 68.771,
+          "serverTiming": "proxy_session;dur=24.8"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 881,
+          "finishedAt": 3881,
+          "startAt": 794.694091796875,
+          "responseStart": 85.102,
+          "responseEnd": 86.264,
+          "serverTiming": "proxy_session;dur=23.6"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 885,
+          "finishedAt": 3886,
+          "startAt": 805.590087890625,
+          "responseStart": 78.834,
+          "responseEnd": 165.829,
+          "serverTiming": "proxy_session;dur=23.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1089,
+          "finishedAt": 4090,
+          "startAt": 982.68212890625,
+          "responseStart": 105.366,
+          "responseEnd": 107.422,
+          "serverTiming": "proxy_session;dur=21.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1244,
+          "finishedAt": 4245,
+          "startAt": 1166.93408203125,
+          "responseStart": 75.531,
+          "responseEnd": 78.384,
+          "serverTiming": "proxy_session;dur=23.6"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1225,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=79.0, auth_membership;dur=7.1, membership_loop_active;dur=1.5, membership_loop_idle;dur=5.7, auth_deck;dur=3.3, auth_workspace;dur=3.5, auth;dur=93.0, target_summaries;dur=5.0, data;dur=30.5, total;dur=123.7"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 273,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=36.9, auth_membership;dur=6.8, membership_loop_active;dur=1.8, membership_loop_idle;dur=5.0, auth_deck;dur=3.1, auth_workspace;dur=3.1, auth;dur=50.0, data;dur=5.7, total;dur=56.1"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 314,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=26.9, auth_membership;dur=8.7, membership_loop_active;dur=1.6, membership_loop_idle;dur=7.1, auth_deck;dur=4.2, auth_workspace;dur=4.3, auth;dur=44.1, target_summaries;dur=6.2, data;dur=28.4, total;dur=72.7"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 327,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=45.3, auth_membership;dur=6.2, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.9, auth_deck;dur=3.2, auth_workspace;dur=2.9, auth;dur=57.7, data;dur=5.8, total;dur=63.8"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1166.0999999046326,
+        "responseEnd": 1097.8999998569489,
+        "load": 1175,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 27
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1106,
+          "finishedAt": 1182,
+          "startAt": 8.697998046875,
+          "responseStart": 1094.951,
+          "responseEnd": 1097.009,
+          "serverTiming": "proxy_session;dur=27.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1287,
+          "finishedAt": 1288,
+          "startAt": 1201.791015625,
+          "responseStart": 85.122,
+          "responseEnd": 85.809,
+          "serverTiming": "proxy_session;dur=39.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1296,
+          "finishedAt": 1296,
+          "startAt": 1201.20703125,
+          "responseStart": 94.171,
+          "responseEnd": 94.815,
+          "serverTiming": "proxy_session;dur=38.3"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1366,
+          "finishedAt": 1367,
+          "startAt": 1198.873046875,
+          "responseStart": 166.52,
+          "responseEnd": 167.012,
+          "serverTiming": "auth_user;dur=48.1, auth_membership;dur=8.5, membership_loop_active;dur=1.7, membership_loop_idle;dur=6.9, auth_deck;dur=4.2, auth_workspace;dur=4.7, auth;dur=65.7, data;dur=11.4, total;dur=77.3"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1367,
+          "finishedAt": 1367,
+          "startAt": 1296.6279296875,
+          "responseStart": 69.073,
+          "responseEnd": 69.38,
+          "serverTiming": "proxy_session;dur=26.2"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1374,
+          "finishedAt": 1374,
+          "startAt": 1198.29296875,
+          "responseStart": 173.473,
+          "responseEnd": 174.034,
+          "serverTiming": "auth_user;dur=46.8, auth_membership;dur=8.8, membership_loop_active;dur=1.6, membership_loop_idle;dur=7.2, auth_deck;dur=5.0, auth_workspace;dur=4.4, auth;dur=65.2, data;dur=15.2, total;dur=80.7"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1411,
+          "finishedAt": 1411,
+          "startAt": 1198.6220703125,
+          "responseStart": 211.721,
+          "responseEnd": 212.228,
+          "serverTiming": "auth_user;dur=79.0, auth_membership;dur=7.1, membership_loop_active;dur=1.5, membership_loop_idle;dur=5.7, auth_deck;dur=3.3, auth_workspace;dur=3.5, auth;dur=93.0, target_summaries;dur=5.0, data;dur=30.5, total;dur=123.7"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1424,
+          "finishedAt": 1424,
+          "startAt": 1325.845947265625,
+          "responseStart": 94.057,
+          "responseEnd": 94.58,
+          "serverTiming": "proxy_session;dur=32.4"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1427,
+          "finishedAt": 1428,
+          "startAt": 1366.937744140625,
+          "responseStart": 58.681,
+          "responseEnd": 59.305,
+          "serverTiming": "proxy_session;dur=22.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1454,
+          "finishedAt": 1455,
+          "startAt": 1393.182861328125,
+          "responseStart": 60.373,
+          "responseEnd": 60.872,
+          "serverTiming": "proxy_session;dur=25.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1498,
+          "finishedAt": 1498,
+          "startAt": 1428.146728515625,
+          "responseStart": 68.686,
+          "responseEnd": 69.334,
+          "serverTiming": "proxy_session;dur=23.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1505,
+          "finishedAt": 1515,
+          "startAt": 1201.661865234375,
+          "responseStart": 302.214,
+          "responseEnd": 303.028,
+          "serverTiming": "proxy_session;dur=39.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1521,
+          "finishedAt": 1521,
+          "startAt": 1454.75390625,
+          "responseStart": 65.608,
+          "responseEnd": 66.051,
+          "serverTiming": "proxy_session;dur=27.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1553,
+          "finishedAt": 1554,
+          "startAt": 1478.719970703125,
+          "responseStart": 74.118,
+          "responseEnd": 74.772,
+          "serverTiming": "proxy_session;dur=36.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1584,
+          "finishedAt": 1584,
+          "startAt": 1521.2568359375,
+          "responseStart": 61.989,
+          "responseEnd": 62.345,
+          "serverTiming": "proxy_session;dur=25.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1587,
+          "finishedAt": 1587,
+          "startAt": 1515.040771484375,
+          "responseStart": 70.94,
+          "responseEnd": 71.506,
+          "serverTiming": "proxy_session;dur=30.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1603,
+          "finishedAt": 1603,
+          "startAt": 1498.2880859375,
+          "responseStart": 103.478,
+          "responseEnd": 104.009,
+          "serverTiming": "proxy_session;dur=23.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1616,
+          "finishedAt": 1617,
+          "startAt": 1553.965087890625,
+          "responseStart": 61.503,
+          "responseEnd": 61.928,
+          "serverTiming": "proxy_session;dur=22.8"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1646,
+          "finishedAt": 1646,
+          "startAt": 1513.67529296875,
+          "responseStart": 131.415,
+          "responseEnd": 132.351,
+          "serverTiming": "auth_user;dur=36.9, auth_membership;dur=6.8, membership_loop_active;dur=1.8, membership_loop_idle;dur=5.0, auth_deck;dur=3.1, auth_workspace;dur=3.1, auth;dur=50.0, data;dur=5.7, total;dur=56.1"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1680,
+          "finishedAt": 1685,
+          "startAt": 1584.324951171875,
+          "responseStart": 66.045,
+          "responseEnd": 66.418,
+          "serverTiming": "proxy_session;dur=23.2"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1680,
+          "finishedAt": 1685,
+          "startAt": 1603.169921875,
+          "responseStart": 50.068,
+          "responseEnd": 50.586,
+          "serverTiming": "proxy_session;dur=22.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1682,
+          "finishedAt": 1685,
+          "startAt": 1587.43408203125,
+          "responseStart": 76.958,
+          "responseEnd": 78.087,
+          "serverTiming": "proxy_session;dur=38.3"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1686,
+          "finishedAt": 1686,
+          "startAt": 1616.762939453125,
+          "responseStart": 68.064,
+          "responseEnd": 68.565,
+          "serverTiming": "proxy_session;dur=35.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1771,
+          "finishedAt": 1772,
+          "startAt": 1686.1201171875,
+          "responseStart": 79.985,
+          "responseEnd": 81.258,
+          "serverTiming": "proxy_session;dur=28.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1922,
+          "finishedAt": 1924,
+          "startAt": 1684.365966796875,
+          "responseStart": 237.385,
+          "responseEnd": 237.825,
+          "serverTiming": "proxy_session;dur=30.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1997,
+          "finishedAt": 1998,
+          "startAt": 1923.541748046875,
+          "responseStart": 72.794,
+          "responseEnd": 73.225,
+          "serverTiming": "proxy_session;dur=23.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1998,
+          "finishedAt": 1999,
+          "startAt": 1929.22900390625,
+          "responseStart": 67.509,
+          "responseEnd": 67.921,
+          "serverTiming": "proxy_session;dur=31.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2007,
+          "finishedAt": 2008,
+          "startAt": 1912.64697265625,
+          "responseStart": 94.334,
+          "responseEnd": 94.763,
+          "serverTiming": "proxy_session;dur=34.9"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2052,
+          "finishedAt": 2052,
+          "startAt": 1997.490966796875,
+          "responseStart": 53.958,
+          "responseEnd": 54.41,
+          "serverTiming": "proxy_session;dur=25.2"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2076,
+          "finishedAt": 2076,
+          "startAt": 1999.419921875,
+          "responseStart": 73.168,
+          "responseEnd": 73.801,
+          "serverTiming": "proxy_session;dur=30.8"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2082,
+          "finishedAt": 2083,
+          "startAt": 1909.02001953125,
+          "responseStart": 171.358,
+          "responseEnd": 172.122,
+          "serverTiming": "auth_user;dur=26.9, auth_membership;dur=8.7, membership_loop_active;dur=1.6, membership_loop_idle;dur=7.1, auth_deck;dur=4.2, auth_workspace;dur=4.3, auth;dur=44.1, target_summaries;dur=6.2, data;dur=28.4, total;dur=72.7"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2082,
+          "finishedAt": 2083,
+          "startAt": 2008.0888671875,
+          "responseStart": 72.444,
+          "responseEnd": 73.19,
+          "serverTiming": "proxy_session;dur=25.7"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2098,
+          "finishedAt": 2099,
+          "startAt": 1909.261962890625,
+          "responseStart": 188.052,
+          "responseEnd": 188.655,
+          "serverTiming": "auth_user;dur=49.3, auth_membership;dur=38.0, membership_loop_active;dur=38.0, membership_loop_idle;dur=0.0, auth_deck;dur=5.4, auth_workspace;dur=3.3, auth;dur=96.0, data;dur=17.7, total;dur=114.0"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2386,
+          "finishedAt": 2386,
+          "startAt": 2242.35693359375,
+          "responseStart": 142.369,
+          "responseEnd": 143.638,
+          "serverTiming": "auth_user;dur=45.3, auth_membership;dur=6.2, membership_loop_active;dur=1.4, membership_loop_idle;dur=4.9, auth_deck;dur=3.2, auth_workspace;dur=2.9, auth;dur=57.7, data;dur=5.8, total;dur=63.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1317,
+          "finishedAt": 4319,
+          "startAt": 1201.369873046875,
+          "responseStart": 115.04,
+          "responseEnd": 124.233,
+          "serverTiming": "proxy_session;dur=38.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1477,
+          "finishedAt": 4479,
+          "startAt": 1419.217041015625,
+          "responseStart": 57.194,
+          "responseEnd": 59.191,
+          "serverTiming": "proxy_session;dur=23.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1501,
+          "finishedAt": 4501,
+          "startAt": 1421.8818359375,
+          "responseStart": 79.146,
+          "responseEnd": 80.988,
+          "serverTiming": "proxy_session;dur=24.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1750,
+          "finishedAt": 4751,
+          "startAt": 1682.81103515625,
+          "responseStart": 65.655,
+          "responseEnd": 68.151,
+          "serverTiming": "proxy_session;dur=25.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1751,
+          "finishedAt": 4751,
+          "startAt": 1682.611083984375,
+          "responseStart": 66.925,
+          "responseEnd": 72.824,
+          "serverTiming": "proxy_session;dur=24.1"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1792,
+          "finishedAt": 4793,
+          "startAt": 1710.77978515625,
+          "responseStart": 80.58,
+          "responseEnd": 190.687,
+          "serverTiming": "proxy_session;dur=37.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1834,
+          "finishedAt": 4835,
+          "startAt": 1756.131103515625,
+          "responseStart": 76.686,
+          "responseEnd": 79.212,
+          "serverTiming": "proxy_session;dur=26.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1851,
+          "finishedAt": 4853,
+          "startAt": 1770.06494140625,
+          "responseStart": 80.525,
+          "responseEnd": 83.769,
+          "serverTiming": "proxy_session;dur=31.7"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1927,
+          "finishedAt": 4927,
+          "startAt": 1853.570068359375,
+          "responseStart": 72.789,
+          "responseEnd": 75.46,
+          "serverTiming": "proxy_session;dur=25.0"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1975,
+          "finishedAt": 4976,
+          "startAt": 1901.637939453125,
+          "responseStart": 72.909,
+          "responseEnd": 75.645,
+          "serverTiming": "proxy_session;dur=25.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2043,
+          "finishedAt": 5045,
+          "startAt": 1977.4990234375,
+          "responseStart": 65.42,
+          "responseEnd": 66.04,
+          "serverTiming": "proxy_session;dur=23.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2228,
+          "finishedAt": 5228,
+          "startAt": 2154.469970703125,
+          "responseStart": 71.921,
+          "responseEnd": 74.445,
+          "serverTiming": "proxy_session;dur=24.3"
+        }
+      ]
+    }
+  ],
+  "cacheMiss": [
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1836,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=64.7, auth_membership;dur=7.3, membership_loop_active;dur=1.6, membership_loop_idle;dur=5.7, auth_deck;dur=3.5, auth_workspace;dur=6.7, auth;dur=82.2, catalog_loader;dur=13.4, date_ranges;dur=4.1, campaign_current;dur=8.0, campaign_previous;dur=6.5, summary_loader;dur=11.7, target_summaries;dur=17.9, data;dur=80.1, total;dur=162.5"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 830,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=31.0, auth_membership;dur=10.1, membership_loop_active;dur=1.6, membership_loop_idle;dur=8.5, auth_deck;dur=3.4, auth_workspace;dur=3.1, auth;dur=47.7, overview_latest;dur=27.0, overview_ad_types;dur=166.2, overview_current;dur=171.2, overview_previous;dur=179.5, overview_targets;dur=182.4, overview_memos;dur=209.6, overview_meta;dur=212.8, overview_loader;dur=214.6, data;dur=221.2, total;dur=269.4"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 1338,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=33.3, auth_membership;dur=6.0, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.5, auth_deck;dur=3.2, auth_workspace;dur=2.8, auth;dur=45.4, target_summaries;dur=4.0, data;dur=17.8, total;dur=63.5"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 623,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=33.4, auth_membership;dur=9.7, membership_loop_active;dur=1.9, membership_loop_idle;dur=7.7, auth_deck;dur=4.7, auth_workspace;dur=4.4, auth;dur=52.2, data;dur=6.4, total;dur=59.0"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1778.8000001907349,
+        "responseEnd": 1736.7000000476837,
+        "load": 1788.3000001907349,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 465
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1747,
+          "finishedAt": 1800,
+          "startAt": 8.474853515625,
+          "responseStart": 1732.412,
+          "responseEnd": 1735.881,
+          "serverTiming": "proxy_session;dur=465.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2066,
+          "finishedAt": 2068,
+          "startAt": 1816.318115234375,
+          "responseStart": 245.433,
+          "responseEnd": 246.657,
+          "serverTiming": "proxy_session;dur=179.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2069,
+          "finishedAt": 2070,
+          "startAt": 1815.865966796875,
+          "responseStart": 249.274,
+          "responseEnd": 250.039,
+          "serverTiming": "proxy_session;dur=174.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2089,
+          "finishedAt": 2089,
+          "startAt": 1816.013916015625,
+          "responseStart": 272.114,
+          "responseEnd": 272.603,
+          "serverTiming": "proxy_session;dur=213.0"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2187,
+          "finishedAt": 2189,
+          "startAt": 2067.744140625,
+          "responseStart": 118.496,
+          "responseEnd": 118.95,
+          "serverTiming": "proxy_session;dur=39.1"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2190,
+          "finishedAt": 2190,
+          "startAt": 1807.783203125,
+          "responseStart": 379.547,
+          "responseEnd": 380.233,
+          "serverTiming": "auth_user;dur=69.1, auth_membership;dur=9.6, membership_loop_active;dur=8.1, membership_loop_idle;dur=1.5, auth_deck;dur=14.3, auth_workspace;dur=2.8, auth;dur=95.9, data;dur=14.1, total;dur=110.2"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2215,
+          "finishedAt": 2215,
+          "startAt": 2089.677978515625,
+          "responseStart": 123.616,
+          "responseEnd": 124.376,
+          "serverTiming": "proxy_session;dur=37.8"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2226,
+          "finishedAt": 2232,
+          "startAt": 1808.086181640625,
+          "responseStart": 417.177,
+          "responseEnd": 423.884,
+          "serverTiming": "auth_user;dur=64.7, auth_membership;dur=7.3, membership_loop_active;dur=1.6, membership_loop_idle;dur=5.7, auth_deck;dur=3.5, auth_workspace;dur=6.7, auth;dur=82.2, catalog_loader;dur=13.4, date_ranges;dur=4.1, campaign_current;dur=8.0, campaign_previous;dur=6.5, summary_loader;dur=11.7, target_summaries;dur=17.9, data;dur=80.1, total;dur=162.5"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2231,
+          "finishedAt": 2235,
+          "startAt": 1808.35498046875,
+          "responseStart": 421.671,
+          "responseEnd": 427.078,
+          "serverTiming": "auth_user;dur=41.8, auth_membership;dur=11.4, membership_loop_active;dur=9.7, membership_loop_idle;dur=1.7, auth_deck;dur=6.8, auth_workspace;dur=6.4, auth;dur=66.5, kpi_current;dur=10.6, kpi_previous;dur=4.9, kpi_loader;dur=15.9, data;dur=24.3, total;dur=90.9"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2309,
+          "finishedAt": 2310,
+          "startAt": 2186.7392578125,
+          "responseStart": 101.694,
+          "responseEnd": 103.649,
+          "serverTiming": "proxy_session;dur=29.1"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2318,
+          "finishedAt": 2319,
+          "startAt": 2187.826904296875,
+          "responseStart": 126.513,
+          "responseEnd": 128.175,
+          "serverTiming": "proxy_session;dur=30.7"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2327,
+          "finishedAt": 2328,
+          "startAt": 2095.4150390625,
+          "responseStart": 230.543,
+          "responseEnd": 231.117,
+          "serverTiming": "proxy_session;dur=38.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2577,
+          "finishedAt": 2577,
+          "startAt": 2215.650146484375,
+          "responseStart": 360.648,
+          "responseEnd": 361.381,
+          "serverTiming": "proxy_session;dur=298.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2580,
+          "finishedAt": 2580,
+          "startAt": 2327.4970703125,
+          "responseStart": 251.844,
+          "responseEnd": 252.433,
+          "serverTiming": "proxy_session;dur=203.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2599,
+          "finishedAt": 2600,
+          "startAt": 2317.56103515625,
+          "responseStart": 280.824,
+          "responseEnd": 281.365,
+          "serverTiming": "proxy_session;dur=203.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2605,
+          "finishedAt": 2617,
+          "startAt": 2281.614013671875,
+          "responseStart": 318.156,
+          "responseEnd": 319.759,
+          "serverTiming": "proxy_session;dur=274.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2680,
+          "finishedAt": 2680,
+          "startAt": 2577.3798828125,
+          "responseStart": 101.794,
+          "responseEnd": 102.147,
+          "serverTiming": "proxy_session;dur=38.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2685,
+          "finishedAt": 2685,
+          "startAt": 2599.46484375,
+          "responseStart": 85.161,
+          "responseEnd": 85.54,
+          "serverTiming": "proxy_session;dur=24.7"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2717,
+          "finishedAt": 2717,
+          "startAt": 2607.8701171875,
+          "responseStart": 108.376,
+          "responseEnd": 108.696,
+          "serverTiming": "proxy_session;dur=31.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2730,
+          "finishedAt": 2730,
+          "startAt": 2580.349853515625,
+          "responseStart": 149.302,
+          "responseEnd": 149.699,
+          "serverTiming": "proxy_session;dur=26.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2760,
+          "finishedAt": 2760,
+          "startAt": 2680.157958984375,
+          "responseStart": 79.416,
+          "responseEnd": 79.771,
+          "serverTiming": "proxy_session;dur=29.3"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2776,
+          "finishedAt": 2776,
+          "startAt": 2685.413818359375,
+          "responseStart": 90.112,
+          "responseEnd": 90.471,
+          "serverTiming": "proxy_session;dur=32.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2850,
+          "finishedAt": 2851,
+          "startAt": 2776.516845703125,
+          "responseStart": 72.466,
+          "responseEnd": 73.362,
+          "serverTiming": "proxy_session;dur=25.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2862,
+          "finishedAt": 2863,
+          "startAt": 2760.508056640625,
+          "responseStart": 100.51,
+          "responseEnd": 101.431,
+          "serverTiming": "proxy_session;dur=32.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2914,
+          "finishedAt": 2915,
+          "startAt": 2730.44384765625,
+          "responseStart": 182.745,
+          "responseEnd": 183.303,
+          "serverTiming": "proxy_session;dur=28.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2971,
+          "finishedAt": 2972,
+          "startAt": 2850.78466796875,
+          "responseStart": 118.581,
+          "responseEnd": 119.179,
+          "serverTiming": "proxy_session;dur=39.4"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3010,
+          "finishedAt": 3011,
+          "startAt": 2915.363037109375,
+          "responseStart": 93.055,
+          "responseEnd": 94.29,
+          "serverTiming": "proxy_session;dur=36.1"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 3020,
+          "finishedAt": 3025,
+          "startAt": 2615.475830078125,
+          "responseStart": 403.57,
+          "responseEnd": 408.981,
+          "serverTiming": "auth_user;dur=31.0, auth_membership;dur=10.1, membership_loop_active;dur=1.6, membership_loop_idle;dur=8.5, auth_deck;dur=3.4, auth_workspace;dur=3.1, auth;dur=47.7, overview_latest;dur=27.0, overview_ad_types;dur=166.2, overview_current;dur=171.2, overview_previous;dur=179.5, overview_targets;dur=182.4, overview_memos;dur=209.6, overview_meta;dur=212.8, overview_loader;dur=214.6, data;dur=221.2, total;dur=269.4"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3085,
+          "finishedAt": 3087,
+          "startAt": 2887.934814453125,
+          "responseStart": 162.847,
+          "responseEnd": 190.122,
+          "serverTiming": "proxy_session;dur=23.3"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3086,
+          "finishedAt": 3087,
+          "startAt": 2962.26513671875,
+          "responseStart": 95.431,
+          "responseEnd": 96.119,
+          "serverTiming": "proxy_session;dur=32.5"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3086,
+          "finishedAt": 3087,
+          "startAt": 2972.31982421875,
+          "responseStart": 94.125,
+          "responseEnd": 96.862,
+          "serverTiming": "proxy_session;dur=26.3"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3127,
+          "finishedAt": 3141,
+          "startAt": 3011.60498046875,
+          "responseStart": 114.339,
+          "responseEnd": 115.488,
+          "serverTiming": "proxy_session;dur=31.4"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 4213,
+          "finishedAt": 4213,
+          "startAt": 4042.77392578125,
+          "responseStart": 169.485,
+          "responseEnd": 170.381,
+          "serverTiming": "auth_user;dur=33.3, auth_membership;dur=6.0, membership_loop_active;dur=1.5, membership_loop_idle;dur=4.5, auth_deck;dur=3.2, auth_workspace;dur=2.8, auth;dur=45.4, target_summaries;dur=4.0, data;dur=17.8, total;dur=63.5"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 4228,
+          "finishedAt": 4228,
+          "startAt": 4043.06103515625,
+          "responseStart": 184.075,
+          "responseEnd": 184.779,
+          "serverTiming": "auth_user;dur=42.9, auth_membership;dur=9.1, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.5, auth_deck;dur=4.7, auth_workspace;dur=4.5, auth;dur=61.4, data;dur=10.5, total;dur=72.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 4303,
+          "finishedAt": 4303,
+          "startAt": 4046.435791015625,
+          "responseStart": 255.28,
+          "responseEnd": 256.063,
+          "serverTiming": "proxy_session;dur=39.9"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 5017,
+          "finishedAt": 5018,
+          "startAt": 4863.630126953125,
+          "responseStart": 152.648,
+          "responseEnd": 155.14,
+          "serverTiming": "auth_user;dur=33.4, auth_membership;dur=9.7, membership_loop_active;dur=1.9, membership_loop_idle;dur=7.7, auth_deck;dur=4.7, auth_workspace;dur=4.4, auth;dur=52.2, data;dur=6.4, total;dur=59.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2095,
+          "finishedAt": 5096,
+          "startAt": 1816.4619140625,
+          "responseStart": 277.793,
+          "responseEnd": 278.998,
+          "serverTiming": "proxy_session;dur=213.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2600,
+          "finishedAt": 5601,
+          "startAt": 2288.989990234375,
+          "responseStart": 309.807,
+          "responseEnd": 315.169,
+          "serverTiming": "proxy_session;dur=239.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2800,
+          "finishedAt": 5800,
+          "startAt": 2717.22802734375,
+          "responseStart": 82.227,
+          "responseEnd": 83.044,
+          "serverTiming": "proxy_session;dur=39.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2886,
+          "finishedAt": 5889,
+          "startAt": 2800.47802734375,
+          "responseStart": 85.336,
+          "responseEnd": 86.959,
+          "serverTiming": "proxy_session;dur=42.5"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 3230,
+          "finishedAt": 6232,
+          "startAt": 3085.799072265625,
+          "responseStart": 143.716,
+          "responseEnd": 948.73,
+          "serverTiming": "proxy_session;dur=34.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 4251,
+          "finishedAt": 7253,
+          "startAt": 4046.5751953125,
+          "responseStart": 203.326,
+          "responseEnd": 205.278,
+          "serverTiming": "proxy_session;dur=43.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 4264,
+          "finishedAt": 7266,
+          "startAt": 4046.82177734375,
+          "responseStart": 216.464,
+          "responseEnd": 219.549,
+          "serverTiming": "proxy_session;dur=43.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 4813,
+          "finishedAt": 7815,
+          "startAt": 4465.575927734375,
+          "responseStart": 342.411,
+          "responseEnd": 379.249,
+          "serverTiming": "proxy_session;dur=25.0"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1596,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=39.8, auth_membership;dur=9.7, membership_loop_active;dur=2.0, membership_loop_idle;dur=7.6, auth_deck;dur=4.7, auth_workspace;dur=4.8, auth;dur=59.1, catalog_loader;dur=18.9, date_ranges;dur=5.7, campaign_current;dur=10.7, campaign_previous;dur=6.5, summary_loader;dur=15.3, target_summaries;dur=21.3, data;dur=303.8, total;dur=363.1"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 366,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=27.5, auth_membership;dur=8.1, membership_loop_active;dur=1.5, membership_loop_idle;dur=6.6, auth_deck;dur=4.2, auth_workspace;dur=4.4, auth;dur=44.3, overview_latest;dur=13.8, overview_ad_types;dur=33.4, overview_current;dur=38.1, overview_previous;dur=43.0, overview_targets;dur=47.4, overview_memos;dur=51.7, overview_meta;dur=55.5, overview_loader;dur=57.3, data;dur=64.4, total;dur=109.1"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 118,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=27.1, auth_membership;dur=9.2, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.5, auth_deck;dur=4.5, auth_workspace;dur=4.5, auth;dur=45.4, campaign_current;dur=6.5, campaign_previous;dur=6.1, target_summaries;dur=6.4, data;dur=34.5, total;dur=80.1"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 333,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=41.1, auth_membership;dur=9.2, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.9, auth_deck;dur=4.6, auth_workspace;dur=4.3, auth;dur=59.4, data;dur=5.3, total;dur=64.9"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1543.6000001430511,
+        "responseEnd": 1518.1000001430511,
+        "load": 1550.1000001430511,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 53.7
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1520,
+          "finishedAt": 1576,
+          "startAt": 5.446044921875,
+          "responseStart": 1513.548,
+          "responseEnd": 1517.478,
+          "serverTiming": "proxy_session;dur=53.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1671,
+          "finishedAt": 1672,
+          "startAt": 1571.0810546875,
+          "responseStart": 99.095,
+          "responseEnd": 100.185,
+          "serverTiming": "proxy_session;dur=46.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1671,
+          "finishedAt": 1672,
+          "startAt": 1570.343017578125,
+          "responseStart": 99.981,
+          "responseEnd": 100.775,
+          "serverTiming": "proxy_session;dur=44.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1697,
+          "finishedAt": 1697,
+          "startAt": 1570.94384765625,
+          "responseStart": 125.092,
+          "responseEnd": 125.995,
+          "serverTiming": "proxy_session;dur=40.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1722,
+          "finishedAt": 1722,
+          "startAt": 1570.60498046875,
+          "responseStart": 150.245,
+          "responseEnd": 150.873,
+          "serverTiming": "proxy_session;dur=47.3"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1753,
+          "finishedAt": 1757,
+          "startAt": 1568.111083984375,
+          "responseStart": 184.217,
+          "responseEnd": 189.541,
+          "serverTiming": "auth_user;dur=52.5, auth_membership;dur=6.2, membership_loop_active;dur=1.8, membership_loop_idle;dur=4.4, auth_deck;dur=3.1, auth_workspace;dur=2.9, auth;dur=64.8, kpi_current;dur=4.6, kpi_previous;dur=4.9, kpi_loader;dur=9.5, data;dur=19.1, total;dur=84.1"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1777,
+          "finishedAt": 1778,
+          "startAt": 1671.73193359375,
+          "responseStart": 104.319,
+          "responseEnd": 104.846,
+          "serverTiming": "proxy_session;dur=27.1"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1807,
+          "finishedAt": 1808,
+          "startAt": 1566.576904296875,
+          "responseStart": 239.424,
+          "responseEnd": 240.723,
+          "serverTiming": "auth_user;dur=40.9, db_connect;dur=25.0, auth_membership;dur=33.4, membership_loop_active;dur=6.9, membership_loop_idle;dur=26.6, auth_deck;dur=4.1, auth_workspace;dur=3.9, auth;dur=82.4, data;dur=12.7, total;dur=95.3"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1858,
+          "finishedAt": 1859,
+          "startAt": 1722.087890625,
+          "responseStart": 134.386,
+          "responseEnd": 135.346,
+          "serverTiming": "proxy_session;dur=38.8"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1880,
+          "finishedAt": 1881,
+          "startAt": 1778.05908203125,
+          "responseStart": 100.892,
+          "responseEnd": 102.444,
+          "serverTiming": "proxy_session;dur=35.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1933,
+          "finishedAt": 1934,
+          "startAt": 1859.4169921875,
+          "responseStart": 72.413,
+          "responseEnd": 73.877,
+          "serverTiming": "proxy_session;dur=24.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1955,
+          "finishedAt": 1955,
+          "startAt": 1860.358154296875,
+          "responseStart": 93.275,
+          "responseEnd": 94.099,
+          "serverTiming": "proxy_session;dur=33.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1966,
+          "finishedAt": 1967,
+          "startAt": 1881.1591796875,
+          "responseStart": 83.256,
+          "responseEnd": 84.185,
+          "serverTiming": "proxy_session;dur=28.7"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1998,
+          "finishedAt": 1999,
+          "startAt": 1697.2119140625,
+          "responseStart": 299.48,
+          "responseEnd": 300.153,
+          "serverTiming": "proxy_session;dur=30.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2017,
+          "finishedAt": 2019,
+          "startAt": 1934.73095703125,
+          "responseStart": 81.516,
+          "responseEnd": 82.596,
+          "serverTiming": "proxy_session;dur=26.0"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2020,
+          "finishedAt": 2025,
+          "startAt": 1567.889892578125,
+          "responseStart": 451.816,
+          "responseEnd": 456.22,
+          "serverTiming": "auth_user;dur=39.8, auth_membership;dur=9.7, membership_loop_active;dur=2.0, membership_loop_idle;dur=7.6, auth_deck;dur=4.7, auth_workspace;dur=4.8, auth;dur=59.1, catalog_loader;dur=18.9, date_ranges;dur=5.7, campaign_current;dur=10.7, campaign_previous;dur=6.5, summary_loader;dur=15.3, target_summaries;dur=21.3, data;dur=303.8, total;dur=363.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2039,
+          "finishedAt": 2040,
+          "startAt": 1955.740966796875,
+          "responseStart": 82.004,
+          "responseEnd": 82.8,
+          "serverTiming": "proxy_session;dur=25.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2050,
+          "finishedAt": 2051,
+          "startAt": 1967.630859375,
+          "responseStart": 81.83,
+          "responseEnd": 82.821,
+          "serverTiming": "proxy_session;dur=46.2"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2078,
+          "finishedAt": 2081,
+          "startAt": 2018.803955078125,
+          "responseStart": 56.93,
+          "responseEnd": 58.355,
+          "serverTiming": "proxy_session;dur=26.9"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2081,
+          "finishedAt": 2082,
+          "startAt": 1998.8876953125,
+          "responseStart": 81.443,
+          "responseEnd": 82.245,
+          "serverTiming": "proxy_session;dur=32.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2110,
+          "finishedAt": 2111,
+          "startAt": 2039.956787109375,
+          "responseStart": 68.728,
+          "responseEnd": 69.381,
+          "serverTiming": "proxy_session;dur=28.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2142,
+          "finishedAt": 2145,
+          "startAt": 2067.527099609375,
+          "responseStart": 69.268,
+          "responseEnd": 73.467,
+          "serverTiming": "proxy_session;dur=23.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2175,
+          "finishedAt": 2179,
+          "startAt": 2082.465087890625,
+          "responseStart": 86.038,
+          "responseEnd": 87.895,
+          "serverTiming": "proxy_session;dur=37.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2176,
+          "finishedAt": 2179,
+          "startAt": 2110.718017578125,
+          "responseStart": 60.927,
+          "responseEnd": 62.64,
+          "serverTiming": "proxy_session;dur=24.7"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2239,
+          "finishedAt": 2239,
+          "startAt": 2177.661865234375,
+          "responseStart": 59.539,
+          "responseEnd": 60.77,
+          "serverTiming": "proxy_session;dur=24.8"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2292,
+          "finishedAt": 2293,
+          "startAt": 2216.6728515625,
+          "responseStart": 74.994,
+          "responseEnd": 75.53,
+          "serverTiming": "proxy_session;dur=27.4"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2315,
+          "finishedAt": 2316,
+          "startAt": 2223.36474609375,
+          "responseStart": 90.99,
+          "responseEnd": 91.561,
+          "serverTiming": "proxy_session;dur=28.7"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2365,
+          "finishedAt": 2365,
+          "startAt": 2168.448974609375,
+          "responseStart": 195.834,
+          "responseEnd": 196.938,
+          "serverTiming": "auth_user;dur=27.5, auth_membership;dur=8.1, membership_loop_active;dur=1.5, membership_loop_idle;dur=6.6, auth_deck;dur=4.2, auth_workspace;dur=4.4, auth;dur=44.3, overview_latest;dur=13.8, overview_ad_types;dur=33.4, overview_current;dur=38.1, overview_previous;dur=43.0, overview_targets;dur=47.4, overview_memos;dur=51.7, overview_meta;dur=55.5, overview_loader;dur=57.3, data;dur=64.4, total;dur=109.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2592,
+          "finishedAt": 2594,
+          "startAt": 2496.422119140625,
+          "responseStart": 94.011,
+          "responseEnd": 94.747,
+          "serverTiming": "proxy_session;dur=35.4"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2621,
+          "finishedAt": 2621,
+          "startAt": 2493.73291015625,
+          "responseStart": 126.242,
+          "responseEnd": 127.086,
+          "serverTiming": "auth_user;dur=26.2, auth_membership;dur=8.5, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.1, auth_deck;dur=4.3, auth_workspace;dur=4.0, auth;dur=43.1, data;dur=6.1, total;dur=49.4"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2665,
+          "finishedAt": 2666,
+          "startAt": 2493.387939453125,
+          "responseStart": 170.09,
+          "responseEnd": 170.934,
+          "serverTiming": "auth_user;dur=27.1, auth_membership;dur=9.2, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.5, auth_deck;dur=4.5, auth_workspace;dur=4.5, auth;dur=45.4, campaign_current;dur=6.5, campaign_previous;dur=6.1, target_summaries;dur=6.4, data;dur=34.5, total;dur=80.1"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2961,
+          "finishedAt": 2962,
+          "startAt": 2814.109130859375,
+          "responseStart": 146.014,
+          "responseEnd": 147.399,
+          "serverTiming": "auth_user;dur=41.1, auth_membership;dur=9.2, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.9, auth_deck;dur=4.6, auth_workspace;dur=4.3, auth;dur=59.4, data;dur=5.3, total;dur=64.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2121,
+          "finishedAt": 5122,
+          "startAt": 2051.45703125,
+          "responseStart": 68.561,
+          "responseEnd": 71.596,
+          "serverTiming": "proxy_session;dur=25.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2146,
+          "finishedAt": 5148,
+          "startAt": 2073.969970703125,
+          "responseStart": 71.684,
+          "responseEnd": 74.722,
+          "serverTiming": "proxy_session;dur=29.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2215,
+          "finishedAt": 5217,
+          "startAt": 2123.098876953125,
+          "responseStart": 90.663,
+          "responseEnd": 93.226,
+          "serverTiming": "proxy_session;dur=27.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2222,
+          "finishedAt": 5224,
+          "startAt": 2143.034912109375,
+          "responseStart": 78.712,
+          "responseEnd": 80.816,
+          "serverTiming": "proxy_session;dur=29.9"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2331,
+          "finishedAt": 5332,
+          "startAt": 2248.050048828125,
+          "responseStart": 82.906,
+          "responseEnd": 84.318,
+          "serverTiming": "proxy_session;dur=40.7"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2332,
+          "finishedAt": 5332,
+          "startAt": 2238.625,
+          "responseStart": 92.774,
+          "responseEnd": 93.625,
+          "serverTiming": "proxy_session;dur=23.2"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2364,
+          "finishedAt": 5365,
+          "startAt": 2292.78125,
+          "responseStart": 70.484,
+          "responseEnd": 193.825,
+          "serverTiming": "proxy_session;dur=25.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2567,
+          "finishedAt": 5568,
+          "startAt": 2496.225830078125,
+          "responseStart": 69.632,
+          "responseEnd": 70.915,
+          "serverTiming": "proxy_session;dur=25.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2573,
+          "finishedAt": 5573,
+          "startAt": 2496.709228515625,
+          "responseStart": 75.595,
+          "responseEnd": 80.636,
+          "serverTiming": "proxy_session;dur=30.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2795,
+          "finishedAt": 5797,
+          "startAt": 2719.895263671875,
+          "responseStart": 72.395,
+          "responseEnd": 77.486,
+          "serverTiming": "proxy_session;dur=25.4"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 1324,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=40.6, auth_membership;dur=9.1, membership_loop_active;dur=3.9, membership_loop_idle;dur=5.3, auth_deck;dur=4.6, auth_workspace;dur=4.6, auth;dur=59.1, catalog_loader;dur=15.7, date_ranges;dur=8.0, campaign_current;dur=6.3, campaign_previous;dur=6.7, summary_loader;dur=23.0, target_summaries;dur=29.7, data;dur=96.4, total;dur=155.8"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 372,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=26.7, auth_membership;dur=9.6, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.9, auth_deck;dur=4.6, auth_workspace;dur=4.5, auth;dur=45.6, overview_latest;dur=11.6, overview_ad_types;dur=33.4, overview_current;dur=39.7, overview_previous;dur=44.8, overview_targets;dur=49.3, overview_memos;dur=53.9, overview_meta;dur=57.7, overview_loader;dur=59.2, data;dur=65.1, total;dur=111.1"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 616,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=25.9, auth_membership;dur=9.2, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.8, auth_deck;dur=4.8, auth_workspace;dur=4.6, auth;dur=44.5, target_summaries;dur=6.2, data;dur=21.9, total;dur=66.6"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 594,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=25.1, auth_membership;dur=8.9, membership_loop_active;dur=1.6, membership_loop_idle;dur=7.3, auth_deck;dur=4.4, auth_workspace;dur=4.2, auth;dur=42.8, data;dur=5.4, total;dur=48.5"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 1276.5,
+        "responseEnd": 1243,
+        "load": 1282.6999998092651,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 34.6
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1247,
+          "finishedAt": 1291,
+          "startAt": 5.470703125,
+          "responseStart": 1238.189,
+          "responseEnd": 1242.418,
+          "serverTiming": "proxy_session;dur=34.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1388,
+          "finishedAt": 1388,
+          "startAt": 1308.754150390625,
+          "responseStart": 78.491,
+          "responseEnd": 78.867,
+          "serverTiming": "proxy_session;dur=40.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1411,
+          "finishedAt": 1411,
+          "startAt": 1309.236083984375,
+          "responseStart": 100.878,
+          "responseEnd": 101.525,
+          "serverTiming": "proxy_session;dur=38.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1439,
+          "finishedAt": 1439,
+          "startAt": 1309.11083984375,
+          "responseStart": 128.784,
+          "responseEnd": 129.274,
+          "serverTiming": "proxy_session;dur=37.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1472,
+          "finishedAt": 1472,
+          "startAt": 1308.8720703125,
+          "responseStart": 161.277,
+          "responseEnd": 161.748,
+          "serverTiming": "proxy_session;dur=35.8"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1497,
+          "finishedAt": 1498,
+          "startAt": 1411.1298828125,
+          "responseStart": 84.493,
+          "responseEnd": 85.112,
+          "serverTiming": "proxy_session;dur=26.0"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1518,
+          "finishedAt": 1518,
+          "startAt": 1438.911865234375,
+          "responseStart": 77.585,
+          "responseEnd": 78.092,
+          "serverTiming": "proxy_session;dur=33.3"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1528,
+          "finishedAt": 1530,
+          "startAt": 1472.243896484375,
+          "responseStart": 53.729,
+          "responseEnd": 54.765,
+          "serverTiming": "proxy_session;dur=23.4"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1538,
+          "finishedAt": 1539,
+          "startAt": 1299.02392578125,
+          "responseStart": 237.953,
+          "responseEnd": 238.663,
+          "serverTiming": "auth_user;dur=59.1, auth_membership;dur=8.8, membership_loop_active;dur=4.3, membership_loop_idle;dur=4.5, auth_deck;dur=4.8, auth_workspace;dur=8.5, auth;dur=81.3, kpi_current;dur=10.4, kpi_previous;dur=10.2, kpi_loader;dur=21.0, data;dur=32.5, total;dur=114.0"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1543,
+          "finishedAt": 1548,
+          "startAt": 1298.85595703125,
+          "responseStart": 243.681,
+          "responseEnd": 248.325,
+          "serverTiming": "auth_user;dur=40.6, auth_membership;dur=9.1, membership_loop_active;dur=3.9, membership_loop_idle;dur=5.3, auth_deck;dur=4.6, auth_workspace;dur=4.6, auth;dur=59.1, catalog_loader;dur=15.7, date_ranges;dur=8.0, campaign_current;dur=6.3, campaign_previous;dur=6.7, summary_loader;dur=23.0, target_summaries;dur=29.7, data;dur=96.4, total;dur=155.8"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1587,
+          "finishedAt": 1587,
+          "startAt": 1472.847900390625,
+          "responseStart": 88.393,
+          "responseEnd": 88.771,
+          "serverTiming": "proxy_session;dur=27.3"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1614,
+          "finishedAt": 1615,
+          "startAt": 1497.6640625,
+          "responseStart": 115.643,
+          "responseEnd": 116.403,
+          "serverTiming": "proxy_session;dur=23.8"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1637,
+          "finishedAt": 1637,
+          "startAt": 1298.5439453125,
+          "responseStart": 337.801,
+          "responseEnd": 338.792,
+          "serverTiming": "auth_user;dur=25.9, auth_membership;dur=9.3, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.8, auth_deck;dur=4.5, auth_workspace;dur=4.5, auth;dur=44.4, data;dur=5.2, total;dur=49.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1671,
+          "finishedAt": 1671,
+          "startAt": 1555.544921875,
+          "responseStart": 114.624,
+          "responseEnd": 115.159,
+          "serverTiming": "proxy_session;dur=46.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1686,
+          "finishedAt": 1687,
+          "startAt": 1614.73681640625,
+          "responseStart": 70.157,
+          "responseEnd": 70.716,
+          "serverTiming": "proxy_session;dur=26.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1698,
+          "finishedAt": 1698,
+          "startAt": 1619.98583984375,
+          "responseStart": 77.329,
+          "responseEnd": 77.818,
+          "serverTiming": "proxy_session;dur=24.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1741,
+          "finishedAt": 1741,
+          "startAt": 1661.288818359375,
+          "responseStart": 79.216,
+          "responseEnd": 79.716,
+          "serverTiming": "proxy_session;dur=26.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1752,
+          "finishedAt": 1753,
+          "startAt": 1671.47314453125,
+          "responseStart": 80.301,
+          "responseEnd": 80.77,
+          "serverTiming": "proxy_session;dur=27.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1776,
+          "finishedAt": 1776,
+          "startAt": 1698.591064453125,
+          "responseStart": 76.612,
+          "responseEnd": 77.071,
+          "serverTiming": "proxy_session;dur=33.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1786,
+          "finishedAt": 1787,
+          "startAt": 1686.922119140625,
+          "responseStart": 98.445,
+          "responseEnd": 98.857,
+          "serverTiming": "proxy_session;dur=43.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1799,
+          "finishedAt": 1800,
+          "startAt": 1741.446044921875,
+          "responseStart": 56.964,
+          "responseEnd": 57.388,
+          "serverTiming": "proxy_session;dur=24.6"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1885,
+          "finishedAt": 1891,
+          "startAt": 1679.22509765625,
+          "responseStart": 205.476,
+          "responseEnd": 211.412,
+          "serverTiming": "auth_user;dur=26.7, auth_membership;dur=9.6, membership_loop_active;dur=1.7, membership_loop_idle;dur=7.9, auth_deck;dur=4.6, auth_workspace;dur=4.5, auth;dur=45.6, overview_latest;dur=11.6, overview_ad_types;dur=33.4, overview_current;dur=39.7, overview_previous;dur=44.8, overview_targets;dur=49.3, overview_memos;dur=53.9, overview_meta;dur=57.7, overview_loader;dur=59.2, data;dur=65.1, total;dur=111.1"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1916,
+          "finishedAt": 1918,
+          "startAt": 1842.421875,
+          "responseStart": 70.441,
+          "responseEnd": 70.846,
+          "serverTiming": "proxy_session;dur=24.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1947,
+          "finishedAt": 1948,
+          "startAt": 1867.17529296875,
+          "responseStart": 79.563,
+          "responseEnd": 80.109,
+          "serverTiming": "proxy_session;dur=35.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2024,
+          "finishedAt": 2024,
+          "startAt": 1947.801025390625,
+          "responseStart": 74.442,
+          "responseEnd": 74.874,
+          "serverTiming": "proxy_session;dur=26.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2262,
+          "finishedAt": 2271,
+          "startAt": 2054.076904296875,
+          "responseStart": 56.896,
+          "responseEnd": 57.66,
+          "serverTiming": "proxy_session;dur=21.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2274,
+          "finishedAt": 2276,
+          "startAt": 2053.654052734375,
+          "responseStart": 77.424,
+          "responseEnd": 78.013,
+          "serverTiming": "proxy_session;dur=24.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2335,
+          "finishedAt": 2416,
+          "startAt": 2088.326904296875,
+          "responseStart": 69.064,
+          "responseEnd": 69.582,
+          "serverTiming": "proxy_session;dur=34.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2418,
+          "finishedAt": 2427,
+          "startAt": 2080.452880859375,
+          "responseStart": 81.984,
+          "responseEnd": 82.549,
+          "serverTiming": "proxy_session;dur=52.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2449,
+          "finishedAt": 2452,
+          "startAt": 2112.892822265625,
+          "responseStart": 57.521,
+          "responseEnd": 58.242,
+          "serverTiming": "proxy_session;dur=24.0"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2456,
+          "finishedAt": 2489,
+          "startAt": 2053.094970703125,
+          "responseStart": 151.764,
+          "responseEnd": 156.238,
+          "serverTiming": "auth_user;dur=25.5, auth_membership;dur=9.3, membership_loop_active;dur=1.6, membership_loop_idle;dur=7.8, auth_deck;dur=4.6, auth_workspace;dur=4.3, auth;dur=43.9, kpi_current;dur=5.9, kpi_previous;dur=5.9, kpi_loader;dur=11.9, data;dur=17.2, total;dur=61.3"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2502,
+          "finishedAt": 2504,
+          "startAt": 2052.860107421875,
+          "responseStart": 311.261,
+          "responseEnd": 312.036,
+          "serverTiming": "auth_user;dur=25.9, auth_membership;dur=9.2, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.8, auth_deck;dur=4.8, auth_workspace;dur=4.6, auth;dur=44.5, target_summaries;dur=6.2, data;dur=21.9, total;dur=66.6"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 3118,
+          "finishedAt": 3138,
+          "startAt": 2941.242919921875,
+          "responseStart": 131.463,
+          "responseEnd": 132.479,
+          "serverTiming": "auth_user;dur=25.1, auth_membership;dur=8.9, membership_loop_active;dur=1.6, membership_loop_idle;dur=7.3, auth_deck;dur=4.4, auth_workspace;dur=4.2, auth;dur=42.8, data;dur=5.4, total;dur=48.5"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1618,
+          "finishedAt": 4618,
+          "startAt": 1518.652099609375,
+          "responseStart": 97.967,
+          "responseEnd": 101.245,
+          "serverTiming": "proxy_session;dur=29.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1637,
+          "finishedAt": 4644,
+          "startAt": 1559.922119140625,
+          "responseStart": 75.719,
+          "responseEnd": 79.056,
+          "serverTiming": "proxy_session;dur=44.4"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1842,
+          "finishedAt": 4844,
+          "startAt": 1786.821044921875,
+          "responseStart": 53.89,
+          "responseEnd": 55.269,
+          "serverTiming": "proxy_session;dur=24.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1844,
+          "finishedAt": 4844,
+          "startAt": 1752.7568359375,
+          "responseStart": 89.907,
+          "responseEnd": 91.142,
+          "serverTiming": "proxy_session;dur=31.3"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1854,
+          "finishedAt": 4856,
+          "startAt": 1776.312255859375,
+          "responseStart": 76.097,
+          "responseEnd": 77.405,
+          "serverTiming": "proxy_session;dur=24.2"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1864,
+          "finishedAt": 4868,
+          "startAt": 1799.578125,
+          "responseStart": 64.336,
+          "responseEnd": 67.495,
+          "serverTiming": "proxy_session;dur=33.2"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1931,
+          "finishedAt": 4933,
+          "startAt": 1844.02099609375,
+          "responseStart": 85.738,
+          "responseEnd": 86.765,
+          "serverTiming": "proxy_session;dur=39.1"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1932,
+          "finishedAt": 4933,
+          "startAt": 1854.343017578125,
+          "responseStart": 76.111,
+          "responseEnd": 190.725,
+          "serverTiming": "proxy_session;dur=23.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1988,
+          "finishedAt": 4988,
+          "startAt": 1916.703125,
+          "responseStart": 70.529,
+          "responseEnd": 72.243,
+          "serverTiming": "proxy_session;dur=22.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2010,
+          "finishedAt": 5012,
+          "startAt": 1931.08984375,
+          "responseStart": 78.84,
+          "responseEnd": 81.633,
+          "serverTiming": "proxy_session;dur=29.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2124,
+          "finishedAt": 5126,
+          "startAt": 1989.027099609375,
+          "responseStart": 88.785,
+          "responseEnd": 90.205,
+          "serverTiming": "proxy_session;dur=25.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2188,
+          "finishedAt": 5191,
+          "startAt": 2012.76416015625,
+          "responseStart": 71.317,
+          "responseEnd": 75.106,
+          "serverTiming": "proxy_session;dur=22.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2929,
+          "finishedAt": 5931,
+          "startAt": 2747.546142578125,
+          "responseStart": 179.869,
+          "responseEnd": 181.833,
+          "serverTiming": "proxy_session;dur=23.8"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 405,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=47.0, auth_membership;dur=18.1, membership_loop_active;dur=3.8, membership_loop_idle;dur=14.3, auth_deck;dur=4.5, auth_workspace;dur=4.1, auth;dur=73.8, catalog_loader;dur=13.9, date_ranges;dur=5.6, campaign_current;dur=6.6, campaign_previous;dur=6.2, summary_loader;dur=11.5, target_summaries;dur=16.7, data;dur=70.5, total;dur=144.6"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 462,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=28.4, auth_membership;dur=12.1, membership_loop_active;dur=1.7, membership_loop_idle;dur=10.4, auth_deck;dur=5.8, auth_workspace;dur=4.7, auth;dur=51.0, overview_latest;dur=6.7, overview_ad_types;dur=27.4, overview_current;dur=34.8, overview_previous;dur=40.8, overview_targets;dur=45.1, overview_memos;dur=50.8, overview_meta;dur=55.0, overview_loader;dur=56.1, data;dur=63.2, total;dur=114.6"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 1339,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=39.4, auth_membership;dur=8.7, membership_loop_active;dur=1.3, membership_loop_idle;dur=7.4, auth_deck;dur=4.4, auth_workspace;dur=4.3, auth;dur=56.9, date_ranges;dur=5.1, campaign_current;dur=6.2, campaign_previous;dur=5.9, summary_loader;dur=11.2, target_summaries;dur=15.8, data;dur=49.1, total;dur=106.2"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 329,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=27.0, auth_membership;dur=9.9, membership_loop_active;dur=1.5, membership_loop_idle;dur=8.3, auth_deck;dur=4.6, auth_workspace;dur=4.6, auth;dur=46.1, data;dur=7.3, total;dur=53.8"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 367.90000009536743,
+        "responseEnd": 344.5,
+        "load": 373,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 41.9
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 347,
+          "finishedAt": 376,
+          "startAt": 5.1259765625,
+          "responseStart": 340.008,
+          "responseEnd": 343.897,
+          "serverTiming": "proxy_session;dur=41.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 491,
+          "finishedAt": 491,
+          "startAt": 400.171875,
+          "responseStart": 89.813,
+          "responseEnd": 90.214,
+          "serverTiming": "proxy_session;dur=43.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 542,
+          "finishedAt": 543,
+          "startAt": 400.4658203125,
+          "responseStart": 141.193,
+          "responseEnd": 141.813,
+          "serverTiming": "proxy_session;dur=86.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 573,
+          "finishedAt": 576,
+          "startAt": 491.33984375,
+          "responseStart": 80.585,
+          "responseEnd": 81.432,
+          "serverTiming": "proxy_session;dur=38.2"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 576,
+          "finishedAt": 581,
+          "startAt": 387.10302734375,
+          "responseStart": 185.86,
+          "responseEnd": 194.389,
+          "serverTiming": "auth_user;dur=47.8, auth_membership;dur=8.7, membership_loop_active;dur=1.3, membership_loop_idle;dur=7.4, auth_deck;dur=4.5, auth_workspace;dur=4.3, auth;dur=65.3, kpi_current;dur=5.7, kpi_previous;dur=9.3, kpi_loader;dur=15.1, data;dur=27.2, total;dur=92.8"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 627,
+          "finishedAt": 628,
+          "startAt": 543.302978515625,
+          "responseStart": 82.467,
+          "responseEnd": 83.387,
+          "serverTiming": "proxy_session;dur=27.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 644,
+          "finishedAt": 645,
+          "startAt": 400.6650390625,
+          "responseStart": 241.645,
+          "responseEnd": 242.937,
+          "serverTiming": "proxy_session;dur=43.0"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 649,
+          "finishedAt": 651,
+          "startAt": 574.579833984375,
+          "responseStart": 73.196,
+          "responseEnd": 74.099,
+          "serverTiming": "proxy_session;dur=24.8"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 651,
+          "finishedAt": 652,
+          "startAt": 575.531005859375,
+          "responseStart": 74.318,
+          "responseEnd": 75.257,
+          "serverTiming": "proxy_session;dur=30.1"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 654,
+          "finishedAt": 659,
+          "startAt": 386.75,
+          "responseStart": 266.945,
+          "responseEnd": 272.526,
+          "serverTiming": "auth_user;dur=47.0, auth_membership;dur=18.1, membership_loop_active;dur=3.8, membership_loop_idle;dur=14.3, auth_deck;dur=4.5, auth_workspace;dur=4.1, auth;dur=73.8, catalog_loader;dur=13.9, date_ranges;dur=5.6, campaign_current;dur=6.6, campaign_previous;dur=6.2, summary_loader;dur=11.5, target_summaries;dur=16.7, data;dur=70.5, total;dur=144.6"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 734,
+          "finishedAt": 736,
+          "startAt": 386.31591796875,
+          "responseStart": 337.579,
+          "responseEnd": 341.696,
+          "serverTiming": "auth_user;dur=54.8, db_connect;dur=25.4, auth_membership;dur=34.0, membership_loop_active;dur=5.4, membership_loop_idle;dur=28.6, auth_deck;dur=4.5, auth_workspace;dur=4.3, auth;dur=97.7, catalog_loader;dur=109.9, data;dur=122.1, total;dur=220.0"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 733,
+          "finishedAt": 736,
+          "startAt": 628.692138671875,
+          "responseStart": 73.123,
+          "responseEnd": 74.092,
+          "serverTiming": "proxy_session;dur=22.5"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 733,
+          "finishedAt": 736,
+          "startAt": 645.0400390625,
+          "responseStart": 63.99,
+          "responseEnd": 65.845,
+          "serverTiming": "proxy_session;dur=26.0"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 734,
+          "finishedAt": 737,
+          "startAt": 650.885986328125,
+          "responseStart": 65.281,
+          "responseEnd": 65.858,
+          "serverTiming": "proxy_session;dur=23.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 804,
+          "finishedAt": 804,
+          "startAt": 734.992919921875,
+          "responseStart": 68.031,
+          "responseEnd": 68.459,
+          "serverTiming": "proxy_session;dur=36.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 805,
+          "finishedAt": 806,
+          "startAt": 734.60791015625,
+          "responseStart": 70.23,
+          "responseEnd": 70.768,
+          "serverTiming": "proxy_session;dur=26.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 883,
+          "finishedAt": 884,
+          "startAt": 805.528076171875,
+          "responseStart": 72.666,
+          "responseEnd": 73.039,
+          "serverTiming": "proxy_session;dur=25.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 883,
+          "finishedAt": 884,
+          "startAt": 804.31103515625,
+          "responseStart": 74.954,
+          "responseEnd": 75.536,
+          "serverTiming": "proxy_session;dur=26.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 961,
+          "finishedAt": 961,
+          "startAt": 884.509765625,
+          "responseStart": 74.236,
+          "responseEnd": 74.649,
+          "serverTiming": "proxy_session;dur=28.2"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 971,
+          "finishedAt": 971,
+          "startAt": 894.2880859375,
+          "responseStart": 75.836,
+          "responseEnd": 76.257,
+          "serverTiming": "proxy_session;dur=39.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 973,
+          "finishedAt": 974,
+          "startAt": 884.303955078125,
+          "responseStart": 88.74,
+          "responseEnd": 89.303,
+          "serverTiming": "proxy_session;dur=25.7"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1030,
+          "finishedAt": 1030,
+          "startAt": 971.3251953125,
+          "responseStart": 57.248,
+          "responseEnd": 57.723,
+          "serverTiming": "proxy_session;dur=27.2"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1031,
+          "finishedAt": 1032,
+          "startAt": 960.10986328125,
+          "responseStart": 69.776,
+          "responseEnd": 70.383,
+          "serverTiming": "proxy_session;dur=25.5"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1075,
+          "finishedAt": 1081,
+          "startAt": 880.553955078125,
+          "responseStart": 193.381,
+          "responseEnd": 201.227,
+          "serverTiming": "auth_user;dur=28.4, auth_membership;dur=12.1, membership_loop_active;dur=1.7, membership_loop_idle;dur=10.4, auth_deck;dur=5.8, auth_workspace;dur=4.7, auth;dur=51.0, overview_latest;dur=6.7, overview_ad_types;dur=27.4, overview_current;dur=34.8, overview_previous;dur=40.8, overview_targets;dur=45.1, overview_memos;dur=50.8, overview_meta;dur=55.0, overview_loader;dur=56.1, data;dur=63.2, total;dur=114.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1121,
+          "finishedAt": 1123,
+          "startAt": 1032.202880859375,
+          "responseStart": 69.841,
+          "responseEnd": 71.137,
+          "serverTiming": "proxy_session;dur=31.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1121,
+          "finishedAt": 1123,
+          "startAt": 1029.619873046875,
+          "responseStart": 76.768,
+          "responseEnd": 78.352,
+          "serverTiming": "proxy_session;dur=27.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1183,
+          "finishedAt": 1183,
+          "startAt": 1067.00390625,
+          "responseStart": 114.844,
+          "responseEnd": 115.578,
+          "serverTiming": "proxy_session;dur=34.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1201,
+          "finishedAt": 1202,
+          "startAt": 1121.76416015625,
+          "responseStart": 78.16,
+          "responseEnd": 78.688,
+          "serverTiming": "proxy_session;dur=25.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2071,
+          "finishedAt": 2071,
+          "startAt": 1989.33203125,
+          "responseStart": 79.419,
+          "responseEnd": 81.271,
+          "serverTiming": "proxy_session;dur=23.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2093,
+          "finishedAt": 2093,
+          "startAt": 1989.65087890625,
+          "responseStart": 101.934,
+          "responseEnd": 103.806,
+          "serverTiming": "proxy_session;dur=28.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2119,
+          "finishedAt": 2119,
+          "startAt": 1988.8798828125,
+          "responseStart": 126.244,
+          "responseEnd": 128.47,
+          "serverTiming": "proxy_session;dur=24.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2147,
+          "finishedAt": 2148,
+          "startAt": 1988.35107421875,
+          "responseStart": 156.656,
+          "responseEnd": 157.949,
+          "serverTiming": "proxy_session;dur=55.8"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2151,
+          "finishedAt": 2156,
+          "startAt": 1987.30517578125,
+          "responseStart": 162.686,
+          "responseEnd": 168.832,
+          "serverTiming": "auth_user;dur=30.5, auth_membership;dur=9.3, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.8, auth_deck;dur=4.4, auth_workspace;dur=4.2, auth;dur=48.5, kpi_current;dur=7.6, kpi_previous;dur=6.0, kpi_loader;dur=14.0, data;dur=20.4, total;dur=69.2"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2170,
+          "finishedAt": 2175,
+          "startAt": 1986.6572265625,
+          "responseStart": 182.053,
+          "responseEnd": 188.345,
+          "serverTiming": "auth_user;dur=39.4, auth_membership;dur=8.7, membership_loop_active;dur=1.3, membership_loop_idle;dur=7.4, auth_deck;dur=4.4, auth_workspace;dur=4.3, auth;dur=56.9, date_ranges;dur=5.1, campaign_current;dur=6.2, campaign_previous;dur=5.9, summary_loader;dur=11.2, target_summaries;dur=15.8, data;dur=49.1, total;dur=106.2"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 2751,
+          "finishedAt": 2752,
+          "startAt": 2623.254150390625,
+          "responseStart": 125.801,
+          "responseEnd": 127.101,
+          "serverTiming": "auth_user;dur=27.0, auth_membership;dur=9.9, membership_loop_active;dur=1.5, membership_loop_idle;dur=8.3, auth_deck;dur=4.6, auth_workspace;dur=4.6, auth;dur=46.1, data;dur=7.3, total;dur=53.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 791,
+          "finishedAt": 3793,
+          "startAt": 712.641845703125,
+          "responseStart": 77.625,
+          "responseEnd": 80.033,
+          "serverTiming": "proxy_session;dur=27.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 822,
+          "finishedAt": 3824,
+          "startAt": 735.293212890625,
+          "responseStart": 85.703,
+          "responseEnd": 87.826,
+          "serverTiming": "proxy_session;dur=28.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 846,
+          "finishedAt": 3847,
+          "startAt": 702.799072265625,
+          "responseStart": 142.377,
+          "responseEnd": 169.207,
+          "serverTiming": "proxy_session;dur=27.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 894,
+          "finishedAt": 3895,
+          "startAt": 823.357177734375,
+          "responseStart": 69.696,
+          "responseEnd": 70.676,
+          "serverTiming": "proxy_session;dur=25.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 940,
+          "finishedAt": 3943,
+          "startAt": 871.39404296875,
+          "responseStart": 68.659,
+          "responseEnd": 70.292,
+          "serverTiming": "proxy_session;dur=25.1"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1023,
+          "finishedAt": 4024,
+          "startAt": 941.89404296875,
+          "responseStart": 80.557,
+          "responseEnd": 86.67,
+          "serverTiming": "proxy_session;dur=25.2"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1062,
+          "finishedAt": 4063,
+          "startAt": 973.994873046875,
+          "responseStart": 87.092,
+          "responseEnd": 92.081,
+          "serverTiming": "proxy_session;dur=29.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1190,
+          "finishedAt": 4191,
+          "startAt": 1121.54296875,
+          "responseStart": 68.237,
+          "responseEnd": 69.495,
+          "serverTiming": "proxy_session;dur=37.7"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1202,
+          "finishedAt": 4202,
+          "startAt": 1029.105224609375,
+          "responseStart": 171.668,
+          "responseEnd": 939.563,
+          "serverTiming": "proxy_session;dur=24.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1266,
+          "finishedAt": 4268,
+          "startAt": 1182.97216796875,
+          "responseStart": 80.422,
+          "responseEnd": 82.749,
+          "serverTiming": "proxy_session;dur=25.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 2606,
+          "finishedAt": 5607,
+          "startAt": 2505.09521484375,
+          "responseStart": 98.059,
+          "responseEnd": 101.803,
+          "serverTiming": "proxy_session;dur=51.2"
+        }
+      ]
+    },
+    {
+      "flow": [
+        {
+          "screen": "home-first",
+          "ms": 615,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=46.7, auth_membership;dur=8.8, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.4, auth_deck;dur=4.5, auth_workspace;dur=5.9, auth;dur=65.9, catalog_loader;dur=25.6, date_ranges;dur=4.8, campaign_current;dur=7.0, campaign_previous;dur=6.0, summary_loader;dur=11.1, target_summaries;dur=17.3, data;dur=88.7, total;dur=154.9"
+        },
+        {
+          "screen": "detail-first",
+          "ms": 392,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=28.8, auth_membership;dur=9.1, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.6, auth_deck;dur=4.5, auth_workspace;dur=4.4, auth;dur=46.8, overview_latest;dur=6.0, overview_ad_types;dur=33.4, overview_current;dur=38.8, overview_previous;dur=44.8, overview_targets;dur=49.1, overview_memos;dur=53.7, overview_meta;dur=57.4, overview_loader;dur=58.0, data;dur=65.4, total;dur=112.5"
+        },
+        {
+          "screen": "home-revisit",
+          "ms": 316,
+          "status": [200, 200],
+          "correct": true,
+          "period": ["2026-09-16", "2026-09-22"],
+          "timing": "auth_user;dur=29.8, auth_membership;dur=9.7, membership_loop_active;dur=6.1, membership_loop_idle;dur=3.5, auth_deck;dur=4.6, auth_workspace;dur=4.4, auth;dur=48.5, catalog_loader;dur=14.3, target_summaries;dur=7.2, data;dur=44.2, total;dur=92.9"
+        },
+        {
+          "screen": "detail-revisit",
+          "ms": 298,
+          "status": 200,
+          "series": 7,
+          "timing": "auth_user;dur=27.0, auth_membership;dur=9.0, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.5, auth_deck;dur=4.6, auth_workspace;dur=4.4, auth;dur=45.0, data;dur=7.6, total;dur=52.9"
+        }
+      ],
+      "documentTiming": {
+        "domMs": 574.7000000476837,
+        "responseEnd": 547.2999999523163,
+        "load": 579.5999999046326,
+        "serverTiming": [
+          {
+            "name": "proxy_session",
+            "duration": 54.2
+          }
+        ]
+      },
+      "network": [
+        {
+          "path": "/d/coupang-ads",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 552,
+          "finishedAt": 582,
+          "startAt": 5.393798828125,
+          "responseStart": 544.975,
+          "responseEnd": 546.682,
+          "serverTiming": "proxy_session;dur=54.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 696,
+          "finishedAt": 697,
+          "startAt": 603.748046875,
+          "responseStart": 91.941,
+          "responseEnd": 92.46,
+          "serverTiming": "proxy_session;dur=37.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 708,
+          "finishedAt": 708,
+          "startAt": 603.640869140625,
+          "responseStart": 104.167,
+          "responseEnd": 104.601,
+          "serverTiming": "proxy_session;dur=67.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 724,
+          "finishedAt": 724,
+          "startAt": 603.434814453125,
+          "responseStart": 119.578,
+          "responseEnd": 119.962,
+          "serverTiming": "proxy_session;dur=50.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 745,
+          "finishedAt": 745,
+          "startAt": 603.319091796875,
+          "responseStart": 140.98,
+          "responseEnd": 141.534,
+          "serverTiming": "proxy_session;dur=57.9"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 781,
+          "finishedAt": 781,
+          "startAt": 708.60400390625,
+          "responseStart": 71.412,
+          "responseEnd": 71.808,
+          "serverTiming": "proxy_session;dur=31.8"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 782,
+          "finishedAt": 785,
+          "startAt": 594.31396484375,
+          "responseStart": 186.774,
+          "responseEnd": 190.785,
+          "serverTiming": "auth_user;dur=50.8, auth_membership;dur=9.0, membership_loop_active;dur=1.5, membership_loop_idle;dur=7.5, auth_deck;dur=5.0, auth_workspace;dur=4.4, auth;dur=69.3, kpi_current;dur=6.0, kpi_previous;dur=5.6, kpi_loader;dur=11.6, data;dur=20.8, total;dur=90.3"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 834,
+          "finishedAt": 834,
+          "startAt": 593.89111328125,
+          "responseStart": 238.713,
+          "responseEnd": 239.732,
+          "serverTiming": "auth_user;dur=50.7, db_connect;dur=18.9, auth_membership;dur=28.0, membership_loop_active;dur=6.6, membership_loop_idle;dur=21.4, auth_deck;dur=3.3, auth_workspace;dur=2.8, auth;dur=84.9, catalog_loader;dur=9.5, data;dur=19.9, total;dur=105.0"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 839,
+          "finishedAt": 839,
+          "startAt": 724.301025390625,
+          "responseStart": 112.091,
+          "responseEnd": 112.532,
+          "serverTiming": "proxy_session;dur=34.2"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 872,
+          "finishedAt": 877,
+          "startAt": 594.093994140625,
+          "responseStart": 276.966,
+          "responseEnd": 282.747,
+          "serverTiming": "auth_user;dur=46.7, auth_membership;dur=8.8, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.4, auth_deck;dur=4.5, auth_workspace;dur=5.9, auth;dur=65.9, catalog_loader;dur=25.6, date_ranges;dur=4.8, campaign_current;dur=7.0, campaign_previous;dur=6.0, summary_loader;dur=11.1, target_summaries;dur=17.3, data;dur=88.7, total;dur=154.9"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 885,
+          "finishedAt": 886,
+          "startAt": 803.115966796875,
+          "responseStart": 80.363,
+          "responseEnd": 81.212,
+          "serverTiming": "proxy_session;dur=32.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 932,
+          "finishedAt": 933,
+          "startAt": 839.023193359375,
+          "responseStart": 74.872,
+          "responseEnd": 75.427,
+          "serverTiming": "proxy_session;dur=30.2"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 934,
+          "finishedAt": 936,
+          "startAt": 781.451171875,
+          "responseStart": 150.322,
+          "responseEnd": 150.931,
+          "serverTiming": "proxy_session;dur=24.4"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 950,
+          "finishedAt": 950,
+          "startAt": 745.587890625,
+          "responseStart": 203.286,
+          "responseEnd": 203.864,
+          "serverTiming": "proxy_session;dur=38.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 978,
+          "finishedAt": 978,
+          "startAt": 886.095947265625,
+          "responseStart": 90.978,
+          "responseEnd": 91.716,
+          "serverTiming": "proxy_session;dur=30.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 999,
+          "finishedAt": 1000,
+          "startAt": 901.0390625,
+          "responseStart": 97.315,
+          "responseEnd": 98.038,
+          "serverTiming": "proxy_session;dur=31.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1043,
+          "finishedAt": 1043,
+          "startAt": 935.412109375,
+          "responseStart": 105.654,
+          "responseEnd": 106.395,
+          "serverTiming": "proxy_session;dur=30.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1069,
+          "finishedAt": 1069,
+          "startAt": 950.3798828125,
+          "responseStart": 113.008,
+          "responseEnd": 113.542,
+          "serverTiming": "proxy_session;dur=24.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1094,
+          "finishedAt": 1094,
+          "startAt": 978.503173828125,
+          "responseStart": 114.497,
+          "responseEnd": 114.971,
+          "serverTiming": "proxy_session;dur=55.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1107,
+          "finishedAt": 1107,
+          "startAt": 999.81787109375,
+          "responseStart": 106.406,
+          "responseEnd": 106.837,
+          "serverTiming": "proxy_session;dur=58.2"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1119,
+          "finishedAt": 1120,
+          "startAt": 1042.56494140625,
+          "responseStart": 76.213,
+          "responseEnd": 76.644,
+          "serverTiming": "proxy_session;dur=25.6"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1145,
+          "finishedAt": 1145,
+          "startAt": 1064.862060546875,
+          "responseStart": 79.124,
+          "responseEnd": 79.504,
+          "serverTiming": "proxy_session;dur=43.2"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1158,
+          "finishedAt": 1159,
+          "startAt": 1094.282958984375,
+          "responseStart": 63.133,
+          "responseEnd": 63.816,
+          "serverTiming": "proxy_session;dur=34.4"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1233,
+          "finishedAt": 1242,
+          "startAt": 1033.845947265625,
+          "responseStart": 199.142,
+          "responseEnd": 207.911,
+          "serverTiming": "auth_user;dur=28.8, auth_membership;dur=9.1, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.6, auth_deck;dur=4.5, auth_workspace;dur=4.4, auth;dur=46.8, overview_latest;dur=6.0, overview_ad_types;dur=33.4, overview_current;dur=38.8, overview_previous;dur=44.8, overview_targets;dur=49.1, overview_memos;dur=53.7, overview_meta;dur=57.4, overview_loader;dur=58.0, data;dur=65.4, total;dur=112.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1241,
+          "finishedAt": 1242,
+          "startAt": 1168.924072265625,
+          "responseStart": 72.001,
+          "responseEnd": 72.428,
+          "serverTiming": "proxy_session;dur=31.4"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104673632",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1246,
+          "finishedAt": 1271,
+          "startAt": 1158.6708984375,
+          "responseStart": 85.365,
+          "responseEnd": 85.78,
+          "serverTiming": "proxy_session;dur=24.8"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1314,
+          "finishedAt": 1314,
+          "startAt": 1214.3359375,
+          "responseStart": 91.198,
+          "responseEnd": 92.266,
+          "serverTiming": "proxy_session;dur=33.9"
+        },
+        {
+          "path": "/d/coupang-ads/analysis",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1348,
+          "finishedAt": 1348,
+          "startAt": 1287.722900390625,
+          "responseStart": 60.175,
+          "responseEnd": 60.516,
+          "serverTiming": "proxy_session;dur=32.0"
+        },
+        {
+          "path": "/d/coupang-ads/upload",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1424,
+          "finishedAt": 1424,
+          "startAt": 1340.406982421875,
+          "responseStart": 83.135,
+          "responseEnd": 83.528,
+          "serverTiming": "proxy_session;dur=27.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105221220",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1642,
+          "finishedAt": 1643,
+          "startAt": 1543.18505859375,
+          "responseStart": 97.804,
+          "responseEnd": 98.548,
+          "serverTiming": "proxy_session;dur=25.1"
+        },
+        {
+          "path": "/api/dashboard/kpi",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1715,
+          "finishedAt": 1716,
+          "startAt": 1540.2490234375,
+          "responseStart": 172.889,
+          "responseEnd": 174.12,
+          "serverTiming": "auth_user;dur=30.3, auth_membership;dur=13.7, membership_loop_active;dur=6.8, membership_loop_idle;dur=6.9, auth_deck;dur=4.9, auth_workspace;dur=4.7, auth;dur=53.6, data;dur=4.7, total;dur=58.5"
+        },
+        {
+          "path": "/api/campaigns",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1716,
+          "finishedAt": 1716,
+          "startAt": 1539.95703125,
+          "responseStart": 173.685,
+          "responseEnd": 175.798,
+          "serverTiming": "auth_user;dur=29.8, auth_membership;dur=9.7, membership_loop_active;dur=6.1, membership_loop_idle;dur=3.5, auth_deck;dur=4.6, auth_workspace;dur=4.4, auth;dur=48.5, catalog_loader;dur=14.3, target_summaries;dur=7.2, data;dur=44.2, total;dur=92.9"
+        },
+        {
+          "path": "/api/campaigns/104605602/overview",
+          "rsc": false,
+          "status": 200,
+          "receivedAt": 1975,
+          "finishedAt": 1976,
+          "startAt": 1846.89501953125,
+          "responseStart": 126.644,
+          "responseEnd": 128.201,
+          "serverTiming": "auth_user;dur=27.0, auth_membership;dur=9.0, membership_loop_active;dur=1.4, membership_loop_idle;dur=7.5, auth_deck;dur=4.6, auth_workspace;dur=4.4, auth;dur=45.0, data;dur=7.6, total;dur=52.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1017,
+          "finishedAt": 4019,
+          "startAt": 904.634033203125,
+          "responseStart": 111.634,
+          "responseEnd": 116.153,
+          "serverTiming": "proxy_session;dur=35.0"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1168,
+          "finishedAt": 4170,
+          "startAt": 1107.45703125,
+          "responseStart": 59.654,
+          "responseEnd": 61.457,
+          "serverTiming": "proxy_session;dur=21.5"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/103901669",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1214,
+          "finishedAt": 4218,
+          "startAt": 1145.141845703125,
+          "responseStart": 68.102,
+          "responseEnd": 69.068,
+          "serverTiming": "proxy_session;dur=35.1"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1217,
+          "finishedAt": 4218,
+          "startAt": 1119.98193359375,
+          "responseStart": 97.147,
+          "responseEnd": 97.896,
+          "serverTiming": "proxy_session;dur=36.9"
+        },
+        {
+          "path": "/d/coupang-ads/settings",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1331,
+          "finishedAt": 4335,
+          "startAt": 1242.083984375,
+          "responseStart": 88.533,
+          "responseEnd": 98.197,
+          "serverTiming": "proxy_session;dur=26.6"
+        },
+        {
+          "path": "/d/coupang-ads/execution",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1331,
+          "finishedAt": 4335,
+          "startAt": 1269.005859375,
+          "responseStart": 62.276,
+          "responseEnd": 63.162,
+          "serverTiming": "proxy_session;dur=26.9"
+        },
+        {
+          "path": "/d/coupang-ads",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1355,
+          "finishedAt": 4357,
+          "startAt": 1299.177001953125,
+          "responseStart": 55.315,
+          "responseEnd": 230.475,
+          "serverTiming": "proxy_session;dur=23.7"
+        },
+        {
+          "path": "/d/coupang-ads/inventory",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1436,
+          "finishedAt": 4438,
+          "startAt": 1332.264892578125,
+          "responseStart": 103.374,
+          "responseEnd": 104.225,
+          "serverTiming": "proxy_session;dur=49.3"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/105168050",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1623,
+          "finishedAt": 4627,
+          "startAt": 1543.556884765625,
+          "responseStart": 78.048,
+          "responseEnd": 82.566,
+          "serverTiming": "proxy_session;dur=23.9"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104902074",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1628,
+          "finishedAt": 4629,
+          "startAt": 1543.96484375,
+          "responseStart": 83.676,
+          "responseEnd": 92.244,
+          "serverTiming": "proxy_session;dur=44.7"
+        },
+        {
+          "path": "/d/coupang-ads/campaigns/104605602",
+          "rsc": true,
+          "status": 200,
+          "receivedAt": 1829,
+          "finishedAt": 4830,
+          "startAt": 1756.43505859375,
+          "responseStart": 71.008,
+          "responseEnd": 74.325,
+          "serverTiming": "proxy_session;dur=26.4"
+        }
+      ]
+    }
+  ]
+}

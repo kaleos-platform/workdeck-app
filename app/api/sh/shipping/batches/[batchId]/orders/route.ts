@@ -4,6 +4,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { decryptPii } from '@/lib/del/encryption'
 import { maskName, maskPhone, maskAddress } from '@/lib/del/pii-masker'
+import { matchesPaymentAmount } from '@/lib/sh/order-search'
 
 type Params = { params: Promise<{ batchId: string }> }
 
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     Math.max(1, Number(req.nextUrl.searchParams.get('pageSize')) || 50)
   )
   const decrypt = req.nextUrl.searchParams.get('decrypt') === 'true'
-  // 묶음 내 검색 — 주문번호·받는분·전화·주소·상품명 대상.
+  // 묶음 내 검색 — 주문번호·받는분·전화·주소·상품명·결제금액 대상.
   // 받는분/전화/주소는 암호화 PII라 DB 검색 불가 → 전량 fetch 후 메모리 복호화-후-필터.
   const q = (req.nextUrl.searchParams.get('q') ?? '').trim()
   const MIN_PHONE_DIGITS = 4
@@ -98,9 +99,10 @@ export async function GET(req: NextRequest, { params }: Params) {
     const phoneSearchable = qDigits.length >= MIN_PHONE_DIGITS
 
     const filtered = all.filter((order) => {
-      // 평문 매칭: 주문번호 + 상품명
+      // 평문 매칭: 주문번호 + 상품명 + 결제금액
       if (order.orderNumber?.toLowerCase().includes(qLower)) return true
       if (order.items.some((it) => it.name.toLowerCase().includes(qLower))) return true
+      if (matchesPaymentAmount(order.paymentAmount, q)) return true
       // 암호화 PII 매칭: 복호화 후 비교
       try {
         const name = decryptPii(order.recipientNameEnc, order.recipientNameIv)

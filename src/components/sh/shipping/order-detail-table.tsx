@@ -425,7 +425,7 @@ export function OrderDetailTable({ batchId, shippingMethods }: OrderDetailTableP
           </SelectContent>
         </Select>
         <Input
-          placeholder="주문번호·받는분·전화·주소·상품 검색"
+          placeholder="주문번호·받는분·전화·주소·상품·결제금액 검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-[280px]"

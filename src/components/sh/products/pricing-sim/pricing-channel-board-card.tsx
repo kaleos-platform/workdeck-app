@@ -10,14 +10,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import {
-  calculateMatrix,
-  isPromotionConditionMet,
-  type MatrixChannel,
-} from '@/lib/sh/pricing-matrix-calc'
+import { isPromotionConditionMet, type MatrixChannel } from '@/lib/sh/pricing-matrix-calc'
 import type { MatrixBundle, MatrixPromotion, MatrixGlobals } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
-import { snapPrice } from '@/lib/sh/price-snap'
+import { computeChannelPrice } from '@/lib/sh/pricing-channel-price'
 
 import { PricingCostBar } from './pricing-cost-bar'
 import { PricingMatrix } from './pricing-matrix'
@@ -30,7 +26,7 @@ function fmt(n: number): string {
   return Math.round(n).toLocaleString('ko-KR')
 }
 
-function tierBadgeClass(tier: 'good' | 'fair' | 'bad'): string {
+export function tierBadgeClass(tier: 'good' | 'fair' | 'bad'): string {
   if (tier === 'good') return 'border-emerald-300 bg-emerald-50 text-emerald-700'
   if (tier === 'fair') return 'border-amber-300 bg-amber-50 text-amber-700'
   return 'border-destructive/40 bg-destructive/10 text-destructive'
@@ -42,7 +38,7 @@ function thr(p: PromotionValue): string {
   return p.minThreshold && p.minThreshold > 0 ? ` · 최소 ₩${fmt(p.minThreshold)}↑` : ''
 }
 
-function promoLabel(p: PromotionValue): string | null {
+export function promoLabel(p: PromotionValue): string | null {
   switch (p.type) {
     case 'PERCENT':
       return `정률 ${p.value}%${thr(p)}`
@@ -122,28 +118,6 @@ export function PricingChannelBoardCard({
     return basic ? Number(basic.ratePercent) / 100 : 0
   }, [channel])
 
-  // 광고 제외 채널 — 권장가 역산·광고 전 마진 비교에 사용.
-  // (광고비가 역산 분모에 들어가면 권장가↑→광고비↑ 순환 인플레 발생하므로 제외)
-  const adlessChannel = useMemo<MatrixChannel>(
-    () => ({ ...channel, applyAdCost: false }),
-    [channel]
-  )
-  // 권장 판매가 역산 — 광고 제외 기준(salePrice=0 번들) recommendedRetail.good
-  const recoMatrix = useMemo(
-    () =>
-      calculateMatrix({
-        bundle: { ...bundle, salePrice: 0 },
-        channel: adlessChannel,
-        promotion: { type: 'NONE', value: 0 },
-        globals,
-        thresholds,
-      }),
-    [bundle, adlessChannel, globals, thresholds]
-  )
-  const rawRecommended = recoMatrix.recommendedRetail.good
-  const recommended =
-    rawRecommended != null && snap ? snapPrice(rawRecommended, 'end900') : rawRecommended
-
   // 소비자가 상한 — 판매가는 소비자가를 초과할 수 없음.
   // 부모가 override 반영한 유효 소비자가(retailCapProp)를 우선 사용.
   // 미전달 시 bundle 컴포넌트에서 Σ(소비자가 × 수량) 계산. 0/미입력이면 상한 없음(null).
@@ -152,26 +126,27 @@ export function PricingChannelBoardCard({
     const sum = bundle.components.reduce((s, c) => s + (c.retailPrice ?? 0) * c.quantity, 0)
     return sum > 0 ? sum : null
   }, [retailCapProp, bundle])
-  const exceedsRetail = recommended != null && retailCap != null && recommended > retailCap
-  // 자동 권장가(상한 클램프).
-  const autoPrice = exceedsRetail ? retailCap : recommended
-  // 수동가도 소비자가 상한으로 클램프 — 판매가는 소비자가를 넘을 수 없음.
-  const clampedManual =
-    manualPrice != null && retailCap != null ? Math.min(manualPrice, retailCap) : manualPrice
-  const effectivePrice = clampedManual ?? autoPrice
   const isManual = manualPrice != null
 
+  // 권장가 역산(광고 제외) → 소비자가 상한 클램프 → 수동가 → 헤드라인/프로모션 매트릭스.
+  // KPI·조합 한눈에 보기 표와 같은 단일 계산(computeChannelPrice).
+  const priced = useMemo(
+    () =>
+      computeChannelPrice({
+        bundle,
+        channel,
+        promotion,
+        globals,
+        thresholds,
+        snap,
+        retailCap,
+        manualPrice,
+      }),
+    [bundle, channel, promotion, globals, thresholds, snap, retailCap, manualPrice]
+  )
+  const { recommended, exceedsRetail, effectivePrice } = priced
   // 헤드라인 매트릭스 — 실채널(광고 적용) × effectivePrice. 마진은 광고 반영(에로전).
-  const headlineMatrix = useMemo(() => {
-    if (effectivePrice == null) return null
-    return calculateMatrix({
-      bundle: { ...bundle, salePrice: effectivePrice },
-      channel,
-      promotion: { type: 'NONE', value: 0 },
-      globals,
-      thresholds,
-    })
-  }, [effectivePrice, bundle, channel, globals, thresholds])
+  const headlineMatrix = priced.headline
 
   const cell = headlineMatrix?.cells[0] ?? null
 
@@ -185,16 +160,7 @@ export function PricingChannelBoardCard({
   // 조건부 프로모션(FLAT/PERCENT + minThreshold) 중 현재 판매가가 조건 미만 → 미적용
   const promoConditionUnmet =
     hasPromo && effectivePrice != null && !isPromotionConditionMet(promotionValue, effectivePrice)
-  const promoMatrix = useMemo(() => {
-    if (effectivePrice == null || !hasPromo) return null
-    return calculateMatrix({
-      bundle: { ...bundle, salePrice: effectivePrice },
-      channel,
-      promotion,
-      globals,
-      thresholds,
-    })
-  }, [effectivePrice, hasPromo, bundle, channel, promotion, globals, thresholds])
+  const promoMatrix = priced.promo
   const promoCell = promoMatrix?.cells[0] ?? null
   const currentDiscount =
     promoCell != null && cell != null && cell.finalPrice > 0
@@ -297,6 +263,13 @@ export function PricingChannelBoardCard({
                 title="소비자가 대비 할인율"
               >
                 −{Math.round(Math.max(0, (retailCap - cell.finalPrice) / retailCap) * 100)}%
+                {/* 프로모션 적용 시 최종 할인율 병기 (판매가 취소선→프로모가와 같은 문법) */}
+                {promoApplied && promoCell != null && (
+                  <span title="프로모션 적용 후 최종 할인율">
+                    {' → −'}
+                    {Math.round(Math.max(0, (retailCap - promoCell.finalPrice) / retailCap) * 100)}%
+                  </span>
+                )}
               </span>
             )}
           </div>

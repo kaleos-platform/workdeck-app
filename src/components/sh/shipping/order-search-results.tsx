@@ -202,17 +202,15 @@ export function OrderSearchResults({ query, shippingMethods, channels }: Props) 
         {result?.hasMore && <span>최대 {orders.length}건만 표시 — 검색어를 좁혀주세요</span>}
       </div>
       <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full min-w-[1350px] table-fixed text-sm">
+        <table className="w-full min-w-[1080px] table-fixed text-sm">
           <thead className="border-b bg-muted/40">
             <tr className="text-left text-xs text-muted-foreground">
-              <th className="w-[130px] px-3 py-2 font-medium">받는분</th>
-              <th className="w-[140px] px-3 py-2 font-medium">주문번호</th>
-              <th className="w-[130px] px-3 py-2 font-medium">전화</th>
-              <th className="w-[260px] px-3 py-2 font-medium">주소</th>
-              <th className="w-[200px] px-3 py-2 font-medium">상품</th>
-              <th className="w-[140px] px-3 py-2 font-medium">메모</th>
-              <th className="w-[120px] px-3 py-2 font-medium">판매채널</th>
-              <th className="w-[100px] px-3 py-2 font-medium">주문일자</th>
+              <th className="w-[145px] px-3 py-2 font-medium">받는분 · 전화번호</th>
+              <th className="w-[160px] px-3 py-2 font-medium">주문번호 · 주문일</th>
+              <th className="w-[245px] px-3 py-2 font-medium">주소</th>
+              <th className="w-[185px] px-3 py-2 font-medium">상품명</th>
+              <th className="w-[120px] px-3 py-2 font-medium">배송메모</th>
+              <th className="w-[125px] px-3 py-2 font-medium">판매채널</th>
               <th className="w-[100px] px-3 py-2 text-right font-medium">결제금액</th>
             </tr>
           </thead>
@@ -244,12 +242,20 @@ export function OrderSearchResults({ query, shippingMethods, channels }: Props) 
                         {dec ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                       </button>
                     </div>
+                    <div
+                      className="truncate text-xs text-muted-foreground"
+                      title={dec?.phone ?? o.phone}
+                    >
+                      {dec?.phone ?? o.phone}
+                    </div>
                   </td>
-                  <td className="truncate px-3 py-2" title={o.orderNumber ?? ''}>
-                    {o.orderNumber ?? '-'}
-                  </td>
-                  <td className="truncate px-3 py-2" title={dec?.phone ?? o.phone}>
-                    {dec?.phone ?? o.phone}
+                  <td className="px-3 py-2">
+                    <div className="truncate" title={o.orderNumber ?? ''}>
+                      {o.orderNumber ?? '-'}
+                    </div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {formatDate(o.orderDate)}
+                    </div>
                   </td>
                   <td className="truncate px-3 py-2" title={dec?.address ?? o.address}>
                     {dec?.address ?? o.address}
@@ -263,8 +269,7 @@ export function OrderSearchResults({ query, shippingMethods, channels }: Props) 
                   <td className="truncate px-3 py-2" title={o.channel?.name ?? ''}>
                     {o.channel?.name ?? '-'}
                   </td>
-                  <td className="px-3 py-2 whitespace-nowrap">{formatDate(o.orderDate)}</td>
-                  <td className="px-3 py-2 text-right whitespace-nowrap">
+                  <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
                     {formatAmount(o.paymentAmount)}
                   </td>
                 </tr>

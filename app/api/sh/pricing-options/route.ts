@@ -19,8 +19,10 @@ export async function GET(req: NextRequest) {
   // 상품 단위 조회 — picker step1은 상품 목록이 필요(옵션 단위가 아님).
   // 옵션 단위로 페이지네이션하면 같은 상품 옵션이 page를 채워 상품이 일부만 노출됨.
   // spaceId 소속 검증 + 활성 옵션이 1건 이상 있는 상품만(가격그룹 step2 빈 화면 방지).
+  // status는 상품 목록(/api/sh/products 기본값)과 동일하게 ACTIVE만 — 미사용 상품이 picker에 뜨는 것 방지.
   const where: Record<string, unknown> = {
     spaceId: resolved.space.id,
+    status: 'ACTIVE',
     options: { some: { deletedAt: null } },
   }
 

@@ -104,7 +104,7 @@ describe('GET /api/sh/products/[productId]/options', () => {
       where: {
         spaceId: 'space-1',
         status: 'STOCKED_IN',
-        items: { some: { option: { productId: 'p1' } } },
+        items: { some: { option: { productId: { in: ['p1'] } } } },
       },
       select: {
         id: true,

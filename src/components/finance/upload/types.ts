@@ -3,7 +3,7 @@
  * upload-panel(단일)에서 추출, 다중 파일 업로드에서 공용.
  */
 import { BANK_FIELDS, CARD_FIELDS } from '@/lib/finance/parser'
-import { matchesAccountNumber } from '@/lib/finance/automap'
+import { hintedHeaderIndexes, matchesAccountNumber } from '@/lib/finance/automap'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
@@ -175,6 +175,22 @@ export function duplicateColumnFields(
   return [...byCol.entries()]
     .filter(([, labels]) => labels.length > 1)
     .map(([colIdx, labels]) => ({ colIdx, labels }))
+}
+
+/**
+ * 값이 있고 거래 데이터로 보이는데 어떤 필드에도 매핑되지 않은 컬럼 인덱스.
+ * 신한 프리셋이 "적요"(거래구분) 컬럼을 통째로 빠뜨려 578건에서 거래구분이 소실된 사례 방지용.
+ * 빈 컬럼과 힌트에 안 걸리는 컬럼(No·전체선택 등)은 제외해 노이즈를 줄인다.
+ */
+export function unmappedDataColumns(
+  mapping: FieldMapping,
+  headers: string[],
+  emptyColumns: number[],
+  kind: FinKind
+): number[] {
+  const used = new Set(Object.values(mapping).flat())
+  const empty = new Set(emptyColumns)
+  return hintedHeaderIndexes(headers, kind).filter((i) => !used.has(i) && !empty.has(i))
 }
 
 /** suggestedMapping/preset.mapping [{headerName, field}] → FieldMapping(필드→헤더 인덱스 배열) */

@@ -66,7 +66,6 @@ export function findMatchingOption(
 
 /**
  * attrState 기반 cartesian — 활성 속성은 선택값만, 미활성은 전체 값.
- * SimpleModeSettings의 effectiveCombos / buildSimpleCompositionGroups의 combos 생성 로직을 단일화.
  */
 export function cartesianFromAttrState(
   attrs: BuilderAttributeDef[],
@@ -258,63 +257,89 @@ export function diagnoseComposition(
   }
 }
 
-export function buildSimpleCompositionGroups(params: {
-  product: BuilderProductDetail
-  attrState: Record<string, BuilderAttrState>
-  setQuantities: number[]
-}): BuilderBuiltGroup[] {
-  const { product, attrState } = params
-  const attrs = product.optionAttributes ?? []
-  const qtys = params.setQuantities.map((q) => Math.max(1, q))
-  const includeQtySuffix = qtys.length > 1
+/**
+ * 실제 옵션 행이 없는 속성값을 정의에서 제거한다 — 옵션을 지워도 optionAttributes 정의엔 값이 남아
+ * 빌더에 "옵션 없음" 칩이 뜨던 문제. 한 값도 뒷받침되지 않는 속성은 진단 메시지(KEY/VALUE_MISMATCH)를
+ * 위해 원본 그대로 둔다.
+ */
+export function pruneUnbackedAttributes(
+  attrs: BuilderAttributeDef[],
+  options: BuilderOptionRow[]
+): BuilderAttributeDef[] {
+  const backed = buildBackedValueSet(options)
+  return attrs.map((attr) => {
+    const kept = attr.values.filter((v) =>
+      backed.has(`${attr.name.trim()} ${attrValueOf(v).trim()}`)
+    )
+    return kept.length > 0 ? { ...attr, values: kept } : attr
+  })
+}
 
-  if (attrs.length === 0) {
-    const defaultOpt = product.options[0]
-    if (!defaultOpt) return []
-    return qtys.map((q) => ({
-      suffixParts: includeQtySuffix ? [`${q}개`] : [],
-      items: [
-        {
-          optionId: defaultOpt.id,
-          optionName: defaultOpt.name,
-          sku: defaultOpt.sku,
-          quantity: q,
-          retailPrice: defaultOpt.retailPrice,
-          attributeValues: defaultOpt.attributeValues,
-        },
-      ],
-    }))
-  }
+/** 여러 상품 조합의 상품 1개 — 고른 옵션들과 판매 옵션 1개당 들어갈 수량 */
+export type MultiProductPick = {
+  options: BuilderOptionRow[]
+  quantity: number
+}
 
-  const combos = attrs.reduce<Array<Record<string, string>>>((acc, attr) => {
-    const state = attrState[attr.name]
-    const selectedVals = state?.enabled ? Object.keys(state.valueQuantities) : []
-    const vals = selectedVals.length > 0 ? selectedVals : attributeValuesOf(attr)
-    if (acc.length === 0) return vals.map((v) => ({ [attr.name]: v }))
-    return acc.flatMap((prev) => vals.map((v) => ({ ...prev, [attr.name]: v })))
-  }, [])
-
-  const groups: BuilderBuiltGroup[] = []
-  for (const combo of combos) {
-    const opt = findMatchingOption(product.options, combo)
-    if (!opt) continue
-    const baseParts = attrs.map((a) => combo[a.name]).filter(Boolean)
-    for (const q of qtys) {
-      groups.push({
-        suffixParts: includeQtySuffix ? [...baseParts, `${q}개`] : baseParts,
+/**
+ * 상품 간 cartesian — 상품마다 고른 옵션 1개씩 뽑아 판매 옵션 1개를 만든다.
+ * 이름 접미사는 옵션을 2개 이상 고른(펼쳐지는) 상품의 옵션명만 붙인다. 옵션을 안 고른 상품은 제외.
+ */
+export function buildMultiProductGroups(picks: MultiProductPick[]): BuilderBuiltGroup[] {
+  const active = picks.filter((p) => p.options.length > 0)
+  if (active.length === 0) return []
+  let groups: BuilderBuiltGroup[] = [{ suffixParts: [], items: [] }]
+  for (const pick of active) {
+    const quantity = Math.max(1, pick.quantity)
+    const expands = pick.options.length > 1
+    groups = groups.flatMap((g) =>
+      pick.options.map((opt) => ({
+        suffixParts: expands ? [...g.suffixParts, opt.name] : g.suffixParts,
         items: [
+          ...g.items,
           {
             optionId: opt.id,
             optionName: opt.name,
             sku: opt.sku,
-            quantity: q,
+            quantity,
             retailPrice: opt.retailPrice,
             attributeValues: opt.attributeValues,
           },
         ],
-      })
+      }))
+    )
+  }
+  return groups
+}
+
+/** 여러 상품 번들 — 상품별 고른 옵션 + 묶음별 수량(quantities[묶음 index], 0 = 그 묶음에서 제외) */
+export type MultiProductBundleProduct = {
+  label: string
+  options: BuilderOptionRow[]
+  quantities: number[]
+}
+
+/**
+ * 묶음마다 buildMultiProductGroups 로 판매 옵션을 만든다. 묶음이 2개 이상이면
+ * 묶음 요약(`상품×수량 + …`)을 접미사로 붙여 묶음 간 이름이 겹치지 않게 한다.
+ */
+export function buildMultiProductBundleGroups(
+  products: MultiProductBundleProduct[]
+): BuilderBuiltGroup[] {
+  const bundleCount = Math.max(0, ...products.map((p) => p.quantities.length))
+  const groups: BuilderBuiltGroup[] = []
+  for (let b = 0; b < bundleCount; b++) {
+    const picks = products
+      .map((p) => ({ label: p.label, options: p.options, quantity: p.quantities[b] ?? 0 }))
+      .filter((p) => p.quantity > 0 && p.options.length > 0)
+    // 상품 1개면 기존 단일 상품 세트 이름 규칙(`N개`)을 유지
+    const summary =
+      products.length === 1
+        ? `${picks[0]?.quantity ?? 0}개`
+        : picks.map((p) => `${p.label}×${p.quantity}`).join(' + ')
+    for (const g of buildMultiProductGroups(picks)) {
+      groups.push(bundleCount > 1 ? { ...g, suffixParts: [...g.suffixParts, summary] } : g)
     }
   }
-
   return groups
 }

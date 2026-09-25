@@ -1,58 +1,11 @@
 import {
-  buildSimpleCompositionGroups,
   diagnoseComposition,
   cartesianFromAttrState,
   buildBackedValueSet,
+  pruneUnbackedAttributes,
+  buildMultiProductGroups,
+  buildMultiProductBundleGroups,
 } from '../composition-builder-utils'
-
-describe('buildSimpleCompositionGroups', () => {
-  it('builds groups when optionAttributes are legacy string values', () => {
-    const groups = buildSimpleCompositionGroups({
-      product: {
-        optionAttributes: [
-          { name: '사이즈', values: ['M', 'L'] },
-          { name: '색상', values: ['블루베리', '오렌지에이드'] },
-        ],
-        options: [
-          option('m-blue', { 사이즈: 'M', 색상: '블루베리' }),
-          option('m-orange', { 사이즈: 'M', 색상: '오렌지에이드' }),
-          option('l-blue', { 사이즈: 'L', 색상: '블루베리' }),
-          option('l-orange', { 사이즈: 'L', 색상: '오렌지에이드' }),
-        ],
-      },
-      attrState: {
-        사이즈: { enabled: true, valueQuantities: {} },
-        색상: { enabled: true, valueQuantities: {} },
-      },
-      setQuantities: [1],
-    })
-
-    expect(groups).toHaveLength(4)
-    expect(groups.map((g) => g.items[0].optionId).sort()).toEqual([
-      'l-blue',
-      'l-orange',
-      'm-blue',
-      'm-orange',
-    ])
-  })
-
-  it('counts only combinations backed by real options', () => {
-    const groups = buildSimpleCompositionGroups({
-      product: {
-        optionAttributes: [
-          { name: '사이즈', values: [{ value: 'M' }, { value: 'L' }] },
-          { name: '색상', values: [{ value: '블루베리' }, { value: '오렌지에이드' }] },
-        ],
-        options: [option('m-blue', { 사이즈: 'M', 색상: '블루베리' })],
-      },
-      attrState: {},
-      setQuantities: [1],
-    })
-
-    expect(groups).toHaveLength(1)
-    expect(groups[0].suffixParts).toEqual(['M', '블루베리'])
-  })
-})
 
 describe('diagnoseComposition', () => {
   const attrs = [
@@ -211,3 +164,91 @@ function option(id: string, attributeValues: Record<string, string>) {
     attributeValues,
   }
 }
+
+describe('pruneUnbackedAttributes', () => {
+  it('drops definition values without a backing option', () => {
+    const attrs = pruneUnbackedAttributes(
+      [{ name: '구성', values: ['1매', '5매', { value: '20매' }, '60매'] }],
+      [option('o60', { 구성: '60매' })]
+    )
+    expect(attrs[0].values).toEqual(['60매'])
+  })
+
+  it('keeps an attribute untouched when none of its values are backed', () => {
+    const attrs = pruneUnbackedAttributes(
+      [{ name: '구성', values: ['1매', '5매'] }],
+      [option('o60', { 구성: '60매' })]
+    )
+    expect(attrs[0].values).toEqual(['1매', '5매'])
+  })
+})
+
+describe('buildMultiProductGroups', () => {
+  it('expands a cartesian across products with per-product quantity', () => {
+    const groups = buildMultiProductGroups([
+      {
+        options: [option('c50', { 용량: '50ml' }), option('c100', { 용량: '100ml' })],
+        quantity: 1,
+      },
+      { options: [option('p60', {})], quantity: 2 },
+      { options: [], quantity: 1 },
+    ])
+    expect(groups).toHaveLength(2)
+    expect(groups.map((g) => g.items.map((it) => `${it.optionId}x${it.quantity}`))).toEqual([
+      ['c50x1', 'p60x2'],
+      ['c100x1', 'p60x2'],
+    ])
+    // 펼쳐지는 상품(옵션 2개)의 옵션명만 접미사로
+    expect(groups.map((g) => g.suffixParts)).toEqual([['50ml'], ['100ml']])
+  })
+})
+
+describe('buildMultiProductBundleGroups', () => {
+  it('makes one listing per bundle, skipping zero-quantity products', () => {
+    const groups = buildMultiProductBundleGroups([
+      { label: '크림', options: [option('c', {})], quantities: [1, 1, 0] },
+      { label: '패드', options: [option('p', {})], quantities: [1, 2, 3] },
+    ])
+    expect(groups.map((g) => g.items.map((it) => `${it.optionId}x${it.quantity}`))).toEqual([
+      ['cx1', 'px1'],
+      ['cx1', 'px2'],
+      ['px3'],
+    ])
+    expect(groups.map((g) => g.suffixParts)).toEqual([
+      ['크림×1 + 패드×1'],
+      ['크림×1 + 패드×2'],
+      ['패드×3'],
+    ])
+  })
+
+  it('adds no bundle suffix with a single bundle and drops all-zero bundles', () => {
+    expect(
+      buildMultiProductBundleGroups([
+        { label: '크림', options: [option('c', {})], quantities: [2] },
+      ]).map((g) => g.suffixParts)
+    ).toEqual([[]])
+    expect(
+      buildMultiProductBundleGroups([
+        { label: '크림', options: [option('c', {})], quantities: [0] },
+      ])
+    ).toEqual([])
+  })
+})
+
+describe('buildMultiProductBundleGroups — single product', () => {
+  it('keeps the `N개` set suffix and expands selected options', () => {
+    const groups = buildMultiProductBundleGroups([
+      {
+        label: '패드',
+        options: [option('p1', { 구성: '1매' }), option('p5', { 구성: '5매' })],
+        quantities: [1, 3],
+      },
+    ])
+    expect(groups.map((g) => g.suffixParts)).toEqual([
+      ['1매', '1개'],
+      ['5매', '1개'],
+      ['1매', '3개'],
+      ['5매', '3개'],
+    ])
+  })
+})
