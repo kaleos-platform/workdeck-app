@@ -37,6 +37,10 @@ describe('productSchema — description clear/skip', () => {
 })
 
 describe('productSchema — features/certifications 상한', () => {
+  it('features 상한은 200개다', () => {
+    expect(PRODUCT_FEATURES_MAX_ITEMS).toBe(200)
+  })
+
   it('features 상한 초과는 실패', () => {
     const r = patchSchema.safeParse({
       features: Array.from({ length: PRODUCT_FEATURES_MAX_ITEMS + 1 }, (_, i) => `f${i}`),
