@@ -29,7 +29,6 @@
 ## Task 1: KST 날짜 parsing과 배송 묶음 기간 API
 
 **Files:**
-
 - Modify: `src/lib/date-range.ts`
 - Create: `src/lib/__tests__/date-range.test.ts`
 - Modify: `app/api/sh/shipping/batches/route.ts`
@@ -133,16 +132,17 @@ describe('GET /api/sh/shipping/batches', () => {
     expect(mockBatch.count).not.toHaveBeenCalled()
   })
 
-  test.each(['from=2026-09-17', 'from=2026-02-30&to=2026-03-01', 'from=2026-09-25&to=2026-09-24'])(
-    '잘못된 기간 %s를 400으로 거부한다',
-    async (query) => {
-      const res = await GET(
-        new NextRequest(`http://localhost/api/sh/shipping/batches?status=COMPLETED&${query}`)
-      )
-      expect(res.status).toBe(400)
-      expect(mockBatch.findMany).not.toHaveBeenCalled()
-    }
-  )
+  test.each([
+    'from=2026-09-17',
+    'from=2026-02-30&to=2026-03-01',
+    'from=2026-09-25&to=2026-09-24',
+  ])('잘못된 기간 %s를 400으로 거부한다', async (query) => {
+    const res = await GET(
+      new NextRequest(`http://localhost/api/sh/shipping/batches?status=COMPLETED&${query}`)
+    )
+    expect(res.status).toBe(400)
+    expect(mockBatch.findMany).not.toHaveBeenCalled()
+  })
 
   test('날짜가 없으면 기존 pagination 계약을 유지한다', async () => {
     await GET(
@@ -239,7 +239,6 @@ git commit -m "🐛 fix(sh): 배송 묶음 완료일 기간 조회 수정"
 ## Task 2: 결제금액 검색을 두 API에 공유
 
 **Files:**
-
 - Create: `src/lib/sh/order-search.ts`
 - Create: `src/lib/sh/__tests__/order-search.test.ts`
 - Modify: `app/api/sh/shipping/orders/route.ts`
@@ -326,10 +325,10 @@ if (!orderNumberMatch && !paymentAmountMatch && !piiMatch) continue
 
 ```tsx
 // src/components/sh/shipping/order-search-bar.tsx
-placeholder = '받는분·주문번호·전화·주소·결제금액 검색'
+placeholder="받는분·주문번호·전화·주소·결제금액 검색"
 
 // src/components/sh/shipping/order-detail-table.tsx
-placeholder = '주문번호·받는분·전화·주소·상품·결제금액 검색'
+placeholder="주문번호·받는분·전화·주소·상품·결제금액 검색"
 ```
 
 - [ ] **Step 7: helper test와 typecheck 통과 확인**
@@ -348,7 +347,6 @@ git commit -m "✨ feat(sh): 주문 검색에 결제금액 포함"
 ## Task 3: 배송 묶음 component를 server 기간 결과와 동기화
 
 **Files:**
-
 - Modify: `src/components/sh/shipping/batch-list.tsx`
 - Create: `src/components/sh/shipping/__tests__/batch-list.test.tsx`
 
@@ -379,7 +377,9 @@ const response = {
 describe('BatchList', () => {
   beforeEach(() => {
     jest.spyOn(Date, 'now').mockReturnValue(new Date('2026-09-24T03:00:00.000Z').getTime())
-    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => response } as Response)
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue({ ok: true, json: async () => response } as Response)
   })
 
   afterEach(() => {
@@ -482,20 +482,18 @@ const batchDate = batch.completedAt ?? batch.createdAt
 panel title 옆에는 desktop에서만 보이는 접근 가능한 collapse button을 둔다.
 
 ```tsx
-{
-  onCollapse && (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      className="ml-auto hidden h-8 w-8 2xl:inline-flex"
-      onClick={onCollapse}
-      aria-label="배송 묶음 접기"
-    >
-      <ChevronLeft className="h-4 w-4" />
-    </Button>
-  )
-}
+{onCollapse && (
+  <Button
+    type="button"
+    variant="ghost"
+    size="icon"
+    className="ml-auto hidden h-8 w-8 2xl:inline-flex"
+    onClick={onCollapse}
+    aria-label="배송 묶음 접기"
+  >
+    <ChevronLeft className="h-4 w-4" />
+  </Button>
+)}
 ```
 
 `ChevronLeft`를 `lucide-react` import에 추가한다. 왼쪽 280px 안에서 date input 두 개가 넘치지 않도록 각각 `min-w-0 flex-1`을 사용하고 묶음 table container는 `2xl:max-h-[calc(100vh-260px)]`로 확장한다.
@@ -516,7 +514,6 @@ git commit -m "🐛 fix(sh): 배송 묶음 기간 결과를 한 번에 표시"
 ## Task 4: `2xl` 좌우 layout과 panel 복구 rail
 
 **Files:**
-
 - Modify: `app/d/seller-ops/shipping/orders/page.tsx`
 
 - [ ] **Step 1: page layout local state와 grid 구현**
@@ -599,7 +596,6 @@ git commit -m "💄 feat(sh): 배송 묶음과 주문 목록 좌우 배치"
 ## Task 5: 통합 검증과 UI 확인
 
 **Files:**
-
 - Verify only
 
 - [ ] **Step 1: 변경 test 전체 실행**
