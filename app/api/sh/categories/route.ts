@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
     categories: categories.map((c) => ({
       id: c.id,
       name: c.name,
+      excludeFromSalesAnalytics: c.excludeFromSalesAnalytics,
       createdAt: c.createdAt,
       ...(includeCount && '_count' in c
         ? { productCount: (c as typeof c & { _count: { products: number } })._count.products }
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
 
-  let body: { name?: string }
+  let body: { name?: string; excludeFromSalesAnalytics?: boolean }
   try {
     body = await req.json()
   } catch {
@@ -50,7 +51,11 @@ export async function POST(req: NextRequest) {
   if (existing) return errorResponse('이미 존재하는 카테고리명입니다', 409)
 
   const category = await prisma.invProductGroup.create({
-    data: { spaceId: resolved.space.id, name },
+    data: {
+      spaceId: resolved.space.id,
+      name,
+      excludeFromSalesAnalytics: body.excludeFromSalesAnalytics === true,
+    },
   })
 
   return NextResponse.json({ category }, { status: 201 })

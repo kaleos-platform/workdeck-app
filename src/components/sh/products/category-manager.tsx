@@ -5,6 +5,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -27,8 +28,11 @@ import {
 type Category = {
   id: string
   name: string
-  _count?: { products: number }
+  excludeFromSalesAnalytics: boolean
+  productCount?: number
 }
+
+const EXCLUDE_HINT = '판매분석 상품 랭킹·공헌이익에서 기본 제외됩니다. 재고·발주에는 영향 없습니다.'
 
 type Props = {
   /** 외부에서 Dialog 열림 상태 제어 (undefined이면 Card 모드로 렌더) */
@@ -51,12 +55,13 @@ export function ShCategoryManager({ open, onOpenChange, onChanged }: Props) {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Category | null>(null)
   const [name, setName] = useState('')
+  const [exclude, setExclude] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const loadCategories = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/sh/categories')
+      const res = await fetch('/api/sh/categories?includeProductCount=true')
       if (!res.ok) throw new Error('카테고리 조회 실패')
       const data = await res.json()
       setCategories(data.categories ?? [])
@@ -77,12 +82,14 @@ export function ShCategoryManager({ open, onOpenChange, onChanged }: Props) {
   function openNew() {
     setEditing(null)
     setName('')
+    setExclude(false)
     setEditDialogOpen(true)
   }
 
   function openEdit(cat: Category) {
     setEditing(cat)
     setName(cat.name)
+    setExclude(cat.excludeFromSalesAnalytics)
     setEditDialogOpen(true)
   }
 
@@ -98,7 +105,7 @@ export function ShCategoryManager({ open, onOpenChange, onChanged }: Props) {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({ name: name.trim(), excludeFromSalesAnalytics: exclude }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? '저장 실패')
@@ -110,6 +117,28 @@ export function ShCategoryManager({ open, onOpenChange, onChanged }: Props) {
       toast.error(err instanceof Error ? err.message : '저장 실패')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function toggleExclude(cat: Category, next: boolean) {
+    // 낙관적 반영 — 실패하면 되돌린다.
+    setCategories((cs) =>
+      cs.map((c) => (c.id === cat.id ? { ...c, excludeFromSalesAnalytics: next } : c))
+    )
+    try {
+      const res = await fetch(`/api/sh/categories/${cat.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ excludeFromSalesAnalytics: next }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '저장 실패')
+      onChanged?.()
+    } catch (err) {
+      setCategories((cs) =>
+        cs.map((c) => (c.id === cat.id ? { ...c, excludeFromSalesAnalytics: !next } : c))
+      )
+      toast.error(err instanceof Error ? err.message : '저장 실패')
     }
   }
 
@@ -140,6 +169,9 @@ export function ShCategoryManager({ open, onOpenChange, onChanged }: Props) {
             <TableRow>
               <TableHead>카테고리명</TableHead>
               <TableHead className="text-right">상품 수</TableHead>
+              <TableHead className="w-28 text-center" title={EXCLUDE_HINT}>
+                판매분석 제외
+              </TableHead>
               <TableHead className="w-24 text-right">액션</TableHead>
             </TableRow>
           </TableHeader>
@@ -148,7 +180,14 @@ export function ShCategoryManager({ open, onOpenChange, onChanged }: Props) {
               <TableRow key={cat.id}>
                 <TableCell className="font-medium">{cat.name}</TableCell>
                 <TableCell className="text-right text-sm text-muted-foreground">
-                  {cat._count?.products ?? 0}개
+                  {cat.productCount ?? 0}개
+                </TableCell>
+                <TableCell className="text-center">
+                  <Checkbox
+                    checked={cat.excludeFromSalesAnalytics}
+                    onCheckedChange={(v) => void toggleExclude(cat, v === true)}
+                    aria-label={`${cat.name} 판매분석 제외`}
+                  />
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
@@ -199,6 +238,19 @@ export function ShCategoryManager({ open, onOpenChange, onChanged }: Props) {
               }}
             />
           </div>
+          <label className="flex cursor-pointer items-start gap-2 text-sm">
+            <Checkbox
+              className="mt-0.5"
+              checked={exclude}
+              onCheckedChange={(v) => setExclude(v === true)}
+            />
+            <span>
+              판매분석에서 제외
+              <span className="block text-xs text-muted-foreground">
+                체험단 발송·부자재처럼 판매 실적이 아닌 카테고리. {EXCLUDE_HINT}
+              </span>
+            </span>
+          </label>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={saving}>

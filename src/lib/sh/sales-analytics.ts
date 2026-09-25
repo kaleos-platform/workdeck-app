@@ -6,14 +6,6 @@ import { getTodayStrKst } from '@/lib/date-range'
 
 export type SalesUnit = '일' | '주' | '월'
 
-/**
- * 판매 실적으로 보지 않는 상품 그룹 — 판매분석 랭킹과 공헌이익(margin-query)의 **공통 기본값**.
- * 체험단 마케팅 발송분·부자재가 여기 묶여 있어, 포함하면 실제 판매 상품이 가려진다.
- * 두 곳이 같은 상수를 써야 화면 간 숫자가 일치한다. 그룹 이름이 바뀌면 조용히
- * "제외 없음"이 될 뿐이라 화면(랭킹 헤더의 제외 금액 표기)에서 바로 드러난다.
- */
-export const DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES = ['배송 부자재']
-
 export type DateRange = { from: string; to: string }
 
 // ─── 날짜 유틸 (YYYY-MM-DD 문자열, KST) ──────────────────────────────────────
