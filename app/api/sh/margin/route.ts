@@ -4,7 +4,7 @@ import { queryProductMargin } from '@/lib/sh/margin-query'
 
 // SKU/옵션 단위 공헌이익 API — 집계 로직은 src/lib/sh/margin-query.ts (route·MCP tool 공유).
 // searchParams: from, to (필수, YYYY-MM-DD KST), productIds/optionIds(콤마), channel, page, pageSize,
-//   excludeGroups(콤마) — 생략 시 판매분석 랭킹과 같은 기본값(체험단·부자재 제외), 빈 값이면 제외 없음
+//   excludeGroups(콤마, 상품 카테고리 이름) — 생략 시 판매분석 랭킹과 같은 기본값(카테고리 관리의 「판매분석 제외」), 빈 값이면 제외 없음
 
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')

@@ -28,6 +28,7 @@ export type InvProductGroupMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
+  excludeFromSalesAnalytics: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -36,6 +37,7 @@ export type InvProductGroupMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
   name: string | null
+  excludeFromSalesAnalytics: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +46,7 @@ export type InvProductGroupCountAggregateOutputType = {
   id: number
   spaceId: number
   name: number
+  excludeFromSalesAnalytics: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -54,6 +57,7 @@ export type InvProductGroupMinAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  excludeFromSalesAnalytics?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -62,6 +66,7 @@ export type InvProductGroupMaxAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  excludeFromSalesAnalytics?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -70,6 +75,7 @@ export type InvProductGroupCountAggregateInputType = {
   id?: true
   spaceId?: true
   name?: true
+  excludeFromSalesAnalytics?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -151,6 +157,7 @@ export type InvProductGroupGroupByOutputType = {
   id: string
   spaceId: string
   name: string
+  excludeFromSalesAnalytics: boolean
   createdAt: Date
   updatedAt: Date
   _count: InvProductGroupCountAggregateOutputType | null
@@ -180,6 +187,7 @@ export type InvProductGroupWhereInput = {
   id?: Prisma.StringFilter<"InvProductGroup"> | string
   spaceId?: Prisma.StringFilter<"InvProductGroup"> | string
   name?: Prisma.StringFilter<"InvProductGroup"> | string
+  excludeFromSalesAnalytics?: Prisma.BoolFilter<"InvProductGroup"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvProductGroup"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProductGroup"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -190,6 +198,7 @@ export type InvProductGroupOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  excludeFromSalesAnalytics?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
@@ -204,6 +213,7 @@ export type InvProductGroupWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.InvProductGroupWhereInput | Prisma.InvProductGroupWhereInput[]
   spaceId?: Prisma.StringFilter<"InvProductGroup"> | string
   name?: Prisma.StringFilter<"InvProductGroup"> | string
+  excludeFromSalesAnalytics?: Prisma.BoolFilter<"InvProductGroup"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvProductGroup"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProductGroup"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
@@ -214,6 +224,7 @@ export type InvProductGroupOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  excludeFromSalesAnalytics?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.InvProductGroupCountOrderByAggregateInput
@@ -228,6 +239,7 @@ export type InvProductGroupScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"InvProductGroup"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"InvProductGroup"> | string
   name?: Prisma.StringWithAggregatesFilter<"InvProductGroup"> | string
+  excludeFromSalesAnalytics?: Prisma.BoolWithAggregatesFilter<"InvProductGroup"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvProductGroup"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"InvProductGroup"> | Date | string
 }
@@ -235,6 +247,7 @@ export type InvProductGroupScalarWhereWithAggregatesInput = {
 export type InvProductGroupCreateInput = {
   id?: string
   name: string
+  excludeFromSalesAnalytics?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductGroupsInput
@@ -245,6 +258,7 @@ export type InvProductGroupUncheckedCreateInput = {
   id?: string
   spaceId: string
   name: string
+  excludeFromSalesAnalytics?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.InvProductUncheckedCreateNestedManyWithoutGroupInput
@@ -253,6 +267,7 @@ export type InvProductGroupUncheckedCreateInput = {
 export type InvProductGroupUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  excludeFromSalesAnalytics?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductGroupsNestedInput
@@ -263,6 +278,7 @@ export type InvProductGroupUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  excludeFromSalesAnalytics?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.InvProductUncheckedUpdateManyWithoutGroupNestedInput
@@ -272,6 +288,7 @@ export type InvProductGroupCreateManyInput = {
   id?: string
   spaceId: string
   name: string
+  excludeFromSalesAnalytics?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -279,6 +296,7 @@ export type InvProductGroupCreateManyInput = {
 export type InvProductGroupUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  excludeFromSalesAnalytics?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -287,6 +305,7 @@ export type InvProductGroupUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  excludeFromSalesAnalytics?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -310,6 +329,7 @@ export type InvProductGroupCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  excludeFromSalesAnalytics?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -318,6 +338,7 @@ export type InvProductGroupMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  excludeFromSalesAnalytics?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -326,6 +347,7 @@ export type InvProductGroupMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  excludeFromSalesAnalytics?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -394,6 +416,7 @@ export type InvProductGroupUpdateOneRequiredWithoutProductsNestedInput = {
 export type InvProductGroupCreateWithoutSpaceInput = {
   id?: string
   name: string
+  excludeFromSalesAnalytics?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.InvProductCreateNestedManyWithoutGroupInput
@@ -402,6 +425,7 @@ export type InvProductGroupCreateWithoutSpaceInput = {
 export type InvProductGroupUncheckedCreateWithoutSpaceInput = {
   id?: string
   name: string
+  excludeFromSalesAnalytics?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.InvProductUncheckedCreateNestedManyWithoutGroupInput
@@ -440,6 +464,7 @@ export type InvProductGroupScalarWhereInput = {
   id?: Prisma.StringFilter<"InvProductGroup"> | string
   spaceId?: Prisma.StringFilter<"InvProductGroup"> | string
   name?: Prisma.StringFilter<"InvProductGroup"> | string
+  excludeFromSalesAnalytics?: Prisma.BoolFilter<"InvProductGroup"> | boolean
   createdAt?: Prisma.DateTimeFilter<"InvProductGroup"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"InvProductGroup"> | Date | string
 }
@@ -447,6 +472,7 @@ export type InvProductGroupScalarWhereInput = {
 export type InvProductGroupCreateWithoutProductsInput = {
   id?: string
   name: string
+  excludeFromSalesAnalytics?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutInvProductGroupsInput
@@ -456,6 +482,7 @@ export type InvProductGroupUncheckedCreateWithoutProductsInput = {
   id?: string
   spaceId: string
   name: string
+  excludeFromSalesAnalytics?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -479,6 +506,7 @@ export type InvProductGroupUpdateToOneWithWhereWithoutProductsInput = {
 export type InvProductGroupUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  excludeFromSalesAnalytics?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutInvProductGroupsNestedInput
@@ -488,6 +516,7 @@ export type InvProductGroupUncheckedUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  excludeFromSalesAnalytics?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -495,6 +524,7 @@ export type InvProductGroupUncheckedUpdateWithoutProductsInput = {
 export type InvProductGroupCreateManySpaceInput = {
   id?: string
   name: string
+  excludeFromSalesAnalytics?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -502,6 +532,7 @@ export type InvProductGroupCreateManySpaceInput = {
 export type InvProductGroupUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  excludeFromSalesAnalytics?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.InvProductUpdateManyWithoutGroupNestedInput
@@ -510,6 +541,7 @@ export type InvProductGroupUpdateWithoutSpaceInput = {
 export type InvProductGroupUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  excludeFromSalesAnalytics?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.InvProductUncheckedUpdateManyWithoutGroupNestedInput
@@ -518,6 +550,7 @@ export type InvProductGroupUncheckedUpdateWithoutSpaceInput = {
 export type InvProductGroupUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  excludeFromSalesAnalytics?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -557,6 +590,7 @@ export type InvProductGroupSelect<ExtArgs extends runtime.Types.Extensions.Inter
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  excludeFromSalesAnalytics?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -568,6 +602,7 @@ export type InvProductGroupSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  excludeFromSalesAnalytics?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -577,6 +612,7 @@ export type InvProductGroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  excludeFromSalesAnalytics?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -586,11 +622,12 @@ export type InvProductGroupSelectScalar = {
   id?: boolean
   spaceId?: boolean
   name?: boolean
+  excludeFromSalesAnalytics?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvProductGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductGroup"]>
+export type InvProductGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "excludeFromSalesAnalytics" | "createdAt" | "updatedAt", ExtArgs["result"]["invProductGroup"]>
 export type InvProductGroupInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   products?: boolean | Prisma.InvProductGroup$productsArgs<ExtArgs>
@@ -613,6 +650,7 @@ export type $InvProductGroupPayload<ExtArgs extends runtime.Types.Extensions.Int
     id: string
     spaceId: string
     name: string
+    excludeFromSalesAnalytics: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["invProductGroup"]>
@@ -1043,6 +1081,7 @@ export interface InvProductGroupFieldRefs {
   readonly id: Prisma.FieldRef<"InvProductGroup", 'String'>
   readonly spaceId: Prisma.FieldRef<"InvProductGroup", 'String'>
   readonly name: Prisma.FieldRef<"InvProductGroup", 'String'>
+  readonly excludeFromSalesAnalytics: Prisma.FieldRef<"InvProductGroup", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"InvProductGroup", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvProductGroup", 'DateTime'>
 }

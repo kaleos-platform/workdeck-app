@@ -1110,6 +1110,9 @@ model InvProductGroup {
   id      String @id @default(cuid())
   spaceId String
   name    String
+  // 판매분석(상품 랭킹·공헌이익) 기본 제외 — 체험단 발송 부자재처럼 판매 실적이 아닌 카테고리.
+  // 재고·발주에는 영향 없음.
+  excludeFromSalesAnalytics Boolean @default(false)
 
   space    Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   products InvProduct[]

@@ -62,10 +62,19 @@ export async function GET(req: NextRequest) {
 
   const period = { from: fromParam, to: toParam }
 
+  // 체크박스 기본값 — 카테고리 관리의 「판매분석 제외」. margin-query 기본값과 같은 컬럼이다.
+  const defaultExcludedGroupIds = (
+    await prisma.invProductGroup.findMany({
+      where: { spaceId: resolved.space.id, excludeFromSalesAnalytics: true },
+      select: { id: true },
+    })
+  ).map((g) => g.id)
+
   if (channels.length === 0) {
     return NextResponse.json({
       period,
       prevPeriod: prev,
+      defaultExcludedGroupIds,
       rows: [],
       prevTotals: [],
       unmatched: {
@@ -117,8 +126,8 @@ export async function GET(req: NextRequest) {
   }
 
   // 옵션별 비용·공헌이익 — 방금 불러온 매출을 그대로 넘겨 재집계 없이 비용만 붙인다.
-  // 그룹 제외는 화면 체크박스가 결정하므로 여기선 전 그룹을 계산해 둔다(비용 분모는
-  // 어차피 조회 범위와 무관하게 전체 기준이라 그룹 필터와 독립적이다).
+  // 카테고리 제외는 화면 체크박스가 결정하므로 여기선 전 카테고리를 계산해 둔다(비용 분모는
+  // 어차피 조회 범위와 무관하게 전체 기준이라 카테고리 필터와 독립적이다).
   const margin = await queryProductMargin(
     resolved.space.id,
     { from: fromParam, to: toParam, excludeProductGroupNames: [] },
@@ -143,6 +152,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     period,
     prevPeriod: prev,
+    defaultExcludedGroupIds,
     rows: current.rows,
     margins,
     marginMissingFields: margin.missingFields,

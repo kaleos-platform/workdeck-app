@@ -23,7 +23,6 @@ import {
   addDaysYmd,
   addMonthsYmd,
   resolveOptionSeries,
-  DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES,
   type DateRange,
   type SalesUnit,
   type SalesMetric,
@@ -149,7 +148,7 @@ export function SalesAnalyticsPage() {
   // 상품 탭 표시 지표 — 랭킹/차트/피벗 공통 단일 소스.
   const [metric, setMetric] = useState<SalesMetric>('revenue')
 
-  // 제외 상품 그룹 — null = 아직 손대지 않음(기본 제외 적용). 배열이면 사용자 선택.
+  // 제외 상품 카테고리 — null = 아직 손대지 않음(기본 제외 적용). 배열이면 사용자 선택.
   const [excludedGroupIds, setExcludedGroupIds] = useState<string[] | null>(null)
 
   const optionData = useProductSales(
@@ -157,8 +156,7 @@ export function SalesAnalyticsPage() {
     range,
     typedChannelIds,
     tab === 'product',
-    excludedGroupIds,
-    DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES
+    excludedGroupIds
   )
 
   // 상품(옵션) 필터 선택 — 미선택=전체. 그래프·표 공통 단일 소스.
@@ -347,10 +345,15 @@ export function SalesAnalyticsPage() {
             </Button>
           </div>
 
-          {/* 상품 그룹 필터 — 부자재·체험단은 기본 제외, 체크하면 다시 포함 */}
+          {/* 상품 카테고리 필터 — 카테고리 관리의 「판매분석 제외」가 기본 해제, 체크하면 다시 포함 */}
           {optionData.groups.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <Label className="text-xs text-muted-foreground">상품 그룹</Label>
+              <Label
+                className="text-xs text-muted-foreground"
+                title="기본 제외 카테고리는 상품 목록 → 카테고리 관리에서 「판매분석 제외」로 설정합니다"
+              >
+                상품 카테고리
+              </Label>
               {optionData.groups.map((g) => {
                 const on = !optionData.excludedGroupIds.includes(g.id)
                 return (
