@@ -21,6 +21,8 @@ import { lookupCategoryFeePct, DEFAULT_FEE_CATEGORY } from '@/lib/sh/channel-fee
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
 import { loadExternalOptionBridge } from '@/lib/sh/external-option-bridge'
 import { loadProductSales } from '@/lib/sh/product-sales'
+import { DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES } from '@/lib/sh/sales-analytics'
+import { loadProductionUnitCosts } from '@/lib/sh/production-cost'
 
 export interface QueryProductMarginParams {
   from: string // YYYY-MM-DD (KST)
@@ -31,6 +33,12 @@ export interface QueryProductMarginParams {
   channel?: string | null
   page?: number | null
   pageSize?: number | null
+  /**
+   * 판매 실적에서 뺄 상품 그룹 이름. 생략(null/undefined)하면 판매분석 랭킹과 같은
+   * 기본값(DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES — 체험단·부자재)을 쓴다.
+   * 빈 배열이면 아무것도 제외하지 않는다.
+   */
+  excludeProductGroupNames?: string[] | null
 }
 
 type Accum = {
@@ -80,10 +88,29 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
       sku: true,
       costPrice: true,
       costVatIncluded: true,
-      product: { select: { id: true, name: true, internalName: true } },
+      product: {
+        select: {
+          id: true,
+          name: true,
+          internalName: true,
+          useProductionCost: true,
+          group: { select: { name: true } },
+        },
+      },
     },
   })
-  const optionIdSet = new Set(options.map((o) => o.id))
+
+  // 제외 그룹(체험단·부자재)은 옵션 유니버스에서 뺀다. 매출은 미귀속이 아니라
+  // excludedRevenue 로 따로 센다 — 귀속은 됐지만 판매 실적으로 안 보는 것이므로.
+  const excludedGroupNames = new Set(
+    params.excludeProductGroupNames ?? DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES
+  )
+  const isExcludedGroup = (groupName: string | null | undefined) =>
+    !!groupName && excludedGroupNames.has(groupName)
+
+  const optionIdSet = new Set(
+    options.filter((o) => !isExcludedGroup(o.product.group?.name)).map((o) => o.id)
+  )
   const optionById = new Map(options.map((o) => [o.id, o]))
 
   // ── 채널 (수수료·배송비 계수) ─────────────────────────────────────────
@@ -156,6 +183,7 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
   // 조회 대상 옵션 유니버스(파라미터 필터 적용) 밖의 매출은 이 조회의 관심사가 아니므로
   // 귀속으로 세지 않고 별도로 모은다.
   let outOfScopeRevenue = 0
+  let excludedRevenue = 0
   // FIXED 배송비 배분용: 채널 → (옵션 → 매출)
   const fixedShipRevenueByChannel = new Map<string, Map<string, number>>()
   for (const row of sales.rows) {
@@ -169,6 +197,10 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
       fixedShipRevenueByChannel.set(row.channelId, cur)
     }
 
+    if (isExcludedGroup(row.productGroupName)) {
+      excludedRevenue += row.revenue
+      continue
+    }
     if (!optionIdSet.has(row.optionId)) {
       outOfScopeRevenue += row.revenue
       continue
@@ -327,14 +359,25 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
     missingFields.push('packagingCost')
   }
 
+  // ── 원가 — 상품 상세 화면과 같은 규칙 ──────────────────────────────────
+  // useProductionCost=true 면 생산차수 가중평균 단가, 아니면 수동 costPrice(ex-VAT).
+  // 예전엔 수동 costPrice 만 읽어 머드팬티 원가가 1.91배 과대였다.
+  const productionUnitCosts = await loadProductionUnitCosts(spaceId, [
+    ...new Set(options.filter((o) => o.product.useProductionCost).map((o) => o.product.id)),
+  ])
+  const unitCostOf = (opt: (typeof options)[number]): number => {
+    const derived = opt.product.useProductionCost
+      ? productionUnitCosts.get(opt.product.id)
+      : undefined
+    if (derived != null) return derived
+    return costExVat(opt.costPrice == null ? null : Number(opt.costPrice), opt.costVatIncluded)
+  }
+
   // ── 행 구성 ───────────────────────────────────────────────────────────
   const allRows = [...acc.entries()]
     .map(([optionId, a]) => {
       const opt = optionById.get(optionId)!
-      const unitCost = costExVat(
-        opt.costPrice == null ? null : Number(opt.costPrice),
-        opt.costVatIncluded
-      )
+      const unitCost = unitCostOf(opt)
       const cogs = unitCost * a.quantity
       const packagingCost = packagingUnit * a.quantity
       const contributionProfit =
@@ -391,6 +434,9 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
     contributionMarginRatio: revenueSum > 0 ? contributionSum / revenueSum : null,
     unattributedRevenue,
     unallocatedAdCost,
+    /** 제외 그룹(체험단·부자재) 매출 — 귀속은 됐으나 판매 실적에서 뺀 금액. */
+    excludedRevenue,
+    excludedProductGroups: [...excludedGroupNames],
     optionCount: total,
   }
 

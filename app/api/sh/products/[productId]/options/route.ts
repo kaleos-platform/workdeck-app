@@ -3,6 +3,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { productOptionSchema } from '@/lib/sh/schemas'
 import { costExVat } from '@/lib/sh/cost'
+import { loadProductionUnitCosts } from '@/lib/sh/production-cost'
 
 export async function GET(
   _req: NextRequest,
@@ -33,41 +34,17 @@ export async function GET(
   })
   const stockMap = new Map(stockGroups.map((g) => [g.optionId, g._sum.quantity ?? 0]))
 
-  // 완료(입고완료) 생산 차수 가중평균 단가 — Σ ex-VAT 원가 ÷ Σ run 전체 발주수량
-  // (원가는 run 단위라 옵션별 분리 불가 — production-runs API의 averageUnitCost와 동일 규약)
-  // 공급원가는 ex-VAT 관리: 항목별 vatIncluded=true면 ÷1.1 적용해 매입세액 제외.
-  const completedRuns = await prisma.productionRun.findMany({
+  // 완료(입고완료) 생산 차수 가중평균 단가 — 공헌이익(margin-query)과 같은 함수.
+  const runCount = await prisma.productionRun.count({
     where: {
       spaceId: resolved.space.id,
       status: 'STOCKED_IN',
-      // 0 = BREAKDOWN 모드 비용 미입력 저장값일 수 있어 제외 (가중평균 왜곡 방지)
       totalCost: { gt: 0 },
       items: { some: { option: { productId } } },
     },
-    select: {
-      totalCost: true,
-      items: { select: { quantity: true } },
-      costs: { select: { amount: true, vatIncluded: true } },
-    },
   })
-  let productionCost: { unitCost: number; runCount: number } | null = null
-  if (completedRuns.length > 0) {
-    // run별 ex-VAT 원가 합. costs 항목이 있으면 항목별 vatIncluded로 ÷1.1, 없으면(구 데이터) totalCost as-is.
-    const totalCost = completedRuns.reduce((sum, r) => {
-      const exVat =
-        r.costs.length > 0
-          ? r.costs.reduce((s, c) => s + costExVat(Number(c.amount), c.vatIncluded), 0)
-          : Number(r.totalCost ?? 0)
-      return sum + exVat
-    }, 0)
-    const totalQty = completedRuns.reduce(
-      (sum, r) => sum + r.items.reduce((s, it) => s + it.quantity, 0),
-      0
-    )
-    if (totalQty > 0) {
-      productionCost = { unitCost: totalCost / totalQty, runCount: completedRuns.length }
-    }
-  }
+  const unitCost = (await loadProductionUnitCosts(resolved.space.id, [productId])).get(productId)
+  const productionCost = unitCost != null ? { unitCost, runCount } : null
 
   const derivedUnitCost =
     product.useProductionCost && productionCost ? productionCost.unitCost : null

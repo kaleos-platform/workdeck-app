@@ -23,6 +23,7 @@ import {
   addDaysYmd,
   addMonthsYmd,
   resolveOptionSeries,
+  DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES,
   type DateRange,
   type SalesUnit,
   type SalesMetric,
@@ -40,13 +41,6 @@ export type Channel = { id: string; name: string; typeName: string }
 
 const UNITS: SalesUnit[] = ['일', '주', '월']
 const ALL_TYPES = 'ALL'
-
-/**
- * 판매 실적으로 보지 않는 상품 그룹 — 기본 제외.
- * 부자재·체험단 발송분이 여기 묶여 있어 랭킹 상위를 차지하면 실제 상품이 가려진다.
- * 그룹 이름이 바뀌면 조용히 "제외 없음"이 될 뿐이라 화면에서 바로 알아챌 수 있다.
- */
-const DEFAULT_EXCLUDED_GROUP_NAMES = ['배송 부자재']
 
 // ─── 퀵필터 (기간만 변경 — 표시 단위와 독립) ─────────────────────────────────
 type QuickFilter = { label: string; range: () => DateRange }
@@ -164,7 +158,7 @@ export function SalesAnalyticsPage() {
     typedChannelIds,
     tab === 'product',
     excludedGroupIds,
-    DEFAULT_EXCLUDED_GROUP_NAMES
+    DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES
   )
 
   // 상품(옵션) 필터 선택 — 미선택=전체. 그래프·표 공통 단일 소스.
