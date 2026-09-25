@@ -9,6 +9,7 @@ import {
   type OptionBucket,
   type OptionCatalogProduct,
   type OptionQtyRow,
+  type OptionMargin,
   type PrevOptionTotal,
   type ProductRanking,
   type SalesUnit,
@@ -54,6 +55,7 @@ export type ProductSalesData = {
 
 type RawState = {
   rows: OptionQtyRow[]
+  margins: OptionMargin[]
   prevTotals: PrevOptionTotal[]
   unmatched: UnmatchedTotals
   coverage: SalesCoverage | null
@@ -63,6 +65,7 @@ type RawState = {
 
 const EMPTY_RAW: RawState = {
   rows: [],
+  margins: [],
   prevTotals: [],
   unmatched: { revenue: 0, quantity: 0 },
   coverage: null,
@@ -138,8 +141,24 @@ export function useProductSales(
           byReason: res?.unmatched?.byReason,
         }
 
+        const margins: OptionMargin[] = (res?.margins ?? []).map((m: OptionMargin) => ({
+          optionId: m.optionId,
+          productId: m.productId,
+          productName: m.productName,
+          optionName: m.optionName,
+          productGroupId: m.productGroupId ?? null,
+          cogs: Number(m.cogs ?? 0),
+          commissionFee: Number(m.commissionFee ?? 0),
+          shippingCost: Number(m.shippingCost ?? 0),
+          packagingCost: Number(m.packagingCost ?? 0),
+          adCost: Number(m.adCost ?? 0),
+          contributionProfit: Number(m.contributionProfit ?? 0),
+          unitCost: Number(m.unitCost ?? 0),
+        }))
+
         setRaw({
           rows,
+          margins,
           prevTotals,
           unmatched,
           coverage: res?.coverage ?? null,
@@ -195,7 +214,12 @@ export function useProductSales(
     return {
       buckets: bucketOptionQty(rows, unit),
       catalog: buildOptionCatalog(rows),
-      ranking: buildProductRanking(rows, prevTotals, raw.unmatched),
+      ranking: buildProductRanking(
+        rows,
+        prevTotals,
+        raw.unmatched,
+        excluded.size ? raw.margins.filter(keep) : raw.margins
+      ),
       coverage: raw.coverage,
       prevPeriod: raw.prevPeriod,
       groups,

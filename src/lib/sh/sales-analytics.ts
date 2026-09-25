@@ -558,6 +558,33 @@ export type UnmatchedTotals = {
   byReason?: Record<string, number>
 }
 
+/** 옵션별 비용·공헌이익 (서버 margin-query 결과). */
+export type OptionMargin = {
+  optionId: string
+  /** 판매 없이 비용(광고비)만 있는 옵션을 행으로 살리기 위한 이름·소속. */
+  productId?: string
+  productName?: string
+  optionName?: string
+  productGroupId?: string | null
+  cogs: number
+  commissionFee: number
+  shippingCost: number
+  packagingCost: number
+  adCost: number
+  contributionProfit: number
+  /** 0 이면 원가 미입력 — 공헌이익이 과대평가된다. */
+  unitCost: number
+}
+
+/** 공헌이익 합계. 원가 미입력 옵션이 섞였는지도 같이 들고 다닌다. */
+export type MarginTotals = {
+  contributionProfit: number
+  /** 공헌이익률 = 공헌이익 / 매출. 매출 0이면 null. */
+  marginRatio: number | null
+  /** 매출이 있는데 원가가 없는 옵션이 섞임 → 이익이 과대평가됨. */
+  costMissing: boolean
+}
+
 export type RankingOption = {
   optionId: string
   optionName: string
@@ -565,6 +592,7 @@ export type RankingOption = {
   revenue: number
   prevQuantity: number
   prevRevenue: number
+  margin: MarginTotals | null
 }
 
 export type RankingChannel = {
@@ -584,6 +612,7 @@ export type RankingRow = {
   prevRevenue: number
   /** 총매출(미매칭 포함) 대비 매출 비중 0~1. 총매출 0이면 null. */
   share: number | null
+  margin: MarginTotals | null
   options: RankingOption[]
   byChannel: RankingChannel[]
 }
@@ -593,6 +622,29 @@ export type ProductRanking = {
   unmatched: UnmatchedTotals & { share: number | null }
   /** rows + unmatched. 채널 탭 총매출과 일치해야 한다. */
   totals: { quantity: number; revenue: number; prevRevenue: number }
+  /** 상품 행들의 공헌이익 합(미매칭은 비용을 알 수 없어 제외). */
+  marginTotals: MarginTotals | null
+}
+
+/** 옵션 비용 목록 → 매출 기준 공헌이익 합계. */
+function sumMargin(
+  items: { revenue: number; margin: OptionMargin | undefined }[]
+): MarginTotals | null {
+  if (items.every((i) => !i.margin)) return null
+  let profit = 0
+  let revenue = 0
+  let costMissing = false
+  for (const i of items) {
+    revenue += i.revenue
+    if (!i.margin) continue
+    profit += i.margin.contributionProfit
+    if (i.revenue > 0 && !i.margin.unitCost) costMissing = true
+  }
+  return {
+    contributionProfit: profit,
+    marginRatio: revenue > 0 ? profit / revenue : null,
+    costMissing,
+  }
 }
 
 /**
@@ -602,8 +654,10 @@ export type ProductRanking = {
 export function buildProductRanking(
   rows: OptionQtyRow[],
   prevTotals: PrevOptionTotal[],
-  unmatched: UnmatchedTotals
+  unmatched: UnmatchedTotals,
+  margins: OptionMargin[] = []
 ): ProductRanking {
+  const marginByOption = new Map(margins.map((m) => [m.optionId, m]))
   const prevByOption = new Map(prevTotals.map((p) => [p.optionId, p]))
 
   type Acc = {
@@ -648,6 +702,7 @@ export function buildProductRanking(
         revenue,
         prevQuantity: 0,
         prevRevenue: 0,
+        margin: null,
       })
     }
 
@@ -658,6 +713,35 @@ export function buildProductRanking(
     } else {
       p.channels.set(r.channelId, { channelId: r.channelId, quantity: qty, revenue })
     }
+  }
+
+  // 판매는 없는데 비용(주로 광고비)만 나간 옵션도 행으로 살린다. 빼면 그 비용이
+  // 합계 공헌이익에서 빠져 공헌이익 API 와 어긋나고, 정작 봐야 할 "돈만 쓴 상품"이 숨는다.
+  for (const mg of margins) {
+    if (!mg.productId) continue
+    let p = products.get(mg.productId)
+    if (p?.options.has(mg.optionId)) continue
+    if (!p) {
+      p = {
+        productName: mg.productName ?? '(이름 미상)',
+        groupId: mg.productGroupId ?? null,
+        groupName: null,
+        quantity: 0,
+        revenue: 0,
+        options: new Map(),
+        channels: new Map(),
+      }
+      products.set(mg.productId, p)
+    }
+    p.options.set(mg.optionId, {
+      optionId: mg.optionId,
+      optionName: mg.optionName ?? '(이름 미상)',
+      quantity: 0,
+      revenue: 0,
+      prevQuantity: 0,
+      prevRevenue: 0,
+      margin: null,
+    })
   }
 
   // 이전 구간: 이번 구간에 없던 상품/옵션도 행으로 살린다(급감 탐지에 필요).
@@ -690,6 +774,7 @@ export function buildProductRanking(
         revenue: 0,
         prevQuantity: prev.quantity,
         prevRevenue: prev.revenue,
+        margin: null,
       })
     }
   }
@@ -698,7 +783,11 @@ export function buildProductRanking(
   const built: RankingRow[] = Array.from(products.entries()).map(([productId, p]) => {
     const options = Array.from(p.options.values()).map((o) => {
       const prev = prevByOption.get(o.optionId)
-      return prev ? { ...o, prevQuantity: prev.quantity, prevRevenue: prev.revenue } : o
+      const withPrev = prev ? { ...o, prevQuantity: prev.quantity, prevRevenue: prev.revenue } : o
+      return {
+        ...withPrev,
+        margin: sumMargin([{ revenue: o.revenue, margin: marginByOption.get(o.optionId) }]),
+      }
     })
     return {
       productId,
@@ -710,6 +799,9 @@ export function buildProductRanking(
       prevQuantity: options.reduce((a, o) => a + o.prevQuantity, 0),
       prevRevenue: options.reduce((a, o) => a + o.prevRevenue, 0),
       share: null,
+      margin: sumMargin(
+        options.map((o) => ({ revenue: o.revenue, margin: marginByOption.get(o.optionId) }))
+      ),
       options: options.sort((a, b) => b.revenue - a.revenue || b.quantity - a.quantity),
       byChannel: Array.from(p.channels.values()).sort((a, b) => b.revenue - a.revenue),
     }
@@ -731,5 +823,10 @@ export function buildProductRanking(
       share: totalRevenue > 0 ? unmatched.revenue / totalRevenue : null,
     },
     totals: { quantity: totalQuantity, revenue: totalRevenue, prevRevenue: totalPrevRevenue },
+    marginTotals: sumMargin(
+      withShare.flatMap((r) =>
+        r.options.map((o) => ({ revenue: o.revenue, margin: marginByOption.get(o.optionId) }))
+      )
+    ),
   }
 }
