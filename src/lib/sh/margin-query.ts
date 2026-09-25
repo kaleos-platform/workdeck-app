@@ -22,6 +22,7 @@ import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-works
 import { loadExternalOptionBridge } from '@/lib/sh/external-option-bridge'
 import { loadProductSales } from '@/lib/sh/product-sales'
 import { DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES } from '@/lib/sh/sales-analytics'
+import { loadProductionUnitCosts } from '@/lib/sh/production-cost'
 
 export interface QueryProductMarginParams {
   from: string // YYYY-MM-DD (KST)
@@ -88,7 +89,13 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
       costPrice: true,
       costVatIncluded: true,
       product: {
-        select: { id: true, name: true, internalName: true, group: { select: { name: true } } },
+        select: {
+          id: true,
+          name: true,
+          internalName: true,
+          useProductionCost: true,
+          group: { select: { name: true } },
+        },
       },
     },
   })
@@ -352,14 +359,25 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
     missingFields.push('packagingCost')
   }
 
+  // ── 원가 — 상품 상세 화면과 같은 규칙 ──────────────────────────────────
+  // useProductionCost=true 면 생산차수 가중평균 단가, 아니면 수동 costPrice(ex-VAT).
+  // 예전엔 수동 costPrice 만 읽어 머드팬티 원가가 1.91배 과대였다.
+  const productionUnitCosts = await loadProductionUnitCosts(spaceId, [
+    ...new Set(options.filter((o) => o.product.useProductionCost).map((o) => o.product.id)),
+  ])
+  const unitCostOf = (opt: (typeof options)[number]): number => {
+    const derived = opt.product.useProductionCost
+      ? productionUnitCosts.get(opt.product.id)
+      : undefined
+    if (derived != null) return derived
+    return costExVat(opt.costPrice == null ? null : Number(opt.costPrice), opt.costVatIncluded)
+  }
+
   // ── 행 구성 ───────────────────────────────────────────────────────────
   const allRows = [...acc.entries()]
     .map(([optionId, a]) => {
       const opt = optionById.get(optionId)!
-      const unitCost = costExVat(
-        opt.costPrice == null ? null : Number(opt.costPrice),
-        opt.costVatIncluded
-      )
+      const unitCost = unitCostOf(opt)
       const cogs = unitCost * a.quantity
       const packagingCost = packagingUnit * a.quantity
       const contributionProfit =
