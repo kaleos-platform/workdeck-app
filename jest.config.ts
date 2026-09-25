@@ -21,6 +21,7 @@ const config: Config = {
     '<rootDir>/node_modules/',
     '<rootDir>/.next/',
     '<rootDir>/e2e/',
+    '<rootDir>/worker/src/coupang-api/__tests__/',
     '\\.e2e\\.test\\.ts$',
   ],
   testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
