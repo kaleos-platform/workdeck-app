@@ -3,6 +3,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { isYmdDateString } from '@/lib/date-range'
 import { prisma } from '@/lib/prisma'
 import { loadProductSales } from '@/lib/sh/product-sales'
+import { queryProductMargin } from '@/lib/sh/margin-query'
 import { prevRange } from '@/lib/sh/sales-analytics'
 
 // 판매분석 "상품" 탭 — 일자×내부옵션×채널 수량·매출 + 미매칭 + 커버리지 + 비교 구간.
@@ -115,10 +116,36 @@ export async function GET(req: NextRequest) {
     prevMap.set(r.optionId, entry)
   }
 
+  // 옵션별 비용·공헌이익 — 방금 불러온 매출을 그대로 넘겨 재집계 없이 비용만 붙인다.
+  // 그룹 제외는 화면 체크박스가 결정하므로 여기선 전 그룹을 계산해 둔다(비용 분모는
+  // 어차피 조회 범위와 무관하게 전체 기준이라 그룹 필터와 독립적이다).
+  const margin = await queryProductMargin(
+    resolved.space.id,
+    { from: fromParam, to: toParam, excludeProductGroupNames: [] },
+    { sales: current, unpaginated: true }
+  )
+  const margins = margin.rows.map((r) => ({
+    optionId: r.optionId,
+    // 판매 없이 광고비만 나간 옵션은 rows 에 없어 이름 출처가 여기뿐이다.
+    productId: r.productId,
+    productName: r.productInternalName?.trim() || r.productName,
+    optionName: r.optionName,
+    productGroupId: r.productGroupId,
+    cogs: r.cogs,
+    commissionFee: r.commissionFee,
+    shippingCost: r.shippingCost,
+    packagingCost: r.packagingCost,
+    adCost: r.adCost,
+    contributionProfit: r.contributionProfit,
+    unitCost: r.unitCost,
+  }))
+
   return NextResponse.json({
     period,
     prevPeriod: prev,
     rows: current.rows,
+    margins,
+    marginMissingFields: margin.missingFields,
     prevTotals: Array.from(prevMap.values()),
     unmatched: { ...current.unmatched, prevRevenue: previous.unmatched.revenue },
     coverage: current.coverage,

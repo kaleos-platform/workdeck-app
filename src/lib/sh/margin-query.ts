@@ -20,7 +20,7 @@ import { costExVat } from '@/lib/sh/cost'
 import { lookupCategoryFeePct, DEFAULT_FEE_CATEGORY } from '@/lib/sh/channel-fee-lookup'
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
 import { loadExternalOptionBridge } from '@/lib/sh/external-option-bridge'
-import { loadProductSales } from '@/lib/sh/product-sales'
+import { loadProductSales, type ProductSalesResult } from '@/lib/sh/product-sales'
 import { DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES } from '@/lib/sh/sales-analytics'
 import { loadProductionUnitCosts } from '@/lib/sh/production-cost'
 
@@ -65,7 +65,22 @@ function kstRange(from: string, to: string): { gte: Date; lt: Date } {
   return { gte, lt }
 }
 
-export async function queryProductMargin(spaceId: string, params: QueryProductMarginParams) {
+/** 내부 호출 전용 옵션 — API/MCP 파라미터(QueryProductMarginParams)와 분리한다. */
+export type QueryProductMarginOptions = {
+  /**
+   * 이미 불러온 매출. 판매분석 랭킹이 같은 기간·채널로 loadProductSales 를 돌린 뒤
+   * 비용만 붙이고 싶을 때 넘긴다 — 중복 집계를 피하고 채널 범위도 랭킹과 일치한다.
+   */
+  sales?: ProductSalesResult
+  /** true 면 페이지네이션 없이 전 행을 돌려준다(랭킹 합성용). */
+  unpaginated?: boolean
+}
+
+export async function queryProductMargin(
+  spaceId: string,
+  params: QueryProductMarginParams,
+  opts: QueryProductMarginOptions = {}
+) {
   const page = Math.max(1, Math.floor(params.page ?? 1))
   const pageSize = Math.min(200, Math.max(1, Math.floor(params.pageSize ?? 50)))
   const { gte, lt } = kstRange(params.from, params.to)
@@ -94,7 +109,7 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
           name: true,
           internalName: true,
           useProductionCost: true,
-          group: { select: { name: true } },
+          group: { select: { id: true, name: true } },
         },
       },
     },
@@ -178,7 +193,8 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
     .filter((c) => matchesChannel(c.id))
     .map((c) => ({ id: c.id, name: c.name, externalSource: c.externalSource }))
 
-  const sales = await loadProductSales(spaceId, gte, new Date(lt.getTime() - 1), salesChannels)
+  const sales =
+    opts.sales ?? (await loadProductSales(spaceId, gte, new Date(lt.getTime() - 1), salesChannels))
 
   // 조회 대상 옵션 유니버스(파라미터 필터 적용) 밖의 매출은 이 조회의 관심사가 아니므로
   // 귀속으로 세지 않고 별도로 모은다.
@@ -387,6 +403,7 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
         productId: opt.product.id,
         productName: opt.product.name,
         productInternalName: opt.product.internalName,
+        productGroupId: opt.product.group?.id ?? null,
         optionId,
         optionName: opt.name,
         skuCode: opt.sku,
@@ -406,7 +423,7 @@ export async function queryProductMargin(spaceId: string, params: QueryProductMa
     .sort((a, b) => b.revenue - a.revenue)
 
   const total = allRows.length
-  const rows = allRows.slice((page - 1) * pageSize, page * pageSize)
+  const rows = opts.unpaginated ? allRows : allRows.slice((page - 1) * pageSize, page * pageSize)
 
   const sum = (k: keyof (typeof allRows)[number]) =>
     allRows.reduce((s, r) => s + (typeof r[k] === 'number' ? (r[k] as number) : 0), 0)

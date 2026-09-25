@@ -23,11 +23,12 @@ import {
   type OptionSelection,
   type ProductRanking,
   type RankingRow,
+  type MarginTotals,
 } from '@/lib/sh/sales-analytics'
 import type { SalesCoverage } from '@/hooks/use-product-sales'
 import type { Channel } from './sales-analytics-page'
 
-type SortKey = 'revenue' | 'quantity' | 'delta' | 'share'
+type SortKey = 'revenue' | 'quantity' | 'delta' | 'share' | 'profit' | 'marginRatio'
 
 type Props = {
   ranking: ProductRanking | null
@@ -92,6 +93,47 @@ function UnmatchedReasons({ byReason }: { byReason?: Record<string, number> }) {
   )
 }
 
+/**
+ * 공헌이익·이익률 두 칸. 원가가 없는 옵션이 섞이면 이익이 과대평가되므로 흐리게
+ * 표시하고 툴팁으로 알린다(숫자를 숨기진 않는다 — 원가만 빠진 것이지 틀린 건 아니다).
+ */
+function MarginCells({
+  m,
+  small = false,
+}: {
+  m: MarginTotals | null | undefined
+  small?: boolean
+}) {
+  const size = small ? 'text-xs' : ''
+  if (!m) {
+    return (
+      <>
+        <TableCell className={`text-right text-muted-foreground tabular-nums ${size}`}>-</TableCell>
+        <TableCell className={`text-right text-muted-foreground tabular-nums ${size}`}>-</TableCell>
+      </>
+    )
+  }
+  const tone = m.contributionProfit < 0 ? 'text-rose-600' : ''
+  const hint = m.costMissing ? '원가 미입력 옵션 포함 — 이익이 과대평가됨' : undefined
+  return (
+    <>
+      <TableCell
+        className={`text-right tabular-nums ${size} ${m.costMissing ? 'text-muted-foreground' : tone}`}
+        title={hint}
+      >
+        {formatKRW(m.contributionProfit)}
+        {m.costMissing && '*'}
+      </TableCell>
+      <TableCell
+        className={`text-right tabular-nums ${size} ${m.costMissing ? 'text-muted-foreground' : tone}`}
+        title={hint}
+      >
+        {pct(m.marginRatio)}
+      </TableCell>
+    </>
+  )
+}
+
 function SortHead({
   k,
   sortKey,
@@ -137,13 +179,18 @@ export function ProductRankingTable({
 
   const allRows = useMemo(() => ranking?.rows ?? [], [ranking])
   // 표시 필터일 뿐 — 합계·커버리지는 건드리지 않는다.
-  const unsoldCount = allRows.filter((r) => r.quantity === 0 && r.revenue === 0).length
+  // 판매 0 이어도 비용(광고비)이 나간 행은 "돈만 쓴 상품"이라 숨기지 않는다.
+  const isUnsold = (r: RankingRow) =>
+    r.quantity === 0 && r.revenue === 0 && !(r.margin && r.margin.contributionProfit !== 0)
+  const unsoldCount = allRows.filter(isUnsold).length
   const visibleRows = useMemo(() => {
-    const base = showUnsold ? allRows : allRows.filter((r) => r.quantity !== 0 || r.revenue !== 0)
+    const base = showUnsold ? allRows : allRows.filter((r) => !isUnsold(r))
     const dir = asc ? 1 : -1
     const val = (r: RankingRow) => {
       if (sortKey === 'quantity') return r.quantity
       if (sortKey === 'share') return r.share ?? 0
+      if (sortKey === 'profit') return r.margin?.contributionProfit ?? -Infinity
+      if (sortKey === 'marginRatio') return r.margin?.marginRatio ?? -Infinity
       if (sortKey === 'delta') return pctChange(r.revenue, r.prevRevenue) ?? -Infinity
       return r.revenue
     }
@@ -259,25 +306,35 @@ export function ProductRankingTable({
                 <TableRow>
                   <TableHead className="w-10" />
                   <TableHead className="w-10" />
-                  <TableHead className="w-[320px]">상품</TableHead>
-                  <TableHead className="w-28 text-right">
+                  <TableHead>상품</TableHead>
+                  <TableHead className="w-24 text-right">
                     <SortHead sortKey={sortKey} asc={asc} k="quantity" onSort={toggleSort}>
                       수량
                     </SortHead>
                   </TableHead>
-                  <TableHead className="w-36 text-right">
+                  <TableHead className="w-32 text-right">
                     <SortHead sortKey={sortKey} asc={asc} k="revenue" onSort={toggleSort}>
                       매출
                     </SortHead>
                   </TableHead>
-                  <TableHead className="w-24 text-right">
+                  <TableHead className="w-20 text-right">
                     <SortHead sortKey={sortKey} asc={asc} k="delta" onSort={toggleSort}>
                       증감
                     </SortHead>
                   </TableHead>
-                  <TableHead className="w-24 text-right">
+                  <TableHead className="w-16 text-right">
                     <SortHead sortKey={sortKey} asc={asc} k="share" onSort={toggleSort}>
                       비중
+                    </SortHead>
+                  </TableHead>
+                  <TableHead className="w-32 text-right">
+                    <SortHead sortKey={sortKey} asc={asc} k="profit" onSort={toggleSort}>
+                      공헌이익
+                    </SortHead>
+                  </TableHead>
+                  <TableHead className="w-20 text-right">
+                    <SortHead sortKey={sortKey} asc={asc} k="marginRatio" onSort={toggleSort}>
+                      이익률
                     </SortHead>
                   </TableHead>
                 </TableRow>
@@ -323,6 +380,7 @@ export function ProductRankingTable({
                         <TableCell className="text-right text-muted-foreground tabular-nums">
                           {pct(r.share)}
                         </TableCell>
+                        <MarginCells m={r.margin} />
                       </TableRow>
 
                       {open && (
@@ -343,6 +401,8 @@ export function ProductRankingTable({
                               <TableCell className="text-right text-xs tabular-nums">
                                 {formatKRW(c.revenue)}
                               </TableCell>
+                              <TableCell />
+                              <TableCell />
                               <TableCell />
                               <TableCell />
                             </TableRow>
@@ -371,6 +431,7 @@ export function ProductRankingTable({
                                 <DeltaCell cur={o.revenue} prev={o.prevRevenue} />
                               </TableCell>
                               <TableCell />
+                              <MarginCells m={o.margin} small />
                             </TableRow>
                           ))}
                         </>
@@ -398,6 +459,8 @@ export function ProductRankingTable({
                     <TableCell className="text-right text-muted-foreground tabular-nums">
                       {pct(ranking.unmatched.share)}
                     </TableCell>
+                    <TableCell />
+                    <TableCell />
                   </TableRow>
                 )}
 
@@ -416,6 +479,7 @@ export function ProductRankingTable({
                       <DeltaCell cur={ranking.totals.revenue} prev={ranking.totals.prevRevenue} />
                     </TableCell>
                     <TableCell />
+                    <MarginCells m={ranking.marginTotals} />
                   </TableRow>
                 )}
               </TableBody>
