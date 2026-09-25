@@ -24,9 +24,9 @@ test.describe('Sales Content Deck 진입', () => {
     expect(response?.status()).toBe(404)
   })
 
-  test('비로그인 /d/seller-hub → 덱 로그인 페이지 정상 노출', async ({ page }) => {
+  test('비로그인 /d/seller-hub → canonical 덱 로그인 페이지 정상 노출', async ({ page }) => {
     await page.goto('/d/seller-hub')
-    await expect(page).toHaveURL(/\/d\/seller-hub\/login/)
+    await expect(page).toHaveURL(/\/d\/seller-ops\/login/)
     await expect(page.getByText(/셀러 허브/)).toBeVisible()
   })
 })

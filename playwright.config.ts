@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const localOrigin = 'http://localhost:3100'
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -8,7 +10,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'list',
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3100',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? localOrigin,
     trace: 'on-first-retry',
   },
   projects: [
@@ -21,7 +23,11 @@ export default defineConfig({
     ? undefined
     : {
         command: 'npm run dev -- --port 3100',
-        url: 'http://localhost:3100',
+        url: localOrigin,
+        env: {
+          NEXT_PUBLIC_APP_URL: localOrigin,
+          NEXT_PUBLIC_MARKETING_URL: localOrigin,
+        },
         timeout: 120000,
       },
 })

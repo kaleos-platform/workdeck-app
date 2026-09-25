@@ -10,7 +10,7 @@ const DECK_COPY: Record<string, { title: string; description: string }> = {
     title: 'Workdeck 로그인',
     description: '로그인 후 쿠팡 광고 관리로 바로 이동합니다',
   },
-  'seller-hub': {
+  'seller-ops': {
     title: 'Workdeck 로그인',
     description: '로그인 후 셀러 허브로 바로 이동합니다',
   },
