@@ -144,3 +144,58 @@ describe('buildProductRanking — 직전 구간에만 있던 항목의 이름', 
     expect(r.rows[0].prevRevenue).toBe(500)
   })
 })
+
+describe('buildProductRanking — 공헌이익', () => {
+  const m = (optionId: string, contributionProfit: number, unitCost = 1000) => ({
+    optionId,
+    cogs: 0,
+    commissionFee: 0,
+    shippingCost: 0,
+    packagingCost: 0,
+    adCost: 0,
+    contributionProfit,
+    unitCost,
+  })
+
+  it('상품 행은 옵션 공헌이익 합, 이익률은 매출 대비', () => {
+    const r = buildProductRanking(
+      [row({ optionId: 'o1', revenue: 1000 }), row({ optionId: 'o2', revenue: 3000 })],
+      [],
+      NONE,
+      [m('o1', 200), m('o2', 600)]
+    )
+    expect(r.rows[0].margin?.contributionProfit).toBe(800)
+    expect(r.rows[0].margin?.marginRatio).toBeCloseTo(0.2, 10)
+    expect(r.rows[0].options.find((o) => o.optionId === 'o1')?.margin?.contributionProfit).toBe(200)
+  })
+
+  it('원가 없는 옵션이 섞이면 costMissing', () => {
+    const r = buildProductRanking(
+      [row({ optionId: 'o1', revenue: 1000 }), row({ optionId: 'o2', revenue: 1000 })],
+      [],
+      NONE,
+      [m('o1', 200), m('o2', 900, 0)]
+    )
+    expect(r.rows[0].margin?.costMissing).toBe(true)
+  })
+
+  it('비용 정보가 없으면 margin 은 null', () => {
+    const r = buildProductRanking([row({})], [], NONE, [])
+    expect(r.rows[0].margin).toBeNull()
+    expect(r.marginTotals).toBeNull()
+  })
+
+  it('합계 공헌이익은 상품 행 합 — 미매칭 매출은 분모에서 제외', () => {
+    const r = buildProductRanking(
+      [
+        row({ productId: 'p1', optionId: 'o1', revenue: 1000 }),
+        row({ productId: 'p2', optionId: 'o2', revenue: 1000 }),
+      ],
+      [],
+      { revenue: 5000, quantity: 1 },
+      [m('o1', 100), m('o2', 300)]
+    )
+    expect(r.marginTotals?.contributionProfit).toBe(400)
+    expect(r.marginTotals?.marginRatio).toBeCloseTo(0.2, 10)
+  })
+})
