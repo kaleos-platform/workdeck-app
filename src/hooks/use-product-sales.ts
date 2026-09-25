@@ -30,7 +30,7 @@ export type SalesCoverage = {
   rocket: { revenueTotal: number; revenueAttributed: number; unmappedRevenue: number }
 }
 
-/** 랭킹·차트에 쓸 상품 그룹 목록 (기간 내 판매가 있는 것만). */
+/** 랭킹·차트에 쓸 상품 카테고리 목록 (기간 내 판매가 있는 것만). */
 export type ProductGroupOption = { id: string; name: string }
 
 export type ProductSalesData = {
@@ -43,7 +43,7 @@ export type ProductSalesData = {
   coverage: SalesCoverage | null
   /** 증감 비교 구간 — 헤더에 그대로 표기한다. */
   prevPeriod: DateRange | null
-  /** 기간 내 판매가 있는 상품 그룹 (필터 체크박스 목록). */
+  /** 기간 내 판매가 있는 상품 카테고리 (필터 체크박스 목록). */
   groups: ProductGroupOption[]
   /** 실제로 제외 중인 그룹 id — 사용자가 손대기 전에는 기본 제외가 반영된 값. */
   excludedGroupIds: string[]
@@ -60,6 +60,8 @@ type RawState = {
   unmatched: UnmatchedTotals
   coverage: SalesCoverage | null
   prevPeriod: DateRange | null
+  /** 카테고리 관리에서 「판매분석 제외」로 표시한 카테고리 id — 체크박스 기본값. */
+  defaultExcludedGroupIds: string[]
   loading: boolean
 }
 
@@ -70,6 +72,7 @@ const EMPTY_RAW: RawState = {
   unmatched: { revenue: 0, quantity: 0 },
   coverage: null,
   prevPeriod: null,
+  defaultExcludedGroupIds: [],
   loading: false,
 }
 
@@ -78,23 +81,20 @@ const EMPTY_RAW: RawState = {
  * rows → 시계열 버킷 + 카탈로그 + 랭킹 모두 여기서 파생한다(숫자 소스 단일화).
  */
 /**
- * @param excludedGroupIds 집계에서 뺄 상품 그룹. **null 이면 아직 사용자가 손대지 않은
- *   상태**라 defaultExcludedGroupNames 로 기본 제외를 적용한다. 서버 재호출 없이
- *   이미 받은 rows 를 다시 파생하므로 체크박스 조작이 즉시 반영된다.
- * @param defaultExcludedGroupNames 부자재·체험단처럼 판매 실적으로 보지 않을 그룹 이름.
+ * @param excludedGroupIds 집계에서 뺄 상품 카테고리. **null 이면 아직 사용자가 손대지 않은
+ *   상태**라 서버가 내려준 기본 제외(카테고리의 「판매분석 제외」 표시)를 적용한다.
+ *   서버 재호출 없이 이미 받은 rows 를 다시 파생하므로 체크박스 조작이 즉시 반영된다.
  */
 export function useProductSales(
   unit: SalesUnit,
   range: DateRange,
   channelIds: string[],
   enabled: boolean,
-  excludedGroupIds: string[] | null = null,
-  defaultExcludedGroupNames: string[] = []
+  excludedGroupIds: string[] | null = null
 ): ProductSalesData {
   const [raw, setRaw] = useState<RawState>(EMPTY_RAW)
   const channelIdsKey = channelIds.join(',')
   const excludedKey = excludedGroupIds === null ? null : excludedGroupIds.join(',')
-  const defaultNamesKey = defaultExcludedGroupNames.join(',')
 
   useEffect(() => {
     if (!enabled) return
@@ -163,6 +163,7 @@ export function useProductSales(
           unmatched,
           coverage: res?.coverage ?? null,
           prevPeriod: res?.prevPeriod ?? null,
+          defaultExcludedGroupIds: res?.defaultExcludedGroupIds ?? [],
           loading: false,
         })
       } catch {
@@ -176,7 +177,7 @@ export function useProductSales(
     }
   }, [enabled, range.from, range.to, channelIdsKey])
 
-  // 그룹 목록은 필터 전 전체 rows 에서 만든다 — 제외된 그룹도 체크박스엔 보여야 한다.
+  // 카테고리 목록은 필터 전 전체 rows 에서 만든다 — 제외된 카테고리도 체크박스엔 보여야 한다.
   const groups = useMemo(() => {
     const m = new Map<string, string>()
     for (const r of raw.rows) {
@@ -189,11 +190,7 @@ export function useProductSales(
 
   return useMemo(() => {
     const effectiveExcluded =
-      excludedKey === null
-        ? groups.filter((g) => defaultNamesKey.split(',').includes(g.name)).map((g) => g.id)
-        : excludedKey
-          ? excludedKey.split(',')
-          : []
+      excludedKey === null ? raw.defaultExcludedGroupIds : excludedKey ? excludedKey.split(',') : []
     const excluded = new Set(effectiveExcluded)
     // prevTotals 도 같이 걸러야 한다. 안 그러면 제외한 상품이 직전 기간 값만 갖고
     // 0원 행으로 되살아나고, 합계 증감이 현재(제외) vs 직전(포함)으로 어긋난다.
@@ -228,5 +225,5 @@ export function useProductSales(
       excludedLabel,
       loading: raw.loading,
     }
-  }, [raw, unit, excludedKey, groups, defaultNamesKey])
+  }, [raw, unit, excludedKey, groups])
 }

@@ -21,7 +21,6 @@ import { lookupCategoryFeePct, DEFAULT_FEE_CATEGORY } from '@/lib/sh/channel-fee
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
 import { loadExternalOptionBridge } from '@/lib/sh/external-option-bridge'
 import { loadProductSales, type ProductSalesResult } from '@/lib/sh/product-sales'
-import { DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES } from '@/lib/sh/sales-analytics'
 import { loadProductionUnitCosts } from '@/lib/sh/production-cost'
 
 export interface QueryProductMarginParams {
@@ -34,8 +33,8 @@ export interface QueryProductMarginParams {
   page?: number | null
   pageSize?: number | null
   /**
-   * 판매 실적에서 뺄 상품 그룹 이름. 생략(null/undefined)하면 판매분석 랭킹과 같은
-   * 기본값(DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES — 체험단·부자재)을 쓴다.
+   * 판매 실적에서 뺄 상품 카테고리 이름. 생략(null/undefined)하면 판매분석 랭킹과 같은
+   * 기본값 — 카테고리 관리에서 「판매분석 제외」로 표시한 카테고리(excludeFromSalesAnalytics).
    * 빈 배열이면 아무것도 제외하지 않는다.
    */
   excludeProductGroupNames?: string[] | null
@@ -117,14 +116,21 @@ export async function queryProductMargin(
 
   // 제외 그룹(체험단·부자재)은 옵션 유니버스에서 뺀다. 매출은 미귀속이 아니라
   // excludedRevenue 로 따로 센다 — 귀속은 됐지만 판매 실적으로 안 보는 것이므로.
-  const excludedGroupNames = new Set(
-    params.excludeProductGroupNames ?? DEFAULT_EXCLUDED_PRODUCT_GROUP_NAMES
-  )
-  const isExcludedGroup = (groupName: string | null | undefined) =>
-    !!groupName && excludedGroupNames.has(groupName)
+  const excludedGroups = await prisma.invProductGroup.findMany({
+    where: {
+      spaceId,
+      ...(params.excludeProductGroupNames
+        ? { name: { in: params.excludeProductGroupNames } }
+        : { excludeFromSalesAnalytics: true }),
+    },
+    select: { id: true, name: true },
+  })
+  const excludedGroupIds = new Set(excludedGroups.map((g) => g.id))
+  const isExcludedGroup = (groupId: string | null | undefined) =>
+    !!groupId && excludedGroupIds.has(groupId)
 
   const optionIdSet = new Set(
-    options.filter((o) => !isExcludedGroup(o.product.group?.name)).map((o) => o.id)
+    options.filter((o) => !isExcludedGroup(o.product.group?.id)).map((o) => o.id)
   )
   const optionById = new Map(options.map((o) => [o.id, o]))
 
@@ -213,7 +219,7 @@ export async function queryProductMargin(
       fixedShipRevenueByChannel.set(row.channelId, cur)
     }
 
-    if (isExcludedGroup(row.productGroupName)) {
+    if (isExcludedGroup(row.productGroupId)) {
       excludedRevenue += row.revenue
       continue
     }
@@ -453,7 +459,7 @@ export async function queryProductMargin(
     unallocatedAdCost,
     /** 제외 그룹(체험단·부자재) 매출 — 귀속은 됐으나 판매 실적에서 뺀 금액. */
     excludedRevenue,
-    excludedProductGroups: [...excludedGroupNames],
+    excludedProductGroups: excludedGroups.map((g) => g.name),
     optionCount: total,
   }
 

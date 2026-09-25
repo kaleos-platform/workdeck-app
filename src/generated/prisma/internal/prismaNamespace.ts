@@ -11713,6 +11713,7 @@ export const InvProductGroupScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   name: 'name',
+  excludeFromSalesAnalytics: 'excludeFromSalesAnalytics',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -17,26 +17,35 @@ export async function PATCH(
   })
   if (!category) return errorResponse('카테고리를 찾을 수 없습니다', 404)
 
-  let body: { name?: string }
+  let body: { name?: string; excludeFromSalesAnalytics?: boolean }
   try {
     body = await req.json()
   } catch {
     return errorResponse('잘못된 요청 본문입니다', 400)
   }
 
-  const name = body.name?.trim()
-  if (!name) return errorResponse('카테고리명은 필수입니다', 400)
-  if (name.length > 100) return errorResponse('카테고리명은 100자 이내여야 합니다', 400)
+  // 이름·판매분석 제외는 각각 선택 — 목록의 체크박스는 제외 플래그만 보낸다.
+  const data: { name?: string; excludeFromSalesAnalytics?: boolean } = {}
+  if (typeof body.excludeFromSalesAnalytics === 'boolean') {
+    data.excludeFromSalesAnalytics = body.excludeFromSalesAnalytics
+  }
+  if (body.name !== undefined) {
+    const name = body.name.trim()
+    if (!name) return errorResponse('카테고리명은 필수입니다', 400)
+    if (name.length > 100) return errorResponse('카테고리명은 100자 이내여야 합니다', 400)
 
-  // 중복 검사
-  const conflict = await prisma.invProductGroup.findFirst({
-    where: { spaceId: resolved.space.id, name, id: { not: categoryId } },
-  })
-  if (conflict) return errorResponse('이미 존재하는 카테고리명입니다', 409)
+    // 중복 검사
+    const conflict = await prisma.invProductGroup.findFirst({
+      where: { spaceId: resolved.space.id, name, id: { not: categoryId } },
+    })
+    if (conflict) return errorResponse('이미 존재하는 카테고리명입니다', 409)
+    data.name = name
+  }
+  if (Object.keys(data).length === 0) return errorResponse('변경할 항목이 없습니다', 400)
 
   const updated = await prisma.invProductGroup.update({
     where: { id: categoryId },
-    data: { name },
+    data,
   })
 
   return NextResponse.json({ category: updated })

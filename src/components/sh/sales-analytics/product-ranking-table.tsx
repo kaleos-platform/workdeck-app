@@ -32,7 +32,7 @@ type SortKey = 'revenue' | 'quantity' | 'delta' | 'share' | 'profit' | 'marginRa
 
 type Props = {
   ranking: ProductRanking | null
-  /** 그룹 필터로 랭킹에서 빠진 금액 — 채널 탭 총매출과의 차이를 설명한다. */
+  /** 카테고리 필터로 랭킹에서 빠진 금액 — 채널 탭 총매출과의 차이를 설명한다. */
   excludedRevenue?: number
   excludedLabel?: string | null
   coverage: SalesCoverage | null
@@ -256,7 +256,7 @@ export function ProductRankingTable({
                   귀속 {formatKRW(coverage.attributedRevenue)} / 전체{' '}
                   {formatKRW(coverage.totalRevenue)}
                 </div>
-                <div className="text-muted-foreground">그룹 필터와 무관한 전체 기준입니다</div>
+                <div className="text-muted-foreground">카테고리 필터와 무관한 전체 기준입니다</div>
                 <div className="mt-1 text-muted-foreground">
                   직접배송{' '}
                   {coverage.direct.revenueTotal > 0
