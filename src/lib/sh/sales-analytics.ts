@@ -438,7 +438,8 @@ export function buildOptionCatalog(rows: OptionQtyRow[]): OptionCatalogProduct[]
 // 옵션 선택 = 옵션당 1선. 선택은 그래프·표 공통 단일 소스.
 
 /** 전체 합산 시리즈의 고정 id. */
-export const ALL_SERIES_ID = '__all__'
+export const OTHER_SERIES_ID = '__other__'
+const OTHER_SERIES_COLOR = '#9ca3af'
 
 /** 차트 선 / 표 열 한 개. optionIds = 이 시리즈가 합산하는 옵션 집합. */
 export type OptionSeries = {
@@ -459,22 +460,34 @@ export const MAX_OPTION_SERIES = 8
 
 /**
  * 선택 + 카탈로그 → 시리즈 배열(차트 선·표 열 단일 소스).
- * - 미선택: 전체 합산 1선 (카탈로그 전 옵션).
+ * - 미선택: 지표 상위 상품 7개 + 「기타」(나머지 합산) — 누적 막대 높이 = 전체 합계.
  * - 상품 선택(옵션 미선택): 상품당 1선 (상품의 모든 옵션 합산).
  * - 옵션 선택: 옵션당 1선. 상품 선택 + 그 상품 옵션 선택 시 옵션선이 우선(상품 전체선 대체).
  * 최대 MAX_OPTION_SERIES 선. 색상 CHANNEL_COLORS 순환.
  */
 export function resolveOptionSeries(
   selection: OptionSelection,
-  catalog: OptionCatalogProduct[]
+  catalog: OptionCatalogProduct[],
+  metric: SalesMetric = 'qty'
 ): OptionSeries[] {
   const color = (i: number) => CHANNEL_COLORS[i % CHANNEL_COLORS.length]
   const { productIds, optionIds } = selection
 
-  // 미선택 → 전체 합산 1선
+  // 미선택 → 상위 상품 + 기타
   if (productIds.length === 0 && optionIds.length === 0) {
-    const allOptionIds = catalog.flatMap((p) => p.options.map((o) => o.optionId))
-    return [{ id: ALL_SERIES_ID, name: '전체', color: color(0), optionIds: allOptionIds }]
+    const ranked = [...catalog].sort((a, b) => b[metric] - a[metric])
+    const top = ranked.slice(0, MAX_OPTION_SERIES - 1).map((p, i) => ({
+      id: p.productId,
+      name: p.productName,
+      color: color(i),
+      optionIds: p.options.map((o) => o.optionId),
+    }))
+    const rest = ranked
+      .slice(MAX_OPTION_SERIES - 1)
+      .flatMap((p) => p.options.map((o) => o.optionId))
+    return rest.length
+      ? [...top, { id: OTHER_SERIES_ID, name: '기타', color: OTHER_SERIES_COLOR, optionIds: rest }]
+      : top
   }
 
   const series: OptionSeries[] = []

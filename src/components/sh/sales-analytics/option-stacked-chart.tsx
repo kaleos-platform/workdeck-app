@@ -2,8 +2,8 @@
 
 import { useMemo } from 'react'
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import {
   formatKRW,
   seriesBucketValue,
@@ -22,10 +23,11 @@ import {
 
 type Props = {
   buckets: OptionBucket[]
-  /** 차트 선 = 해석된 시리즈 (미선택=전체 1선, 선택 시 항목별 선). page 가 단일 소스. */
+  /** 누적 막대 층 = 해석된 시리즈 (미선택=상위 상품+기타, 선택 시 항목별). page 가 단일 소스. */
   series: OptionSeries[]
-  /** 표시 지표 — 수량(개) / 매출(원). 랭킹 테이블과 같은 토글을 공유한다. */
+  /** 표시 지표 — 수량(개) / 매출(원). 아래 피벗과 공유한다. */
   metric: SalesMetric
+  onMetricChange: (metric: SalesMetric) => void
   loading: boolean
 }
 
@@ -87,7 +89,7 @@ function OptionTooltip({
   )
 }
 
-export function OptionQtyLineChart({ buckets, series, metric, loading }: Props) {
+export function OptionStackedChart({ buckets, series, metric, onMetricChange, loading }: Props) {
   const chartData = useMemo<ChartRow[]>(() => {
     return buckets.map((b) => {
       const row: ChartRow = { label: b.label }
@@ -105,9 +107,29 @@ export function OptionQtyLineChart({ buckets, series, metric, loading }: Props) 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {metric === 'revenue' ? '상품(옵션)별 매출 추이' : '상품(옵션)별 판매량 추이'}
-        </CardTitle>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <CardTitle>
+            {metric === 'revenue' ? '상품(옵션)별 매출 추이' : '상품(옵션)별 판매량 추이'}
+          </CardTitle>
+          {/* 지표 토글 — 차트·아래 피벗이 같은 축을 본다 */}
+          <div className="flex gap-1">
+            {(
+              [
+                ['revenue', '매출'],
+                ['qty', '수량'],
+              ] as const
+            ).map(([m, label]) => (
+              <Button
+                key={m}
+                variant={metric === m ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onMetricChange(m)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -120,7 +142,7 @@ export function OptionQtyLineChart({ buckets, series, metric, loading }: Props) 
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+            <BarChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} />
               <YAxis
@@ -128,6 +150,7 @@ export function OptionQtyLineChart({ buckets, series, metric, loading }: Props) 
                 tickFormatter={(v) => Number(v).toLocaleString('ko-KR')}
               />
               <Tooltip
+                cursor={{ fill: 'var(--muted)', opacity: 0.4 }}
                 allowEscapeViewBox={{ x: false, y: false }}
                 wrapperStyle={{ zIndex: 50 }}
                 content={(<OptionTooltip series={series} metric={metric} />) as never}
@@ -135,21 +158,20 @@ export function OptionQtyLineChart({ buckets, series, metric, loading }: Props) 
               {/* 상품 탭은 Legend 가 유일한 색↔시리즈 단서라 유지한다.
                   단 시리즈가 많으면 줄바꿈이 무한정 늘어나 플롯을 침범하므로 높이를 묶는다. */}
               <Legend
+                itemSorter={(item) => series.findIndex((s) => s.id === item.dataKey)}
                 wrapperStyle={{ fontSize: 12, maxHeight: 56, overflowY: 'auto' }}
                 formatter={(value) => nameById.get(String(value)) ?? String(value)}
               />
-              {series.map((s) => (
-                <Line
+              {series.map((s, i) => (
+                <Bar
                   key={s.id}
-                  type="monotone"
                   dataKey={s.id}
-                  stroke={s.color}
-                  strokeWidth={2}
-                  dot={{ r: 2 }}
-                  activeDot={{ r: 4 }}
+                  stackId="stack"
+                  fill={s.color}
+                  radius={i === series.length - 1 ? [3, 3, 0, 0] : undefined}
                 />
               ))}
-            </LineChart>
+            </BarChart>
           </ResponsiveContainer>
         )}
       </CardContent>

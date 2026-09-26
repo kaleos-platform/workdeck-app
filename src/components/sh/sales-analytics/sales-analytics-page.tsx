@@ -32,7 +32,7 @@ import { useSalesAnalysis } from '@/hooks/use-sales-analysis'
 import { useProductSales } from '@/hooks/use-product-sales'
 import { SalesPivotTable } from './sales-pivot-table'
 import { ChannelRevenueStackedChart } from './channel-revenue-stacked-chart'
-import { OptionQtyLineChart } from './option-qty-line-chart'
+import { OptionStackedChart } from './option-stacked-chart'
 import { OptionPivotTable } from './option-pivot-table'
 import { ProductRankingTable } from './product-ranking-table'
 
@@ -166,8 +166,8 @@ export function SalesAnalyticsPage() {
   })
   // 선택 + 카탈로그 → 시리즈(선·열). 카탈로그가 바뀌면(기간/채널 변경) 사라진 선택은 자연 무시됨.
   const optionSeries = useMemo(
-    () => resolveOptionSeries(optionSelection, optionData.catalog),
-    [optionSelection, optionData.catalog]
+    () => resolveOptionSeries(optionSelection, optionData.catalog, metric),
+    [optionSelection, optionData.catalog, metric]
   )
 
   function changeUnit(next: SalesUnit) {
@@ -326,25 +326,6 @@ export function SalesAnalyticsPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* 지표 토글 — 랭킹·차트·피벗이 같은 축을 본다 */}
-          <div className="flex items-center gap-1">
-            <Label className="mr-2 text-xs text-muted-foreground">지표</Label>
-            <Button
-              variant={metric === 'revenue' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setMetric('revenue')}
-            >
-              매출
-            </Button>
-            <Button
-              variant={metric === 'qty' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setMetric('qty')}
-            >
-              수량
-            </Button>
-          </div>
-
           {/* 상품 카테고리 필터 — 카테고리 관리의 「판매분석 제외」가 기본 해제, 체크하면 다시 포함 */}
           {optionData.groups.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -391,10 +372,11 @@ export function SalesAnalyticsPage() {
             loading={optionData.loading}
           />
 
-          <OptionQtyLineChart
+          <OptionStackedChart
             buckets={optionData.buckets}
             series={optionSeries}
             metric={metric}
+            onMetricChange={setMetric}
             loading={optionData.loading}
           />
 
