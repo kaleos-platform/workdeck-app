@@ -286,9 +286,23 @@ export function ProductRankingTable({
             차트 선택 {selectedCount}/{MAX_OPTION_SERIES}
           </span>
           {unsoldCount > 0 && (
-            <Button variant="outline" size="sm" onClick={() => setShowUnsold((v) => !v)}>
-              {showUnsold ? '미판매 숨기기' : `미판매 ${unsoldCount}개 보기`}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" onClick={() => setShowUnsold((v) => !v)}>
+                  {showUnsold ? '미판매 숨기기' : `미판매 ${unsoldCount}개 보기`}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs text-xs">
+                <div>이번 기간엔 판매가 없고, 비교 구간에만 판매가 있던 상품입니다.</div>
+                <div>
+                  켜면 수량·매출 0, 증감 -100%로 표시돼 판매가 끊긴 상품을 찾을 수 있습니다.
+                </div>
+                <div className="mt-1 text-muted-foreground">
+                  표시만 바뀌며 합계·비중·귀속률에는 영향이 없습니다. 광고비가 나간 상품은 항상
+                  표시됩니다.
+                </div>
+              </TooltipContent>
+            </Tooltip>
           )}
         </div>
       </CardHeader>
