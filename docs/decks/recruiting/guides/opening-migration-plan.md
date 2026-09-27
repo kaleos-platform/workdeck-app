@@ -1,6 +1,23 @@
 # opening.work 고객 이전 설계와 dry-run 기준
 
-작성: 2026-09-27. 상태: 코드·스키마 대조 완료, 고객 이전 도구와 운영 dry-run은 미실행.
+작성: 2026-09-27. 상태: 코드·스키마 대조 및 일부 읽기 전용 검사기 구현 완료. 고객 이전 도구와 운영 dry-run은 미실행.
+
+## 읽기 전용 검사기 실행
+
+[`audit-opening-migration.mjs`](../../../../scripts/audit-opening-migration.mjs)는 고객 ID를 명시한 범위만 집계한다. 전용 파일의 `DATABASE_URL`을 사용하며 Workdeck `.env.local`을 자동으로 읽지 않는다. 아래 ID는 예시이며 실제 대상 고객 ID로 바꾼다.
+
+```bash
+node scripts/audit-opening-migration.mjs --help
+OPENING_ENV_FILE=/secure/opening.env node scripts/audit-opening-migration.mjs --spaces 101,202
+node --test scripts/__tests__/audit-opening-migration.test.mjs
+```
+
+- 연결부터 기본 read-only를 설정하고 REPEATABLE READ READ ONLY 트랜잭션으로 집계한 뒤 ROLLBACK한다. 쿼리당 30초 제한, lock 3초 제한을 둔다. 고객 1~100개를 허용하고 존재하지 않는 고객이 섞이면 실패한다. ID는 BIGINT 문자열로 전달한다.
+- 출력은 합산된 건수이며 고객 ID·폼 라벨·제출값·연락처·파일 key를 포함하지 않는다. 여러 지표에 같은 행이 잡힐 수 있으므로 지표 합계는 이전 차단 행 수가 아니다. 숫자는 PostgreSQL count 정밀도를 유지하는 문자열이다.
+- 범위: 공고 상태/담당자 이메일 존재/JSON 구조, 공고·지원서의 누락·중복 key/타입/선택지/추가 제약, 근무조건 존재, 지원서 동의/상태/공고 관계, 지원서에 연결된 첨부 파일의 메타데이터 상태. 근무조건은 false/0도 명시적 값이면 검토 대상으로 잡는 보수적인 존재 검사다.
+- 미검사: 콘텐츠 섹션 전체 변환, 공개 이미지·scene 참조, 고아 첨부의 고객 귀속, S3 실재·바이트, 계정·권한·결제, 과거 폼과 제출값 대응, 대상 적재. 리포트의 `unverified`와 이 목록을 함께 확인한다. 기준 테이블 `posting/application`의 JSON 구조와 모델 필드를 가정하므로 실제 운영 스키마가 다르면 성공으로 간주하지 않고 실패한다.
+- 종료 코드: `0`은 검사 범위에서 플래그 없음(이전 승인 아님), `2`는 검토 필요, `1`은 검사 실패. 오류 원문은 접속/개인정보 노출 방지를 위해 출력하지 않는다. 실패 시 부분 집계 결과를 출력하지 않는다.
+- 기본 테스트는 연결 없이 실행하고 SQL 테스트 1개를 skip한다. `AUDIT_TEST_DATABASE_URL`을 별도 지정하면 합성 CTE만 사용해 PostgreSQL SQL 테스트까지 실행한다. 실제 테이블 조회·생성·수정은 하지 않는다. 이번 검증은 개발용 연결에서 합성 SQL을 실행했고 운영 고객 검사 실행은 아직 하지 않았다.
 
 ## 판단
 
