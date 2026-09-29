@@ -85,7 +85,12 @@ async function handleCollectionFailure(
  * 파일 내 실제 날짜 중 요청한 종료일(dateTo)이 포함되지 않으면 경고를 로깅한다.
  * 쿠팡이 캐시된 보고서를 반환하거나 최신 날짜 데이터가 누락된 경우를 감지한다.
  */
-function verifyDownloadedFile(buffer: Buffer, fileName: string, dateTo: string): void {
+export function verifyDownloadedFile(
+  buffer: Buffer,
+  fileName: string,
+  dateTo: string,
+  allowOneDayLag = false
+): void {
   try {
     const wb = XLSX.read(buffer, { type: 'buffer' })
     const sheet = wb.Sheets[wb.SheetNames[0]]
@@ -109,6 +114,16 @@ function verifyDownloadedFile(buffer: Buffer, fileName: string, dateTo: string):
     )
 
     if (!uniqueDates.has(dateTo)) {
+      // 쿠팡 광고 전일 데이터는 자정 직후엔 아직 집계 전이다. 수동 수집은 재시도가 없어
+      // 하루 지연까지만 허용하고 받은 기간을 적재한다(다음 정기 수집이 14일 범위로 보충).
+      // 정기 수집은 엄격 유지 — throw 하면 스케줄러의 65분 재시도가 전일치를 받아온다.
+      const dayBefore = new Date(new Date(`${dateTo}T00:00:00Z`).getTime() - 86400000)
+        .toISOString()
+        .slice(0, 10)
+      if (allowOneDayLag && fileMaxDate === dayBefore) {
+        console.warn(`종료일(${dateTo}) 데이터 미집계 — ${fileMaxDate}까지 적재합니다.`)
+        return
+      }
       throw new Error(
         `요청한 종료일(${dateTo})이 파일에 없습니다. ` +
           `파일 날짜: ${sortedDates.join(', ')}. ` +
@@ -414,7 +429,7 @@ async function executeCollectionPipeline(
 
     // ── Step 4.5: 다운로드 파일 날짜 범위 검증 ──
     const fileBuffer = fs.readFileSync(result.filePath)
-    verifyDownloadedFile(Buffer.from(fileBuffer), result.fileName, dateTo)
+    verifyDownloadedFile(Buffer.from(fileBuffer), result.fileName, dateTo, isManual)
 
     // ── Step 5: 상태 → PARSING ──
     await updateCollectionRun(runId, { status: 'PARSING' })
