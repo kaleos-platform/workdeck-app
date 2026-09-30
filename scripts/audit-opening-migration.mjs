@@ -35,6 +35,16 @@ const queries = {
         WHERE jsonb_typeof(o) IS DISTINCT FROM 'object' OR jsonb_typeof(o->'label') IS DISTINCT FROM 'string'
           OR NOT (o ? 'value') OR o->'label' IS DISTINCT FROM o->'value') AS option_value_differs,
       EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(entries) = 'array' THEN entries ELSE '[]'::jsonb END) e
+        WHERE e->>'other_option' = 'true') AS other_option,
+      EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(entries) = 'array' THEN entries ELSE '[]'::jsonb END) e
+        WHERE e->>'is_other' = 'true') AS submitted_other,
+      EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(entries) = 'array' THEN entries ELSE '[]'::jsonb END) e
+        WHERE e->>'max_file_count' IS NOT NULL OR e->>'max_file_size' IS NOT NULL) AS file_limits,
+      EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(entries) = 'array' THEN entries ELSE '[]'::jsonb END) e
+        WHERE e->>'min_length' IS NOT NULL OR e->>'max_length' IS NOT NULL) AS length_limits,
+      EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(entries) = 'array' THEN entries ELSE '[]'::jsonb END) e
+        WHERE coalesce(e->>'error_message','') <> '') AS custom_error_message,
+      EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(entries) = 'array' THEN entries ELSE '[]'::jsonb END) e
         WHERE coalesce(e->>'description','') <> '' OR coalesce(e->>'placeholder','') <> ''
           OR e->>'other_option' = 'true' OR e->>'is_other' = 'true'
           OR e->>'min_length' IS NOT NULL OR e->>'max_length' IS NOT NULL
@@ -48,6 +58,11 @@ const queries = {
     count(*) FILTER (WHERE unknown_type)::text AS unknown_type,
     count(*) FILTER (WHERE invalid_options)::text AS invalid_options,
     count(*) FILTER (WHERE option_value_differs)::text AS option_value_differs,
+    count(*) FILTER (WHERE other_option)::text AS other_option,
+    count(*) FILTER (WHERE submitted_other)::text AS submitted_other,
+    count(*) FILTER (WHERE file_limits)::text AS file_limits,
+    count(*) FILTER (WHERE length_limits)::text AS length_limits,
+    count(*) FILTER (WHERE custom_error_message)::text AS custom_error_message,
     count(*) FILTER (WHERE extra_constraints)::text AS extra_constraints
     FROM flags GROUP BY kind ORDER BY kind`,
   positions: `SELECT count(*)::text AS total,
@@ -110,7 +125,7 @@ async function inspect(client, ids) {
       )
     )
     return {
-      version: 2,
+      version: 3,
       snapshotAt: stamp[0].snapshot_at,
       scopeCount: ids.length,
       status: reviewRequired ? 'REVIEW_REQUIRED' : 'NO_FLAGS_IN_CHECKED_SCOPE',
