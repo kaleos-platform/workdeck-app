@@ -82,7 +82,7 @@ const fixture = `posting AS (
   UNION ALL SELECT 3,8,99,'','[]','[]'
 ), application AS (
   SELECT 1::bigint id, 7::bigint brand_id, 1::bigint posting_id, 0 status, NULL::timestamp deleted_at,
-    now() optional_privacy_agreed_at, 99 stage, 1 hiring_stage, '[null,{"key":"name","type":"string","value":"synthetic-private"}]'::jsonb application_entries
+    now() optional_privacy_agreed_at, 99 stage, 1 hiring_stage, '[null,{"key":"name","type":"string","value":"synthetic-private"},{"key":"choice","type":"select","value":"yes"}]'::jsonb application_entries
   UNION ALL SELECT 2,7,3,1,NULL,NULL,1,1,'[]'
   UNION ALL SELECT 3,7,999,1,NULL,NULL,1,1,'[]'
 ), posting_position AS (
@@ -131,6 +131,7 @@ test(
       assert.equal(forms.option_value_differs, '1')
       assert.equal(forms.invalid_entries, '1')
       assert.equal(results.forms.find((row) => row.kind === 'application').missing_key, '1')
+      assert.equal(results.forms.find((row) => row.kind === 'application').invalid_options, '0')
       assert.equal(results.applications[0].cross_space_posting, '1')
       assert.equal(results.applications[0].missing_posting, '1')
       assert.equal(results.applications[0].optional_consent, '1')

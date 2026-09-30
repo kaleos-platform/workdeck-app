@@ -29,7 +29,7 @@ const queries = {
       EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(entries) = 'array' THEN entries ELSE '[]'::jsonb END) e
         WHERE e->>'type' IS NULL OR e->>'type' NOT IN ('string','text','select','multiselect','file','email','phone','number','date')) AS unknown_type,
       EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(entries) = 'array' THEN entries ELSE '[]'::jsonb END) e
-        WHERE e->>'type' IN ('select','multiselect') AND jsonb_typeof(e->'items') IS DISTINCT FROM 'array') AS invalid_options,
+        WHERE kind = 'posting' AND e->>'type' IN ('select','multiselect') AND jsonb_typeof(e->'items') IS DISTINCT FROM 'array') AS invalid_options,
       EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(entries) = 'array' THEN entries ELSE '[]'::jsonb END) e,
         LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(e->'items') = 'array' THEN e->'items' ELSE '[]'::jsonb END) o
         WHERE jsonb_typeof(o) IS DISTINCT FROM 'object' OR jsonb_typeof(o->'label') IS DISTINCT FROM 'string'
@@ -110,7 +110,7 @@ async function inspect(client, ids) {
       )
     )
     return {
-      version: 1,
+      version: 2,
       snapshotAt: stamp[0].snapshot_at,
       scopeCount: ids.length,
       status: reviewRequired ? 'REVIEW_REQUIRED' : 'NO_FLAGS_IN_CHECKED_SCOPE',
