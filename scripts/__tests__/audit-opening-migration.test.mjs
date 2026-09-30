@@ -77,12 +77,13 @@ test('결과는 집계만 출력하고 0건이어도 이전 완료로 판정하�
 // 테스트 데이터는 CTE로만 제공한다. 기존 테이블을 조회하거나 생성하지 않는다.
 const fixture = `posting AS (
   SELECT 1::bigint id, 7::bigint brand_id, 0 status, 'encrypted-placeholder'::text manager_email_enc,
-    '[{"key":"custom","type":"date"},{"key":"custom","type":"select","items":[{"label":"표시","value":"code"}]}]'::jsonb application_entries, '[]'::jsonb detail
+    '[{"key":"custom","type":"date"},{"key":"custom","type":"select","other_option":true,"error_message":"synthetic-private","items":[{"label":"표시","value":"code"}]}]'::jsonb application_entries, '[]'::jsonb detail
   UNION ALL SELECT 2,7,1,'','{}','{}'
+  UNION ALL SELECT 4,7,1,'','[{"key":"file","type":"file","max_file_count":0,"max_file_size":null},{"key":"text","type":"text","min_length":0,"max_length":5,"other_option":false}]','[]'
   UNION ALL SELECT 3,8,99,'','[]','[]'
 ), application AS (
   SELECT 1::bigint id, 7::bigint brand_id, 1::bigint posting_id, 0 status, NULL::timestamp deleted_at,
-    now() optional_privacy_agreed_at, 99 stage, 1 hiring_stage, '[null,{"key":"name","type":"string","value":"synthetic-private"},{"key":"choice","type":"select","value":"yes"}]'::jsonb application_entries
+    now() optional_privacy_agreed_at, 99 stage, 1 hiring_stage, '[null,{"key":"name","type":"string","value":"synthetic-private"},{"key":"choice","type":"select","value":"yes","is_other":true}]'::jsonb application_entries
   UNION ALL SELECT 2,7,3,1,NULL,NULL,1,1,'[]'
   UNION ALL SELECT 3,7,999,1,NULL,NULL,1,1,'[]'
 ), posting_position AS (
@@ -118,7 +119,7 @@ test(
         results[name] = (await client.query(query, [['7']])).rows
       }
       assert.deepEqual(results.postings[0], {
-        total: '2',
+        total: '3',
         deleted_status: '1',
         unknown_status: '0',
         manager_email: '1',
@@ -130,6 +131,15 @@ test(
       assert.equal(forms.number_or_date, '1')
       assert.equal(forms.option_value_differs, '1')
       assert.equal(forms.invalid_entries, '1')
+      assert.equal(forms.other_option, '1')
+      assert.equal(forms.submitted_other, '0')
+      assert.equal(forms.file_limits, '1')
+      assert.equal(forms.length_limits, '1')
+      assert.equal(forms.custom_error_message, '1')
+      const submitted = results.forms.find((row) => row.kind === 'application')
+      assert.equal(submitted.submitted_other, '1')
+      assert.equal(submitted.other_option, '0')
+      assert.equal(submitted.file_limits, '0')
       assert.equal(results.forms.find((row) => row.kind === 'application').missing_key, '1')
       assert.equal(results.forms.find((row) => row.kind === 'application').invalid_options, '0')
       assert.equal(results.applications[0].cross_space_posting, '1')
