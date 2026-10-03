@@ -108,7 +108,6 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
             costNature: '변동',
             kw: ['매입', '사입', '도매', '소싱'],
           },
-          { name: '매입환출(구매 환불)', code: '5100', contra: true },
         ],
       },
       {

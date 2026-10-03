@@ -171,12 +171,14 @@ export function CategoryCombobox({
           <CommandInput placeholder={searchPlaceholder} value={query} onValueChange={setQuery} />
           {contraOnlyTab && (
             <p className="border-b px-2 py-1.5 text-[11px] text-muted-foreground">
-              {blockType === 'INCOME' ? '출금' : '입금'} 거래에는 차감 계정만 선택할 수 있습니다.
+              {blockType === 'INCOME'
+                ? '출금 거래에는 차감 계정만 선택할 수 있습니다.'
+                : '입금(환불)을 비용 계정에 분류하면 그 비용에서 차감됩니다.'}
             </p>
           )}
           <CommandList>
             <CommandEmpty>
-              {contraOnlyTab
+              {contraOnlyTab && blockType === 'INCOME'
                 ? "차감 계정이 없습니다. 계정과목 관리에서 항목을 수정해 '차감 계정'을 지정하세요"
                 : '일치하는 계정과목이 없습니다'}
             </CommandEmpty>

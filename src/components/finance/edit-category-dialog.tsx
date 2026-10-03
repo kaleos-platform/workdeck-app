@@ -108,8 +108,10 @@ export function EditCategoryDialog({
 
   if (!node) return null
 
-  // 차감 계정은 수입/지출 리프에서만 설정 가능.
-  const showContra = isLeaf && (node.type === 'INCOME' || node.type === 'EXPENSE')
+  // 차감 계정은 수입 리프에서만 설정. 비용 환불은 원래 비용 계정에 바로 분류하므로 불필요 —
+  // 단 레거시 비용 차감 계정(매입환출)은 해제할 수 있게 노출.
+  const showContra =
+    isLeaf && (node.type === 'INCOME' || (node.type === 'EXPENSE' && !!node.isContra))
   const contraChanged = isContra !== (node.isContra ?? false)
 
   async function handleSave() {
@@ -258,8 +260,9 @@ export function EditCategoryDialog({
                 <Label htmlFor="edit-category-contra" className="flex flex-col items-start gap-0.5">
                   <span className="text-sm">차감 계정</span>
                   <span className="text-[11px] font-normal text-muted-foreground">
-                    반대 방향 거래(예: 매출 환불 출금, 구매 환불 입금)를 받아 이 섹션에서
-                    차감합니다.
+                    {node.type === 'INCOME'
+                      ? '고객 환불·반품 출금을 받아 수입에서 차감합니다.'
+                      : '비용 환불 입금은 원래 비용 계정에 바로 분류하면 차감됩니다. 이 설정은 해제해도 됩니다.'}
                   </span>
                 </Label>
               </div>

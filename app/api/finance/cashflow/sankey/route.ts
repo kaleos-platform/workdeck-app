@@ -27,7 +27,7 @@ import {
   isValidBucket,
   type Grain,
 } from '@/lib/finance/periods'
-import { cashSection, contraSectionOf } from '@/lib/finance/contra'
+import { cashSection, fixedSectionOf } from '@/lib/finance/contra'
 import type { FinFlowRole } from '@/generated/prisma/enums'
 
 export async function GET(req: NextRequest) {
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
     const { section, amount: amt } = cashSection(
       t.direction,
       signedAmount({ amount: toNum(t.amount), cancelFlag: t.cancelFlag }),
-      contraSectionOf(t.categoryId ? catById.get(t.categoryId) : null)
+      fixedSectionOf(t.categoryId ? catById.get(t.categoryId) : null)
     )
     const node = t.categoryId ? levelOne(t.categoryId) : null
     const role = node?.flowRole ?? null

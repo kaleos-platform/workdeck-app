@@ -16,7 +16,7 @@ export type AggRow = {
   isTransfer: boolean
   cancelFlag?: string | null
   categoryId?: string | null
-  /** 차감 계정이면 고정 섹션(contraSectionOf). 미지정=현금 방향. */
+  /** 계정으로 고정된 섹션(fixedSectionOf). 미지정=현금 방향. */
   contraSection?: CashSection | null
 }
 

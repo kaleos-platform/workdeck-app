@@ -37,6 +37,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       (c) =>
         ['INCOME', 'EXPENSE', 'TRANSFER'].includes(c.type) &&
         isCategoryAllowedForDirection(c, row.direction) &&
+        // 입금 행 AI 후보에서 일반 비용은 제외(환불은 드물어 수입 거래 오추천 위험) — 수동 분류는 가능.
+        !(row.direction === 'IN' && c.type === 'EXPENSE' && !c.isContra) &&
         c.parentId !== null &&
         !hasChild.has(c.id)
     )

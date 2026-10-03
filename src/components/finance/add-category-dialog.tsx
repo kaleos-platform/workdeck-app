@@ -37,10 +37,9 @@ export function AddCategoryDialog({
   const [isContra, setIsContra] = useState(false)
   const [saving, setSaving] = useState(false)
   const parentOptions = useMemo(() => buildParentOptions(categoryTree), [categoryTree])
-  // 차감 계정은 수입/지출의 대분류(indent=true) 아래 리프를 만들 때만 선택 가능.
+  // 차감 계정은 수입 대분류(indent=true) 아래 리프에만 — 비용 환불은 원래 비용 계정에 바로 분류(contra.ts).
   const parentOpt = parentOptions.find((o) => o.id === parentId)
-  const showContra =
-    !!parentOpt?.indent && (parentOpt.type === 'INCOME' || parentOpt.type === 'EXPENSE')
+  const showContra = !!parentOpt?.indent && parentOpt.type === 'INCOME'
 
   async function handleSave() {
     if (!parentId) {
@@ -120,7 +119,7 @@ export function AddCategoryDialog({
               <Label htmlFor="add-category-contra" className="flex flex-col items-start gap-0.5">
                 <span className="text-sm">차감 계정</span>
                 <span className="text-[11px] font-normal text-muted-foreground">
-                  반대 방향 거래(예: 매출 환불 출금, 구매 환불 입금)를 받아 이 섹션에서 차감합니다.
+                  고객 환불·반품 출금을 받아 수입에서 차감합니다.
                 </span>
               </Label>
             </div>
