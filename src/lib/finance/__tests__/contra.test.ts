@@ -31,7 +31,7 @@ const cat = (
   name: string,
   type: string,
   parentId: string | null,
-  extra: { flowRole?: string; isContra?: boolean } = {}
+  extra: { flowRole?: string } = {}
 ) => ({
   id,
   name,
@@ -39,7 +39,6 @@ const cat = (
   parentId,
   groupLabel: null,
   flowRole: extra.flowRole ?? null,
-  isContra: extra.isContra ?? false,
 })
 
 const CATS = [
