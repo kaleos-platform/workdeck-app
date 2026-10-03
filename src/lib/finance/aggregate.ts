@@ -75,7 +75,8 @@ export function addMonths(ym: string, delta: number): string {
 /** 단일 월의 [gte, lt) 경계. */
 export function monthBounds(ym: string): { gte: Date; lt: Date } {
   const { y, m } = parseYm(ym)
-  return { gte: new Date(y, m - 1, 1), lt: new Date(y, m, 1) }
+  // txnDate 저장 규약(KST 벽시계를 UTC로) → 경계도 UTC. 로컬 Date면 비UTC 서버에서 월 경계가 어긋난다.
+  return { gte: new Date(Date.UTC(y, m - 1, 1)), lt: new Date(Date.UTC(y, m, 1)) }
 }
 
 /** [fromYm, toYm] 포함 범위의 [gte, lt) 경계. */

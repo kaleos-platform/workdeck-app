@@ -56,7 +56,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ymOf, ymdOf } from '@/lib/finance/aggregate'
+import { signedAmount, ymOf, ymdOf } from '@/lib/finance/aggregate'
 import {
   defaultSelectedPeriods,
   availablePeriods,
@@ -1267,6 +1267,7 @@ interface PanelTxn {
   txnDate: string
   direction: 'IN' | 'OUT'
   amount: number
+  cancelFlag: string | null
   description: string | null
   counterparty: string | null
   classStatus: FinClassStatus
@@ -1470,11 +1471,11 @@ function CashflowTxnPanel({
   const sum = !data
     ? 0
     : search.trim()
-      ? // 차감 계정(매출환입 등) 반대 방향 거래는 이 섹션에서 차감.
-        visibleRows.reduce(
-          (s, r) => s + (r.direction === selected.direction ? r.amount : -r.amount),
-          0
-        )
+      ? // 반대 방향(환불)은 이 섹션에서 차감, 카드 취소는 상계 — 서버 summary와 같은 규칙.
+        visibleRows.reduce((s, r) => {
+          const amt = signedAmount(r)
+          return s + (r.direction === selected.direction ? amt : -amt)
+        }, 0)
       : isIncome
         ? data.summary.incomeTotal
         : data.summary.expenseTotal
