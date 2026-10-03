@@ -177,3 +177,5 @@ CLI는 기본 `validation`을 유지한다. 승인된 운영 파일럿은 `--tar
 원본 파일럿은 공고 1개(마감), 지원서 0개, 관리자 1명이다. content 9개가 참조하는 scene 9개·이미지 9개(921,314 bytes)를 읽고 순수 콘텐츠 변환을 확인했다. 템플릿 생성/복사는 파일 참조를 공유하므로 file.target_id가 새 content와 다를 수 있다. 고객 소유 content 관계와 정확한 파일 key·용도·원본 bucket으로 범위를 제한했다. 원문은 임시 암호화 staging에 보관하며 운영 대상 업로드/적재는 아직 수행하지 않았다. 지원서 이관이 없는 파일럿이므로 지원자 관리의 실데이터 검증 완료로 확대 해석하지 않는다.
 
 현재 운영에는 이전 원장·업로드 세션 migration이 미적용이고 private 첨부 bucket은 10 MiB였다. 최신 main 기반의 별도 release worktree로 모집 개선을 옮겨 기존 브랜치의 무관한 생산·마케팅 원가 변경을 제외했다. Next.js·SheetJS 보안 업데이트는 포함되어 전역 런타임/Excel에도 영향을 준다. 운영 schema 변경은 정상 배포 migration 경로만 사용하며 수동 SQL/ALTER는 하지 않는다.
+
+실제 파일럿 packet 검사에서 원본 공고의 `uuid`가 표준 UUID가 아니라 `hashId(posting.id)`로 만든 짧은 공개 URL 키임을 확인했다. 원본 모델은 VARCHAR(36), Workdeck의 공개 키와 API도 문자열을 사용한다. importer는 1~36자의 URL-safe 영문·숫자·하이픈·밑줄을 허용해 원본 키를 보존하고 경로 구분자·공백·초과 길이는 차단한다. 합성 짧은 키 실패 재현 후 관련 18개 테스트와 TypeScript/ESLint 검사를 통과했다. 실제 운영의 동일 공개 키/동일 Space 제목 중복은 0개로 확인했다.
