@@ -292,3 +292,50 @@ test('section file_key가 문자열 metadata가 아니면 차단한다', () => {
     planPostingContent({ ...base, detail: [section('content', { resource_id: 1, file_key: {} })] })
   ).toEqual({ ok: false, code: 'invalid_section', index: 0 })
 })
+
+test('원본에 따로 저장된 표시 이미지와 현재 편집 scene을 각각 보존한다', () => {
+  const scene = { elements: [{ type: 'rectangle' }], files: {} }
+  const result = planPostingContent({
+    ...base,
+    detail: [section('content', { resource_id: 1, image_key: 'original-render' })],
+    resources: {
+      '1': { ...image, hasSceneSource: true, sourceImageKey: 'current-export', scene },
+    },
+    images: {
+      'index:0': {
+        copiedImagePath: 'tenant/original-image.png',
+        verified: true,
+        sourceImageKey: 'original-render',
+      },
+    },
+  })
+  expect(result.ok).toBe(true)
+  if (!result.ok) return
+  expect(result.blocks[0]).toMatchObject({
+    contentType: 'design',
+    imagePath: 'tenant/original-image.png',
+    data: scene,
+  })
+})
+
+test('표시 이미지의 원본 키가 일치하지 않으면 대체하지 않는다', () => {
+  const result = planPostingContent({
+    ...base,
+    detail: [section('content_link', { resource_id: 1, image_key: 'original-render' })],
+    resources: { '1': { ...image, hasSceneSource: false, sourceImageKey: 'current-export' } },
+    images: { 'index:0': { ...image, sourceImageKey: 'different-image' } },
+  })
+  expect(result).toEqual({ ok: false, code: 'image_source_mismatch', index: 0 })
+})
+
+test('원본 키가 일치해도 검증되지 않은 표시 이미지는 거부한다', () => {
+  const result = planPostingContent({
+    ...base,
+    detail: [section('content_link', { resource_id: 1, image_key: 'original-render' })],
+    resources: { '1': { ...image, hasSceneSource: false, sourceImageKey: 'current-export' } },
+    images: {
+      'index:0': { ...image, sourceImageKey: 'original-render', verified: false },
+    },
+  })
+  expect(result).toEqual({ ok: false, code: 'unverified_image', index: 0 })
+})
