@@ -193,6 +193,32 @@ export function unmappedDataColumns(
   return hintedHeaderIndexes(headers, kind).filter((i) => !used.has(i) && !empty.has(i))
 }
 
+/**
+ * 매핑 경고 문구 목록. 접힘 카드 헤더와 펼친 매핑 영역이 같은 목록을 쓴다.
+ * 경고가 펼친 영역에만 있으면, 프리셋이 자동 매칭돼 바로 등록 가능해진 파일은
+ * 사용자가 카드를 펼칠 이유가 없어 경고를 영영 못 본다(실제로 1,479건이 그렇게 쌓였다).
+ */
+export function mappingWarnings(
+  mapping: FieldMapping,
+  headers: string[],
+  emptyColumns: number[],
+  kind: FinKind
+): string[] {
+  const out: string[] = []
+  for (const { colIdx, labels } of duplicateColumnFields(mapping, kind)) {
+    out.push(
+      `"${headers[colIdx]}" 컬럼이 ${labels.join(' · ')}에 동시에 매핑돼 있습니다 — 같은 값이 두 필드에 저장됩니다`
+    )
+  }
+  const unmapped = unmappedDataColumns(mapping, headers, emptyColumns, kind)
+  if (unmapped.length > 0) {
+    out.push(
+      `${unmapped.map((i) => `"${headers[i]}"`).join(' · ')} 컬럼에 값이 있지만 어떤 필드에도 매핑되지 않았습니다 — 저장되지 않습니다`
+    )
+  }
+  return out
+}
+
 /** suggestedMapping/preset.mapping [{headerName, field}] → FieldMapping(필드→헤더 인덱스 배열) */
 export function mappingEntriesToState(entries: MappingEntry[], headers: string[]): FieldMapping {
   const result: FieldMapping = {}

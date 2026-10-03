@@ -4,6 +4,7 @@
 import {
   defaultPresetName,
   duplicateColumnFields,
+  mappingWarnings,
   unmappedDataColumns,
   findOverlappingFileIds,
   isMappingDirty,
@@ -343,5 +344,56 @@ describe('unmappedDataColumns — 값 있는 미매핑 컬럼 경고', () => {
   test('빈 컬럼은 경고하지 않는다', () => {
     const mapping = { txnDate: [2], description: [3], deposit: [4], withdrawal: [5] }
     expect(unmappedDataColumns(mapping, SHINHAN, [6, 7], 'BANK')).toEqual([])
+  })
+})
+
+describe('mappingWarnings — grid_exceldata (16).xlsx 실제 사고 재현', () => {
+  // 실제 신한 export 헤더. 입금인코드·메모는 전건 빈 컬럼이라 emptyColumns 로 들어간다.
+  const HEADERS = [
+    'No',
+    '전체선택',
+    '거래일시',
+    '적요',
+    '입금액',
+    '출금액',
+    '내용',
+    '잔액',
+    '거래점명',
+    '입금인코드',
+    '메모',
+    '메모',
+  ]
+  const EMPTY = [9, 10, 11]
+
+  test('사고 당시 프리셋 매핑에서 경고 2개가 나온다', () => {
+    // description=내용(6), counterparty=내용(6), 적요(3) 미매핑 — 1,479건을 만든 매핑
+    const broken = {
+      txnDate: [2],
+      description: [6],
+      counterparty: [6],
+      deposit: [4],
+      withdrawal: [5],
+      balanceAfter: [7],
+      memo: [10],
+    }
+    const w = mappingWarnings(broken, HEADERS, EMPTY, 'BANK')
+    expect(w).toHaveLength(2)
+    expect(w[0]).toContain('"내용" 컬럼이')
+    expect(w[0]).toContain('적요/내용 · 상대/의뢰인')
+    expect(w[1]).toContain('"적요"')
+    expect(w[1]).toContain('매핑되지 않았습니다')
+  })
+
+  test('올바른 매핑이면 경고가 없다 — 거래점명은 힌트에 안 걸린다', () => {
+    const fixed = {
+      txnDate: [2],
+      description: [3],
+      counterparty: [6],
+      deposit: [4],
+      withdrawal: [5],
+      balanceAfter: [7],
+      memo: [10],
+    }
+    expect(mappingWarnings(fixed, HEADERS, EMPTY, 'BANK')).toEqual([])
   })
 })
