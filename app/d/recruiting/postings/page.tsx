@@ -1,14 +1,22 @@
 import { redirect } from 'next/navigation'
 import { resolveDeckContext } from '@/lib/api-helpers'
-import { listPostings } from '@/lib/hiring/postings'
+import { listPostingPage } from '@/lib/hiring/posting-list'
 import { PostingsTable, type PostingRow } from '@/components/hiring-posts/postings-table'
 
 // 공고 목록 페이지
-export default async function PostingsPage() {
+export default async function PostingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    q?: string | string[]
+    status?: string | string[]
+    page?: string | string[]
+  }>
+}) {
   const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) redirect('/my-deck')
 
-  const rows = await listPostings(resolved.space.id)
+  const { rows, ...pagination } = await listPostingPage(resolved.space.id, await searchParams)
   const postings: PostingRow[] = rows.map((p) => ({
     id: p.id,
     uuid: p.uuid,
@@ -24,10 +32,15 @@ export default async function PostingsPage() {
       <div>
         <h1 className="text-2xl font-semibold">공고 관리</h1>
         <p className="text-sm text-muted-foreground">
-          채용 공고를 만들고 발행해 공개 지원 페이지를 운영합니다.
+          공고를 만들고 HTML을 복사해 외부 채용사이트에 게시하세요. 지원자 접수도 관리할 수
+          있습니다.
         </p>
       </div>
-      <PostingsTable postings={postings} />
+      <PostingsTable
+        key={`${pagination.q}:${pagination.status}:${pagination.page}`}
+        postings={postings}
+        {...pagination}
+      />
     </div>
   )
 }

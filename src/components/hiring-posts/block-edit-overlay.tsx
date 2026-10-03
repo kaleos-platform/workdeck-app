@@ -1,7 +1,9 @@
 'use client'
 
+import { useImperativeHandle, useRef, useState, type Ref } from 'react'
 import { Check } from 'lucide-react'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import type { SaveHandle } from './use-queued-save'
 import { Button } from '@/components/ui/button'
 import { Editor } from '@/components/sc/editor/editor'
 import type { ButtonData, BlockLink } from '@/lib/validations/hiring-posts'
@@ -11,7 +13,9 @@ import type { ExcalidrawScene } from './excalidraw-canvas'
 import type { WizardContentData, WizardPositionData, WizardPosition } from './build-types'
 
 type Props = {
+  ref?: Ref<SaveHandle>
   open: boolean
+  saving?: boolean
   content: WizardContentData | null
   postingId: string
   positions: WizardPositionData[]
@@ -20,7 +24,7 @@ type Props = {
   onClose: () => void
   onTextChange: (contentId: string, doc: unknown) => void
   onButtonSave: (contentId: string, data: ButtonData) => Promise<unknown>
-  onImageSelect: (contentId: string, file: File) => void
+  onImageSelect: (contentId: string, file: File) => Promise<void>
   onImageLinkSave: (contentId: string, link: BlockLink) => Promise<unknown>
   onDesignSave: (contentId: string, scene: ExcalidrawScene, imageBase64: string) => Promise<void>
   onDesignLinkSave: (contentId: string, link: BlockLink) => Promise<unknown>
@@ -29,7 +33,9 @@ type Props = {
 // 블록 본문 편집 풀스크린 오버레이 — 라우트가 아니라 클라이언트 모달이므로 wizard state 가
 // 그대로 유지된다(재동기화·리페치 없음). 저장은 리스트의 기존 핸들러로 onChange 갱신.
 export function BlockEditOverlay({
+  ref,
   open,
+  saving = false,
   content,
   postingId,
   positions,
@@ -43,6 +49,14 @@ export function BlockEditOverlay({
   onDesignSave,
   onDesignLinkSave,
 }: Props) {
+  const [designBusy, setDesignBusy] = useState(false)
+  const blockRef = useRef<SaveHandle>(null)
+  useImperativeHandle(ref, () => ({
+    flush: async () => {
+      if (designBusy) throw new Error('디자인 저장이 진행 중입니다. 완료 후 다시 시도하세요.')
+      await blockRef.current?.flush()
+    },
+  }))
   const meta = content
     ? CONTENT_TYPE_META[content.contentType as keyof typeof CONTENT_TYPE_META]
     : null
@@ -56,7 +70,7 @@ export function BlockEditOverlay({
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) onClose()
+        if (!next && !saving && !designBusy) onClose()
       }}
     >
       <DialogContent
@@ -68,16 +82,20 @@ export function BlockEditOverlay({
       >
         <div className="flex items-center justify-between border-b px-6 py-4">
           <DialogTitle>{heading}</DialogTitle>
+          <DialogDescription className="sr-only">
+            카드 내용을 편집하고 저장을 완료하세요.
+          </DialogDescription>
           {/* 텍스트·직무 블록은 입력이 즉시 반영되므로, 명시적으로 편집을 끝내는 '완료' 버튼을
               제공한다(우측 X 닫기 아이콘과 겹치지 않도록 여백). 디자인 블록은 '카드저장',
               이미지·버튼(팝업)은 자동저장이며 하단 푸터에 별도 완료 버튼을 둔다. */}
           {!isPopup && !isDesign && (
-            <Button size="sm" className="mr-8" onClick={onClose}>
-              <Check /> 완료
+            <Button size="sm" className="mr-8" disabled={saving} onClick={onClose}>
+              <Check /> {saving ? '저장 중…' : '완료'}
             </Button>
           )}
         </div>
         <div
+          inert={saving}
           className={
             isDesign ? 'flex min-h-0 flex-1 flex-col p-4' : 'min-h-0 flex-1 overflow-y-auto p-6'
           }
@@ -102,11 +120,13 @@ export function BlockEditOverlay({
                 />
               ) : content.contentType === 'button' ? (
                 <ButtonBlock
+                  ref={blockRef}
                   data={content.data as ButtonData | null}
                   onSave={(data) => onButtonSave(content.id, data)}
                 />
               ) : content.contentType === 'image' ? (
                 <ImageBlock
+                  ref={blockRef}
                   imagePath={content.imagePath}
                   link={(content.data as { link?: BlockLink } | null)?.link}
                   onSelect={(file) => onImageSelect(content.id, file)}
@@ -115,6 +135,7 @@ export function BlockEditOverlay({
               ) : content.contentType === 'positions' ? (
                 // 기본 정보 화면과 동일한 직무 관리 UI(직무 추가 팝업 + 목록/편집/삭제) 재사용.
                 <StepPositions
+                  ref={blockRef}
                   postingId={postingId}
                   positions={positions}
                   spacePositions={spacePositions}
@@ -122,8 +143,10 @@ export function BlockEditOverlay({
                 />
               ) : content.contentType === 'design' ? (
                 <DesignBlock
+                  ref={blockRef}
                   key={content.id}
                   scene={content.data}
+                  onBusyChange={setDesignBusy}
                   onSave={(scene, imageBase64) => onDesignSave(content.id, scene, imageBase64)}
                   onLinkSave={(link) => onDesignLinkSave(content.id, link)}
                 />
@@ -137,8 +160,8 @@ export function BlockEditOverlay({
             '완료'(닫기) 버튼을 하단 푸터에 제공한다. 디자인은 '카드저장'이 있어 제외. */}
         {isPopup && (
           <div className="flex justify-end border-t px-6 py-4">
-            <Button size="sm" onClick={onClose}>
-              <Check /> 완료
+            <Button size="sm" disabled={saving} onClick={onClose}>
+              <Check /> {saving ? '저장 중…' : '완료'}
             </Button>
           </div>
         )}

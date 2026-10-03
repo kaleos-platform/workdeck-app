@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -21,8 +21,12 @@ type Props = {
 export function StageControls({ applicationId, stage, hiringStage }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
+  const [refreshing, startTransition] = useTransition()
+  const inFlight = useRef(false)
 
   async function patch(data: { stage?: HiringApplicationStage; hiringStage?: HiringProcessStage }) {
+    if (inFlight.current || refreshing) return
+    inFlight.current = true
     const key = data.stage ?? data.hiringStage ?? ''
     setLoading(key)
     try {
@@ -36,16 +40,22 @@ export function StageControls({ applicationId, stage, hiringStage }: Props) {
         throw new Error(err?.message ?? '변경 실패')
       }
       toast.success('상태를 변경했습니다')
-      router.refresh()
+      startTransition(() => router.refresh())
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '변경 실패')
     } finally {
+      inFlight.current = false
       setLoading(null)
     }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" aria-busy={loading !== null || refreshing}>
+      {refreshing && (
+        <p role="status" className="text-xs text-muted-foreground">
+          변경된 상태를 불러오는 중...
+        </p>
+      )}
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>채용 단계</span>
@@ -57,7 +67,7 @@ export function StageControls({ applicationId, stage, hiringStage }: Props) {
               key={s}
               size="sm"
               variant={s === hiringStage ? 'default' : 'outline'}
-              disabled={loading !== null || s === hiringStage}
+              disabled={loading !== null || refreshing || s === hiringStage}
               onClick={() => patch({ hiringStage: s })}
             >
               {loading === s && <Loader2 className="mr-1 size-3.5 animate-spin" />}
@@ -78,7 +88,7 @@ export function StageControls({ applicationId, stage, hiringStage }: Props) {
               key={s}
               size="sm"
               variant={s === stage ? 'default' : 'outline'}
-              disabled={loading !== null || s === stage}
+              disabled={loading !== null || refreshing || s === stage}
               onClick={() => patch({ stage: s })}
             >
               {loading === s && <Loader2 className="mr-1 size-3.5 animate-spin" />}

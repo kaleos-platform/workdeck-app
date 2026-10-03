@@ -62,6 +62,7 @@ export type ApplicationEntryValue = {
   type: string // string/text/number/email/phone/date/file/select/multiselect
   label?: string
   value: unknown
+  fileIds?: string[] // 서버가 발급한 항목별 첨부 ID
 }
 
 /** 표준 PII 키 — JSON에서 값을 제거하고 enc 컬럼으로 이동하는 대상 */

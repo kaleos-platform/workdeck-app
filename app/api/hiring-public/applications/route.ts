@@ -4,7 +4,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashIp } from '@/lib/sc/utm'
 import { errorResponse } from '@/lib/api-helpers'
-import { publicApplicationPayloadSchema } from '@/lib/validations/hiring-applicants'
+import { fileFieldError } from '@/lib/hiring/file-fields'
+import { typedSubmissionError } from '@/lib/hiring/form-values'
+import {
+  publicApplicationPayloadSchema,
+  parseApplicationEntriesSchema,
+} from '@/lib/validations/hiring-applicants'
 import {
   createPublicApplication,
   checkRateLimit,
@@ -87,6 +92,7 @@ export async function POST(req: NextRequest) {
       id: true,
       spaceId: true,
       status: true,
+      applicationEntries: true,
       positions: { select: { id: true } },
       stores: { select: { storeId: true } },
     },
@@ -97,6 +103,12 @@ export async function POST(req: NextRequest) {
   if (posting.status !== 'ACTIVE') {
     return errorResponse('마감된 공고입니다', 410)
   }
+
+  const valueError = typedSubmissionError(
+    parseApplicationEntriesSchema(posting.applicationEntries),
+    payload.entries
+  )
+  if (valueError) return errorResponse(valueError, 400)
 
   // DB 백스톱 캡 — 인메모리 리미터는 서버리스 인스턴스별로 리셋되므로
   // 공고당 시간당 접수 상한을 DB 카운트로 강제한다(스푸핑·콜드스타트 무관).
@@ -123,9 +135,23 @@ export async function POST(req: NextRequest) {
   if (rawFiles.length > MAX_APPLICANT_FILES) {
     return errorResponse(`첨부는 최대 ${MAX_APPLICANT_FILES}개까지 가능합니다`, 400)
   }
+  const attachmentError = fileFieldError(
+    parseApplicationEntriesSchema(posting.applicationEntries),
+    payload.fileFieldKeys,
+    rawFiles.length,
+    rawFiles.map((file) => file.size)
+  )
+  if (attachmentError) return errorResponse(attachmentError, 400)
+  if (
+    payload.fileFieldKeys.some(
+      (key) =>
+        payload.entries.filter((entry) => entry.key === key && entry.type === 'file').length !== 1
+    )
+  )
+    return errorResponse('첨부 항목 연결이 올바르지 않습니다', 400)
   const files: IncomingFile[] = []
-  for (const f of rawFiles) {
-    if (f.size === 0) continue
+  for (const [index, f] of rawFiles.entries()) {
+    if (f.size === 0) return errorResponse('빈 파일은 첨부할 수 없습니다', 400)
     if (!ALLOWED_APPLICANT_MIME.has(f.type)) {
       return errorResponse('허용되지 않는 파일 형식입니다', 400)
     }
@@ -133,6 +159,7 @@ export async function POST(req: NextRequest) {
       return errorResponse('파일이 용량 제한을 초과했습니다', 400)
     }
     files.push({
+      fieldKey: payload.fileFieldKeys[index],
       fileName: f.name,
       mimeType: f.type,
       data: Buffer.from(await f.arrayBuffer()),
@@ -160,6 +187,7 @@ export async function POST(req: NextRequest) {
       storeIds,
       referrer: referrer?.slice(0, 300) ?? null,
       files,
+      fileFields: parseApplicationEntriesSchema(posting.applicationEntries),
       privacyAgreed: payload.privacyAgreed,
     })
     // 블랙리스트/중복 여부는 응답에 노출하지 않는다(비공개 성공 응답 고정).

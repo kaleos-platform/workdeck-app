@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react'
 import {
   Excalidraw,
   exportToBlob,
@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT } from './build-types'
+import type { SaveHandle } from './use-queued-save'
 import type { BlockLink } from '@/lib/validations/hiring-posts'
 
 // 아트보드 규격 — 폭은 640 고정, 높이만 조절 (상수는 build-types 에서 공유)
@@ -138,15 +139,60 @@ function contentTopLeft(elements: readonly unknown[]): { x: number; y: number } 
   }
 }
 
+// 뷰포트·선택·내부 버전은 저장할 디자인 변경이 아니다. 삭제된 요소와 아트보드도 제외한다.
+function sceneSignature(elements: readonly unknown[]): string {
+  return JSON.stringify(
+    elements.filter((e) => !isArtboard(e) && !(e as El).isDeleted),
+    (key, value) =>
+      ['version', 'versionNonce', 'updated', 'index'].includes(key) ? undefined : value
+  )
+}
+
 type Props = {
+  ref?: Ref<SaveHandle>
   initialData: ExcalidrawInitialDataState | null
   canvasHeight: number
   saving: boolean
-  onSave: (scene: ExcalidrawScene, imageBase64: string) => void
+  onSave: (scene: ExcalidrawScene, imageBase64: string) => Promise<void>
+  onBusyChange?: (busy: boolean) => void
 }
 
 // 공고 상세 디자인 캔버스 — next/dynamic(ssr:false) 로만 마운트한다.
-export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: Props) {
+export function ExcalidrawCanvas({
+  ref,
+  initialData,
+  canvasHeight,
+  saving,
+  onSave,
+  onBusyChange,
+}: Props) {
+  const baselineRef = useRef<string | null>(null)
+  const dirtyRef = useRef(false)
+  const [dirty, setDirty] = useState(false)
+  const exportRef = useRef(false)
+  useImperativeHandle(ref, () => ({
+    flush: async () => {
+      if (exportRef.current)
+        throw new Error('디자인 저장이 진행 중입니다. 완료 후 다시 시도하세요.')
+      if (
+        dirtyRef.current &&
+        !window.confirm(
+          '저장하지 않은 디자인 변경사항을 버리고 나가시겠습니까?\n계속 편집하거나 저장하려면 취소 후 카드저장을 눌러주세요.'
+        )
+      )
+        throw new Error('디자인 편집을 계속합니다. 반영하려면 카드저장을 눌러주세요.')
+    },
+  }))
+  useEffect(() => {
+    function warnBeforeUnload(event: BeforeUnloadEvent) {
+      if (!dirtyRef.current && !exportRef.current) return
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warnBeforeUnload)
+    return () => window.removeEventListener('beforeunload', warnBeforeUnload)
+  }, [])
+  const [exporting, setExporting] = useState(false)
   const [api, setApi] = useState<ExcalidrawImperativeAPI | null>(null)
   const [height, setHeight] = useState(() => clampHeight(canvasHeight))
   // 입력 필드는 빈 문자열(지우는 중)을 허용 — height(적용값)는 유효한 숫자일 때만 갱신한다.
@@ -165,6 +211,12 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
     elements: readonly unknown[],
     appState: Parameters<typeof sceneCoordsToViewportCoords>[1]
   ) {
+    if (!('isLoading' in appState) || !appState.isLoading) {
+      const signature = sceneSignature(elements)
+      if (baselineRef.current === null) baselineRef.current = signature
+      dirtyRef.current = signature !== baselineRef.current
+      setDirty(dirtyRef.current)
+    }
     if (contentCount(elements) > 0) {
       setHint((h) => (h === null ? h : null))
       return
@@ -310,7 +362,7 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
   }
 
   async function handleSave() {
-    if (!api) return
+    if (!api || exportRef.current) return
     const elements = api.getSceneElements()
     const appState = api.getAppState()
     const files = api.getFiles()
@@ -321,8 +373,11 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
     const frame = elements.find(isFrame)
     // 한글 오버라이드 face 가 로드되기 전에 export 하면 PNG 가 폴백 폰트로 나간다.
     // 각 excalidraw 폰트 이름 + 한글 텍스트로 명시 로드해 export 전 보장(load 실패는 무시).
-    await ensureKoreanFontsLoaded()
+    exportRef.current = true
+    setExporting(true)
+    onBusyChange?.(true)
     try {
+      await ensureKoreanFontsLoaded()
       const blob = await exportToBlob({
         elements,
         // 저장 카드는 항상 흰색 배경 — 편집 뷰포트의 회색(viewBackgroundColor)이 크롭 영역에
@@ -346,9 +401,16 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
         files,
         canvasHeight: clampHeight(height),
       }
-      onSave(scene, imageBase64)
-    } catch {
-      toast.error('캔버스 이미지 변환에 실패했습니다')
+      await onSave(scene, imageBase64)
+      baselineRef.current = sceneSignature(elements)
+      dirtyRef.current = sceneSignature(api.getSceneElements()) !== baselineRef.current
+      setDirty(dirtyRef.current)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '디자인 변환 또는 저장에 실패했습니다')
+    } finally {
+      exportRef.current = false
+      setExporting(false)
+      onBusyChange?.(false)
     }
   }
 
@@ -361,6 +423,7 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
               캔버스 높이
             </Label>
             <Input
+              disabled={saving || exporting}
               id="canvas-height"
               type="number"
               min={MIN_CANVAS_HEIGHT}
@@ -377,7 +440,12 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
               className="h-8 w-28"
             />
           </div>
-          <Button size="sm" variant="outline" onClick={applyCanvasSize} disabled={!api}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={applyCanvasSize}
+            disabled={!api || saving || exporting}
+          >
             적용
           </Button>
         </div>
@@ -386,12 +454,20 @@ export function ExcalidrawCanvas({ initialData, canvasHeight, saving, onSave }: 
             폭 640px 고정 · 흰색 아트보드 안에 그린 내용이 카드로 저장됩니다 · 카드저장을 눌러야
             반영됩니다
           </p>
-          <Button size="sm" onClick={handleSave} disabled={saving || !api}>
-            <Save /> 카드저장
+          {dirty && (
+            <span role="status" className="text-xs text-muted-foreground">
+              저장하지 않은 변경사항
+            </span>
+          )}
+          <Button size="sm" onClick={handleSave} disabled={saving || exporting || !api}>
+            <Save /> {saving || exporting ? '저장 중…' : '카드저장'}
           </Button>
         </div>
       </div>
-      <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg border">
+      <div
+        inert={saving || exporting}
+        className="relative min-h-0 flex-1 overflow-hidden rounded-lg border"
+      >
         <Excalidraw excalidrawAPI={setApi} initialData={restored} onChange={handleChange} />
         {hint && (
           <div

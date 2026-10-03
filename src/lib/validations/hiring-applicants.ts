@@ -1,3 +1,4 @@
+import { MAX_FORM_FILES, MAX_FORM_FILE_BYTES } from '@/lib/hiring/file-fields'
 // 지원자 관리 Deck — Zod 스키마 + 폼 필드 정의 파서.
 // 공개 지원 폼은 posting.applicationEntries(폼 스키마)를 소비하고,
 // 제출값은 ApplicationEntryValue[](src/lib/hiring/pii.ts) 형태로 서버에 전달한다.
@@ -28,6 +29,12 @@ export const hiringFieldDefSchema = z.object({
   required: z.boolean().optional(),
   options: z.array(z.string()).optional(),
   placeholder: z.string().optional(),
+  maxFileCount: z.number().int().min(1).max(MAX_FORM_FILES).optional(),
+  maxFileSize: z.number().int().min(1).max(MAX_FORM_FILE_BYTES).optional(),
+  errorMessage: z.string().max(2000).optional(),
+  description: z.string().optional(),
+  minLength: z.number().int().nonnegative().optional(),
+  maxLength: z.number().int().nonnegative().optional(),
 })
 
 export type HiringFieldDef = z.infer<typeof hiringFieldDefSchema>
@@ -78,6 +85,7 @@ export type SubmittedEntry = z.infer<typeof applicationEntrySchema>
 // 공개 지원 제출 payload(멀티파트의 JSON 파트)
 export const publicApplicationPayloadSchema = z.object({
   postingUuid: z.string().min(1),
+  fileFieldKeys: z.array(z.string().min(1)).max(3).default([]),
   entries: z.array(applicationEntrySchema).max(50),
   postingPositionId: z.string().optional(),
   storeIds: z.array(z.string()).max(20).optional(),

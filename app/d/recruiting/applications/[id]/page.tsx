@@ -3,7 +3,10 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { resolveDeckContext } from '@/lib/api-helpers'
+import { fileFieldLabel } from '@/lib/hiring/file-fields'
 import { getApplicationDetail } from '@/lib/hiring/applications'
+import { getApplicationHistory } from '@/lib/hiring/migration/application-history'
+import { ApplicationHistory } from '@/components/hiring-applicants/application-history'
 import type { ApplicationEntryValue } from '@/lib/hiring/pii'
 import { RECRUITING_APPLICATIONS_PATH } from '@/lib/deck-routes'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,6 +29,7 @@ export default async function ApplicationDetailPage({ params }: Params) {
   const detail = await getApplicationDetail(resolved.space.id, id)
   if (!detail) notFound()
   const { app, pii, blacklisted } = detail
+  const history = await getApplicationHistory(resolved.space.id, app.id)
 
   const customEntries = ((app.applicationEntries as ApplicationEntryValue[] | null) ?? []).filter(
     (e) =>
@@ -107,11 +111,14 @@ export default async function ApplicationDetailPage({ params }: Params) {
                 files={app.files.map((f) => ({
                   id: f.id,
                   fileName: f.fileName,
+                  fieldLabel: fileFieldLabel(app.applicationEntries, f.id),
                   sizeBytes: f.sizeBytes,
                 }))}
               />
             </CardContent>
           </Card>
+
+          <ApplicationHistory applicationId={app.id} result={history} />
 
           {/* 내부 코멘트 */}
           <Card>

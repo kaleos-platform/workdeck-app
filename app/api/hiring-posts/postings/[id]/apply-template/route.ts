@@ -46,7 +46,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
   if (!template) return errorResponse('템플릿을 찾을 수 없습니다', 404)
 
-  await prisma.$transaction(async (tx) => {
+  const contents = await prisma.$transaction(async (tx) => {
     // replace: 기존 블록 전체 삭제 후 0부터. append: 삭제 없이 기존 max sortOrder 다음부터 이어붙임.
     let base = 0
     if (parsed.data.mode === 'replace') {
@@ -83,11 +83,11 @@ export async function POST(req: NextRequest, { params }: Params) {
         appliedTemplateAt: new Date(),
       },
     })
-  })
-
-  const contents = await prisma.hiringContent.findMany({
-    where: { postingId: id, sourceType: 'POSTING_DETAIL' },
-    orderBy: { sortOrder: 'asc' },
+    // 반환용 조회 실패도 변경과 함께 롤백해 적용 완료를 실패로 오인하지 않도록 한다.
+    return tx.hiringContent.findMany({
+      where: { postingId: id, sourceType: 'POSTING_DETAIL' },
+      orderBy: { sortOrder: 'asc' },
+    })
   })
   return NextResponse.json({ contents })
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useImperativeHandle, useRef, useState, type Ref } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
@@ -18,10 +18,12 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import type { SaveHandle } from './use-queued-save'
 import { cn } from '@/lib/utils'
 import {
   JOB_TYPE_LABELS,
@@ -32,6 +34,7 @@ import {
 } from './build-types'
 
 type Props = {
+  ref?: Ref<SaveHandle>
   postingId: string
   positions: WizardPositionData[]
   spacePositions: WizardPosition[]
@@ -87,11 +90,18 @@ function toForm(p: WizardPositionData): FormState {
 
 const NONE = '__none__'
 
-export function StepPositions({ postingId, positions, spacePositions, onChange }: Props) {
+export function StepPositions({ ref, postingId, positions, spacePositions, onChange }: Props) {
   const router = useRouter()
   const [editingId, setEditingId] = useState<string | null>(null) // null=닫힘, 'new'=신규
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const savingRef = useRef(false)
+  useImperativeHandle(ref, () => ({
+    flush: () =>
+      savingRef.current || editingId !== null
+        ? Promise.reject(new Error('직무 편집을 저장하거나 취소한 뒤 이동하세요.'))
+        : Promise.resolve(),
+  }))
 
   function openNew() {
     setForm(EMPTY_FORM)
@@ -102,6 +112,7 @@ export function StepPositions({ postingId, positions, spacePositions, onChange }
     setEditingId(p.id)
   }
   function close() {
+    if (savingRef.current) return
     setEditingId(null)
     setForm(EMPTY_FORM)
   }
@@ -132,21 +143,13 @@ export function StepPositions({ postingId, positions, spacePositions, onChange }
     }
   }
 
-  async function refresh() {
-    const res = await fetch(`/api/hiring-posts/postings/${postingId}/positions`)
-    if (res.ok) {
-      const { positions: next } = await res.json()
-      onChange(next)
-      // 서버 props 최신화(발행 검증·재마운트 재시딩 대비)
-      router.refresh()
-    }
-  }
-
   async function handleSubmit() {
+    if (savingRef.current) return
     if (!form.name.trim()) {
       toast.error('직무명을 입력하세요')
       return
     }
+    savingRef.current = true
     setSaving(true)
     try {
       const isNew = editingId === 'new'
@@ -159,27 +162,39 @@ export function StepPositions({ postingId, positions, spacePositions, onChange }
         body: JSON.stringify(buildBody()),
       })
       if (!res.ok) throw new Error('직무 저장에 실패했습니다')
-      await refresh()
+      const { position } = await res.json()
+      onChange(
+        isNew ? [...positions, position] : positions.map((p) => (p.id === editingId ? position : p))
+      )
+      router.refresh()
       toast.success('직무를 저장했습니다')
-      close()
+      setEditingId(null)
+      setForm(EMPTY_FORM)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '직무 저장에 실패했습니다')
     } finally {
+      savingRef.current = false
       setSaving(false)
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('이 직무를 삭제할까요?')) return
+    if (savingRef.current || !confirm('이 직무를 삭제할까요?')) return
+    savingRef.current = true
+    setSaving(true)
     try {
       const res = await fetch(`/api/hiring-posts/postings/${postingId}/positions/${id}`, {
         method: 'DELETE',
       })
       if (!res.ok) throw new Error('삭제에 실패했습니다')
-      await refresh()
+      onChange(positions.filter((p) => p.id !== id))
+      router.refresh()
       toast.success('직무를 삭제했습니다')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '삭제에 실패했습니다')
+    } finally {
+      savingRef.current = false
+      setSaving(false)
     }
   }
 
@@ -187,7 +202,7 @@ export function StepPositions({ postingId, positions, spacePositions, onChange }
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">모집 직무와 근무 조건을 등록합니다.</p>
-        <Button size="sm" onClick={openNew}>
+        <Button size="sm" onClick={openNew} disabled={saving}>
           <Plus /> 직무 추가
         </Button>
       </div>
@@ -221,10 +236,15 @@ export function StepPositions({ postingId, positions, spacePositions, onChange }
               </div>
             </div>
             <div className="flex shrink-0 gap-1">
-              <Button size="icon-sm" variant="ghost" onClick={() => openEdit(p)}>
+              <Button size="icon-sm" variant="ghost" onClick={() => openEdit(p)} disabled={saving}>
                 <Pencil />
               </Button>
-              <Button size="icon-sm" variant="ghost" onClick={() => handleDelete(p.id)}>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                onClick={() => handleDelete(p.id)}
+                disabled={saving}
+              >
                 <Trash2 />
               </Button>
             </div>
@@ -242,9 +262,10 @@ export function StepPositions({ postingId, positions, spacePositions, onChange }
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingId === 'new' ? '직무 추가' : '직무 편집'}</DialogTitle>
+            <DialogDescription>직무와 근무 조건을 입력하고 저장하세요.</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div inert={saving} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>직무명</Label>

@@ -6,9 +6,14 @@ import { commentSchema } from '@/lib/validations/hiring-applicants'
 
 type Params = { params: Promise<{ id: string; commentId: string }> }
 
-async function loadOwnComment(spaceId: string, userId: string, commentId: string) {
+async function loadOwnComment(
+  spaceId: string,
+  userId: string,
+  applicationId: string,
+  commentId: string
+) {
   const comment = await prisma.hiringComment.findFirst({
-    where: { id: commentId, spaceId, deletedAt: null },
+    where: { id: commentId, applicationId, spaceId, deletedAt: null },
     select: { id: true, userId: true },
   })
   if (!comment) return { error: errorResponse('코멘트를 찾을 수 없습니다', 404) }
@@ -19,13 +24,13 @@ async function loadOwnComment(spaceId: string, userId: string, commentId: string
 export async function PATCH(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
-  const { commentId } = await params
+  const { id, commentId } = await params
 
   const body = await req.json().catch(() => null)
   const parsed = commentSchema.safeParse(body)
   if (!parsed.success) return errorResponse('내용을 입력하세요', 400)
 
-  const own = await loadOwnComment(resolved.space.id, resolved.user.id, commentId)
+  const own = await loadOwnComment(resolved.space.id, resolved.user.id, id, commentId)
   if ('error' in own) return own.error
 
   const comment = await prisma.hiringComment.update({
@@ -39,9 +44,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('recruiting')
   if ('error' in resolved) return resolved.error
-  const { commentId } = await params
+  const { id, commentId } = await params
 
-  const own = await loadOwnComment(resolved.space.id, resolved.user.id, commentId)
+  const own = await loadOwnComment(resolved.space.id, resolved.user.id, id, commentId)
   if ('error' in own) return own.error
 
   await prisma.hiringComment.update({

@@ -55,7 +55,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     where: { uuid },
     select: { title: true, status: true },
   })
-  if (!posting) return { title: '채용 공고' }
+  if (!posting || !['ACTIVE', 'CLOSED'].includes(posting.status))
+    return { title: '채용 공고' }
   return { title: `${posting.title} · 채용 공고` }
 }
 

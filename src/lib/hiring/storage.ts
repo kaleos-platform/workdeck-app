@@ -8,7 +8,7 @@
  *
  * 버킷은 Supabase 대시보드에서 수동 생성:
  *   hiring-assets  : public true,  file size limit 10 MB
- *   hiring-files   : public false, file size limit 10 MB
+ *   hiring-files   : public false, file size limit 20 MiB
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { randomUUID } from 'node:crypto'
@@ -18,7 +18,7 @@ export const HIRING_FILES_BUCKET = 'hiring-files'
 
 // 업로드 용량 제한 (경로에서 사전 차단)
 export const MAX_ASSET_BYTES = 10 * 1024 * 1024
-export const MAX_APPLICANT_FILE_BYTES = 10 * 1024 * 1024
+export const MAX_APPLICANT_FILE_BYTES = 20 * 1024 * 1024
 
 // 지원자 첨부 허용 MIME (공개 폼 남용 방어)
 export const ALLOWED_APPLICANT_MIME = new Set([
@@ -139,4 +139,35 @@ export async function removeApplicantFiles(paths: string[]): Promise<void> {
   if (paths.length === 0) return
   const { error } = await serviceClient().storage.from(HIRING_FILES_BUCKET).remove(paths)
   if (error) throw new Error(`지원자 파일 삭제 실패: ${error.message}`)
+}
+
+/** 경로가 서버에서 결정된 비공개 첨부의 업로드 URL만 발급한다. */
+export async function createApplicantUploadUrl(path: string): Promise<string> {
+  const { data: bucket, error: bucketError } =
+    await serviceClient().storage.getBucket(HIRING_FILES_BUCKET)
+  if (
+    bucketError ||
+    !bucket ||
+    bucket.public ||
+    bucket.file_size_limit !== MAX_APPLICANT_FILE_BYTES
+  )
+    throw new Error('비공개 첨부 버킷의 용량 설정을 확인하세요')
+  const { data, error } = await serviceClient()
+    .storage.from(HIRING_FILES_BUCKET)
+    .createSignedUploadUrl(path, { upsert: false })
+  if (error || !data) throw new Error('첨부 업로드 권한 발급에 실패했습니다')
+  return data.signedUrl
+}
+
+/** 브라우저가 보낸 메타데이터 대신 저장된 객체의 크기와 MIME을 확인한다. */
+export async function inspectApplicantUpload(
+  path: string
+): Promise<{ sizeBytes: number; mimeType: string }> {
+  const { data, error } = await serviceClient().storage.from(HIRING_FILES_BUCKET).info(path)
+  if (error || !data) throw new Error('업로드된 첨부를 확인할 수 없습니다')
+  const sizeBytes = data.size ?? data.metadata?.size
+  const mimeType = data.contentType ?? data.metadata?.mimetype
+  if (!Number.isSafeInteger(sizeBytes) || typeof mimeType !== 'string')
+    throw new Error('첨부 메타데이터가 올바르지 않습니다')
+  return { sizeBytes: sizeBytes as number, mimeType }
 }
