@@ -46,20 +46,12 @@ describe('availablePeriods (최신순, 현재월 제외)', () => {
 describe('defaultSelectedPeriods (직전월까지 최근 N, 오름차순)', () => {
   test('월 6개: 1~6월', () => {
     expect(defaultSelectedPeriods('month', NOW)).toEqual([
-      '2026-01',
-      '2026-02',
-      '2026-03',
-      '2026-04',
-      '2026-05',
-      '2026-06',
+      '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06',
     ])
   })
   test('분기 4개: 2025Q3~2026Q2', () => {
     expect(defaultSelectedPeriods('quarter', NOW)).toEqual([
-      '2025-Q3',
-      '2025-Q4',
-      '2026-Q1',
-      '2026-Q2',
+      '2025-Q3', '2025-Q4', '2026-Q1', '2026-Q2',
     ])
   })
   test('연 3개: 2024~2026', () => {
@@ -73,10 +65,8 @@ describe('normalizeSelectedPeriods', () => {
     expect(normalizeSelectedPeriods(raw, 'month')).toEqual(['2026-01', '2026-03', '2026-06'])
   })
   test('MAX(월 12) 초과 시 캡', () => {
-    const raw = Array.from(
-      { length: 15 },
-      (_, i) => `2025-${String(i + 1).padStart(2, '0')}`
-    ).filter((b) => /^\d{4}-(0[1-9]|1[0-2])$/.test(b))
+    const raw = Array.from({ length: 15 }, (_, i) => `2025-${String(i + 1).padStart(2, '0')}`)
+      .filter((b) => /^\d{4}-(0[1-9]|1[0-2])$/.test(b))
     // 12개월만 유효 → 캡도 12
     expect(normalizeSelectedPeriods(raw, 'month')!.length).toBeLessThanOrEqual(MAX_PERIODS.month)
   })
@@ -97,10 +87,7 @@ describe('bucketLabel', () => {
 describe('bucketMonthRange', () => {
   test('월/분기/연 월범위', () => {
     expect(bucketMonthRange('2026-06', 'month')).toEqual({ firstYm: '2026-06', lastYm: '2026-06' })
-    expect(bucketMonthRange('2026-Q2', 'quarter')).toEqual({
-      firstYm: '2026-04',
-      lastYm: '2026-06',
-    })
+    expect(bucketMonthRange('2026-Q2', 'quarter')).toEqual({ firstYm: '2026-04', lastYm: '2026-06' })
     expect(bucketMonthRange('2026', 'year')).toEqual({ firstYm: '2026-01', lastYm: '2026-12' })
   })
 })

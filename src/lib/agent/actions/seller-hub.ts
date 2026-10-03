@@ -86,19 +86,14 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
       where: { spaceId, status: 'ORDERED', items: { some: { optionId: { in: optionIds } } } },
       select: {
         status: true,
-        items: {
-          where: { optionId: { in: optionIds } },
-          select: { optionId: true, quantity: true },
-        },
+        items: { where: { optionId: { in: optionIds } }, select: { optionId: true, quantity: true } },
       },
     })
     const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
 
     // ── 3) 주문수요 로드(활성 채널 전수) → 옵션별 일별 집계 ──
     const now = new Date()
-    const since = new Date(
-      now.getTime() - Math.max(DEFAULT_WINDOW_DAYS, windowDays) * 24 * 60 * 60 * 1000
-    )
+    const since = new Date(now.getTime() - Math.max(DEFAULT_WINDOW_DAYS, windowDays) * 24 * 60 * 60 * 1000)
     const activeChannels = await prisma.channel.findMany({
       where: { spaceId, isActive: true },
       select: { id: true, name: true, externalSource: true },

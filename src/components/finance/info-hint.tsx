@@ -4,7 +4,12 @@
 import type { ReactNode } from 'react'
 import { Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export function InfoHint({ content, className }: { content: ReactNode; className?: string }) {
   return (
@@ -20,7 +25,7 @@ export function InfoHint({ content, className }: { content: ReactNode; className
             <Info className="size-3.5" />
           </button>
         </TooltipTrigger>
-        <TooltipContent className="max-w-[240px] p-2.5 text-left leading-relaxed [text-wrap:wrap] break-keep">
+        <TooltipContent className="max-w-[240px] p-2.5 text-left leading-relaxed break-keep [text-wrap:wrap]">
           {content}
         </TooltipContent>
       </Tooltip>

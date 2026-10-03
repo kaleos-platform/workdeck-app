@@ -67,15 +67,7 @@ function SankeyNodeShape(props: {
 
   return (
     <Layer>
-      <Rectangle
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        fill={color}
-        fillOpacity={0.95}
-        radius={2}
-      />
+      <Rectangle x={x} y={y} width={width} height={height} fill={color} fillOpacity={0.95} radius={2} />
       <text
         x={labelX}
         y={midY - 4}
@@ -175,9 +167,7 @@ export function FinanceCashflowSankey({ grain, period }: { grain: Grain; period:
         <SummaryChip label="매출총이익" value={t.grossProfit} color="var(--chart-2)" />
         <SummaryChip label="영업이익" value={t.operatingProfit} color="var(--chart-4)" />
         <SummaryChip label="순현금흐름" value={t.net} color="var(--chart-2)" />
-        <span className="ml-auto text-xs text-muted-foreground">
-          {data.period.label} 기준 · 손익 흐름
-        </span>
+        <span className="ml-auto text-xs text-muted-foreground">{data.period.label} 기준 · 손익 흐름</span>
       </div>
 
       {/* 흐름도 or 경고 */}

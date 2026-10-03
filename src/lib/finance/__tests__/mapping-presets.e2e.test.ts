@@ -69,7 +69,11 @@ function previewRequest(buf: Buffer, fileName: string): NextRequest {
   })
 }
 
-function commitRequest(buf: Buffer, fileName: string, fields: Record<string, string>): NextRequest {
+function commitRequest(
+  buf: Buffer,
+  fileName: string,
+  fields: Record<string, string>
+): NextRequest {
   const fd = new FormData()
   fd.append('file', fileFrom(buf, fileName))
   for (const [k, v] of Object.entries(fields)) fd.append(k, v)
@@ -246,9 +250,7 @@ d('매핑 규칙(프리셋) 라이프사이클 E2E', () => {
 
     const listRes = await call(presetsGet())
     const list = await listRes.json()
-    expect(list.presets.find((p: { id: string }) => p.id === presetId)?.name).toBe(
-      '기업은행 사업용'
-    )
+    expect(list.presets.find((p: { id: string }) => p.id === presetId)?.name).toBe('기업은행 사업용')
 
     const preview = await call(importPreview(previewRequest(bankCsv(5), 'x.csv')))
     const body = await preview.json()

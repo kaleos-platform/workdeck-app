@@ -35,11 +35,7 @@ function mockFetch(overrides: Record<string, unknown> = {}) {
       return { ok: true, status: 200, json: async () => ({ presets: [PRESET] }) }
     }
     if (url === '/api/finance/accounts') {
-      return {
-        ok: true,
-        status: 200,
-        json: async () => ({ accounts: [{ id: 'a1', name: '기업은행 사업용 계좌' }] }),
-      }
+      return { ok: true, status: 200, json: async () => ({ accounts: [{ id: 'a1', name: '기업은행 사업용 계좌' }] }) }
     }
     return { ok: false, status: 404, json: async () => ({}) }
   })

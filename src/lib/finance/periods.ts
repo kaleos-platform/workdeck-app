@@ -66,10 +66,7 @@ export function defaultSelectedPeriods(grain: Grain, nowYm: string): string[] {
 }
 
 /** 버킷이 포함하는 월 범위(YYYY-MM). API 조회 범위 계산용. */
-export function bucketMonthRange(
-  bucket: string,
-  grain: Grain
-): { firstYm: string; lastYm: string } {
+export function bucketMonthRange(bucket: string, grain: Grain): { firstYm: string; lastYm: string } {
   if (grain === 'year') {
     return { firstYm: `${bucket}-01`, lastYm: `${bucket}-12` }
   }
