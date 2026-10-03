@@ -20,7 +20,7 @@ export type SuggestCandidate = {
   /** 대분류(상위) 이름 — 없으면 null */
   group: string | null
   /** 수입/지출/이체 */
-  kind: '수입' | '지출' | '이체' | '수입 차감' | '지출 차감'
+  kind: '수입' | '지출' | '이체'
 }
 
 export type SuggestTxnInput = {

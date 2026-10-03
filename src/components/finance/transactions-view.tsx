@@ -1148,7 +1148,7 @@ function StagingPanel({
       <StagingBulkBar
         selectedCount={selectedInView.length}
         leafTargets={leafTargets}
-        blockType={uniformBlockType(rows, selectedIds)}
+        refundType={uniformRefundType(rows, selectedIds)}
         onClassify={runBulkClassify}
         onResolution={runBulkResolution}
         onDeleteRequest={() => setDeleteTarget(selectedInView)}
@@ -1189,10 +1189,10 @@ function StagingPanel({
 // ─── 다중 선택 일괄 처리 바 ────────────────────────────────────────────────────
 
 /**
- * 선택 행의 금액 방향이 하나로 일치할 때만 어긋난 타입을 막는다(OUT→수익 차단, IN→비용 차단).
- * 방향이 섞였거나 선택이 없으면 null(제한 없음) — 일괄 분류는 혼합 선택을 허용하므로 과도 차단 방지.
+ * 선택 행의 금액 방향이 하나로 일치할 때 환불 탭(OUT→수익, IN→비용)을 정한다(기본 탭·안내용).
+ * 방향이 섞였거나 선택이 없으면 null.
  */
-function uniformBlockType(
+function uniformRefundType(
   rows: { id: string; direction: 'IN' | 'OUT' }[],
   selectedIds: Set<string>
 ): FinCategoryType | null {
@@ -1209,7 +1209,7 @@ function uniformBlockType(
 function StagingBulkBar({
   selectedCount,
   leafTargets,
-  blockType,
+  refundType,
   onClassify,
   onResolution,
   onDeleteRequest,
@@ -1217,7 +1217,7 @@ function StagingBulkBar({
 }: {
   selectedCount: number
   leafTargets: ComboOption[]
-  blockType: FinCategoryType | null
+  refundType: FinCategoryType | null
   onClassify: (categoryId: string) => Promise<void>
   onResolution: (resolution: FinStagedResolution) => Promise<void>
   onDeleteRequest: () => void
@@ -1249,8 +1249,8 @@ function StagingBulkBar({
               triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
               disabled={busy}
               groupByType
-              defaultType={blockType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
-              blockType={blockType}
+              defaultType={refundType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
+              refundType={refundType}
             />
           </div>
           <Button
@@ -1929,7 +1929,7 @@ function TransactionsPanel({
       <TransactionsBulkBar
         selectedCount={selectedInView.length}
         leafTargets={leafTargets}
-        blockType={uniformBlockType(rows, selectedIds)}
+        refundType={uniformRefundType(rows, selectedIds)}
         liabilities={liabilities}
         onClassify={runBulkClassify}
         onLinkLiability={runBulkLinkLiability}
@@ -1967,7 +1967,7 @@ function TransactionsPanel({
 function TransactionsBulkBar({
   selectedCount,
   leafTargets,
-  blockType,
+  refundType,
   liabilities,
   onClassify,
   onLinkLiability,
@@ -1977,7 +1977,7 @@ function TransactionsBulkBar({
 }: {
   selectedCount: number
   leafTargets: ComboOption[]
-  blockType: FinCategoryType | null
+  refundType: FinCategoryType | null
   liabilities: { id: string; name: string }[]
   onClassify: (categoryId: string) => Promise<void>
   onLinkLiability: (liabilityId: string | null) => Promise<void>
@@ -2015,8 +2015,8 @@ function TransactionsBulkBar({
               triggerClassName="h-8 w-44 border-background/20 bg-background/10 text-xs text-background"
               disabled={busy}
               groupByType
-              defaultType={blockType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
-              blockType={blockType}
+              defaultType={refundType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
+              refundType={refundType}
             />
           </div>
           {/* 부채 상환 연결 */}
@@ -2394,7 +2394,7 @@ function CategorySelect({
         onAddNew={() => setDialogOpen(true)}
         groupByType
         defaultType={direction === 'IN' ? 'INCOME' : 'EXPENSE'}
-        blockType={direction === 'IN' ? 'EXPENSE' : 'INCOME'}
+        refundType={direction === 'IN' ? 'EXPENSE' : 'INCOME'}
       />
       <AddCategoryDialog
         open={dialogOpen}

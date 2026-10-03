@@ -1,5 +1,5 @@
-// CategoryCombobox 방향 가드(blockType) 검증 (RTL + jsdom)
-// OUT(지출) 거래에서 '수익' 탭 비활성 + 수익 항목이 목록/검색에서 제외되는지 확인.
+// CategoryCombobox 환불 탭(refundType) 검증 (RTL + jsdom)
+// 기본 탭은 거래 방향 기준, 반대 타입 탭(환불)도 선택 가능 + 안내 문구.
 
 import React from 'react'
 import { render, screen } from '@testing-library/react'
@@ -22,120 +22,74 @@ const OPTIONS: ComboOption[] = [
   { id: 'trf', label: '계좌간 이체', type: 'TRANSFER', keywords: ['계좌간 이체', '이체'] },
 ]
 
-function renderCombo(blockType: 'INCOME' | 'EXPENSE' | null) {
+function renderCombo(refundType: 'INCOME' | 'EXPENSE' | null) {
   return render(
     <CategoryCombobox
       options={OPTIONS}
       value={null}
       onChange={() => {}}
       groupByType
-      defaultType={blockType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
-      blockType={blockType}
+      defaultType={refundType === 'INCOME' ? 'EXPENSE' : 'INCOME'}
+      refundType={refundType}
       placeholder="분류"
     />
   )
 }
 
-describe('CategoryCombobox 방향 가드', () => {
-  test('OUT(지출): 기본 탭=비용, 수익 탭은 열리지만 일반 수익 항목은 숨김(차감 없으면 안내)', async () => {
+describe('CategoryCombobox 환불 탭', () => {
+  test('OUT(지출): 기본 탭=비용, 수익 탭에서 일반 수익 계정 선택 가능 + 환불 안내', async () => {
     const user = userEvent.setup()
     renderCombo('INCOME')
     await user.click(screen.getByRole('button', { name: '분류' }))
 
-    // 세 탭 모두 활성
-    expect(screen.getByRole('button', { name: '수익' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: '비용' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: '이체' })).toBeEnabled()
-
-    // 기본 탭=비용 → 금융비용 노출, 수익 항목(기타수입)은 목록에 없음
+    // 기본 탭=비용
     expect(screen.getByText('금융비용')).toBeInTheDocument()
     expect(screen.queryByText('기타수입')).not.toBeInTheDocument()
+    expect(screen.queryByText(/그 수입에서 차감됩니다/)).not.toBeInTheDocument()
 
-    // 수익 탭: 일반 수익 항목 없음 + 차감 계정 지정 안내
     await user.click(screen.getByRole('button', { name: '수익' }))
-    expect(screen.queryByText('기타수입')).not.toBeInTheDocument()
-    expect(screen.getByText(/출금 거래에는 차감 계정만/)).toBeInTheDocument()
-    expect(screen.getByText(/차감 계정이 없습니다/)).toBeInTheDocument()
+    expect(screen.getByText('기타수입')).toBeInTheDocument()
+    expect(
+      screen.getByText(/출금\(고객 환불\)을 수익 계정에 분류하면 그 수입에서 차감됩니다/)
+    ).toBeInTheDocument()
   })
 
-  test('OUT(지출): 검색으로도 수익 항목 선택 불가(교차검색 우회 차단)', async () => {
-    const user = userEvent.setup()
-    renderCombo('INCOME')
-    await user.click(screen.getByRole('button', { name: '분류' }))
-    await user.type(screen.getByPlaceholderText('검색...'), '기타')
-    // 검색해도 수익 항목은 제외됨
-    expect(screen.queryByText('기타수입')).not.toBeInTheDocument()
-  })
-
-  test('IN(수입): 기본 탭=수익, 비용 탭은 열리되 일반 비용은 숨김', async () => {
+  test('IN(수입): 기본 탭=수익, 비용 탭에서 일반 비용 계정 선택 가능 + 환불 안내', async () => {
     const user = userEvent.setup()
     renderCombo('EXPENSE')
     await user.click(screen.getByRole('button', { name: '분류' }))
-    expect(screen.getByRole('button', { name: '비용' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: '수익' })).toBeEnabled()
     expect(screen.getByText('기타수입')).toBeInTheDocument()
-    expect(screen.queryByText('금융비용')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '비용' }))
+    expect(screen.getByText('금융비용')).toBeInTheDocument()
+    expect(
+      screen.getByText(/입금\(환불\)을 비용 계정에 분류하면 그 비용에서 차감됩니다/)
+    ).toBeInTheDocument()
   })
 
-  test('제한 없음(blockType=null): 세 탭 모두 활성', async () => {
+  test('제한 없음(refundType=null): 안내 없음', async () => {
     const user = userEvent.setup()
     renderCombo(null)
     await user.click(screen.getByRole('button', { name: '분류' }))
-    expect(screen.getByRole('button', { name: '수익' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: '비용' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: '이체' })).toBeEnabled()
+    await user.click(screen.getByRole('button', { name: '비용' }))
+    expect(screen.queryByText(/에서 차감됩니다/)).not.toBeInTheDocument()
   })
-})
 
-describe('CategoryCombobox 차감 계정', () => {
-  const WITH_CONTRA: ComboOption[] = [
-    ...OPTIONS,
-    { id: 'ref', label: '매출환입', type: 'INCOME', isContra: true, keywords: ['매출환입'] },
-    { id: 'ret', label: '매입환출', type: 'EXPENSE', isContra: true, keywords: ['매입환출'] },
-  ]
-
-  test('OUT(지출): 수익 탭이 열리고 매출환입만 노출, 비용 탭에서 매입환출은 숨김', async () => {
+  test('OUT 거래에 이미 수익 계정이 분류돼 있으면 재오픈 시 수익 탭으로 열림', async () => {
     const user = userEvent.setup()
     render(
       <CategoryCombobox
-        options={WITH_CONTRA}
-        value={null}
+        options={OPTIONS}
+        value="inc"
         onChange={() => {}}
         groupByType
         defaultType="EXPENSE"
-        blockType="INCOME"
+        refundType="INCOME"
         placeholder="분류"
       />
     )
-    await user.click(screen.getByRole('button', { name: '분류' }))
-    expect(screen.getByText('금융비용')).toBeInTheDocument()
-    expect(screen.queryByText('매입환출')).not.toBeInTheDocument()
-
-    const incomeTab = screen.getByRole('button', { name: '수익' })
-    expect(incomeTab).toBeEnabled()
-    await user.click(incomeTab)
-    expect(screen.getByText('매출환입')).toBeInTheDocument()
-    expect(screen.queryByText('기타수입')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '기타수입' }))
+    expect(screen.getByRole('option', { name: /기타수입/ })).toBeInTheDocument()
+    expect(screen.queryByText('금융비용')).not.toBeInTheDocument()
   })
-})
-
-test('OUT 거래에 이미 매출환입이 분류돼 있으면 재오픈 시 수익 탭으로 열림', async () => {
-  const user = userEvent.setup()
-  render(
-    <CategoryCombobox
-      options={[
-        ...OPTIONS,
-        { id: 'ref', label: '매출환입', type: 'INCOME', isContra: true, keywords: ['매출환입'] },
-      ]}
-      value="ref"
-      onChange={() => {}}
-      groupByType
-      defaultType="EXPENSE"
-      blockType="INCOME"
-      placeholder="분류"
-    />
-  )
-  await user.click(screen.getByRole('button', { name: '매출환입' }))
-  expect(screen.getByRole('option', { name: /매출환입/ })).toBeInTheDocument()
-  expect(screen.queryByText('금융비용')).not.toBeInTheDocument()
 })

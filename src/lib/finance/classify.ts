@@ -18,7 +18,7 @@ import type {
   FinClassStatus,
   FinTxnDirection,
 } from '@/generated/prisma/enums'
-import { violatesDirectionPolicy } from '@/lib/finance/contra'
+import { fixedSectionOf } from '@/lib/finance/contra'
 
 /** 매칭에 필요한 규칙 최소 형태 */
 export type ClassRuleLite = {
@@ -47,8 +47,8 @@ export type ClassifyResult = {
 
 /**
  * Space의 모든 분류 규칙을 로드한다(임포트 1회 분류 시 1번만 호출해 재사용).
- * 규칙 방향이 계정과목과 어긋나면 제외한다 — 차감 계정(isContra) 토글 후 남은 옛 방향 규칙이
- * 반대 방향 거래를 자동분류해 방향 가드를 우회하는 것을 막는 단일 지점.
+ * 계정 섹션과 반대 방향 규칙(OUT→수익, IN→비용 = 환불)은 자동분류에 쓰지 않는다 — 환불은 예외 거래라
+ * 같은 적요의 정상 거래까지 환불로 자동 분류되면 수입/지출이 조용히 줄어든다(PR #331 오분류 경로).
  */
 export async function loadSpaceRules(spaceId: string): Promise<ClassRuleLite[]> {
   const rules = await prisma.finClassRule.findMany({
@@ -60,11 +60,14 @@ export async function loadSpaceRules(spaceId: string): Promise<ClassRuleLite[]> 
       categoryId: true,
       direction: true,
       memo: true,
-      category: { select: { type: true, isContra: true } },
+      category: { select: { type: true } },
     },
   })
   return rules
-    .filter((r) => !r.direction || !violatesDirectionPolicy(r.category, r.direction))
+    .filter((r) => {
+      const fixed = fixedSectionOf(r.category)
+      return !r.direction || !fixed || r.direction === fixed
+    })
     .map((r) => ({
       id: r.id,
       matchKey: r.matchKey,
@@ -156,6 +159,14 @@ export async function learnRule(
 ): Promise<string | null> {
   const matchKey = buildMatchText(input)
   if (!matchKey) return null
+
+  // 환불(계정 섹션과 반대 방향) 분류는 학습하지 않는다 — loadSpaceRules 주석 참고.
+  const category = await prisma.finCategory.findUnique({
+    where: { id: categoryId },
+    select: { type: true },
+  })
+  const fixed = fixedSectionOf(category)
+  if (fixed && fixed !== direction) return null
 
   const rule = await prisma.finClassRule.upsert({
     where: { spaceId_matchKey_direction: { spaceId, matchKey, direction } },

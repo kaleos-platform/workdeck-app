@@ -30,7 +30,7 @@ import {
 } from '@/lib/finance/periods'
 import { computeLiabilityPending } from '@/lib/finance/liability'
 import { computePnlMetrics, type PnlTxnFact } from '@/lib/finance/pnl-metrics'
-import { cashSection, contraSectionOf, type CashSection } from '@/lib/finance/contra'
+import { cashSection, fixedSectionOf, type CashSection } from '@/lib/finance/contra'
 import type { Prisma } from '@/generated/prisma/client'
 import type { FinFlowRole } from '@/generated/prisma/enums'
 
@@ -38,15 +38,15 @@ import type { FinFlowRole } from '@/generated/prisma/enums'
 // transactions
 // ────────────────────────────────────────────────────────────────────────────
 
-/** 차감 계정 id → 고정 섹션(INCOME→IN / EXPENSE→OUT). 집계·필터가 공유. */
-async function loadContraSections(spaceId: string): Promise<Map<string, CashSection>> {
+/** 섹션 고정 계정 id → 섹션(수익=IN, 비용=OUT; contra.ts). 집계·필터가 공유. */
+async function loadFixedSections(spaceId: string): Promise<Map<string, CashSection>> {
   const cats = await prisma.finCategory.findMany({
-    where: { spaceId, isContra: true },
-    select: { id: true, type: true, isContra: true },
+    where: { spaceId, type: { in: ['INCOME', 'EXPENSE'] } },
+    select: { id: true, type: true },
   })
   const map = new Map<string, CashSection>()
   for (const c of cats) {
-    const section = contraSectionOf(c)
+    const section = fixedSectionOf(c)
     if (section) map.set(c.id, section)
   }
   return map
@@ -156,11 +156,11 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
   // expandCategory=1이면 대분류→자손 리프 확장(리프는 self로 확장=정확 일치, 하위호환). 아니면 정확 일치.
   const [categoryIds, contra] = await Promise.all([
     opts.expandCategory ? collectSelfAndDescendants(spaceId, rawCatIds) : rawCatIds,
-    loadContraSections(spaceId),
+    loadFixedSections(spaceId),
   ])
 
-  // direction 필터는 현금흐름 섹션 기준: 차감 계정 거래는 거래 방향이 아니라 계정 섹션으로 걸린다
-  // (매출 드릴다운 direction=IN에 매출환입 OUT 거래 포함). 차감 계정이 없으면 기존 방향 필터 그대로.
+  // direction 필터는 현금흐름 섹션 기준: 수익·비용 계정 거래는 계정 섹션으로 걸린다
+  // (매출 드릴다운 direction=IN에 고객 환불 OUT, 광고비 드릴다운 OUT에 환급 IN 포함).
   const sectionFilter: Prisma.FinTransactionWhereInput | null =
     direction === 'IN' || direction === 'OUT'
       ? contra.size === 0
@@ -271,7 +271,7 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
     }),
   ])
 
-  // 합계도 현금흐름 섹션 기준(차감 계정은 자기 섹션에서 차감).
+  // 합계도 현금흐름 섹션 기준(환불은 원래 계정 섹션에서 차감).
   let incomeTotal = 0
   let expenseTotal = 0
   for (const g of sums) {
@@ -344,7 +344,6 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
         parentId: true,
         groupLabel: true,
         flowRole: true,
-        isContra: true,
       },
     }),
   ])
@@ -427,12 +426,9 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
     // 리프(운영 항목) 그대로를 행으로, 상위 대분류(levelOne)를 메타로 첨부.
     const leaf = t.categoryId ? catById.get(t.categoryId) : null
 
-    // 섹션은 현금 방향(IN=수입 / OUT=지출) 기준 — 대시보드 집계와 동일.
-    // 계정과목은 행 라벨로만 쓰고, 방향이 계정과목 type과 어긋나는(오분류) 경우에도
-    // 두 화면이 같은 수입/지출 총액을 내도록 한다. key에 섹션을 접두해 동일 계정과목이
-    // IN·OUT 둘 다 가질 때 각 섹션에 별도 행으로 분리한다.
-    // 예외: 차감 계정(매출환입 등)은 계정 섹션에 음수로 들어간다(contra.ts).
-    const sec = cashSection(t.direction, amt, contraSectionOf(leaf))
+    // 섹션: 수익·비용 계정은 계정 섹션 고정, 반대 방향(환불)은 음수. 미분류는 현금 방향(contra.ts).
+    // 대시보드·Sankey·거래내역 합계와 같은 규칙이라 화면 간 총액이 일치한다.
+    const sec = cashSection(t.direction, amt, fixedSectionOf(leaf))
     const type: 'INCOME' | 'EXPENSE' = sec.section === 'IN' ? 'INCOME' : 'EXPENSE'
     const parent = t.categoryId ? levelOne(t.categoryId) : null
 
@@ -706,7 +702,7 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
       where: { spaceId, liabilityId: { not: null } },
       select: { liabilityId: true, amount: true, txnDate: true, direction: true },
     }),
-    loadContraSections(spaceId),
+    loadFixedSections(spaceId),
   ])
 
   const rows: AggRow[] = txns.map((t) => ({

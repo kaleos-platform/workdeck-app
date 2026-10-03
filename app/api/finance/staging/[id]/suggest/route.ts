@@ -10,7 +10,6 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { toNum } from '@/lib/finance/serialize'
 import { suggestCategory, type SuggestCandidate } from '@/lib/finance/ai-suggest'
-import { isCategoryAllowedForDirection } from '@/lib/finance/contra'
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const resolved = await resolveDeckContext('finance')
@@ -26,33 +25,21 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   const cats = await prisma.finCategory.findMany({
     where: { spaceId, isActive: true },
-    select: { id: true, name: true, parentId: true, type: true, isContra: true },
+    select: { id: true, name: true, parentId: true, type: true },
   })
   const byId = new Map(cats.map((c) => [c.id, c]))
   const hasChild = new Set(cats.map((c) => c.parentId).filter((p): p is string => p !== null))
 
-  // 분류 대상 리프 = 자식 없음 + 루트 아님(parentId 존재) + 방향 허용(차감 계정은 반대 방향, contra.ts).
+  // 분류 대상 리프 = 자식 없음 + 루트 아님(parentId 존재) + 방향과 맞는 타입.
+  // 환불(반대 방향 계정)은 예외 거래라 AI 후보에서 제외 — 수동 분류는 가능.
+  const allowed = row.direction === 'IN' ? ['INCOME', 'TRANSFER'] : ['EXPENSE', 'TRANSFER']
   const candidates: SuggestCandidate[] = cats
-    .filter(
-      (c) =>
-        ['INCOME', 'EXPENSE', 'TRANSFER'].includes(c.type) &&
-        isCategoryAllowedForDirection(c, row.direction) &&
-        c.parentId !== null &&
-        !hasChild.has(c.id)
-    )
+    .filter((c) => allowed.includes(c.type) && c.parentId !== null && !hasChild.has(c.id))
     .map((c) => {
       const parent = c.parentId ? byId.get(c.parentId) : null
       // 부모가 대분류(루트가 아님)면 그룹명으로, 부모가 루트면 그룹 없음(예: 이체 항목).
       const group = parent && parent.parentId !== null ? parent.name : null
-      const kind = c.isContra
-        ? c.type === 'INCOME'
-          ? '수입 차감'
-          : '지출 차감'
-        : c.type === 'INCOME'
-          ? '수입'
-          : c.type === 'EXPENSE'
-            ? '지출'
-            : '이체'
+      const kind = c.type === 'INCOME' ? '수입' : c.type === 'EXPENSE' ? '지출' : '이체'
       return { id: c.id, name: c.name, group, kind } as SuggestCandidate
     })
 
