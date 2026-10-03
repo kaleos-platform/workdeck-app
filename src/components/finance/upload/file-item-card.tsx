@@ -39,8 +39,7 @@ import { AccountRegisterDialog } from './account-register-dialog'
 import {
   NONE_ACCOUNT,
   findMatchedAccount,
-  duplicateColumnFields,
-  unmappedDataColumns,
+  mappingWarnings,
   isMappingDirty,
   isMappingValid,
   type Account,
@@ -83,6 +82,15 @@ export function FileItemCard({
     ? findMatchedAccount(accounts, preview.preview.preamble.accountNumber)
     : null
   const validation = preview ? isMappingValid(item.mapping, item.kind) : { ok: false as const }
+  // 매핑 경고 — 헤더(접힘)에 그린다. 펼친 영역에만 두면 프리셋 자동 매칭 파일에서 아무도 못 본다.
+  const warnings = preview
+    ? mappingWarnings(
+        item.mapping,
+        preview.preview.headers,
+        preview.preview.emptyColumns,
+        item.kind
+      )
+    : []
   const preamble = preview?.preview.preamble
   const matchedPreset = preview?.matchedPreset ?? null
   // 기억된 규칙과 매핑이 달라졌는지 — 저장하지 않으면 다음 업로드에 옛 매핑이 되살아난다
@@ -262,6 +270,24 @@ export function FileItemCard({
           </p>
           {reviewReason() && (
             <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-400">{reviewReason()}</p>
+          )}
+          {warnings.map((w) => (
+            <p
+              key={w}
+              className="mt-0.5 flex items-start gap-1 text-xs text-amber-700 dark:text-amber-400"
+            >
+              <AlertTriangle className="mt-0.5 size-3 shrink-0" />
+              <span>{w}</span>
+            </p>
+          ))}
+          {warnings.length > 0 && !expanded && canEdit && (
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className="mt-0.5 text-xs font-medium text-amber-700 underline underline-offset-2 dark:text-amber-400"
+            >
+              컬럼 매핑 고치기
+            </button>
           )}
         </div>
 
@@ -480,30 +506,6 @@ export function FileItemCard({
               거래후잔액 미매핑 시 같은 날 같은 금액 거래가 중복으로 건너뛰어질 수 있습니다
             </p>
           )}
-
-          {/* 미매핑 데이터 컬럼 경고 — 값이 있는데 어디에도 안 실려 통째로 버려진다 */}
-          {(() => {
-            const unmapped = unmappedDataColumns(
-              item.mapping,
-              preview.preview.headers,
-              preview.preview.emptyColumns,
-              item.kind
-            )
-            return unmapped.length === 0 ? null : (
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                {unmapped.map((i) => `"${preview.preview.headers[i]}"`).join(' · ')} 컬럼에 값이
-                있지만 어떤 필드에도 매핑되지 않았습니다 — 저장되지 않습니다
-              </p>
-            )
-          })()}
-
-          {/* 동일 컬럼 이중 매핑 경고 — 같은 값이 두 필드에 저장된다 */}
-          {duplicateColumnFields(item.mapping, item.kind).map(({ colIdx, labels }) => (
-            <p key={colIdx} className="text-xs text-amber-600 dark:text-amber-400">
-              &quot;{preview.preview.headers[colIdx]}&quot; 컬럼이 {labels.join(' · ')}에 동시에
-              매핑돼 있습니다 — 같은 값이 두 필드에 저장됩니다
-            </p>
-          ))}
 
           {/* 이 규칙 기억 / 갱신 */}
           <div className="space-y-2">
