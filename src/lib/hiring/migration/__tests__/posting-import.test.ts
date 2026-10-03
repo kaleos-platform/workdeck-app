@@ -176,3 +176,39 @@ it.each(['../posting', 'key/other', ' key', '', 'x'.repeat(37)])(
     expect(() => planOpeningPosting(input, target)).toThrow()
   }
 )
+
+it('명시한 과거 매장은 비활성 상태를 바꾸지 않고 같은 계정의 연결을 보존한다', async () => {
+  const input = { ...packet(), historicalStoreIds: ['store'] }
+  tx.hiringStore.count.mockImplementation(async ({ where }) =>
+    where.spaceId === 'space' &&
+    where.OR?.some((clause: { id?: { in: string[] } }) => clause.id?.in.includes('store'))
+      ? 1
+      : 0
+  )
+  const result = await importOpeningPosting(db, input, target)
+  expect(result.status).toBe('created')
+  expect(tx.hiringPosting.create.mock.calls[0][0].data.stores.create).toEqual([
+    { storeId: 'store' },
+  ])
+  expect(tx.hiringStore.count).toHaveBeenCalledWith({
+    where: {
+      id: { in: ['store'] },
+      spaceId: 'space',
+      OR: [{ isActive: true }, { id: { in: ['store'] } }],
+    },
+  })
+})
+
+it('과거 매장 지정도 다른 계정의 연결은 거부한다', async () => {
+  tx.hiringStore.count.mockResolvedValue(0)
+  await expect(
+    importOpeningPosting(db, { ...packet(), historicalStoreIds: ['store'] }, target)
+  ).rejects.toThrow('outside space')
+  expect(tx.hiringPosting.create).not.toHaveBeenCalled()
+})
+
+it('실제 연결 목록 밖의 과거 매장 지정은 계획 단계에서 거부한다', () => {
+  expect(() => planOpeningPosting({ ...packet(), historicalStoreIds: ['other'] }, target)).toThrow(
+    'historical store'
+  )
+})

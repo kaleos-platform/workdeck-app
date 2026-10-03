@@ -31,6 +31,8 @@ const packetSchema = z.object({
     z.object({ sourceId, fields: postingPositionSchema, createdAt: instant, updatedAt: instant })
   ),
   storeIds: z.array(z.string().min(1)),
+  // 삭제된 매장을 재활성화하지 않고 과거 공고 연결만 명시적으로 보존한다.
+  historicalStoreIds: z.array(z.string().min(1)).optional(),
   rawSnapshot: z.unknown(),
 })
 export type OpeningPostingPacket = z.input<typeof packetSchema> & { content: PostingContentInput }
@@ -61,6 +63,12 @@ export function planOpeningPosting(input: OpeningPostingPacket, target: OpeningP
     new Set(packet.storeIds).size !== packet.storeIds.length
   )
     throw Error('Duplicate migration relation')
+  const historicalStoreIds = packet.historicalStoreIds ?? []
+  if (
+    new Set(historicalStoreIds).size !== historicalStoreIds.length ||
+    historicalStoreIds.some((id) => !packet.storeIds.includes(id))
+  )
+    throw Error('Invalid migration historical store mapping')
   const form = planOpeningForm(
     `opening.work:posting:${packet.sourcePostingId}`,
     packet.posting.applicationEntries
@@ -116,7 +124,13 @@ export async function importOpeningPosting(
     )
       throw Error('Migration author outside space')
     const stores = await tx.hiringStore.count({
-      where: { id: { in: packet.storeIds }, spaceId: target.spaceId, isActive: true },
+      where: {
+        id: { in: packet.storeIds },
+        spaceId: target.spaceId,
+        ...(packet.historicalStoreIds?.length
+          ? { OR: [{ isActive: true }, { id: { in: packet.historicalStoreIds } }] }
+          : { isActive: true }),
+      },
     })
     if (stores !== packet.storeIds.length) throw Error('Migration store outside space or inactive')
     const positionIds = packet.positions.flatMap((p) =>
