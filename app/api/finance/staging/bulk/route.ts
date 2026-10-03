@@ -12,6 +12,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { normalizeMemoInput } from '@/lib/finance/memo'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
+import { violatesDirectionPolicy } from '@/lib/finance/contra'
 
 const RESOLUTIONS: FinStagedResolution[] = ['NEW', 'DUP_SAME', 'DUP_CHANGED', 'DUP_OVERWRITE']
 
@@ -45,21 +46,25 @@ export async function POST(req: NextRequest) {
   if (typeof body?.categoryId === 'string' && body.categoryId) {
     const category = await prisma.finCategory.findFirst({
       where: { id: body.categoryId, spaceId },
-      select: { id: true, type: true },
+      select: { id: true, type: true, isContra: true },
     })
     if (!category) return errorResponse('계정과목을 찾을 수 없습니다', 400)
 
-    // 방향↔계정과목 type 불일치 차단 — OUT 행에 INCOME 계정 지정 방지.
+    // 방향↔계정과목 type 불일치 차단 — OUT 행에 INCOME 계정 지정 방지(차감 계정=매출환입은 허용).
     // 일괄 선택은 방향이 혼재할 수 있으므로 대상 행의 direction을 조회 후 판정.
     // IN 행에 EXPENSE 계정은 환불 등 합법 케이스가 있어 허용. TRANSFER type은 스킵.
-    if (category.type === 'INCOME') {
-      const outRows = await prisma.finStagedRow.findMany({
-        where: { id: { in: ids }, spaceId, direction: 'OUT' },
-        select: { id: true },
+    const badDirections = (['IN', 'OUT'] as const).filter((d) =>
+      violatesDirectionPolicy(category, d)
+    )
+    if (badDirections.length > 0) {
+      const badRows = await prisma.finStagedRow.count({
+        where: { id: { in: ids }, spaceId, direction: { in: badDirections } },
       })
-      if (outRows.length > 0) {
+      if (badRows > 0) {
         return errorResponse(
-          `선택한 행 중 지출(OUT) 거래가 포함되어 있어 수입 계정과목을 지정할 수 없습니다(${outRows.length}건). 지출 계정과목을 선택하세요`,
+          category.isContra
+            ? `선택한 행 중 차감 계정과 같은 방향 거래가 포함되어 있습니다(${badRows}건). 차감 계정은 반대 방향 거래에만 지정할 수 있습니다`
+            : `선택한 행 중 지출(OUT) 거래가 포함되어 있어 수입 계정과목을 지정할 수 없습니다(${badRows}건). 지출 계정과목을 선택하세요`,
           400
         )
       }

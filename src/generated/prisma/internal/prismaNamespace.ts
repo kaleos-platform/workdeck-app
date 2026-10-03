@@ -13003,6 +13003,7 @@ export const FinCategoryScalarFieldEnum = {
   type: 'type',
   groupLabel: 'groupLabel',
   flowRole: 'flowRole',
+  isContra: 'isContra',
   isSystem: 'isSystem',
   isActive: 'isActive',
   sortOrder: 'sortOrder',

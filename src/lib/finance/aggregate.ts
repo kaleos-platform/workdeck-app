@@ -7,6 +7,8 @@
  *   - 잔고 스냅샷은 거래 없는 달엔 직전 값 이월(carry-forward, 읽기 시점 계산).
  */
 
+import { cashSection, type CashSection } from './contra'
+
 export type AggRow = {
   txnDate: Date
   direction: 'IN' | 'OUT'
@@ -14,6 +16,8 @@ export type AggRow = {
   isTransfer: boolean
   cancelFlag?: string | null
   categoryId?: string | null
+  /** 차감 계정이면 고정 섹션(contraSectionOf). 미지정=현금 방향. */
+  contraSection?: CashSection | null
 }
 
 /** Date → "YYYY-MM" (UTC getter).
@@ -92,9 +96,9 @@ export function aggregateByMonth(rows: AggRow[]): Map<string, MonthAgg> {
     if (r.isTransfer) continue
     const ym = ymOf(r.txnDate)
     const cur = map.get(ym) ?? { income: 0, expense: 0 }
-    const amt = signedAmount(r)
-    if (r.direction === 'IN') cur.income += amt
-    else cur.expense += amt
+    const { section, amount } = cashSection(r.direction, signedAmount(r), r.contraSection)
+    if (section === 'IN') cur.income += amount
+    else cur.expense += amount
     map.set(ym, cur)
   }
   return map
@@ -104,9 +108,11 @@ export function aggregateByMonth(rows: AggRow[]): Map<string, MonthAgg> {
 export function aggregateExpenseByCategory(rows: AggRow[]): Map<string, number> {
   const map = new Map<string, number>()
   for (const r of rows) {
-    if (r.isTransfer || r.direction !== 'OUT') continue
+    if (r.isTransfer) continue
+    const { section, amount } = cashSection(r.direction, signedAmount(r), r.contraSection)
+    if (section !== 'OUT') continue
     const key = r.categoryId ?? '__none'
-    map.set(key, (map.get(key) ?? 0) + signedAmount(r))
+    map.set(key, (map.get(key) ?? 0) + amount)
   }
   return map
 }
@@ -115,9 +121,11 @@ export function aggregateExpenseByCategory(rows: AggRow[]): Map<string, number> 
 export function aggregateIncomeByCategory(rows: AggRow[]): Map<string, number> {
   const map = new Map<string, number>()
   for (const r of rows) {
-    if (r.isTransfer || r.direction !== 'IN') continue
+    if (r.isTransfer) continue
+    const { section, amount } = cashSection(r.direction, signedAmount(r), r.contraSection)
+    if (section !== 'IN') continue
     const key = r.categoryId ?? '__none'
-    map.set(key, (map.get(key) ?? 0) + signedAmount(r))
+    map.set(key, (map.get(key) ?? 0) + amount)
   }
   return map
 }

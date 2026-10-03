@@ -18,7 +18,7 @@ import type { FinTxnDirection } from '@/generated/prisma/enums'
 
 export type RuleSuggestion = { categoryId: string; categoryName: string; reason: string }
 
-type CatLite = { id: string; name: string; type: string }
+type CatLite = { id: string; name: string; type: string; isContra?: boolean }
 
 /**
  * 학습 규칙 + 운영 차트 시드 키워드를 합친 룰셋 + 카테고리명 인덱스를 1회 구성한다.
@@ -29,10 +29,11 @@ export async function loadRuleSuggestContext(
   cats: CatLite[]
 ): Promise<{ ruleset: ClassRuleLite[]; nameById: Map<string, string> }> {
   const spaceRules = await loadSpaceRules(spaceId)
-  const idByKey = new Map(cats.map((c) => [`${c.type}:${c.name}`, c.id]))
+  // 시드 차트의 차감 여부가 DB와 다르면(사용자가 토글) 그 리프의 시드 키워드는 쓰지 않는다.
+  const idByKey = new Map(cats.map((c) => [`${c.type}:${c.name}:${!!c.isContra}`, c.id]))
   const seedRules: ClassRuleLite[] = []
   for (const leaf of flattenOperationalLeaves()) {
-    const catId = idByKey.get(`${leaf.type}:${leaf.name}`)
+    const catId = idByKey.get(`${leaf.type}:${leaf.name}:${leaf.contra}`)
     if (!catId) continue
     for (const kw of leaf.kw) {
       const matchKey = normalizeFinKey(kw)
@@ -42,7 +43,7 @@ export async function loadRuleSuggestContext(
         matchKey,
         matchType: 'KEYWORD',
         categoryId: catId,
-        direction: directionForType(leaf.type),
+        direction: directionForType(leaf.type, leaf.contra),
         memo: null,
       })
     }

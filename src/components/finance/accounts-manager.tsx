@@ -63,6 +63,7 @@ type Category = {
   type: FinCategoryType
   groupLabel: string | null
   flowRole: FinFlowRole | null
+  isContra?: boolean
   isSystem: boolean
   isActive: boolean
   sortOrder: number
@@ -574,6 +575,11 @@ function SubAccountRow({
       {node.groupLabel && (
         <Badge variant="secondary" className="text-[10px]">
           {node.groupLabel}
+        </Badge>
+      )}
+      {node.isContra && (
+        <Badge variant="outline" className="text-[10px]">
+          차감
         </Badge>
       )}
       {!node.isActive && (

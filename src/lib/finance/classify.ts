@@ -18,6 +18,7 @@ import type {
   FinClassStatus,
   FinTxnDirection,
 } from '@/generated/prisma/enums'
+import { violatesDirectionPolicy } from '@/lib/finance/contra'
 
 /** 매칭에 필요한 규칙 최소 형태 */
 export type ClassRuleLite = {
@@ -44,9 +45,13 @@ export type ClassifyResult = {
   ruleMemo: string | null
 }
 
-/** Space의 모든 분류 규칙을 로드한다(임포트 1회 분류 시 1번만 호출해 재사용). */
+/**
+ * Space의 모든 분류 규칙을 로드한다(임포트 1회 분류 시 1번만 호출해 재사용).
+ * 규칙 방향이 계정과목과 어긋나면 제외한다 — 차감 계정(isContra) 토글 후 남은 옛 방향 규칙이
+ * 반대 방향 거래를 자동분류해 방향 가드를 우회하는 것을 막는 단일 지점.
+ */
 export async function loadSpaceRules(spaceId: string): Promise<ClassRuleLite[]> {
-  return prisma.finClassRule.findMany({
+  const rules = await prisma.finClassRule.findMany({
     where: { spaceId },
     select: {
       id: true,
@@ -55,8 +60,19 @@ export async function loadSpaceRules(spaceId: string): Promise<ClassRuleLite[]> 
       categoryId: true,
       direction: true,
       memo: true,
+      category: { select: { type: true, isContra: true } },
     },
   })
+  return rules
+    .filter((r) => !r.direction || !violatesDirectionPolicy(r.category, r.direction))
+    .map((r) => ({
+      id: r.id,
+      matchKey: r.matchKey,
+      matchType: r.matchType,
+      categoryId: r.categoryId,
+      direction: r.direction,
+      memo: r.memo,
+    }))
 }
 
 /** 적요 + 상대를 합쳐 정규화한 매칭 대상 텍스트. */
