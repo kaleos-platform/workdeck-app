@@ -138,7 +138,7 @@ describe('화면 간 수입/지출 일치', () => {
     const res = await sankeyGET({
       nextUrl: new URL('http://x/api/finance/cashflow/sankey?grain=month&period=2026-06'),
     } as Parameters<typeof sankeyGET>[0])
-    const body = (await res.json()) as { totals: Record<string, number> }
+    const body = (await res!.json()) as { totals: Record<string, number> }
     expect(body.totals.merchSales).toBe(70)
     expect(body.totals.cogs).toBe(40)
     expect(body.totals.opex).toBe(0)

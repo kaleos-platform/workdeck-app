@@ -114,3 +114,24 @@ describe('CategoryCombobox 차감 계정', () => {
     expect(screen.queryByText('기타수입')).not.toBeInTheDocument()
   })
 })
+
+test('OUT 거래에 이미 매출환입이 분류돼 있으면 재오픈 시 수익 탭으로 열림', async () => {
+  const user = userEvent.setup()
+  render(
+    <CategoryCombobox
+      options={[
+        ...OPTIONS,
+        { id: 'ref', label: '매출환입', type: 'INCOME', isContra: true, keywords: ['매출환입'] },
+      ]}
+      value="ref"
+      onChange={() => {}}
+      groupByType
+      defaultType="EXPENSE"
+      blockType="INCOME"
+      placeholder="분류"
+    />
+  )
+  await user.click(screen.getByRole('button', { name: '매출환입' }))
+  expect(screen.getByRole('option', { name: /매출환입/ })).toBeInTheDocument()
+  expect(screen.queryByText('금융비용')).not.toBeInTheDocument()
+})

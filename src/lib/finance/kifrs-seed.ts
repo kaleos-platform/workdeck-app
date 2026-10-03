@@ -80,7 +80,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
             kw: ['스마트스토어', '쿠팡', '11번가', '정산입금', '네이버페이'],
           },
           { name: '도매·B2B 매출', code: '4100', kw: ['도매', 'b2b', '거래처입금'] },
-          { name: '매출환입(반품·환불)', code: '4100', contra: true, kw: ['환불', '반품'] },
+          { name: '매출환입(반품·환불)', code: '4100', contra: true, kw: ['환불'] },
         ],
       },
       {

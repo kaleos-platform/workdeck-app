@@ -83,15 +83,18 @@ export function CategoryCombobox({
     [direction]
   )
   // 탭 차단 = 그 타입에 방향 허용 옵션이 하나도 없을 때(차감 계정이 있으면 탭은 열림).
-  const isTabBlocked = (type: FinCategoryType) =>
-    type === blockType &&
-    !options.some((o) => o.type === type && o.isActive !== false && allowedForDirection(o))
+  const isTabBlocked = React.useCallback(
+    (type: FinCategoryType) =>
+      type === blockType &&
+      !options.some((o) => o.type === type && o.isActive !== false && allowedForDirection(o)),
+    [blockType, options, allowedForDirection]
+  )
   // 방향과 어긋나 막힌 타입이 기본 탭이면 허용 탭으로 대체(OUT→비용, IN→수익, 그 외 첫 허용).
   const resolveInitialType = React.useCallback((): FinCategoryType => {
     const pref = selectedOption?.type ?? defaultType ?? 'INCOME'
-    if (pref !== blockType) return pref
+    if (!isTabBlocked(pref)) return pref
     return TYPE_TABS.find((t) => t.type !== blockType)?.type ?? pref
-  }, [selectedOption?.type, defaultType, blockType])
+  }, [selectedOption?.type, defaultType, blockType, isTabBlocked])
   const [activeType, setActiveType] = React.useState<FinCategoryType>(resolveInitialType)
 
   // 라벨은 전체 옵션에서 해석(비활성 항목에 이미 분류된 거래의 표시 보존).
