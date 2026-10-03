@@ -3,6 +3,7 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { resolveDeckContext } from '@/lib/api-helpers'
+import { fileFieldLabel } from '@/lib/hiring/file-fields'
 import { getApplicationDetail } from '@/lib/hiring/applications'
 import type { ApplicationEntryValue } from '@/lib/hiring/pii'
 import { RECRUITING_APPLICATIONS_PATH } from '@/lib/deck-routes'
@@ -107,6 +108,7 @@ export default async function ApplicationDetailPage({ params }: Params) {
                 files={app.files.map((f) => ({
                   id: f.id,
                   fileName: f.fileName,
+                  fieldLabel: fileFieldLabel(app.applicationEntries, f.id),
                   sizeBytes: f.sizeBytes,
                 }))}
               />

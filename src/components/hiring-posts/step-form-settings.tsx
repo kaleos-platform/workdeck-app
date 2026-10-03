@@ -1,12 +1,13 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useImperativeHandle, useState, type Ref } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { AutoSaveIndicator } from './autosave-indicator'
+import { useQueuedSave, type SaveHandle } from './use-queued-save'
 
 type FormSettingsValue = {
   closingDate: string // 'YYYY-MM-DD' 또는 ''
@@ -14,6 +15,7 @@ type FormSettingsValue = {
 }
 
 type Props = {
+  ref?: Ref<SaveHandle>
   postingId: string
   value: FormSettingsValue
   onChange: (patch: Partial<FormSettingsValue>) => void
@@ -26,36 +28,38 @@ function todayStr(): string {
 }
 
 // 지원서 폼 설정 섹션 — 마감일 + 지원 알림. 지원서 폼 제작 스텝에 배치.
-export function StepFormSettings({ postingId, value, onChange }: Props) {
+export function StepFormSettings({ ref, postingId, value, onChange }: Props) {
   const router = useRouter()
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [dateError, setDateError] = useState<string | null>(null)
-  const savingRef = useRef(false)
+  const initialDate = useState(value.closingDate)[0]
+  const saver = useQueuedSave(value, async (next) => {
+    const res = await fetch(`/api/hiring-posts/postings/${postingId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        closingDate: next.closingDate || null,
+        notificationEnabled: next.notificationEnabled,
+      }),
+    })
+    if (!res.ok) throw new Error('마감일·알림 설정 저장에 실패했습니다')
+    router.refresh()
+  })
 
-  async function doSave(patch: Partial<FormSettingsValue>) {
-    if (savingRef.current) return
-    savingRef.current = true
-    setStatus('saving')
-    const merged = { ...value, ...patch }
-    try {
-      const res = await fetch(`/api/hiring-posts/postings/${postingId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          closingDate: merged.closingDate || null,
-          notificationEnabled: merged.notificationEnabled,
-        }),
-      })
-      if (!res.ok) throw new Error('저장에 실패했습니다')
-      setStatus('saved')
-      router.refresh()
-      setTimeout(() => setStatus('idle'), 2000)
-    } catch (err) {
-      setStatus('idle')
-      toast.error(err instanceof Error ? err.message : '저장에 실패했습니다')
-    } finally {
-      savingRef.current = false
+  function flush(next = value): Promise<void> {
+    // 기존 마감 공고의 날짜는 유지할 수 있지만 새로 과거 날짜를 입력할 수는 없다.
+    if (next.closingDate !== initialDate && next.closingDate && next.closingDate < todayStr()) {
+      const message = '오늘 이전 날짜는 선택할 수 없습니다'
+      setDateError(message)
+      return Promise.reject(new Error(message))
     }
+    return saver.flush(next)
+  }
+  useImperativeHandle(ref, () => ({ flush }))
+
+  function doSave(patch: Partial<FormSettingsValue>) {
+    void flush({ ...value, ...patch }).catch((error: unknown) => {
+      toast.error(error instanceof Error ? error.message : '설정 저장에 실패했습니다')
+    })
   }
 
   function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -109,7 +113,7 @@ export function StepFormSettings({ postingId, value, onChange }: Props) {
       </div>
 
       <div className="flex justify-end">
-        <AutoSaveIndicator status={status} />
+        <AutoSaveIndicator status={saver.status} />
       </div>
     </div>
   )

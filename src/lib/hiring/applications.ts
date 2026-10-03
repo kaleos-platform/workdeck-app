@@ -1,5 +1,7 @@
 // 지원자 관리 Deck 도메인 모듈 — 공개 지원 생성·목록·복호화·레이트리밋·블랙리스트 매칭.
 // PII 처리는 반드시 src/lib/hiring/pii.ts 유틸을 거친다(call-site 강제).
+import { fileFieldError, type FileField } from './file-fields'
+import { randomUUID } from 'node:crypto'
 import { prisma } from '@/lib/prisma'
 import {
   buildApplicationPii,
@@ -64,6 +66,7 @@ export function checkRateLimit(ipKey: string): boolean {
 // ─── 공개 지원 생성 ──────────────────────────────────────────────────────────
 
 export type IncomingFile = {
+  fieldKey: string
   fileName: string
   mimeType: string
   data: Buffer
@@ -80,6 +83,7 @@ export async function createPublicApplication(params: {
   storeIds?: string[]
   referrer?: string | null
   files: IncomingFile[]
+  fileFields?: FileField[]
   privacyAgreed: boolean
 }): Promise<{ uuid: string; id: string }> {
   const { posting, entries, files } = params
@@ -88,13 +92,42 @@ export async function createPublicApplication(params: {
   if (files.length > MAX_APPLICANT_FILES) {
     throw new Error(`첨부는 최대 ${MAX_APPLICANT_FILES}개까지 가능합니다`)
   }
+  const fileError = fileFieldError(
+    params.fileFields ?? entries,
+    files.map((file) => file.fieldKey),
+    files.length,
+    files.map((file) => file.data.byteLength)
+  )
+  if (fileError) throw new Error(fileError)
   for (const f of files) {
+    if (!f.data.byteLength) throw new Error('빈 파일은 첨부할 수 없습니다')
     if (!ALLOWED_APPLICANT_MIME.has(f.mimeType)) throw new Error('허용되지 않는 파일 형식입니다')
     if (f.data.byteLength > MAX_APPLICANT_FILE_BYTES)
       throw new Error('파일이 용량 제한을 초과했습니다')
   }
 
-  const { columns, sanitizedEntries } = buildApplicationPii(entries)
+  const linkedFiles = files.map((file) => ({ ...file, id: randomUUID() }))
+  for (const file of linkedFiles) {
+    if (
+      entries.filter((entry) => entry.key === file.fieldKey && entry.type === 'file').length !== 1
+    )
+      throw new Error('첨부 항목 연결이 올바르지 않습니다')
+  }
+  const linkedEntries = entries.map((entry) => {
+    const clean = { ...entry }
+    delete clean.fileIds
+    if (entry.type !== 'file') return clean
+    const attached = linkedFiles.filter((file) => file.fieldKey === entry.key)
+    return {
+      ...clean,
+      value:
+        attached.length > 1
+          ? attached.map((file) => file.fileName)
+          : (attached[0]?.fileName ?? null),
+      fileIds: attached.map((file) => file.id),
+    }
+  })
+  const { columns, sanitizedEntries } = buildApplicationPii(linkedEntries)
 
   // 중복 판정: 같은 postingId + phoneHash
   let duplicated = false
@@ -128,7 +161,7 @@ export async function createPublicApplication(params: {
   // "첨부 일부만 남은 지원서"가 생기지 않게 한다.
   const uploadedPaths: string[] = []
   try {
-    for (const f of files) {
+    for (const f of linkedFiles) {
       const { path } = await uploadApplicantFile({
         spaceId: posting.spaceId,
         applicationId: application.id,
@@ -140,6 +173,7 @@ export async function createPublicApplication(params: {
         data: {
           spaceId: posting.spaceId,
           applicationId: application.id,
+          id: f.id,
           fileName: f.fileName.slice(0, 200),
           filePath: path,
           mimeType: f.mimeType,

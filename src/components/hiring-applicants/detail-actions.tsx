@@ -100,7 +100,7 @@ export function BlacklistButton({
 }
 
 // ─── 첨부 파일 다운로드(서명 URL 클릭 시 발급) ────────────────────────────────
-type FileItem = { id: string; fileName: string; sizeBytes: number }
+type FileItem = { id: string; fileName: string; sizeBytes: number; fieldLabel?: string }
 
 export function FileDownloadList({
   applicationId,
@@ -135,10 +135,21 @@ export function FileDownloadList({
     <ul className="space-y-1.5">
       {files.map((f) => (
         <li key={f.id} className="flex items-center justify-between gap-2 text-sm">
-          <span className="truncate">{f.fileName}</span>
+          <div className="min-w-0 flex-1">
+            {f.fieldLabel && (
+              <p className="truncate text-xs text-muted-foreground" title={f.fieldLabel}>
+                {f.fieldLabel}
+              </p>
+            )}
+            <p className="truncate" title={f.fileName}>
+              {f.fileName}
+            </p>
+          </div>
           <Button
             size="xs"
             variant="outline"
+            className="shrink-0"
+            aria-label={`${f.fieldLabel ? `${f.fieldLabel} · ` : ''}${f.fileName} 다운로드`}
             onClick={() => download(f.id)}
             disabled={loadingId === f.id}
           >

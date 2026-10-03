@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Check, X, Copy, Send, Lock, RotateCcw } from 'lucide-react'
@@ -12,6 +12,8 @@ import { getHiringPublicPostingPath } from '@/lib/deck-routes'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 
 type Props = {
+  disabled?: boolean
+  runWithSaving?: (action: () => Promise<void>) => Promise<void>
   postingId: string
   uuid: string
   title: string
@@ -22,6 +24,8 @@ type Props = {
 }
 
 export function PublishBar({
+  disabled = false,
+  runWithSaving,
   postingId,
   uuid,
   title,
@@ -32,6 +36,7 @@ export function PublishBar({
 }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
+  const busyRef = useRef(false)
   const [checklistOpen, setChecklistOpen] = useState(false)
 
   const checks = useMemo(() => {
@@ -51,30 +56,37 @@ export function PublishBar({
     typeof window !== 'undefined' ? `${window.location.origin}${publicPath}` : publicPath
 
   async function runAction(action: 'publish' | 'close' | 'reopen') {
+    if (busyRef.current || disabled) return
+    busyRef.current = true
     setBusy(true)
     try {
-      const res = await fetch(`/api/hiring-posts/postings/${postingId}/actions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.message ?? '처리에 실패했습니다')
+      const execute = async () => {
+        const res = await fetch(`/api/hiring-posts/postings/${postingId}/actions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.message ?? '처리에 실패했습니다')
+        }
+        const { posting } = await res.json()
+        onStatusChange(posting.status)
+        toast.success(
+          action === 'publish'
+            ? '공고를 발행했습니다'
+            : action === 'close'
+              ? '공고를 마감했습니다'
+              : '공고를 재개했습니다'
+        )
+        router.refresh()
       }
-      const { posting } = await res.json()
-      onStatusChange(posting.status)
-      toast.success(
-        action === 'publish'
-          ? '공고를 발행했습니다'
-          : action === 'close'
-            ? '공고를 마감했습니다'
-            : '공고를 재개했습니다'
-      )
-      router.refresh()
+      if (runWithSaving) await runWithSaving(execute)
+      else await execute()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '처리에 실패했습니다')
     } finally {
+      busyRef.current = false
       setBusy(false)
     }
   }
@@ -109,7 +121,7 @@ export function PublishBar({
             }}
           >
             <PopoverTrigger asChild>
-              <Button onClick={handlePublishClick} disabled={busy}>
+              <Button variant="outline" onClick={handlePublishClick} disabled={busy || disabled}>
                 <Send /> {publishLabel}
               </Button>
             </PopoverTrigger>
@@ -141,7 +153,7 @@ export function PublishBar({
 
       {status === 'ACTIVE' && (
         <>
-          <Button variant="outline" onClick={() => runAction('close')} disabled={busy}>
+          <Button variant="outline" onClick={() => runAction('close')} disabled={busy || disabled}>
             <Lock /> 마감
           </Button>
           <Button variant="outline" onClick={copyUrl}>
@@ -151,7 +163,7 @@ export function PublishBar({
       )}
 
       {status === 'CLOSED' && (
-        <Button variant="outline" onClick={() => runAction('reopen')} disabled={busy}>
+        <Button variant="outline" onClick={() => runAction('reopen')} disabled={busy || disabled}>
           <RotateCcw /> 재개
         </Button>
       )}

@@ -4,7 +4,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 import { Paperclip } from 'lucide-react'
+import { fileLimitText } from '@/lib/hiring/file-fields'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 
 type Props = {
@@ -56,7 +58,15 @@ function FieldPreview({ field }: { field: FormFieldInput }) {
         {field.label}
         {field.required && <span className="ml-0.5 text-red-500">*</span>}
       </div>
-      {field.type === 'text' ? (
+      {field.type === 'number' || field.type === 'date' ? (
+        <Input
+          type={field.type}
+          step={field.type === 'number' ? 'any' : undefined}
+          placeholder={field.placeholder}
+          aria-label={field.label}
+          disabled
+        />
+      ) : field.type === 'text' ? (
         <div className="h-16 rounded-md border bg-muted/40" />
       ) : field.type === 'select' ? (
         <div className="h-9 rounded-md border bg-muted/40 px-2 text-xs leading-9 text-muted-foreground">
@@ -79,9 +89,20 @@ function FieldPreview({ field }: { field: FormFieldInput }) {
         <div className="flex flex-col items-center justify-center gap-1 rounded-md border border-dashed bg-muted/40 py-4 text-muted-foreground">
           <Paperclip className="size-4" />
           <span className="text-xs">파일을 첨부하세요</span>
+          <span className="text-xs">{fileLimitText(field)}</span>
         </div>
       ) : (
         <div className="h-9 rounded-md border bg-muted/40" />
+      )}
+      {(!!field.minLength || !!field.maxLength) && (
+        <p className="text-xs text-muted-foreground">
+          {field.minLength ? `최소 ${field.minLength}자` : ''}
+          {field.minLength && field.maxLength ? ' · ' : ''}
+          {field.maxLength ? `최대 ${field.maxLength}자` : ''}
+        </p>
+      )}
+      {field.description && (
+        <p className="text-xs whitespace-pre-wrap text-muted-foreground">{field.description}</p>
       )}
     </div>
   )

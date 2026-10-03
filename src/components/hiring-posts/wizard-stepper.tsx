@@ -1,64 +1,70 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export type WizardStepKey = 'basic' | 'form' | 'decorate'
 
 export const WIZARD_STEPS: Array<{ key: WizardStepKey; label: string }> = [
   { key: 'basic', label: '공고 기본 정보' },
-  { key: 'form', label: '지원서 폼 제작' },
   { key: 'decorate', label: '공고 꾸미기' },
 ]
 
 type Props = {
   current: WizardStepKey
   onSelect: (key: WizardStepKey) => void
+  disabled?: boolean
 }
 
-// 원형 번호 배지 스텝퍼 (3단계). 완료 단계는 체크, 현재 단계는 primary 채움.
-export function WizardStepper({ current, onSelect }: Props) {
-  const currentIndex = WIZARD_STEPS.findIndex((s) => s.key === current)
-
+// 공고 제작은 2단계로 진행하고 지원 접수 설정은 필요할 때 별도로 연다.
+export function WizardStepper({ current, onSelect, disabled = false }: Props) {
   return (
-    <nav className="flex items-center justify-center gap-2">
-      {WIZARD_STEPS.map((s, idx) => {
-        const active = idx === currentIndex
-        const done = idx < currentIndex
-        return (
-          <div key={s.key} className="flex items-center gap-2">
+    <nav aria-label="공고 편집 단계" className="flex flex-wrap items-center justify-center gap-4">
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {WIZARD_STEPS.map((step, index) => (
+          <div key={step.key} className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => onSelect(s.key)}
-              className="flex items-center gap-2"
+              disabled={disabled}
+              aria-current={current === step.key ? 'step' : undefined}
+              onClick={() => onSelect(step.key)}
+              className="flex items-center gap-2 disabled:opacity-50"
             >
               <span
                 className={cn(
-                  'flex size-6 items-center justify-center rounded-full border text-xs font-medium transition',
-                  active
+                  'flex size-6 items-center justify-center rounded-full border text-xs font-medium',
+                  current === step.key
                     ? 'border-primary bg-primary text-primary-foreground'
-                    : done
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border text-muted-foreground'
+                    : 'border-border text-muted-foreground'
                 )}
               >
-                {done ? <Check className="size-3.5" /> : idx + 1}
+                {index + 1}
               </span>
               <span
                 className={cn(
-                  'text-sm font-medium transition',
-                  active ? 'text-foreground' : 'text-muted-foreground'
+                  'text-sm font-medium',
+                  current === step.key ? 'text-foreground' : 'text-muted-foreground'
                 )}
               >
-                {s.label}
+                {step.label}
               </span>
             </button>
-            {idx < WIZARD_STEPS.length - 1 && (
+            {index < WIZARD_STEPS.length - 1 && (
               <span className="mx-1 h-px w-8 bg-border" aria-hidden />
             )}
           </div>
-        )
-      })}
+        ))}
+      </div>
+      <Button
+        type="button"
+        size="sm"
+        variant={current === 'form' ? 'secondary' : 'ghost'}
+        aria-pressed={current === 'form'}
+        disabled={disabled}
+        onClick={() => onSelect('form')}
+      >
+        지원서 설정
+      </Button>
     </nav>
   )
 }
