@@ -4,6 +4,10 @@ import { scalarFieldError } from './form-values'
 import { createHash } from 'node:crypto'
 import { formFieldSchema, type FormFieldInput } from '@/lib/validations/hiring-posts'
 import type { ApplicationEntryValue } from './pii'
+import {
+  parseApplicationEntriesSchema,
+  publicApplicationPayloadSchema,
+} from '@/lib/validations/hiring-applicants'
 
 type Failure = { ok: false; code: string; index?: number }
 type Mapping = { identity: string; field: FormFieldInput; options: Map<string, string> }
@@ -141,7 +145,16 @@ export function planOpeningForm(sourceSnapshotRef: string, source: unknown): Pla
       .reduce((sum, m) => sum + (m.field.maxFileCount ?? 1), 0) > MAX_FORM_FILES
   )
     return fail('FILE_POLICY_REVIEW_REQUIRED')
-  return { ok: true, fields: mappings.map((m) => m.field), mappings }
+  const fields = mappings.map((m) => m.field)
+  // 공개 폼이 보강하는 기본 항목까지 제출 API의 실제 한도로 검사한다.
+  const effective = parseApplicationEntriesSchema(fields)
+  if (
+    !publicApplicationPayloadSchema.shape.entries.safeParse(
+      effective.map((field) => ({ key: field.key, type: field.type, value: null }))
+    ).success
+  )
+    return fail('FIELD_COUNT_LIMIT')
+  return { ok: true, fields, mappings }
 }
 
 // 폼 이력 확인은 호출부의 책임이다. 현재 폼만으로 과거의 의미를 단정하지 않는다.

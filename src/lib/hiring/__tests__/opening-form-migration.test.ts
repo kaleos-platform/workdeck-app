@@ -228,3 +228,19 @@ it('명시적인 파일 제한을 보존하고 축소가 필요한 정책은 보
     code: 'FILE_POLICY_REVIEW_REQUIRED',
   })
 })
+
+it.each([
+  [48, true],
+  [49, false],
+])('기본 이름·연락처를 포함해 공개 제출의 필드 수 한도를 검사한다 (%s)', (count, expected) => {
+  const plan = planOpeningForm(
+    'qa-limit',
+    Array.from({ length: count as number }, (_, i) => ({
+      key: 'custom',
+      type: 'string',
+      label: `합성 ${i}`,
+    }))
+  )
+  expect(plan.ok).toBe(expected)
+  if (!plan.ok) expect(plan.code).toBe('FIELD_COUNT_LIMIT')
+})
