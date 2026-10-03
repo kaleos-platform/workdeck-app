@@ -179,3 +179,22 @@ CLI는 기본 `validation`을 유지한다. 승인된 운영 파일럿은 `--tar
 현재 운영에는 이전 원장·업로드 세션 migration이 미적용이고 private 첨부 bucket은 10 MiB였다. 최신 main 기반의 별도 release worktree로 모집 개선을 옮겨 기존 브랜치의 무관한 생산·마케팅 원가 변경을 제외했다. Next.js·SheetJS 보안 업데이트는 포함되어 전역 런타임/Excel에도 영향을 준다. 운영 schema 변경은 정상 배포 migration 경로만 사용하며 수동 SQL/ALTER는 하지 않는다.
 
 실제 파일럿 packet 검사에서 원본 공고의 `uuid`가 표준 UUID가 아니라 `hashId(posting.id)`로 만든 짧은 공개 URL 키임을 확인했다. 원본 모델은 VARCHAR(36), Workdeck의 공개 키와 API도 문자열을 사용한다. importer는 1~36자의 URL-safe 영문·숫자·하이픈·밑줄을 허용해 원본 키를 보존하고 경로 구분자·공백·초과 길이는 차단한다. 합성 짧은 키 실패 재현 후 관련 18개 테스트와 TypeScript/ESLint 검사를 통과했다. 실제 운영의 동일 공개 키/동일 Space 제목 중복은 0개로 확인했다.
+
+## 2026-10-03 승인된 운영 파일럿 실행 결과
+
+사용자가 지정한 기존 고객/Space의 운영 이전 및 PR #987 push·main 병합·운영 배포를 명시적으로 승인했다. 고객 식별자·공개 키·원문·비밀정보는 문서와 Git에 기록하지 않는다.
+
+- PR #987 병합 커밋: `453d8ed0e787bc2ed52cf609e1ae1d5c7ae42f97`. Vercel production 배포 `dpl_BnQhk3D197ErnQq2tGeNBiXtncU1` READY 및 `app.workdeck.work` 연결 확인.
+- 최신 main 통합 후 Jest 215 suites/1,854 tests 통과. 이후 초안·보관 공고의 메타데이터 제목 노출을 재현하여 차단하고 관련 테스트 5개, TypeScript, 전체 lint(오류 0/경고 63)를 통과했다. 최종 커밋의 Vercel preview/production 빌드도 통과했다.
+- 정상 배포의 `prisma migrate deploy`로 업로드 세션/이전 원장 migration 적용. 두 테이블의 RLS 활성화와 anon/authenticated SELECT 권한 회수를 읽기 전용으로 확인했다. 운영 DB에 직접 DDL을 실행하지 않았다.
+- 운영 `hiring-files`는 비공개·기존 MIME 정책을 유지하며 20 MiB 제한으로 변경했다.
+- 적재 전 원본 공고·상세 resource·파일 metadata·직무·매장·주소 및 실제 객체 18개의 SHA256을 암호화 staging과 재대조했다. 원본 변경 없음, 지원서 0건. AWS 임시 접속 규칙 회수 후 잔여 0개.
+- 공고 1건·매장 1건·직무 1건·상세 블록 9개·지원서 폼 항목 10개를 적재했다. 공고는 DRAFT, 알림 false를 유지한다. 원본은 마감 상태였으며 원본 데이터는 수정하지 않았다.
+- 이미지 9개를 결정적 경로에 `upsert: false`로 복사했다. 원본 scene 9개는 편집 가능한 상세 데이터에 보존했다. 복사 후 실제 공개 다운로드 bytes/SHA256과 HTML 이미지 9개를 대조했다. HTML 생성 오류 0개, 원본 지원 링크는 Workdeck 지원 링크로 변환했다.
+- 담당자 복호화 값 일치 및 암호문 저장, 암호화 원장 2건의 복호화/hash 검증, 공고/폼/직무/매장/상세 관계 대조를 통과했다. 계약기간·사용자 지정 근무일·미정 모집인원은 직무 설명에 보존했으며 전용 구조화 필드 지원으로 간주하지 않는다.
+- 동일 계획 재실행 결과 공고와 매장이 `existing`, 추가 생성 0건. 대상 공고 수 3→4, 지원서 수 1→1. 이전부터 있던 공고 3건·지원서 1건은 전체 행 SHA256이 모두 동일했다.
+- 비로그인 공개 URL은 초안을 표시하지 않고 메타데이터에도 고객 공고 제목이 없음을 운영 HTTP 응답으로 검증했다.
+
+첫 자산 조회에서는 Storage SDK가 객체 미존재 HTTP 400/body 404 응답을 `StorageUnknownError`로 감싸 실행을 중단했다. 이때 공고/매장 생성이나 파일 복사 완료는 없었다. HTTP 상태와 `statusCode=404`, `error=not_found`, `message=Object not found`의 정확한 조합만 미존재로 처리한 뒤 재개했다. 권한/네트워크 오류를 미존재로 간주하지 않았다.
+
+**남은 검증:** 맥미니 Aside의 운영 Workdeck 세션이 로그아웃 상태이므로, 해당 Space 접근 권한이 있는 사용자의 로그인 후 실제 편집·미리보기·HTML 복사 화면 대조가 필요하다. 비밀번호 대리 사용이나 고객 계정 세션 생성은 하지 않았다. 이번 고객의 원본 지원서는 0건이므로 실제 지원자 이전·과거 응답·첨부·엑셀 업무 검증을 완료했다고 판단하지 않는다. 원본 서비스 종료, 도메인 전환, 다른 고객 일괄 이전은 수행하지 않았다.
