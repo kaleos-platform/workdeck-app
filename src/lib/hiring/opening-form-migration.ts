@@ -50,10 +50,14 @@ const optionKey = (v: unknown): string | null =>
     ? String(v)
     : null
 
-export function planOpeningForm(sourceSnapshotRef: string, source: unknown): Plan {
+export function planOpeningForm(
+  sourceSnapshotRef: string,
+  source: unknown,
+  migrationOptions: { preserveRepeatedCustomFields?: boolean } = {}
+): Plan {
   if (!sourceSnapshotRef.trim() || !Array.isArray(source)) return fail('INVALID_SOURCE')
   const mappings: Mapping[] = []
-  const identities = new Set<string>()
+  const identities = new Map<string, number>()
   const keys = new Set<string>()
   for (const [index, entry] of source.entries()) {
     if (
@@ -87,14 +91,24 @@ export function planOpeningForm(sourceSnapshotRef: string, source: unknown): Pla
     if (entry.required !== undefined && typeof entry.required !== 'boolean')
       return fail('INVALID_FIELD', index)
     const id = identity(entry)
+    const occurrence = identities.get(id) ?? 0
+    if (
+      occurrence > 0 &&
+      (!migrationOptions.preserveRepeatedCustomFields || standardKeys.has(entry.key))
+    )
+      return fail('AMBIGUOUS_FIELD', index)
     const key = standardKeys.has(entry.key)
       ? entry.key
       : `custom_${createHash('sha256')
-          .update(JSON.stringify([sourceSnapshotRef, id]))
+          .update(
+            JSON.stringify(
+              occurrence === 0 ? [sourceSnapshotRef, id] : [sourceSnapshotRef, id, occurrence]
+            )
+          )
           .digest('hex')
           .slice(0, 40)}`
-    if (identities.has(id) || keys.has(key)) return fail('AMBIGUOUS_FIELD', index)
-    identities.add(id)
+    if (keys.has(key)) return fail('AMBIGUOUS_FIELD', index)
+    identities.set(id, occurrence + 1)
     keys.add(key)
     const options = new Map<string, string>()
     if (entry.type === 'select' || entry.type === 'multiselect') {
@@ -165,6 +179,9 @@ export function convertOpeningSubmission(
 ): { ok: true; entries: ApplicationEntryValue[] } | Failure {
   if (!evidence.sourceSnapshotVerified) return fail('UNVERIFIED_SNAPSHOT')
   if (!plan.ok) return plan
+  // 반복 질문의 과거 답변은 순서 대응 근거 없이 첫 질문에 자동 배정하지 않는다.
+  if (new Set(plan.mappings.map((mapping) => mapping.identity)).size !== plan.mappings.length)
+    return fail('AMBIGUOUS_FIELD')
   if (!Array.isArray(source)) return fail('INVALID_SUBMISSION')
   const entries: ApplicationEntryValue[] = []
   const seen = new Set<string>()

@@ -212,3 +212,17 @@ it('실제 연결 목록 밖의 과거 매장 지정은 계획 단계에서 거�
     'historical store'
   )
 })
+
+it('명시한 반복 custom 폼 질문을 누락 없이 공고에 저장한다', () => {
+  const input = packet()
+  const field = {
+    key: 'custom',
+    type: 'multiselect',
+    label: '선택',
+    items: [{ label: 'A', value: 1 }],
+  }
+  input.posting.applicationEntries = [field, field]
+  const result = planOpeningPosting({ ...input, preserveRepeatedCustomFields: true }, target)
+  expect(result.form.fields).toHaveLength(2)
+  expect(new Set(result.form.fields.map((field) => field.key)).size).toBe(2)
+})
