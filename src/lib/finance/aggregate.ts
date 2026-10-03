@@ -33,6 +33,23 @@ export function ymOf(d: Date): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
 }
 
+/**
+ * txnDate(ISO 문자열) → "YYYY-MM-DD". 화면 날짜 표시 공용.
+ *
+ * 위 저장 규약과 같은 이유로 UTC getter로 읽어야 KST 달력일이 복원된다.
+ * 로컬 getter로 읽으면 브라우저가 KST일 때 +9h 되어 15시 이후 거래가 전부 다음날로 보인다
+ * (실제로 3,047건 중 1,231건이 그렇게 틀리게 표시됐다).
+ *
+ * ⚠️ txnDate·periodFrom·periodTo 전용 — commit-staging toDate를 거쳐 저장된 필드에만 쓴다.
+ * createdAt·updatedAt은 진짜 UTC 인스턴트이므로 여기 말고 로컬 포맷을 써야 한다.
+ */
+export function ymdOf(iso: string): string {
+  const d = new Date(iso)
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(d.getUTCDate()).padStart(2, '0')
+  return `${d.getUTCFullYear()}-${mm}-${dd}`
+}
+
 /** 현재 KST 기준 "YYYY-MM".
  * KST = UTC+9이므로 +9h 후 UTC getter로 읽는다.
  * ymOf(new Date()) 대신 이 함수를 쓸 것 — Vercel UTC 서버에서 자정~09시에 이전 달로 틀림.

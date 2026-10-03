@@ -56,7 +56,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ymOf } from '@/lib/finance/aggregate'
+import { ymOf, ymdOf } from '@/lib/finance/aggregate'
 import {
   defaultSelectedPeriods,
   availablePeriods,
@@ -1283,13 +1283,6 @@ interface PanelData {
 }
 
 /** ISO → YYYY-MM-DD(로컬). */
-function fmtDate(iso: string): string {
-  const d = new Date(iso)
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${d.getFullYear()}-${mm}-${dd}`
-}
-
 /** ISO → "YYYY년 M월". 월 구분선 라벨(KST 자릿수의 UTC 저장 규약 → ISO 슬라이스로 정확). */
 function monthLabel(iso: string): string {
   return `${iso.slice(0, 4)}년 ${Number(iso.slice(5, 7))}월`
@@ -1649,9 +1642,7 @@ function PanelTxnRow({
             className="block w-full px-4 py-2.5 text-left transition-colors hover:bg-accent"
           >
             <span className="flex items-center justify-between gap-2">
-              <span className="font-mono text-xs text-muted-foreground">
-                {fmtDate(txn.txnDate)}
-              </span>
+              <span className="font-mono text-xs text-muted-foreground">{ymdOf(txn.txnDate)}</span>
               <span
                 className={cn(
                   'font-mono text-xs font-medium tabular-nums',

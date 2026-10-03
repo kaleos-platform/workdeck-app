@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/table'
 import { classStatusBadge, accountKindLabel, formatWon } from '@/components/finance/format'
 import { MEMO_MAX } from '@/lib/finance/memo'
+import { ymdOf } from '@/lib/finance/aggregate'
 import { finTxnLabel } from '@/lib/finance/txn-label'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
 import { useShiftSelect } from '@/components/finance/use-shift-select'
@@ -139,13 +140,6 @@ type TransactionSummary = {
 }
 
 // ─── 날짜 포맷 ───────────────────────────────────────────────────────────────
-
-function fmtDate(iso: string): string {
-  const d = new Date(iso)
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${d.getFullYear()}-${mm}-${dd}`
-}
 
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
@@ -1347,7 +1341,7 @@ function StagingRow({
       </TableCell>
 
       {/* 날짜 */}
-      <TableCell className="font-mono text-xs">{fmtDate(row.txnDate)}</TableCell>
+      <TableCell className="font-mono text-xs">{ymdOf(row.txnDate)}</TableCell>
 
       {/* 출처 칩 */}
       <TableCell>
@@ -2124,7 +2118,7 @@ function TransactionRow({
       </TableCell>
 
       {/* 날짜 */}
-      <TableCell className="font-mono text-xs">{fmtDate(txn.txnDate)}</TableCell>
+      <TableCell className="font-mono text-xs">{ymdOf(txn.txnDate)}</TableCell>
 
       {/* 출처 */}
       <TableCell>
