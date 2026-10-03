@@ -82,19 +82,14 @@ export function CategoryCombobox({
       isCategoryAllowedForDirection({ type: o.type, isContra: o.isContra }, direction),
     [direction]
   )
-  // 탭 차단 = 그 타입에 방향 허용 옵션이 하나도 없을 때(차감 계정이 있으면 탭은 열림).
-  const isTabBlocked = React.useCallback(
-    (type: FinCategoryType) =>
-      type === blockType &&
-      !options.some((o) => o.type === type && o.isActive !== false && allowedForDirection(o)),
-    [blockType, options, allowedForDirection]
-  )
-  // 방향과 어긋나 막힌 타입이 기본 탭이면 허용 탭으로 대체(OUT→비용, IN→수익, 그 외 첫 허용).
+  // 기본 탭: 선택값 타입 > defaultType(방향 기본: OUT→비용, IN→수익) > blockType 아닌 첫 탭.
+  // 반대 탭(blockType)도 열리지만 차감 계정만 노출된다(allowedForDirection).
+  const selectedType = selectedOption?.type
   const resolveInitialType = React.useCallback((): FinCategoryType => {
-    const pref = selectedOption?.type ?? defaultType ?? 'INCOME'
-    if (!isTabBlocked(pref)) return pref
-    return TYPE_TABS.find((t) => t.type !== blockType)?.type ?? pref
-  }, [selectedOption?.type, defaultType, blockType, isTabBlocked])
+    if (selectedType) return selectedType
+    if (defaultType) return defaultType
+    return TYPE_TABS.find((t) => t.type !== blockType)?.type ?? 'INCOME'
+  }, [selectedType, defaultType, blockType])
   const [activeType, setActiveType] = React.useState<FinCategoryType>(resolveInitialType)
 
   // 라벨은 전체 옵션에서 해석(비활성 항목에 이미 분류된 거래의 표시 보존).
@@ -112,6 +107,9 @@ export function CategoryCombobox({
     groupByType && !query.trim()
       ? base.filter((o) => o.type === activeType || o.type == null)
       : base
+  // 방향과 반대 타입 탭(OUT의 수익 / IN의 비용) — 차감 계정만 노출됨을 안내.
+  const contraOnlyTab =
+    !!groupByType && !query.trim() && blockType != null && activeType === blockType
 
   return (
     <Popover
@@ -147,26 +145,21 @@ export function CategoryCombobox({
           {groupByType && (
             <div className="flex gap-1 border-b p-1">
               {TYPE_TABS.map((t) => {
-                const blocked = isTabBlocked(t.type)
+                const contraOnly = t.type === blockType
                 return (
                   <button
                     key={t.type}
                     type="button"
-                    disabled={blocked}
-                    aria-disabled={blocked}
-                    title={blocked ? '금액 방향과 맞지 않는 분류입니다' : undefined}
+                    title={contraOnly ? '차감 계정만 선택할 수 있습니다' : undefined}
                     onClick={() => {
-                      if (blocked) return
                       setActiveType(t.type)
                       setQuery('')
                     }}
                     className={cn(
                       'flex-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors',
-                      blocked
-                        ? 'cursor-not-allowed text-muted-foreground/40'
-                        : activeType === t.type
-                          ? 'bg-accent text-foreground'
-                          : 'text-muted-foreground hover:bg-accent/50'
+                      activeType === t.type
+                        ? 'bg-accent text-foreground'
+                        : 'text-muted-foreground hover:bg-accent/50'
                     )}
                   >
                     {t.label}
@@ -176,8 +169,17 @@ export function CategoryCombobox({
             </div>
           )}
           <CommandInput placeholder={searchPlaceholder} value={query} onValueChange={setQuery} />
+          {contraOnlyTab && (
+            <p className="border-b px-2 py-1.5 text-[11px] text-muted-foreground">
+              {blockType === 'INCOME' ? '출금' : '입금'} 거래에는 차감 계정만 선택할 수 있습니다.
+            </p>
+          )}
           <CommandList>
-            <CommandEmpty>일치하는 계정과목이 없습니다</CommandEmpty>
+            <CommandEmpty>
+              {contraOnlyTab
+                ? "차감 계정이 없습니다. 계정과목 관리에서 항목을 수정해 '차감 계정'을 지정하세요"
+                : '일치하는 계정과목이 없습니다'}
+            </CommandEmpty>
             {visibleOptions.map((opt) => (
               <CommandItem
                 key={opt.id}
@@ -203,6 +205,11 @@ export function CategoryCombobox({
                     className="shrink-0 px-1.5 text-[10px] text-muted-foreground"
                   >
                     비활성
+                  </Badge>
+                )}
+                {opt.isContra && (
+                  <Badge variant="outline" className="shrink-0 px-1.5 text-[10px]">
+                    차감
                   </Badge>
                 )}
                 {opt.hint && (
