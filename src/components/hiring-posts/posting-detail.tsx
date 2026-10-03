@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { PostingStatusBadge, type PostingStatus } from '@/components/hiring-posts/status-badge'
 import { PreviewFrame } from '@/components/hiring-posts/preview-frame'
-import { HIRING_PROSE_CLASS } from '@/lib/hiring/prose'
+import type { PostingEmbedIssue } from '@/lib/hiring/render-embed-html'
 import { RECRUITING_POSTINGS_PATH, getRecruitingPostingBuildPath } from '@/lib/deck-routes'
 
 type Posting = {
@@ -25,6 +25,8 @@ type Props = {
   posting: Posting
   origin: string
   embedHtml: string
+  embedIssues?: PostingEmbedIssue[]
+  usesFormLink?: boolean
 }
 
 function formatClosingDate(value: string | null): string | null {
@@ -40,11 +42,18 @@ function copyText(value: string, successMessage: string) {
   )
 }
 
-export function PostingDetail({ posting, origin, embedHtml }: Props) {
+export function PostingDetail({
+  posting,
+  origin,
+  embedHtml,
+  embedIssues = [],
+  usesFormLink = false,
+}: Props) {
   const router = useRouter()
   const [status, setStatus] = useState<PostingStatus>(posting.status)
   const [busy, setBusy] = useState(false)
 
+  const hasOutputErrors = embedIssues.some((issue) => issue.severity === 'error')
   const isDraft = status === 'DRAFT'
   const applyUrl = `${origin}/p/${posting.uuid}/apply`
   const postingUrl = `${origin}/p/${posting.uuid}`
@@ -112,12 +121,71 @@ export function PostingDetail({ posting, origin, embedHtml }: Props) {
 
       {isDraft && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-900/40 dark:text-amber-200">
-          발행 전 — 링크는 발행 후 공개되며, 열기는 미리보기로 표시됩니다.
+          HTML은 발행 전에도 복사할 수 있습니다. Workdeck 지원서·공고 링크는 발행 후 공개되므로,
+          HTML에 지원서 연결 버튼이 있으면 발행 상태를 확인하세요.
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_680px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,680px)]">
         <div className="space-y-6">
+          <section className="space-y-3 rounded-lg border p-6">
+            <div>
+              <h2 className="font-medium">외부 채용사이트에 게시</h2>
+              <p className="text-sm text-muted-foreground">
+                HTML을 복사해 사람인·알바몬 등의 공고 상세 HTML 입력란에 붙여 넣으세요. 게시 전 해당
+                사이트의 미리보기를 확인하세요.
+              </p>
+            </div>
+            {embedIssues.length > 0 && (
+              <div role="alert" className="space-y-2 rounded-md border p-3 text-sm">
+                <p className="font-medium">
+                  {hasOutputErrors
+                    ? '수정 후 HTML을 복사할 수 있습니다.'
+                    : 'HTML 복사 전 확인하세요.'}
+                </p>
+                <ul className="list-disc space-y-1 pl-5">
+                  {embedIssues.map((issue, index) => (
+                    <li key={index}>
+                      {issue.blockNumber > 0 ? `카드 ${issue.blockNumber}: ` : ''}
+                      {issue.message}
+                    </li>
+                  ))}
+                </ul>
+                {hasOutputErrors && (
+                  <Link
+                    className="inline-block underline"
+                    href={getRecruitingPostingBuildPath(posting.id)}
+                  >
+                    공고 수정하기
+                  </Link>
+                )}
+              </div>
+            )}
+            {usesFormLink && status !== 'ACTIVE' && (
+              <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">
+                HTML에 Workdeck 지원서 링크가 포함되어 있지만 현재 지원 접수가 열려 있지 않습니다.
+                접수를 시작하거나 링크를 변경하세요.
+              </p>
+            )}
+            <Button
+              disabled={hasOutputErrors}
+              onClick={() => copyText(embedHtml, 'HTML 코드를 복사했습니다')}
+            >
+              <Copy /> HTML 복사
+            </Button>
+            <details className="space-y-2">
+              <summary className="cursor-pointer text-sm text-muted-foreground">
+                HTML 코드 보기
+              </summary>
+              <Textarea
+                aria-label="공고 HTML 코드"
+                readOnly
+                value={embedHtml}
+                rows={6}
+                className="font-mono text-xs"
+              />
+            </details>
+          </section>
           <div className="space-y-3 rounded-lg border p-6">
             <div>
               <h2 className="font-medium">지원서 링크</h2>
@@ -171,31 +239,23 @@ export function PostingDetail({ posting, origin, embedHtml }: Props) {
               </Button>
             </div>
           </div>
-
-          <div className="space-y-3 rounded-lg border p-6">
-            <div>
-              <h2 className="font-medium">공고 HTML 코드</h2>
-              <p className="text-sm text-muted-foreground">
-                채용 사이트의 공고 상세에 붙여넣으면 동일한 공고가 표시됩니다.
-              </p>
-            </div>
-            <Textarea readOnly value={embedHtml} rows={6} className="font-mono text-xs" />
-            <Button
-              variant="outline"
-              onClick={() => copyText(embedHtml, 'HTML 코드를 복사했습니다')}
-            >
-              <Copy /> 복사
-            </Button>
-          </div>
         </div>
 
         {/* 우측 — 공고 미리보기(임베드 HTML과 동일한 결과, PC/모바일 폭 전환) */}
         <aside className="space-y-3 lg:sticky lg:top-6 lg:self-start">
           <h2 className="font-medium">공고 미리보기</h2>
           <PreviewFrame>
-            <div className="rounded-md border bg-white p-4">
-              <div className={HIRING_PROSE_CLASS} dangerouslySetInnerHTML={{ __html: embedHtml }} />
-            </div>
+            <iframe
+              title="외부 게시용 공고 미리보기"
+              sandbox=""
+              referrerPolicy="no-referrer"
+              className="h-[70vh] min-h-96 w-full rounded-md border bg-white"
+              srcDoc={`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:16px;overflow-wrap:anywhere">${embedHtml}</body></html>`}
+            />
+            <p className="text-xs text-muted-foreground">
+              외부 게시용 HTML 미리보기입니다. 채용 사이트의 편집 설정에 따라 표시가 달라질 수
+              있습니다.
+            </p>
           </PreviewFrame>
         </aside>
       </div>

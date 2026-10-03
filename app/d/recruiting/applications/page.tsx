@@ -6,23 +6,19 @@ import { listApplications } from '@/lib/hiring/applications'
 import type { HiringApplicationStage } from '@/generated/prisma/client'
 import { ApplicationsTable } from '@/components/hiring-applicants/applications-table'
 
+import { parseYmdDateKst } from '@/lib/date-range'
+
 const PAGE_SIZE = 50
 const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
 
 type Props = {
   searchParams: Promise<{
-    posting?: string
-    stage?: string
-    from?: string
-    to?: string
-    page?: string
+    posting?: string | string[]
+    stage?: string | string[]
+    from?: string | string[]
+    to?: string | string[]
+    page?: string | string[]
   }>
-}
-
-function parseDate(v?: string): Date | undefined {
-  if (!v) return undefined
-  const d = new Date(v)
-  return Number.isNaN(d.getTime()) ? undefined : d
 }
 
 export default async function ApplicationsPage({ searchParams }: Props) {
@@ -30,13 +26,27 @@ export default async function ApplicationsPage({ searchParams }: Props) {
   if ('error' in resolved) redirect('/my-deck')
   const spaceId = resolved.space.id
 
-  const sp = await searchParams
-  const page = Math.max(1, Number.parseInt(sp.page ?? '1', 10) || 1)
+  const raw = await searchParams
+  const sp = {
+    posting: typeof raw.posting === 'string' ? raw.posting : '',
+    stage: typeof raw.stage === 'string' ? raw.stage : '',
+    from: typeof raw.from === 'string' ? raw.from : '',
+    to: typeof raw.to === 'string' ? raw.to : '',
+  }
+  const requestedPage =
+    typeof raw.page === 'string' && /^\d+$/.test(raw.page) ? Number(raw.page) : 1
+  // Prisma skip의 Int 범위를 넘는 페이지는 첫 페이지로 복구한다.
+  const page =
+    Number.isSafeInteger(requestedPage) &&
+    requestedPage > 0 &&
+    requestedPage <= Math.floor(2147483647 / PAGE_SIZE) + 1
+      ? requestedPage
+      : 1
   const stage =
     sp.stage && VALID_STAGES.has(sp.stage) ? (sp.stage as HiringApplicationStage) : undefined
-  const from = parseDate(sp.from)
+  const from = parseYmdDateKst(sp.from ?? '') ?? undefined
   // to 는 해당 일자 끝까지 포함
-  const toRaw = parseDate(sp.to)
+  const toRaw = parseYmdDateKst(sp.to ?? '')
   const to = toRaw ? new Date(toRaw.getTime() + 24 * 60 * 60 * 1000 - 1) : undefined
 
   const [{ rows, total }, postings] = await Promise.all([
@@ -65,6 +75,7 @@ export default async function ApplicationsPage({ searchParams }: Props) {
       </div>
 
       <ApplicationsTable
+        key={JSON.stringify([sp.posting, stage, sp.from, sp.to, page])}
         rows={rows}
         total={total}
         pageSize={PAGE_SIZE}
@@ -72,9 +83,9 @@ export default async function ApplicationsPage({ searchParams }: Props) {
         postings={postings}
         filters={{
           posting: sp.posting ?? '',
-          stage: sp.stage ?? '',
-          from: sp.from ?? '',
-          to: sp.to ?? '',
+          stage: stage ?? '',
+          from: from ? (sp.from ?? '') : '',
+          to: to ? (sp.to ?? '') : '',
         }}
       />
     </div>

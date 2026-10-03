@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Loader2, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -29,10 +29,13 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
+  const inFlight = useRef(false)
+  const busy = posting || busyId !== null
 
   async function add() {
     const content = draft.trim()
-    if (!content) return
+    if (!content || inFlight.current) return
+    inFlight.current = true
     setPosting(true)
     try {
       const res = await fetch(`/api/hiring-applicants/applications/${applicationId}/comments`, {
@@ -47,13 +50,15 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
     } catch {
       toast.error('코멘트 등록에 실패했습니다')
     } finally {
+      inFlight.current = false
       setPosting(false)
     }
   }
 
   async function saveEdit(id: string) {
     const content = editDraft.trim()
-    if (!content) return
+    if (!content || inFlight.current) return
+    inFlight.current = true
     setBusyId(id)
     try {
       const res = await fetch(
@@ -71,11 +76,14 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
     } catch {
       toast.error('코멘트 수정에 실패했습니다')
     } finally {
+      inFlight.current = false
       setBusyId(null)
     }
   }
 
   async function remove(id: string) {
+    if (inFlight.current) return
+    inFlight.current = true
     setBusyId(id)
     try {
       const res = await fetch(
@@ -87,6 +95,7 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
     } catch {
       toast.error('코멘트 삭제에 실패했습니다')
     } finally {
+      inFlight.current = false
       setBusyId(null)
     }
   }
@@ -103,14 +112,22 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
                 <div className="space-y-2">
                   <Textarea
                     value={editDraft}
+                    disabled={busy}
+                    aria-label="코멘트 수정 내용"
+                    maxLength={2000}
                     onChange={(e) => setEditDraft(e.target.value)}
                     rows={2}
                   />
                   <div className="flex justify-end gap-2">
-                    <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={busy}
+                      onClick={() => setEditingId(null)}
+                    >
                       취소
                     </Button>
-                    <Button size="sm" onClick={() => saveEdit(c.id)} disabled={busyId === c.id}>
+                    <Button size="sm" onClick={() => saveEdit(c.id)} disabled={busy}>
                       {busyId === c.id && <Loader2 className="mr-1 size-3.5 animate-spin" />}
                       저장
                     </Button>
@@ -134,6 +151,7 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
                             setEditDraft(c.content)
                           }}
                           aria-label="수정"
+                          disabled={busy}
                         >
                           <Pencil className="size-3.5" />
                         </button>
@@ -141,7 +159,7 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
                           type="button"
                           className="text-muted-foreground hover:text-destructive"
                           onClick={() => remove(c.id)}
-                          disabled={busyId === c.id}
+                          disabled={busy}
                           aria-label="삭제"
                         >
                           <Trash2 className="size-3.5" />
@@ -159,12 +177,15 @@ export function CommentThread({ applicationId, currentUserId, initial }: Props) 
       <div className="space-y-2">
         <Textarea
           value={draft}
+          disabled={busy}
+          aria-label="새 코멘트"
+          maxLength={2000}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="내부 코멘트를 남기세요 (지원자에게 보이지 않습니다)"
           rows={2}
         />
         <div className="flex justify-end">
-          <Button size="sm" onClick={add} disabled={posting || !draft.trim()}>
+          <Button size="sm" onClick={add} disabled={busy || !draft.trim()}>
             {posting && <Loader2 className="mr-1 size-3.5 animate-spin" />}
             코멘트 추가
           </Button>

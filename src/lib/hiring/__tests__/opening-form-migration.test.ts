@@ -36,10 +36,10 @@ it('확인된 폼의 선택값을 라벨로 변환하고 다른 custom 값을 �
 })
 
 it.each([
-  [[{ key: 'custom', type: 'date', label: '날짜' }], 'UNSUPPORTED_TYPE'],
+  [[{ key: 'custom', type: 'unknown', label: '미지원' }], 'UNSUPPORTED_TYPE'],
   [[fields[2], fields[2]], 'AMBIGUOUS_FIELD'],
   [[{ ...fields[2], key: '' }], 'INVALID_FIELD'],
-  [[{ ...fields[2], description: '설명' }], 'UNSUPPORTED_ATTRIBUTE'],
+  [[{ ...fields[2], max_file_count: 5 }], 'INVALID_TARGET_FIELD'],
   [
     [
       {
@@ -96,11 +96,17 @@ it('누락된 필수 항목과 미이전 파일은 성공으로 처리하지 않
     ok: false,
     code: 'MISSING_REQUIRED_FIELD',
   })
-  const file = { key: 'resume', type: 'file', label: '이력서' }
+  const file = {
+    key: 'resume',
+    type: 'file',
+    label: '이력서',
+    max_file_count: 1,
+    max_file_size: 100,
+  }
   expect(
     convertOpeningSubmission(
       planOpeningForm('qa', [file]),
-      [{ ...file, value: ['old-key'] }],
+      [{ key: file.key, type: file.type, label: file.label, value: ['old-key'] }],
       verified
     )
   ).toEqual({ ok: false, code: 'FILE_MAPPING_REQUIRED', index: 0 })
@@ -131,7 +137,7 @@ it('표시명 중복 선택지와 자유입력 선택값은 차단한다', () =>
       [{ ...fields[1], value: '기타', is_other: true }],
       verified
     )
-  ).toEqual({ ok: false, code: 'UNSUPPORTED_ATTRIBUTE', index: 0 })
+  ).toEqual({ ok: false, code: 'OTHER_RESPONSE_REVIEW_REQUIRED', index: 0 })
 })
 
 it('문자열 항목의 빈 배열을 개인정보 추출기에서 잃지 않도록 거부한다', () => {
@@ -148,4 +154,77 @@ it('빈 선택값과 선택지가 아닌 항목의 잘못된 items를 버리지 
   expect(planOpeningForm('qa', [{ ...fields[2], items: { hidden: true } }])).toEqual(
     expect.objectContaining({ ok: false, code: 'UNSUPPORTED_ATTRIBUTE' })
   )
+})
+
+it.each(['1', '', null, ['1']])(
+  '기타 표시자는 값 모양과 무관하게 별도 검토로 보류한다',
+  (value) => {
+    const field = fields[1]
+    expect(
+      convertOpeningSubmission(
+        planOpeningForm('qa', [field]),
+        [{ ...field, value, is_other: true }],
+        verified
+      )
+    ).toEqual({ ok: false, code: 'OTHER_RESPONSE_REVIEW_REQUIRED', index: 0 })
+  }
+)
+it.each(['false', 0, null])('boolean이 아닌 기타 표시자는 잘못된 제출로 거부한다', (is_other) => {
+  expect(
+    convertOpeningSubmission(
+      planOpeningForm('qa', [fields[1]]),
+      [{ ...fields[1], value: '1', is_other }],
+      verified
+    )
+  ).toEqual({ ok: false, code: 'INVALID_OTHER_MARKER', index: 0 })
+})
+it('명시적 false는 일반 선택값만 변환하고 미등록 값은 추측하지 않는다', () => {
+  const plan = planOpeningForm('qa', [fields[1]])
+  const entry = { ...fields[1], is_other: false }
+  expect(convertOpeningSubmission(plan, [{ ...entry, value: '1' }], verified)).toMatchObject({
+    ok: true,
+    entries: [{ value: '매장 운영' }],
+  })
+  expect(
+    convertOpeningSubmission(plan, [{ ...entry, value: '비공개 기타 응답' }], verified)
+  ).toEqual({ ok: false, code: 'UNKNOWN_OPTION', index: 0 })
+})
+it('기타 허용 폼을 미지원 속성과 구분하고 부분 계획을 반환하지 않는다', () => {
+  expect(planOpeningForm('qa', [{ ...fields[1], other_option: true }])).toEqual({
+    ok: false,
+    code: 'OTHER_OPTION_MAPPING_REQUIRED',
+    index: 0,
+  })
+  expect(planOpeningForm('qa', [{ ...fields[1], other_option: 'false' }])).toEqual({
+    ok: false,
+    code: 'INVALID_OTHER_MARKER',
+    index: 0,
+  })
+})
+
+it('명시적인 파일 제한을 보존하고 축소가 필요한 정책은 보류한다', () => {
+  const file = {
+    key: 'resume',
+    type: 'file',
+    label: '이력서',
+    max_file_count: 2,
+    max_file_size: 1024,
+  }
+  const plan = planOpeningForm('qa', [file])
+  expect(plan).toMatchObject({ ok: true, fields: [{ maxFileCount: 2, maxFileSize: 1024 }] })
+  for (const change of [
+    { max_file_count: 0 },
+    { max_file_count: 4 },
+    { max_file_size: 0 },
+    { max_file_size: undefined },
+    { max_file_size: 11 * 1024 * 1024 },
+  ])
+    expect(planOpeningForm('qa', [{ ...file, ...change }])).toMatchObject({
+      ok: false,
+      code: 'FILE_POLICY_REVIEW_REQUIRED',
+    })
+  expect(planOpeningForm('qa', [file, { ...file, key: 'portfolio' }])).toMatchObject({
+    ok: false,
+    code: 'FILE_POLICY_REVIEW_REQUIRED',
+  })
 })

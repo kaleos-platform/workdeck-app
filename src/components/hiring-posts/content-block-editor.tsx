@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -42,6 +43,8 @@ import type { ExcalidrawScene } from './excalidraw-canvas'
 import { CONTENT_TYPE_META, type ContentType } from './block-editors'
 import { BlockEditOverlay } from './block-edit-overlay'
 import { ContentBlockPreview } from './posting-preview'
+import type { SaveHandle } from './use-queued-save'
+import { createTextSaveQueue } from './text-save-queue'
 
 type TemplateItem = {
   id: string
@@ -57,7 +60,10 @@ type AppliedTemplate = {
   at: string | null
 }
 
+export type ContentBlockEditorHandle = { flush: () => Promise<void> }
+
 type Props = {
+  ref?: Ref<ContentBlockEditorHandle>
   postingId: string
   contents: WizardContentData[]
   positions: WizardPositionData[]
@@ -108,6 +114,7 @@ function blockHasContent(c: WizardContentData): boolean {
 }
 
 export function ContentBlockEditor({
+  ref,
   postingId,
   contents,
   positions,
@@ -118,10 +125,73 @@ export function ContentBlockEditor({
 }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
+  const mutationRef = useRef<Promise<void> | null>(null)
   const [templateName, setTemplateName] = useState('')
   const [savingTemplate, setSavingTemplate] = useState(false)
-  // 텍스트 블록별 debounce 타이머 (data 저장)
-  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  const [closingOverlay, setClosingOverlay] = useState(false)
+  const overlayRef = useRef<SaveHandle>(null)
+  const closingRef = useRef(false)
+  const mediaSavesRef = useRef(new Set<Promise<void>>())
+  const mediaErrorsRef = useRef(new Map<string, string>())
+  const textQueueRef = useRef<ReturnType<typeof createTextSaveQueue> | null>(null)
+  if (!textQueueRef.current) {
+    textQueueRef.current = createTextSaveQueue(
+      (id, data) => patchContent(id, { data }),
+      () => toast.error('본문 저장에 실패했습니다. 편집 완료를 눌러 다시 저장하세요.')
+    )
+  }
+  const textQueue = textQueueRef.current
+  useImperativeHandle(ref, () => ({ flush: flushContentSaves }))
+
+  function runMutation(action: () => Promise<void>): Promise<void> {
+    if (mutationRef.current)
+      return Promise.reject(new Error('다른 저장이 진행 중입니다. 완료 후 다시 시도하세요.'))
+    setBusy(true)
+    const request = Promise.resolve()
+      .then(action)
+      .finally(() => {
+        mutationRef.current = null
+        setBusy(false)
+      })
+    mutationRef.current = request
+    return request
+  }
+
+  async function flushContentSaves() {
+    if (mutationRef.current) await mutationRef.current
+    if (editingTitleId && !titleHandledRef.current) await commitTitle(editingTitleId)
+    await flushEdits()
+  }
+
+  async function flushEdits() {
+    if (editingTitleId && !titleHandledRef.current)
+      throw new Error('카드 제목을 저장한 뒤 다시 시도하세요.')
+    const results = await Promise.allSettled([
+      overlayRef.current?.flush(),
+      textQueue.flush(),
+      ...mediaSavesRef.current,
+    ])
+    const failure = results.find((result) => result.status === 'rejected')
+    if (failure?.status === 'rejected') throw failure.reason
+    if (mediaErrorsRef.current.size) throw new Error([...mediaErrorsRef.current.values()][0])
+  }
+
+  function saveMedia(contentId: string, action: () => Promise<void>, retryMessage: string) {
+    const request = action()
+      .then(() => {
+        mediaErrorsRef.current.delete(contentId)
+      })
+      .catch((error: unknown) => {
+        mediaErrorsRef.current.set(contentId, retryMessage)
+        throw error
+      })
+      .finally(() => {
+        mediaSavesRef.current.delete(request)
+      })
+    mediaSavesRef.current.add(request)
+    return request
+  }
+  useEffect(() => () => textQueue.dispose(), [textQueue])
   // 풀스크린 편집 오버레이 대상 블록
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null)
   // 제목 인라인 편집
@@ -164,56 +234,67 @@ export function ContentBlockEditor({
   }
 
   async function handleAdd(contentType: ContentType) {
-    setBusy(true)
     try {
-      const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentType }),
+      await runMutation(async () => {
+        await flushEdits()
+        const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contentType }),
+        })
+        if (!res.ok) throw new Error('블록 추가에 실패했습니다')
+        const { content } = await res.json()
+        onChange([...contentsRef.current, content])
+        router.refresh()
       })
-      if (!res.ok) throw new Error('블록 추가에 실패했습니다')
-      const { content } = await res.json()
-      onChange([...contents, content])
-      router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '블록 추가에 실패했습니다')
-    } finally {
-      setBusy(false)
     }
   }
 
   async function handleDelete(contentId: string) {
     if (!confirm('이 블록을 삭제할까요?')) return
     try {
-      const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents/${contentId}`, {
-        method: 'DELETE',
+      await runMutation(async () => {
+        await flushEdits()
+        const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents/${contentId}`, {
+          method: 'DELETE',
+        })
+        if (!res.ok) throw new Error('삭제에 실패했습니다')
+        textQueue.cancel(contentId)
+        mediaErrorsRef.current.delete(contentId)
+        onChange(contentsRef.current.filter((c) => c.id !== contentId))
+        toast.success('블록을 삭제했습니다')
+        router.refresh()
       })
-      if (!res.ok) throw new Error('삭제에 실패했습니다')
-      onChange(contents.filter((c) => c.id !== contentId))
-      toast.success('블록을 삭제했습니다')
-      router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '삭제에 실패했습니다')
     }
   }
 
-  // 인접 블록 순서 교환 + 양쪽 sortOrder PATCH
+  // 전체 순서를 서버 트랜잭션으로 저장한 뒤 화면에 반영한다.
   async function handleMove(index: number, dir: -1 | 1) {
     const target = index + dir
     if (target < 0 || target >= contents.length) return
-    const next = [...contents]
-    ;[next[index], next[target]] = [next[target], next[index]]
-    // sortOrder 를 배열 인덱스로 재정규화
-    const reordered = next.map((c, i) => ({ ...c, sortOrder: i }))
-    onChange(reordered)
     try {
-      await Promise.all([
-        patchContent(reordered[index].id, { sortOrder: reordered[index].sortOrder }),
-        patchContent(reordered[target].id, { sortOrder: reordered[target].sortOrder }),
-      ])
-      router.refresh()
-    } catch {
-      toast.error('순서 변경 저장에 실패했습니다')
+      await runMutation(async () => {
+        await flushEdits()
+        const next = [...contentsRef.current]
+        ;[next[index], next[target]] = [next[target], next[index]]
+        const res = await fetch(`/api/hiring-posts/postings/${postingId}/contents`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contentIds: next.map((c) => c.id) }),
+        })
+        if (!res.ok) {
+          const error = await res.json().catch(() => ({}))
+          throw new Error(error.message ?? '순서 변경 저장에 실패했습니다')
+        }
+        onChange(next.map((c, sortOrder) => ({ ...c, sortOrder })))
+        router.refresh()
+      })
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '순서 변경 저장에 실패했습니다')
     }
   }
 
@@ -231,55 +312,58 @@ export function ContentBlockEditor({
   async function commitTitle(contentId: string) {
     if (titleHandledRef.current) return
     titleHandledRef.current = true
-    const prev = contents.find((c) => c.id === contentId)?.title ?? null
-    const raw = titleDraft.trim()
-    const title = raw === '' ? null : raw
-    setEditingTitleId(null)
-    if (title === prev) return
-    onChange(contents.map((c) => (c.id === contentId ? { ...c, title } : c)))
-    try {
-      await patchContent(contentId, { title })
-    } catch {
-      toast.error('제목 저장에 실패했습니다')
-      // 저장 실패 → 낙관적 갱신 롤백(진행 중 다른 저장 보존 위해 최신 ref 기준).
-      onChange(contentsRef.current.map((c) => (c.id === contentId ? { ...c, title: prev } : c)))
+    const prev = contentsRef.current.find((c) => c.id === contentId)?.title ?? null
+    const title = titleDraft.trim() || null
+    if (title === prev) {
+      setEditingTitleId(null)
+      return
     }
+    try {
+      await runMutation(async () => {
+        await patchContent(contentId, { title })
+        onChange(contentsRef.current.map((c) => (c.id === contentId ? { ...c, title } : c)))
+        setEditingTitleId(null)
+      })
+    } catch (error) {
+      titleHandledRef.current = false
+      throw error
+    }
+  }
+  function saveTitle(contentId: string) {
+    void commitTitle(contentId).catch(() =>
+      toast.error('카드 제목 저장에 실패했습니다. 입력은 유지됩니다. 다시 저장하세요.')
+    )
   }
 
   // 텍스트 편집 → 로컬 즉시 반영 + debounce(700ms) PATCH
   function handleTextChange(contentId: string, doc: unknown) {
-    onChange(contents.map((c) => (c.id === contentId ? { ...c, data: doc } : c)))
-    clearTimeout(timers.current[contentId])
-    timers.current[contentId] = setTimeout(() => {
-      patchContent(contentId, { data: doc })
-        .catch(() => toast.error('본문 저장에 실패했습니다'))
-        .finally(() => {
-          delete timers.current[contentId]
-        })
-    }, 700)
+    onChange(contentsRef.current.map((c) => (c.id === contentId ? { ...c, data: doc } : c)))
+    textQueue.schedule(contentId, doc)
   }
 
-  async function handleImageSelect(contentId: string, file: File) {
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = () => reject(new Error('파일을 읽을 수 없습니다'))
-      reader.readAsDataURL(file)
-    })
-    try {
-      const updated = await patchContent(contentId, {
-        imageBase64: dataUrl,
-        mimeType: file.type || undefined,
-      })
-      onChange(
-        contentsRef.current.map((c) =>
-          c.id === contentId ? { ...c, imagePath: updated.imagePath } : c
+  function handleImageSelect(contentId: string, file: File) {
+    return saveMedia(
+      contentId,
+      async () => {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = () => reject(new Error('파일을 읽을 수 없습니다'))
+          reader.readAsDataURL(file)
+        })
+        const updated = await patchContent(contentId, {
+          imageBase64: dataUrl,
+          mimeType: file.type || undefined,
+        })
+        onChange(
+          contentsRef.current.map((c) =>
+            c.id === contentId ? { ...c, imagePath: updated.imagePath } : c
+          )
         )
-      )
-      toast.success('이미지를 업로드했습니다')
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '이미지 업로드에 실패했습니다')
-    }
+        toast.success('이미지를 업로드했습니다')
+      },
+      '이미지 업로드가 완료되지 않았습니다. 이미지 다시 업로드를 눌러 재시도하세요.'
+    )
   }
 
   function handleButtonSave(contentId: string, data: ButtonData) {
@@ -307,50 +391,55 @@ export function ContentBlockEditor({
     return patchContent(contentId, { data })
   }
 
-  async function handleDesignSave(contentId: string, scene: ExcalidrawScene, imageBase64: string) {
-    // Vercel serverless 함수의 요청 바디 한도(~4.5MB) 아래에서 사전 차단해 친절한 안내를 제공한다.
-    // scene(붙여넣은 이미지 dataURL 포함) + PNG 를 합산, JSON 오버헤드 여유로 4MB 로 보수적 설정.
-    // 캔버스 저장은 새 scene 을 만들어(link 미포함) 넘기므로, 기존에 설정된 링크를 병합 보존한다.
-    const existingLink = (
-      contentsRef.current.find((c) => c.id === contentId)?.data as
-        | { link?: BlockLink }
-        | null
-        | undefined
-    )?.link
-    const nextScene: ExcalidrawScene = existingLink ? { ...scene, link: existingLink } : scene
-    const payloadChars = JSON.stringify(nextScene).length + imageBase64.length
-    if (payloadChars > 4 * 1024 * 1024) {
-      toast.error('디자인이 너무 큽니다. 캔버스에 넣은 이미지 수·크기를 줄여주세요')
-      return
-    }
-    try {
-      const updated = await patchContent(contentId, { data: nextScene, imageBase64 })
-      onChange(
-        contentsRef.current.map((c) =>
-          c.id === contentId ? { ...c, data: nextScene, imagePath: updated.imagePath } : c
+  function handleDesignSave(contentId: string, scene: ExcalidrawScene, imageBase64: string) {
+    return saveMedia(
+      contentId,
+      async () => {
+        // Vercel serverless 함수의 요청 바디 한도(~4.5MB) 아래에서 사전 차단해 친절한 안내를 제공한다.
+        // scene(붙여넣은 이미지 dataURL 포함) + PNG 를 합산, JSON 오버헤드 여유로 4MB 로 보수적 설정.
+        // 캔버스 저장은 새 scene 을 만들어(link 미포함) 넘기므로, 기존에 설정된 링크를 병합 보존한다.
+        const existingLink = (
+          contentsRef.current.find((c) => c.id === contentId)?.data as
+            | { link?: BlockLink }
+            | null
+            | undefined
+        )?.link
+        const nextScene: ExcalidrawScene = existingLink ? { ...scene, link: existingLink } : scene
+        const payloadChars = JSON.stringify(nextScene).length + imageBase64.length
+        if (payloadChars > 4 * 1024 * 1024) {
+          throw new Error('디자인이 너무 큽니다. 캔버스에 넣은 이미지 수·크기를 줄여주세요')
+        }
+        const updated = await patchContent(contentId, { data: nextScene, imageBase64 })
+        onChange(
+          contentsRef.current.map((c) =>
+            c.id === contentId ? { ...c, data: nextScene, imagePath: updated.imagePath } : c
+          )
         )
-      )
-      toast.success('디자인을 저장했습니다')
-    } catch {
-      toast.error('디자인 저장에 실패했습니다')
-    }
+        toast.success('디자인을 저장했습니다')
+      },
+      '디자인 저장이 완료되지 않았습니다. 카드저장을 눌러 재시도하세요.'
+    )
   }
 
-  // 오버레이 닫기 — 열린 블록의 pending 텍스트 저장을 flush.
-  function handleOverlayClose() {
-    const id = editingBlockId
-    if (id) {
-      const t = timers.current[id]
-      if (t) {
-        clearTimeout(t)
-        delete timers.current[id]
-        const c = contents.find((x) => x.id === id)
-        if (c && c.contentType === 'text') {
-          patchContent(id, { data: c.data }).catch(() => toast.error('본문 저장에 실패했습니다'))
-        }
-      }
+  // 저장이 끝나기 전에는 편집기를 유지해 완료·템플릿 저장으로 넘어가지 않는다.
+  async function handleOverlayClose() {
+    if (closingRef.current) return
+    closingRef.current = true
+    setClosingOverlay(true)
+    try {
+      await flushContentSaves()
+      setEditingBlockId(null)
+      router.refresh()
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : '저장에 실패했습니다. 입력은 유지됩니다. 다시 시도하세요.'
+      )
+    } finally {
+      closingRef.current = false
+      setClosingOverlay(false)
     }
-    setEditingBlockId(null)
   }
 
   function openSaveDialog() {
@@ -366,6 +455,7 @@ export function ContentBlockEditor({
   }
 
   async function handleSaveTemplate() {
+    if (mutationRef.current) return
     const name = templateName.trim()
     if (!name) {
       toast.error('템플릿 이름을 입력하세요')
@@ -374,26 +464,29 @@ export function ContentBlockEditor({
     const overwriteId = saveMode === 'overwrite' ? (templateInfo?.id ?? null) : null
     setSavingTemplate(true)
     try {
-      const res = await fetch('/api/hiring-posts/templates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          postingId,
-          ...(overwriteId ? { templateId: overwriteId } : {}),
-        }),
+      await runMutation(async () => {
+        await flushEdits()
+        const res = await fetch('/api/hiring-posts/templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            postingId,
+            ...(overwriteId ? { templateId: overwriteId } : {}),
+          }),
+        })
+        if (res.status === 404 && overwriteId) {
+          throw new Error('원본 템플릿이 삭제되었습니다 — 새 템플릿으로 저장하세요')
+        }
+        if (!res.ok) throw new Error('템플릿 저장에 실패했습니다')
+        const { template } = await res.json()
+        setTemplateInfo({ id: template.id, name, at: new Date().toISOString() })
+        setTemplateName('')
+        setSaveDialogOpen(false)
+        toast.success(
+          overwriteId ? '템플릿을 덮어썼습니다' : '현재 상세를 새 템플릿으로 저장했습니다'
+        )
       })
-      if (res.status === 404 && overwriteId) {
-        throw new Error('원본 템플릿이 삭제되었습니다 — 새 템플릿으로 저장하세요')
-      }
-      if (!res.ok) throw new Error('템플릿 저장에 실패했습니다')
-      const { template } = await res.json()
-      setTemplateInfo({ id: template.id, name, at: new Date().toISOString() })
-      setTemplateName('')
-      setSaveDialogOpen(false)
-      toast.success(
-        overwriteId ? '템플릿을 덮어썼습니다' : '현재 상세를 새 템플릿으로 저장했습니다'
-      )
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '템플릿 저장에 실패했습니다')
     } finally {
@@ -450,24 +543,33 @@ export function ContentBlockEditor({
 
   // 템플릿 적용 — 기존 블록 전체 교체
   async function handleApplyTemplate() {
-    if (!selectedTemplateId) return
+    if (!selectedTemplateId || mutationRef.current) return
     setApplyingTemplate(true)
     try {
-      const res = await fetch(`/api/hiring-posts/postings/${postingId}/apply-template`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId: selectedTemplateId, mode: applyMode }),
+      await runMutation(async () => {
+        await flushEdits()
+        const res = await fetch(`/api/hiring-posts/postings/${postingId}/apply-template`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ templateId: selectedTemplateId, mode: applyMode }),
+        })
+        if (!res.ok) throw new Error('템플릿 적용에 실패했습니다')
+        const { contents: next } = await res.json()
+        for (const content of contentsRef.current) textQueue.cancel(content.id)
+        mediaErrorsRef.current.clear()
+        setEditingBlockId(null)
+        setEditingTitleId(null)
+        onChange(next)
+        const applied = templates?.find((t) => t.id === selectedTemplateId)
+        setTemplateInfo(
+          applied ? { id: applied.id, name: applied.name, at: new Date().toISOString() } : null
+        )
+        setLoadDialogOpen(false)
+        toast.success(
+          applyMode === 'append' ? '템플릿 블록을 추가했습니다' : '템플릿을 적용했습니다'
+        )
+        router.refresh()
       })
-      if (!res.ok) throw new Error('템플릿 적용에 실패했습니다')
-      const { contents: next } = await res.json()
-      onChange(next)
-      const applied = templates?.find((t) => t.id === selectedTemplateId)
-      setTemplateInfo(
-        applied ? { id: applied.id, name: applied.name, at: new Date().toISOString() } : null
-      )
-      setLoadDialogOpen(false)
-      toast.success(applyMode === 'append' ? '템플릿 블록을 추가했습니다' : '템플릿을 적용했습니다')
-      router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '템플릿 적용에 실패했습니다')
     } finally {
@@ -480,7 +582,7 @@ export function ContentBlockEditor({
     : null
 
   return (
-    <div className="space-y-4">
+    <div inert={busy} className="space-y-4">
       {/* 템플릿 툴바 — 좌: 현재 템플릿 정보 / 우: 불러오기·저장 */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
@@ -538,11 +640,11 @@ export function ContentBlockEditor({
                       autoFocus
                       value={titleDraft}
                       onChange={(e) => setTitleDraft(e.target.value)}
-                      onBlur={() => commitTitle(c.id)}
+                      onBlur={() => saveTitle(c.id)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault()
-                          commitTitle(c.id)
+                          saveTitle(c.id)
                         } else if (e.key === 'Escape') {
                           e.preventDefault()
                           cancelTitle()
@@ -582,6 +684,7 @@ export function ContentBlockEditor({
                   <Button
                     size="icon-sm"
                     variant="ghost"
+                    aria-label="카드 위로 이동"
                     onClick={() => handleMove(idx, -1)}
                     disabled={idx === 0}
                   >
@@ -590,6 +693,7 @@ export function ContentBlockEditor({
                   <Button
                     size="icon-sm"
                     variant="ghost"
+                    aria-label="카드 아래로 이동"
                     onClick={() => handleMove(idx, 1)}
                     disabled={idx === contents.length - 1}
                   >
@@ -646,6 +750,7 @@ export function ContentBlockEditor({
 
       {/* 풀스크린 편집 오버레이 */}
       <BlockEditOverlay
+        ref={overlayRef}
         open={editingBlockId !== null}
         content={editingBlock}
         postingId={postingId}
@@ -653,6 +758,7 @@ export function ContentBlockEditor({
         spacePositions={spacePositions}
         onPositionsChange={onPositionsChange}
         onClose={handleOverlayClose}
+        saving={closingOverlay}
         onTextChange={handleTextChange}
         onButtonSave={handleButtonSave}
         onImageSelect={handleImageSelect}
@@ -665,15 +771,18 @@ export function ContentBlockEditor({
       <Dialog
         open={saveDialogOpen}
         onOpenChange={(open) => {
-          if (!open) {
+          if (!open && !savingTemplate) {
             setSaveDialogOpen(false)
             setTemplateName('')
           }
         }}
       >
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent inert={savingTemplate} className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>템플릿으로 저장</DialogTitle>
+            <DialogDescription>
+              현재 공고 내용을 템플릿으로 저장해 다음 공고에 재사용하세요.
+            </DialogDescription>
           </DialogHeader>
           {templateInfo?.id && (
             <div className="space-y-1.5">
@@ -746,12 +855,15 @@ export function ContentBlockEditor({
       <Dialog
         open={loadDialogOpen}
         onOpenChange={(open) => {
-          if (!open) setLoadDialogOpen(false)
+          if (!open && !applyingTemplate) setLoadDialogOpen(false)
         }}
       >
-        <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-4xl">
+        <DialogContent inert={applyingTemplate} className="flex max-h-[85vh] flex-col sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>템플릿 불러오기</DialogTitle>
+            <DialogDescription>
+              현재 공고에 템플릿을 추가하거나 기존 카드를 교체합니다.
+            </DialogDescription>
           </DialogHeader>
           {/* 좌: 템플릿 목록 / 우: 선택 템플릿 미리보기. 모바일(sm 미만)은 세로 스택. */}
           <div className="flex min-h-0 flex-1 flex-col gap-4 sm:flex-row">

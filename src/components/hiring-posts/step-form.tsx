@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { clearIncompatibleFieldLimits } from '@/lib/hiring/form-values'
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
 import { toast } from 'sonner'
 import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, X } from 'lucide-react'
 import {
@@ -33,7 +34,10 @@ import {
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
 import { AutoSaveIndicator } from './autosave-indicator'
 
+export type StepFormHandle = { flush: () => Promise<void> }
+
 type Props = {
+  ref?: Ref<StepFormHandle>
   postingId: string
   // 최초 시딩 전용 — 이후 파생 fields 는 위로만 흐른다(다시 내부 상태로 되먹이지 않음).
   initialFields: FormFieldInput[]
@@ -41,6 +45,8 @@ type Props = {
 }
 
 const CUSTOM_TYPE_LABELS: Record<string, string> = {
+  number: '숫자 입력',
+  date: '날짜 입력',
   string: '한 줄 입력',
   text: '여러 줄 입력',
   select: '선택 목록',
@@ -59,6 +65,13 @@ type EditorField = {
   required: boolean
   options: OptionItem[]
   kind: EditorFieldKind
+  maxFileCount?: number
+  maxFileSize?: number
+  errorMessage?: string
+  description?: string
+  placeholder?: string
+  minLength?: number
+  maxLength?: number
 }
 
 function makeKey(): string {
@@ -75,6 +88,13 @@ function toFormFieldInput(f: EditorField): FormFieldInput {
     type: f.type,
     label: f.label,
     required: f.required,
+    ...(f.maxFileCount !== undefined ? { maxFileCount: f.maxFileCount } : {}),
+    ...(f.maxFileSize !== undefined ? { maxFileSize: f.maxFileSize } : {}),
+    ...(f.errorMessage !== undefined ? { errorMessage: f.errorMessage } : {}),
+    ...(f.description !== undefined ? { description: f.description } : {}),
+    ...(f.placeholder !== undefined ? { placeholder: f.placeholder } : {}),
+    ...(f.minLength !== undefined ? { minLength: f.minLength } : {}),
+    ...(f.maxLength !== undefined ? { maxLength: f.maxLength } : {}),
   }
   if (f.type === 'select' || f.type === 'multiselect') {
     const vals = f.options.map((o) => o.value).filter(Boolean)
@@ -83,9 +103,13 @@ function toFormFieldInput(f: EditorField): FormFieldInput {
   return base
 }
 
-// 저장 payload 전용 — 빈 라벨 custom 필드 제외(로컬 상태 유지)
+// 빈 항목을 필터링하면 기존 서버 항목이 삭제되므로 저장 전에 검증한다.
+function hasEmptyLabel(fields: EditorField[]): boolean {
+  return fields.some((f) => !f.label.trim())
+}
+
 function toSavePayload(fields: EditorField[]): FormFieldInput[] {
-  return fields.filter((f) => f.kind !== 'custom' || f.label.trim() !== '').map(toFormFieldInput)
+  return fields.map(toFormFieldInput)
 }
 
 function seedFields(initialFields: FormFieldInput[]): EditorField[] {
@@ -100,6 +124,13 @@ function seedFields(initialFields: FormFieldInput[]): EditorField[] {
     type: f.type,
     label: f.label,
     required: f.required,
+    ...(f.maxFileCount !== undefined ? { maxFileCount: f.maxFileCount } : {}),
+    ...(f.maxFileSize !== undefined ? { maxFileSize: f.maxFileSize } : {}),
+    ...(f.errorMessage !== undefined ? { errorMessage: f.errorMessage } : {}),
+    ...(f.description !== undefined ? { description: f.description } : {}),
+    ...(f.placeholder !== undefined ? { placeholder: f.placeholder } : {}),
+    ...(f.minLength !== undefined ? { minLength: f.minLength } : {}),
+    ...(f.maxLength !== undefined ? { maxLength: f.maxLength } : {}),
     options: (f.options ?? []).map((v) => ({ id: makeOptId(), value: v })),
     kind: kindOf(f.key),
   }))
@@ -130,10 +161,11 @@ function seedFields(initialFields: FormFieldInput[]): EditorField[] {
   return out
 }
 
-export function StepForm({ postingId, initialFields, onChange }: Props) {
+export function StepForm({ ref, postingId, initialFields, onChange }: Props) {
   const [editorFields, setEditorFields] = useState<EditorField[]>(() => seedFields(initialFields))
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const savingRef = useRef(false)
+  const savingRef = useRef<Promise<void> | null>(null)
+  const lastSavedRef = useRef(JSON.stringify(toSavePayload(editorFields)))
   // in-flight 중 saveNow 가 호출됐을 때 저장할 fields 를 보관. null 이면 pending 없음.
   const pendingRef = useRef<EditorField[] | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -154,51 +186,86 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
   const fieldsRef = useRef(editorFields)
   fieldsRef.current = editorFields
 
-  async function doSave(currentFields: EditorField[]) {
-    // 저장 중이면 pending 갱신 후 반환 — finally 에서 재저장
-    if (savingRef.current) {
-      pendingRef.current = currentFields
-      return
+  useEffect(() => {
+    function warnBeforeUnload(event: BeforeUnloadEvent) {
+      if (
+        !savingRef.current &&
+        !hasEmptyLabel(fieldsRef.current) &&
+        JSON.stringify(toSavePayload(fieldsRef.current)) === lastSavedRef.current
+      )
+        return
+      event.preventDefault()
+      event.returnValue = ''
     }
-    savingRef.current = true
-    pendingRef.current = null
-    setStatus('saving')
-    try {
-      const res = await fetch(`/api/hiring-posts/postings/${postingId}/form`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        // 빈 라벨 custom 항목은 payload에서 제외(로컬 상태 유지)
-        body: JSON.stringify({ fields: toSavePayload(currentFields) }),
-      })
-      if (!res.ok) throw new Error('폼 저장에 실패했습니다')
-      setStatus('saved')
-      setTimeout(() => setStatus('idle'), 2000)
-    } catch (err) {
-      setStatus('idle')
-      toast.error(err instanceof Error ? err.message : '폼 저장에 실패했습니다')
-    } finally {
-      savingRef.current = false
-      // in-flight 중 쌓인 pending 이 있으면 1회 재저장
-      if (pendingRef.current !== null) {
-        const retry = pendingRef.current
+    window.addEventListener('beforeunload', warnBeforeUnload)
+    return () => window.removeEventListener('beforeunload', warnBeforeUnload)
+  }, [])
+
+  // 단계 이동은 마지막 입력을 포함해 저장하고 실패하면 현재 편집기를 유지한다.
+  useImperativeHandle(ref, () => ({
+    flush: () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      return doSave(fieldsRef.current)
+    },
+  }))
+  useEffect(
+    () => () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    },
+    []
+  )
+
+  function doSave(currentFields: EditorField[]): Promise<void> {
+    if (hasEmptyLabel(currentFields)) {
+      pendingRef.current = null
+      return Promise.reject(new Error('지원서 항목 이름을 입력하거나 빈 항목을 삭제하세요.'))
+    }
+    pendingRef.current = currentFields
+    if (savingRef.current) return savingRef.current
+    const request = (async () => {
+      while (pendingRef.current !== null) {
+        const fields = pendingRef.current
         pendingRef.current = null
-        doSave(retry)
+        const payload = JSON.stringify(toSavePayload(fields))
+        if (payload === lastSavedRef.current) continue
+        setStatus('saving')
+        try {
+          const res = await fetch(`/api/hiring-posts/postings/${postingId}/form`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields: JSON.parse(payload) }),
+          })
+          if (!res.ok) throw new Error('지원서 항목 저장에 실패했습니다')
+          lastSavedRef.current = payload
+          setStatus('saved')
+        } catch (error) {
+          pendingRef.current ??= fields
+          setStatus('idle')
+          throw error
+        }
       }
-    }
+    })()
+    savingRef.current = request.finally(() => {
+      savingRef.current = null
+    })
+    return savingRef.current
   }
 
-  // 즉시 저장 — 토글/추가/삭제/타입변경/이동 시
   function saveNow(currentFields: EditorField[]) {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    doSave(currentFields)
+    if (hasEmptyLabel(currentFields)) {
+      pendingRef.current = null
+      setStatus('idle')
+      return
+    }
+    void doSave(currentFields).catch((error: unknown) => {
+      toast.error(error instanceof Error ? error.message : '지원서 항목 저장에 실패했습니다')
+    })
   }
 
-  // blur 디바운스 저장 — 라벨·선택지 텍스트 편집 시
   function saveOnBlur() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      doSave(fieldsRef.current)
-    }, 600)
+    debounceRef.current = setTimeout(() => saveNow(fieldsRef.current), 600)
   }
 
   // 드래그 종료 — arrayMove 후 saveNow(위/아래 버튼과 동일한 저장 경로)
@@ -258,7 +325,7 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
       { key: makeKey(), type: 'string', label: '', required: false, options: [], kind: 'custom' },
     ]
     setEditorFields(next)
-    // 빈 라벨 필드는 toSavePayload 에서 걸러지므로 즉시 저장 가능
+    // 빈 항목은 입력 또는 명시적 삭제 전까지 로컬에 유지한다.
     saveNow(next)
   }
 
@@ -274,9 +341,20 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
       (prev.type === 'select' || prev.type === 'multiselect')
     const next = editorFields.map((f, i) =>
       i === idx
-        ? { ...f, type: v as EditorField['type'], options: keepOptions ? f.options : [] }
+        ? clearIncompatibleFieldLimits({
+            ...f,
+            type: v as EditorField['type'],
+            options: keepOptions ? f.options : [],
+          })
         : f
     )
+    if (
+      prev.minLength !== next[idx].minLength ||
+      prev.maxLength !== next[idx].maxLength ||
+      prev.maxFileCount !== next[idx].maxFileCount ||
+      prev.maxFileSize !== next[idx].maxFileSize
+    )
+      toast.info('항목 유형이 바뀌어 호환되지 않는 글자 수·파일 제한을 해제했습니다')
     setEditorFields(next)
     saveNow(next)
   }
@@ -376,7 +454,13 @@ export function StepForm({ postingId, initialFields, onChange }: Props) {
       </div>
 
       <div className="flex justify-end">
-        <AutoSaveIndicator status={status} />
+        {hasEmptyLabel(editorFields) ? (
+          <span role="status" className="text-xs text-muted-foreground">
+            미완성 항목이 있습니다
+          </span>
+        ) : (
+          <AutoSaveIndicator status={status} />
+        )}
       </div>
     </div>
   )
@@ -463,6 +547,9 @@ function FieldRowContent({
           <div className="flex flex-1 items-center px-1 text-sm font-medium">{field.label}</div>
         ) : (
           <Input
+            aria-label="항목 이름"
+            aria-invalid={!field.label.trim()}
+            aria-describedby={!field.label.trim() ? `field-error-${field.key}` : undefined}
             value={field.label}
             onChange={(e) => onUpdate(idx, { label: e.target.value })}
             onBlur={onBlurSave}
@@ -486,11 +573,22 @@ function FieldRowContent({
 
         {/* locked 는 삭제 불가 */}
         {field.kind !== 'locked' && (
-          <Button size="icon-sm" variant="ghost" onClick={() => onRemove(idx)}>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            aria-label={`${field.label.trim() || '빈 항목'} 삭제`}
+            onClick={() => onRemove(idx)}
+          >
             <Trash2 />
           </Button>
         )}
       </div>
+
+      {field.kind === 'custom' && !field.label.trim() && (
+        <p id={`field-error-${field.key}`} className="pl-6 text-xs text-destructive">
+          항목 이름을 입력하거나 항목을 삭제하세요.
+        </p>
+      )}
 
       {/* 커스텀 항목: 타입 선택 + 필수 스위치 */}
       {field.kind === 'custom' && (

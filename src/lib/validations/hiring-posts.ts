@@ -1,3 +1,5 @@
+import { MAX_FORM_FILES, MAX_FORM_FILE_BYTES, validFileLimits } from '@/lib/hiring/file-fields'
+import { validFieldLengths } from '@/lib/hiring/form-values'
 import { z } from 'zod'
 
 // ─── 공용 ─────────────────────────────────────────────────────────────────────
@@ -200,6 +202,8 @@ export type UpdateContentInput = z.infer<typeof updateContentSchema>
 // ─── 지원서 폼 스키마 (applicationEntries) ─────────────────────────────────────
 // ⚠️ 표준 PII 키는 pii.ts 의 PII_ENTRY_KEYS 와 정확히 일치해야 한다: name/phone/email/address
 export const formFieldTypeEnum = z.enum([
+  'number',
+  'date',
   'string',
   'text',
   'select',
@@ -209,13 +213,23 @@ export const formFieldTypeEnum = z.enum([
   'phone',
 ])
 
-export const formFieldSchema = z.object({
-  key: z.string().min(1).max(64),
-  type: formFieldTypeEnum,
-  label: z.string().min(1, '항목 이름을 입력하세요').max(100),
-  required: z.boolean(),
-  options: z.array(z.string().max(100)).optional(),
-})
+export const formFieldSchema = z
+  .object({
+    key: z.string().min(1).max(64),
+    type: formFieldTypeEnum,
+    label: z.string().min(1, '항목 이름을 입력하세요').max(100),
+    required: z.boolean(),
+    options: z.array(z.string().max(100)).optional(),
+    maxFileCount: z.number().int().min(1).max(MAX_FORM_FILES).optional(),
+    maxFileSize: z.number().int().min(1).max(MAX_FORM_FILE_BYTES).optional(),
+    errorMessage: z.string().max(2000).optional(),
+    description: z.string().max(2000).optional(),
+    placeholder: z.string().max(500).optional(),
+    minLength: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
+    maxLength: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
+  })
+  .refine(validFileLimits, '파일 제한은 첨부 항목에만 설정할 수 있습니다')
+  .refine(validFieldLengths, '글자 수 제한의 범위나 항목 타입을 확인하세요')
 export type FormFieldInput = z.infer<typeof formFieldSchema>
 
 export const updateFormSchema = z.object({

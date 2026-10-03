@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { getPostingDetail } from '@/lib/hiring/postings'
-import { renderPostingEmbedHtml } from '@/lib/hiring/render-embed-html'
+import { renderPostingEmbed } from '@/lib/hiring/render-embed-html'
 import { PostingDetail } from '@/components/hiring-posts/posting-detail'
 
 type PageProps = { params: Promise<{ id: string }> }
@@ -25,7 +25,7 @@ export default async function PostingDetailPage({ params }: PageProps) {
   if (!posting) notFound()
 
   const origin = await resolveOrigin()
-  const embedHtml = renderPostingEmbedHtml({
+  const embed = renderPostingEmbed({
     posting: {
       uuid: posting.uuid,
       contents: posting.contents.map((c) => ({
@@ -60,7 +60,9 @@ export default async function PostingDetailPage({ params }: PageProps) {
         closingDate: posting.closingDate ? posting.closingDate.toISOString() : null,
       }}
       origin={origin}
-      embedHtml={embedHtml}
+      embedHtml={embed.html}
+      embedIssues={embed.issues}
+      usesFormLink={embed.usesFormLink}
     />
   )
 }

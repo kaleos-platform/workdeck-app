@@ -8,6 +8,8 @@ import { decryptApplicationPii, type ApplicationEntryValue } from '@/lib/hiring/
 import { STAGE_LABELS, PROCESS_STAGE_LABELS } from '@/lib/hiring/applications'
 import type { HiringApplicationStage } from '@/generated/prisma/client'
 
+import { parseYmdDateKst, formatDateToYmdKst } from '@/lib/date-range'
+
 export const runtime = 'nodejs'
 
 const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
@@ -29,8 +31,9 @@ export async function GET(req: NextRequest) {
     stageRaw && VALID_STAGES.has(stageRaw) ? (stageRaw as HiringApplicationStage) : undefined
   const fromRaw = sp.get('from')
   const toRaw = sp.get('to')
-  const from = fromRaw ? new Date(fromRaw) : undefined
-  const to = toRaw ? new Date(new Date(toRaw).getTime() + 24 * 60 * 60 * 1000 - 1) : undefined
+  const from = parseYmdDateKst(fromRaw ?? '') ?? undefined
+  const toDate = parseYmdDateKst(toRaw ?? '')
+  const to = toDate ? new Date(toDate.getTime() + 24 * 60 * 60 * 1000 - 1) : undefined
 
   const applications = await prisma.hiringApplication.findMany({
     where: {
@@ -38,11 +41,11 @@ export async function GET(req: NextRequest) {
       deletedAt: null,
       ...(posting ? { postingId: posting } : {}),
       ...(stage ? { stage } : {}),
-      ...(from || (to && !Number.isNaN(to.getTime()))
+      ...(from || to
         ? {
             createdAt: {
-              ...(from && !Number.isNaN(from.getTime()) ? { gte: from } : {}),
-              ...(to && !Number.isNaN(to.getTime()) ? { lte: to } : {}),
+              ...(from ? { gte: from } : {}),
+              ...(to ? { lte: to } : {}),
             },
           }
         : {}),
@@ -81,7 +84,7 @@ export async function GET(req: NextRequest) {
       공고: app.posting?.title ?? '',
       결과: STAGE_LABELS[app.stage],
       단계: PROCESS_STAGE_LABELS[app.hiringStage],
-      지원일: app.createdAt.toISOString().slice(0, 10),
+      지원일: formatDateToYmdKst(app.createdAt),
     }
     const entries = (app.applicationEntries as ApplicationEntryValue[] | null) ?? []
     const byKey = new Map(entries.map((e) => [e.key, e]))
@@ -98,7 +101,7 @@ export async function GET(req: NextRequest) {
   XLSX.utils.book_append_sheet(workbook, worksheet, '지원자')
   const buf: Buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
 
-  const filename = `applicants_${new Date().toISOString().slice(0, 10)}.xlsx`
+  const filename = `applicants_${formatDateToYmdKst(new Date())}.xlsx`
   return new Response(new Uint8Array(buf), {
     status: 200,
     headers: {
