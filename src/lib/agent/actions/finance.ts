@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { learnRule } from '@/lib/finance/classify'
 import { normalizeFinKey, directionForType } from '@/lib/finance/kifrs-seed'
 import { normalizeMemoInput } from '@/lib/finance/memo'
+import { violatesDirectionPolicy } from '@/lib/finance/contra'
 
 // 제네릭 파라미터 액션을 배열(ActionDefinition[])에 담기 위한 위더너.
 // TParams는 execute/snapshot에서 반공변 위치라 좁은 타입이 넓은 타입에 직접 대입 불가 →
@@ -47,9 +48,13 @@ const reclassify: ActionDefinition<z.infer<typeof reclassifyParams>> = {
 
     const category = await prisma.finCategory.findFirst({
       where: { id: params.categoryId, spaceId },
-      select: { id: true, type: true },
+      select: { id: true, type: true, isContra: true },
     })
     if (!category) throw new Error('계정과목을 찾을 수 없습니다')
+    // 방향 정책(UI·API와 동일) — OUT→일반 수익, 차감 계정에 자기 방향 거래 차단.
+    if (violatesDirectionPolicy(category, txn.direction)) {
+      throw new Error('거래 방향과 맞지 않는 계정과목입니다')
+    }
 
     let matchedRuleId: string | null | undefined
     if (params.learn !== false) {

@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
     prisma.finStagedRow.count({ where: { ...base, classStatus: 'CLASSIFIED', ...activeQueue } }),
     prisma.finCategory.findMany({
       where: { spaceId, isActive: true },
-      select: { id: true, name: true, type: true },
+      select: { id: true, name: true, type: true, isContra: true },
     }),
   ])
 

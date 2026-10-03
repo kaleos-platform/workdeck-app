@@ -169,3 +169,52 @@ describe('화면 간 수입/지출 일치', () => {
     ])
   })
 })
+
+describe('서버 방향 정책', () => {
+  test('OUT→일반 수익 차단, IN→일반 비용 허용(환불), 차감 계정은 반대 방향만', async () => {
+    const { violatesDirectionPolicy } = await import('@/lib/finance/contra')
+    expect(violatesDirectionPolicy({ type: 'INCOME' }, 'OUT')).toBe(true)
+    expect(violatesDirectionPolicy({ type: 'EXPENSE' }, 'IN')).toBe(false)
+    expect(violatesDirectionPolicy({ type: 'INCOME', isContra: true }, 'OUT')).toBe(false)
+    expect(violatesDirectionPolicy({ type: 'INCOME', isContra: true }, 'IN')).toBe(true)
+    expect(violatesDirectionPolicy({ type: 'EXPENSE', isContra: true }, 'OUT')).toBe(true)
+  })
+
+  test('loadSpaceRules: 차감 해제 후 남은 OUT→수익 규칙은 제외, IN→비용 규칙은 유지', async () => {
+    mockPrisma.finClassRule = {
+      findMany: jest.fn(async () => [
+        {
+          id: 'r1',
+          matchKey: '환불',
+          matchType: 'KEYWORD',
+          categoryId: 'x',
+          direction: 'OUT',
+          memo: null,
+          category: { type: 'INCOME', isContra: false },
+        },
+        {
+          id: 'r2',
+          matchKey: '환불',
+          matchType: 'KEYWORD',
+          categoryId: 'y',
+          direction: 'IN',
+          memo: null,
+          category: { type: 'EXPENSE', isContra: false },
+        },
+        {
+          id: 'r3',
+          matchKey: '이체',
+          matchType: 'KEYWORD',
+          categoryId: 'z',
+          direction: null,
+          memo: null,
+          category: { type: 'TRANSFER', isContra: false },
+        },
+      ]),
+    }
+    const { loadSpaceRules } = await import('@/lib/finance/classify')
+    const rules = await loadSpaceRules('space-1')
+    expect(rules.map((r) => r.id)).toEqual(['r2', 'r3'])
+    expect(rules[0]).not.toHaveProperty('category')
+  })
+})

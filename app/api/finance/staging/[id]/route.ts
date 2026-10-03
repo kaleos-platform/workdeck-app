@@ -10,6 +10,7 @@ import { prisma } from '@/lib/prisma'
 import { learnRule, matchKeyOf } from '@/lib/finance/classify'
 import { normalizeMemoInput } from '@/lib/finance/memo'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
+import { violatesDirectionPolicy } from '@/lib/finance/contra'
 
 const RESOLUTIONS: FinStagedResolution[] = ['NEW', 'DUP_SAME', 'DUP_CHANGED', 'DUP_OVERWRITE']
 
@@ -59,9 +60,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // 방향↔계정과목 type 불일치 차단(차감 계정=매출환입은 OUT 허용) — 과거 실버그(OUT 거래를 수입 계정으로 오분류)방지.
     // OUT 행에 INCOME 계정: 차단. IN 행에 EXPENSE 계정: 환불·반품 등 합법 케이스가 있으므로 허용.
     // TRANSFER 등 다른 type은 검증 스킵.
-    if (category.type === 'INCOME' && !category.isContra && row.direction === 'OUT') {
+    if (violatesDirectionPolicy(category, row.direction)) {
       return errorResponse(
-        '지출(OUT) 거래에 수입 계정과목을 지정할 수 없습니다. 지출 계정과목을 선택하세요',
+        category.isContra
+          ? '차감 계정은 반대 방향 거래에만 지정할 수 있습니다(매출환입=출금, 매입환출=입금)'
+          : '지출(OUT) 거래에 수입 계정과목을 지정할 수 없습니다. 지출 계정과목을 선택하세요',
         400
       )
     }

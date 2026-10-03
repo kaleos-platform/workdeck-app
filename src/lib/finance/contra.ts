@@ -39,3 +39,12 @@ export function isCategoryAllowedForDirection(cat: ContraCat, direction: CashSec
   if (!natural) return true
   return (natural === direction) !== !!cat.isContra
 }
+
+/**
+ * 서버 정책(저장·자동분류): UI 가드보다 느슨하다 — 입금(IN)을 일반 비용 계정에 두는 환불 처리는 기존대로 허용.
+ * 막는 것: 출금(OUT)을 일반 수익 계정에(PR #331 실버그), 차감 계정에 자기 방향 거래.
+ */
+export function violatesDirectionPolicy(cat: ContraCat, direction: CashSection): boolean {
+  if (cat.isContra) return !isCategoryAllowedForDirection(cat, direction)
+  return cat.type === 'INCOME' && direction === 'OUT'
+}
