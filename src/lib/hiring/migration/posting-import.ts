@@ -15,7 +15,8 @@ const packetSchema = z.object({
   sourceMemberId: sourceId.nullable(),
   sourceSnapshotAt: instant,
   posting: z.object({
-    uuid: z.uuid(),
+    // 오프닝워크는 hashId(id) 기반의 짧은 공개 키를 사용한다.
+    uuid: z.string().regex(/^[A-Za-z0-9_-]{1,36}$/),
     title: z.string().min(1).max(200),
     status: z.number().int().min(0).max(4),
     createdAt: instant,

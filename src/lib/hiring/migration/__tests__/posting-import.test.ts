@@ -161,3 +161,18 @@ it('현재 편집기의 저장 용량을 초과하는 디자인은 적재 전에
   }
   expect(() => planOpeningPosting(input, target)).toThrow('editable size')
 })
+
+it('원본 hashId 기반의 짧은 공개 URL 키를 보존한다', () => {
+  const input = packet()
+  input.posting.uuid = 'Qa7'
+  expect(planOpeningPosting(input, target).packet.posting.uuid).toBe('Qa7')
+})
+
+it.each(['../posting', 'key/other', ' key', '', 'x'.repeat(37)])(
+  '공개 URL 키 %s가 안전한 원본 범위를 벗어나면 차단한다',
+  (uuid) => {
+    const input = packet()
+    input.posting.uuid = uuid
+    expect(() => planOpeningPosting(input, target)).toThrow()
+  }
+)
