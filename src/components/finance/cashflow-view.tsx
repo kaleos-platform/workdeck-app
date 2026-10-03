@@ -1730,7 +1730,8 @@ function TxnEditPopover({
 }) {
   const [categoryId, setCategoryId] = useState<string | null>(txn.categoryId)
   const [memo, setMemo] = useState(txn.memo ?? '')
-  const [learn, setLearn] = useState(true)
+  // 규칙 저장은 명시적 선택만(기본 해제) — 일회성 분류가 규칙으로 굳어 다음 업로드를 오분류하지 않게.
+  const [learn, setLearn] = useState(false)
   const [saving, setSaving] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
 

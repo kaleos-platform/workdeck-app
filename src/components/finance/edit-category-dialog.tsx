@@ -215,15 +215,18 @@ export function EditCategoryDialog({
                 />
               </div>
               <Select value={flowRole} onValueChange={setFlowRole}>
-                <SelectTrigger className="h-auto min-h-9 text-sm">
-                  <SelectValue />
+                {/* 선택값엔 라벨만(설명까지 렌더되면 w-fit·nowrap 트리거가 팝업 밖으로 넘침) — 설명은 목록에서. */}
+                <SelectTrigger className="h-9 w-full text-sm">
+                  <SelectValue>
+                    {flowRoleOptions.find((o) => o.value === flowRole)?.label}
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" className="w-[var(--radix-select-trigger-width)]">
                   {flowRoleOptions.map((o) => (
                     <SelectItem key={o.value} value={o.value}>
                       <span className="flex flex-col items-start">
                         <span>{o.label}</span>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[10px] whitespace-normal text-muted-foreground">
                           {flowOptionGuide(o.value, node!.type as 'INCOME' | 'EXPENSE')}
                         </span>
                       </span>
