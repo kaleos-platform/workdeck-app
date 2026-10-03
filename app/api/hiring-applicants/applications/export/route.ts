@@ -74,29 +74,40 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  const headers = ['이름', '전화', '이메일', '주소', '공고', '결과', '단계', '지원일']
+  const usedHeaders = new Set(headers)
+  for (const label of customLabels.values()) {
+    let header = label
+    let suffix = 2
+    while (usedHeaders.has(header)) header = `${label} (${suffix++})`
+    usedHeaders.add(header)
+    headers.push(header)
+  }
+
   const rows = applications.map((app) => {
     const pii = decryptApplicationPii(app)
-    const base: Record<string, string> = {
-      이름: pii.name ?? '',
-      전화: pii.phone ?? '',
-      이메일: pii.email ?? '',
-      주소: pii.address ?? '',
-      공고: app.posting?.title ?? '',
-      결과: STAGE_LABELS[app.stage],
-      단계: PROCESS_STAGE_LABELS[app.hiringStage],
-      지원일: formatDateToYmdKst(app.createdAt),
-    }
+    const row = [
+      pii.name ?? '',
+      pii.phone ?? '',
+      pii.email ?? '',
+      pii.address ?? '',
+      app.posting?.title ?? '',
+      STAGE_LABELS[app.stage],
+      PROCESS_STAGE_LABELS[app.hiringStage],
+      formatDateToYmdKst(app.createdAt),
+    ]
     const entries = (app.applicationEntries as ApplicationEntryValue[] | null) ?? []
     const byKey = new Map(entries.map((e) => [e.key, e]))
-    for (const [key, label] of customLabels) {
+    for (const key of customLabels.keys()) {
       const e = byKey.get(key)
       const val = e?.value
-      base[label] = Array.isArray(val) ? val.join(', ') : typeof val === 'string' ? val : ''
+      row.push(Array.isArray(val) ? val.join(', ') : typeof val === 'string' ? val : '')
     }
-    return base
+    return row
   })
 
-  const worksheet = XLSX.utils.json_to_sheet(rows)
+  // 사용자 라벨을 객체 속성으로 사용하지 않아 중복·특수 이름도 값을 덮어쓰지 않는다.
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows])
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, '지원자')
   const buf: Buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
