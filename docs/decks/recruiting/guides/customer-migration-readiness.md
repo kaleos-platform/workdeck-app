@@ -167,3 +167,13 @@ scene 참조 8,403회, 이미지 참조 9,274회, 전체 상세 이미지 63개,
 항목 key 순서로 열을 만들고 기본 열 및 중복 라벨에는 숫자 구분자를 붙인다. XLSX는 배열 기반으로 생성해 사용자 라벨을 객체 속성으로 사용하지 않는다. 원본의 답변과 개인정보는 수정하지 않는다. 실제 XLSX 생성 후 재읽기 테스트에서 이름 덮어쓰기를 재현했고 수정 후 기본 개인정보와 모든 충돌 답변의 독립 보존을 확인했다. 관련 13개 테스트, TypeScript, webpack production build 통과. 전체 lint 오류 0/기존 경고 70. 이 소규모 export 수정에는 관련 회귀 검증을 사용했으며 전체 Jest 1,908개 결과는 앞선 커밋의 검증 기록이다.
 
 과거 원문-only 지원서의 `applicationEntries` 변환은 별도 미완료다. 기존 `convertOpeningSubmission`은 제출 당시 폼의 확인 근거를 요구하고, 원본 `update_posting.ts`는 현재 양식을 덮어쓴다. 현재 DB 폼만으로 과거 양식이 같았다고 간주하지 않는다. 다음 고객별 검증에는 파일럿 고객·검증 프로젝트와 함께 해당 고객의 과거 양식 확인 근거 또는 미확정 항목 처리 결정을 확인해야 한다.
+
+## 운영 파일럿으로 검증 범위 변경
+
+사용자가 현재 운영 Workdeck 프로젝트와 특정 기존 고객/Space를 직접 지정했다. 신규 검증 프로젝트 생성은 이번 파일럿의 선행 조건에서 제외한다. 기존 개발 DB로 고객 데이터를 옮기지 않는 규칙은 유지한다. 대상 사용자·Space·OWNER 역할의 일치를 읽기 전용으로 확인했으며, 해당 Space의 기존 공고·지원서는 보존한다. 고객 식별자와 원문은 이 문서에 기록하지 않는다.
+
+CLI는 기본 `validation`을 유지한다. 승인된 운영 파일럿은 `--target-mode production-pilot`과 대상 env의 `MIGRATION_ENVIRONMENT=production-pilot`이 모두 있어야 실행할 수 있다. `--apply`, 원본 고객/대상 Space 및 예상 Supabase project ref를 별도로 요구하고 개발 프로젝트 차단·DB/project 대응·자산 checksum 확인·DRAFT/알림 false·원장 재실행 검사는 그대로 적용한다. 운영 env를 validation으로 위장해 검사를 우회하지 않는다.
+
+원본 파일럿은 공고 1개(마감), 지원서 0개, 관리자 1명이다. content 9개가 참조하는 scene 9개·이미지 9개(921,314 bytes)를 읽고 순수 콘텐츠 변환을 확인했다. 템플릿 생성/복사는 파일 참조를 공유하므로 file.target_id가 새 content와 다를 수 있다. 고객 소유 content 관계와 정확한 파일 key·용도·원본 bucket으로 범위를 제한했다. 원문은 임시 암호화 staging에 보관하며 운영 대상 업로드/적재는 아직 수행하지 않았다. 지원서 이관이 없는 파일럿이므로 지원자 관리의 실데이터 검증 완료로 확대 해석하지 않는다.
+
+현재 운영에는 이전 원장·업로드 세션 migration이 미적용이고 private 첨부 bucket은 10 MiB였다. 최신 main 기반의 별도 release worktree로 모집 개선을 옮겨 기존 브랜치의 무관한 생산·마케팅 원가 변경을 제외했다. Next.js·SheetJS 보안 업데이트는 포함되어 전역 런타임/Excel에도 영향을 준다. 운영 schema 변경은 정상 배포 migration 경로만 사용하며 수동 SQL/ALTER는 하지 않는다.

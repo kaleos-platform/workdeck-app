@@ -79,3 +79,32 @@ test('실제 자산 내용과 checksum을 대조하고 누락·잘못된 manifes
     /MANIFEST_CONFLICT/
   )
 })
+
+test('운영 파일럿은 명시적 모드와 환경 표시가 모두 일치할 때만 허용한다', () => {
+  const production = { ...env, MIGRATION_ENVIRONMENT: 'production-pilot' }
+  assert.throws(() => validateDestination(production, ref))
+  assert.throws(() => validateDestination(env, ref, undefined, 'production-pilot'))
+  assert.equal(
+    new URL(validateDestination(production, ref, undefined, 'production-pilot')).hostname,
+    `db.${ref}.supabase.co`
+  )
+  assert.throws(
+    () =>
+      validateDestination(production, ref, production.NEXT_PUBLIC_SUPABASE_URL, 'production-pilot'),
+    /DEVELOPMENT/
+  )
+  assert.equal(
+    parseOptions([
+      '--source-space',
+      '1',
+      '--target-space',
+      'space',
+      '--target-mode',
+      'production-pilot',
+    ]).targetMode,
+    'production-pilot'
+  )
+  assert.throws(() =>
+    parseOptions(['--source-space', '1', '--target-space', 'space', '--target-mode', 'production'])
+  )
+})

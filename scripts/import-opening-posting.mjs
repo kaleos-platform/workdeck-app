@@ -1,4 +1,4 @@
-// 준비된 공고 snapshot 한 건의 검증 적재. 기본값은 계획만 출력하며 고객 원문은 로그에 남기지 않는다.
+// 준비된 공고 snapshot 한 건의 명시적 대상 적재. 기본값은 계획만 출력하며 고객 원문은 로그에 남기지 않는다.
 import { readFileSync, existsSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
@@ -11,6 +11,7 @@ export function parseOptions(args) {
   const options = { apply: false }
   const names = {
     '--source-space': 'sourceSpace',
+    '--target-mode': 'targetMode',
     '--target-space': 'targetSpace',
     '--target-env': 'targetEnv',
     '--expected-project-ref': 'projectRef',
@@ -30,13 +31,20 @@ export function parseOptions(args) {
     !/^[A-Za-z0-9_-]+$/.test(options.targetSpace ?? '')
   )
     throw Error('EXPLICIT_SCOPE_REQUIRED')
+  options.targetMode ??= 'validation'
+  if (!['validation', 'production-pilot'].includes(options.targetMode))
+    throw Error('INVALID_TARGET_MODE')
   if (options.apply && (!options.targetEnv || !options.projectRef))
     throw Error('EXPLICIT_TARGET_REQUIRED')
   return options
 }
 
-export function validateDestination(env, expectedRef, developmentUrl) {
-  if (env.MIGRATION_ENVIRONMENT !== 'validation' || !/^[a-z0-9]{20}$/.test(expectedRef))
+export function validateDestination(env, expectedRef, developmentUrl, targetMode = 'validation') {
+  if (
+    !['validation', 'production-pilot'].includes(targetMode) ||
+    env.MIGRATION_ENVIRONMENT !== targetMode ||
+    !/^[a-z0-9]{20}$/.test(expectedRef)
+  )
     throw Error('VALIDATION_ENVIRONMENT_REQUIRED')
   const projectUrl = new URL(env.NEXT_PUBLIC_SUPABASE_URL)
   if (projectUrl.origin !== `https://${expectedRef}.supabase.co`)
@@ -128,7 +136,8 @@ async function main() {
   const connectionString = validateDestination(
     env,
     options.projectRef,
-    local.NEXT_PUBLIC_SUPABASE_URL
+    local.NEXT_PUBLIC_SUPABASE_URL,
+    options.targetMode
   )
   const { createClient } = await import('@supabase/supabase-js')
   const storage = createClient(
