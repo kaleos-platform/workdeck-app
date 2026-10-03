@@ -6,7 +6,13 @@ import { Check, ChevronsUpDown, CornerDownRight, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import { comboOptionLabel, type ComboOption } from '@/lib/finance/category-options'
 import type { FinCategoryType } from '@/generated/prisma/enums'
 
@@ -164,10 +170,15 @@ export function CategoryMultiCombobox({
                   >
                     {checked && <Check className="size-3" />}
                   </span>
-                  {opt.indent && <CornerDownRight className="size-3 shrink-0 text-muted-foreground" />}
+                  {opt.indent && (
+                    <CornerDownRight className="size-3 shrink-0 text-muted-foreground" />
+                  )}
                   <span className="min-w-0 flex-1 truncate">{opt.label}</span>
                   {opt.isActive === false && (
-                    <Badge variant="outline" className="shrink-0 px-1.5 text-[10px] text-muted-foreground">
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 px-1.5 text-[10px] text-muted-foreground"
+                    >
                       비활성
                     </Badge>
                   )}

@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
 import { buildParentOptions, type CategoryTreeNode } from '@/lib/finance/category-options'
 
@@ -34,12 +33,8 @@ export function AddCategoryDialog({
 }) {
   const [parentId, setParentId] = useState('')
   const [name, setName] = useState('')
-  const [isContra, setIsContra] = useState(false)
   const [saving, setSaving] = useState(false)
   const parentOptions = useMemo(() => buildParentOptions(categoryTree), [categoryTree])
-  // 차감 계정은 수입 대분류(indent=true) 아래 리프에만 — 비용 환불은 원래 비용 계정에 바로 분류(contra.ts).
-  const parentOpt = parentOptions.find((o) => o.id === parentId)
-  const showContra = !!parentOpt?.indent && parentOpt.type === 'INCOME'
 
   async function handleSave() {
     if (!parentId) {
@@ -55,7 +50,7 @@ export function AddCategoryDialog({
       const res = await fetch('/api/finance/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parentId, name: name.trim(), ...(showContra && { isContra }) }),
+        body: JSON.stringify({ parentId, name: name.trim() }),
       })
       const data = (await res.json().catch(() => ({}))) as {
         message?: string
@@ -65,7 +60,6 @@ export function AddCategoryDialog({
       toast.success('계정과목이 추가되어 이 거래에 적용되었습니다')
       setName('')
       setParentId('')
-      setIsContra(false)
       onOpenChange(false)
       await onCreated(data.category)
     } catch (err) {
@@ -108,22 +102,6 @@ export function AddCategoryDialog({
               }}
             />
           </div>
-          {showContra && (
-            <div className="flex items-start gap-2">
-              <Checkbox
-                id="add-category-contra"
-                checked={isContra}
-                onCheckedChange={(v) => setIsContra(v === true)}
-                className="mt-0.5"
-              />
-              <Label htmlFor="add-category-contra" className="flex flex-col items-start gap-0.5">
-                <span className="text-sm">차감 계정</span>
-                <span className="text-[11px] font-normal text-muted-foreground">
-                  고객 환불·반품 출금을 받아 수입에서 차감합니다.
-                </span>
-              </Label>
-            </div>
-          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>

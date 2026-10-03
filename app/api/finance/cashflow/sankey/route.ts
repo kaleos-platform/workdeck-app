@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
     }),
     prisma.finCategory.findMany({
       where: { spaceId },
-      select: { id: true, name: true, type: true, parentId: true, flowRole: true, isContra: true },
+      select: { id: true, name: true, type: true, parentId: true, flowRole: true },
     }),
   ])
 

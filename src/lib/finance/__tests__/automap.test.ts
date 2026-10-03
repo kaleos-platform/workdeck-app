@@ -97,12 +97,7 @@ describe('extractCardNumberColumn — 카드번호 행 컬럼 추출', () => {
 // 적용되던 원인(동점 시 입력 순서 의존)과, 다중 적요 컬럼 프리셋이 분모 팽창으로 불리해지던
 // 문제를 회귀 방어한다.
 describe('findBestPreset — 형식(헤더) 기준 매칭', () => {
-  const preset = (
-    id: string,
-    pairs: MappingPair[],
-    updatedAt?: string,
-    name = id
-  ): PresetLike => ({
+  const preset = (id: string, pairs: MappingPair[], updatedAt?: string, name = id): PresetLike => ({
     id,
     name,
     institution: '테스트은행',

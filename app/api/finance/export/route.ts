@@ -67,7 +67,6 @@ export async function GET(req: NextRequest) {
           name: true,
           code: true,
           type: true,
-          isContra: true,
           parent: { select: { name: true } },
         },
       },

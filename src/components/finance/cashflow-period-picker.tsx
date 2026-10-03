@@ -85,10 +85,7 @@ export function CashflowPeriodPicker({
             const disabled =
               (!checked && selected.length >= max) || (checked && selected.length <= 1)
             return (
-              <label
-                key={bucket}
-                className={cnRow(disabled)}
-              >
+              <label key={bucket} className={cnRow(disabled)}>
                 <Checkbox
                   checked={checked}
                   disabled={disabled}

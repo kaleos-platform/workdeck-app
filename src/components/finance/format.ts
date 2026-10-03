@@ -64,10 +64,7 @@ export function maskAccountNumber(num: string | null | undefined): string {
 // 지출: COGS=매출원가 / OPEX=영업비용 / FINANCING_COST=금융비용 / null=미지정.
 
 /** flowRole → 짧은 라벨(대분류 type에 따라 null 라벨이 달라짐). */
-export function flowRoleLabel(
-  role: FinFlowRole | null,
-  type: 'INCOME' | 'EXPENSE'
-): string {
+export function flowRoleLabel(role: FinFlowRole | null, type: 'INCOME' | 'EXPENSE'): string {
   switch (role) {
     case 'MERCH_SALES':
       return '매출'
@@ -99,7 +96,8 @@ export function flowRoleBadge(
     case 'COGS':
       return {
         label,
-        className: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400',
+        className:
+          'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400',
       }
     case 'OPEX':
       return {
@@ -119,7 +117,8 @@ export function flowRoleBadge(
 
 /** 분류 안내(툴팁) — "어떤 항목을 넣는지". 수입 기타는 OTHER_INCOME 키로 참조. */
 export const FLOW_ROLE_GUIDE: Record<string, string> = {
-  MERCH_SALES: '상품·서비스 판매 등 주된 영업 수익. 흐름도 매출총이익(매출 − 매출원가) 계산의 기준입니다.',
+  MERCH_SALES:
+    '상품·서비스 판매 등 주된 영업 수익. 흐름도 매출총이익(매출 − 매출원가) 계산의 기준입니다.',
   OTHER_INCOME: '매출 외 수입 — 정부지원금·이자수익·잡수입 등.',
   COGS: '판매한 상품의 매입·제조 원가. 매출에서 차감해 매출총이익을 산출합니다.',
   OPEX: '판매·관리 활동 비용 — 인건비·마케팅·물류·임차료·수수료 등.',

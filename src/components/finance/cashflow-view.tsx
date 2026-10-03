@@ -1790,7 +1790,7 @@ function TxnEditPopover({
           triggerClassName="h-8 w-full text-xs"
           groupByType
           defaultType={txn.direction === 'IN' ? 'INCOME' : 'EXPENSE'}
-          blockType={txn.direction === 'IN' ? 'EXPENSE' : 'INCOME'}
+          refundType={txn.direction === 'IN' ? 'EXPENSE' : 'INCOME'}
           onAddNew={() => setAddOpen(true)}
         />
         <AddCategoryDialog

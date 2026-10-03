@@ -18,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params
   const body = await req.json().catch(() => ({}))
-  const { name, alias, groupLabel, isActive, parentId, code, isContra } = body as {
+  const { name, alias, groupLabel, isActive, parentId, code } = body as {
     name?: string
     alias?: string
     groupLabel?: string
@@ -27,8 +27,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     parentId?: string
     /** 회계용 내보내기 단계의 K-IFRS 매핑 코드 */
     code?: string | null
-    /** 차감 계정 여부(수입/지출 타입만 의미 있음) */
-    isContra?: boolean
   }
   // 흐름도 역할(대분류에 부여) — 'flowRole' 키가 body에 있을 때만 반영.
   const hasFlowRole = 'flowRole' in (body as Record<string, unknown>)
@@ -85,11 +83,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(parentId !== undefined && { parentId }),
         ...(code !== undefined && { code: code && code.trim() ? code.trim() : null }),
         ...(flowRole !== undefined && { flowRole }),
-        // 수입/지출 외 타입은 항상 false로 강제.
-        ...(isContra !== undefined && {
-          isContra:
-            isContra === true && (existing.type === 'INCOME' || existing.type === 'EXPENSE'),
-        }),
       },
     })
     return NextResponse.json({ category })

@@ -8,7 +8,6 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { learnRule } from '@/lib/finance/classify'
 import { normalizeMemoInput } from '@/lib/finance/memo'
-import { violatesDirectionPolicy } from '@/lib/finance/contra'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const resolved = await resolveDeckContext('finance')
@@ -49,18 +48,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (typeof body?.categoryId === 'string' && body.categoryId) {
     const category = await prisma.finCategory.findFirst({
       where: { id: body.categoryId, spaceId },
-      select: { id: true, type: true, isContra: true },
+      select: { id: true, type: true },
     })
     if (!category) return errorResponse('계정과목을 찾을 수 없습니다', 400)
-    // 방향 정책(스테이징과 동일) — OUT→일반 수익, 차감 계정에 자기 방향 거래 차단.
-    if (violatesDirectionPolicy(category, txn.direction)) {
-      return errorResponse(
-        category.isContra
-          ? '차감 계정은 반대 방향 거래에만 지정할 수 있습니다(매출환입=출금, 매입환출=입금)'
-          : '지출(OUT) 거래에 수입 계정과목을 지정할 수 없습니다',
-        400
-      )
-    }
     data.categoryId = body.categoryId
     data.classStatus = 'CLASSIFIED'
     data.isTransfer = category.type === 'TRANSFER'

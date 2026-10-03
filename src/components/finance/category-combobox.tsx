@@ -14,7 +14,6 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { comboOptionLabel, type ComboOption } from '@/lib/finance/category-options'
-import { isCategoryAllowedForDirection } from '@/lib/finance/contra'
 import type { FinCategoryType } from '@/generated/prisma/enums'
 
 /** 분류 탭(수익/비용/이체). 라벨은 항목 배지(categoryTypeBadge)와 동일 표기. */
@@ -42,12 +41,10 @@ type CategoryComboboxProps = {
   /** 오픈 시 기본 활성 탭. 선택값이 있으면 그 타입을 우선. (IN→INCOME, OUT→EXPENSE) */
   defaultType?: FinCategoryType
   /**
-   * 금액 방향과 어긋나는 타입을 선택 불가로 막는다(오분류 방지).
-   * OUT(지출) → '수익'(INCOME) 비활성, IN(수입) → '비용'(EXPENSE) 비활성. '이체'는 항상 허용.
-   * 탭 비활성 + 목록/검색에서도 제외(검색으로 우회 선택 차단). 이미 분류된 현재 값은 라벨 보존을 위해 유지.
-   * 차감 계정(isContra)은 반대로 판정 — OUT이면 '수익' 탭에 매출환입만, '비용' 탭에서 매입환출은 숨김.
+   * 거래 방향과 반대 타입(OUT→INCOME, IN→EXPENSE) — 이 탭에서 고르면 환불로 처리된다
+   * (원래 계정 섹션에서 차감, contra.ts). 기본 탭에서 제외하고 탭 상단에 안내를 띄운다.
    */
-  blockType?: FinCategoryType | null
+  refundType?: FinCategoryType | null
 }
 
 /**
@@ -67,49 +64,34 @@ export function CategoryCombobox({
   disabled,
   groupByType,
   defaultType,
-  blockType,
+  refundType,
 }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
   // 선택값의 타입을 우선 활성 탭으로(이미 분류된 행 재오픈 시 해당 탭). 없으면 방향 기본/수익.
   const selectedOption = value ? options.find((o) => o.id === value) : undefined
-  // blockType = 거래 방향의 반대 타입(OUT→INCOME, IN→EXPENSE). 옵션 단위 판정은 거래 방향으로 한다.
-  const direction = blockType === 'INCOME' ? 'OUT' : blockType === 'EXPENSE' ? 'IN' : null
-  const allowedForDirection = React.useCallback(
-    (o: ComboOption) =>
-      direction == null ||
-      o.type == null ||
-      isCategoryAllowedForDirection({ type: o.type, isContra: o.isContra }, direction),
-    [direction]
-  )
-  // 기본 탭: 선택값 타입 > defaultType(방향 기본: OUT→비용, IN→수익) > blockType 아닌 첫 탭.
-  // 반대 탭(blockType)도 열리지만 차감 계정만 노출된다(allowedForDirection).
+  // 기본 탭: 선택값 타입 > defaultType(방향 기본: OUT→비용, IN→수익) > 환불 탭 아닌 첫 탭.
   const selectedType = selectedOption?.type
   const resolveInitialType = React.useCallback((): FinCategoryType => {
     if (selectedType) return selectedType
     if (defaultType) return defaultType
-    return TYPE_TABS.find((t) => t.type !== blockType)?.type ?? 'INCOME'
-  }, [selectedType, defaultType, blockType])
+    return TYPE_TABS.find((t) => t.type !== refundType)?.type ?? 'INCOME'
+  }, [selectedType, defaultType, refundType])
   const [activeType, setActiveType] = React.useState<FinCategoryType>(resolveInitialType)
 
   // 라벨은 전체 옵션에서 해석(비활성 항목에 이미 분류된 거래의 표시 보존).
   const selectedLabel = comboOptionLabel(options, value)
   // 목록은 비활성 항목을 숨겨 새 선택을 막되, 현재 선택값은 유지(라벨·체크 표시).
-  // 방향과 어긋난 타입(blockType)은 목록·검색에서도 제외해 검색 우회 선택을 막는다(현재 값은 유지).
-  // blockType 미지정이면 타입 비교를 건너뛴다 — type 없는 옵션(undefined !== undefined = false)이
-  // 통째로 탈락하는 회귀 방지(상위 계정과목 콤보가 항상 빈 목록이 됐던 버그).
-  const base = options.filter(
-    (o) => (o.isActive !== false && allowedForDirection(o)) || o.id === value
-  )
+  const base = options.filter((o) => o.isActive !== false || o.id === value)
   // groupByType + 검색어 없음 → 활성 탭만(단 type 없는 옵션=미분류 sentinel은 탭 무관 항상 노출).
   // 검색 중엔 전 타입 교차 검색(탭 필터 우회).
   const visibleOptions =
     groupByType && !query.trim()
       ? base.filter((o) => o.type === activeType || o.type == null)
       : base
-  // 방향과 반대 타입 탭(OUT의 수익 / IN의 비용) — 차감 계정만 노출됨을 안내.
-  const contraOnlyTab =
-    !!groupByType && !query.trim() && blockType != null && activeType === blockType
+  // 환불 탭(OUT의 수익 / IN의 비용) — 고르면 그 계정에서 차감됨을 안내.
+  const refundTab =
+    !!groupByType && !query.trim() && refundType != null && activeType === refundType
 
   return (
     <Popover
@@ -145,12 +127,10 @@ export function CategoryCombobox({
           {groupByType && (
             <div className="flex gap-1 border-b p-1">
               {TYPE_TABS.map((t) => {
-                const contraOnly = t.type === blockType
                 return (
                   <button
                     key={t.type}
                     type="button"
-                    title={contraOnly ? '차감 계정만 선택할 수 있습니다' : undefined}
                     onClick={() => {
                       setActiveType(t.type)
                       setQuery('')
@@ -169,19 +149,15 @@ export function CategoryCombobox({
             </div>
           )}
           <CommandInput placeholder={searchPlaceholder} value={query} onValueChange={setQuery} />
-          {contraOnlyTab && (
+          {refundTab && (
             <p className="border-b px-2 py-1.5 text-[11px] text-muted-foreground">
-              {blockType === 'INCOME'
-                ? '출금 거래에는 차감 계정만 선택할 수 있습니다.'
+              {refundType === 'INCOME'
+                ? '출금(고객 환불)을 수익 계정에 분류하면 그 수입에서 차감됩니다.'
                 : '입금(환불)을 비용 계정에 분류하면 그 비용에서 차감됩니다.'}
             </p>
           )}
           <CommandList>
-            <CommandEmpty>
-              {contraOnlyTab && blockType === 'INCOME'
-                ? "차감 계정이 없습니다. 계정과목 관리에서 항목을 수정해 '차감 계정'을 지정하세요"
-                : '일치하는 계정과목이 없습니다'}
-            </CommandEmpty>
+            <CommandEmpty>일치하는 계정과목이 없습니다</CommandEmpty>
             {visibleOptions.map((opt) => (
               <CommandItem
                 key={opt.id}
@@ -207,11 +183,6 @@ export function CategoryCombobox({
                     className="shrink-0 px-1.5 text-[10px] text-muted-foreground"
                   >
                     비활성
-                  </Badge>
-                )}
-                {opt.isContra && (
-                  <Badge variant="outline" className="shrink-0 px-1.5 text-[10px]">
-                    차감
                   </Badge>
                 )}
                 {opt.hint && (

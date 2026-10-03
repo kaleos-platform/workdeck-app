@@ -177,7 +177,15 @@ export function CoverageMatrix({
                 <button
                   type="button"
                   className="w-full cursor-pointer"
-                  onClick={() => onCellClick({ accountId: acct.id, accountLabel: label, month: m, confirmed, staged })}
+                  onClick={() =>
+                    onCellClick({
+                      accountId: acct.id,
+                      accountLabel: label,
+                      month: m,
+                      confirmed,
+                      staged,
+                    })
+                  }
                 >
                   {inner}
                 </button>

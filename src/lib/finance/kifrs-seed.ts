@@ -45,7 +45,7 @@ type SeedNode = {
   flowRole?: FinFlowRole
   /** 검색·AI 컨텍스트용 키워드(withRules=true일 때만 규칙 등록). */
   kw?: string[]
-  /** 차감 계정(반대 방향 거래를 받아 자기 섹션에서 차감) → FinCategory.isContra. */
+  /** 환불 전용 계정(반대 방향 거래만 받음) → FinCategory.isContra. 시드 키워드 추천 방향을 뒤집는다. */
   contra?: true
   /** 하위 노드(있으면 구조 그룹, 없으면 리프). */
   children?: SeedNode[]
