@@ -5,7 +5,9 @@
 
 /** Date → "YYYY-MM" (로컬). */
 export function yearMonth(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  // txnDate는 KST 벽시계를 UTC로 저장하는 규약(aggregate.ts ymOf 주석) → UTC getter로 읽는다.
+  // 서버가 UTC인 prod에선 결과가 같지만, 로컬 dev(KST)에서 월말 거래가 다음 달로 새는 것을 막는다.
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
 }
 
 /**

@@ -1,9 +1,14 @@
 /** @jest-environment node */
 import { deriveMonthEndSnapshots, yearMonth } from '../snapshots'
 
-const d = (iso: string) => new Date(iso)
+/**
+ * txnDate는 "KST 벽시계 자릿수를 UTC로 저장"하는 규약이라 Prisma가 돌려주는 값은 항상
+ * UTC 인스턴트다. TZ 없는 문자열은 로컬 해석되어 실행 머신 TZ에 따라 결과가 달라지므로
+ * 픽스처에 Z를 명시한다(이 전제가 어긋나 KST 머신에서만 깨지던 테스트였다).
+ */
+const d = (iso: string) => new Date(`${iso}Z`)
 
-describe('yearMonth — 로컬 "YYYY-MM"', () => {
+describe('yearMonth — UTC getter 기반 "YYYY-MM"', () => {
   test('한 자리 월은 0 패딩', () => {
     expect(yearMonth(d('2026-03-09T10:00:00'))).toBe('2026-03')
   })
