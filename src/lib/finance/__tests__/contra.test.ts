@@ -1,7 +1,7 @@
 // 환불 집계 — 현금흐름 표·대시보드·Sankey·거래내역 합계가 같은 섹션 규칙(contra.ts)을 쓰는지
 // 통제된 데이터로 검증(prisma는 mock).
 //   매출 IN 100 + 매출 환불 OUT 30(원래 매출 계정) + 상품매입 OUT 50 + 광고비 OUT 20 + 광고비 환급 IN 10
-//   → 수입 70 / 지출 60 / net 10 (순현금흐름은 방향 기준과 동일)
+//   + 광고비 카드 취소 OUT 5 → 수입 70 / 지출 55 / net 15 (순현금흐름은 방향 기준과 동일)
 
 // eslint-disable-next-line no-var
 var mockPrisma: Record<string, Record<string, jest.Mock>>
@@ -53,12 +53,17 @@ const CATS = [
   cat('l-ad', '광고비', 'EXPENSE', 'g-mkt'),
 ]
 
-const txn = (categoryId: string, direction: 'IN' | 'OUT', amount: number) => ({
+const txn = (
+  categoryId: string,
+  direction: 'IN' | 'OUT',
+  amount: number,
+  cancelFlag: string | null = null
+) => ({
   txnDate: new Date('2026-06-15T00:00:00.000Z'),
   direction,
   amount,
   isTransfer: false,
-  cancelFlag: null,
+  cancelFlag,
   categoryId,
 })
 const TXNS = [
@@ -67,6 +72,7 @@ const TXNS = [
   txn('l-buy', 'OUT', 50),
   txn('l-ad', 'OUT', 20),
   txn('l-ad', 'IN', 10),
+  txn('l-ad', 'OUT', 5, '취소'), // 카드 취소 — 상계(지출 −5)
 ]
 
 beforeEach(() => {
@@ -87,6 +93,7 @@ beforeEach(() => {
         TXNS.map((t) => ({
           direction: t.direction,
           categoryId: t.categoryId,
+          cancelFlag: t.cancelFlag,
           _sum: { amount: t.amount },
         }))
       ),
@@ -122,13 +129,13 @@ describe('화면 간 수입/지출 일치', () => {
   test('현금흐름 표: 환불이 원래 계정 행에서 차감', async () => {
     const r = await queryCashflow('space-1', { grain: 'month', periods: ['2026-06'] })
     expect(r.totals.income.values['2026-06']).toBe(70)
-    expect(r.totals.expense.values['2026-06']).toBe(60)
-    expect(r.totals.net.values['2026-06']).toBe(10)
+    expect(r.totals.expense.values['2026-06']).toBe(55)
+    expect(r.totals.net.values['2026-06']).toBe(15)
     // 매출 환불 출금은 판매정산 행에서 차감(지출 섹션에 '판매정산' 행이 생기지 않음)
     expect(r.incomeRows.find((x) => x.name === '온라인 판매정산')?.values['2026-06']).toBe(70)
     expect(r.expenseRows.some((x) => x.name === '온라인 판매정산')).toBe(false)
     // 광고비 환불 입금은 광고비 행에서 차감(수입 섹션에 '광고비' 행이 생기지 않음)
-    expect(r.expenseRows.find((x) => x.name === '광고비')?.values['2026-06']).toBe(10)
+    expect(r.expenseRows.find((x) => x.name === '광고비')?.values['2026-06']).toBe(5)
     expect(r.incomeRows.some((x) => x.name === '광고비')).toBe(false)
     expect(r.metrics.revenue.values['2026-06']).toBe(70)
   })
@@ -136,18 +143,18 @@ describe('화면 간 수입/지출 일치', () => {
   test('대시보드: 같은 합계', async () => {
     const r = await queryDashboard('space-1', { period: 'month', anchor: '2026-06' })
     expect(r.kpi.income).toBe(70)
-    expect(r.kpi.expense).toBe(60)
-    expect(r.kpi.net).toBe(10)
+    expect(r.kpi.expense).toBe(55)
+    expect(r.kpi.net).toBe(15)
   })
 
-  test('Sankey: 매출 70 · 원가 50 · 판관비 10 (환불이 각자 자리에서 차감)', async () => {
+  test('Sankey: 매출 70 · 원가 50 · 판관비 5 (환불·취소가 각자 자리에서 차감)', async () => {
     const res = await sankeyGET({
       nextUrl: new URL('http://x/api/finance/cashflow/sankey?grain=month&period=2026-06'),
     } as Parameters<typeof sankeyGET>[0])
     const body = (await res!.json()) as { totals: Record<string, number> }
     expect(body.totals.merchSales).toBe(70)
     expect(body.totals.cogs).toBe(50)
-    expect(body.totals.opex).toBe(10)
+    expect(body.totals.opex).toBe(5)
     expect(body.totals.totalIncome).toBe(70)
   })
 
@@ -158,7 +165,8 @@ describe('화면 간 수입/지출 일치', () => {
       take: 50,
       skip: 0,
     })
-    expect(r.summary).toEqual({ incomeTotal: 70, expenseTotal: 60, net: 10 })
+    // 카드 취소까지 현금흐름 표와 같은 규칙(취소 상계)
+    expect(r.summary).toEqual({ incomeTotal: 70, expenseTotal: 55, net: 15 })
 
     const where = mockPrisma.finTransaction.findMany.mock.calls[0][0].where
     expect(where.direction).toBeUndefined()

@@ -73,6 +73,10 @@
 
 **처리:** 이 계획 범위 밖. 그 PR을 재개할 때 origin/main 기준으로 리베이스하고, 충돌 지점은 "가드 블록 삭제 + write 옵션 추가"로 해결.
 
+## 진행 중 발견(범위 밖)
+
+- `src/lib/finance/__tests__/coverage.e2e.test.ts`의 imports 목록 테스트 2건(`목록 최신순 + 계좌 정보 포함`, `accountId 필터`)이 **origin/main에서도 실패**한다(2026-10-03 확인, 이번 변경과 무관). 별도 확인 필요.
+
 ## 진행 순서
 
 1. **PR-A (코드만, 스키마 변경 없음):** 1·2·3 → develop → develop URL 검증 → main.

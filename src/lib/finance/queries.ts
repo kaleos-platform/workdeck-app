@@ -190,9 +190,9 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
     ...(from || to
       ? {
           txnDate: {
-            // 로컬 자정 경계 — 대시보드/집계(aggregate.ts)의 로컬 월 경계와 시간대 일치
-            ...(from ? { gte: new Date(`${from}T00:00:00`) } : {}),
-            ...(to ? { lte: new Date(`${to}T23:59:59`) } : {}),
+            // txnDate 저장 규약(KST 벽시계를 UTC로) → 경계도 UTC로 명시(서버 시간대 무관)
+            ...(from ? { gte: new Date(`${from}T00:00:00Z`) } : {}),
+            ...(to ? { lte: new Date(`${to}T23:59:59Z`) } : {}),
           },
         }
       : {}),
@@ -265,19 +265,19 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
     }),
     prisma.finTransaction.count({ where }),
     prisma.finTransaction.groupBy({
-      by: ['direction', 'categoryId'],
+      by: ['direction', 'categoryId', 'cancelFlag'],
       where: sumWhere,
       _sum: { amount: true },
     }),
   ])
 
-  // 합계도 현금흐름 섹션 기준(환불은 원래 계정 섹션에서 차감).
+  // 합계도 현금흐름 섹션 기준(환불은 원래 계정 섹션에서 차감, 카드 취소는 상계) — 현금흐름 표와 동일.
   let incomeTotal = 0
   let expenseTotal = 0
   for (const g of sums) {
     const { section, amount } = cashSection(
       g.direction,
-      toNum(g._sum.amount),
+      signedAmount({ amount: toNum(g._sum.amount), cancelFlag: g.cancelFlag }),
       g.categoryId ? contra.get(g.categoryId) : null
     )
     if (section === 'IN') incomeTotal += amount
