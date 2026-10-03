@@ -6,6 +6,7 @@ export type ContentJson =
   | ContentJson[]
   | { [key: string]: ContentJson }
 export type VerifiedContentImage = {
+  sourceImageKey?: string
   copiedImagePath: string
   verified: boolean
   sha256?: string
@@ -254,12 +255,21 @@ export function planPostingContent(input: PostingContentInput): PostingContentRe
       if (!id) return fail('invalid_resource_id')
       resource = Object.hasOwn(input.resources, id) ? input.resources[id] : undefined
       if (!resource) return fail('missing_resource')
+      asset = resource
       if (
         section.image_key !== undefined &&
         (typeof section.image_key !== 'string' || section.image_key !== resource.sourceImageKey)
-      )
-        return fail('image_source_mismatch')
-      asset = resource
+      ) {
+        // 원본 HTML은 section 이미지, 편집기는 resource scene을 사용하므로 각각 보존한다.
+        const originalImage = input.images[`index:${index}`]
+        if (
+          typeof section.image_key !== 'string' ||
+          !section.image_key ||
+          originalImage?.sourceImageKey !== section.image_key
+        )
+          return fail('image_source_mismatch')
+        asset = originalImage
+      }
     }
     const imageFailure = validateImage(asset)
     if (imageFailure) return fail(imageFailure)
