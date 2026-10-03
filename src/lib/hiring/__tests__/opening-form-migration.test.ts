@@ -217,7 +217,7 @@ it('명시적인 파일 제한을 보존하고 축소가 필요한 정책은 보
     { max_file_count: 4 },
     { max_file_size: 0 },
     { max_file_size: undefined },
-    { max_file_size: 11 * 1024 * 1024 },
+    { max_file_size: 21 * 1024 * 1024 },
   ])
     expect(planOpeningForm('qa', [{ ...file, ...change }])).toMatchObject({
       ok: false,

@@ -2,6 +2,8 @@ import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
 
 const nextConfig: NextConfig = {
+  // 직접 관리하는 AGENTS.md에 개발 서버가 규칙을 자동 추가하지 않도록 한다.
+  agentRules: false,
   env: {
     // Expose Vercel's system URL so client code can detect preview deployments
     NEXT_PUBLIC_VERCEL_URL: process.env.VERCEL_URL ?? '',

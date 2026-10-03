@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useForm, Controller, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -41,6 +41,16 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
   const [files, setFiles] = useState<Record<string, File[]>>({})
   const [fileError, setFileError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null)
+  const uploadBatch = useRef<{
+    files: Array<{ fieldKey: string; file: File }>
+    uploadSessionId: string
+    uploadToken: string
+    expiresAt: number
+    uploads: Array<{ url: string }>
+    completed: boolean[]
+    lastAttemptedPayload?: string
+  } | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
   const [positionId, setPositionId] = useState<string>('')
@@ -71,7 +81,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
 
     // 필수 파일 검증
     for (const f of fileFields) {
-      if (f.required && !files[f.key]?.length) {
+      if (!uploadBatch.current?.lastAttemptedPayload && f.required && !files[f.key]?.length) {
         setFileError(`${f.label} 첨부가 필요합니다`)
         return
       }
@@ -110,7 +120,98 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
 
     setSubmitting(true)
     try {
-      const res = await fetch('/api/hiring-public/applications', { method: 'POST', body: form })
+      const selected = fileFields.flatMap((field) =>
+        (files[field.key] ?? []).map((file) => ({ fieldKey: field.key, file }))
+      )
+      let res: Response
+      if (uploadBatch.current?.lastAttemptedPayload) {
+        // 완료 응답이 유실됐을 수 있으므로 수정된 값보다 이전 요청의 결과를 먼저 확인한다.
+        setUploadProgress('이전 지원서 제출 결과 확인 중')
+        res = await fetch('/api/hiring-public/upload-sessions/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: uploadBatch.current.lastAttemptedPayload,
+        })
+        if (res.status === 400 || res.status === 422) {
+          uploadBatch.current.lastAttemptedPayload = undefined
+        }
+        if (res.status === 410) uploadBatch.current = null
+      } else if (selected.length) {
+        const previous = uploadBatch.current
+        if (
+          !previous ||
+          previous.files.length !== selected.length ||
+          previous.files.some(
+            (item, index) =>
+              item.fieldKey !== selected[index].fieldKey || item.file !== selected[index].file
+          )
+        ) {
+          setUploadProgress('첨부 업로드 준비 중')
+          const intentResponse = await fetch('/api/hiring-public/upload-sessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              postingUuid,
+              files: selected.map(({ fieldKey, file }) => ({
+                fieldKey,
+                fileName: file.name,
+                mimeType: file.type,
+                sizeBytes: file.size,
+              })),
+            }),
+          })
+          const intent = await intentResponse.json().catch(() => ({}))
+          if (!intentResponse.ok)
+            throw new Error(intent.message ?? '첨부 업로드를 준비하지 못했습니다')
+          uploadBatch.current = {
+            files: selected,
+            uploadSessionId: intent.uploadSessionId,
+            uploadToken: intent.uploadToken,
+            expiresAt: Date.parse(intent.expiresAt),
+            uploads: intent.uploads,
+            completed: selected.map(() => false),
+          }
+        }
+        const batch = uploadBatch.current!
+        for (const [index, item] of batch.files.entries()) {
+          if (batch.completed[index] || batch.expiresAt <= Date.now()) continue
+          setUploadProgress(`첨부 업로드 중 (${index + 1}/${batch.files.length})`)
+          const uploaded = await fetch(batch.uploads[index].url, {
+            method: 'PUT',
+            headers: { 'Content-Type': item.file.type, 'x-upsert': 'false' },
+            body: item.file,
+          })
+          // 응답 유실 뒤 같은 경로가 이미 존재하면 완료 API에서 실제 객체를 다시 검증한다.
+          if (!uploaded.ok && uploaded.status !== 409) {
+            const error = uploaded.status === 400 ? await uploaded.json().catch(() => ({})) : {}
+            const duplicate = [error.code, error.error, error.message].some(
+              (value) =>
+                value === 'Duplicate' ||
+                value === 'Asset Already Exists' ||
+                value === 'The resource already exists'
+            )
+            if (!duplicate)
+              throw new Error('첨부 업로드에 실패했습니다. 다시 제출하면 이어서 진행합니다')
+          }
+          batch.completed[index] = true
+        }
+        setUploadProgress('업로드 확인 및 지원서 저장 중')
+        batch.lastAttemptedPayload = JSON.stringify({
+          ...payload,
+          uploadSessionId: batch.uploadSessionId,
+          uploadToken: batch.uploadToken,
+        })
+        res = await fetch('/api/hiring-public/upload-sessions/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: batch.lastAttemptedPayload,
+        })
+        // 최초 요청이 검증 오류로 거절된 경우에만 입력을 수정해 다시 제출할 수 있다.
+        if (res.status === 400 || res.status === 422) batch.lastAttemptedPayload = undefined
+        if (res.status === 410) uploadBatch.current = null
+      } else {
+        res = await fetch('/api/hiring-public/applications', { method: 'POST', body: form })
+      }
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err?.message ?? '지원서 제출에 실패했습니다')
@@ -120,6 +221,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
       setSubmitError(err instanceof Error ? err.message : '지원서 제출에 실패했습니다')
     } finally {
       setSubmitting(false)
+      setUploadProgress(null)
     }
   }
 
@@ -299,6 +401,7 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
                 </span>
                 <button
                   type="button"
+                  disabled={submitting}
                   onClick={() =>
                     setFiles((prev) => ({
                       ...prev,
@@ -341,6 +444,11 @@ export function ApplyForm({ postingUuid, fields, positions, stores, preview = fa
         )
       })}
 
+      {uploadProgress && (
+        <p role="status" className="text-xs text-muted-foreground">
+          {uploadProgress}
+        </p>
+      )}
       {fileError && <p className="text-xs text-destructive">{fileError}</p>}
 
       {/* 개인정보 수집·이용 동의 */}

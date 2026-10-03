@@ -515,6 +515,8 @@ export const ModelName = {
   HiringDetailTemplate: 'HiringDetailTemplate',
   HiringApplication: 'HiringApplication',
   HiringApplicationStore: 'HiringApplicationStore',
+  HiringUploadSession: 'HiringUploadSession',
+  HiringMigrationRecord: 'HiringMigrationRecord',
   HiringApplicationFile: 'HiringApplicationFile',
   HiringComment: 'HiringComment',
   HiringApplicationNotification: 'HiringApplicationNotification',
@@ -541,7 +543,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -10239,6 +10241,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    HiringUploadSession: {
+      payload: Prisma.$HiringUploadSessionPayload<ExtArgs>
+      fields: Prisma.HiringUploadSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringUploadSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringUploadSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringUploadSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringUploadSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload>
+        }
+        findMany: {
+          args: Prisma.HiringUploadSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload>[]
+        }
+        create: {
+          args: Prisma.HiringUploadSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload>
+        }
+        createMany: {
+          args: Prisma.HiringUploadSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringUploadSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringUploadSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload>
+        }
+        update: {
+          args: Prisma.HiringUploadSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringUploadSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringUploadSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringUploadSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringUploadSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringUploadSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringUploadSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringUploadSession>
+        }
+        groupBy: {
+          args: Prisma.HiringUploadSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringUploadSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringUploadSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringUploadSessionCountAggregateOutputType> | number
+        }
+      }
+    }
+    HiringMigrationRecord: {
+      payload: Prisma.$HiringMigrationRecordPayload<ExtArgs>
+      fields: Prisma.HiringMigrationRecordFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HiringMigrationRecordFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HiringMigrationRecordFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload>
+        }
+        findFirst: {
+          args: Prisma.HiringMigrationRecordFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HiringMigrationRecordFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload>
+        }
+        findMany: {
+          args: Prisma.HiringMigrationRecordFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload>[]
+        }
+        create: {
+          args: Prisma.HiringMigrationRecordCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload>
+        }
+        createMany: {
+          args: Prisma.HiringMigrationRecordCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HiringMigrationRecordCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload>[]
+        }
+        delete: {
+          args: Prisma.HiringMigrationRecordDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload>
+        }
+        update: {
+          args: Prisma.HiringMigrationRecordUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload>
+        }
+        deleteMany: {
+          args: Prisma.HiringMigrationRecordDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HiringMigrationRecordUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HiringMigrationRecordUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload>[]
+        }
+        upsert: {
+          args: Prisma.HiringMigrationRecordUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HiringMigrationRecordPayload>
+        }
+        aggregate: {
+          args: Prisma.HiringMigrationRecordAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHiringMigrationRecord>
+        }
+        groupBy: {
+          args: Prisma.HiringMigrationRecordGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringMigrationRecordGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HiringMigrationRecordCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HiringMigrationRecordCountAggregateOutputType> | number
+        }
+      }
+    }
     HiringApplicationFile: {
       payload: Prisma.$HiringApplicationFilePayload<ExtArgs>
       fields: Prisma.HiringApplicationFileFieldRefs
@@ -13307,6 +13457,43 @@ export const HiringApplicationStoreScalarFieldEnum = {
 export type HiringApplicationStoreScalarFieldEnum = (typeof HiringApplicationStoreScalarFieldEnum)[keyof typeof HiringApplicationStoreScalarFieldEnum]
 
 
+export const HiringUploadSessionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postingId: 'postingId',
+  tokenHash: 'tokenHash',
+  files: 'files',
+  expiresAt: 'expiresAt',
+  claimedAt: 'claimedAt',
+  completedAt: 'completedAt',
+  applicationId: 'applicationId',
+  requestHash: 'requestHash',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringUploadSessionScalarFieldEnum = (typeof HiringUploadSessionScalarFieldEnum)[keyof typeof HiringUploadSessionScalarFieldEnum]
+
+
+export const HiringMigrationRecordScalarFieldEnum = {
+  id: 'id',
+  sourceRef: 'sourceRef',
+  spaceId: 'spaceId',
+  sourceSnapshotAt: 'sourceSnapshotAt',
+  transformVersion: 'transformVersion',
+  sourceHash: 'sourceHash',
+  targetModel: 'targetModel',
+  targetId: 'targetId',
+  targetHash: 'targetHash',
+  sourceSnapshotEnc: 'sourceSnapshotEnc',
+  sourceSnapshotIv: 'sourceSnapshotIv',
+  metadata: 'metadata',
+  verifiedAt: 'verifiedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringMigrationRecordScalarFieldEnum = (typeof HiringMigrationRecordScalarFieldEnum)[keyof typeof HiringMigrationRecordScalarFieldEnum]
+
+
 export const HiringApplicationFileScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -14951,6 +15138,8 @@ export type GlobalOmitConfig = {
   hiringDetailTemplate?: Prisma.HiringDetailTemplateOmit
   hiringApplication?: Prisma.HiringApplicationOmit
   hiringApplicationStore?: Prisma.HiringApplicationStoreOmit
+  hiringUploadSession?: Prisma.HiringUploadSessionOmit
+  hiringMigrationRecord?: Prisma.HiringMigrationRecordOmit
   hiringApplicationFile?: Prisma.HiringApplicationFileOmit
   hiringComment?: Prisma.HiringCommentOmit
   hiringApplicationNotification?: Prisma.HiringApplicationNotificationOmit

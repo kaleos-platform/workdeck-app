@@ -21,15 +21,15 @@
 - [x] 전체 단위 테스트 기준선: 215 suites / 1,756 tests 통과.
 - [x] 공개 지원/첨부/변환기 독립 코드 리뷰와 중요한 지적 수정. 일반 필수값 API 누락과 유형 변경 시 제한 충돌을 수정하고 UI 저장까지 검증.
 - [x] 실패 재현 → 수정 → 전체 215 suites/1,760 tests, typecheck, lint(오류 0/기존 경고 70), 로컬 production build 통과.
-- [ ] 누적 코드와 테스트를 범위별 커밋. 스크린샷/비밀정보는 포함하지 않음.
+- [x] 누적 코드와 테스트 체크포인트 `e7cf7d9a`. 스크린샷/비밀정보 제외.
 
 ### 2. 실제 원본과 변환 성공/보류 건수 대조
 
 대상: `scripts/audit-opening-migration.mjs`, `src/lib/hiring/opening-form-migration.ts` 및 합성 테스트.
 
-- [ ] 기존 읽기 전용 원본 접근으로 폼 변환 사유와 파일 정책 분포를 집계. 고객 원문/PII 출력 금지.
+- [x] 읽기 전용 폼 집계: 18개 유료 ACTIVE 고객, 1,506개 중 1,490개 계획 가능 / 모호한 필드 16개 보류(2026-10-03 06:41 UTC). 202개 파일 항목은 3개/20 MiB. 고객 원문/PII 출력 없음.
 - [ ] 원본 콘텐츠·관계의 변환 가능 범위를 확인하고 지원자 과거 폼/표시값의 근거를 구분.
-- [ ] 파일 메타데이터와 객체 HEAD 대조를 구현. 참조 범위 밖 객체를 수집하지 않음.
+- [x] 참조 범위 내 첨부 262개 HEAD 대조: 모두 존재, 누락/접근 실패 0, 합계 528,799,917 bytes, 10 MiB 초과 11개. 내용 checksum/복사는 별도 미완료.
 - [ ] `planned + blocked + excluded = source` 대조 및 잘못된 데이터/범위 이탈 합성 사례 검증.
 
 ### 3. 이전 계획과 영속 대응 원장
@@ -37,8 +37,8 @@
 대상: 신규 `src/lib/hiring/migration/` 모듈, `scripts/migrate-opening-customers.*`, 필요 시 `prisma/schema.prisma`와 migrate dev 생성 파일.
 
 - [ ] 명시적 고객 allowlist/원본 snapshot/대상 Space·계정 대응을 입력으로 받는 읽기 전용 계획 명령 구현.
-- [ ] BIGINT 문자열과 `(sourceSystem, sourceTable, sourceId, occurrence)` 대응, 버전·checksum·상태를 기록.
-- [ ] DB 행 생성과 원장 확정을 같은 트랜잭션으로 수행. 기존 수정 데이터는 덮어쓰지 않음.
+- [x] BIGINT 문자열 tuple 대응과 snapshot/변환 버전·hash·암호화 원본을 저장하는 원장 helper 구현. 고객 이전 CLI 연결은 미완료.
+- [x] 합성 공고의 실제 개발 DB transaction에서 원자성/재실행/고객 수정 충돌을 검증. 고객 importer 연결은 미완료.
 - [ ] 객체 복사를 checksum/개별 상태로 분리하고 실패 재개 검증. 알림·결제·공개 접수 부작용 없음.
 - [ ] 합성 데이터로 첫 실행/재실행/실패 재개/충돌/교차 Space 거부를 검증.
 
@@ -62,3 +62,37 @@
 대표 고객 범위와 대상 Space 소유자, 실제 고객 데이터를 받을 검증 환경, 삭제/이력 보존 정책, 기존 결제와 URL 유지 기간, 최종 운영 전환은 코드만으로 결정하지 않는다. 해당 단계까지 독립적인 구현·테스트를 계속 진행하고, 선택 가능한 구체적 결과와 영향을 제시한다.
 
 상세 근거: [이전 가이드](opening-migration-plan.md). 앱 기능 개선 기록: [누적 평가](../../../audit/2026-09-11-recruiting-product-review.md).
+
+## 직접 업로드와 이전 원장 구현 계약
+
+2026-10-03 원본 HEAD 확인: 첨부 262개 모두 존재, 11개는 10 MiB 초과. 원본 파일 정책 202개 항목은 모두 최대 3개/20 MiB. 파일 내용 checksum은 아직 확인하지 않았다.
+
+- 브라우저는 서버가 발급한 항목별 signed upload URL로 `hiring-files` 비공개 버킷에 직접 PUT한다. API에 파일 본문을 보내지 않아 Vercel body 한도를 피한다.
+- `HiringUploadSession`은 임의 token의 hash, 공고/Space, 서버가 정한 파일 ID/경로/크기/MIME/항목, 만료와 최종 지원서 대응을 보관한다. 임의 경로/다른 세션/만료 token/동시 완료는 거부한다.
+- 완료 API는 실제 객체 메타데이터·현재 공고 정의·지원서 값을 검증한 뒤 지원서/파일 메타데이터/세션 완료를 DB 트랜잭션으로 확정한다. 같은 token과 같은 제출값의 재시도는 동일 결과를 반환하고 다른 제출값은 충돌 처리한다.
+- 미완료 업로드는 만료 후 정리한다. 성공한 지원서가 참조하는 객체는 정리하지 않는다. 세션 만료·서명 URL 수명과 정리 시점의 관계를 검증한다.
+- 원본 정책 지원을 위해 최대 파일 크기를 20 MiB로 맞춘다. 운영 버킷 제한/권한 변경은 대상 환경 사전 점검과 전환 실행 목록에 포함한다.
+- `HiringMigrationRecord`는 sourceRef unique, targetModel/targetId unique, 원본·대상 hash와 snapshot/변환 버전을 보관한다. 원본 추가 데이터 보존이 필요한 경우 암호화 snapshot을 사용한다. 평문 고객 데이터는 로그나 Git에 저장하지 않는다.
+- 새 테이블은 migration에서 RLS를 활성화하고 익명·일반 로그인 DB API 접근을 허용하지 않는다. 서버 권한으로만 사용한다.
+
+## 2026-10-03 직접 업로드 및 원장 검증 결과
+
+- 직접 업로드 API: 파일 본문을 API로 보내지 않고 브라우저에서 private Storage로 PUT. 선언/실제 크기·MIME 메타데이터 대조, token hash, 항목 대응, 중복 완료 방지.
+- 완료 응답이 유실되면 파일/입력 변경보다 기존 제출 결과 확인을 먼저 수행. 완료 세션은 만료 후에도 동일 결과 반환. 400/422 검증 오류에는 입력 수정 가능.
+- 미완료 세션은 생성 3시간 후 정리. 매시간 실행, 회당 40초/500개 한도 내 반복 배치, 실패 항목 1시간 backoff. `CronRun.detail`의 failed/remaining/truncated 확인 필요. 운영의 시간 단위 cron 지원과 CRON_SECRET 설정은 배포 전 확인한다.
+- 공고 삭제 시 세션의 postingId는 SET NULL로 남아 미완료 객체 정리 근거를 유지. 실제 지원서가 참조하는 파일은 정리하지 않는다.
+- 버킷은 private + 정확히 20 MiB 제한을 검사한다. 개발 버킷만 10→20 MiB 변경 완료. 운영은 미변경.
+- Aside 실제 브라우저: 합성 12 MiB PUT 200, 동시 complete 2회 모두 201/동일 uuid, 실제 지원서 1건/파일 1건/세션 1건. 이름 암호화 및 JSON 평문 제거 확인. QA 공고/파일/세션 정리 완료.
+- 실제 개발 DB 원장: 동시 실행 생성 1건, 재실행 existing, 암호화 snapshot 복원, 고객 수정 충돌, 대상과 원장 동시 rollback 확인. 합성 데이터 정리 완료.
+- 파일 복사 helper: 안정 경로, 원본·대상 SHA256/크기, 쓰기 후 재다운로드 확인, 실패 후 재실행 합성 검증. 실제 원본 첨부의 복사/내용 checksum은 아직 수행하지 않았다.
+- MIME은 Storage 메타데이터 검증이며 바이너리 내용 판별/악성코드 검사를 뜻하지 않는다.
+
+### 마이그레이션 생성·적용 환경
+
+기존 전체 이력은 빈 shadow DB에서 재생되지 않는다. storage/auth 사전 객체와 `CoupangBackfillStatus` enum 생성 전 ALTER 순서 문제가 있다. 별도 브랜치의 적용 이력 3건도 현재 브랜치에 없었다. 기존 이력을 수정하거나 개발 DB를 reset하지 않았다.
+
+이번 새 테이블만 기존 HEAD 스키마를 baseline으로 만든 임시 로컬 PostgreSQL에서 `prisma migrate dev --name hiring_upload_sessions_and_migration_ledger`로 생성·적용 검증했다. RLS 활성화와 anon/authenticated 권한 회수를 포함한다. 유일한 대기 migration임을 확인한 후 개발 DB에 migrate deploy 적용했다. 전체 이력의 신규 환경 재생 문제는 별도 미해결이며 검증 환경 생성 전 해결해야 한다.
+
+Next.js 16.3.8 및 관련 보안 업데이트 내용은 [런타임 점검](../../../audit/2026-10-03-runtime-security.md)을 참조한다. Next 개발 서버의 AGENTS.md 자동 추가는 `agentRules: false`로 꺼 기존 프로젝트 규칙을 유지한다.
+
+검증 체크포인트: Jest 219 suites / 1,824 tests 통과. 읽기 전용 도구 테스트 8개 통과, 선택 SQL integration 1개 미실행. TypeScript 검사 통과, lint 오류 0/기존 경고 70, Next.js 16.3.8 로컬 production build 통과. 로컬 URL로 빌드한 `.next`는 배포 산출물로 사용하지 않는다.

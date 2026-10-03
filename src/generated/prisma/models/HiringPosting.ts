@@ -300,6 +300,7 @@ export type HiringPostingWhereInput = {
   managers?: Prisma.HiringPostingManagerListRelationFilter
   contents?: Prisma.HiringContentListRelationFilter
   applications?: Prisma.HiringApplicationListRelationFilter
+  uploadSessions?: Prisma.HiringUploadSessionListRelationFilter
 }
 
 export type HiringPostingOrderByWithRelationInput = {
@@ -329,6 +330,7 @@ export type HiringPostingOrderByWithRelationInput = {
   managers?: Prisma.HiringPostingManagerOrderByRelationAggregateInput
   contents?: Prisma.HiringContentOrderByRelationAggregateInput
   applications?: Prisma.HiringApplicationOrderByRelationAggregateInput
+  uploadSessions?: Prisma.HiringUploadSessionOrderByRelationAggregateInput
 }
 
 export type HiringPostingWhereUniqueInput = Prisma.AtLeast<{
@@ -361,6 +363,7 @@ export type HiringPostingWhereUniqueInput = Prisma.AtLeast<{
   managers?: Prisma.HiringPostingManagerListRelationFilter
   contents?: Prisma.HiringContentListRelationFilter
   applications?: Prisma.HiringApplicationListRelationFilter
+  uploadSessions?: Prisma.HiringUploadSessionListRelationFilter
 }, "id" | "uuid">
 
 export type HiringPostingOrderByWithAggregationInput = {
@@ -441,6 +444,7 @@ export type HiringPostingCreateInput = {
   managers?: Prisma.HiringPostingManagerCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingUncheckedCreateInput = {
@@ -469,6 +473,7 @@ export type HiringPostingUncheckedCreateInput = {
   managers?: Prisma.HiringPostingManagerUncheckedCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingUpdateInput = {
@@ -497,6 +502,7 @@ export type HiringPostingUpdateInput = {
   managers?: Prisma.HiringPostingManagerUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingUncheckedUpdateInput = {
@@ -525,6 +531,7 @@ export type HiringPostingUncheckedUpdateInput = {
   managers?: Prisma.HiringPostingManagerUncheckedUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUncheckedUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingCreateManyInput = {
@@ -798,6 +805,22 @@ export type HiringPostingUpdateOneRequiredWithoutApplicationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.HiringPostingUpdateToOneWithWhereWithoutApplicationsInput, Prisma.HiringPostingUpdateWithoutApplicationsInput>, Prisma.HiringPostingUncheckedUpdateWithoutApplicationsInput>
 }
 
+export type HiringPostingCreateNestedOneWithoutUploadSessionsInput = {
+  create?: Prisma.XOR<Prisma.HiringPostingCreateWithoutUploadSessionsInput, Prisma.HiringPostingUncheckedCreateWithoutUploadSessionsInput>
+  connectOrCreate?: Prisma.HiringPostingCreateOrConnectWithoutUploadSessionsInput
+  connect?: Prisma.HiringPostingWhereUniqueInput
+}
+
+export type HiringPostingUpdateOneWithoutUploadSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.HiringPostingCreateWithoutUploadSessionsInput, Prisma.HiringPostingUncheckedCreateWithoutUploadSessionsInput>
+  connectOrCreate?: Prisma.HiringPostingCreateOrConnectWithoutUploadSessionsInput
+  upsert?: Prisma.HiringPostingUpsertWithoutUploadSessionsInput
+  disconnect?: Prisma.HiringPostingWhereInput | boolean
+  delete?: Prisma.HiringPostingWhereInput | boolean
+  connect?: Prisma.HiringPostingWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.HiringPostingUpdateToOneWithWhereWithoutUploadSessionsInput, Prisma.HiringPostingUpdateWithoutUploadSessionsInput>, Prisma.HiringPostingUncheckedUpdateWithoutUploadSessionsInput>
+}
+
 export type HiringPostingCreateWithoutSpaceInput = {
   id?: string
   uuid?: string
@@ -823,6 +846,7 @@ export type HiringPostingCreateWithoutSpaceInput = {
   managers?: Prisma.HiringPostingManagerCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingUncheckedCreateWithoutSpaceInput = {
@@ -850,6 +874,7 @@ export type HiringPostingUncheckedCreateWithoutSpaceInput = {
   managers?: Prisma.HiringPostingManagerUncheckedCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingCreateOrConnectWithoutSpaceInput = {
@@ -929,6 +954,7 @@ export type HiringPostingCreateWithoutPositionsInput = {
   managers?: Prisma.HiringPostingManagerCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingUncheckedCreateWithoutPositionsInput = {
@@ -956,6 +982,7 @@ export type HiringPostingUncheckedCreateWithoutPositionsInput = {
   managers?: Prisma.HiringPostingManagerUncheckedCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingCreateOrConnectWithoutPositionsInput = {
@@ -999,6 +1026,7 @@ export type HiringPostingUpdateWithoutPositionsInput = {
   managers?: Prisma.HiringPostingManagerUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingUncheckedUpdateWithoutPositionsInput = {
@@ -1026,6 +1054,7 @@ export type HiringPostingUncheckedUpdateWithoutPositionsInput = {
   managers?: Prisma.HiringPostingManagerUncheckedUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUncheckedUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingCreateWithoutStoresInput = {
@@ -1053,6 +1082,7 @@ export type HiringPostingCreateWithoutStoresInput = {
   managers?: Prisma.HiringPostingManagerCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingUncheckedCreateWithoutStoresInput = {
@@ -1080,6 +1110,7 @@ export type HiringPostingUncheckedCreateWithoutStoresInput = {
   managers?: Prisma.HiringPostingManagerUncheckedCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingCreateOrConnectWithoutStoresInput = {
@@ -1123,6 +1154,7 @@ export type HiringPostingUpdateWithoutStoresInput = {
   managers?: Prisma.HiringPostingManagerUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingUncheckedUpdateWithoutStoresInput = {
@@ -1150,6 +1182,7 @@ export type HiringPostingUncheckedUpdateWithoutStoresInput = {
   managers?: Prisma.HiringPostingManagerUncheckedUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUncheckedUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingCreateWithoutManagersInput = {
@@ -1177,6 +1210,7 @@ export type HiringPostingCreateWithoutManagersInput = {
   stores?: Prisma.HiringPostingStoreCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingUncheckedCreateWithoutManagersInput = {
@@ -1204,6 +1238,7 @@ export type HiringPostingUncheckedCreateWithoutManagersInput = {
   stores?: Prisma.HiringPostingStoreUncheckedCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingCreateOrConnectWithoutManagersInput = {
@@ -1247,6 +1282,7 @@ export type HiringPostingUpdateWithoutManagersInput = {
   stores?: Prisma.HiringPostingStoreUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingUncheckedUpdateWithoutManagersInput = {
@@ -1274,6 +1310,7 @@ export type HiringPostingUncheckedUpdateWithoutManagersInput = {
   stores?: Prisma.HiringPostingStoreUncheckedUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUncheckedUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingCreateWithoutContentsInput = {
@@ -1301,6 +1338,7 @@ export type HiringPostingCreateWithoutContentsInput = {
   stores?: Prisma.HiringPostingStoreCreateNestedManyWithoutPostingInput
   managers?: Prisma.HiringPostingManagerCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingUncheckedCreateWithoutContentsInput = {
@@ -1328,6 +1366,7 @@ export type HiringPostingUncheckedCreateWithoutContentsInput = {
   stores?: Prisma.HiringPostingStoreUncheckedCreateNestedManyWithoutPostingInput
   managers?: Prisma.HiringPostingManagerUncheckedCreateNestedManyWithoutPostingInput
   applications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingCreateOrConnectWithoutContentsInput = {
@@ -1371,6 +1410,7 @@ export type HiringPostingUpdateWithoutContentsInput = {
   stores?: Prisma.HiringPostingStoreUpdateManyWithoutPostingNestedInput
   managers?: Prisma.HiringPostingManagerUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingUncheckedUpdateWithoutContentsInput = {
@@ -1398,6 +1438,7 @@ export type HiringPostingUncheckedUpdateWithoutContentsInput = {
   stores?: Prisma.HiringPostingStoreUncheckedUpdateManyWithoutPostingNestedInput
   managers?: Prisma.HiringPostingManagerUncheckedUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingCreateWithoutApplicationsInput = {
@@ -1425,6 +1466,7 @@ export type HiringPostingCreateWithoutApplicationsInput = {
   stores?: Prisma.HiringPostingStoreCreateNestedManyWithoutPostingInput
   managers?: Prisma.HiringPostingManagerCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingUncheckedCreateWithoutApplicationsInput = {
@@ -1452,6 +1494,7 @@ export type HiringPostingUncheckedCreateWithoutApplicationsInput = {
   stores?: Prisma.HiringPostingStoreUncheckedCreateNestedManyWithoutPostingInput
   managers?: Prisma.HiringPostingManagerUncheckedCreateNestedManyWithoutPostingInput
   contents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutPostingInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutPostingInput
 }
 
 export type HiringPostingCreateOrConnectWithoutApplicationsInput = {
@@ -1495,6 +1538,7 @@ export type HiringPostingUpdateWithoutApplicationsInput = {
   stores?: Prisma.HiringPostingStoreUpdateManyWithoutPostingNestedInput
   managers?: Prisma.HiringPostingManagerUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingUncheckedUpdateWithoutApplicationsInput = {
@@ -1522,6 +1566,135 @@ export type HiringPostingUncheckedUpdateWithoutApplicationsInput = {
   stores?: Prisma.HiringPostingStoreUncheckedUpdateManyWithoutPostingNestedInput
   managers?: Prisma.HiringPostingManagerUncheckedUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUncheckedUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutPostingNestedInput
+}
+
+export type HiringPostingCreateWithoutUploadSessionsInput = {
+  id?: string
+  uuid?: string
+  title: string
+  status?: $Enums.HiringPostingStatus
+  detail?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  applicationEntries?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  managerNameEnc?: string | null
+  managerNameIv?: string | null
+  managerPhoneEnc?: string | null
+  managerPhoneIv?: string | null
+  closingDate?: Date | string | null
+  publishedAt?: Date | string | null
+  notificationEnabled?: boolean
+  authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutHiringPostingsInput
+  positions?: Prisma.HiringPostingPositionCreateNestedManyWithoutPostingInput
+  stores?: Prisma.HiringPostingStoreCreateNestedManyWithoutPostingInput
+  managers?: Prisma.HiringPostingManagerCreateNestedManyWithoutPostingInput
+  contents?: Prisma.HiringContentCreateNestedManyWithoutPostingInput
+  applications?: Prisma.HiringApplicationCreateNestedManyWithoutPostingInput
+}
+
+export type HiringPostingUncheckedCreateWithoutUploadSessionsInput = {
+  id?: string
+  spaceId: string
+  uuid?: string
+  title: string
+  status?: $Enums.HiringPostingStatus
+  detail?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  applicationEntries?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  managerNameEnc?: string | null
+  managerNameIv?: string | null
+  managerPhoneEnc?: string | null
+  managerPhoneIv?: string | null
+  closingDate?: Date | string | null
+  publishedAt?: Date | string | null
+  notificationEnabled?: boolean
+  authorUserId?: string | null
+  appliedTemplateName?: string | null
+  appliedTemplateId?: string | null
+  appliedTemplateAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  positions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutPostingInput
+  stores?: Prisma.HiringPostingStoreUncheckedCreateNestedManyWithoutPostingInput
+  managers?: Prisma.HiringPostingManagerUncheckedCreateNestedManyWithoutPostingInput
+  contents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutPostingInput
+  applications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutPostingInput
+}
+
+export type HiringPostingCreateOrConnectWithoutUploadSessionsInput = {
+  where: Prisma.HiringPostingWhereUniqueInput
+  create: Prisma.XOR<Prisma.HiringPostingCreateWithoutUploadSessionsInput, Prisma.HiringPostingUncheckedCreateWithoutUploadSessionsInput>
+}
+
+export type HiringPostingUpsertWithoutUploadSessionsInput = {
+  update: Prisma.XOR<Prisma.HiringPostingUpdateWithoutUploadSessionsInput, Prisma.HiringPostingUncheckedUpdateWithoutUploadSessionsInput>
+  create: Prisma.XOR<Prisma.HiringPostingCreateWithoutUploadSessionsInput, Prisma.HiringPostingUncheckedCreateWithoutUploadSessionsInput>
+  where?: Prisma.HiringPostingWhereInput
+}
+
+export type HiringPostingUpdateToOneWithWhereWithoutUploadSessionsInput = {
+  where?: Prisma.HiringPostingWhereInput
+  data: Prisma.XOR<Prisma.HiringPostingUpdateWithoutUploadSessionsInput, Prisma.HiringPostingUncheckedUpdateWithoutUploadSessionsInput>
+}
+
+export type HiringPostingUpdateWithoutUploadSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumHiringPostingStatusFieldUpdateOperationsInput | $Enums.HiringPostingStatus
+  detail?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  applicationEntries?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  managerNameEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerNameIv?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerPhoneEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerPhoneIv?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  closingDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutHiringPostingsNestedInput
+  positions?: Prisma.HiringPostingPositionUpdateManyWithoutPostingNestedInput
+  stores?: Prisma.HiringPostingStoreUpdateManyWithoutPostingNestedInput
+  managers?: Prisma.HiringPostingManagerUpdateManyWithoutPostingNestedInput
+  contents?: Prisma.HiringContentUpdateManyWithoutPostingNestedInput
+  applications?: Prisma.HiringApplicationUpdateManyWithoutPostingNestedInput
+}
+
+export type HiringPostingUncheckedUpdateWithoutUploadSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumHiringPostingStatusFieldUpdateOperationsInput | $Enums.HiringPostingStatus
+  detail?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  applicationEntries?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  managerNameEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerNameIv?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerPhoneEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerPhoneIv?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  closingDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notificationEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  authorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  appliedTemplateAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  positions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutPostingNestedInput
+  stores?: Prisma.HiringPostingStoreUncheckedUpdateManyWithoutPostingNestedInput
+  managers?: Prisma.HiringPostingManagerUncheckedUpdateManyWithoutPostingNestedInput
+  contents?: Prisma.HiringContentUncheckedUpdateManyWithoutPostingNestedInput
+  applications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingCreateManySpaceInput = {
@@ -1571,6 +1744,7 @@ export type HiringPostingUpdateWithoutSpaceInput = {
   managers?: Prisma.HiringPostingManagerUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingUncheckedUpdateWithoutSpaceInput = {
@@ -1598,6 +1772,7 @@ export type HiringPostingUncheckedUpdateWithoutSpaceInput = {
   managers?: Prisma.HiringPostingManagerUncheckedUpdateManyWithoutPostingNestedInput
   contents?: Prisma.HiringContentUncheckedUpdateManyWithoutPostingNestedInput
   applications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutPostingNestedInput
+  uploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutPostingNestedInput
 }
 
 export type HiringPostingUncheckedUpdateManyWithoutSpaceInput = {
@@ -1633,6 +1808,7 @@ export type HiringPostingCountOutputType = {
   managers: number
   contents: number
   applications: number
+  uploadSessions: number
 }
 
 export type HiringPostingCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1641,6 +1817,7 @@ export type HiringPostingCountOutputTypeSelect<ExtArgs extends runtime.Types.Ext
   managers?: boolean | HiringPostingCountOutputTypeCountManagersArgs
   contents?: boolean | HiringPostingCountOutputTypeCountContentsArgs
   applications?: boolean | HiringPostingCountOutputTypeCountApplicationsArgs
+  uploadSessions?: boolean | HiringPostingCountOutputTypeCountUploadSessionsArgs
 }
 
 /**
@@ -1688,6 +1865,13 @@ export type HiringPostingCountOutputTypeCountApplicationsArgs<ExtArgs extends ru
   where?: Prisma.HiringApplicationWhereInput
 }
 
+/**
+ * HiringPostingCountOutputType without action
+ */
+export type HiringPostingCountOutputTypeCountUploadSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.HiringUploadSessionWhereInput
+}
+
 
 export type HiringPostingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1716,6 +1900,7 @@ export type HiringPostingSelect<ExtArgs extends runtime.Types.Extensions.Interna
   managers?: boolean | Prisma.HiringPosting$managersArgs<ExtArgs>
   contents?: boolean | Prisma.HiringPosting$contentsArgs<ExtArgs>
   applications?: boolean | Prisma.HiringPosting$applicationsArgs<ExtArgs>
+  uploadSessions?: boolean | Prisma.HiringPosting$uploadSessionsArgs<ExtArgs>
   _count?: boolean | Prisma.HiringPostingCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["hiringPosting"]>
 
@@ -1798,6 +1983,7 @@ export type HiringPostingInclude<ExtArgs extends runtime.Types.Extensions.Intern
   managers?: boolean | Prisma.HiringPosting$managersArgs<ExtArgs>
   contents?: boolean | Prisma.HiringPosting$contentsArgs<ExtArgs>
   applications?: boolean | Prisma.HiringPosting$applicationsArgs<ExtArgs>
+  uploadSessions?: boolean | Prisma.HiringPosting$uploadSessionsArgs<ExtArgs>
   _count?: boolean | Prisma.HiringPostingCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type HiringPostingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1816,6 +2002,7 @@ export type $HiringPostingPayload<ExtArgs extends runtime.Types.Extensions.Inter
     managers: Prisma.$HiringPostingManagerPayload<ExtArgs>[]
     contents: Prisma.$HiringContentPayload<ExtArgs>[]
     applications: Prisma.$HiringApplicationPayload<ExtArgs>[]
+    uploadSessions: Prisma.$HiringUploadSessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2238,6 +2425,7 @@ export interface Prisma__HiringPostingClient<T, Null = never, ExtArgs extends ru
   managers<T extends Prisma.HiringPosting$managersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HiringPosting$managersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringPostingManagerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   contents<T extends Prisma.HiringPosting$contentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HiringPosting$contentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringContentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   applications<T extends Prisma.HiringPosting$applicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HiringPosting$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  uploadSessions<T extends Prisma.HiringPosting$uploadSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.HiringPosting$uploadSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HiringUploadSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2800,6 +2988,30 @@ export type HiringPosting$applicationsArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.HiringApplicationScalarFieldEnum | Prisma.HiringApplicationScalarFieldEnum[]
+}
+
+/**
+ * HiringPosting.uploadSessions
+ */
+export type HiringPosting$uploadSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HiringUploadSession
+   */
+  select?: Prisma.HiringUploadSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HiringUploadSession
+   */
+  omit?: Prisma.HiringUploadSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HiringUploadSessionInclude<ExtArgs> | null
+  where?: Prisma.HiringUploadSessionWhereInput
+  orderBy?: Prisma.HiringUploadSessionOrderByWithRelationInput | Prisma.HiringUploadSessionOrderByWithRelationInput[]
+  cursor?: Prisma.HiringUploadSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.HiringUploadSessionScalarFieldEnum | Prisma.HiringUploadSessionScalarFieldEnum[]
 }
 
 /**
