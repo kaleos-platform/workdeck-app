@@ -13,6 +13,8 @@ export type CategoryTreeNode = {
   type: string
   /** 비활성 항목은 새 분류 선택지에서 숨긴다(미지정=활성 취급). */
   isActive?: boolean
+  /** 차감 계정(매출환입 등) — 반대 방향 거래만 받는다(contra.ts). */
+  isContra?: boolean
   children: CategoryTreeNode[]
 }
 
@@ -33,6 +35,8 @@ export type ComboOption = {
    * 콤보박스가 목록에서 숨긴다(현재 선택값은 라벨 보존 위해 유지). 미지정=활성.
    */
   isActive?: boolean
+  /** 차감 계정 — 콤보 방향 가드가 반대 방향 거래에만 노출한다. */
+  isContra?: boolean
   /** 검색 매칭 키워드: [이름, 상위명, 그룹명] */
   keywords: string[]
 }
@@ -91,6 +95,7 @@ export function buildClassifyOptions(
             badge: { label: badge.label, className: badge.className },
             indent: true,
             isActive: groupActive && sub.isActive !== false,
+            isContra: sub.isContra,
             keywords: [sub.name, lvl1.name, badge.label],
           })
         }

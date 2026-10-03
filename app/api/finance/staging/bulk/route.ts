@@ -45,14 +45,14 @@ export async function POST(req: NextRequest) {
   if (typeof body?.categoryId === 'string' && body.categoryId) {
     const category = await prisma.finCategory.findFirst({
       where: { id: body.categoryId, spaceId },
-      select: { id: true, type: true },
+      select: { id: true, type: true, isContra: true },
     })
     if (!category) return errorResponse('계정과목을 찾을 수 없습니다', 400)
 
-    // 방향↔계정과목 type 불일치 차단 — OUT 행에 INCOME 계정 지정 방지.
+    // 방향↔계정과목 type 불일치 차단 — OUT 행에 INCOME 계정 지정 방지(차감 계정=매출환입은 허용).
     // 일괄 선택은 방향이 혼재할 수 있으므로 대상 행의 direction을 조회 후 판정.
     // IN 행에 EXPENSE 계정은 환불 등 합법 케이스가 있어 허용. TRANSFER type은 스킵.
-    if (category.type === 'INCOME') {
+    if (category.type === 'INCOME' && !category.isContra) {
       const outRows = await prisma.finStagedRow.findMany({
         where: { id: { in: ids }, spaceId, direction: 'OUT' },
         select: { id: true },

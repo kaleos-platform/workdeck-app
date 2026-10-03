@@ -14,6 +14,7 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { comboOptionLabel, type ComboOption } from '@/lib/finance/category-options'
+import { isCategoryAllowedForDirection } from '@/lib/finance/contra'
 import type { FinCategoryType } from '@/generated/prisma/enums'
 
 /** 분류 탭(수익/비용/이체). 라벨은 항목 배지(categoryTypeBadge)와 동일 표기. */
@@ -44,6 +45,7 @@ type CategoryComboboxProps = {
    * 금액 방향과 어긋나는 타입을 선택 불가로 막는다(오분류 방지).
    * OUT(지출) → '수익'(INCOME) 비활성, IN(수입) → '비용'(EXPENSE) 비활성. '이체'는 항상 허용.
    * 탭 비활성 + 목록/검색에서도 제외(검색으로 우회 선택 차단). 이미 분류된 현재 값은 라벨 보존을 위해 유지.
+   * 차감 계정(isContra)은 반대로 판정 — OUT이면 '수익' 탭에 매출환입만, '비용' 탭에서 매입환출은 숨김.
    */
   blockType?: FinCategoryType | null
 }
@@ -71,6 +73,19 @@ export function CategoryCombobox({
   const [query, setQuery] = React.useState('')
   // 선택값의 타입을 우선 활성 탭으로(이미 분류된 행 재오픈 시 해당 탭). 없으면 방향 기본/수익.
   const selectedOption = value ? options.find((o) => o.id === value) : undefined
+  // blockType = 거래 방향의 반대 타입(OUT→INCOME, IN→EXPENSE). 옵션 단위 판정은 거래 방향으로 한다.
+  const direction = blockType === 'INCOME' ? 'OUT' : blockType === 'EXPENSE' ? 'IN' : null
+  const allowedForDirection = React.useCallback(
+    (o: ComboOption) =>
+      direction == null ||
+      o.type == null ||
+      isCategoryAllowedForDirection({ type: o.type, isContra: o.isContra }, direction),
+    [direction]
+  )
+  // 탭 차단 = 그 타입에 방향 허용 옵션이 하나도 없을 때(차감 계정이 있으면 탭은 열림).
+  const isTabBlocked = (type: FinCategoryType) =>
+    type === blockType &&
+    !options.some((o) => o.type === type && o.isActive !== false && allowedForDirection(o))
   // 방향과 어긋나 막힌 타입이 기본 탭이면 허용 탭으로 대체(OUT→비용, IN→수익, 그 외 첫 허용).
   const resolveInitialType = React.useCallback((): FinCategoryType => {
     const pref = selectedOption?.type ?? defaultType ?? 'INCOME'
@@ -86,7 +101,7 @@ export function CategoryCombobox({
   // blockType 미지정이면 타입 비교를 건너뛴다 — type 없는 옵션(undefined !== undefined = false)이
   // 통째로 탈락하는 회귀 방지(상위 계정과목 콤보가 항상 빈 목록이 됐던 버그).
   const base = options.filter(
-    (o) => (o.isActive !== false && (blockType == null || o.type !== blockType)) || o.id === value
+    (o) => (o.isActive !== false && allowedForDirection(o)) || o.id === value
   )
   // groupByType + 검색어 없음 → 활성 탭만(단 type 없는 옵션=미분류 sentinel은 탭 무관 항상 노출).
   // 검색 중엔 전 타입 교차 검색(탭 필터 우회).
@@ -129,7 +144,7 @@ export function CategoryCombobox({
           {groupByType && (
             <div className="flex gap-1 border-b p-1">
               {TYPE_TABS.map((t) => {
-                const blocked = t.type === blockType
+                const blocked = isTabBlocked(t.type)
                 return (
                   <button
                     key={t.type}

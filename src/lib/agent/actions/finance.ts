@@ -97,12 +97,12 @@ const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
 
     const category = await prisma.finCategory.findFirst({
       where: { id: params.categoryId, spaceId },
-      select: { id: true, type: true },
+      select: { id: true, type: true, isContra: true },
     })
     if (!category) throw new Error('계정과목을 찾을 수 없습니다')
 
     const normalizedKey = normalizeFinKey(params.matchKey)
-    const direction = directionForType(category.type)
+    const direction = directionForType(category.type, category.isContra)
 
     // 메모 정규화 — undefined=변경 없음(유지), null/빈="삭제"(null), 그 외 trim 문자열.
     const memoResult = normalizeMemoInput(params.memo)

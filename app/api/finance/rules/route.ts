@@ -58,10 +58,10 @@ export async function POST(req: NextRequest) {
   // categoryId spaceId 소유 검증 + 방향(type 기반) 유도
   const category = await prisma.finCategory.findFirst({
     where: { id: categoryId, spaceId },
-    select: { id: true, type: true },
+    select: { id: true, type: true, isContra: true },
   })
   if (!category) return errorResponse('계정과목을 찾을 수 없습니다', 400)
-  const direction = directionForType(category.type)
+  const direction = directionForType(category.type, category.isContra)
 
   // (spaceId, matchKey, direction) 멱등 — direction이 null일 수 있어 compound-unique upsert 대신
   // findFirst → update/create. 있으면 categoryId/matchType 갱신.

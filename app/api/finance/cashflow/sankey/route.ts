@@ -6,7 +6,7 @@
  * 손익 계층은 level-1 대분류(FinCategory.flowRole)로 분류한다:
  *  - 수입측: MERCH_SALES=상품매출, 그 외/미태그=기타수익
  *  - 지출측: COGS=매출원가, FINANCING_COST=금융비용, OPEX/미태그=판매관리비
- * 섹션(수입/지출)은 테이블과 동일하게 거래 방향(IN/OUT)이 진실 원본 —
+ * 섹션(수입/지출)은 테이블과 동일하게 거래 방향(IN/OUT)이 진실 원본(차감 계정만 계정 섹션, contra.ts) —
  * 이 덕분에 순현금흐름(terminal) == 테이블 net이 구조적으로 보장된다.
  *
  * 단일 기간: grain(month|quarter|year). 기본은 직전월이 속한 버킷. `period`(버킷키, 예 2026-05/
@@ -20,7 +20,14 @@ import { prisma } from '@/lib/prisma'
 import { ensureFinanceSeeded } from '@/lib/finance/kifrs-seed'
 import { toNum, round2 } from '@/lib/finance/serialize'
 import { nowYmKst, addMonths, rangeBounds, signedAmount } from '@/lib/finance/aggregate'
-import { bucketOf, bucketMonthRange, bucketLabel, isValidBucket, type Grain } from '@/lib/finance/periods'
+import {
+  bucketOf,
+  bucketMonthRange,
+  bucketLabel,
+  isValidBucket,
+  type Grain,
+} from '@/lib/finance/periods'
+import { cashSection, contraSectionOf } from '@/lib/finance/contra'
 import type { FinFlowRole } from '@/generated/prisma/enums'
 
 export async function GET(req: NextRequest) {
@@ -58,7 +65,7 @@ export async function GET(req: NextRequest) {
     }),
     prisma.finCategory.findMany({
       where: { spaceId },
-      select: { id: true, name: true, type: true, parentId: true, flowRole: true },
+      select: { id: true, name: true, type: true, parentId: true, flowRole: true, isContra: true },
     }),
   ])
 
@@ -66,7 +73,9 @@ export async function GET(req: NextRequest) {
   const rootIds = new Set(categories.filter((c) => c.parentId === null).map((c) => c.id))
 
   /** 카테고리의 level-1 조상(루트의 직계 자식)을 반환. flowRole 포함. */
-  function levelOne(catId: string): { id: string; name: string; flowRole: FinFlowRole | null } | null {
+  function levelOne(
+    catId: string
+  ): { id: string; name: string; flowRole: FinFlowRole | null } | null {
     let cur = catById.get(catId)
     if (!cur) return null
     let parentId = cur.parentId
@@ -95,11 +104,15 @@ export async function GET(req: NextRequest) {
 
   for (const t of txns) {
     if (t.isTransfer) continue
-    const amt = signedAmount({ amount: toNum(t.amount), cancelFlag: t.cancelFlag })
+    const { section, amount: amt } = cashSection(
+      t.direction,
+      signedAmount({ amount: toNum(t.amount), cancelFlag: t.cancelFlag }),
+      contraSectionOf(t.categoryId ? catById.get(t.categoryId) : null)
+    )
     const node = t.categoryId ? levelOne(t.categoryId) : null
     const role = node?.flowRole ?? null
 
-    if (t.direction === 'IN') {
+    if (section === 'IN') {
       // 수입측: 상품매출 vs 기타수익
       if (role === 'MERCH_SALES') merch += amt
       else addOther(node?.id ?? '__none', node?.name ?? '기타수익', amt)
@@ -153,7 +166,8 @@ export async function GET(req: NextRequest) {
     reason = '취소·환불로 일부 항목이 음수여서 흐름도를 표시할 수 없습니다.'
   } else if (merch <= 0) {
     renderable = false
-    reason = '상품매출이 없어 손익 흐름도를 표시할 수 없습니다. 계정과목에서 매출 대분류를 지정해 주세요.'
+    reason =
+      '상품매출이 없어 손익 흐름도를 표시할 수 없습니다. 계정과목에서 매출 대분류를 지정해 주세요.'
   } else if (grossProfit < 0) {
     renderable = false
     reason = '매출원가가 상품매출을 초과해(매출총이익 음수) 흐름도를 표시할 수 없습니다.'
