@@ -90,6 +90,14 @@ export function ApprovalDetailSheet({
         return
       }
 
+      // 402 = 구독 만료로 실행 차단. 액션은 PENDING으로 남으므로 목록을 갱신하지 않는다.
+      if (outcome?.status === 'BLOCKED') {
+        const message = outcome.message ?? '구독이 만료되어 조회만 가능합니다'
+        setOutcomeNote({ kind: 'failed', message })
+        toast.error(message)
+        return
+      }
+
       if (!res.ok) {
         toast.error('처리에 실패했습니다')
         return
