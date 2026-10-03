@@ -33,6 +33,7 @@ const packetSchema = z.object({
   storeIds: z.array(z.string().min(1)),
   // 삭제된 매장을 재활성화하지 않고 과거 공고 연결만 명시적으로 보존한다.
   historicalStoreIds: z.array(z.string().min(1)).optional(),
+  preserveRepeatedCustomFields: z.boolean().optional(),
   rawSnapshot: z.unknown(),
 })
 export type OpeningPostingPacket = z.input<typeof packetSchema> & { content: PostingContentInput }
@@ -71,7 +72,8 @@ export function planOpeningPosting(input: OpeningPostingPacket, target: OpeningP
     throw Error('Invalid migration historical store mapping')
   const form = planOpeningForm(
     `opening.work:posting:${packet.sourcePostingId}`,
-    packet.posting.applicationEntries
+    packet.posting.applicationEntries,
+    { preserveRepeatedCustomFields: packet.preserveRepeatedCustomFields === true }
   )
   if (!form.ok) throw Error(`Migration form blocked: ${form.code}`)
   const content = planPostingContent(input.content)
