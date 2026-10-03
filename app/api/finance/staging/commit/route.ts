@@ -15,7 +15,8 @@ import type { Prisma } from '@/generated/prisma/client'
 
 /** Date → "YYYY-MM" (로컬). */
 function yearMonth(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  // txnDate는 KST 벽시계를 UTC로 저장하는 규약 → UTC getter(snapshots.ts yearMonth와 동일)
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
 }
 
 export async function POST(req: NextRequest) {
