@@ -37,21 +37,25 @@ function renderCombo(blockType: 'INCOME' | 'EXPENSE' | null) {
 }
 
 describe('CategoryCombobox 방향 가드', () => {
-  test('OUT(지출): 수익 탭 비활성 + 수익 항목 숨김, 비용/이체는 선택 가능', async () => {
+  test('OUT(지출): 기본 탭=비용, 수익 탭은 열리지만 일반 수익 항목은 숨김(차감 없으면 안내)', async () => {
     const user = userEvent.setup()
     renderCombo('INCOME')
     await user.click(screen.getByRole('button', { name: '분류' }))
 
-    // 수익 탭 비활성
-    const incomeTab = screen.getByRole('button', { name: '수익' })
-    expect(incomeTab).toBeDisabled()
-    // 비용/이체 탭 활성
+    // 세 탭 모두 활성
+    expect(screen.getByRole('button', { name: '수익' })).toBeEnabled()
     expect(screen.getByRole('button', { name: '비용' })).toBeEnabled()
     expect(screen.getByRole('button', { name: '이체' })).toBeEnabled()
 
     // 기본 탭=비용 → 금융비용 노출, 수익 항목(기타수입)은 목록에 없음
     expect(screen.getByText('금융비용')).toBeInTheDocument()
     expect(screen.queryByText('기타수입')).not.toBeInTheDocument()
+
+    // 수익 탭: 일반 수익 항목 없음 + 차감 계정 지정 안내
+    await user.click(screen.getByRole('button', { name: '수익' }))
+    expect(screen.queryByText('기타수입')).not.toBeInTheDocument()
+    expect(screen.getByText(/출금 거래에는 차감 계정만/)).toBeInTheDocument()
+    expect(screen.getByText(/차감 계정이 없습니다/)).toBeInTheDocument()
   })
 
   test('OUT(지출): 검색으로도 수익 항목 선택 불가(교차검색 우회 차단)', async () => {
@@ -63,11 +67,11 @@ describe('CategoryCombobox 방향 가드', () => {
     expect(screen.queryByText('기타수입')).not.toBeInTheDocument()
   })
 
-  test('IN(수입): 비용 탭 비활성, 수익 선택 가능', async () => {
+  test('IN(수입): 기본 탭=수익, 비용 탭은 열리되 일반 비용은 숨김', async () => {
     const user = userEvent.setup()
     renderCombo('EXPENSE')
     await user.click(screen.getByRole('button', { name: '분류' }))
-    expect(screen.getByRole('button', { name: '비용' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '비용' })).toBeEnabled()
     expect(screen.getByRole('button', { name: '수익' })).toBeEnabled()
     expect(screen.getByText('기타수입')).toBeInTheDocument()
     expect(screen.queryByText('금융비용')).not.toBeInTheDocument()
