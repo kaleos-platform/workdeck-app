@@ -697,6 +697,16 @@ export type HiringApplication = Prisma.HiringApplicationModel
  */
 export type HiringApplicationStore = Prisma.HiringApplicationStoreModel
 /**
+ * Model HiringUploadSession
+ * 
+ */
+export type HiringUploadSession = Prisma.HiringUploadSessionModel
+/**
+ * Model HiringMigrationRecord
+ * 
+ */
+export type HiringMigrationRecord = Prisma.HiringMigrationRecordModel
+/**
  * Model HiringApplicationFile
  * 
  */

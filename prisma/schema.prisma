@@ -505,6 +505,8 @@ model Space {
   hiringContents         HiringContent[]
   hiringDetailTemplates  HiringDetailTemplate[]
   hiringApplications     HiringApplication[]
+  hiringUploadSessions   HiringUploadSession[]
+  hiringMigrationRecords HiringMigrationRecord[]
   hiringBlacklists       HiringBlacklist[]
   hiringMessageTemplates HiringMessageTemplate[]
 
@@ -3754,6 +3756,7 @@ model HiringPosting {
   managers     HiringPostingManager[]
   contents     HiringContent[]
   applications HiringApplication[]
+  uploadSessions HiringUploadSession[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3932,6 +3935,50 @@ model HiringApplicationStore {
 }
 
 // 지원자 첨부 파일 (이력서 등 — hiring-files 비공개 버킷, 서명 URL 접근만)
+// 공개 직접 업로드의 일회성 권한과 재시도 상태. 파일 경로는 서버에서만 결정한다.
+model HiringUploadSession {
+  id            String   @id @default(uuid())
+  spaceId       String
+  postingId     String?
+  tokenHash     String
+  files         Json
+  expiresAt     DateTime
+  claimedAt     DateTime?
+  completedAt   DateTime?
+  applicationId String?  @unique
+  requestHash   String?
+  createdAt     DateTime @default(now())
+
+  space       Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  posting     HiringPosting? @relation(fields: [postingId], references: [id], onDelete: SetNull)
+
+  @@index([expiresAt, completedAt])
+  @@index([postingId, createdAt])
+}
+
+// 고객 이전의 영속 대응 원장. 대상 행 생성과 원장 확정은 같은 트랜잭션에서 수행한다.
+model HiringMigrationRecord {
+  id                 String   @id @default(cuid())
+  sourceRef          String   @unique
+  spaceId            String
+  sourceSnapshotAt   DateTime
+  transformVersion   String
+  sourceHash         String
+  targetModel        String
+  targetId           String
+  targetHash         String
+  sourceSnapshotEnc  String?
+  sourceSnapshotIv   String?
+  metadata           Json?
+  verifiedAt         DateTime?
+  createdAt          DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+
+  @@unique([targetModel, targetId])
+  @@index([spaceId, sourceSnapshotAt])
+}
+
 model HiringApplicationFile {
   id            String @id @default(cuid())
   spaceId       String

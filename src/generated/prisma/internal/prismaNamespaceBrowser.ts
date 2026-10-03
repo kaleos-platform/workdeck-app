@@ -182,6 +182,8 @@ export const ModelName = {
   HiringDetailTemplate: 'HiringDetailTemplate',
   HiringApplication: 'HiringApplication',
   HiringApplicationStore: 'HiringApplicationStore',
+  HiringUploadSession: 'HiringUploadSession',
+  HiringMigrationRecord: 'HiringMigrationRecord',
   HiringApplicationFile: 'HiringApplicationFile',
   HiringComment: 'HiringComment',
   HiringApplicationNotification: 'HiringApplicationNotification',
@@ -2425,6 +2427,43 @@ export const HiringApplicationStoreScalarFieldEnum = {
 } as const
 
 export type HiringApplicationStoreScalarFieldEnum = (typeof HiringApplicationStoreScalarFieldEnum)[keyof typeof HiringApplicationStoreScalarFieldEnum]
+
+
+export const HiringUploadSessionScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  postingId: 'postingId',
+  tokenHash: 'tokenHash',
+  files: 'files',
+  expiresAt: 'expiresAt',
+  claimedAt: 'claimedAt',
+  completedAt: 'completedAt',
+  applicationId: 'applicationId',
+  requestHash: 'requestHash',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringUploadSessionScalarFieldEnum = (typeof HiringUploadSessionScalarFieldEnum)[keyof typeof HiringUploadSessionScalarFieldEnum]
+
+
+export const HiringMigrationRecordScalarFieldEnum = {
+  id: 'id',
+  sourceRef: 'sourceRef',
+  spaceId: 'spaceId',
+  sourceSnapshotAt: 'sourceSnapshotAt',
+  transformVersion: 'transformVersion',
+  sourceHash: 'sourceHash',
+  targetModel: 'targetModel',
+  targetId: 'targetId',
+  targetHash: 'targetHash',
+  sourceSnapshotEnc: 'sourceSnapshotEnc',
+  sourceSnapshotIv: 'sourceSnapshotIv',
+  metadata: 'metadata',
+  verifiedAt: 'verifiedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HiringMigrationRecordScalarFieldEnum = (typeof HiringMigrationRecordScalarFieldEnum)[keyof typeof HiringMigrationRecordScalarFieldEnum]
 
 
 export const HiringApplicationFileScalarFieldEnum = {

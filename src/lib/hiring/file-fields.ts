@@ -1,5 +1,5 @@
 export const MAX_FORM_FILES = 3
-export const MAX_FORM_FILE_BYTES = 10 * 1024 * 1024
+export const MAX_FORM_FILE_BYTES = 20 * 1024 * 1024
 export type FileField = {
   key: string
   type: string

@@ -16,5 +16,7 @@ export default defineConfig({
     // 마이그레이션/db push: 직접 연결 사용 (트랜잭션 풀러는 DDL 미지원)
     // 앱 런타임: prisma.ts에서 DATABASE_URL(트랜잭션 풀러) 사용
     url: process.env['DIRECT_URL'] ?? process.env['DATABASE_URL'],
+    // Supabase 기반 이력 재생에는 storage/auth 사전 구성이 있는 전용 shadow DB를 사용한다.
+    shadowDatabaseUrl: process.env['SHADOW_DATABASE_URL'],
   },
 })
