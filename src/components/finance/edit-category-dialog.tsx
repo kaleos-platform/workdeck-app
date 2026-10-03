@@ -9,7 +9,6 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -34,7 +33,6 @@ export type EditNode = {
   type: string
   groupLabel: string | null
   flowRole: string | null
-  isContra?: boolean
   parentId: string | null
 }
 
@@ -86,7 +84,6 @@ export function EditCategoryDialog({
   const [groupLabel, setGroupLabel] = useState('')
   const [parentId, setParentId] = useState('')
   const [flowRole, setFlowRole] = useState('none')
-  const [isContra, setIsContra] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const isExpenseLeaf = isLeaf && node?.type === 'EXPENSE'
@@ -102,15 +99,10 @@ export function EditCategoryDialog({
       setGroupLabel(node.groupLabel ?? '')
       setParentId(node.parentId ?? '')
       setFlowRole(node.flowRole ?? 'none')
-      setIsContra(node.isContra ?? false)
     }
   }, [node, open])
 
   if (!node) return null
-
-  // 차감 계정은 수입/지출 리프에서만 설정 가능.
-  const showContra = isLeaf && (node.type === 'INCOME' || node.type === 'EXPENSE')
-  const contraChanged = isContra !== (node.isContra ?? false)
 
   async function handleSave() {
     const trimmed = name.trim()
@@ -123,7 +115,6 @@ export function EditCategoryDialog({
       const body: Record<string, unknown> = { name: trimmed }
       if (isExpenseLeaf) body.groupLabel = groupLabel || null
       if (isLeaf && parentId && parentId !== node!.parentId) body.parentId = parentId
-      if (showContra && contraChanged) body.isContra = isContra
       if (flowRoleOptions) body.flowRole = flowRole === 'none' ? null : flowRole
 
       const res = await fetch(`/api/finance/categories/${node!.id}`, {
@@ -243,31 +234,6 @@ export function EditCategoryDialog({
               <p className="text-[11px] text-muted-foreground">
                 현금흐름 상세의 흐름도(Sankey) 손익 계층 분류에 사용됩니다.
               </p>
-            </div>
-          )}
-
-          {showContra && (
-            <div className="space-y-1.5">
-              <div className="flex items-start gap-2">
-                <Checkbox
-                  id="edit-category-contra"
-                  checked={isContra}
-                  onCheckedChange={(v) => setIsContra(v === true)}
-                  className="mt-0.5"
-                />
-                <Label htmlFor="edit-category-contra" className="flex flex-col items-start gap-0.5">
-                  <span className="text-sm">차감 계정</span>
-                  <span className="text-[11px] font-normal text-muted-foreground">
-                    반대 방향 거래(예: 매출 환불 출금, 구매 환불 입금)를 받아 이 섹션에서
-                    차감합니다.
-                  </span>
-                </Label>
-              </div>
-              {contraChanged && (
-                <p role="alert" className="text-[11px] text-amber-600">
-                  이 계정에 연결된 과거 거래의 수입/지출 집계 위치가 바뀝니다.
-                </p>
-              )}
             </div>
           )}
 

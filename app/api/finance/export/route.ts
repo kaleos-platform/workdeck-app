@@ -11,7 +11,7 @@ import { prisma } from '@/lib/prisma'
 import { toNum } from '@/lib/finance/serialize'
 import { cfActivityForCode, kifrsAccountName, CF_ACTIVITY_LABEL } from '@/lib/finance/kifrs-seed'
 import { signedAmount } from '@/lib/finance/aggregate'
-import { cashSection, contraSectionOf } from '@/lib/finance/contra'
+import { cashSection, fixedSectionOf } from '@/lib/finance/contra'
 
 function parseDate(v: string | null): Date | null {
   if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return null
@@ -67,7 +67,6 @@ export async function GET(req: NextRequest) {
           name: true,
           code: true,
           type: true,
-          isContra: true,
           parent: { select: { name: true } },
         },
       },
@@ -97,7 +96,7 @@ export async function GET(req: NextRequest) {
     const { section, amount } = cashSection(
       t.direction,
       signedAmount({ amount: toNum(t.amount), cancelFlag: t.cancelFlag }),
-      contraSectionOf(t.category)
+      fixedSectionOf(t.category)
     )
     const division = t.isTransfer ? '이체' : section === 'IN' ? '수입' : '지출'
     const cf = t.isTransfer ? '내부이체(제외)' : CF_ACTIVITY_LABEL[cfActivityForCode(code)]

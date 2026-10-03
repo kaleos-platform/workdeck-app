@@ -22,7 +22,6 @@ type CategoryNode = {
   type: string
   groupLabel: string | null
   flowRole: string | null
-  isContra: boolean
   isSystem: boolean
   isActive: boolean
   sortOrder: number
@@ -52,7 +51,6 @@ export async function GET() {
       type: true,
       groupLabel: true,
       flowRole: true,
-      isContra: true,
       isSystem: true,
       isActive: true,
       sortOrder: true,
@@ -88,12 +86,11 @@ export async function POST(req: NextRequest) {
   const spaceId = resolved.space.id
 
   const body = await req.json().catch(() => ({}))
-  const { parentId, name, alias, groupLabel, isContra } = body as {
+  const { parentId, name, alias, groupLabel } = body as {
     parentId?: string
     name?: string
     alias?: string
     groupLabel?: string
-    isContra?: boolean
   }
   const flowRole = parseFlowRole((body as { flowRole?: unknown }).flowRole)
 
@@ -133,8 +130,6 @@ export async function POST(req: NextRequest) {
         alias: alias ?? null,
         groupLabel: groupLabel ?? null,
         ...(flowRole !== undefined && { flowRole }),
-        // 차감 계정은 수입/지출 타입에서만 의미가 있다 — 그 외 타입은 강제 false.
-        isContra: isContra === true && (parent.type === 'INCOME' || parent.type === 'EXPENSE'),
       },
     })
     return NextResponse.json({ category }, { status: 201 })
