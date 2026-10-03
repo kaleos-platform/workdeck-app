@@ -11,6 +11,7 @@ import { prisma } from '@/lib/prisma'
 import { toNum } from '@/lib/finance/serialize'
 import { cfActivityForCode, kifrsAccountName, CF_ACTIVITY_LABEL } from '@/lib/finance/kifrs-seed'
 import { signedAmount } from '@/lib/finance/aggregate'
+import { cashSection, contraSectionOf } from '@/lib/finance/contra'
 
 function parseDate(v: string | null): Date | null {
   if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return null
@@ -62,7 +63,13 @@ export async function GET(req: NextRequest) {
       cancelFlag: true,
       account: { select: { name: true } },
       category: {
-        select: { name: true, code: true, parent: { select: { name: true } } },
+        select: {
+          name: true,
+          code: true,
+          type: true,
+          isContra: true,
+          parent: { select: { name: true } },
+        },
       },
     },
   })
@@ -85,10 +92,15 @@ export async function GET(req: NextRequest) {
 
   for (const t of txns) {
     const code = t.category?.code ?? null
-    const division = t.isTransfer ? '이체' : t.direction === 'IN' ? '수입' : '지출'
-    const cf = t.isTransfer ? '내부이체(제외)' : CF_ACTIVITY_LABEL[cfActivityForCode(code)]
     // 취소거래(cancelFlag '취소')는 부호 반전으로 상계 — dashboard·cashflow와 동일 회계 처리.
-    const amount = signedAmount({ amount: toNum(t.amount), cancelFlag: t.cancelFlag })
+    // 차감 계정(매출환입 등)은 계정 섹션으로 구분하고 반대 방향이면 음수(contra.ts).
+    const { section, amount } = cashSection(
+      t.direction,
+      signedAmount({ amount: toNum(t.amount), cancelFlag: t.cancelFlag }),
+      contraSectionOf(t.category)
+    )
+    const division = t.isTransfer ? '이체' : section === 'IN' ? '수입' : '지출'
+    const cf = t.isTransfer ? '내부이체(제외)' : CF_ACTIVITY_LABEL[cfActivityForCode(code)]
     lines.push(
       [
         cell(ymd(t.txnDate)),

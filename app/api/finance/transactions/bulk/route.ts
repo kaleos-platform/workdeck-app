@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { rebuildDerivedSnapshots } from '@/lib/finance/snapshot-rebuild'
+import { violatesDirectionPolicy } from '@/lib/finance/contra'
 
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('finance')
@@ -49,9 +50,27 @@ export async function POST(req: NextRequest) {
   if (typeof body?.categoryId === 'string' && body.categoryId) {
     const category = await prisma.finCategory.findFirst({
       where: { id: body.categoryId, spaceId },
-      select: { id: true, type: true },
+      select: { id: true, type: true, isContra: true },
     })
     if (!category) return errorResponse('계정과목을 찾을 수 없습니다', 400)
+
+    // 방향 정책(스테이징과 동일) — 선택에 정책 위반 방향 거래가 섞이면 전체 거절.
+    const badDirections = (['IN', 'OUT'] as const).filter((d) =>
+      violatesDirectionPolicy(category, d)
+    )
+    if (badDirections.length > 0) {
+      const badRows = await prisma.finTransaction.count({
+        where: { id: { in: ids }, spaceId, direction: { in: badDirections } },
+      })
+      if (badRows > 0) {
+        return errorResponse(
+          category.isContra
+            ? `선택한 거래 중 차감 계정과 같은 방향 거래가 포함되어 있습니다(${badRows}건). 차감 계정은 반대 방향 거래에만 지정할 수 있습니다`
+            : `선택한 거래 중 지출(OUT) 거래가 포함되어 있어 수입 계정과목을 지정할 수 없습니다(${badRows}건)`,
+          400
+        )
+      }
+    }
 
     const result = await prisma.finTransaction.updateMany({
       where: { id: { in: ids }, spaceId },

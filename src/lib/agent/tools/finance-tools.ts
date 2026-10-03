@@ -39,7 +39,7 @@ const financeGetCashflowTool: ToolDefinition = {
 const financeListTransactionsTool: ToolDefinition = {
   name: 'finance_list_transactions',
   description:
-    '확정 거래(FinTransaction) 목록과 합계를 반환합니다. 기간(from/to)·방향(IN/OUT)·분류상태·계정과목·검색어로 필터하며, take(기본 50)로 페이지네이션합니다. total(전체 건수)과 summary(수입/지출/순액)를 함께 반환합니다.',
+    '확정 거래(FinTransaction) 목록과 합계를 반환합니다. 기간(from/to)·방향(IN=수입/OUT=지출 섹션 — 차감 계정(매출환입 등)의 반대 방향 거래는 계정 섹션에 포함)·분류상태·계정과목·검색어로 필터하며, take(기본 50)로 페이지네이션합니다. total(전체 건수)과 summary(수입/지출/순액)를 함께 반환합니다.',
   inputSchema: {
     from: z.string().optional(),
     to: z.string().optional(),

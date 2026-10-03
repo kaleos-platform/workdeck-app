@@ -45,6 +45,8 @@ type SeedNode = {
   flowRole?: FinFlowRole
   /** 검색·AI 컨텍스트용 키워드(withRules=true일 때만 규칙 등록). */
   kw?: string[]
+  /** 차감 계정(반대 방향 거래를 받아 자기 섹션에서 차감) → FinCategory.isContra. */
+  contra?: true
   /** 하위 노드(있으면 구조 그룹, 없으면 리프). */
   children?: SeedNode[]
 }
@@ -78,6 +80,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
             kw: ['스마트스토어', '쿠팡', '11번가', '정산입금', '네이버페이'],
           },
           { name: '도매·B2B 매출', code: '4100', kw: ['도매', 'b2b', '거래처입금'] },
+          { name: '매출환입(반품·환불)', code: '4100', contra: true, kw: ['환불'] },
         ],
       },
       {
@@ -105,6 +108,7 @@ export const OPERATIONAL_CHART: SeedRoot[] = [
             costNature: '변동',
             kw: ['매입', '사입', '도매', '소싱'],
           },
+          { name: '매입환출(구매 환불)', code: '5100', contra: true },
         ],
       },
       {
@@ -287,13 +291,14 @@ export function flattenOperationalLeaves(): {
   name: string
   type: FinCategoryType
   kw: string[]
+  contra: boolean
 }[] {
-  const out: { name: string; type: FinCategoryType; kw: string[] }[] = []
+  const out: { name: string; type: FinCategoryType; kw: string[]; contra: boolean }[] = []
   const walk = (nodes: SeedNode[], type: FinCategoryType): void => {
     for (const n of nodes) {
       const isLeaf = !n.children || n.children.length === 0
       if (isLeaf) {
-        if (n.kw && n.kw.length > 0) out.push({ name: n.name, type, kw: n.kw })
+        if (n.kw && n.kw.length > 0) out.push({ name: n.name, type, kw: n.kw, contra: !!n.contra })
       } else {
         walk(n.children!, type)
       }
@@ -347,6 +352,7 @@ async function seedChildren(
       type: rootType,
       groupLabel: node.costNature ?? null,
       flowRole: node.flowRole ?? null,
+      isContra: !!node.contra,
       // 루트만 보호. 모든 리프·대분류는 편집·삭제 가능(net-off는 type 기준이라 이체 리프도 안전).
       isSystem: false,
       sortOrder: order++,
@@ -355,7 +361,7 @@ async function seedChildren(
     if (isLeaf) {
       if (withRules) {
         for (const keyword of node.kw ?? []) {
-          await upsertSeedRule(spaceId, row.id, keyword, directionForType(rootType))
+          await upsertSeedRule(spaceId, row.id, keyword, directionForType(rootType, !!node.contra))
         }
       }
     } else {
@@ -383,6 +389,7 @@ async function upsertCategory(
     alias?: string | null
     groupLabel?: string | null
     flowRole?: FinFlowRole | null
+    isContra?: boolean
     isSystem: boolean
     sortOrder: number
   }
@@ -402,6 +409,7 @@ async function upsertCategory(
       type: data.type,
       groupLabel: data.groupLabel ?? null,
       flowRole: data.flowRole ?? null,
+      isContra: data.isContra ?? false,
       isSystem: data.isSystem,
       sortOrder: data.sortOrder,
     },
@@ -409,10 +417,10 @@ async function upsertCategory(
   })
 }
 
-/** 계정과목 type → 규칙 방향 (INCOME=IN, EXPENSE=OUT, 그 외=null 방향무관). */
-export function directionForType(type: FinCategoryType): FinTxnDirection | null {
-  if (type === 'INCOME') return 'IN'
-  if (type === 'EXPENSE') return 'OUT'
+/** 계정과목 type → 규칙 방향 (INCOME=IN, EXPENSE=OUT, 그 외=null 방향무관). 차감 계정은 반대 방향. */
+export function directionForType(type: FinCategoryType, isContra = false): FinTxnDirection | null {
+  if (type === 'INCOME') return isContra ? 'OUT' : 'IN'
+  if (type === 'EXPENSE') return isContra ? 'IN' : 'OUT'
   return null
 }
 

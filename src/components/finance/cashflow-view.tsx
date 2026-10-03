@@ -1477,7 +1477,11 @@ function CashflowTxnPanel({
   const sum = !data
     ? 0
     : search.trim()
-      ? visibleRows.reduce((s, r) => s + r.amount, 0)
+      ? // 차감 계정(매출환입 등) 반대 방향 거래는 이 섹션에서 차감.
+        visibleRows.reduce(
+          (s, r) => s + (r.direction === selected.direction ? r.amount : -r.amount),
+          0
+        )
       : isIncome
         ? data.summary.incomeTotal
         : data.summary.expenseTotal
@@ -1603,7 +1607,6 @@ function CashflowTxnPanel({
                   )}
                   <PanelTxnRow
                     txn={txn}
-                    isIncome={isIncome}
                     options={options}
                     categoryTree={categoryTree}
                     onCategoryAdded={onCategoryAdded}
@@ -1623,14 +1626,12 @@ function CashflowTxnPanel({
 
 function PanelTxnRow({
   txn,
-  isIncome,
   options,
   categoryTree,
   onCategoryAdded,
   onSaved,
 }: {
   txn: PanelTxn
-  isIncome: boolean
   options: ComboOption[]
   categoryTree: CategoryTreeNode[]
   onCategoryAdded: () => Promise<void>
@@ -1654,12 +1655,13 @@ function PanelTxnRow({
               <span
                 className={cn(
                   'font-mono text-xs font-medium tabular-nums',
-                  isIncome
+                  // 부호·색은 실제 입출금 방향(차감 계정의 반대 방향 거래가 섞일 수 있음).
+                  txn.direction === 'IN'
                     ? 'text-emerald-700 dark:text-emerald-400'
                     : 'text-red-600 dark:text-red-400'
                 )}
               >
-                {isIncome ? '+' : '-'}
+                {txn.direction === 'IN' ? '+' : '-'}
                 {formatWon(txn.amount)}
               </span>
             </span>

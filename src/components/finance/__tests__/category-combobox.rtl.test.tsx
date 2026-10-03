@@ -82,3 +82,56 @@ describe('CategoryCombobox 방향 가드', () => {
     expect(screen.getByRole('button', { name: '이체' })).toBeEnabled()
   })
 })
+
+describe('CategoryCombobox 차감 계정', () => {
+  const WITH_CONTRA: ComboOption[] = [
+    ...OPTIONS,
+    { id: 'ref', label: '매출환입', type: 'INCOME', isContra: true, keywords: ['매출환입'] },
+    { id: 'ret', label: '매입환출', type: 'EXPENSE', isContra: true, keywords: ['매입환출'] },
+  ]
+
+  test('OUT(지출): 수익 탭이 열리고 매출환입만 노출, 비용 탭에서 매입환출은 숨김', async () => {
+    const user = userEvent.setup()
+    render(
+      <CategoryCombobox
+        options={WITH_CONTRA}
+        value={null}
+        onChange={() => {}}
+        groupByType
+        defaultType="EXPENSE"
+        blockType="INCOME"
+        placeholder="분류"
+      />
+    )
+    await user.click(screen.getByRole('button', { name: '분류' }))
+    expect(screen.getByText('금융비용')).toBeInTheDocument()
+    expect(screen.queryByText('매입환출')).not.toBeInTheDocument()
+
+    const incomeTab = screen.getByRole('button', { name: '수익' })
+    expect(incomeTab).toBeEnabled()
+    await user.click(incomeTab)
+    expect(screen.getByText('매출환입')).toBeInTheDocument()
+    expect(screen.queryByText('기타수입')).not.toBeInTheDocument()
+  })
+})
+
+test('OUT 거래에 이미 매출환입이 분류돼 있으면 재오픈 시 수익 탭으로 열림', async () => {
+  const user = userEvent.setup()
+  render(
+    <CategoryCombobox
+      options={[
+        ...OPTIONS,
+        { id: 'ref', label: '매출환입', type: 'INCOME', isContra: true, keywords: ['매출환입'] },
+      ]}
+      value="ref"
+      onChange={() => {}}
+      groupByType
+      defaultType="EXPENSE"
+      blockType="INCOME"
+      placeholder="분류"
+    />
+  )
+  await user.click(screen.getByRole('button', { name: '매출환입' }))
+  expect(screen.getByRole('option', { name: /매출환입/ })).toBeInTheDocument()
+  expect(screen.queryByText('금융비용')).not.toBeInTheDocument()
+})
