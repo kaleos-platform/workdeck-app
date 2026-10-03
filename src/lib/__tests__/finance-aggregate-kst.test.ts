@@ -8,7 +8,7 @@
  *   2. nowYmKst(): 현재 시각의 KST 월. UTC 15:00(=KST 00:00 다음날) → 다음 날 월 버킷.
  */
 
-import { ymOf, nowYmKst } from '@/lib/finance/aggregate'
+import { ymOf, nowYmKst, monthBounds, rangeBounds } from '@/lib/finance/aggregate'
 
 describe('ymOf — KST 벽시계 저장 규약 기반 버킷팅', () => {
   test('UTC 자정(=KST 09:00) — 같은 날 월 버킷', () => {
@@ -53,5 +53,26 @@ describe('nowYmKst — 현재 KST 월', () => {
     jest.spyOn(Date, 'now').mockReturnValue(fakeNow)
     expect(nowYmKst()).toBe('2026-01')
     jest.restoreAllMocks()
+  })
+})
+
+describe('monthBounds / rangeBounds — 서버 시간대 무관 UTC 경계', () => {
+  // txnDate 저장 규약과 같은 축(UTC 자릿수)이어야 한다. 로컬 Date면 KST 서버에서 9시간 앞당겨진다.
+  test('월 경계는 UTC 자정', () => {
+    const { gte, lt } = monthBounds('2026-08')
+    expect(gte.toISOString()).toBe('2026-08-01T00:00:00.000Z')
+    expect(lt.toISOString()).toBe('2026-09-01T00:00:00.000Z')
+  })
+
+  test('월초 01시(KST 벽시계) 거래는 그 달 범위 안, 전달 범위 밖', () => {
+    const t = new Date('2026-08-01T01:28:12Z')
+    const aug = monthBounds('2026-08')
+    const jul = monthBounds('2026-07')
+    expect(t >= aug.gte && t < aug.lt).toBe(true)
+    expect(t >= jul.gte && t < jul.lt).toBe(false)
+  })
+
+  test('연말 → 다음 해 경계', () => {
+    expect(rangeBounds('2026-11', '2026-12').lt.toISOString()).toBe('2027-01-01T00:00:00.000Z')
   })
 })

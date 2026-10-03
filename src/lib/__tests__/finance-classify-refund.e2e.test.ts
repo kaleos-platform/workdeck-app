@@ -1,11 +1,14 @@
 /**
- * staging/[id] + staging/bulk — OUT 행에 INCOME 카테고리 차단 e2e (수정 7 검증).
+ * staging/[id] + staging/bulk — 환불(계정 섹션과 반대 방향) 분류 e2e.
+ * 방향 가드(PR #331)는 #993에서 제거됐다 — 환불은 원래 계정에 분류하고 그 섹션에서 차감한다(contra.ts).
+ * 대신 환불 분류는 규칙으로 학습하지 않는다(classify.ts learnRule).
  *
  * 검증 항목:
- *   1. 단건: OUT 방향 staged 행에 INCOME 계정과목 지정 시 400 반환.
- *   2. 단건: IN 방향 staged 행에 EXPENSE 계정과목 지정 시 허용(환불 케이스).
- *   3. 일괄: OUT 행 포함 선택에 INCOME 계정과목 지정 시 400 반환.
- *   4. 일괄: IN 행만 선택 시 INCOME 계정과목 허용.
+ *   1. 단건: OUT 행에 INCOME 계정(고객 환불) → 200, learn=true여도 규칙 미생성.
+ *   2. 단건: IN 행에 EXPENSE 계정(비용 환급) → 200, 규칙 미생성.
+ *   3. 일괄: 방향이 섞인 선택에 INCOME 계정 → 200.
+ *   4. 일괄: IN 행만 선택 시 INCOME 계정 → 200.
+ *   5. 단건: 정상 방향(IN 행에 INCOME 계정) + learn=true → 규칙 생성.
  *
  * route handler를 직접 import해 테스트한다. DB는 실제 dev DB.
  * DATABASE_URL 없으면 skip.
@@ -27,7 +30,7 @@ jest.mock('@/lib/api-helpers', () => ({
 import { resolveDeckContext } from '@/lib/api-helpers'
 
 const SPACE_ID = 'e2e0fin0-0000-4000-8000-0000000000d1'
-const USER_ID  = 'e2e0fin0-0000-4000-8000-0000000000d2'
+const USER_ID = 'e2e0fin0-0000-4000-8000-0000000000d2'
 const RUN = !!(process.env.DATABASE_URL || process.env.DIRECT_URL)
 const d = RUN ? describe : describe.skip
 
@@ -44,7 +47,7 @@ async function cleanup() {
   await prisma.user.deleteMany({ where: { id: USER_ID } })
 }
 
-d('finance classify direction guard (dev DB)', () => {
+d('finance classify refund (dev DB)', () => {
   let accountId: string
   let importId: string
   let incomeCatId: string
@@ -106,6 +109,7 @@ d('finance classify direction guard (dev DB)', () => {
         amount: 10000,
         classStatus: 'UNCLASSIFIED',
         resolution: 'NEW',
+        description: '고객 환불 홍길동',
         identityKey: 'e2e-guard-out-1',
         contentHash: 'gh1',
       },
@@ -125,6 +129,7 @@ d('finance classify direction guard (dev DB)', () => {
         amount: 5000,
         classStatus: 'UNCLASSIFIED',
         resolution: 'NEW',
+        description: '광고비 환급',
         identityKey: 'e2e-guard-in-1',
         contentHash: 'gh2',
       },
@@ -143,33 +148,33 @@ d('finance classify direction guard (dev DB)', () => {
 
   // ── 단건 PATCH ──
 
-  test('단건: OUT 행에 INCOME 계정 → 400', async () => {
+  test('단건: OUT 행에 INCOME 계정(고객 환불) → 200, 규칙 미생성', async () => {
     const { PATCH } = await import('@/app/api/finance/staging/[id]/route')
     const req = new Request(`http://localhost/api/finance/staging/${outRowId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ categoryId: incomeCatId, learn: false }),
+      body: JSON.stringify({ categoryId: incomeCatId, learn: true }),
       headers: { 'Content-Type': 'application/json' },
     })
     const res = await PATCH(req as never, { params: Promise.resolve({ id: outRowId }) })
-    expect(res!.status).toBe(400)
-    const body = await res!.json()
-    expect(body.error).toMatch(/수입 계정과목/)
+    expect(res!.status).toBe(200)
+    expect(await prisma.finClassRule.count({ where: { spaceId: SPACE_ID } })).toBe(0)
   })
 
-  test('단건: IN 행에 EXPENSE 계정 → 허용(200)', async () => {
+  test('단건: IN 행에 EXPENSE 계정(비용 환급) → 200, 규칙 미생성', async () => {
     const { PATCH } = await import('@/app/api/finance/staging/[id]/route')
     const req = new Request(`http://localhost/api/finance/staging/${inRowId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ categoryId: expenseCatId, learn: false }),
+      body: JSON.stringify({ categoryId: expenseCatId, learn: true }),
       headers: { 'Content-Type': 'application/json' },
     })
     const res = await PATCH(req as never, { params: Promise.resolve({ id: inRowId }) })
     expect(res!.status).toBe(200)
+    expect(await prisma.finClassRule.count({ where: { spaceId: SPACE_ID } })).toBe(0)
   })
 
   // ── 일괄 POST ──
 
-  test('일괄: OUT 행 포함 선택에 INCOME 계정 → 400', async () => {
+  test('일괄: 방향이 섞인 선택에 INCOME 계정 → 200', async () => {
     const { POST } = await import('@/app/api/finance/staging/bulk/route')
     const req = new Request('http://localhost/api/finance/staging/bulk', {
       method: 'POST',
@@ -177,9 +182,7 @@ d('finance classify direction guard (dev DB)', () => {
       headers: { 'Content-Type': 'application/json' },
     })
     const res = await POST(req as never)
-    expect(res!.status).toBe(400)
-    const body = await res!.json()
-    expect(body.error).toMatch(/수입 계정과목/)
+    expect(res!.status).toBe(200)
   })
 
   test('일괄: IN 행만 선택 시 INCOME 계정 → 허용(200)', async () => {
@@ -209,5 +212,36 @@ d('finance classify direction guard (dev DB)', () => {
     })
     const res = await POST(req as never)
     expect(res!.status).toBe(200)
+  })
+
+  test('단건: 정상 방향(IN 행에 INCOME 계정) + learn → 규칙 생성', async () => {
+    const inRow3 = await prisma.finStagedRow.create({
+      data: {
+        importId,
+        spaceId: SPACE_ID,
+        accountId,
+        raw: {},
+        txnDate: new Date('2026-01-25'),
+        direction: 'IN',
+        amount: 7000,
+        description: '쿠팡 정산입금',
+        classStatus: 'UNCLASSIFIED',
+        resolution: 'NEW',
+        identityKey: 'e2e-guard-in-3',
+        contentHash: 'gh4',
+      },
+      select: { id: true },
+    })
+    const { PATCH } = await import('@/app/api/finance/staging/[id]/route')
+    const req = new Request(`http://localhost/api/finance/staging/${inRow3.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ categoryId: incomeCatId, learn: true }),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const res = await PATCH(req as never, { params: Promise.resolve({ id: inRow3.id }) })
+    expect(res!.status).toBe(200)
+    const rules = await prisma.finClassRule.findMany({ where: { spaceId: SPACE_ID } })
+    expect(rules).toHaveLength(1)
+    expect(rules[0]).toMatchObject({ categoryId: incomeCatId, direction: 'IN' })
   })
 })

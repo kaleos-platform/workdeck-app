@@ -27,10 +27,11 @@ import {
 import { loadSpaceRules, classifyRow } from '@/lib/finance/classify'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
 
-/** 'YYYY-MM-DD HH:MM:SS' | 'YYYY-MM-DD' → Date(로컬). */
+/** 'YYYY-MM-DD HH:MM:SS' | 'YYYY-MM-DD' → Date(KST 벽시계를 UTC 자릿수로). */
 function toDate(s: string): Date {
   const iso = s.includes(' ') ? s.replace(' ', 'T') : s
-  const dt = new Date(iso)
+  // 시간대 없는 값은 KST 벽시계 → UTC 자릿수로 저장(규약, aggregate.ts ymOf). 로컬 파싱은 서버 TZ에 의존.
+  const dt = new Date(/T/.test(iso) && !/(Z|[+-]\d{2}:?\d{2})$/.test(iso) ? `${iso}Z` : iso)
   return Number.isNaN(dt.getTime()) ? new Date(s) : dt
 }
 
