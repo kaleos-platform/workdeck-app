@@ -82,6 +82,7 @@ export async function GET(req: NextRequest) {
         counterparty: true,
         identityKey: true,
         memo: true,
+        excludeFromAnalysis: true,
         approvalNo: true,
         cancelFlag: true,
         classStatus: true,

@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
       approvalNo: true,
       cancelFlag: true,
       memo: true,
+      excludeFromAnalysis: true,
       categoryId: true,
       classStatus: true,
       matchedRuleId: true,
@@ -154,6 +155,9 @@ export async function POST(req: NextRequest) {
         // 기존 메모가 있으면 건너뛴다 — 업로드 파일의 메모 컬럼·규칙 메모가 사용자가
         // 거래내역에서 직접 편집한 메모를 덮어쓰지 않도록. 의도된 제약: 스테이징 단계에서
         // 기존 확정 거래의 메모를 수정·삭제할 수는 없다(수정·삭제는 전체 거래 탭에서).
+        // 분석 제외 — 확인·처리 단계에서 지정한 경우에만 기존 거래에 true 로 반영한다.
+        // 미지정(false) 재업로드가 거래내역에서 지정한 분석 제외를 풀지 않도록 false 는 쓰지 않는다.
+        const excludePatch = s.excludeFromAnalysis ? { excludeFromAnalysis: true } : {}
         const memoPatch =
           s.memo != null && !memoedKeys.has(`${s.accountId}|${s.identityKey}`)
             ? { memo: s.memo }
@@ -167,8 +171,8 @@ export async function POST(req: NextRequest) {
             },
           },
           update: preserve
-            ? { ...content, ...memoPatch }
-            : { ...content, ...classification, ...memoPatch },
+            ? { ...content, ...memoPatch, ...excludePatch }
+            : { ...content, ...classification, ...memoPatch, ...excludePatch },
           create: {
             spaceId,
             accountId: s.accountId,
@@ -176,6 +180,7 @@ export async function POST(req: NextRequest) {
             ...content,
             ...classification,
             memo: s.memo,
+            excludeFromAnalysis: s.excludeFromAnalysis,
           },
         })
         committedIds.push(s.id)
