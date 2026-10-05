@@ -40,7 +40,7 @@ export async function GET() {
 
 /** PUT — 분석 스케줄 생성/수정 (upsert) */
 export async function PUT(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 
@@ -66,7 +66,11 @@ export async function PUT(request: NextRequest) {
   }
 
   // analysisHour 유효성 검증
-  if (analysisHour !== undefined && analysisHour !== null && (analysisHour < 0 || analysisHour > 23)) {
+  if (
+    analysisHour !== undefined &&
+    analysisHour !== null &&
+    (analysisHour < 0 || analysisHour > 23)
+  ) {
     return errorResponse('analysisHour는 0~23 사이여야 합니다', 400)
   }
 

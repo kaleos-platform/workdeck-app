@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
     triggeredBy = body.triggeredBy ?? 'scheduled'
   } else {
-    const resolved = await resolveWorkspace()
+    const resolved = await resolveWorkspace({ write: true })
     if ('error' in resolved) return resolved.error
     workspaceId = resolved.workspace.id
   }

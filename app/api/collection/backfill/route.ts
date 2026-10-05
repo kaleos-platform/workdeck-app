@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
  *     (endDate ≤ 어제, 구간 ≤ 120일)
  */
 export async function POST(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 
@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
  * 진행 중 잡이 없으면 404.
  */
 export async function DELETE(_request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 

@@ -9,7 +9,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ ruleId: string }> }
 ) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 
@@ -51,7 +51,7 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ ruleId: string }> }
 ) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 

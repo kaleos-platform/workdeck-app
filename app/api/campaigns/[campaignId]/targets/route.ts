@@ -36,7 +36,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ campaignId: string }> }
 ) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 

@@ -29,7 +29,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ taskId: string }> }
 ) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
   const user = 'user' in resolved ? resolved.user : undefined

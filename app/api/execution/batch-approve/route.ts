@@ -4,7 +4,7 @@ import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 
 // POST /api/execution/batch-approve — 여러 태스크 일괄 승인
 export async function POST(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
   const user = 'user' in resolved ? resolved.user : undefined
