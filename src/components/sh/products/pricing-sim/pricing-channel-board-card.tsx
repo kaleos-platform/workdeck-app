@@ -568,30 +568,42 @@ export function PricingChannelBoardCard({
           </Button>
         )}
         {isCoupangChannel && onApplyCoupang && (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="h-7 gap-1 text-xs"
-            disabled={!canApplyCoupang}
-            onClick={() =>
-              onApplyCoupang(channel, {
-                salePriceBeforeDiscount: cell.finalPrice,
-                recommendedMin: floorPrice ?? cell.finalPrice,
-                discountRate: currentDiscount,
-                promotionLabel: hasPromoValue ? promoLabelText : null,
-                costPrice: cell.cogs,
-                channelFeePct,
-                shippingCost: cell.shipping,
-                computedMargin: displayCell.margin,
-                minMarginPct: floorPct,
-                targetMarginPct: target,
-              })
-            }
-          >
-            <Upload className="h-3.5 w-3.5" />
-            쿠팡 판매가로 반영 (₩{fmt(roundPriceTo10(cell.finalPrice))})
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* disabled 버튼은 hover 이벤트가 없어 span 으로 감싼다 */}
+                <span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1 text-xs"
+                    disabled={!canApplyCoupang}
+                    onClick={() =>
+                      onApplyCoupang(channel, {
+                        salePriceBeforeDiscount: cell.finalPrice,
+                        recommendedMin: floorPrice ?? cell.finalPrice,
+                        discountRate: currentDiscount,
+                        promotionLabel: hasPromoValue ? promoLabelText : null,
+                        costPrice: cell.cogs,
+                        channelFeePct,
+                        shippingCost: cell.shipping,
+                        computedMargin: displayCell.margin,
+                        minMarginPct: floorPct,
+                        targetMarginPct: target,
+                      })
+                    }
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    쿠팡 판매가로 반영 (₩{fmt(roundPriceTo10(cell.finalPrice))})
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {!canApplyCoupang && (
+                <TooltipContent>기존 상품 모드에서 상품을 설정해야 반영할 수 있습니다</TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         )}
       </div>
 

@@ -984,10 +984,14 @@ export function PricingQuickFlow({
   // 쿠팡 판매가 반영 다이얼로그 대상
   const [coupangApplyTarget, setCoupangApplyTarget] = useState<CoupangApplyTarget | null>(null)
 
+  // 쿠팡 반영은 기존 상품 모드면 단품·세트 모두 가능하다(행 → 리스팅 구성 매칭).
+  // 채널 상품 "생성"의 isSingleProduct 제한과 다르다 — 생성은 단일 상품 옵션만 만든다.
+  const canApplyCoupang = mode === 'existing' && confirmedRows.length > 0
+
   const handleApplyCoupang = useCallback(
     (api: ApiCh, info: CoupangApplyInfo) => {
-      if (!canCreate || groupOptionIds.length === 0) {
-        toast.error('상품을 먼저 설정해 주세요')
+      if (!canApplyCoupang) {
+        toast.error('기존 상품을 먼저 설정해 주세요')
         return
       }
       setCoupangApplyTarget({
@@ -995,9 +999,7 @@ export function PricingQuickFlow({
         channelName: api.name,
         listingChannelId: api.representativeChannelId ?? api.id,
         externalSource: api.externalSource ?? null,
-        productId: confirmedRows[0].productId,
-        optionIds: groupOptionIds,
-        quantity: createQuantity,
+        rows: confirmedRows.map((r) => ({ optionIds: r.optionIds, quantity: Math.max(1, r.quantity) })),
         salePrice: info.salePriceBeforeDiscount,
         minMarginPrice: info.recommendedMin,
         includeVat: live.includeVat,
@@ -1012,7 +1014,7 @@ export function PricingQuickFlow({
         computedMargin: info.computedMargin,
       })
     },
-    [canCreate, groupOptionIds, confirmedRows, createQuantity, live.includeVat, live.vatRate]
+    [canApplyCoupang, confirmedRows, live.includeVat, live.vatRate]
   )
 
   const handleCreateForChannel = async (channel: MatrixChannel, price: number) => {
@@ -2676,7 +2678,7 @@ export function PricingQuickFlow({
                   onManualPriceChange={(v) => setChannelManualPrice(bc.api.id, v)}
                   retailCap={effectiveRetail}
                   isCoupangChannel={bc.isCoupang}
-                  canApplyCoupang={canCreate}
+                  canApplyCoupang={canApplyCoupang}
                   onApplyCoupang={(_ch, info) => handleApplyCoupang(bc.api, info)}
                 />
               ))}

@@ -25,6 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { PreviewTarget } from '@/lib/sh/coupang-price/build-targets'
+import type { PriceRow } from '@/lib/sh/coupang-price/listing-derive'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { APPROVALS_PATH } from '@/lib/deck-routes'
 import { wingListingUrl } from '@/lib/coupang/wing-link'
@@ -47,9 +48,8 @@ export type CoupangApplyTarget = {
   /** 대표 채널로 대체된 실제 리스팅 채널 id (로켓그로스는 representativeChannelId) */
   listingChannelId: string
   externalSource: string | null
-  productId: string
-  optionIds: string[]
-  quantity: number
+  /** 가격시뮬 확정 행 — 행 2개 이상이면 세트 */
+  rows: PriceRow[]
   /** 할인·프로모션 적용 전 판매가 */
   salePrice: number
   /** 최소허용마진 달성가 (자동조정 최저가) */
@@ -100,8 +100,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             channelId: t.channelId,
-            optionIds: t.optionIds,
-            quantity: t.quantity,
+            rows: t.rows,
             salePrice: t.salePrice,
             minMarginPrice: t.minMarginPrice,
             includeVat: t.includeVat,
@@ -201,7 +200,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
           <DialogHeader>
             <DialogTitle>쿠팡 판매가 반영</DialogTitle>
             <DialogDescription>
-              {target?.channelName} 채널의 옵션 {target?.optionIds.length ?? 0}개를 쿠팡 판매가에
+              {target?.channelName} 채널에 {target && target.rows.length > 1 ? '세트' : '옵션'} 가격을
               반영합니다. 승인 큐에 등록되며, 실제 반영은 승인 후 워커가 실행합니다.
             </DialogDescription>
           </DialogHeader>
