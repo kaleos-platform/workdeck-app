@@ -33,9 +33,8 @@ export async function POST(req: NextRequest) {
   const writable = computed.targets.filter(
     (t): t is typeof t & { vendorItemId: string } => t.blockedReason == null && t.vendorItemId != null
   )
-  if (writable.length === 0) return errorResponse('반영 가능한 대상이 없습니다', 400)
-
-  // 미리보기 이후 다른 탭에서 매칭이 확정되면 사용자가 보지 못한 대상이 조용히 끼어든다.
+  // 미리보기 이후 다른 탭에서 매칭이 확정·해제되면 사용자가 본 대상과 달라진다. 0개 검사보다
+  // 먼저 해야 '본 대상이 전부 사라진' 경우도 미리보기 재로딩으로 이어진다.
   const expected = parsed.data.expectedListingIds
   if (expected) {
     const want = new Set(expected)
@@ -48,6 +47,8 @@ export async function POST(req: NextRequest) {
       )
     }
   }
+
+  if (writable.length === 0) return errorResponse('반영 가능한 대상이 없습니다', 400)
 
   let workspaceId: string
   try {

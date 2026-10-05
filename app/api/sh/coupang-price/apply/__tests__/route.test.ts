@@ -110,3 +110,12 @@ test('미리보기 이후 반영 대상이 바뀌면 409 — 사용자가 못 �
 test('미리보기 대상과 같으면 그대로 반영', async () => {
   expect((await call({ expectedListingIds: ['L1'] })).status).toBe(201)
 })
+
+test('미리보기 대상이 전부 막혔어도(다른 탭에서 해제) 400 이 아니라 409 — 미리보기를 다시 불러오게', async () => {
+  ;(computePriceTargets as jest.Mock).mockResolvedValue({
+    channelId: 'ch', channelAxis: 'RG', targets: [target({ vendorItemId: null, blockedReason: '연결 안 됨' })], ambiguous: [], unmatched: [],
+  })
+  const res = await call({ expectedListingIds: ['L1'] })
+  expect(res.status).toBe(409)
+  expect(job.create).not.toHaveBeenCalled()
+})
