@@ -103,7 +103,7 @@ export function PostingDetail({
           <PostingStatusBadge status={status} />
         </div>
         <div className="flex items-center gap-2">
-          {(isDraft || status === 'CLOSED' || (status === 'ACTIVE' && expired)) && (
+          {(status !== 'ACTIVE' || expired) && (
             <PublishDialog
               postingId={posting.id}
               closingDate={closingDate}

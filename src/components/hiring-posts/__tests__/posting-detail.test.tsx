@@ -136,3 +136,14 @@ it('발행 실패 시 팝업과 입력한 날짜를 유지하고 오류를 안�
   expect(screen.getByLabelText('지원서 마감일')).toHaveValue('2099-12-31')
   expect(screen.getByRole('button', { name: '발행하기' })).toBeEnabled()
 })
+
+it('보관 공고도 상세에서 다시 발행할 수 있다', () => {
+  render(
+    <PostingDetail
+      posting={{ id: 'test', uuid: 'qa', title: 'QA', status: 'ARCHIVED', closingDate: null }}
+      origin="https://workdeck.test"
+      embedHtml="<p>QA</p>"
+    />
+  )
+  expect(screen.getByRole('button', { name: '공고 발행' })).toBeInTheDocument()
+})
