@@ -59,6 +59,8 @@ export async function POST(req: NextRequest) {
     if (!RESOLUTIONS.includes(body.resolution))
       return errorResponse('유효하지 않은 처리 값입니다', 400)
     data.resolution = body.resolution
+    // 단건 PATCH와 동일 — 「유지」는 저장 대상으로 올린다(staging/[id]/route.ts 주석 참조)
+    if (body.resolution === 'DUP_OVERWRITE') data.classStatus = 'CLASSIFIED'
   }
 
   // 메모 — 명시 전달 시에만 포함(미전달이 기존 메모를 지우지 않도록)
