@@ -307,6 +307,14 @@ export async function ruleNoticeFor(
   accountId: string,
   categoryId: string
 ): Promise<RuleNotice | null> {
+  // 환불(계정 섹션과 반대 방향) 분류는 learnRule 이 학습하지 않으므로 알릴 변화도 없다.
+  const target = await prisma.finCategory.findUnique({
+    where: { id: categoryId },
+    select: { type: true },
+  })
+  const fixed = fixedSectionOf(target)
+  if (fixed && fixed !== direction) return null
+
   const rules = await loadSpaceRules(spaceId)
   const cls = classifyRow(input, rules, direction, accountId)
   if (!cls.matchedRuleId || !cls.categoryId || cls.categoryId === categoryId) return null
