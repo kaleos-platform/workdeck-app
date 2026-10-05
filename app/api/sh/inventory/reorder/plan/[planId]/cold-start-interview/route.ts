@@ -28,7 +28,7 @@ const AnswerSchema = z.object({
 })
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ planId: string }> }) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const spaceId = resolved.space.id

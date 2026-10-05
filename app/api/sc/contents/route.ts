@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
 // POST: 새 Content 생성. template + idea 가 있으면 skeleton 으로 doc 초기화.
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   let body: unknown

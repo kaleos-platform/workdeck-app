@@ -28,7 +28,7 @@ function isValidCron(expr: string): boolean {
 
 // PUT /api/collection/schedule — 수집 스케줄 생성/수정
 export async function PUT(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 

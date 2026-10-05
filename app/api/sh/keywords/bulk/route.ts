@@ -9,7 +9,7 @@ import { assertLinkOwnership, createOrUpdateLink } from '@/lib/sh/keyword-link'
  * 키워드 일괄 처리 — 상태 전환 / 삭제 / 상품·리스팅 연결.
  */
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => ({}))

@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       )
     }
     // 워커 인증 실패 → 사용자 세션 인증 시도
-    const resolved = await resolveWorkspace()
+    const resolved = await resolveWorkspace({ write: true })
     if ('error' in resolved) return resolved.error
     workspaceId = resolved.workspace.id
   } else {

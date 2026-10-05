@@ -20,7 +20,7 @@ export async function GET() {
 
 // PUT /api/execution/limits — 안전 제한 설정 업데이트
 export async function PUT(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 
@@ -33,13 +33,22 @@ export async function PUT(request: NextRequest) {
   }
 
   // 숫자 필드 유효성 검증
-  if (maxBidChangePct !== undefined && (typeof maxBidChangePct !== 'number' || maxBidChangePct < 0)) {
+  if (
+    maxBidChangePct !== undefined &&
+    (typeof maxBidChangePct !== 'number' || maxBidChangePct < 0)
+  ) {
     return errorResponse('maxBidChangePct는 0 이상의 숫자여야 합니다', 400)
   }
-  if (maxKeywordsPerBatch !== undefined && (typeof maxKeywordsPerBatch !== 'number' || maxKeywordsPerBatch < 1)) {
+  if (
+    maxKeywordsPerBatch !== undefined &&
+    (typeof maxKeywordsPerBatch !== 'number' || maxKeywordsPerBatch < 1)
+  ) {
     return errorResponse('maxKeywordsPerBatch는 1 이상의 숫자여야 합니다', 400)
   }
-  if (maxBudgetChangePct !== undefined && (typeof maxBudgetChangePct !== 'number' || maxBudgetChangePct < 0)) {
+  if (
+    maxBudgetChangePct !== undefined &&
+    (typeof maxBudgetChangePct !== 'number' || maxBudgetChangePct < 0)
+  ) {
     return errorResponse('maxBudgetChangePct는 0 이상의 숫자여야 합니다', 400)
   }
 

@@ -21,7 +21,7 @@ function isAllowedMime(mime: string): mime is (typeof ALLOWED_SOURCE_MIME_TYPES)
 }
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { productId } = await params

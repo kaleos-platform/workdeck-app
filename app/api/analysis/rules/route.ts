@@ -28,7 +28,7 @@ export async function GET() {
 
 // POST — 새 분석 규칙 추가
 export async function POST(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 

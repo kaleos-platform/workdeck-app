@@ -62,7 +62,7 @@ async function downloadWithRetry(
 // POST /api/reports/upload — JSON body { storagePath, fileName }
 // 브라우저가 Supabase Storage에 직접 업로드한 파일을 서버에서 다운로드 후 파싱·저장
 export async function POST(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 

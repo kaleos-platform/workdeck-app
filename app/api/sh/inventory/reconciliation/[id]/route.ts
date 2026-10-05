@@ -155,7 +155,7 @@ async function attachMappingInfo(
 //     (부분 적용 + PARTIAL/APPLIED 상태 머신은 자동 대조 cron 전용으로, processor 를 직접 호출한다)
 // { action: 'map', externalCode: string, items: [{optionId: string, quantity?: number}] }
 export async function POST(req: NextRequest, ctx: RouteContext) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await ctx.params
@@ -291,7 +291,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
 // DELETE /api/sh/inventory/reconciliation/[id]
 export async function DELETE(_req: NextRequest, ctx: RouteContext) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await ctx.params

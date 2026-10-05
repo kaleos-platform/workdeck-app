@@ -12,8 +12,7 @@ function toAgentResponse(agent: {
   lastActiveAt: Date | null
 }) {
   const connected =
-    agent.lastActiveAt != null &&
-    Date.now() - agent.lastActiveAt.getTime() < CONNECTED_THRESHOLD_MS
+    agent.lastActiveAt != null && Date.now() - agent.lastActiveAt.getTime() < CONNECTED_THRESHOLD_MS
 
   return {
     id: agent.id,
@@ -40,7 +39,7 @@ export async function GET() {
 
 // 에이전트 설정 생성/업데이트
 export async function POST(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 

@@ -31,7 +31,7 @@ function parseDraft(content: string): OnboardingDraft | null {
 }
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
   const body = await req.json().catch(() => ({}))

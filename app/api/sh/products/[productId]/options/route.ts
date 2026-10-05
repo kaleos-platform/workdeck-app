@@ -67,7 +67,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ productId: string }> }
 ) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { productId } = await params

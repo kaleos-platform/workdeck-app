@@ -8,7 +8,7 @@ type Params = { params: Promise<{ id: string }> }
 
 // 상세 템플릿을 공고에 적용 — 기존 POSTING_DETAIL 블록 전체 교체
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

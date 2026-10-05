@@ -12,7 +12,7 @@ const linkBodySchema = z.object({
 const unlinkBodySchema = z.object({ coupangProductItemId: z.string().min(1) })
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
   // 매칭은 쿠팡의 어느 옵션에 돈(가격)이 쓰일지를 정한다 — 반영 API 와 같은 ADMIN.
   const denied = assertRole(resolved.role, 'ADMIN')
@@ -21,14 +21,18 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return errorResponse(parsed.error.issues[0]?.message ?? '입력값이 올바르지 않습니다', 400)
   }
-  const r = await linkCoupangItem(resolved.space.id, parsed.data.coupangProductItemId, parsed.data.listingId)
+  const r = await linkCoupangItem(
+    resolved.space.id,
+    parsed.data.coupangProductItemId,
+    parsed.data.listingId
+  )
   if (!r.ok) return errorResponse(r.reason, r.status)
   return NextResponse.json({ ok: true })
 }
 
 // 연결 해제 — 잘못 확정한 매칭을 되돌리는 유일한 경로(v1.1 §7.2).
 export async function DELETE(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
   // 매칭은 쿠팡의 어느 옵션에 돈(가격)이 쓰일지를 정한다 — 반영 API 와 같은 ADMIN.
   const denied = assertRole(resolved.role, 'ADMIN')

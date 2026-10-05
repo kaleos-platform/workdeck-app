@@ -10,7 +10,7 @@ type Params = { params: Promise<{ runId: string }> }
 // 생산 차수 상태 전환 — PLANNED ↔ ORDERED ↔ STOCKED_IN
 // STOCKED_IN 전환 시 모든 옵션 수량을 지정된 보관 위치에 INBOUND 처리.
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { runId } = await params

@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
 // 새 공고 생성 (DRAFT) — 기본 제목·기본 폼으로 시작
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
 
   let body: unknown = {}

@@ -13,7 +13,7 @@ type Params = { params: Promise<{ orderId: string }> }
  * 주문번호는 비우고(재주문), 주문일자는 오늘로 설정한다.
  */
 export async function POST(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { orderId } = await params

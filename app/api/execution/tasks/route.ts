@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/execution/tasks — 제안에서 태스크 생성
 export async function POST(request: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 

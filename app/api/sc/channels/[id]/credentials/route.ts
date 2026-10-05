@@ -34,7 +34,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 // POST: 새 자격증명 저장 (upsert — kind 단위 1개). payload 는 복호화 없이 반환하지 않음.
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id: channelId } = await params
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id: channelId } = await params

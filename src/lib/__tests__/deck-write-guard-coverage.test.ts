@@ -14,8 +14,16 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-// 가드 적용을 마친 deck. Phase 3 PR 마다 하나씩 추가한다.
-const GUARDED_DECKS = ['finance'] as const
+// 가드 적용을 마친 deck 과 그 deck 의 컨텍스트 호출 패턴. Phase 3 PR 마다 하나씩 추가한다.
+// coupang-ads 는 resolveDeckContext 대신 resolveWorkspace() 를 쓴다.
+const GUARDED_DECKS: { deck: string; call: string }[] = [
+  { deck: 'finance', call: "resolveDeckContext('finance'" },
+  { deck: 'recruiting', call: "resolveDeckContext('recruiting'" },
+  { deck: 'sales-content', call: "resolveDeckContext('sales-content'" },
+  { deck: 'seller-hub', call: "resolveDeckContext('seller-hub'" },
+  // coupang-ads — 세션 경로만 가드(워커 키 경로는 Phase 4 워커 정책 대상)
+  { deck: 'coupang-ads', call: 'resolveWorkspace(' },
+]
 
 const API_ROOT = join(process.cwd(), 'app', 'api')
 const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
@@ -37,16 +45,18 @@ interface Call {
   hasWrite: boolean
 }
 
-// 각 resolveDeckContext(<deck>) 호출을 감싸는 최상위 export 핸들러 이름과 함께 수집한다.
-function collectCalls(deck: string): Call[] {
+// 각 컨텍스트 호출을 감싸는 최상위 export 핸들러 이름과 함께 수집한다.
+function collectCalls(call: string): Call[] {
   const calls: Call[] = []
   for (const file of routeFiles(API_ROOT)) {
     const lines = readFileSync(file, 'utf8').split('\n')
     let handler = '<top>'
     lines.forEach((line, idx) => {
-      const m = /^export\s+async\s+function\s+(\w+)/.exec(line)
+      // 최상위 함수 경계(export 여부 무관) — 핸들러 뒤에 선언된 보조 함수의 호출을
+      // 앞 핸들러로 잘못 묶지 않게 한다. 보조 함수는 메서드 이름이 아니라 검사 대상에서 빠진다.
+      const m = /^(?:export\s+)?(?:async\s+)?function\s+(\w+)/.exec(line)
       if (m) handler = m[1]
-      if (!line.includes(`resolveDeckContext('${deck}'`)) return
+      if (!line.includes(call)) return
       calls.push({
         file: file.replace(`${process.cwd()}/`, ''),
         line: idx + 1,
@@ -58,8 +68,8 @@ function collectCalls(deck: string): Call[] {
   return calls
 }
 
-describe.each(GUARDED_DECKS)('deck write 가드 커버리지 — %s', (deck) => {
-  const calls = collectCalls(deck)
+describe.each(GUARDED_DECKS)('deck write 가드 커버리지 — $deck', ({ call }) => {
+  const calls = collectCalls(call)
 
   test('스캔 대상이 존재한다 (경로 오타·이동 감지)', () => {
     expect(calls.length).toBeGreaterThan(0)
