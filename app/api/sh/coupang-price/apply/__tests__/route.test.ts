@@ -41,8 +41,13 @@ const target = (over: Record<string, unknown> = {}) => ({
   sellerProductId: 'sp',
   ...over,
 })
-const call = async () =>
-  (await POST(new NextRequest('http://localhost/api/sh/coupang-price/apply', { method: 'POST', body: JSON.stringify(body) })))!
+const call = async (extra: Record<string, unknown> = {}) =>
+  (await POST(
+    new NextRequest('http://localhost/api/sh/coupang-price/apply', {
+      method: 'POST',
+      body: JSON.stringify({ ...body, ...extra }),
+    })
+  ))!
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -92,4 +97,16 @@ test('반영 가능한 타깃이 0개면 400', async () => {
     channelId: 'ch', channelAxis: 'RG', targets: [target({ blockedReason: 'VAT 미포함' })], ambiguous: [], unmatched: [],
   })
   expect((await call()).status).toBe(400)
+})
+
+test('미리보기 이후 반영 대상이 바뀌면 409 — 사용자가 못 본 대상이 끼어들지 않게', async () => {
+  const res = await call({ expectedListingIds: ['L1', 'L9'] })
+  expect(res.status).toBe(409)
+  expect((await res.json()).message).toBe('미리보기 이후 반영 대상이 바뀌었습니다. 미리보기를 다시 불러온 뒤 시도하세요')
+  expect(job.findFirst).not.toHaveBeenCalled()
+  expect(job.create).not.toHaveBeenCalled()
+})
+
+test('미리보기 대상과 같으면 그대로 반영', async () => {
+  expect((await call({ expectedListingIds: ['L1'] })).status).toBe(201)
 })

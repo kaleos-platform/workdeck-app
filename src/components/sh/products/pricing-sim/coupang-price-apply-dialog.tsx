@@ -220,9 +220,14 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
           salePrice: target.salePrice,
           minMarginPrice: target.minMarginPrice,
           includeVat: target.includeVat,
+          // 서버가 다시 계산한 대상이 미리보기와 다르면 409 — 보지 못한 대상이 반영되지 않게.
+          expectedListingIds: targets
+            .filter((t) => t.blockedReason == null && t.vendorItemId != null)
+            .map((t) => t.listingId),
         }),
       })
       const data = await res.json().catch(() => ({}))
+      if (res.status === 409 && data?.code === 'TARGETS_CHANGED') void loadPreview(target)
       if (!res.ok) throw new Error(data?.message ?? `반영 요청 실패 (HTTP ${res.status})`)
       // 201 본문으로 임시 job 을 즉시 보여주고, 이후는 폴링이 갱신한다.
       const jobId = (data as { job?: { id?: string } }).job?.id ?? ''

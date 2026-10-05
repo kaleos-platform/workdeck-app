@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 import { assertRole, errorResponse, resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
@@ -11,13 +12,16 @@ import { computePriceTargets, priceInputSchema } from '@/lib/sh/coupang-price/co
  * ADMIN 역할을 요구한다(승인 채널 구성으로 대신하던 역할 게이트).
  * 실제 쿠팡 호출은 IP allowlist 때문에 워커가 한다 — 여기서는 잡만 만든다.
  */
+// 미리보기에서 사용자가 본 반영 대상. 생략하면 검사하지 않는다(미리보기 스키마와 분리).
+const applyInputSchema = priceInputSchema.extend({ expectedListingIds: z.array(z.string()).optional() })
+
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
   const denied = assertRole(resolved.role, 'ADMIN')
   if (denied) return denied
 
-  const parsed = priceInputSchema.safeParse(await req.json().catch(() => ({})))
+  const parsed = applyInputSchema.safeParse(await req.json().catch(() => ({})))
   if (!parsed.success) {
     return errorResponse(parsed.error.issues[0]?.message ?? '입력값이 올바르지 않습니다', 400)
   }
@@ -30,6 +34,20 @@ export async function POST(req: NextRequest) {
     (t): t is typeof t & { vendorItemId: string } => t.blockedReason == null && t.vendorItemId != null
   )
   if (writable.length === 0) return errorResponse('반영 가능한 대상이 없습니다', 400)
+
+  // 미리보기 이후 다른 탭에서 매칭이 확정되면 사용자가 보지 못한 대상이 조용히 끼어든다.
+  const expected = parsed.data.expectedListingIds
+  if (expected) {
+    const want = new Set(expected)
+    const drifted = want.size !== writable.length || writable.some((t) => !want.has(t.listingId))
+    if (drifted) {
+      return errorResponse(
+        '미리보기 이후 반영 대상이 바뀌었습니다. 미리보기를 다시 불러온 뒤 시도하세요',
+        409,
+        { code: 'TARGETS_CHANGED' }
+      )
+    }
+  }
 
   let workspaceId: string
   try {
