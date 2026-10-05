@@ -12,7 +12,12 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { normalizeFinKey, directionForType } from '@/lib/finance/kifrs-seed'
 import { normalizeMemoInput } from '@/lib/finance/memo'
-import { loadMatchTexts, reclassifyDraftStagedRows } from '@/lib/finance/classify'
+import {
+  classifyRow,
+  loadMatchTexts,
+  loadSpaceRules,
+  reclassifyDraftStagedRows,
+} from '@/lib/finance/classify'
 import { matchingTexts } from '@/lib/finance/rule-usage'
 import { categoryLabelOf } from '@/lib/finance/category-options'
 
@@ -51,7 +56,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     select: { id: true, type: true },
   })
   if (!category) return errorResponse('계정과목을 찾을 수 없습니다', 400)
-  const direction = directionForType(category.type)
+  // 방향은 계정과목 type 에서 유도하되, 방향 없는 type(이체·자산·부채)이면 규칙의 기존 방향을 유지한다.
+  // 학습 규칙은 거래 방향(IN/OUT)을 저장하므로, null 로 바꾸면 반대 방향 거래까지 매칭되고
+  // 같은 적요의 IN·OUT 이체 규칙 쌍이 서로 충돌(409)해 수정할 수 없게 된다.
+  const direction = directionForType(category.type) ?? rule.direction
 
   let accountId = rule.accountId
   if (body?.accountId !== undefined) {
@@ -85,14 +93,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     })
   }
 
-  // 기존 거래 함께 변경 대상 — 수정 "전" 조건으로 계산(트랜잭션 밖에서 읽기).
+  // 기존 거래 함께 변경 대상 — 수정 "전" 조건에 걸리고, 계정과목이 수정 전 값 그대로이며,
+  // 지금 규칙셋에서 실제로 이 규칙이 적용되는(다른 규칙이 우선하지 않는) 거래만.
+  // 우선순위를 무시하면 다른 규칙이 관할하는 과거 거래까지 바뀌어, 같은 적요의 새 거래와 분류가 갈린다.
   const categoryChanged = categoryId !== rule.categoryId
-  const applyIds =
-    body?.applyToExisting === true && categoryChanged
-      ? matchingTexts(rule, await loadMatchTexts(spaceId, rule.accountId))
-          .filter((t) => t.categoryId === rule.categoryId)
-          .map((t) => t.id)
-      : []
+  let applyIds: string[] = []
+  if (body?.applyToExisting === true && categoryChanged) {
+    const [texts, rulesBefore] = await Promise.all([
+      loadMatchTexts(spaceId, rule.accountId),
+      loadSpaceRules(spaceId),
+    ])
+    applyIds = matchingTexts(rule, texts)
+      .filter(
+        (t) =>
+          t.categoryId === rule.categoryId &&
+          classifyRow({ description: t.text }, rulesBefore, t.direction, t.accountId)
+            .matchedRuleId === rule.id
+      )
+      .map((t) => t.id)
+  }
 
   const [updated, applied] = await prisma.$transaction([
     prisma.finClassRule.update({

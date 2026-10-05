@@ -82,6 +82,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         body.memo !== undefined ? (data.memo ?? null) : undefined
       )
       data.matchedRuleId = learned?.ruleId ?? null
+    } else {
+      // 규칙 저장 없이 직접 분류 — 이전 자동분류 규칙 참조를 끊는다(staging/bulk 와 동일).
+      // 남겨 두면 그 규칙을 수정·삭제할 때 재분류 대상이 되어 사용자가 고른 계정과목이 사라진다.
+      data.matchedRuleId = null
     }
   }
 

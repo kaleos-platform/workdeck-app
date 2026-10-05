@@ -27,6 +27,7 @@ import {
 } from '../../../../app/api/finance/rules/[id]/route'
 import { POST as rulePreview } from '../../../../app/api/finance/rules/preview/route'
 import { GET as rulesLookup } from '../../../../app/api/finance/rules/lookup/route'
+import { PATCH as stagingPatch } from '../../../../app/api/finance/staging/[id]/route'
 
 const SPACE_ID = 'e2e0fin0-0000-4000-8000-0000000000f1'
 const USER_ID = 'e2e0fin0-0000-4000-8000-0000000000f2'
@@ -314,6 +315,188 @@ d('finance class rules by account (dev DB)', () => {
       await learnRule(SPACE_ID, { description: '알림테스트' }, catCogs, 'OUT', accA)
       json = await (await rulesLookup(q({ ...base, categoryId: catCogs2 })))!.json()
       expect(json.notice.kind).toBe('REPLACED')
+    })
+  })
+
+  describe('리뷰 수정', () => {
+    let catTransfer: string
+    let impId: string
+
+    beforeAll(async () => {
+      const parent = await prisma.finCategory.create({
+        data: { spaceId: SPACE_ID, name: '이체그룹', type: 'TRANSFER' },
+        select: { id: true },
+      })
+      catTransfer = (
+        await prisma.finCategory.create({
+          data: { spaceId: SPACE_ID, parentId: parent.id, name: '계좌이체', type: 'TRANSFER' },
+          select: { id: true },
+        })
+      ).id
+      impId = (
+        await prisma.finImport.create({
+          data: {
+            spaceId: SPACE_ID,
+            accountId: accA,
+            fileName: 'fix.csv',
+            institution: '테스트은행',
+            kind: 'BANK',
+            status: 'DRAFT',
+          },
+          select: { id: true },
+        })
+      ).id
+    })
+
+    test('I-1: 규칙 저장 없이 직접 바꾼 대기 행은 규칙 수정 후에도 유지', async () => {
+      const rule = await prisma.finClassRule.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId: accA,
+          matchKey: '수정테스트',
+          matchType: 'EXACT',
+          direction: 'OUT',
+          categoryId: catCogs,
+          learnedFrom: 'USER',
+        },
+      })
+      const row = await prisma.finStagedRow.create({
+        data: {
+          importId: impId,
+          spaceId: SPACE_ID,
+          accountId: accA,
+          raw: {},
+          txnDate: new Date('2026-06-01T00:00:00Z'),
+          direction: 'OUT',
+          amount: 10,
+          description: '수정테스트',
+          categoryId: catCogs,
+          classStatus: 'CLASSIFIED',
+          matchedRuleId: rule.id,
+          identityKey: 'fix-1',
+          contentHash: 'fix-1',
+        },
+        select: { id: true },
+      })
+      await stagingPatch(
+        jsonReq(`http://localhost/api/finance/staging/${row.id}`, 'PATCH', {
+          categoryId: catCogs2,
+          learn: false,
+        }),
+        { params: Promise.resolve({ id: row.id }) }
+      )
+      await rulePatch(
+        jsonReq(`http://localhost/api/finance/rules/${rule.id}`, 'PATCH', { memo: '메모만 수정' }),
+        { params: Promise.resolve({ id: rule.id }) }
+      )
+      const after = await prisma.finStagedRow.findUnique({ where: { id: row.id } })
+      expect(after!.categoryId).toBe(catCogs2)
+    })
+
+    test('I-2: applyToExisting 은 그 규칙이 실제 적용되는 거래만 바꾼다', async () => {
+      // 공통 KEYWORD '정산테스트' → 매입, 계좌 A EXACT '정산테스트 쿠팡' → 매입
+      const common = await prisma.finClassRule.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId: null,
+          matchKey: '정산테스트',
+          matchType: 'KEYWORD',
+          direction: 'OUT',
+          categoryId: catCogs,
+          learnedFrom: 'USER',
+        },
+      })
+      await prisma.finClassRule.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId: accA,
+          matchKey: '정산테스트 쿠팡',
+          matchType: 'EXACT',
+          direction: 'OUT',
+          categoryId: catCogs,
+          learnedFrom: 'USER',
+        },
+      })
+      const mk = (key: string, accountId: string, description: string) =>
+        prisma.finTransaction.create({
+          data: {
+            spaceId: SPACE_ID,
+            accountId,
+            direction: 'OUT',
+            amount: 1,
+            txnDate: new Date('2026-06-02T00:00:00Z'),
+            description,
+            categoryId: catCogs,
+            classStatus: 'CLASSIFIED',
+            identityKey: key,
+            contentHash: key,
+          },
+          select: { id: true },
+        })
+      const shadowed = await mk('fix-2a', accA, '정산테스트 쿠팡') // 계좌 EXACT 가 관할
+      const owned = await mk('fix-2b', accB, '정산테스트 쿠팡') // 계좌 B 엔 EXACT 없음 → 공통 규칙 관할
+      const pv = await (await rulePreview(
+        jsonReq('http://localhost/api/finance/rules/preview', 'POST', {
+          matchKey: '정산테스트',
+          matchType: 'KEYWORD',
+          accountId: null,
+          categoryId: catCogs,
+          ruleId: common.id,
+        })
+      ))!.json()
+      expect(pv.applicableCount).toBe(1) // 팝업 「기존 거래 N건」 = 실제 변경 수
+      const res = await rulePatch(
+        jsonReq(`http://localhost/api/finance/rules/${common.id}`, 'PATCH', {
+          categoryId: catCogs2,
+          applyToExisting: true,
+        }),
+        { params: Promise.resolve({ id: common.id }) }
+      )
+      expect((await res!.json()).updatedTransactions).toBe(1)
+      expect(
+        (await prisma.finTransaction.findUnique({ where: { id: shadowed.id } }))!.categoryId
+      ).toBe(catCogs)
+      expect(
+        (await prisma.finTransaction.findUnique({ where: { id: owned.id } }))!.categoryId
+      ).toBe(catCogs2)
+    })
+
+    test('I-3: 이체 규칙은 메모만 수정해도 방향이 유지된다', async () => {
+      const inRule = await prisma.finClassRule.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId: accA,
+          matchKey: '이체테스트',
+          matchType: 'EXACT',
+          direction: 'IN',
+          categoryId: catTransfer,
+          learnedFrom: 'USER',
+        },
+      })
+      const outRule = await prisma.finClassRule.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId: accA,
+          matchKey: '이체테스트',
+          matchType: 'EXACT',
+          direction: 'OUT',
+          categoryId: catTransfer,
+          learnedFrom: 'USER',
+        },
+      })
+      const r1 = await rulePatch(
+        jsonReq(`http://localhost/api/finance/rules/${inRule.id}`, 'PATCH', { memo: 'a' }),
+        { params: Promise.resolve({ id: inRule.id }) }
+      )
+      expect(r1!.status).toBe(200)
+      expect((await prisma.finClassRule.findUnique({ where: { id: inRule.id } }))!.direction).toBe(
+        'IN'
+      )
+      const r2 = await rulePatch(
+        jsonReq(`http://localhost/api/finance/rules/${outRule.id}`, 'PATCH', { memo: 'b' }),
+        { params: Promise.resolve({ id: outRule.id }) }
+      )
+      expect(r2!.status).toBe(200)
     })
   })
 })

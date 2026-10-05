@@ -355,6 +355,8 @@ export function ClassRulesManager({
 // ─── 추가/수정 팝업 ────────────────────────────────────────────────────────────
 
 type Preview = {
+  /** ruleId 지정 시 — 기존 거래 함께 변경 대상 수(PATCH 와 같은 기준) */
+  applicableCount: number | null
   count: number
   sameCategoryCount: number
   samples: {
@@ -371,6 +373,8 @@ async function fetchPreview(body: {
   matchType: MatchType
   accountId: string | null
   categoryId: string
+  /** 수정 중 규칙 — 이체 등 방향 없는 계정과목이면 이 규칙의 방향으로 미리보기 */
+  ruleId?: string
 }): Promise<Preview | null> {
   const res = await fetch('/api/finance/rules/preview', {
     method: 'POST',
@@ -419,7 +423,8 @@ function RuleDialog({
       matchType: editing.matchType,
       accountId: editing.accountId,
       categoryId: editing.categoryId,
-    }).then((p) => setOriginalSameCount(p?.sameCategoryCount ?? 0))
+      ruleId: editing.id,
+    }).then((p) => setOriginalSameCount(p?.applicableCount ?? 0))
   }, [editing])
 
   // 입력이 바뀌면 400ms 뒤 미리보기 갱신(키워드·계정과목이 비어 있으면 결과만 숨김).
@@ -428,7 +433,9 @@ function RuleDialog({
   useEffect(() => {
     if (!previewKey || !categoryId) return
     const t = setTimeout(() => {
-      void fetchPreview({ matchKey, matchType, accountId, categoryId }).then(setPreview)
+      void fetchPreview({ matchKey, matchType, accountId, categoryId, ruleId: editing?.id }).then(
+        setPreview
+      )
     }, 400)
     return () => clearTimeout(t)
   }, [previewKey]) // eslint-disable-line react-hooks/exhaustive-deps
