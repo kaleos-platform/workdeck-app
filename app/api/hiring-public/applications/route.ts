@@ -1,3 +1,4 @@
+import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 // 공개 지원 제출 API — 무인증. 남용 방어(레이트리밋·MIME·용량·개수) 필수.
 // 단일 멀티파트 POST: payload(JSON) + files(최대 3). spaceId/postingId 는 posting 행에서 파생.
 import { NextRequest, NextResponse } from 'next/server'
@@ -92,6 +93,7 @@ export async function POST(req: NextRequest) {
       id: true,
       spaceId: true,
       status: true,
+      closingDate: true,
       applicationEntries: true,
       positions: { select: { id: true } },
       stores: { select: { storeId: true } },
@@ -100,7 +102,7 @@ export async function POST(req: NextRequest) {
   if (!posting || posting.status === 'DRAFT' || posting.status === 'ARCHIVED') {
     return errorResponse('공고를 찾을 수 없습니다', 404)
   }
-  if (posting.status !== 'ACTIVE') {
+  if (posting.status !== 'ACTIVE' || isHiringDeadlinePassed(posting.closingDate)) {
     return errorResponse('마감된 공고입니다', 410)
   }
 
