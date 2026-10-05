@@ -249,8 +249,16 @@ d('finance coverage/imports API E2E', () => {
     expect(res.status).toBe(400)
   })
 
-  it('imports: 목록 최신순 + 계좌 정보 포함', async () => {
+  it('imports: 기본은 검토중(잔여 스테이징 있음)만', async () => {
     const res = await call(importsGet(getRequest('/api/finance/imports')))
+    const body = await res.json()
+    expect(body.total).toBe(1)
+    expect(body.imports[0].id).toBe(draftImportId)
+    expect(body.imports[0].committed).toBe(false)
+  })
+
+  it('imports: 목록 최신순 + 계좌 정보 포함', async () => {
+    const res = await call(importsGet(getRequest('/api/finance/imports?includeCommitted=1')))
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.total).toBe(2)
@@ -265,11 +273,14 @@ d('finance coverage/imports API E2E', () => {
   })
 
   it('imports: accountId 필터', async () => {
-    const res = await call(importsGet(getRequest(`/api/finance/imports?accountId=${bankId}`)))
+    const res = await call(
+      importsGet(getRequest(`/api/finance/imports?accountId=${bankId}&includeCommitted=1`))
+    )
     const body = await res.json()
     expect(body.total).toBe(1)
     expect(body.imports[0].id).toBe(committedImportId)
     expect(body.imports[0].status).toBe('COMMITTED')
+    expect(body.imports[0].committed).toBe(true)
   })
 
   it('imports: limit 검증', async () => {
