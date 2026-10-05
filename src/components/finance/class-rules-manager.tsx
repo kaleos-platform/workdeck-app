@@ -39,7 +39,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
-import { accountKindLabel } from '@/components/finance/format'
+import { accountLabel } from '@/components/finance/format'
 import { categoryLabelOf, type ComboOption } from '@/lib/finance/category-options'
 import { ymdOf } from '@/lib/finance/aggregate'
 import { MEMO_MAX } from '@/lib/finance/memo'
@@ -57,11 +57,11 @@ type Rule = {
   accountId: string | null
   categoryId: string
   category: { id: string; name: string; parent: { name: string } | null } | null
-  account: { id: string; name: string; kind: FinAccountKind } | null
+  account: { id: string; name: string; kind: FinAccountKind; accountNumber: string | null } | null
   usage: { count: number; lastMatchedAt: string | null }
 }
 
-type Account = { id: string; name: string; kind: FinAccountKind }
+type Account = { id: string; name: string; kind: FinAccountKind; accountNumber: string | null }
 
 /** 좌측 선택 — 전체 / 전체 공통 / 계좌 id */
 type Scope = 'ALL' | 'COMMON' | string
@@ -161,7 +161,7 @@ export function ClassRulesManager({
     { value: 'COMMON', label: '전체 공통', count: countByScope.get('COMMON') ?? 0 },
     ...accounts.map((a) => ({
       value: a.id,
-      label: `${accountKindLabel(a.kind)} · ${a.name}`,
+      label: accountLabel(a),
       count: countByScope.get(a.id) ?? 0,
     })),
   ]
@@ -293,7 +293,7 @@ export function ClassRulesManager({
                     <TableCell>{categoryLabelOf(r.category) || '(삭제된 계정)'}</TableCell>
                     {scope === 'ALL' && (
                       <TableCell className="text-muted-foreground">
-                        {r.account ? r.account.name : '전체 공통'}
+                        {r.account ? accountLabel(r.account) : '전체 공통'}
                       </TableCell>
                     )}
                     <TableCell
@@ -368,18 +368,22 @@ type Preview = {
   }[]
 }
 
-async function fetchPreview(body: {
-  matchKey: string
-  matchType: MatchType
-  accountId: string | null
-  categoryId: string
-  /** 수정 중 규칙 — 이체 등 방향 없는 계정과목이면 이 규칙의 방향으로 미리보기 */
-  ruleId?: string
-}): Promise<Preview | null> {
+async function fetchPreview(
+  body: {
+    matchKey: string
+    matchType: MatchType
+    accountId: string | null
+    categoryId: string
+    /** 수정 중 규칙 — 이체 등 방향 없는 계정과목이면 이 규칙의 방향으로 미리보기 */
+    ruleId?: string
+  },
+  signal?: AbortSignal
+): Promise<Preview | null> {
   const res = await fetch('/api/finance/rules/preview', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    signal,
   })
   return res.ok ? res.json() : null
 }
@@ -432,12 +436,17 @@ function RuleDialog({
     matchKey.trim() && categoryId ? `${matchKey}|${matchType}|${accountValue}|${categoryId}` : ''
   useEffect(() => {
     if (!previewKey || !categoryId) return
+    // 입력이 바뀌면 이전 요청을 취소 — 늦게 도착한 옛 응답이 최신 미리보기를 덮지 않게.
+    const ctrl = new AbortController()
     const t = setTimeout(() => {
-      void fetchPreview({ matchKey, matchType, accountId, categoryId, ruleId: editing?.id }).then(
-        setPreview
-      )
+      fetchPreview({ matchKey, matchType, accountId, categoryId, ruleId: editing?.id }, ctrl.signal)
+        .then(setPreview)
+        .catch(() => {})
     }, 400)
-    return () => clearTimeout(t)
+    return () => {
+      clearTimeout(t)
+      ctrl.abort()
+    }
   }, [previewKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const categoryChanged = !!editing && !!categoryId && categoryId !== editing.categoryId
@@ -555,7 +564,7 @@ function RuleDialog({
                 <SelectItem value={COMMON_VALUE}>전체 공통 (모든 계좌)</SelectItem>
                 {accounts.map((a) => (
                   <SelectItem key={a.id} value={a.id}>
-                    {accountKindLabel(a.kind)} · {a.name}
+                    {accountLabel(a)}
                   </SelectItem>
                 ))}
               </SelectContent>

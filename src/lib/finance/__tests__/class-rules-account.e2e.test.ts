@@ -182,7 +182,9 @@ d('finance class rules by account (dev DB)', () => {
     })
 
     test('GET: 계좌·사용 현황(텍스트 매칭, 계좌 A 만 3건)', async () => {
-      const json = await (await rulesGet())!.json()
+      const json = await (await rulesGet(
+        new NextRequest('http://localhost/api/finance/rules')
+      ))!.json()
       const r = json.rules.find((x: { id: string }) => x.id === ruleId)
       expect(r.account.id).toBe(accA)
       expect(r.usage.count).toBe(3)
@@ -497,6 +499,61 @@ d('finance class rules by account (dev DB)', () => {
         { params: Promise.resolve({ id: outRule.id }) }
       )
       expect(r2!.status).toBe(200)
+    })
+  })
+
+  describe('후속', () => {
+    test('B: 학습되지 않는 환불 방향 분류는 알림을 내지 않는다', async () => {
+      // 공통 규칙 '환불테스트' OUT → 매입 이 적용 중. 이 OUT 거래를 수익 계정(매출)으로 분류 = 환불 → 학습 안 됨.
+      await prisma.finClassRule.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId: null,
+          matchKey: '환불테스트',
+          matchType: 'EXACT',
+          direction: 'OUT',
+          categoryId: catCogs,
+          learnedFrom: 'USER',
+        },
+      })
+      const qs = new URLSearchParams({
+        accountId: accA,
+        direction: 'OUT',
+        description: '환불테스트',
+        counterparty: '',
+        categoryId: catSales,
+      })
+      const json = await (await rulesLookup(
+        new NextRequest(`http://localhost/api/finance/rules/lookup?${qs}`)
+      ))!.json()
+      expect(json.notice).toBeNull()
+    })
+
+    test('C: 공백만 있는 키워드는 추가·수정 모두 400', async () => {
+      const post = await rulesPost(
+        jsonReq('http://localhost/api/finance/rules', 'POST', {
+          matchKey: '   ',
+          matchType: 'KEYWORD',
+          categoryId: catCogs,
+        })
+      )
+      expect(post!.status).toBe(400)
+      const rule = await prisma.finClassRule.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId: accB,
+          matchKey: '공백테스트',
+          matchType: 'EXACT',
+          direction: 'OUT',
+          categoryId: catCogs,
+          learnedFrom: 'USER',
+        },
+      })
+      const patch = await rulePatch(
+        jsonReq(`http://localhost/api/finance/rules/${rule.id}`, 'PATCH', { matchKey: '  ' }),
+        { params: Promise.resolve({ id: rule.id }) }
+      )
+      expect(patch!.status).toBe(400)
     })
   })
 })

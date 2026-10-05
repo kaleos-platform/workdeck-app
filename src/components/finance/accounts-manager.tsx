@@ -99,7 +99,8 @@ export function FinanceAccountsManager() {
     try {
       const [catRes, ruleRes] = await Promise.all([
         fetch('/api/finance/categories'),
-        fetch('/api/finance/rules'),
+        // 탭 개수만 필요 — 사용 현황 계산 생략(규칙 탭이 열리면 ClassRulesManager 가 전체 조회)
+        fetch('/api/finance/rules?usage=0'),
       ])
       if (!catRes.ok) throw new Error('계정과목 조회 실패')
       if (!ruleRes.ok) throw new Error('규칙 조회 실패')

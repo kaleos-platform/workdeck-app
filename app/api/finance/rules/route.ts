@@ -14,24 +14,26 @@ const RULE_INCLUDE = {
   category: {
     select: { id: true, name: true, type: true, parent: { select: { name: true } } },
   },
-  account: { select: { id: true, name: true, kind: true } },
+  account: { select: { id: true, name: true, kind: true, accountNumber: true } },
 } as const
 
 // 조회: spaceId 기준 분류 규칙 전체 (updatedAt desc) + 계좌 + 사용 현황(텍스트 매칭 기준, rule-usage.ts).
-export async function GET() {
+// ?usage=0 이면 사용 현황 계산(전 거래 로드)을 생략 — 탭 개수 표시처럼 목록만 필요한 호출용.
+export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('finance')
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
+  const withUsage = req.nextUrl.searchParams.get('usage') !== '0'
   const [rules, texts] = await Promise.all([
     prisma.finClassRule.findMany({
       where: { spaceId },
       orderBy: { updatedAt: 'desc' },
       include: RULE_INCLUDE,
     }),
-    loadMatchTexts(spaceId),
+    withUsage ? loadMatchTexts(spaceId) : Promise.resolve([]),
   ])
-  const usage = computeRuleUsage(rules, texts)
+  const usage = computeRuleUsage(withUsage ? rules : [], texts)
 
   return NextResponse.json({
     rules: rules.map((r) => ({
