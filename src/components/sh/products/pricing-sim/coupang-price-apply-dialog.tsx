@@ -146,7 +146,10 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   }, [target, loadPreview])
 
   const [job, setJob] = useState<JobView | null>(null)
-  const [pollStartedAt, setPollStartedAt] = useState<number | null>(null)
+  // 폴링 기준 시각(ms). 타임아웃 상태는 이 값에서 타이머로 만든다(렌더 중 Date.now() 금지).
+  const [pollAnchor, setPollAnchor] = useState<number | null>(null)
+  const [timedOut, setTimedOut] = useState(false)
+  const [tick, setTick] = useState(0)
 
   const fetchLatestJob = useCallback(async (channelId: string): Promise<JobView | null> => {
     const res = await fetch(`/api/sh/coupang-price/jobs?channelId=${encodeURIComponent(channelId)}`)
@@ -156,31 +159,53 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
 
   // 열 때 미리보기와 함께 이 채널의 최근 반영 결과를 불러온다(닫은 사이 끝난 결과 확인용).
   useEffect(() => {
+    setTimedOut(false)
     if (!target) {
       setJob(null)
-      setPollStartedAt(null)
+      setPollAnchor(null)
       return
     }
-    void fetchLatestJob(target.channelId).then((j) => {
-      setJob(j)
-      if (j && !isDone(j.status)) setPollStartedAt(Date.now())
-    })
+    let cancelled = false
+    fetchLatestJob(target.channelId)
+      .then((j) => {
+        if (cancelled) return
+        setJob(j)
+        // 미완료 job 은 생성 시각 기준으로 3분을 센다.
+        if (j && !isDone(j.status)) setPollAnchor(new Date(j.createdAt).getTime())
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
   }, [target, fetchLatestJob])
 
-  // 진행 중이면 2초 간격 폴링, 3분에서 멈춘다(워커 중단 의심 안내).
+  const running = job != null && !isDone(job.status)
+
+  // 3분 타임아웃(워커 중단 의심 안내). 이미 지났으면 즉시 발동.
   useEffect(() => {
-    if (!target || !job || isDone(job.status) || pollStartedAt == null) return
-    if (Date.now() - pollStartedAt > POLL_LIMIT_MS) return
+    if (!running || pollAnchor == null) return
+    const t = setTimeout(
+      () => setTimedOut(true),
+      Math.max(0, POLL_LIMIT_MS - (Date.now() - pollAnchor))
+    )
+    return () => clearTimeout(t)
+  }, [running, pollAnchor])
+
+  // 진행 중이면 2초 간격 폴링. 실패해도 타임아웃까지 계속 재시도한다.
+  useEffect(() => {
+    if (!target || !running || timedOut) return
     const t = setTimeout(async () => {
-      const next = await fetchLatestJob(target.channelId)
-      if (next) setJob(next)
-      if (next && isDone(next.status)) void loadPreview(target)
+      try {
+        const next = await fetchLatestJob(target.channelId)
+        if (next) setJob(next)
+        if (next && isDone(next.status)) void loadPreview(target)
+      } catch {
+        // 일시 오류 — 다음 틱에 재시도
+      }
+      setTick((n) => n + 1)
     }, POLL_MS)
     return () => clearTimeout(t)
-  }, [target, job, pollStartedAt, fetchLatestJob, loadPreview])
-
-  const pollTimedOut =
-    job != null && !isDone(job.status) && pollStartedAt != null && Date.now() - pollStartedAt > POLL_LIMIT_MS
+  }, [target, running, timedOut, tick, fetchLatestJob, loadPreview])
 
   async function handleSubmit() {
     if (!target) return
@@ -199,8 +224,26 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? `반영 요청 실패 (HTTP ${res.status})`)
-      setJob(await fetchLatestJob(target.channelId))
-      setPollStartedAt(Date.now())
+      // 201 본문으로 임시 job 을 즉시 보여주고, 이후는 폴링이 갱신한다.
+      const jobId = (data as { job?: { id?: string } }).job?.id ?? ''
+      setJob({
+        id: jobId,
+        status: 'PENDING',
+        results: null,
+        error: null,
+        createdAt: new Date().toISOString(),
+        executedAt: null,
+        targets: targets
+          .filter((t) => t.blockedReason == null)
+          .map((t) => ({
+            listingId: t.listingId,
+            listingName: t.listingName,
+            targetPrice: t.targetPrice,
+            apMinSalePrice: t.apMinSalePrice,
+          })),
+      })
+      setTimedOut(false)
+      setPollAnchor(Date.now())
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '반영 요청 실패')
     } finally {
@@ -208,7 +251,8 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
     }
   }
 
-  const inFlight = job != null && !isDone(job.status) && !pollTimedOut
+  const pollTimedOut = running && timedOut
+  const inFlight = running && !timedOut
 
   const writableCount = targets.filter((t) => t.blockedReason == null).length
 
