@@ -22,6 +22,7 @@ import { fixedSectionOf } from '@/lib/finance/contra'
 
 export { ruleMatchesText } from '@/lib/finance/classify-core'
 import type { MatchText } from '@/lib/finance/rule-usage'
+import { categoryLabelOf } from '@/lib/finance/category-options'
 
 /** 매칭에 필요한 규칙 최소 형태 */
 export type ClassRuleLite = {
@@ -284,6 +285,47 @@ export async function reclassifyDraftStagedRows(spaceId: string, ruleId: string)
     changed++
   }
   return changed
+}
+
+export type RuleNotice = {
+  /** REPLACED: 이 계좌의 같은 키 규칙을 덮어씀 / OVERRIDES: 다른 규칙(공통·부분포함) 대신 새 규칙이 적용됨 */
+  kind: 'REPLACED' | 'OVERRIDES'
+  fromCategoryId: string
+  fromLabel: string
+}
+
+/**
+ * 학습 직전 알림 — 지금 이 거래에 실제 적용되는 규칙(classifyRow) 기준.
+ * 계좌 전용 학습이 되면 흔한 경우는 같은 키 덮어쓰기가 아니라 다른 계정과목의 공통 규칙을
+ * 새 계좌 규칙이 앞지르는 것이라, 같은 키 조회가 아니라 매칭 결과로 판단한다.
+ * 적용 규칙이 없거나 같은 계정과목이면 null.
+ */
+export async function ruleNoticeFor(
+  spaceId: string,
+  input: ClassifyInput,
+  direction: FinTxnDirection,
+  accountId: string,
+  categoryId: string
+): Promise<RuleNotice | null> {
+  const rules = await loadSpaceRules(spaceId)
+  const cls = classifyRow(input, rules, direction, accountId)
+  if (!cls.matchedRuleId || !cls.categoryId || cls.categoryId === categoryId) return null
+  const rule = rules.find((r) => r.id === cls.matchedRuleId)
+  if (!rule) return null
+  const sameKey =
+    rule.accountId === accountId &&
+    rule.matchType === 'EXACT' &&
+    rule.direction === direction &&
+    rule.matchKey === buildMatchText(input)
+  const cat = await prisma.finCategory.findUnique({
+    where: { id: cls.categoryId },
+    select: { name: true, parent: { select: { name: true } } },
+  })
+  return {
+    kind: sameKey ? 'REPLACED' : 'OVERRIDES',
+    fromCategoryId: cls.categoryId,
+    fromLabel: categoryLabelOf(cat),
+  }
 }
 
 /** 적요+상대를 정규화한 매칭 키(외부에서 sibling 계산 등에 재사용). */

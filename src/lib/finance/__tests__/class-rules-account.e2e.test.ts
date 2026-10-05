@@ -26,6 +26,7 @@ import {
   DELETE as ruleDelete,
 } from '../../../../app/api/finance/rules/[id]/route'
 import { POST as rulePreview } from '../../../../app/api/finance/rules/preview/route'
+import { GET as rulesLookup } from '../../../../app/api/finance/rules/lookup/route'
 
 const SPACE_ID = 'e2e0fin0-0000-4000-8000-0000000000f1'
 const USER_ID = 'e2e0fin0-0000-4000-8000-0000000000f2'
@@ -281,6 +282,38 @@ d('finance class rules by account (dev DB)', () => {
       const row = await prisma.finStagedRow.findUnique({ where: { id: staged.id } })
       expect(row!.matchedRuleId).toBe(commonId)
       expect(row!.categoryId).toBe(catCogs)
+    })
+  })
+
+  describe('덮어쓰기·우선 적용 알림', () => {
+    const q = (p: Record<string, string>) =>
+      new NextRequest(`http://localhost/api/finance/rules/lookup?${new URLSearchParams(p)}`)
+
+    test('공통 규칙 적용 중 → OVERRIDES, 같은 키 계좌 규칙 → REPLACED, 같은 계정과목 → null', async () => {
+      await prisma.finClassRule.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId: null,
+          matchKey: '알림테스트',
+          matchType: 'EXACT',
+          direction: 'OUT',
+          categoryId: catCogs,
+          learnedFrom: 'USER',
+        },
+      })
+      const base = {
+        accountId: accA,
+        direction: 'OUT',
+        description: '알림테스트',
+        counterparty: '',
+      }
+      let json = await (await rulesLookup(q({ ...base, categoryId: catCogs2 })))!.json()
+      expect(json.notice.kind).toBe('OVERRIDES')
+      json = await (await rulesLookup(q({ ...base, categoryId: catCogs })))!.json()
+      expect(json.notice).toBeNull()
+      await learnRule(SPACE_ID, { description: '알림테스트' }, catCogs, 'OUT', accA)
+      json = await (await rulesLookup(q({ ...base, categoryId: catCogs2 })))!.json()
+      expect(json.notice.kind).toBe('REPLACED')
     })
   })
 })

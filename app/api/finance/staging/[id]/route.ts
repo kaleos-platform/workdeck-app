@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { learnRule, matchKeyOf } from '@/lib/finance/classify'
+import { learnRule, matchKeyOf, ruleNoticeFor, type RuleNotice } from '@/lib/finance/classify'
 import { normalizeMemoInput } from '@/lib/finance/memo'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
 
@@ -34,6 +34,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!row) return errorResponse('스테이징 행을 찾을 수 없습니다', 404)
 
   const body = await req.json().catch(() => ({}))
+  // 규칙 학습 시 덮어쓰기·우선 적용 알림(학습 안 하면 null)
+  let ruleNotice: RuleNotice | null = null
   const data: {
     categoryId?: string
     classStatus?: 'CLASSIFIED'
@@ -63,6 +65,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     data.classStatus = 'CLASSIFIED'
 
     if (body.learn !== false) {
+      ruleNotice = await ruleNoticeFor(
+        spaceId,
+        { description: row.description, counterparty: row.counterparty },
+        row.direction,
+        row.accountId,
+        body.categoryId
+      )
       const learned = await learnRule(
         spaceId,
         { description: row.description, counterparty: row.counterparty },
@@ -133,5 +142,5 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
 
-  return NextResponse.json({ row: updated, siblingIds })
+  return NextResponse.json({ row: updated, siblingIds, ruleNotice })
 }
