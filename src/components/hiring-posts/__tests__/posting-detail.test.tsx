@@ -67,3 +67,29 @@ it('초안의 지원서 링크와 빈 직무는 안내하되 HTML 복사를 허�
   expect(screen.getByText(/현재 지원 접수가 열려 있지 않습니다/)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'HTML 복사' })).toBeEnabled()
 })
+
+it('초안 HTML 복사 완료 시 접수 불가 안내와 발행 설정 경로를 제공한다', async () => {
+  const { toast } = await import('sonner')
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: jest.fn().mockResolvedValue(undefined) },
+  })
+  render(
+    <PostingDetail
+      posting={{ id: 'test', uuid: 'qa', title: 'QA', status: 'DRAFT', closingDate: null }}
+      origin="https://workdeck.test"
+      embedHtml="<p>QA</p>"
+    />
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'HTML 복사' }))
+  await waitFor(() =>
+    expect(toast.success).toHaveBeenCalledWith('HTML 코드를 복사했습니다', {
+      description: '초안 공고는 발행 전까지 지원서 링크로 접수할 수 없습니다.',
+      duration: 8000,
+    })
+  )
+  expect(screen.getByRole('link', { name: '발행 설정' })).toHaveAttribute(
+    'href',
+    '/d/recruiting/postings/test/build'
+  )
+})

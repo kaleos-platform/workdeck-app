@@ -1,3 +1,4 @@
+import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 // 공개 채용 공고 페이지(server component, 무인증).
 // ACTIVE 만 공개. CLOSED → 마감 안내. 그 외 → 404.
 // ?preview=1 + 스페이스 멤버인 경우 DRAFT 도 열람 가능(발행 전 미리보기).
@@ -55,8 +56,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     where: { uuid },
     select: { title: true, status: true },
   })
-  if (!posting || !['ACTIVE', 'CLOSED'].includes(posting.status))
-    return { title: '채용 공고' }
+  if (!posting || !['ACTIVE', 'CLOSED'].includes(posting.status)) return { title: '채용 공고' }
   return { title: `${posting.title} · 채용 공고` }
 }
 
@@ -71,7 +71,7 @@ export default async function PublicPostingPage({ params, searchParams }: Params
     posting.status === 'DRAFT' && (await isSpaceMemberPreview(preview, posting.spaceId))
   if (posting.status === 'DRAFT' && !isPreview) notFound()
 
-  const isClosed = posting.status === 'CLOSED'
+  const isClosed = posting.status === 'CLOSED' || isHiringDeadlinePassed(posting.closingDate)
 
   // 마감일 D-day (KST 기준 날짜 비교 — closingDate는 UTC 자정으로 저장된 날짜값)
   const closingLabel = (() => {

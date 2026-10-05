@@ -1,3 +1,4 @@
+import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { randomUUID } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
@@ -18,9 +19,9 @@ export async function POST(req: NextRequest) {
   const { postingUuid, files } = parsed.data
   const posting = await prisma.hiringPosting.findUnique({
     where: { uuid: postingUuid },
-    select: { id: true, spaceId: true, status: true, applicationEntries: true },
+    select: { id: true, spaceId: true, status: true, closingDate: true, applicationEntries: true },
   })
-  if (!posting || posting.status !== 'ACTIVE')
+  if (!posting || posting.status !== 'ACTIVE' || isHiringDeadlinePassed(posting.closingDate))
     return errorResponse('지원 가능한 공고가 아닙니다', 404)
   const error = fileFieldError(
     parseApplicationEntriesSchema(posting.applicationEntries),

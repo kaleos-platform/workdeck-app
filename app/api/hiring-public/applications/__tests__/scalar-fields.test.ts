@@ -173,3 +173,22 @@ it('일반 필수 항목을 누락하면 첨부 없는 API 직접 호출도 저�
   expect(response.status).toBe(400)
   expect(createPublicApplication).not.toHaveBeenCalled()
 })
+
+it('발행 상태여도 마감일이 지난 공고의 제출을 거부한다', async () => {
+  jest
+    .mocked(prisma.hiringPosting.findUnique)
+    .mockResolvedValue({ status: 'ACTIVE', closingDate: new Date('2023-11-30') } as never)
+  const form = new FormData()
+  form.set(
+    'payload',
+    JSON.stringify({ postingUuid: 'post-uuid', entries: standardEntries, privacyAgreed: true })
+  )
+  const response = await POST(
+    new NextRequest('http://localhost/api/hiring-public/applications', {
+      method: 'POST',
+      body: form,
+    })
+  )
+  expect(response.status).toBe(410)
+  expect(createPublicApplication).not.toHaveBeenCalled()
+})

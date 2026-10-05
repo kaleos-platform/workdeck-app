@@ -1,3 +1,4 @@
+import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { randomUUID } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
@@ -50,7 +51,8 @@ export async function POST(req: NextRequest) {
     !posting ||
     posting.spaceId !== session.spaceId ||
     posting.uuid !== body.postingUuid ||
-    posting.status !== 'ACTIVE'
+    posting.status !== 'ACTIVE' ||
+    isHiringDeadlinePassed(posting.closingDate)
   )
     return errorResponse('지원 가능한 공고가 아닙니다', 410)
   const fields = parseApplicationEntriesSchema(posting.applicationEntries)
