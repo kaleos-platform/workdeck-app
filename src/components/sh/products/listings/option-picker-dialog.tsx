@@ -17,8 +17,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { tokenizeProductName } from '@/lib/inv/search-tokens'
 import { productDisplayName } from '@/lib/sh/product-display'
+import { useTokenSearch } from './use-token-search'
 
 const PAGE_SIZE = 50
 
@@ -108,22 +108,17 @@ export function OptionPickerDialog({
   initialTokenCount = 2,
   tokenized = false,
 }: Props) {
-  const keywordTokens = useMemo(
-    () => (keywordSource ? tokenizeProductName(keywordSource) : []),
-    [keywordSource]
-  )
-  // keywordSource가 있으면 전체 문자열 대신 앞쪽 토큰 몇 개만 초기 검색어로 쓴다.
-  const seedQuery = useMemo(
-    () =>
-      keywordTokens.length > 0
-        ? keywordTokens.slice(0, Math.max(1, initialTokenCount)).join(' ')
-        : initialQuery,
-    [keywordTokens, initialTokenCount, initialQuery]
-  )
+  const {
+    keywordTokens,
+    search,
+    debounced,
+    relaxedNote,
+    activeTokens,
+    setSearch,
+    toggleKeywordToken,
+    reportResultCount,
+  } = useTokenSearch({ open, keywordSource, initialTokenCount, initialQuery })
 
-  const [search, setSearch] = useState(seedQuery)
-  const [debounced, setDebounced] = useState(seedQuery)
-  const [relaxedNote, setRelaxedNote] = useState<string | null>(null)
   const [products, setProducts] = useState<ProductWithOptions[]>([])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
@@ -133,40 +128,29 @@ export function OptionPickerDialog({
   // multi-with-qty: 누적 선택 items (여러 상품에 걸쳐 유지)
   const [accumulatedItems, setAccumulatedItems] = useState<PickedOptionWithQty[]>([])
 
-  // 0건 자동 완화는 시드/칩 클릭으로 만들어진 검색어에만 적용한다.
-  // 직접 타이핑 중에는 완화하지 않는다(입력 중간 상태를 멋대로 잘라내면 방해).
-  const autoRelaxRef = useRef(false)
-
-  // 호출부가 initialItems/initialQuery를 인라인으로 넘기면 매 렌더 identity가 바뀐다.
-  // deps에 그대로 두면 사용자가 고친 검색어·쌓아둔 페이지가 되돌아가므로 ref로 잡고
-  // 시드는 open 전환에서만 수행한다.
-  const seedRef = useRef({ seedQuery, initialItems })
-  seedRef.current = { seedQuery, initialItems }
+  // 호출부가 initialItems를 인라인으로 넘기면 매 렌더 identity가 바뀐다.
+  // deps에 그대로 두면 사용자가 쌓아둔 선택이 되돌아가므로 ref로 잡고 open 전환에서만 수행한다.
+  const initialItemsRef = useRef(initialItems)
+  useEffect(() => {
+    initialItemsRef.current = initialItems
+  }, [initialItems])
 
   useEffect(() => {
     if (open) {
-      const { seedQuery: q, initialItems: items } = seedRef.current
-      setSearch(q)
-      setDebounced(q)
       setSelectedProductId(null)
-      setRelaxedNote(null)
-      autoRelaxRef.current = true
       setPage(1)
       // initialItems로 복원 또는 초기화
-      setAccumulatedItems(items ? [...items] : [])
+      setAccumulatedItems(initialItemsRef.current ? [...initialItemsRef.current] : [])
     } else {
       // 닫힐 때 누적 state 초기화
       setAccumulatedItems([])
     }
   }, [open])
 
+  // 검색어(debounced) 변경 시 페이지 초기화 — useTokenSearch가 자체 300ms 디바운스로 갱신한다.
   useEffect(() => {
-    const t = setTimeout(() => {
-      setDebounced(search)
-      setPage(1)
-    }, 300)
-    return () => clearTimeout(t)
-  }, [search])
+    setPage(1)
+  }, [debounced])
 
   useEffect(() => {
     if (!open) return
@@ -211,14 +195,7 @@ export function OptionPickerDialog({
         setProducts((prev) => (page > 1 ? [...prev, ...grouped] : grouped))
 
         // 0건이면 마지막 토큰을 떼고 자동 재검색 — 토큰이 1개 남을 때까지 단계적으로 완화.
-        if (page === 1 && rows.length === 0 && autoRelaxRef.current) {
-          const tokens = tokenizeProductName(debounced)
-          if (tokens.length > 1) {
-            const next = tokens.slice(0, -1).join(' ')
-            setRelaxedNote(next)
-            setSearch(next)
-          }
-        }
+        if (page === 1) reportResultCount(rows.length)
       } catch (err) {
         toast.error(err instanceof Error ? err.message : '검색 실패')
       } finally {
@@ -229,25 +206,7 @@ export function OptionPickerDialog({
     return () => {
       cancelled = true
     }
-  }, [open, debounced, page])
-
-  // 칩 선택 상태는 별도 state 없이 현재 검색어에서 파생 — 직접 타이핑과 어긋나지 않는다.
-  const activeTokens = useMemo(
-    () => new Set(tokenizeProductName(search).map((t) => t.toLowerCase())),
-    [search]
-  )
-
-  function toggleKeywordToken(token: string) {
-    const current = tokenizeProductName(search)
-    const key = token.toLowerCase()
-    const next = current.some((t) => t.toLowerCase() === key)
-      ? current.filter((t) => t.toLowerCase() !== key)
-      : [...current, token]
-    // 칩 클릭은 명시적 조건 지정이므로 자동 완화하지 않는다(누른 단어가 곧바로 떨어져 나가면 오작동으로 보임).
-    autoRelaxRef.current = false
-    setRelaxedNote(null)
-    setSearch(next.join(' '))
-  }
+  }, [open, debounced, page, reportResultCount])
 
   const hasMore = products.length < total
 
@@ -418,11 +377,7 @@ export function OptionPickerDialog({
                 <Input
                   id="option-picker-search"
                   value={search}
-                  onChange={(e) => {
-                    autoRelaxRef.current = false
-                    setRelaxedNote(null)
-                    setSearch(e.target.value)
-                  }}
+                  onChange={(e) => setSearch(e.target.value)}
                   placeholder={
                     mode === 'two-step' || isMultiMode
                       ? '상품명 / 코드 / 브랜드'

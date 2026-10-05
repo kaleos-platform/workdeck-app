@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ExternalLink, Trash2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { applyRangeSelection } from '@/lib/range-selection'
 import { computeDiscount } from '@/lib/sh/listing-calc'
+import { wingListingUrl } from '@/lib/coupang/wing-link'
 
 export type GroupListingRow = {
   id: string
@@ -42,6 +43,8 @@ export type GroupListingRow = {
   availableStock: number
   autoAvailableStock: number
   availableByLocation: Array<{ locationId: string; locationName: string; availableStock: number }>
+  /** Wing 딥링크용 — 연결된 쿠팡 옵션의 vendorInventoryId. 미연결이면 null */
+  sellerProductId: string | null
   items: Array<{
     optionId: string
     optionName: string
@@ -256,7 +259,21 @@ export function GroupListingsTable({
                   />
                 </TableCell>
                 <TableCell>
-                  <p className="text-sm font-medium">{r.managementName?.trim() || r.searchName}</p>
+                  <p className="flex items-center gap-1 text-sm font-medium">
+                    {r.managementName?.trim() || r.searchName}
+                    {r.sellerProductId && (
+                      <a
+                        href={wingListingUrl(r.sellerProductId)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="쿠팡 Wing에서 보기"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    )}
+                  </p>
                   {r.managementName?.trim() && r.managementName.trim() !== r.searchName && (
                     <p className="text-xs text-muted-foreground">검색명: {r.searchName}</p>
                   )}

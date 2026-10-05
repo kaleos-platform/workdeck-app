@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { AlertTriangle, ChevronDown, ChevronUp, Plus, Settings2, X } from 'lucide-react'
+import { AlertTriangle, ChevronDown, ChevronUp, Plus, Settings2, Upload, X } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import { isPromotionConditionMet, type MatrixChannel } from '@/lib/sh/pricing-ma
 import type { MatrixBundle, MatrixPromotion, MatrixGlobals } from '@/lib/sh/pricing-matrix-calc'
 import type { TierThresholds } from '@/lib/sh/margin-tier'
 import { computeChannelPrice } from '@/lib/sh/pricing-channel-price'
+import { roundPriceTo10 } from '@/lib/sh/coupang-price/price-round'
 
 import { PricingCostBar } from './pricing-cost-bar'
 import { PricingMatrix } from './pricing-matrix'
@@ -83,6 +84,27 @@ type Props = {
   onManualPriceChange: (v: number | null) => void
   /** 유효 소비자가(상한). 부모가 override 반영해 전달. 미전달 시 bundle 컴포넌트에서 Σ계산 */
   retailCap?: number | null
+  /** 이 채널이 쿠팡(RG 자신 또는 RG가 대표로 지정한 채널)인지 — 부모가 externalSource·representativeChannelId로 판정 */
+  isCoupangChannel?: boolean
+  /** 채널별 쿠팡 판매가 반영. salePriceBeforeDiscount=할인·프로모션 적용 전 판매가(옆 채널 상품 생성과 다름), recommendedMin=최소마진 달성가 */
+  onApplyCoupang?: (channel: MatrixChannel, info: CoupangApplyInfo) => void
+  canApplyCoupang?: boolean
+}
+
+/** onApplyCoupang 로 넘기는 부가 정보 — 승인 액션 rationale 구성에 그대로 쓰인다 */
+export type CoupangApplyInfo = {
+  salePriceBeforeDiscount: number
+  recommendedMin: number
+  discountRate: number
+  promotionLabel: string | null
+  costPrice: number
+  channelFeePct: number
+  shippingCost: number
+  computedMargin: number
+  /** 최소허용마진율(0~1) — recommendedMin(자동조정 최저가)을 만든 기준 */
+  minMarginPct: number
+  /** 목표 마진율(0~1) — 권장가를 역산한 목표(플랫폼 good) */
+  targetMarginPct: number
 }
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────────────────────
@@ -109,6 +131,9 @@ export function PricingChannelBoardCard({
   manualPrice,
   onManualPriceChange,
   retailCap: retailCapProp,
+  isCoupangChannel,
+  onApplyCoupang,
+  canApplyCoupang,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
 
@@ -541,6 +566,44 @@ export function PricingChannelBoardCard({
             <Plus className="h-3.5 w-3.5" />
             {creating ? '생성 중...' : '채널 상품 생성'}
           </Button>
+        )}
+        {isCoupangChannel && onApplyCoupang && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* disabled 버튼은 hover 이벤트가 없어 span 으로 감싼다 */}
+                <span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1 text-xs"
+                    disabled={!canApplyCoupang}
+                    onClick={() =>
+                      onApplyCoupang(channel, {
+                        salePriceBeforeDiscount: cell.finalPrice,
+                        recommendedMin: floorPrice ?? cell.finalPrice,
+                        discountRate: currentDiscount,
+                        promotionLabel: hasPromoValue ? promoLabelText : null,
+                        costPrice: cell.cogs,
+                        channelFeePct,
+                        shippingCost: cell.shipping,
+                        computedMargin: displayCell.margin,
+                        minMarginPct: floorPct,
+                        targetMarginPct: target,
+                      })
+                    }
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    쿠팡 판매가로 반영 (₩{fmt(roundPriceTo10(cell.finalPrice))})
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {!canApplyCoupang && (
+                <TooltipContent>기존 상품 모드에서 상품을 설정해야 반영할 수 있습니다</TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         )}
       </div>
 

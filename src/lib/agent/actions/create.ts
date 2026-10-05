@@ -5,7 +5,7 @@ import { getActionDefinition } from './registry'
 import type { PendingActionDraft, PendingActionResult } from './types'
 
 // 승인 만료 기본 72시간.
-const DEFAULT_TTL_MS = 72 * 60 * 60 * 1000
+const DEFAULT_TTL_HOURS = 72
 
 function toResult(action: { id: string; expiresAt: Date }): PendingActionResult {
   return {
@@ -21,7 +21,8 @@ function toResult(action: { id: string; expiresAt: Date }): PendingActionResult 
  *
  *  1. actionType 유효성·paramsSchema 검증 (실패 시 throw).
  *  2. idempotencyKey가 있으면 기존 액션을 먼저 조회 → 있으면 그대로 반환(멱등).
- *  3. snapshot(선택) → INSERT(PENDING, expiresAt=now+72h).
+ *  3. validateCreate(선택, 실패 시 throw로 생성 거부) → snapshot(선택, 실패해도 진행)
+ *     → INSERT(PENDING, expiresAt=now+expiryHours(기본 72h)).
  *  4. 생성 중 idempotencyKey 경합(P2002)이면 승자 액션을 재조회해 반환.
  */
 export async function createPendingAction(draft: PendingActionDraft): Promise<PendingActionResult> {
@@ -46,6 +47,12 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
   }
 
   const ctx = { spaceId: draft.spaceId, requestedBy: draft.requestedBy }
+
+  // 생성 시점 가드 — throw하면 그대로 전파되어 생성이 거부된다(snapshot과 달리 관대하지 않음).
+  if (def.validateCreate) {
+    await def.validateCreate(ctx, params)
+  }
+
   let beforeState: unknown = undefined
   if (def.snapshot) {
     try {
@@ -56,7 +63,8 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
     }
   }
 
-  const expiresAt = new Date(Date.now() + DEFAULT_TTL_MS)
+  // ?? 로 둔다 — truthy 검사면 expiryHours: 0(즉시 만료)이 조용히 72시간이 된다.
+  const expiresAt = new Date(Date.now() + (def.expiryHours ?? DEFAULT_TTL_HOURS) * 60 * 60 * 1000)
 
   try {
     const action = await prisma.agentPendingAction.create({
