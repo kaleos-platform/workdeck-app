@@ -21,6 +21,11 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { PATCH as txnPatch } from '../../../../app/api/finance/transactions/[id]/route'
 import { POST as txnBulk } from '../../../../app/api/finance/transactions/bulk/route'
 import { POST as stagingCommit } from '../../../../app/api/finance/staging/commit/route'
+import { GET as cashflowGet } from '../../../../app/api/finance/cashflow/route'
+import { GET as dashboardGet } from '../../../../app/api/finance/dashboard/route'
+import { GET as sankeyGet } from '../../../../app/api/finance/cashflow/sankey/route'
+import { GET as transactionsGet } from '../../../../app/api/finance/transactions/route'
+import { GET as exportGet } from '../../../../app/api/finance/export/route'
 
 const SPACE_ID = 'e2e0fin0-0000-4000-8000-0000000000e1'
 const OTHER_SPACE_ID = 'e2e0fin0-0000-4000-8000-0000000000e3'
@@ -243,4 +248,96 @@ d('finance exclude-from-analysis (dev DB)', () => {
       expect(row!.excludeFromAnalysis).toBe(true)
     }
   )
+
+  describe('집계 필터', () => {
+    const get = (url: string) => new NextRequest(url)
+    beforeAll(async () => {
+      // 이체이면서 분석 제외인 거래 — 어떤 경우에도 합계에 들어가면 안 된다(Review Focus 4)
+      await prisma.finTransaction.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId,
+          direction: 'IN',
+          txnDate: new Date('2026-01-15T00:00:00Z'),
+          amount: 7000,
+          isTransfer: true,
+          excludeFromAnalysis: true,
+          identityKey: 'e2e-ex-transfer',
+          contentHash: 'h-transfer',
+        },
+      })
+    })
+
+    test('현금흐름: 기본 제외, includeExcluded=1 이면 포함', async () => {
+      const off = await (await cashflowGet(
+        get('http://localhost/api/finance/cashflow?grain=month&periods=2026-01')
+      ))!.json()
+      expect(off.totals.income.values['2026-01']).toBe(100000)
+      const on = await (await cashflowGet(
+        get('http://localhost/api/finance/cashflow?grain=month&periods=2026-01&includeExcluded=1')
+      ))!.json()
+      expect(on.totals.income.values['2026-01']).toBe(130000)
+    })
+
+    test('대시보드: 수입 기본 제외 + excludedCount', async () => {
+      const off = await (await dashboardGet(
+        get('http://localhost/api/finance/dashboard?period=month&anchor=2026-01')
+      ))!.json()
+      expect(off.kpi.income).toBe(100000)
+      expect(off.excludedCount).toBe(1) // 이체+제외 거래는 세지 않음
+      const on = await (await dashboardGet(
+        get('http://localhost/api/finance/dashboard?period=month&anchor=2026-01&includeExcluded=1')
+      ))!.json()
+      expect(on.kpi.income).toBe(130000)
+      expect(on.excludedCount).toBe(0)
+    })
+
+    test('Sankey: 기본 제외, includeExcluded=1 이면 포함', async () => {
+      const off = await (await sankeyGet(
+        get('http://localhost/api/finance/cashflow/sankey?grain=month&period=2026-01')
+      ))!.json()
+      expect(off.totals.totalIncome).toBe(100000)
+      const on = await (await sankeyGet(
+        get(
+          'http://localhost/api/finance/cashflow/sankey?grain=month&period=2026-01&includeExcluded=1'
+        )
+      ))!.json()
+      expect(on.totals.totalIncome).toBe(130000)
+    })
+
+    test('거래내역: scope 별 행 + 요약 합계 규칙', async () => {
+      const q = 'http://localhost/api/finance/transactions?from=2026-01-01&to=2026-01-31'
+      const all = await (await transactionsGet(get(q)))!.json()
+      expect(all.total).toBe(3) // 행은 전부(이체 포함)
+      expect(all.summary.incomeTotal).toBe(100000) // 요약은 분석 제외·이체 뺌
+      expect(all.rows.find((r: { id: string }) => r.id === excludedTxnId).excludeFromAnalysis).toBe(
+        true
+      )
+
+      const included = await (await transactionsGet(get(`${q}&scope=included`)))!.json()
+      expect(included.total).toBe(1)
+      expect(included.summary.incomeTotal).toBe(100000)
+
+      const excluded = await (await transactionsGet(get(`${q}&scope=excluded`)))!.json()
+      expect(excluded.total).toBe(2) // excluded + transferExcluded
+      expect(excluded.summary.incomeTotal).toBe(30000) // 이체는 여전히 합계 제외
+
+      const withInc = await (await transactionsGet(get(`${q}&includeExcluded=1`)))!.json()
+      expect(withInc.summary.incomeTotal).toBe(130000)
+    })
+
+    test('export: 분석 제외 컬럼', async () => {
+      const res = await exportGet(
+        get('http://localhost/api/finance/export?from=2026-01-01&to=2026-01-31')
+      )
+      const csv = await res!.text()
+      const [header, ...lines] = csv.replace(/^﻿/, '').split('\r\n')
+      // cell() 은 모든 값을 "..." 로 감싼다
+      expect(header.split(',')).toContain('"분석제외"')
+      const line = lines.find((l) => l.includes('외부 계약 매출'))!
+      expect(line.split(',').at(-1)).toBe('"Y"')
+      const normalLine = lines.find((l) => l.includes('본업 매출'))!
+      expect(normalLine.split(',').at(-1)).toBe('""')
+    })
+  })
 })
