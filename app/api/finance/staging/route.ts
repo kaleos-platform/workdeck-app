@@ -117,16 +117,34 @@ export async function GET(req: NextRequest) {
         .map((r) => r.identityKey)
     ),
   ]
-  const prevByKey = new Map<string, { description: string | null; counterparty: string | null }>()
+  const prevByKey = new Map<
+    string,
+    {
+      description: string | null
+      counterparty: string | null
+      categoryName: string | null
+      categoryParentName: string | null
+    }
+  >()
   if (dupKeys.length > 0) {
     const prior = await prisma.finTransaction.findMany({
       where: { spaceId, identityKey: { in: dupKeys } },
-      select: { accountId: true, identityKey: true, description: true, counterparty: true },
+      select: {
+        accountId: true,
+        identityKey: true,
+        description: true,
+        counterparty: true,
+        // 기존 분류도 함께 — 재업로드가 계정과목을 어떻게 다루는지 저장 전에 보여준다.
+        // preserve 규칙상 기존 분류가 있으면 유지되고, 「유지」(DUP_OVERWRITE) 선택 시에만 교체된다.
+        category: { select: { name: true, parent: { select: { name: true } } } },
+      },
     })
     for (const p of prior) {
       prevByKey.set(`${p.accountId}|${p.identityKey}`, {
         description: p.description,
         counterparty: p.counterparty,
+        categoryName: p.category?.name ?? null,
+        categoryParentName: p.category?.parent?.name ?? null,
       })
     }
   }
