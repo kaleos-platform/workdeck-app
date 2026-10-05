@@ -359,6 +359,14 @@ export function DashboardView() {
     data.accountSnapshots.length === 0 &&
     data.trend.every((t) => t.income === 0 && t.expense === 0)
 
+  // 분석 제외 안내 — 수입·지출 카드 공용(제외된 거래가 있을 때만).
+  const excludedHint =
+    data && data.excludedCount > 0 ? (
+      <InfoHint
+        content={`분석 제외 거래 ${data.excludedCount}건이 수입·지출에서 빠졌습니다. 총현금(잔액)은 실제 잔액이라 포함되므로 수입−지출과 잔액 변동이 다를 수 있습니다.`}
+      />
+    ) : null
+
   // 은행 잔고 합계 (null 무시)
   const bankTotal =
     data?.accountSnapshots
@@ -458,11 +466,7 @@ export function DashboardView() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
                   수입
-                  {data.excludedCount > 0 && (
-                    <InfoHint
-                      content={`분석 제외 거래 ${data.excludedCount}건이 수입·지출에서 빠졌습니다. 총현금(잔액)은 실제 잔액이라 포함되므로 수입−지출과 잔액 변동이 다를 수 있습니다.`}
-                    />
-                  )}
+                  {excludedHint}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
@@ -476,7 +480,10 @@ export function DashboardView() {
             {/* ③ 지출 */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">지출</CardTitle>
+                <CardTitle className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
+                  지출
+                  {excludedHint}
+                </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
                 <p className="font-mono text-2xl font-semibold text-red-600 dark:text-red-400">

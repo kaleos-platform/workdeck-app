@@ -21,7 +21,7 @@ const DECK = 'finance'
 const financeGetCashflowTool: ToolDefinition = {
   name: 'finance_get_cashflow',
   description:
-    '현금흐름 상세를 반환합니다. 기간(월/분기/연) 버킷별로 수입·지출을 운영 항목(리프) 단위로 집계하고, 수입/지출/순현금흐름 총계와 직전 기간 대비 증감%를 포함합니다.',
+    '현금흐름 상세를 반환합니다. 기간(월/분기/연) 버킷별로 수입·지출을 운영 항목(리프) 단위로 집계하고, 수입/지출/순현금흐름 총계와 직전 기간 대비 증감%를 포함합니다. 「분석 제외」로 지정된 거래(개인 목적·외부 계약 등 본 사업 외 거래)는 수입·지출 집계에서 기본 제외됩니다.',
   inputSchema: {
     grain: z.enum(['month', 'quarter', 'year']).optional(),
     periods: z.array(z.string()).optional(),
@@ -39,7 +39,7 @@ const financeGetCashflowTool: ToolDefinition = {
 const financeListTransactionsTool: ToolDefinition = {
   name: 'finance_list_transactions',
   description:
-    '확정 거래(FinTransaction) 목록과 합계를 반환합니다. 기간(from/to)·방향(IN=수입/OUT=지출 섹션 — 차감 계정(매출환입 등)의 반대 방향 거래는 계정 섹션에 포함)·분류상태·계정과목·검색어로 필터하며, take(기본 50)로 페이지네이션합니다. total(전체 건수)과 summary(수입/지출/순액)를 함께 반환합니다.',
+    '확정 거래(FinTransaction) 목록과 합계를 반환합니다. 기간(from/to)·방향(IN=수입/OUT=지출 섹션 — 차감 계정(매출환입 등)의 반대 방향 거래는 계정 섹션에 포함)·분류상태·계정과목·검색어로 필터하며, take(기본 50)로 페이지네이션합니다. total(전체 건수)과 summary(수입/지출/순액)를 함께 반환합니다. 목록은 「분석 제외」 거래도 포함(행의 excludeFromAnalysis=true)하지만 summary 합계에서는 이체와 함께 제외됩니다.',
   inputSchema: {
     from: z.string().optional(),
     to: z.string().optional(),
@@ -87,7 +87,7 @@ const financeListAccountsTool: ToolDefinition = {
 const financeGetDashboardTool: ToolDefinition = {
   name: 'finance_get_dashboard',
   description:
-    '재무 요약 대시보드 집계를 반환합니다. KPI(총현금/수입/지출/순현금흐름/순자산/총부채 + 전기 대비), 12개월 추이, 계좌별 잔고 스냅샷, 계정과목별 지출 Top, 부채 현황을 포함합니다. period(month/year)·anchor로 기간을 지정합니다.',
+    '재무 요약 대시보드 집계를 반환합니다. KPI(총현금/수입/지출/순현금흐름/순자산/총부채 + 전기 대비), 12개월 추이, 계좌별 잔고 스냅샷, 계정과목별 지출 Top, 부채 현황을 포함합니다. period(month/year)·anchor로 기간을 지정합니다. 「분석 제외」로 지정된 거래(개인 목적·외부 계약 등 본 사업 외 거래)는 수입·지출 집계에서 기본 제외됩니다. 총현금(잔액)은 실제 잔액이라 포함되므로 수입−지출과 잔액 변동이 다를 수 있으며, 제외 건수는 excludedCount 입니다.',
   inputSchema: {
     period: z.enum(['month', 'year']).optional(),
     anchor: z.string().optional(),
