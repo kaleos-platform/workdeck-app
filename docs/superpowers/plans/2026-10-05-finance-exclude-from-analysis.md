@@ -340,7 +340,12 @@ d('finance exclude-from-analysis (dev DB)', () => {
 - [ ] **Step 4: 테스트 실패 확인**
 
 Run: `npx jest -c jest.config.e2e.ts src/lib/finance/__tests__/exclude-from-analysis.e2e.test.ts`
-Expected: FAIL — 단건 PATCH 가 400 "변경할 내용이 없습니다", bulk 가 400 "처리할 내용이 없습니다". 재업로드 2건은 이미 PASS(보존은 기존 upsert 구조가 보장 — 회귀 방지용).
+Expected: 5개 전부 FAIL — 단건 PATCH 400 "변경할 내용이 없습니다", bulk 400 "처리할 내용이 없습니다",
+나머지 3개(재분류·재업로드 2건)는 앞 테스트가 플래그를 못 세워 `toBe(true)` 실패. 테스트를 고치지 말 것 —
+Step 5·6 후 전부 통과해야 정상. (재업로드 보존 자체는 기존 upsert 구조가 보장하므로 구현 추가 없음.)
+
+참고: 업로드 경로는 `imports/commit-staging`(스테이징 행 생성만, 확정 거래 쓰기 없음) → `staging/commit`(확정 거래 upsert)
+두 단계라 보존 검증은 `staging/commit` 하나로 충분하다.
 
 - [ ] **Step 5: 단건 PATCH 구현**
 
