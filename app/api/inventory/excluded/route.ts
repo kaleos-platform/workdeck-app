@@ -15,11 +15,15 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json()
-  const { productId, optionId, reason } = body as { productId: string; optionId: string; reason?: string }
+  const { productId, optionId, reason } = body as {
+    productId: string
+    optionId: string
+    reason?: string
+  }
 
   if (!optionId) {
     return errorResponse('optionId가 필요합니다', 400)
@@ -47,7 +51,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json()

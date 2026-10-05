@@ -7,7 +7,7 @@ export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ taskId: string }> }
 ) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
   const { taskId } = await params

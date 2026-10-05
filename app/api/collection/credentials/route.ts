@@ -81,7 +81,7 @@ export async function PUT(request: NextRequest) {
 
   let workspace: { id: string }
   if (isWorker) {
-    const resolved = await resolveWorkspace()
+    const resolved = await resolveWorkspace({ write: true })
     if ('error' in resolved) return resolved.error
     workspace = resolved.workspace
   } else {

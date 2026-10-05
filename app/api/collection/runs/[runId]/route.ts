@@ -132,7 +132,7 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ runId: string }> }
 ) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
   const { workspace } = resolved
 

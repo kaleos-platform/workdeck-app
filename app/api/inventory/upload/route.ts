@@ -7,7 +7,7 @@ import { runAndSaveInventoryAnalysis } from '@/lib/inventory-analyzer'
 export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveWorkspace()
+  const resolved = await resolveWorkspace({ write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => null)
@@ -42,7 +42,10 @@ export async function POST(req: NextRequest) {
   })
 
   // 임시 파일 삭제
-  await supabase.storage.from('reports').remove([body.storagePath]).catch(() => {})
+  await supabase.storage
+    .from('reports')
+    .remove([body.storagePath])
+    .catch(() => {})
 
   if (!result.success) {
     return errorResponse(result.error, 400)
