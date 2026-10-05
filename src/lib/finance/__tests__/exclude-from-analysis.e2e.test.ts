@@ -21,6 +21,8 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { PATCH as txnPatch } from '../../../../app/api/finance/transactions/[id]/route'
 import { POST as txnBulk } from '../../../../app/api/finance/transactions/bulk/route'
 import { POST as stagingCommit } from '../../../../app/api/finance/staging/commit/route'
+import { PATCH as stagingPatch } from '../../../../app/api/finance/staging/[id]/route'
+import { POST as stagingBulk } from '../../../../app/api/finance/staging/bulk/route'
 import { GET as cashflowGet } from '../../../../app/api/finance/cashflow/route'
 import { GET as dashboardGet } from '../../../../app/api/finance/dashboard/route'
 import { GET as sankeyGet } from '../../../../app/api/finance/cashflow/sankey/route'
@@ -338,6 +340,120 @@ d('finance exclude-from-analysis (dev DB)', () => {
       expect(line.split(',').at(-1)).toBe('"Y"')
       const normalLine = lines.find((l) => l.includes('본업 매출'))!
       expect(normalLine.split(',').at(-1)).toBe('""')
+    })
+  })
+
+  describe('확인·처리 단계 지정 → 저장 처리 이관', () => {
+    // 2026-02 로 두어 1월 집계 테스트와 섞이지 않게 한다.
+    let impId: string
+    const staged = (identityKey: string, extra: Record<string, unknown> = {}) =>
+      prisma.finStagedRow.create({
+        data: {
+          importId: impId,
+          spaceId: SPACE_ID,
+          accountId,
+          raw: {},
+          txnDate: new Date('2026-02-05T00:00:00Z'),
+          direction: 'OUT',
+          amount: 5000,
+          description: `스테이징 ${identityKey}`,
+          categoryId: incomeCatId,
+          classStatus: 'CLASSIFIED',
+          identityKey,
+          contentHash: `h-${identityKey}`,
+          ...extra,
+        },
+        select: { id: true },
+      })
+
+    beforeAll(async () => {
+      impId = (
+        await prisma.finImport.create({
+          data: {
+            spaceId: SPACE_ID,
+            accountId,
+            fileName: 'staging-exclude.csv',
+            institution: '테스트은행',
+            kind: 'BANK',
+            status: 'DRAFT',
+          },
+          select: { id: true },
+        })
+      ).id
+    })
+
+    test('단건 PATCH 로 스테이징 행 분석 제외 지정', async () => {
+      const { id } = await staged('e2e-st-single')
+      const res = await stagingPatch(
+        jsonReq(`http://localhost/api/finance/staging/${id}`, 'PATCH', {
+          excludeFromAnalysis: true,
+        }),
+        { params: Promise.resolve({ id }) }
+      )
+      expect(res!.status).toBe(200)
+      expect((await res!.json()).row.excludeFromAnalysis).toBe(true)
+    })
+
+    test('bulk 로 스테이징 행 분석 제외 지정/해제', async () => {
+      const a = await staged('e2e-st-bulk-a')
+      const b = await staged('e2e-st-bulk-b')
+      const res = await stagingBulk(
+        jsonReq('http://localhost/api/finance/staging/bulk', 'POST', {
+          ids: [a.id, b.id],
+          excludeFromAnalysis: true,
+        })
+      )
+      expect(res!.status).toBe(200)
+      const rows = await prisma.finStagedRow.findMany({ where: { id: { in: [a.id, b.id] } } })
+      expect(rows.every((r) => r.excludeFromAnalysis)).toBe(true)
+      await stagingBulk(
+        jsonReq('http://localhost/api/finance/staging/bulk', 'POST', {
+          ids: [b.id],
+          excludeFromAnalysis: false,
+        })
+      )
+      const rb = await prisma.finStagedRow.findUnique({ where: { id: b.id } })
+      expect(rb!.excludeFromAnalysis).toBe(false)
+    })
+
+    test('저장 처리: 신규 거래는 지정값 그대로, 기존 거래는 지정 시에만 true 로 반영', async () => {
+      // 기존 확정 거래 2건 — 하나는 false(→ 스테이징 지정으로 true 가 되어야 함), 하나는 true(→ 미지정 재업로드로 풀리면 안 됨)
+      const base = {
+        spaceId: SPACE_ID,
+        accountId,
+        direction: 'OUT' as const,
+        amount: 5000,
+        txnDate: new Date('2026-02-05T00:00:00Z'),
+        categoryId: incomeCatId,
+        classStatus: 'CLASSIFIED' as const,
+      }
+      await prisma.finTransaction.create({
+        data: { ...base, identityKey: 'e2e-st-dup-false', contentHash: 'old-1' },
+      })
+      await prisma.finTransaction.create({
+        data: {
+          ...base,
+          identityKey: 'e2e-st-dup-true',
+          contentHash: 'old-2',
+          excludeFromAnalysis: true,
+        },
+      })
+      await staged('e2e-st-dup-false', { resolution: 'DUP_CHANGED', excludeFromAnalysis: true })
+      await staged('e2e-st-dup-true', { resolution: 'DUP_CHANGED', excludeFromAnalysis: false })
+      await staged('e2e-st-new', { excludeFromAnalysis: true })
+
+      const res = await stagingCommit(
+        jsonReq('http://localhost/api/finance/staging/commit', 'POST', { importId: impId })
+      )
+      expect(res!.status).toBe(200)
+
+      const byKey = async (identityKey: string) =>
+        (await prisma.finTransaction.findFirst({ where: { spaceId: SPACE_ID, identityKey } }))!
+          .excludeFromAnalysis
+      expect(await byKey('e2e-st-new')).toBe(true)
+      expect(await byKey('e2e-st-dup-false')).toBe(true)
+      expect(await byKey('e2e-st-dup-true')).toBe(true)
+      expect(await byKey('e2e-st-bulk-b')).toBe(false)
     })
   })
 })
