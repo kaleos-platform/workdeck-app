@@ -13255,6 +13255,7 @@ export const FinTransactionScalarFieldEnum = {
   categoryId: 'categoryId',
   liabilityId: 'liabilityId',
   isTransfer: 'isTransfer',
+  excludeFromAnalysis: 'excludeFromAnalysis',
   classStatus: 'classStatus',
   matchedRuleId: 'matchedRuleId',
   approvalNo: 'approvalNo',
