@@ -89,3 +89,19 @@ it('기본 정보의 다음은 지원서 설정을 거치지 않고 공고 꾸�
   expect(screen.queryByText('지원서 마감일')).not.toBeInTheDocument()
   expect(screen.getByText(/지원서 설정은 HTML 공고 작성과 별도로 관리합니다/)).toBeInTheDocument()
 })
+
+it('이전된 초안도 과거 발행 이력이 있으면 지원서를 읽기 전용으로 보여준다', async () => {
+  render(
+    <BuildWizard
+      data={{ ...data, posting: { ...data.posting, publishedAt: '2023-11-15T00:00:00Z' } }}
+    />
+  )
+  expect(
+    screen.getByText(/최초 발행 후에는 모집 조건과 지원서 설정을 변경할 수 없습니다/)
+  ).toBeInTheDocument()
+  await act(async () =>
+    fireEvent.click(screen.getByRole('button', { name: '지원서 설정 (읽기 전용)' }))
+  )
+  expect(screen.queryByRole('button', { name: '항목 추가' })).not.toBeInTheDocument()
+  expect(screen.getByText(/지원서 설정은 읽기 전용입니다/)).toBeInTheDocument()
+})

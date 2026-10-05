@@ -1,5 +1,10 @@
 'use client'
 
+import {
+  isPostingRecruitmentLocked,
+  PUBLISHED_POSTING_LOCK_MESSAGE,
+} from '@/lib/hiring/publication-policy'
+
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -54,6 +59,7 @@ const STEP_ORDER: WizardStepKey[] = WIZARD_STEPS.map((s) => s.key)
 
 export function BuildWizard({ data }: { data: WizardData }) {
   const router = useRouter()
+  const recruitmentLocked = isPostingRecruitmentLocked(data.posting)
   const positionsRef = useRef<SaveHandle>(null)
   const settingsRef = useRef<SaveHandle>(null)
   const storesRef = useRef<SaveHandle>(null)
@@ -163,7 +169,17 @@ export function BuildWizard({ data }: { data: WizardData }) {
           <PostingStatusBadge status={state.status} />
         </div>
 
-        <WizardStepper current={step} onSelect={selectStep} disabled={leaving} />
+        <WizardStepper
+          recruitmentLocked={recruitmentLocked}
+          current={step}
+          onSelect={selectStep}
+          disabled={leaving}
+        />
+        {recruitmentLocked && (
+          <p role="note" className="rounded-lg border bg-muted/40 p-3 text-sm">
+            {PUBLISHED_POSTING_LOCK_MESSAGE}
+          </p>
+        )}
         {actionError && (
           <Alert variant="destructive">
             <AlertTitle>요청을 완료하지 못했습니다</AlertTitle>
@@ -179,39 +195,61 @@ export function BuildWizard({ data }: { data: WizardData }) {
         {/* STEP 1 — 공고 기본 정보 */}
         {step === 'basic' && (
           <div className="mx-auto w-full max-w-3xl">
-            <div className="space-y-8">
-              <Section title="기본 정보">
-                <StepBasic
-                  ref={basicRef}
-                  postingId={data.posting.id}
-                  value={{ title: state.title }}
-                  onChange={patch}
-                />
-              </Section>
-              <Section title="모집 직무">
-                <StepPositions
-                  ref={positionsRef}
-                  postingId={data.posting.id}
-                  positions={state.positions}
-                  spacePositions={data.spacePositions}
-                  onChange={(positions: WizardPositionData[]) => patch({ positions })}
-                />
-              </Section>
-              <Section title="모집 장소">
-                <StepStores
-                  ref={storesRef}
-                  postingId={data.posting.id}
-                  value={{
-                    stores: state.stores,
-                    storeIds: state.storeIds,
-                    noStores: state.noStores,
-                  }}
-                  onChange={(
-                    p: Partial<{ stores: WizardStore[]; storeIds: string[]; noStores: boolean }>
-                  ) => patch(p)}
-                />
-              </Section>
-            </div>
+            {recruitmentLocked ? (
+              <dl className="space-y-3 text-sm">
+                <div>
+                  <dt className="text-muted-foreground">공고 제목</dt>
+                  <dd>{state.title}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">모집 직무</dt>
+                  <dd>{state.positions.map((p) => p.name).join(', ') || '없음'}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">모집 장소</dt>
+                  <dd>
+                    {state.stores
+                      .filter((s) => state.storeIds.includes(s.id))
+                      .map((s) => s.name)
+                      .join(', ') || '없음'}
+                  </dd>
+                </div>
+              </dl>
+            ) : (
+              <div className="space-y-8">
+                <Section title="기본 정보">
+                  <StepBasic
+                    ref={basicRef}
+                    postingId={data.posting.id}
+                    value={{ title: state.title }}
+                    onChange={patch}
+                  />
+                </Section>
+                <Section title="모집 직무">
+                  <StepPositions
+                    ref={positionsRef}
+                    postingId={data.posting.id}
+                    positions={state.positions}
+                    spacePositions={data.spacePositions}
+                    onChange={(positions: WizardPositionData[]) => patch({ positions })}
+                  />
+                </Section>
+                <Section title="모집 장소">
+                  <StepStores
+                    ref={storesRef}
+                    postingId={data.posting.id}
+                    value={{
+                      stores: state.stores,
+                      storeIds: state.storeIds,
+                      noStores: state.noStores,
+                    }}
+                    onChange={(
+                      p: Partial<{ stores: WizardStore[]; storeIds: string[]; noStores: boolean }>
+                    ) => patch(p)}
+                  />
+                </Section>
+              </div>
+            )}
           </div>
         )}
 
@@ -223,25 +261,34 @@ export function BuildWizard({ data }: { data: WizardData }) {
                 Workdeck에서 지원자를 접수할 때 사용하는 설정입니다. 외부 채용사이트용 HTML만 만들
                 때는 기본 설정을 그대로 둘 수 있습니다.
               </p>
-              <Section title="지원서 마감일">
-                <StepFormSettings
-                  ref={settingsRef}
-                  postingId={data.posting.id}
-                  value={{
-                    closingDate: state.closingDate,
-                    notificationEnabled: state.notificationEnabled,
-                  }}
-                  onChange={patch}
-                />
-              </Section>
-              <Section title="지원서 항목">
-                <StepForm
-                  ref={formRef}
-                  postingId={data.posting.id}
-                  initialFields={state.formFields}
-                  onChange={(formFields: FormFieldInput[]) => patch({ formFields })}
-                />
-              </Section>
+              {!recruitmentLocked && (
+                <>
+                  <Section title="지원서 마감일">
+                    <StepFormSettings
+                      ref={settingsRef}
+                      postingId={data.posting.id}
+                      value={{
+                        closingDate: state.closingDate,
+                        notificationEnabled: state.notificationEnabled,
+                      }}
+                      onChange={patch}
+                    />
+                  </Section>
+                  <Section title="지원서 항목">
+                    <StepForm
+                      ref={formRef}
+                      postingId={data.posting.id}
+                      initialFields={state.formFields}
+                      onChange={(formFields: FormFieldInput[]) => patch({ formFields })}
+                    />
+                  </Section>
+                </>
+              )}
+              {recruitmentLocked && (
+                <p className="text-sm font-medium">
+                  지원서 설정은 읽기 전용입니다. 기존 항목은 미리보기에서 확인할 수 있습니다.
+                </p>
+              )}
             </div>
             <div
               className={`space-y-3 lg:sticky ${TOP_BAR_OFFSET} ${RIGHT_COL_MAX_H} lg:self-start lg:overflow-y-auto`}
@@ -276,6 +323,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
           <div className={gridCls}>
             <div>
               <ContentBlockEditor
+                recruitmentLocked={recruitmentLocked}
                 ref={contentEditorRef}
                 postingId={data.posting.id}
                 contents={state.contents}

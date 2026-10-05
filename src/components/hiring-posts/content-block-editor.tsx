@@ -63,6 +63,7 @@ type AppliedTemplate = {
 export type ContentBlockEditorHandle = { flush: () => Promise<void> }
 
 type Props = {
+  recruitmentLocked?: boolean
   ref?: Ref<ContentBlockEditorHandle>
   postingId: string
   contents: WizardContentData[]
@@ -119,6 +120,7 @@ export function ContentBlockEditor({
   contents,
   positions,
   spacePositions,
+  recruitmentLocked = false,
   onPositionsChange,
   appliedTemplate,
   onChange,
@@ -750,6 +752,7 @@ export function ContentBlockEditor({
 
       {/* 풀스크린 편집 오버레이 */}
       <BlockEditOverlay
+        recruitmentLocked={recruitmentLocked}
         ref={overlayRef}
         open={editingBlockId !== null}
         content={editingBlock}

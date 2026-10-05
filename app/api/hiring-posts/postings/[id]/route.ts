@@ -1,3 +1,8 @@
+import { withUnpublishedPosting } from '@/lib/hiring/unpublished-posting'
+import {
+  isPostingRecruitmentLocked,
+  PUBLISHED_POSTING_LOCK_MESSAGE,
+} from '@/lib/hiring/publication-policy'
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
@@ -25,35 +30,38 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const existing = await prisma.hiringPosting.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, status: true, publishedAt: true },
   })
   if (!existing) return errorResponse('공고를 찾을 수 없습니다', 404)
+  if (isPostingRecruitmentLocked(existing))
+    return errorResponse(PUBLISHED_POSTING_LOCK_MESSAGE, 409)
+  return withUnpublishedPosting(resolved.space.id, id, async (tx) => {
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch {
+      return errorResponse('잘못된 요청 형식입니다', 400)
+    }
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return errorResponse('잘못된 요청 형식입니다', 400)
-  }
+    const parsed = updatePostingSchema.safeParse(body)
+    if (!parsed.success) {
+      return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
+    }
 
-  const parsed = updatePostingSchema.safeParse(body)
-  if (!parsed.success) {
-    return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
-  }
-
-  const { title, closingDate, notificationEnabled } = parsed.data
-  const posting = await prisma.hiringPosting.update({
-    where: { id },
-    data: {
-      ...(title !== undefined && { title }),
-      ...(closingDate !== undefined && {
-        closingDate: closingDate ? new Date(closingDate) : null,
-      }),
-      ...(notificationEnabled !== undefined && { notificationEnabled }),
-    },
-    select: { id: true, title: true, closingDate: true, notificationEnabled: true },
+    const { title, closingDate, notificationEnabled } = parsed.data
+    const posting = await tx.hiringPosting.update({
+      where: { id },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(closingDate !== undefined && {
+          closingDate: closingDate ? new Date(closingDate) : null,
+        }),
+        ...(notificationEnabled !== undefined && { notificationEnabled }),
+      },
+      select: { id: true, title: true, closingDate: true, notificationEnabled: true },
+    })
+    return NextResponse.json({ posting })
   })
-  return NextResponse.json({ posting })
 }
 
 // 공고 삭제
