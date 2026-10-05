@@ -20,6 +20,12 @@ jest.mock('@/lib/api-helpers', () => ({
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { learnRule, loadSpaceRules, classifyRow } from '@/lib/finance/classify'
 import { PATCH as txnPatch } from '../../../../app/api/finance/transactions/[id]/route'
+import { GET as rulesGet, POST as rulesPost } from '../../../../app/api/finance/rules/route'
+import {
+  PATCH as rulePatch,
+  DELETE as ruleDelete,
+} from '../../../../app/api/finance/rules/[id]/route'
+import { POST as rulePreview } from '../../../../app/api/finance/rules/preview/route'
 
 const SPACE_ID = 'e2e0fin0-0000-4000-8000-0000000000f1'
 const USER_ID = 'e2e0fin0-0000-4000-8000-0000000000f2'
@@ -129,5 +135,152 @@ d('finance class rules by account (dev DB)', () => {
       where: { spaceId: SPACE_ID, matchKey: '스마트스토어정산' },
     })
     expect(rule!.accountId).toBe(accB)
+  })
+
+  describe('규칙 API', () => {
+    let ruleId: string
+    const mk = (
+      id: string,
+      accountId: string,
+      description: string,
+      categoryId: string | null,
+      date = '2026-04-01'
+    ) =>
+      prisma.finTransaction.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId,
+          direction: 'OUT',
+          amount: 100,
+          txnDate: new Date(`${date}T00:00:00Z`),
+          description,
+          categoryId,
+          classStatus: categoryId ? 'CLASSIFIED' : 'UNCLASSIFIED',
+          identityKey: id,
+          contentHash: id,
+        },
+        select: { id: true },
+      })
+
+    beforeAll(async () => {
+      await mk('u1', accA, '택배 CJ', catCogs)
+      await mk('u2', accA, '택배 한진', catCogs)
+      await mk('u3', accA, '택배 우체국', catCogs2) // 이후 사용자가 다른 계정으로 바꾼 거래
+      await mk('u4', accB, '택배 CJ', catCogs)
+    })
+
+    test('POST: 계좌 A 부분포함 규칙 생성, 같은 조건 재생성은 409', async () => {
+      const body = { matchKey: '택배', matchType: 'KEYWORD', categoryId: catCogs, accountId: accA }
+      const res = await rulesPost(jsonReq('http://localhost/api/finance/rules', 'POST', body))
+      expect(res!.status).toBe(201)
+      ruleId = (await res!.json()).rule.id
+      const dup = await rulesPost(jsonReq('http://localhost/api/finance/rules', 'POST', body))
+      expect(dup!.status).toBe(409)
+      expect((await dup!.json()).existing.id).toBe(ruleId)
+    })
+
+    test('GET: 계좌·사용 현황(텍스트 매칭, 계좌 A 만 3건)', async () => {
+      const json = await (await rulesGet())!.json()
+      const r = json.rules.find((x: { id: string }) => x.id === ruleId)
+      expect(r.account.id).toBe(accA)
+      expect(r.usage.count).toBe(3)
+    })
+
+    test('preview: 건수·같은 계정과목 건수', async () => {
+      const json = await (await rulePreview(
+        jsonReq('http://localhost/api/finance/rules/preview', 'POST', {
+          matchKey: '택배',
+          matchType: 'KEYWORD',
+          accountId: accA,
+          categoryId: catCogs,
+        })
+      ))!.json()
+      expect(json.count).toBe(3)
+      expect(json.sameCategoryCount).toBe(2)
+      expect(json.samples.length).toBeLessThanOrEqual(5)
+    })
+
+    test('PATCH applyToExisting: 같은 계정과목 거래만 변경, 수동 변경 거래 유지', async () => {
+      const res = await rulePatch(
+        jsonReq(`http://localhost/api/finance/rules/${ruleId}`, 'PATCH', {
+          categoryId: catCogs2,
+          applyToExisting: true,
+        }),
+        { params: Promise.resolve({ id: ruleId }) }
+      )
+      expect(res!.status).toBe(200)
+      expect((await res!.json()).updatedTransactions).toBe(2)
+      const b = await prisma.finTransaction.findFirst({
+        where: { spaceId: SPACE_ID, identityKey: 'u4' },
+      })
+      expect(b!.categoryId).toBe(catCogs) // 계좌 B 는 범위 밖
+    })
+
+    test('PATCH 충돌 409 — 같은 계좌·키·방향 규칙이 이미 있으면', async () => {
+      const other = await rulesPost(
+        jsonReq('http://localhost/api/finance/rules', 'POST', {
+          matchKey: '택배 cj',
+          matchType: 'KEYWORD',
+          categoryId: catCogs,
+          accountId: accA,
+        })
+      )
+      const otherId = (await other!.json()).rule.id
+      const res = await rulePatch(
+        jsonReq(`http://localhost/api/finance/rules/${otherId}`, 'PATCH', { matchKey: '택배' }),
+        { params: Promise.resolve({ id: otherId }) }
+      )
+      expect(res!.status).toBe(409)
+    })
+
+    test('DELETE: 대기 행을 남은 규칙으로 재분류', async () => {
+      // 공통 규칙 + 계좌 규칙이 둘 다 걸리는 대기 행 → 계좌 규칙 삭제 후 공통 규칙으로
+      const common = await rulesPost(
+        jsonReq('http://localhost/api/finance/rules', 'POST', {
+          matchKey: '택배',
+          matchType: 'KEYWORD',
+          categoryId: catCogs,
+          accountId: null,
+        })
+      )
+      const commonId = (await common!.json()).rule.id
+      const imp = await prisma.finImport.create({
+        data: {
+          spaceId: SPACE_ID,
+          accountId: accA,
+          fileName: 'r.csv',
+          institution: '테스트은행',
+          kind: 'BANK',
+          status: 'DRAFT',
+        },
+        select: { id: true },
+      })
+      const staged = await prisma.finStagedRow.create({
+        data: {
+          importId: imp.id,
+          spaceId: SPACE_ID,
+          accountId: accA,
+          raw: {},
+          txnDate: new Date('2026-05-01T00:00:00Z'),
+          direction: 'OUT',
+          amount: 10,
+          description: '택배 로젠',
+          categoryId: catCogs2,
+          classStatus: 'REVIEW',
+          matchedRuleId: ruleId,
+          identityKey: 's1',
+          contentHash: 's1',
+        },
+        select: { id: true },
+      })
+      const res = await ruleDelete(
+        jsonReq(`http://localhost/api/finance/rules/${ruleId}`, 'DELETE'),
+        { params: Promise.resolve({ id: ruleId }) }
+      )
+      expect((await res!.json()).reclassifiedStaged).toBeGreaterThanOrEqual(1)
+      const row = await prisma.finStagedRow.findUnique({ where: { id: staged.id } })
+      expect(row!.matchedRuleId).toBe(commonId)
+      expect(row!.categoryId).toBe(catCogs)
+    })
   })
 })

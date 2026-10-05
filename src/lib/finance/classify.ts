@@ -21,6 +21,7 @@ import type {
 import { fixedSectionOf } from '@/lib/finance/contra'
 
 export { ruleMatchesText } from '@/lib/finance/classify-core'
+import type { MatchText } from '@/lib/finance/rule-usage'
 
 /** 매칭에 필요한 규칙 최소 형태 */
 export type ClassRuleLite = {
@@ -212,6 +213,77 @@ export function stagedClassificationPatch(cls: ClassifyResult, currentMemo: stri
     matchedRuleId: cls.matchedRuleId,
     memo: currentMemo ?? (cls.classStatus === 'CLASSIFIED' ? (cls.ruleMemo ?? null) : null),
   }
+}
+
+/** 확정 거래의 매칭 텍스트(사용 현황·미리보기·일괄 변경 대상 계산용). accountId 지정 시 그 계좌만. */
+export async function loadMatchTexts(
+  spaceId: string,
+  accountId?: string | null
+): Promise<MatchText[]> {
+  const rows = await prisma.finTransaction.findMany({
+    where: { spaceId, ...(accountId ? { accountId } : {}) },
+    select: {
+      id: true,
+      accountId: true,
+      direction: true,
+      description: true,
+      counterparty: true,
+      txnDate: true,
+      categoryId: true,
+    },
+  })
+  return rows.map((r) => ({
+    id: r.id,
+    accountId: r.accountId,
+    direction: r.direction,
+    text: buildMatchText(r),
+    txnDate: r.txnDate,
+    categoryId: r.categoryId,
+  }))
+}
+
+/**
+ * 규칙 수정·삭제 후 확인·처리 대기(DRAFT) 행 재분류. 대상: 이 규칙으로 분류됐던 행 +
+ * 미분류·검토 행(수정된 규칙이 새로 걸릴 수 있음). 결과가 그대로인 행은 쓰지 않는다.
+ * 사용자가 직접 분류한 CLASSIFIED 행(다른 규칙 매칭분)은 대상이 아니다.
+ */
+export async function reclassifyDraftStagedRows(spaceId: string, ruleId: string): Promise<number> {
+  const rows = await prisma.finStagedRow.findMany({
+    where: {
+      spaceId,
+      import: { status: 'DRAFT' },
+      OR: [{ matchedRuleId: ruleId }, { classStatus: { in: ['UNCLASSIFIED', 'REVIEW'] } }],
+    },
+    select: {
+      id: true,
+      accountId: true,
+      direction: true,
+      description: true,
+      counterparty: true,
+      memo: true,
+      matchedRuleId: true,
+      categoryId: true,
+      classStatus: true,
+    },
+  })
+  if (rows.length === 0) return 0
+  const rules = await loadSpaceRules(spaceId)
+  let changed = 0
+  for (const r of rows) {
+    const cls = classifyRow(r, rules, r.direction, r.accountId)
+    const same =
+      r.matchedRuleId !== ruleId &&
+      cls.matchedRuleId === r.matchedRuleId &&
+      cls.categoryId === r.categoryId &&
+      cls.classStatus === r.classStatus
+    if (same) continue
+    await prisma.finStagedRow.update({
+      where: { id: r.id },
+      data: stagedClassificationPatch(cls, r.memo),
+    })
+    changed++
+  }
+  return changed
 }
 
 /** 적요+상대를 정규화한 매칭 키(외부에서 sibling 계산 등에 재사용). */
