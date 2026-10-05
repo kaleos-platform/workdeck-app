@@ -128,14 +128,14 @@ export function CoupangMatchingView() {
       </div>
 
       <div className="rounded-md border">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>쿠팡 옵션</TableHead>
-              <TableHead className="text-right">쿠팡 현재가 (RG / 판매자배송)</TableHead>
-              <TableHead>상태</TableHead>
+              <TableHead className="w-[34%]">쿠팡 옵션</TableHead>
+              <TableHead className="w-[150px] text-right">쿠팡 현재가 (RG / 판매자배송)</TableHead>
+              <TableHead className="w-[90px]">상태</TableHead>
               <TableHead>판매채널 상품</TableHead>
-              <TableHead />
+              <TableHead className="w-[90px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -154,7 +154,7 @@ export function CoupangMatchingView() {
             ) : (
               rows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="max-w-[320px] whitespace-normal">
+                  <TableCell className="whitespace-normal break-words">
                     <span className="flex items-center gap-1 font-medium">
                       {r.itemName ?? r.sellerProductId}
                       <a
@@ -179,7 +179,7 @@ export function CoupangMatchingView() {
                       {STATUS_LABEL[r.status]}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-[280px] whitespace-normal text-sm">
+                  <TableCell className="whitespace-normal break-words text-sm">
                     {r.listing ? (
                       <>
                         {r.listing.name}
