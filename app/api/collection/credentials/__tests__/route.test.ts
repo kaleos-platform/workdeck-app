@@ -31,6 +31,7 @@ const save = async () => {
       body: JSON.stringify({ loginId: 'id', password: 'pw' }),
     })
   )
+  if (!res) throw new Error('응답이 없습니다')
   return (await res.json()) as { retriggered: boolean }
 }
 

@@ -172,7 +172,13 @@ export async function PUT(request: NextRequest) {
   // 비번 오류로 실패한 뒤 자격증명을 고치면 바로 1회 재수집한다. 정기 수집은
   // CREDENTIAL_INVALID 를 재시도하지 않아 다음날까지 아무것도 돌지 않았다.
   // 새 run 이 최신이 되므로 같은 값을 다시 저장해도 중복 트리거되지 않는다.
-  const retriggered = isWorker ? false : await retriggerAfterCredentialFix(workspace.id)
+  // 재수집은 부가 동작 — 실패해도 이미 저장된 자격증명 응답을 500 으로 만들지 않는다.
+  const retriggered = isWorker
+    ? false
+    : await retriggerAfterCredentialFix(workspace.id).catch((err) => {
+        console.error('[credentials] 재수집 트리거 실패:', err)
+        return false
+      })
 
   return NextResponse.json({ credential, isConnected: true, retriggered })
 }
