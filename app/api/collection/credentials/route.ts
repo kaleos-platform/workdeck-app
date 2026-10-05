@@ -4,6 +4,10 @@ import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { getUser } from '@/hooks/use-user'
 import { ensureWorkspaceForUser } from '@/lib/workspace'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
+import { canWorkspaceCollect } from '@/lib/billing/entitlement'
+
+// worker/src/login-guard.ts 의 CREDENTIAL_INVALID 사유 문구 — 워커가 run.error 에 남긴다.
+const CREDENTIAL_INVALID_MARK = '아이디/비밀번호 불일치'
 
 // GET /api/collection/credentials — 쿠팡 자격증명 조회
 // 사용자 인증 또는 Worker 인증 모두 지원
@@ -165,5 +169,31 @@ export async function PUT(request: NextRequest) {
     },
   })
 
-  return NextResponse.json({ credential, isConnected: true })
+  // 비번 오류로 실패한 뒤 자격증명을 고치면 바로 1회 재수집한다. 정기 수집은
+  // CREDENTIAL_INVALID 를 재시도하지 않아 다음날까지 아무것도 돌지 않았다.
+  // 새 run 이 최신이 되므로 같은 값을 다시 저장해도 중복 트리거되지 않는다.
+  // 재수집은 부가 동작 — 실패해도 이미 저장된 자격증명 응답을 500 으로 만들지 않는다.
+  const retriggered = isWorker
+    ? false
+    : await retriggerAfterCredentialFix(workspace.id).catch((err) => {
+        console.error('[credentials] 재수집 트리거 실패:', err)
+        return false
+      })
+
+  return NextResponse.json({ credential, isConnected: true, retriggered })
+}
+
+async function retriggerAfterCredentialFix(workspaceId: string): Promise<boolean> {
+  const last = await prisma.collectionRun.findFirst({
+    where: { workspaceId, probeApi: false },
+    orderBy: { createdAt: 'desc' },
+    select: { status: true, error: true },
+  })
+  if (last?.status !== 'FAILED' || !last.error?.includes(CREDENTIAL_INVALID_MARK)) return false
+  if (!(await canWorkspaceCollect(workspaceId))) return false
+
+  await prisma.collectionRun.create({
+    data: { workspaceId, triggeredBy: 'manual', status: 'PENDING' },
+  })
+  return true
 }
