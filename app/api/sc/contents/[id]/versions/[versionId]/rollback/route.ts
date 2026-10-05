@@ -9,7 +9,7 @@ import { rollbackContent } from '@/lib/sc/content-versions'
 type Params = { params: Promise<{ id: string; versionId: string }> }
 
 export async function POST(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id, versionId } = await params

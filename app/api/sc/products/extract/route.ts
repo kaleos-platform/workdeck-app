@@ -14,7 +14,7 @@ import {
 export const maxDuration = 180
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
   const body: unknown = await req.json().catch(() => null)
   const parsed = productExtractRequestSchema.safeParse(body)

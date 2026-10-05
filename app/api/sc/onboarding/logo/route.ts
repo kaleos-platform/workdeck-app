@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { uploadBrandLogo, ALLOWED_LOGO_MIME, MAX_LOGO_BYTES } from '@/lib/sc/onboarding/storage'
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 

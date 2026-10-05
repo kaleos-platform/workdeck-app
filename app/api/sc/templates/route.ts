@@ -21,7 +21,7 @@ export async function GET() {
 
 // POST: 사용자 템플릿 생성.
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   let body: unknown

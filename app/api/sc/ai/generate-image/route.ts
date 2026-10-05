@@ -12,7 +12,7 @@ import { aiImageBaseSchema } from '@/lib/sc/schemas'
 const bodySchema = aiImageBaseSchema
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   let raw: unknown

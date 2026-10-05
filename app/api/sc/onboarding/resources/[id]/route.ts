@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { removeOnboardingFiles } from '@/lib/sc/onboarding/storage'
 
 export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await ctx.params

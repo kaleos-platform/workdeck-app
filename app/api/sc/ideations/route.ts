@@ -34,7 +34,7 @@ export async function GET() {
 // POST /api/sc/ideations — AI 로 새 아이데이션 실행 (기본) 또는 사용자 수동 저장.
 // body.mode === 'user' 이면 userIdeationSchema 로 검증, 그 외는 runIdeationSchema.
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   let body: unknown

@@ -6,7 +6,7 @@ import { collectPage, MAX_COLLECTION_RESOURCES, resourceSelect } from '@/lib/sc/
 export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
   let body: unknown

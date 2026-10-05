@@ -30,7 +30,7 @@ function canonicalSource(source: string | undefined): string | undefined {
 
 /** 검토한 설정을 한 번에 저장한다. 재시도·새로고침·동시 요청에도 기존 상품을 복제하지 않는다. */
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
   const body: unknown = await req.json().catch(() => null)
   const parsed = inputSchema.safeParse(body)

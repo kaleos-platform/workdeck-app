@@ -24,7 +24,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await params
@@ -94,7 +94,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await params
@@ -105,10 +105,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (!existing) return errorResponse('콘텐츠를 찾을 수 없습니다', 404)
 
   if (existing.status === 'PUBLISHED' || existing.status === 'ANALYZED') {
-    return errorResponse(
-      '게시된 콘텐츠는 삭제할 수 없습니다 — 먼저 보관 처리하세요',
-      409,
-    )
+    return errorResponse('게시된 콘텐츠는 삭제할 수 없습니다 — 먼저 보관 처리하세요', 409)
   }
 
   await prisma.content.delete({ where: { id } })

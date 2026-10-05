@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 // PATCH: 사용자 소유 템플릿만 수정 가능 (isSystem=true 는 403).
 // body.cloneFrom=true 이면 시스템 템플릿을 복제해서 새 사용자 템플릿 생성 (사이드이펙트).
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await params
@@ -95,7 +95,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await params
