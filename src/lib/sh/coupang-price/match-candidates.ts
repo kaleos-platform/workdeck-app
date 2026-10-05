@@ -41,5 +41,20 @@ export function computeMatchCandidates(args: {
 
     out.set(item.id, { status, candidateListingIds: candidates })
   }
+
+  // 일괄 확정이 엉뚱한 옵션을 잇지 않게 — 같은 리스팅을 유일 후보로 가진 미연결 옵션이 둘 이상이거나
+  // (여러 RG SKU 가 같은 구성에 매핑), 그 리스팅이 이미 다른 옵션에 연결돼 있으면 사람이 골라야 한다.
+  const claimants = new Map<string, number>()
+  for (const r of out.values()) {
+    if (r.status === 'CANDIDATE') {
+      claimants.set(r.candidateListingIds[0], (claimants.get(r.candidateListingIds[0]) ?? 0) + 1)
+    }
+  }
+  const linked = new Set(args.items.map((i) => i.listingId).filter((id): id is string => id != null))
+  for (const r of out.values()) {
+    if (r.status !== 'CANDIDATE') continue
+    const l = r.candidateListingIds[0]
+    if ((claimants.get(l) ?? 0) > 1 || linked.has(l)) r.status = 'AMBIGUOUS'
+  }
   return out
 }
