@@ -104,7 +104,7 @@ export function CredentialForm() {
         return
       }
 
-      const data = (await res.json()) as { isConnected?: boolean }
+      const data = (await res.json()) as { isConnected?: boolean; retriggered?: boolean }
       setSavedLoginId(values.loginId)
       setIsEditing(false)
       setStatus(data.isConnected ? 'connected' : 'disconnected')
@@ -113,7 +113,11 @@ export function CredentialForm() {
         password: '',
         collectVendorSales: values.collectVendorSales,
       })
-      toast.success('계정 정보가 저장되었습니다')
+      toast.success(
+        data.retriggered
+          ? '계정 정보가 저장되었습니다. 실패했던 수집을 다시 시작합니다'
+          : '계정 정보가 저장되었습니다'
+      )
     } catch {
       setStatus('disconnected')
       toast.error('저장 중 오류가 발생했습니다')
