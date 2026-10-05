@@ -137,7 +137,7 @@ it('발행 실패 시 팝업과 입력한 날짜를 유지하고 오류를 안�
   expect(screen.getByRole('button', { name: '발행하기' })).toBeEnabled()
 })
 
-it('보관 공고도 상세에서 다시 발행할 수 있다', () => {
+it('보관 공고는 재발행 대신 복사해서 새 모집한다', () => {
   render(
     <PostingDetail
       posting={{ id: 'test', uuid: 'qa', title: 'QA', status: 'ARCHIVED', closingDate: null }}
@@ -145,5 +145,6 @@ it('보관 공고도 상세에서 다시 발행할 수 있다', () => {
       embedHtml="<p>QA</p>"
     />
   )
-  expect(screen.getByRole('button', { name: '공고 발행' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '공고 발행' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '복사해서 새 모집' })).toBeInTheDocument()
 })

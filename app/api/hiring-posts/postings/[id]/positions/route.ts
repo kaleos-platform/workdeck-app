@@ -1,3 +1,8 @@
+import { withUnpublishedPosting } from '@/lib/hiring/unpublished-posting'
+import {
+  isPostingRecruitmentLocked,
+  PUBLISHED_POSTING_LOCK_MESSAGE,
+} from '@/lib/hiring/publication-policy'
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
@@ -32,39 +37,41 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const posting = await prisma.hiringPosting.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, status: true, publishedAt: true },
   })
   if (!posting) return errorResponse('공고를 찾을 수 없습니다', 404)
+  if (isPostingRecruitmentLocked(posting)) return errorResponse(PUBLISHED_POSTING_LOCK_MESSAGE, 409)
+  return withUnpublishedPosting(resolved.space.id, id, async (tx) => {
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch {
+      return errorResponse('잘못된 요청 형식입니다', 400)
+    }
+    const parsed = postingPositionSchema.safeParse(body)
+    if (!parsed.success) {
+      return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
+    }
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return errorResponse('잘못된 요청 형식입니다', 400)
-  }
-  const parsed = postingPositionSchema.safeParse(body)
-  if (!parsed.success) {
-    return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
-  }
+    // positionId 가 있으면 같은 space 소속인지 확인
+    if (parsed.data.positionId) {
+      const linked = await tx.hiringPosition.findFirst({
+        where: { id: parsed.data.positionId, spaceId: resolved.space.id },
+        select: { id: true },
+      })
+      if (!linked) return errorResponse('직무 기준정보를 찾을 수 없습니다', 404)
+    }
 
-  // positionId 가 있으면 같은 space 소속인지 확인
-  if (parsed.data.positionId) {
-    const linked = await prisma.hiringPosition.findFirst({
-      where: { id: parsed.data.positionId, spaceId: resolved.space.id },
-      select: { id: true },
+    const { positionId, workDays, ...rest } = parsed.data
+    const position = await tx.hiringPostingPosition.create({
+      data: {
+        spaceId: resolved.space.id,
+        postingId: id,
+        ...(positionId ? { positionId } : {}),
+        ...(workDays ? { workDays } : {}),
+        ...rest,
+      },
     })
-    if (!linked) return errorResponse('직무 기준정보를 찾을 수 없습니다', 404)
-  }
-
-  const { positionId, workDays, ...rest } = parsed.data
-  const position = await prisma.hiringPostingPosition.create({
-    data: {
-      spaceId: resolved.space.id,
-      postingId: id,
-      ...(positionId ? { positionId } : {}),
-      ...(workDays ? { workDays } : {}),
-      ...rest,
-    },
+    return NextResponse.json({ position }, { status: 201 })
   })
-  return NextResponse.json({ position }, { status: 201 })
 }

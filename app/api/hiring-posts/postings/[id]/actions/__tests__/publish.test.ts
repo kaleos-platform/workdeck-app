@@ -4,7 +4,15 @@ import { POST } from '../route'
 import { prisma } from '@/lib/prisma'
 import { checkPublishable } from '@/lib/hiring/postings'
 jest.mock('@/lib/prisma', () => ({
-  prisma: { hiringPosting: { findFirst: jest.fn(), update: jest.fn() } },
+  prisma: {
+    $transaction: jest.fn(),
+    hiringPosting: {
+      findFirst: jest.fn(),
+      findUniqueOrThrow: jest.fn(),
+      updateMany: jest.fn(),
+      update: jest.fn(),
+    },
+  },
 }))
 jest.mock('@/lib/api-helpers', () => ({
   resolveDeckContext: async () => ({ space: { id: 's' } }),
@@ -19,6 +27,13 @@ const request = (closingDate: unknown) =>
   })
 beforeEach(() => {
   jest.clearAllMocks()
+  jest
+    .mocked(prisma.$transaction)
+    .mockImplementation(async (fn: unknown) => (fn as (tx: unknown) => Promise<never>)(prisma))
+  jest.mocked(prisma.hiringPosting.updateMany).mockResolvedValue({ count: 1 })
+  jest
+    .mocked(prisma.hiringPosting.findUniqueOrThrow)
+    .mockResolvedValue({ closingDate: new Date('2023-11-30') } as never)
   jest.mocked(prisma.hiringPosting.findFirst).mockResolvedValue({
     id: 'p',
     status: 'DRAFT',
@@ -30,6 +45,7 @@ beforeEach(() => {
 })
 it.each(['2099-12-31', null])('마감일 %s와 발행 상태를 한 번에 저장한다', async (date) => {
   expect((await POST(request(date), params))?.status).toBe(200)
+  expect(checkPublishable).toHaveBeenCalledWith('s', 'p', prisma)
   expect(prisma.hiringPosting.update).toHaveBeenCalledWith(
     expect.objectContaining({
       data: expect.objectContaining({
@@ -51,3 +67,14 @@ it('발행 요건 실패 시 마감일도 변경하지 않는다', async () => {
   expect((await POST(request('2099-12-31'), params))?.status).toBe(400)
   expect(prisma.hiringPosting.update).not.toHaveBeenCalled()
 })
+
+it.each(['DRAFT', 'ACTIVE', 'CLOSED', 'ARCHIVED'])(
+  '발행 이력이 있는 %s 공고는 재발행할 수 없다',
+  async (status) => {
+    jest
+      .mocked(prisma.hiringPosting.findFirst)
+      .mockResolvedValue({ id: 'p', status, publishedAt: new Date('2023-01-01') } as never)
+    expect((await POST(request('2099-12-31'), params))?.status).toBe(409)
+    expect(prisma.hiringPosting.update).not.toHaveBeenCalled()
+  }
+)

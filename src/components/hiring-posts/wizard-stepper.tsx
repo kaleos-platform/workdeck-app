@@ -11,13 +11,19 @@ export const WIZARD_STEPS: Array<{ key: WizardStepKey; label: string }> = [
 ]
 
 type Props = {
+  recruitmentLocked?: boolean
   current: WizardStepKey
   onSelect: (key: WizardStepKey) => void
   disabled?: boolean
 }
 
 // 공고 제작은 2단계로 진행하고 지원 접수 설정은 필요할 때 별도로 연다.
-export function WizardStepper({ current, onSelect, disabled = false }: Props) {
+export function WizardStepper({
+  current,
+  onSelect,
+  disabled = false,
+  recruitmentLocked = false,
+}: Props) {
   return (
     <nav aria-label="공고 편집 단계" className="flex flex-wrap items-center justify-center gap-4">
       <div className="flex flex-wrap items-center justify-center gap-2">
@@ -63,11 +69,12 @@ export function WizardStepper({ current, onSelect, disabled = false }: Props) {
         disabled={disabled}
         onClick={() => onSelect('form')}
       >
-        지원서 설정
+        {recruitmentLocked ? '지원서 설정 (읽기 전용)' : '지원서 설정'}
       </Button>
       <p className="w-full text-center text-xs leading-relaxed text-muted-foreground">
-        지원서 설정은 HTML 공고 작성과 별도로 관리합니다. 발행 여부와 관계없이 버튼을 눌러 수정할 수
-        있습니다.
+        {recruitmentLocked
+          ? '최초 발행 후 지원서 항목은 변경할 수 없습니다. 새로운 모집은 공고를 복사해 주세요.'
+          : '지원서 설정은 HTML 공고 작성과 별도로 관리합니다. 최초 발행 전까지 수정할 수 있습니다.'}
       </p>
     </nav>
   )

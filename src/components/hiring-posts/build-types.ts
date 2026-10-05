@@ -49,6 +49,7 @@ export type WizardPosting = {
   id: string
   uuid: string
   title: string
+  publishedAt?: string | null
   status: PostingStatus
   closingDate: string | null
   notificationEnabled: boolean

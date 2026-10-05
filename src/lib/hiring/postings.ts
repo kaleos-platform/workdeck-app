@@ -2,6 +2,7 @@
  * 공고 제작(hiring-posts) Deck 서버 전용 도메인 모듈.
  * 모든 조회/변경은 spaceId 로 스코프한다. (라우트 핸들러에서만 호출 — 서버 전용)
  */
+import type { Prisma } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 import { uploadPostingAsset } from '@/lib/hiring/storage'
 import type { FormFieldInput } from '@/lib/validations/hiring-posts'
@@ -86,8 +87,12 @@ export type PublishCheck = {
 }
 
 /** 발행 가능 여부 검증: 제목, 직무 ≥1, 폼에 name+phone */
-export async function checkPublishable(spaceId: string, id: string): Promise<PublishCheck> {
-  const posting = await prisma.hiringPosting.findFirst({
+export async function checkPublishable(
+  spaceId: string,
+  id: string,
+  db: Pick<Prisma.TransactionClient, 'hiringPosting'> = prisma
+): Promise<PublishCheck> {
+  const posting = await db.hiringPosting.findFirst({
     where: { id, spaceId },
     select: {
       title: true,
