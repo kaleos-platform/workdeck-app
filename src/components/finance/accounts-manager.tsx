@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Plus,
   Trash2,
-  Tag,
   Pencil,
   EyeOff,
   Eye,
@@ -49,9 +48,9 @@ import {
 } from '@/components/finance/format'
 import { InfoHint } from '@/components/finance/info-hint'
 import { cn } from '@/lib/utils'
-import { CategoryCombobox } from '@/components/finance/category-combobox'
-import { buildClassifyOptions, type ComboOption } from '@/lib/finance/category-options'
+import { buildClassifyOptions } from '@/lib/finance/category-options'
 import { EditCategoryDialog } from '@/components/finance/edit-category-dialog'
+import { ClassRulesManager } from '@/components/finance/class-rules-manager'
 import { KIFRS_ACCOUNT_OPTIONS } from '@/lib/finance/kifrs-map'
 
 type Category = {
@@ -68,14 +67,6 @@ type Category = {
   sortOrder: number
   _count?: { transactions: number }
   children: Category[]
-}
-
-type Rule = {
-  id: string
-  matchKey: string
-  matchType: 'EXACT' | 'KEYWORD'
-  learnedFrom: 'USER' | 'SEED'
-  category: { id: string; name: string; parent?: { name: string } | null } | null
 }
 
 // 운영 계정 화면은 분류 대상(수입/지출/이체)만. 자산/부채는 "계좌 관리" 메뉴에서 다룬다.
@@ -97,7 +88,8 @@ function downloadExportCsv() {
 
 export function FinanceAccountsManager() {
   const [tree, setTree] = useState<Category[]>([])
-  const [rules, setRules] = useState<Rule[]>([])
+  // 탭 라벨용 규칙 수 — 규칙 탭(ClassRulesManager)이 열리면 그쪽 조회 결과로 갱신된다.
+  const [ruleCount, setRuleCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [exportItems, setExportItems] = useState<{ id: string; name: string; group: string }[]>([])
   const [exportOpen, setExportOpen] = useState(false)
@@ -114,7 +106,7 @@ export function FinanceAccountsManager() {
       const catData = await catRes.json()
       const ruleData = await ruleRes.json()
       setTree(catData.tree ?? [])
-      setRules(ruleData.rules ?? [])
+      setRuleCount((ruleData.rules ?? []).length)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '조회 실패')
     } finally {
@@ -156,8 +148,8 @@ export function FinanceAccountsManager() {
           <TabsTrigger value="categories">운영 계정</TabsTrigger>
           <TabsTrigger value="rules">
             자동 분류 규칙
-            {rules.length > 0 && (
-              <span className="ml-1.5 text-xs text-muted-foreground">{rules.length}</span>
+            {ruleCount > 0 && (
+              <span className="ml-1.5 text-xs text-muted-foreground">{ruleCount}</span>
             )}
           </TabsTrigger>
         </TabsList>
@@ -177,7 +169,7 @@ export function FinanceAccountsManager() {
       </TabsContent>
 
       <TabsContent value="rules">
-        <RuleManager rules={rules} leafTargets={leafTargets} loading={loading} onChanged={load} />
+        <ClassRulesManager leafTargets={leafTargets} onCountChange={setRuleCount} />
       </TabsContent>
 
       <ExportMappingDialog
@@ -905,154 +897,5 @@ function ExportMappingDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
-
-// ─── 자동 분류 규칙 ─────────────────────────────────────────────────────────────
-
-function RuleManager({
-  rules,
-  leafTargets,
-  loading,
-  onChanged,
-}: {
-  rules: Rule[]
-  leafTargets: ComboOption[]
-  loading: boolean
-  onChanged: () => void
-}) {
-  const [matchKey, setMatchKey] = useState('')
-  const [categoryId, setCategoryId] = useState('')
-  const [matchType, setMatchType] = useState<'EXACT' | 'KEYWORD'>('KEYWORD')
-  const [saving, setSaving] = useState(false)
-
-  async function handleAdd() {
-    if (!matchKey.trim()) {
-      toast.error('키워드를 입력해 주세요')
-      return
-    }
-    if (!categoryId) {
-      toast.error('대상 계정과목을 선택해 주세요')
-      return
-    }
-    setSaving(true)
-    try {
-      const res = await fetch('/api/finance/rules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ matchKey: matchKey.trim(), categoryId, matchType }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.message ?? '규칙 추가 실패')
-      toast.success(
-        data?.created === false
-          ? '기존 규칙을 변경했습니다(같은 키워드)'
-          : '분류 규칙이 추가되었습니다'
-      )
-      setMatchKey('')
-      setCategoryId('')
-      onChanged()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '규칙 추가 실패')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  async function handleDelete(rule: Rule) {
-    if (!confirm(`규칙 "${rule.matchKey}"을(를) 삭제하시겠습니까?`)) return
-    try {
-      const res = await fetch(`/api/finance/rules/${rule.id}`, { method: 'DELETE' })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.message ?? '삭제 실패')
-      toast.success('규칙이 삭제되었습니다')
-      onChanged()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : '삭제 실패')
-    }
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>자동 분류 규칙</CardTitle>
-        <CardDescription>
-          적요·가맹점 키워드를 계정과목에 매핑합니다. 거래 내역에서 직접 분류하면 규칙이 자동
-          학습됩니다.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* 규칙 추가 */}
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/30 p-3">
-          <Input
-            value={matchKey}
-            onChange={(e) => setMatchKey(e.target.value)}
-            placeholder="키워드 (예: 택배, 쿠팡)"
-            className="h-8 max-w-48 text-sm"
-          />
-          <Select value={matchType} onValueChange={(v) => setMatchType(v as 'EXACT' | 'KEYWORD')}>
-            <SelectTrigger className="h-8 w-28 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="KEYWORD">부분 포함</SelectItem>
-              <SelectItem value="EXACT">완전 일치</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-xs text-muted-foreground">→</span>
-          <CategoryCombobox
-            options={leafTargets}
-            value={categoryId || null}
-            onChange={setCategoryId}
-            placeholder="대상 계정과목"
-            triggerClassName="h-8 w-56 text-sm"
-          />
-          <Button size="sm" onClick={handleAdd} disabled={saving}>
-            <Plus className="mr-1 size-3.5" />
-            규칙 추가
-          </Button>
-        </div>
-
-        {/* 규칙 목록 */}
-        {loading ? (
-          <p className="text-sm text-muted-foreground">불러오는 중...</p>
-        ) : rules.length === 0 ? (
-          <p className="text-sm text-muted-foreground">등록된 규칙이 없습니다</p>
-        ) : (
-          <div className="divide-y">
-            {rules.map((rule) => (
-              <div key={rule.id} className="flex items-center gap-2 py-2">
-                <Tag className="size-3.5 text-muted-foreground" />
-                <Badge variant="secondary" className="font-mono text-xs">
-                  {rule.matchKey}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {rule.matchType === 'EXACT' ? '완전' : '부분'}
-                </Badge>
-                <span className="text-xs text-muted-foreground">→</span>
-                <span className="text-sm">
-                  {rule.category?.parent?.name ? `${rule.category.parent.name} › ` : ''}
-                  {rule.category?.name ?? '(삭제된 계정)'}
-                </span>
-                {rule.learnedFrom === 'SEED' && (
-                  <Badge variant="outline" className="text-xs text-muted-foreground">
-                    기본
-                  </Badge>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="ml-auto"
-                  onClick={() => handleDelete(rule)}
-                  aria-label="삭제"
-                >
-                  <Trash2 className="size-3.5" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
   )
 }

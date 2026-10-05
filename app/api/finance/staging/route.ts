@@ -163,7 +163,8 @@ export async function GET(req: NextRequest) {
               { description: r.description, counterparty: r.counterparty },
               r.direction,
               ruleset,
-              nameById
+              nameById,
+              r.accountId
             )
           : null,
     })),

@@ -21,6 +21,7 @@ const ruleset: ClassRuleLite[] = [
     categoryId: 'c1',
     direction: 'OUT',
     memo: null,
+    accountId: null,
   },
   {
     id: 'seed:광고',
@@ -29,6 +30,7 @@ const ruleset: ClassRuleLite[] = [
     categoryId: 'c2',
     direction: 'OUT',
     memo: null,
+    accountId: null,
   },
   {
     id: 'rule-learned',
@@ -37,6 +39,7 @@ const ruleset: ClassRuleLite[] = [
     categoryId: 'c1',
     direction: 'OUT',
     memo: null,
+    accountId: null,
   },
 ]
 

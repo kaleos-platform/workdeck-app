@@ -41,7 +41,7 @@ const reclassify: ActionDefinition<z.infer<typeof reclassifyParams>> = {
     // 소유 검증 — learnRule 4번째 인자(direction)가 non-null이라 direction까지 로드.
     const txn = await prisma.finTransaction.findFirst({
       where: { id: params.transactionId, spaceId },
-      select: { id: true, description: true, counterparty: true, direction: true },
+      select: { id: true, accountId: true, description: true, counterparty: true, direction: true },
     })
     if (!txn) throw new Error('거래를 찾을 수 없습니다')
 
@@ -53,12 +53,14 @@ const reclassify: ActionDefinition<z.infer<typeof reclassifyParams>> = {
 
     let matchedRuleId: string | null | undefined
     if (params.learn !== false) {
-      matchedRuleId = await learnRule(
+      const learned = await learnRule(
         spaceId,
         { description: txn.description, counterparty: txn.counterparty },
         params.categoryId,
-        txn.direction
+        txn.direction,
+        txn.accountId
       )
+      matchedRuleId = learned?.ruleId ?? null
     }
 
     await prisma.finTransaction.update({
@@ -84,6 +86,8 @@ const classruleParams = z.object({
   matchType: z.enum(['EXACT', 'KEYWORD']),
   // 규칙 메모(선택) — 자동분류 시 스테이징 행 memo로 복사된다(FinClassRule.memo).
   memo: z.string().optional(),
+  // 적용 계좌(선택) — 생략하면 전체 계좌 공통 규칙.
+  accountId: z.string().optional(),
 })
 
 const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
@@ -101,6 +105,15 @@ const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
     })
     if (!category) throw new Error('계정과목을 찾을 수 없습니다')
 
+    const accountId = params.accountId ?? null
+    if (accountId) {
+      const account = await prisma.finAccount.findFirst({
+        where: { id: accountId, spaceId },
+        select: { id: true },
+      })
+      if (!account) throw new Error('계좌를 찾을 수 없습니다')
+    }
+
     const normalizedKey = normalizeFinKey(params.matchKey)
     const direction = directionForType(category.type)
 
@@ -108,9 +121,9 @@ const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
     const memoResult = normalizeMemoInput(params.memo)
     if (!memoResult.ok) throw new Error(memoResult.error)
 
-    // (spaceId, matchKey, direction) 멱등 — direction이 null일 수 있어 findFirst → update/create.
+    // (spaceId, accountId, matchKey, direction) 멱등 — null 포함 가능해 findFirst → update/create.
     const existing = await prisma.finClassRule.findFirst({
-      where: { spaceId, matchKey: normalizedKey, direction },
+      where: { spaceId, accountId, matchKey: normalizedKey, direction },
       select: { id: true },
     })
     const created = !existing
@@ -134,6 +147,7 @@ const classruleCreate: ActionDefinition<z.infer<typeof classruleParams>> = {
             matchType: params.matchType,
             learnedFrom: 'USER',
             direction,
+            accountId,
             memo: memoResult.value ?? null,
           },
           select: { id: true },

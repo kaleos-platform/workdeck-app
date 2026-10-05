@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { learnRule } from '@/lib/finance/classify'
+import { learnRule, ruleNoticeFor, type RuleNotice } from '@/lib/finance/classify'
 import { normalizeMemoInput } from '@/lib/finance/memo'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -17,11 +17,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const txn = await prisma.finTransaction.findFirst({
     where: { id, spaceId },
-    select: { id: true, description: true, counterparty: true, direction: true },
+    select: { id: true, accountId: true, description: true, counterparty: true, direction: true },
   })
   if (!txn) return errorResponse('거래를 찾을 수 없습니다', 404)
 
   const body = await req.json().catch(() => ({}))
+  // 규칙 학습 시 덮어쓰기·우선 적용 알림(학습 안 하면 null)
+  let ruleNotice: RuleNotice | null = null
   const data: {
     categoryId?: string
     classStatus?: 'CLASSIFIED'
@@ -57,12 +59,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     data.isTransfer = category.type === 'TRANSFER'
 
     if (body.learn !== false) {
-      data.matchedRuleId = await learnRule(
+      // 학습 전 알림 계산 — 기존 규칙을 덮어쓰거나 다른 규칙 대신 적용되면 클라이언트가 토스트로 안내.
+      ruleNotice = await ruleNoticeFor(
+        spaceId,
+        { description: txn.description, counterparty: txn.counterparty },
+        txn.direction,
+        txn.accountId,
+        body.categoryId
+      )
+      const learned = await learnRule(
         spaceId,
         { description: txn.description, counterparty: txn.counterparty },
         body.categoryId,
-        txn.direction
+        txn.direction,
+        txn.accountId
       )
+      data.matchedRuleId = learned?.ruleId ?? null
     }
   }
 
@@ -98,5 +110,5 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     },
   })
 
-  return NextResponse.json({ transaction: updated })
+  return NextResponse.json({ transaction: updated, ruleNotice })
 }

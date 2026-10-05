@@ -44,6 +44,7 @@ export async function loadRuleSuggestContext(
         categoryId: catId,
         direction: directionForType(leaf.type),
         memo: null,
+        accountId: null, // 시드 키워드는 전체 공통
       })
     }
   }
@@ -58,9 +59,10 @@ export function ruleSuggestionFor(
   input: ClassifyInput,
   direction: FinTxnDirection,
   ruleset: ClassRuleLite[],
-  nameById: Map<string, string>
+  nameById: Map<string, string>,
+  accountId: string | null = null
 ): RuleSuggestion | null {
-  const r = classifyRow(input, ruleset, direction)
+  const r = classifyRow(input, ruleset, direction, accountId)
   if (!r.categoryId) return null
   const matchedSeed = r.matchedRuleId?.startsWith('seed:')
     ? r.matchedRuleId.slice('seed:'.length)
