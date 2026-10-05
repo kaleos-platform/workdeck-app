@@ -40,6 +40,7 @@ export default async function BuildPage({ params }: PageProps) {
       uuid: posting.uuid,
       title: posting.title,
       status: posting.status,
+        publishedAt: posting.publishedAt?.toISOString() ?? null,
       closingDate: posting.closingDate ? posting.closingDate.toISOString() : null,
       notificationEnabled: posting.notificationEnabled,
       positions: posting.positions.map((p) => ({

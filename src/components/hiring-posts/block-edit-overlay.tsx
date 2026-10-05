@@ -13,6 +13,7 @@ import type { ExcalidrawScene } from './excalidraw-canvas'
 import type { WizardContentData, WizardPositionData, WizardPosition } from './build-types'
 
 type Props = {
+  recruitmentLocked?: boolean
   ref?: Ref<SaveHandle>
   open: boolean
   saving?: boolean
@@ -40,6 +41,7 @@ export function BlockEditOverlay({
   postingId,
   positions,
   spacePositions,
+  recruitmentLocked = false,
   onPositionsChange,
   onClose,
   onTextChange,
@@ -134,13 +136,19 @@ export function BlockEditOverlay({
                 />
               ) : content.contentType === 'positions' ? (
                 // 기본 정보 화면과 동일한 직무 관리 UI(직무 추가 팝업 + 목록/편집/삭제) 재사용.
-                <StepPositions
-                  ref={blockRef}
-                  postingId={postingId}
-                  positions={positions}
-                  spacePositions={spacePositions}
-                  onChange={onPositionsChange}
-                />
+                recruitmentLocked ? (
+                  <p className="p-4 text-sm">
+                    최초 발행 후 모집 직무는 수정할 수 없습니다. 새로운 모집은 공고를 복사해 주세요.
+                  </p>
+                ) : (
+                  <StepPositions
+                    ref={blockRef}
+                    postingId={postingId}
+                    positions={positions}
+                    spacePositions={spacePositions}
+                    onChange={onPositionsChange}
+                  />
+                )
               ) : content.contentType === 'design' ? (
                 <DesignBlock
                   ref={blockRef}

@@ -57,6 +57,7 @@ export default async function PostingDetailPage({ params }: PageProps) {
         uuid: posting.uuid,
         title: posting.title,
         status: posting.status,
+        publishedAt: posting.publishedAt?.toISOString() ?? null,
         closingDate: posting.closingDate ? posting.closingDate.toISOString() : null,
       }}
       origin={origin}

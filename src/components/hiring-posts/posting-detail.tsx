@@ -1,5 +1,7 @@
 'use client'
 
+import { isPostingRecruitmentLocked } from '@/lib/hiring/publication-policy'
+
 import { PublishDialog } from './publish-dialog'
 import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { useState } from 'react'
@@ -19,6 +21,7 @@ type Posting = {
   id: string
   uuid: string
   title: string
+  publishedAt?: string | null
   status: PostingStatus
   closingDate: string | null
 }
@@ -58,6 +61,7 @@ export function PostingDetail({
   const [status, setStatus] = useState<PostingStatus>(posting.status)
   const [closingDate, setClosingDate] = useState(posting.closingDate)
   const expired = isHiringDeadlinePassed(closingDate ? new Date(closingDate) : null)
+  const locked = isPostingRecruitmentLocked({ ...posting, status })
   const [busy, setBusy] = useState(false)
 
   const hasOutputErrors = embedIssues.some((issue) => issue.severity === 'error')
@@ -103,7 +107,30 @@ export function PostingDetail({
           <PostingStatusBadge status={status} />
         </div>
         <div className="flex items-center gap-2">
-          {(status !== 'ACTIVE' || expired) && (
+          {locked && (
+            <Button
+              disabled={busy}
+              onClick={async () => {
+                if (busy) return
+                setBusy(true)
+                try {
+                  const res = await fetch(`/api/hiring-posts/postings/${posting.id}/copy`, {
+                    method: 'POST',
+                  })
+                  if (!res.ok) throw new Error('공고 복사에 실패했습니다')
+                  const data = await res.json()
+                  router.push(getRecruitingPostingBuildPath(data.posting.id))
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : '공고 복사에 실패했습니다')
+                } finally {
+                  setBusy(false)
+                }
+              }}
+            >
+              복사해서 새 모집
+            </Button>
+          )}
+          {!locked && (
             <PublishDialog
               postingId={posting.id}
               closingDate={closingDate}
@@ -147,7 +174,7 @@ export function PostingDetail({
         </p>
         {expired && (
           <p className="text-sm font-semibold text-destructive">
-            마감일이 지났습니다. 다시 모집하려면 공고 발행에서 마감일을 변경해 주세요.
+            마감일이 지났습니다. 새로운 모집은 공고를 복사해 진행해 주세요.
           </p>
         )}
         <p className="text-sm text-muted-foreground">
@@ -157,7 +184,13 @@ export function PostingDetail({
         </p>
       </section>
 
-      {isDraft && (
+      {locked && (
+        <p className="rounded-lg border bg-muted/40 p-4 text-sm">
+          최초 발행 이력이 있는 공고입니다. 지원자 이력 보존을 위해 모집 조건과 지원서 설정은 변경할
+          수 없습니다. 새로운 지원자는 공고를 복사해 모집해 주세요.
+        </p>
+      )}
+      {isDraft && !locked && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-900/40 dark:text-amber-200">
           HTML은 발행 전에도 복사할 수 있습니다. Workdeck 지원서·공고 링크는 발행 후 공개되므로,
           HTML에 지원서 연결 버튼이 있으면 발행 상태를 확인하세요. 상단의 공고 발행 버튼에서

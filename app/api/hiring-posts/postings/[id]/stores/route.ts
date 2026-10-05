@@ -1,3 +1,8 @@
+import { withUnpublishedPosting } from '@/lib/hiring/unpublished-posting'
+import {
+  isPostingRecruitmentLocked,
+  PUBLISHED_POSTING_LOCK_MESSAGE,
+} from '@/lib/hiring/publication-policy'
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
@@ -32,36 +37,36 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   const posting = await prisma.hiringPosting.findFirst({
     where: { id, spaceId: resolved.space.id },
-    select: { id: true },
+    select: { id: true, status: true, publishedAt: true },
   })
   if (!posting) return errorResponse('공고를 찾을 수 없습니다', 404)
+  if (isPostingRecruitmentLocked(posting)) return errorResponse(PUBLISHED_POSTING_LOCK_MESSAGE, 409)
+  return withUnpublishedPosting(resolved.space.id, id, async (tx) => {
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch {
+      return errorResponse('잘못된 요청 형식입니다', 400)
+    }
+    const parsed = linkStoresSchema.safeParse(body)
+    if (!parsed.success) {
+      return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
+    }
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return errorResponse('잘못된 요청 형식입니다', 400)
-  }
-  const parsed = linkStoresSchema.safeParse(body)
-  if (!parsed.success) {
-    return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
-  }
+    // 요청된 매장이 모두 같은 space 소속인지 검증
+    const validStores = await tx.hiringStore.findMany({
+      where: { id: { in: parsed.data.storeIds }, spaceId: resolved.space.id },
+      select: { id: true },
+    })
+    const validIds = new Set(validStores.map((s) => s.id))
+    const storeIds = parsed.data.storeIds.filter((sid) => validIds.has(sid))
 
-  // 요청된 매장이 모두 같은 space 소속인지 검증
-  const validStores = await prisma.hiringStore.findMany({
-    where: { id: { in: parsed.data.storeIds }, spaceId: resolved.space.id },
-    select: { id: true },
-  })
-  const validIds = new Set(validStores.map((s) => s.id))
-  const storeIds = parsed.data.storeIds.filter((sid) => validIds.has(sid))
-
-  await prisma.$transaction([
-    prisma.hiringPostingStore.deleteMany({ where: { postingId: id } }),
-    prisma.hiringPostingStore.createMany({
+    await tx.hiringPostingStore.deleteMany({ where: { postingId: id } })
+    await tx.hiringPostingStore.createMany({
       data: storeIds.map((storeId) => ({ postingId: id, storeId })),
       skipDuplicates: true,
-    }),
-  ])
+    })
 
-  return NextResponse.json({ storeIds })
+    return NextResponse.json({ storeIds })
+  })
 }
