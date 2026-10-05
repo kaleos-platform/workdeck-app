@@ -234,8 +234,11 @@ export function TransactionsView() {
     const s = searchParams.get('scope')
     return s === 'included' || s === 'excluded' ? s : 'all'
   })
-  // 현금흐름 토글 on 상태에서 온 딥링크 — 요약 합계에 분석 제외 포함(셀 값과 일치). 화면 조작 없음.
-  const linkIncludeExcluded = searchParams.get('includeExcluded') === '1'
+  // 현금흐름 토글 on 상태에서 온 딥링크 — 요약 합계에 분석 제외 포함(셀 값과 일치).
+  // 숨은 상태가 되지 않도록 요약 옆 칩으로 표시하고, X로 해제하면 기본 합계(분석 제외 빼고)로 돌아간다.
+  const [linkIncludeExcluded, setLinkIncludeExcluded] = useState(
+    () => searchParams.get('includeExcluded') === '1'
+  )
   // 딥링크 진입 여부 — 스테이징 대신 전체 거래 탭을 강제로 연다.
   const hasDeepLink = useMemo(() => {
     for (const k of [
@@ -783,6 +786,10 @@ export function TransactionsView() {
     setFilterScope(next)
     setFilterReloadTick((t) => t + 1)
   }, [])
+  const clearLinkIncludeExcluded = useCallback(() => {
+    setLinkIncludeExcluded(false)
+    setFilterReloadTick((t) => t + 1)
+  }, [])
   const clearDates = useCallback(() => {
     setDateFrom('')
     setDateTo('')
@@ -870,6 +877,8 @@ export function TransactionsView() {
           onToggleExcludeTransfer={toggleExcludeTransfer}
           filterScope={filterScope}
           onScopeChange={changeScope}
+          sumsIncludeExcluded={linkIncludeExcluded && filterScope !== 'excluded'}
+          onClearSumsIncludeExcluded={clearLinkIncludeExcluded}
           onClearDates={clearDates}
           accounts={accounts}
           leafTargets={leafTargets}
@@ -1602,6 +1611,8 @@ function TransactionsPanel({
   onToggleExcludeTransfer,
   filterScope,
   onScopeChange,
+  sumsIncludeExcluded,
+  onClearSumsIncludeExcluded,
   onClearDates,
   accounts,
   leafTargets,
@@ -1642,6 +1653,9 @@ function TransactionsPanel({
   onToggleExcludeTransfer: (next: boolean) => void
   filterScope: 'all' | 'included' | 'excluded'
   onScopeChange: (next: 'all' | 'included' | 'excluded') => void
+  /** 요약 합계에 분석 제외 포함 중(현금흐름 토글 on 딥링크). */
+  sumsIncludeExcluded: boolean
+  onClearSumsIncludeExcluded: () => void
   onClearDates: () => void
   sort: { field: TxnSortField; order: 'asc' | 'desc' }
   onSort: (field: TxnSortField) => void
@@ -1882,6 +1896,19 @@ function TransactionsPanel({
             총 {total.toLocaleString('ko-KR')}건
             <InfoHint content="분석 제외로 지정한 거래와 이체는 합계에서 빠집니다. 「분석: 분석 제외」를 고르면 분석 제외 거래 합계를 봅니다." />
           </span>
+          {sumsIncludeExcluded && (
+            <span className="inline-flex items-center gap-0.5 rounded-full border border-border bg-muted px-1.5 py-0 text-[10px] text-muted-foreground">
+              분석 제외 포함 합계
+              <button
+                type="button"
+                onClick={onClearSumsIncludeExcluded}
+                aria-label="분석 제외 포함 해제"
+                className="ml-0.5 rounded-full hover:bg-background"
+              >
+                <X className="size-2.5" />
+              </button>
+            </span>
+          )}
           <span className="text-emerald-700 dark:text-emerald-400">
             수입 {formatWon(summary.incomeTotal)}
           </span>
