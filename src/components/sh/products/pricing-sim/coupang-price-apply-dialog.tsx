@@ -1,13 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -26,11 +25,24 @@ import {
 } from '@/components/ui/table'
 import type { PreviewTarget } from '@/lib/sh/coupang-price/build-targets'
 import type { PriceRow } from '@/lib/sh/coupang-price/listing-derive'
-import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
-import { APPROVALS_PATH } from '@/lib/deck-routes'
+import { SELLER_HUB_COUPANG_MATCHING_PATH } from '@/lib/deck-routes'
 import { wingListingUrl } from '@/lib/coupang/wing-link'
 
 import { CoupangItemPickerDialog } from './coupang-item-picker-dialog'
+
+type JobView = {
+  id: string
+  status: 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'PARTIAL' | 'FAILED'
+  results: Array<{ listingId: string; vendorItemId: string; ok: boolean; error: string | null }> | null
+  error: string | null
+  createdAt: string
+  executedAt: string | null
+  targets: Array<{ listingId: string; listingName: string; targetPrice: number; apMinSalePrice: number }>
+}
+
+const POLL_MS = 2_000
+const POLL_LIMIT_MS = 3 * 60_000
+const isDone = (s: JobView['status']) => s === 'SUCCEEDED' || s === 'PARTIAL' || s === 'FAILED'
 
 function fmt(n: number): string {
   return Math.round(n).toLocaleString('ko-KR')
@@ -87,7 +99,6 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   const [targets, setTargets] = useState<PreviewTarget[]>([])
   const [ambiguous, setAmbiguous] = useState<PreviewResponse['ambiguous']>([])
   const [unmatched, setUnmatched] = useState<PreviewResponse['unmatched']>([])
-  const [apActive, setApActive] = useState(true)
   const [pickerListing, setPickerListing] = useState<{ id: string; name: string } | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -126,7 +137,6 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
 
   useEffect(() => {
     if (target) {
-      setApActive(true)
       void loadPreview(target)
     } else {
       setTargets([])
@@ -135,61 +145,70 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
     }
   }, [target, loadPreview])
 
-  async function handleSubmit() {
-    if (!target) return
-    const writable = targets.filter((t) => t.blockedReason == null)
-    if (writable.length === 0) {
-      toast.error('반영 가능한 대상이 없습니다')
+  const [job, setJob] = useState<JobView | null>(null)
+  const [pollStartedAt, setPollStartedAt] = useState<number | null>(null)
+
+  const fetchLatestJob = useCallback(async (channelId: string): Promise<JobView | null> => {
+    const res = await fetch(`/api/sh/coupang-price/jobs?channelId=${encodeURIComponent(channelId)}`)
+    const data = await res.json().catch(() => ({}))
+    return res.ok ? ((data as { job: JobView | null }).job ?? null) : null
+  }, [])
+
+  // 열 때 미리보기와 함께 이 채널의 최근 반영 결과를 불러온다(닫은 사이 끝난 결과 확인용).
+  useEffect(() => {
+    if (!target) {
+      setJob(null)
+      setPollStartedAt(null)
       return
     }
+    void fetchLatestJob(target.channelId).then((j) => {
+      setJob(j)
+      if (j && !isDone(j.status)) setPollStartedAt(Date.now())
+    })
+  }, [target, fetchLatestJob])
+
+  // 진행 중이면 2초 간격 폴링, 3분에서 멈춘다(워커 중단 의심 안내).
+  useEffect(() => {
+    if (!target || !job || isDone(job.status) || pollStartedAt == null) return
+    if (Date.now() - pollStartedAt > POLL_LIMIT_MS) return
+    const t = setTimeout(async () => {
+      const next = await fetchLatestJob(target.channelId)
+      if (next) setJob(next)
+      if (next && isDone(next.status)) void loadPreview(target)
+    }, POLL_MS)
+    return () => clearTimeout(t)
+  }, [target, job, pollStartedAt, fetchLatestJob, loadPreview])
+
+  const pollTimedOut =
+    job != null && !isDone(job.status) && pollStartedAt != null && Date.now() - pollStartedAt > POLL_LIMIT_MS
+
+  async function handleSubmit() {
+    if (!target) return
     setSubmitting(true)
     try {
-      const channelAxis =
-        target.externalSource === EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH ? 'RG' : 'MP'
-      const res = await fetch('/api/agent/actions', {
+      const res = await fetch('/api/sh/coupang-price/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          actionType: 'seller-hub.coupang-price.change',
-          summary: `${target.channelName} 쿠팡 판매가 반영 — ${writable.length}개 옵션 ₩${fmt(writable[0].targetPrice)}`,
-          params: {
-            channelAxis,
-            channelId: target.channelId,
-            apActive,
-            targets: writable.map((t) => ({
-              listingId: t.listingId,
-              vendorItemId: t.vendorItemId,
-              listingName: t.listingName,
-              currentPrice: t.currentPrice,
-              targetPrice: t.targetPrice,
-              apMinSalePrice: t.apMinSalePrice,
-            })),
-            rationale: {
-              costPrice: target.costPrice,
-              channelFeePct: target.channelFeePct,
-              shippingCost: target.shippingCost,
-              targetMargin: target.targetMargin,
-              computedMargin: target.computedMargin,
-              discountRate: target.discountRate,
-              promotionLabel: target.promotionLabel,
-              includeVat: target.includeVat,
-              vatRate: target.vatRate,
-            },
-          },
+          channelId: target.channelId,
+          rows: target.rows,
+          salePrice: target.salePrice,
+          minMarginPrice: target.minMarginPrice,
+          includeVat: target.includeVat,
         }),
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.message ?? data?.error ?? '승인 요청 생성 실패')
-      toast.success('승인 대기에 등록했습니다', {
-        action: { label: '승인 큐 보기', onClick: () => window.open(APPROVALS_PATH, '_blank') },
-      })
-      onOpenChange(false)
+      if (!res.ok) throw new Error(data?.message ?? `반영 요청 실패 (HTTP ${res.status})`)
+      setJob(await fetchLatestJob(target.channelId))
+      setPollStartedAt(Date.now())
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : '승인 요청 생성 실패')
+      toast.error(err instanceof Error ? err.message : '반영 요청 실패')
     } finally {
       setSubmitting(false)
     }
   }
+
+  const inFlight = job != null && !isDone(job.status) && !pollTimedOut
 
   const writableCount = targets.filter((t) => t.blockedReason == null).length
 
@@ -201,7 +220,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
             <DialogTitle>쿠팡 판매가 반영</DialogTitle>
             <DialogDescription>
               {target?.channelName} 채널에 {target && target.rows.length > 1 ? '세트' : '옵션'} 가격을
-              반영합니다. 승인 큐에 등록되며, 실제 반영은 승인 후 워커가 실행합니다.
+              반영합니다. 확인하면 바로 쿠팡에 반영됩니다(보통 1분 안).
             </DialogDescription>
           </DialogHeader>
 
@@ -216,22 +235,16 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
             </div>
           )}
 
-          <div className="rounded-md border bg-muted/30 px-3 py-2.5">
-            <label className="flex items-start gap-2 text-sm">
-              <Checkbox checked={apActive} onCheckedChange={(v) => setApActive(!!v)} />
-              <span>
-                <span className="font-medium">자동 가격조정 유지</span>
-                <span className="ml-2 text-muted-foreground tabular-nums">
-                  최저가 ₩{target ? fmt(target.minMarginPrice) : 0} (최소마진{' '}
-                  {target ? (target.minMarginPct * 100).toFixed(0) : 0}% 기준)
-                </span>
-                <p className="mt-1 flex items-start gap-1 text-xs text-amber-700">
-                  <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
-                  쿠팡은 이 옵션의 현재 자동조정 상태를 알려주지 않습니다. 체크를 해제하면
-                  자동조정이 꺼집니다.
-                </p>
-              </span>
-            </label>
+          <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm">
+            <span className="font-medium">자동 가격조정 켜짐</span>
+            <span className="ml-2 text-muted-foreground">
+              최저가는 최소마진 {target ? (target.minMarginPct * 100).toFixed(0) : 0}% 기준으로
+              옵션마다 설정됩니다
+            </span>
+            <p className="mt-1 flex items-start gap-1 text-xs text-amber-700">
+              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+              꺼져 있던 옵션도 자동조정이 켜지고, Wing 에서 정한 최저가는 아래 값으로 바뀝니다.
+            </p>
           </div>
 
           {unmatched.length > 0 && (
@@ -248,6 +261,10 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
             </div>
           )}
 
+          <Link href={SELLER_HUB_COUPANG_MATCHING_PATH} className="text-xs text-muted-foreground underline">
+            쿠팡 상품 매칭 관리
+          </Link>
+
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -255,6 +272,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                   <TableHead>리스팅명</TableHead>
                   <TableHead className="text-right">현재가</TableHead>
                   <TableHead className="text-right">목표가</TableHead>
+                  <TableHead className="text-right">자동조정 최저가</TableHead>
                   <TableHead className="text-right">Δ%</TableHead>
                   <TableHead>스냅샷</TableHead>
                   <TableHead />
@@ -264,7 +282,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                 {loading ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className="py-8 text-center text-sm text-muted-foreground"
                     >
                       불러오는 중...
@@ -273,7 +291,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                 ) : targets.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className="py-8 text-center text-sm text-muted-foreground"
                     >
                       대상이 없습니다
@@ -307,6 +325,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                       <TableCell className="text-right tabular-nums">
                         ₩{fmt(t.targetPrice)}
                       </TableCell>
+                      <TableCell className="text-right tabular-nums">₩{fmt(t.apMinSalePrice)}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         {t.deltaPct != null ? `${(t.deltaPct * 100).toFixed(1)}%` : '—'}
                       </TableCell>
@@ -342,17 +361,47 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
             </Table>
           </div>
 
+          {job && (
+            <div className="rounded-md border px-3 py-2 text-sm">
+              <p className="font-medium">
+                {inFlight
+                  ? '쿠팡에 반영 중…'
+                  : pollTimedOut
+                    ? '워커가 아직 처리하지 않았습니다 — 워커가 멈췄을 수 있습니다'
+                    : job.status === 'SUCCEEDED'
+                      ? '최근 반영: 모두 성공'
+                      : job.status === 'PARTIAL'
+                        ? '최근 반영: 일부 실패'
+                        : '최근 반영: 실패'}
+                <span className="ml-2 text-xs text-muted-foreground">
+                  {new Date(job.createdAt).toLocaleString('ko-KR')}
+                </span>
+              </p>
+              {job.error && <p className="mt-1 text-xs text-destructive">{job.error}</p>}
+              {job.results && (
+                <ul className="mt-1 space-y-0.5 text-xs">
+                  {job.results.map((r) => {
+                    const t = job.targets.find((x) => x.listingId === r.listingId)
+                    return (
+                      <li key={r.listingId} className={r.ok ? 'text-emerald-700' : 'text-destructive'}>
+                        {t?.listingName ?? r.listingId} —{' '}
+                        {r.ok ? `₩${fmt(t?.targetPrice ?? 0)} 반영` : `실패: ${r.error ?? '알 수 없음'}`}
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
               취소
             </Button>
-            <Button onClick={handleSubmit} disabled={submitting || loading || writableCount === 0}>
-              {submitting ? '등록 중...' : `승인 요청 (${writableCount}개)`}
+            <Button onClick={handleSubmit} disabled={submitting || loading || inFlight || writableCount === 0}>
+              {submitting ? '요청 중...' : inFlight ? '반영 중...' : `쿠팡에 반영 (${writableCount}개)`}
             </Button>
           </DialogFooter>
-          <Link href={APPROVALS_PATH} className="text-xs text-muted-foreground underline">
-            승인 큐 바로가기
-          </Link>
         </DialogContent>
       </Dialog>
 
