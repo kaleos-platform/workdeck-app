@@ -7,6 +7,14 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Table,
   TableBody,
   TableCell,
@@ -15,7 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { wingListingUrl } from '@/lib/coupang/wing-link'
-import type { MatchingRow } from '@/lib/sh/coupang-price/load-matching'
+import type { MatchingListing, MatchingRow } from '@/lib/sh/coupang-price/load-matching'
 import type { MatchStatus } from '@/lib/sh/coupang-price/match-candidates'
 
 const STATUS_LABEL: Record<MatchStatus, string> = {
@@ -54,10 +62,72 @@ const SYNC_POLL_MS = 5_000
 // 상품 API 수집은 실측 약 1.5분(55상품) — 넉넉히 5분.
 const SYNC_POLL_LIMIT_MS = 5 * 60_000
 
+const won = (n: number | null) => (n == null ? '—' : `₩${n.toLocaleString('ko-KR')}`)
+
+/** 쿠팡 옵션 쪽 — 상품명(재고 기준) + 옵션명 + 옵션 ID */
+function CoupangItemLabel({ r }: { r: MatchingRow }) {
+  return (
+    <>
+      <span className="flex items-center gap-1 font-medium">
+        {r.productName ?? r.itemName ?? r.sellerProductId}
+        <a
+          href={wingListingUrl(r.sellerProductId)}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="쿠팡 Wing에서 보기"
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      </span>
+      {r.productName && r.itemName && <span className="block text-sm">옵션: {r.itemName}</span>}
+      <span className="block text-xs text-muted-foreground">
+        RG {r.rgVendorItemId ?? '—'} · 판매자배송 {r.mpVendorItemId ?? '—'}
+      </span>
+    </>
+  )
+}
+
+/** 판매채널 상품 쪽 — 확정 전에 대조할 이름·구성·판매가·근거 */
+function ListingCard({
+  listing,
+  basisSku,
+  action,
+}: {
+  listing: MatchingListing
+  basisSku?: string | null
+  action?: React.ReactNode
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-md border bg-muted/20 px-3 py-2">
+      <div className="min-w-0 flex-1 space-y-0.5 text-sm">
+        <p className="font-medium">{listing.name}</p>
+        <p className="text-xs">
+          구성:{' '}
+          {listing.composition.length > 0
+            ? listing.composition.map((c) => `${c.label} ×${c.quantity}`).join(' + ')
+            : '—'}
+          <span className="ml-2 text-muted-foreground">
+            워크덱 판매가 {won(listing.retailPrice)}
+          </span>
+        </p>
+        {basisSku && (
+          <p className="text-xs text-muted-foreground">
+            근거: 재고 매핑 SKU {basisSku} 의 구성과 일치
+          </p>
+        )}
+      </div>
+      {action}
+    </div>
+  )
+}
+
 export function CoupangMatchingView() {
   const [rows, setRows] = useState<MatchingRow[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  // 일괄 확정 전 확인 팝업 — 열 때의 목록을 고정해, 보는 목록과 확정되는 목록이 어긋나지 않게 한다.
+  const [bulkRows, setBulkRows] = useState<MatchingRow[] | null>(null)
   // 진행 중인 쿠팡 상품 불러오기(워커 잡) id — 끝나면 목록을 자동으로 다시 조회한다.
   // 불리언이 아니라 id 로 들고 있어야 이전 잡의 결과를 새 잡으로 착각하지 않는다.
   const [syncJobId, setSyncJobId] = useState<string | null>(null)
@@ -147,7 +217,9 @@ export function CoupangMatchingView() {
     return c
   }, [rows])
 
-  async function confirm(pairs: Array<{ coupangProductItemId: string; listingId: string }>) {
+  async function confirm(
+    pairs: Array<{ coupangProductItemId: string; listingId: string }>
+  ): Promise<boolean> {
     setBusy(true)
     try {
       const r = (await send('/api/sh/coupang-price/matching/confirm', 'POST', { pairs })) as {
@@ -159,8 +231,10 @@ export function CoupangMatchingView() {
       )
       if (r.skipped.length) toast.warning(r.skipped[0].reason)
       await load()
+      return true
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '확정 실패')
+      return false
     } finally {
       setBusy(false)
     }
@@ -191,9 +265,11 @@ export function CoupangMatchingView() {
     }
   }
 
-  const candidatePairs = rows
-    .filter((r) => r.status === 'CANDIDATE')
-    .map((r) => ({ coupangProductItemId: r.id, listingId: r.candidates[0].id }))
+  const candidateRows = rows.filter((r) => r.status === 'CANDIDATE' && r.candidates.length === 1)
+  const candidatePairs = candidateRows.map((r) => ({
+    coupangProductItemId: r.id,
+    listingId: r.candidates[0].id,
+  }))
 
   return (
     <div className="space-y-3">
@@ -211,7 +287,7 @@ export function CoupangMatchingView() {
           <Button
             size="sm"
             disabled={busy || candidatePairs.length === 0}
-            onClick={() => confirm(candidatePairs)}
+            onClick={() => setBulkRows(candidateRows)}
           >
             후보 {candidatePairs.length}건 일괄 확정
           </Button>
@@ -250,21 +326,7 @@ export function CoupangMatchingView() {
               rows.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="break-words whitespace-normal">
-                    <span className="flex items-center gap-1 font-medium">
-                      {r.itemName ?? r.sellerProductId}
-                      <a
-                        href={wingListingUrl(r.sellerProductId)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="쿠팡 Wing에서 보기"
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      RG {r.rgVendorItemId ?? '—'} · 판매자배송 {r.mpVendorItemId ?? '—'}
-                    </span>
+                    <CoupangItemLabel r={r} />
                   </TableCell>
                   <TableCell className="text-right text-sm tabular-nums">
                     {r.rgSalePrice?.toLocaleString('ko-KR') ?? '—'} /{' '}
@@ -277,29 +339,45 @@ export function CoupangMatchingView() {
                   </TableCell>
                   <TableCell className="text-sm break-words whitespace-normal">
                     {r.listing ? (
-                      <>
-                        {r.listing.name}
+                      <div className="space-y-1">
+                        <ListingCard listing={r.listing} />
                         {r.status === 'NEEDS_REVIEW' && r.candidates[0] && (
+                          <>
+                            <p className="text-xs text-amber-700">
+                              재고 매핑 기준으로는 아래 상품이 맞습니다 — 확인 후 연결을 해제하고
+                              다시 확정하세요
+                            </p>
+                            <ListingCard listing={r.candidates[0]} basisSku={r.basisSku} />
+                          </>
+                        )}
+                      </div>
+                    ) : r.candidates.length > 0 ? (
+                      <div className="space-y-1">
+                        {r.status === 'AMBIGUOUS' && (
                           <p className="text-xs text-amber-700">
-                            재고 매핑 기준 후보: {r.candidates[0].name}
+                            같은 구성의 판매채널 상품이 여러 개이거나 다른 쿠팡 옵션도 이 상품을
+                            가리킵니다 — 맞는 것을 골라 확정하세요
                           </p>
                         )}
-                      </>
-                    ) : r.candidates.length > 0 ? (
-                      <div className="flex flex-col gap-1">
                         {r.candidates.map((c) => (
-                          <Button
+                          <ListingCard
                             key={c.id}
-                            size="sm"
-                            variant="ghost"
-                            className="h-auto justify-start px-1 py-0.5 text-left text-xs whitespace-normal"
-                            disabled={busy}
-                            onClick={() =>
-                              confirm([{ coupangProductItemId: r.id, listingId: c.id }])
+                            listing={c}
+                            basisSku={r.basisSku}
+                            action={
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 shrink-0 text-xs"
+                                disabled={busy}
+                                onClick={() =>
+                                  confirm([{ coupangProductItemId: r.id, listingId: c.id }])
+                                }
+                              >
+                                확정
+                              </Button>
                             }
-                          >
-                            {c.name} — 이걸로 확정
-                          </Button>
+                          />
                         ))}
                       </div>
                     ) : (
@@ -327,6 +405,60 @@ export function CoupangMatchingView() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={bulkRows != null} onOpenChange={(v) => !busy && !v && setBulkRows(null)}>
+        <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>후보 {bulkRows?.length ?? 0}건 일괄 확정</DialogTitle>
+            <DialogDescription>
+              아래 쿠팡 옵션과 판매채널 상품을 연결합니다. 연결된 상품은 가격시뮬에서 쿠팡 판매가로
+              반영할 때 이 쿠팡 옵션에 가격이 쓰입니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-md border">
+            <Table className="table-fixed">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40%]">쿠팡 옵션</TableHead>
+                  <TableHead>판매채널 상품</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(bulkRows ?? []).map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="break-words whitespace-normal">
+                      <CoupangItemLabel r={r} />
+                    </TableCell>
+                    <TableCell className="break-words whitespace-normal">
+                      <ListingCard listing={r.candidates[0]} basisSku={r.basisSku} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" disabled={busy} onClick={() => setBulkRows(null)}>
+              취소
+            </Button>
+            <Button
+              disabled={busy || !bulkRows?.length}
+              onClick={async () => {
+                if (!bulkRows) return
+                const ok = await confirm(
+                  bulkRows.map((r) => ({
+                    coupangProductItemId: r.id,
+                    listingId: r.candidates[0].id,
+                  }))
+                )
+                if (ok) setBulkRows(null)
+              }}
+            >
+              {busy ? '확정 중...' : `${bulkRows?.length ?? 0}건 확정`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
