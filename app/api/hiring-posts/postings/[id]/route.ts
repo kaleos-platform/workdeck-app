@@ -24,7 +24,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 // 기본 정보 수정
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 
@@ -66,7 +66,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 // 공고 삭제
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
 
   const roleError = assertRole(resolved.role, 'ADMIN')

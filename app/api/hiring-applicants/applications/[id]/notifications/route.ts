@@ -12,7 +12,7 @@ type Params = { params: Promise<{ id: string }> }
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

@@ -31,7 +31,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 // 직무 추가
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

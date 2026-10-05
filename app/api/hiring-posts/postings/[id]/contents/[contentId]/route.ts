@@ -18,7 +18,7 @@ type Params = { params: Promise<{ id: string; contentId: string }> }
 // image 블록: body { imageBase64: string, mimeType?: string, sortOrder? }
 // contentType 별로 허용 필드가 다르며 상대방 필드를 보내면 400 반환.
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id, contentId } = await params
 
@@ -114,7 +114,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 // 콘텐츠 블록 삭제
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id, contentId } = await params
 

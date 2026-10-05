@@ -14,7 +14,7 @@ type Params = { params: Promise<{ id: string }> }
 
 // 공고 상태 전이: publish(발행) / close(마감) / reopen(재개) / archive(보관)
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

@@ -23,7 +23,7 @@ export async function GET() {
 
 // 공고 상세 블록을 템플릿으로 저장 (콘텐츠 복제)
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
 
   let body: unknown
