@@ -3549,6 +3549,8 @@ model FinStagedRow {
   approvalNo    String?
   cancelFlag    String?
   memo          String? // 사용자 메모 — 저장 처리 시 확정 거래로 이관
+  // 분석 제외 — 확인·처리 단계에서 미리 지정. 저장 처리 시 확정 거래로 이관(기존 거래엔 true 일 때만 반영).
+  excludeFromAnalysis Boolean @default(false)
   categoryId    String?
   classStatus   FinClassStatus      @default(UNCLASSIFIED)
   matchedRuleId String? // soft ref — 규칙 재학습/삭제 가능

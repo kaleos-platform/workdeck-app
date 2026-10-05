@@ -1780,6 +1780,7 @@ function TxnEditPopover({
 }) {
   const [categoryId, setCategoryId] = useState<string | null>(txn.categoryId)
   const [memo, setMemo] = useState(txn.memo ?? '')
+  const [excluded, setExcluded] = useState(txn.excludeFromAnalysis)
   // 규칙 저장은 명시적 선택만(기본 해제) — 일회성 분류가 규칙으로 굳어 다음 업로드를 오분류하지 않게.
   const [learn, setLearn] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -1788,19 +1789,26 @@ function TxnEditPopover({
   const normMemo = memo.trim() === '' ? null : memo.trim()
   const dirtyCategory = categoryId != null && categoryId !== txn.categoryId
   const dirtyMemo = normMemo !== (txn.memo ?? null)
-  const dirty = dirtyCategory || dirtyMemo
+  const dirtyExcluded = excluded !== txn.excludeFromAnalysis
+  const dirty = dirtyCategory || dirtyMemo || dirtyExcluded
 
   const save = async () => {
     if (!dirty) {
       onSaved()
       return
     }
-    const body: { categoryId?: string; memo?: string | null; learn?: boolean } = {}
+    const body: {
+      categoryId?: string
+      memo?: string | null
+      learn?: boolean
+      excludeFromAnalysis?: boolean
+    } = {}
     if (dirtyCategory && categoryId) {
       body.categoryId = categoryId
       body.learn = learn
     }
     if (dirtyMemo) body.memo = normMemo
+    if (dirtyExcluded) body.excludeFromAnalysis = excluded
     setSaving(true)
     try {
       const res = await fetch(`/api/finance/transactions/${txn.id}`, {
@@ -1874,6 +1882,19 @@ function TxnEditPopover({
           {memo.length}/{MEMO_MAX}
         </p>
       </div>
+      <label className="flex items-start gap-2 text-xs">
+        <Checkbox
+          checked={excluded}
+          onCheckedChange={(v) => setExcluded(v === true)}
+          className="mt-0.5"
+        />
+        <span>
+          분석 제외
+          <span className="block text-[11px] text-muted-foreground">
+            개인 목적·외부 계약 등 본 사업 외 거래 — 현금흐름·손익 집계에서 기본 제외됩니다
+          </span>
+        </span>
+      </label>
       <Button size="sm" className="w-full" onClick={() => void save()} disabled={saving || !dirty}>
         {saving ? '저장 중...' : '저장'}
       </Button>

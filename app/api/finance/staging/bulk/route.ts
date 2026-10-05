@@ -4,6 +4,7 @@
  *   - categoryId → CLASSIFIED + categoryId (일괄은 자동 학습 안 함 — 이질적 선택의 규칙 폭증 방지)
  *   - resolution → 중복 처리(NEW=유지, DUP_SAME=제외, DUP_CHANGED=자동반영, DUP_OVERWRITE=유지·덮어쓰기)
  *   - memo → 일괄 메모 설정(동일 적요 자동 적용 시 분류와 함께 전파)
+ *   - excludeFromAnalysis → 일괄 분석 제외 지정/해제(저장 처리 시 확정 거래로 이관)
  *   - action: 'delete' → 스테이징 행 물리 삭제(DRAFT 임포트 한정)
  * 보안: 서버에서 spaceId 스코프로만 갱신(클라이언트 id 신뢰 안 함).
  */
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
     matchedRuleId?: string | null
     resolution?: FinStagedResolution
     memo?: string | null
+    excludeFromAnalysis?: boolean
   } = {}
 
   if (typeof body?.categoryId === 'string' && body.categoryId) {
@@ -69,6 +71,10 @@ export async function POST(req: NextRequest) {
     if (!m.ok) return errorResponse(m.error, 400)
     data.memo = m.value ?? null
   }
+
+  // 분석 제외 — 저장 처리 시 확정 거래로 이관(staging/commit)
+  if (typeof body?.excludeFromAnalysis === 'boolean')
+    data.excludeFromAnalysis = body.excludeFromAnalysis
 
   if (Object.keys(data).length === 0) return errorResponse('변경할 내용이 없습니다', 400)
 
