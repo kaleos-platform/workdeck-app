@@ -677,77 +677,77 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
   )
 
   // ── 데이터 로드 ──
-  const [txns, accounts, snapshots, liabilities, repaymentTxns, contra] = await Promise.all([
-    prisma.finTransaction.findMany({
-      where: {
-        spaceId,
-        txnDate: { gte, lt },
-        ...(opts.includeExcluded ? {} : { excludeFromAnalysis: false }),
-      },
-      select: {
-        txnDate: true,
-        direction: true,
-        amount: true,
-        isTransfer: true,
-        cancelFlag: true,
-        categoryId: true,
-      },
-    }),
-    prisma.finAccount.findMany({
-      where: { spaceId },
-      select: {
-        id: true,
-        name: true,
-        kind: true,
-        institution: true,
-        accountNumber: true,
-        openingBalance: true,
-      },
-      orderBy: { createdAt: 'asc' },
-    }),
-    prisma.finBalanceSnapshot.findMany({
-      where: { spaceId },
-      select: { accountId: true, yearMonth: true, balance: true },
-      orderBy: { yearMonth: 'asc' },
-    }),
-    prisma.finLiability.findMany({
-      where: { spaceId },
-      select: {
-        id: true,
-        name: true,
-        lender: true,
-        principal: true,
-        balance: true,
-        rate: true,
-        dueDate: true,
-        monthlyPayment: true,
-        memo: true,
-        accountId: true,
-        balanceAsOf: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'asc' },
-    }),
-    // 부채에 연결된 상환 거래(감지용) — 링크된 것만이라 경량.
-    prisma.finTransaction.findMany({
-      where: { spaceId, liabilityId: { not: null } },
-      select: { liabilityId: true, amount: true, txnDate: true, direction: true },
-    }),
-    loadFixedSections(spaceId),
-  ])
-
   // 현재 기간에서 빠진 분석 제외 건수(이체 제외) — 잔액 변동과 수입−지출 불일치 안내용.
   const curRange = rangeBounds(curMonths[0], curEndYm)
-  const excludedCount = opts.includeExcluded
-    ? 0
-    : await prisma.finTransaction.count({
+  const [txns, accounts, snapshots, liabilities, repaymentTxns, contra, excludedCount] =
+    await Promise.all([
+      prisma.finTransaction.findMany({
         where: {
           spaceId,
-          isTransfer: false,
-          excludeFromAnalysis: true,
-          txnDate: { gte: curRange.gte, lt: curRange.lt },
+          txnDate: { gte, lt },
+          ...(opts.includeExcluded ? {} : { excludeFromAnalysis: false }),
         },
-      })
+        select: {
+          txnDate: true,
+          direction: true,
+          amount: true,
+          isTransfer: true,
+          cancelFlag: true,
+          categoryId: true,
+        },
+      }),
+      prisma.finAccount.findMany({
+        where: { spaceId },
+        select: {
+          id: true,
+          name: true,
+          kind: true,
+          institution: true,
+          accountNumber: true,
+          openingBalance: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.finBalanceSnapshot.findMany({
+        where: { spaceId },
+        select: { accountId: true, yearMonth: true, balance: true },
+        orderBy: { yearMonth: 'asc' },
+      }),
+      prisma.finLiability.findMany({
+        where: { spaceId },
+        select: {
+          id: true,
+          name: true,
+          lender: true,
+          principal: true,
+          balance: true,
+          rate: true,
+          dueDate: true,
+          monthlyPayment: true,
+          memo: true,
+          accountId: true,
+          balanceAsOf: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      // 부채에 연결된 상환 거래(감지용) — 링크된 것만이라 경량.
+      prisma.finTransaction.findMany({
+        where: { spaceId, liabilityId: { not: null } },
+        select: { liabilityId: true, amount: true, txnDate: true, direction: true },
+      }),
+      loadFixedSections(spaceId),
+      opts.includeExcluded
+        ? Promise.resolve(0)
+        : prisma.finTransaction.count({
+            where: {
+              spaceId,
+              isTransfer: false,
+              excludeFromAnalysis: true,
+              txnDate: { gte: curRange.gte, lt: curRange.lt },
+            },
+          }),
+    ])
 
   const rows: AggRow[] = txns.map((t) => ({
     txnDate: t.txnDate,
