@@ -40,7 +40,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 // 템플릿 이름 변경
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 
@@ -70,7 +70,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 // 템플릿 삭제
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

@@ -6,7 +6,7 @@ type Params = { params: Promise<{ id: string }> }
 
 // 공고 복사 — DRAFT 상태로 새 공고 생성 (마감일 제외)
 export async function POST(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

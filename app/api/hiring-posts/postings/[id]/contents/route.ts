@@ -29,7 +29,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 // body: { contentType: 'image'|'text', sortOrder? }
 // 생성 직후 data=null; text는 PATCH로 Tiptap JSON 저장, image는 PATCH로 이미지 업로드
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 
@@ -89,7 +89,7 @@ const reorderSchema = z
 
 // 전체 순서를 한 트랜잭션으로 변경해 두 카드 중 하나만 저장되는 상태를 방지한다.
 export async function PUT(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
   const posting = await prisma.hiringPosting.findFirst({

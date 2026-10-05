@@ -31,7 +31,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
 // 공고 매장 연결 전체 교체 (set semantics)
 export async function PUT(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
   const { id } = await params
 

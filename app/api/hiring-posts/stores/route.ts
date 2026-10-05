@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
 // 매장 기준정보 생성
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('recruiting')
+  const resolved = await resolveDeckContext('recruiting', { write: true })
   if ('error' in resolved) return resolved.error
 
   let body: unknown
