@@ -30,6 +30,7 @@ export function getSellerHubPricingScenarioPath(id: string) {
 }
 export const SELLER_HUB_LISTINGS_PATH = `${SELLER_HUB_BASE_PATH}/products/listings`
 export const SELLER_HUB_LISTING_NEW_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/new`
+export const SELLER_HUB_COUPANG_MATCHING_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/coupang-matching`
 export const SELLER_HUB_KEYWORDS_PATH = `${SELLER_HUB_BASE_PATH}/products/keywords`
 /** 상품명 작성 SOP 위저드 (가이드 §22) */
 export const SELLER_HUB_NAMING_SOP_PATH = `${SELLER_HUB_BASE_PATH}/products/listings/naming-sop`

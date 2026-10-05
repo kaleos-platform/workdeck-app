@@ -73,6 +73,8 @@ export const ModelName = {
   CoupangCredential: 'CoupangCredential',
   CoupangApiCredential: 'CoupangApiCredential',
   CoupangSourceSetting: 'CoupangSourceSetting',
+  CoupangProductItem: 'CoupangProductItem',
+  CoupangWriteJob: 'CoupangWriteJob',
   CollectionSchedule: 'CollectionSchedule',
   CoupangBackfillJob: 'CoupangBackfillJob',
   CollectionRun: 'CollectionRun',
@@ -544,6 +546,47 @@ export const CoupangSourceSettingScalarFieldEnum = {
 } as const
 
 export type CoupangSourceSettingScalarFieldEnum = (typeof CoupangSourceSettingScalarFieldEnum)[keyof typeof CoupangSourceSettingScalarFieldEnum]
+
+
+export const CoupangProductItemScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  sellerProductId: 'sellerProductId',
+  itemName: 'itemName',
+  rgVendorItemId: 'rgVendorItemId',
+  rgSalePrice: 'rgSalePrice',
+  mpVendorItemId: 'mpVendorItemId',
+  mpSalePrice: 'mpSalePrice',
+  barcode: 'barcode',
+  skuInfo: 'skuInfo',
+  statusName: 'statusName',
+  listingId: 'listingId',
+  collectedAt: 'collectedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CoupangProductItemScalarFieldEnum = (typeof CoupangProductItemScalarFieldEnum)[keyof typeof CoupangProductItemScalarFieldEnum]
+
+
+export const CoupangWriteJobScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  spaceId: 'spaceId',
+  actionId: 'actionId',
+  kind: 'kind',
+  status: 'status',
+  payload: 'payload',
+  results: 'results',
+  error: 'error',
+  attempts: 'attempts',
+  claimedAt: 'claimedAt',
+  executedAt: 'executedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CoupangWriteJobScalarFieldEnum = (typeof CoupangWriteJobScalarFieldEnum)[keyof typeof CoupangWriteJobScalarFieldEnum]
 
 
 export const CollectionScheduleScalarFieldEnum = {

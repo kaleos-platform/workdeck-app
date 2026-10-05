@@ -193,6 +193,25 @@ export const CoupangDataSource = {
 export type CoupangDataSource = (typeof CoupangDataSource)[keyof typeof CoupangDataSource]
 
 
+export const CoupangWriteJobKind = {
+  PRICE_CHANGE: 'PRICE_CHANGE',
+  PRODUCT_SYNC: 'PRODUCT_SYNC'
+} as const
+
+export type CoupangWriteJobKind = (typeof CoupangWriteJobKind)[keyof typeof CoupangWriteJobKind]
+
+
+export const CoupangWriteJobStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  SUCCEEDED: 'SUCCEEDED',
+  PARTIAL: 'PARTIAL',
+  FAILED: 'FAILED'
+} as const
+
+export type CoupangWriteJobStatus = (typeof CoupangWriteJobStatus)[keyof typeof CoupangWriteJobStatus]
+
+
 export const CoupangBackfillStatus = {
   PENDING: 'PENDING',
   RUNNING: 'RUNNING',
