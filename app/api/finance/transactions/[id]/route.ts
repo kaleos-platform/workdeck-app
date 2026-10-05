@@ -1,7 +1,7 @@
 /**
  * PATCH /api/finance/transactions/[id]
  * 확정 거래의 계정과목을 재분류한다(+ 규칙 학습). isTransfer 토글·메모 수정 지원.
- *   body: { categoryId?, learn?(기본 true), isTransfer?, memo? }
+ *   body: { categoryId?, learn?(기본 true), isTransfer?, excludeFromAnalysis?, memo? }
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
@@ -27,6 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     classStatus?: 'CLASSIFIED'
     matchedRuleId?: string | null
     isTransfer?: boolean
+    excludeFromAnalysis?: boolean
     liabilityId?: string | null
     memo?: string | null
   } = {}
@@ -66,6 +67,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   if (typeof body?.isTransfer === 'boolean') data.isTransfer = body.isTransfer
+  // 분석 제외 — 계정과목과 독립(재분류가 건드리지 않음)
+  if (typeof body?.excludeFromAnalysis === 'boolean')
+    data.excludeFromAnalysis = body.excludeFromAnalysis
 
   // 메모
   if (body?.memo !== undefined) {
@@ -84,6 +88,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       categoryId: true,
       classStatus: true,
       isTransfer: true,
+      excludeFromAnalysis: true,
       matchedRuleId: true,
       liabilityId: true,
       memo: true,

@@ -93,6 +93,13 @@ export interface QueryTransactionsOptions {
    */
   expandCategory?: boolean
   excludeTransfer?: boolean
+  /** 분석 제외 행 범위 — all(기본)=전부, included=분석 대상만, excluded=분석 제외만. */
+  scope?: 'all' | 'included' | 'excluded' | null
+  /**
+   * 요약 합계에 분석 제외 거래를 포함(현금흐름 토글 on 에서 온 드릴다운). 기본 false —
+   * 요약은 현금흐름 기본 정의(분석 제외 빼고)와 일치시킨다. scope=excluded 면 자동 포함.
+   */
+  includeExcluded?: boolean
   q?: string | null
   take: number
   skip: number
@@ -184,6 +191,11 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
     spaceId,
     ...(opts.accountId ? { accountId: opts.accountId } : {}),
     ...(opts.excludeTransfer === true ? { isTransfer: false } : {}),
+    ...(opts.scope === 'included'
+      ? { excludeFromAnalysis: false }
+      : opts.scope === 'excluded'
+        ? { excludeFromAnalysis: true }
+        : {}),
     ...(classStatus === 'CLASSIFIED' || classStatus === 'REVIEW' || classStatus === 'UNCLASSIFIED'
       ? { classStatus }
       : {}),
@@ -230,8 +242,14 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
   }
 
   // 요약 집계(incomeTotal/expenseTotal)는 이체를 제외한다 — 대시보드·현금흐름과 정의 일치.
+  // 분석 제외도 기본 제외(현금흐름 기본값과 일치). 분석 제외만 보는 중이거나 포함 토글이면 유지.
   // 행 목록(where)은 변경 없이 이체 행을 계속 표시하며, excludeTransfer=1 파라미터로 별도 제어.
-  const sumWhere = { ...where, isTransfer: false }
+  const keepExcludedInSums = opts.scope === 'excluded' || opts.includeExcluded === true
+  const sumWhere = {
+    ...where,
+    isTransfer: false,
+    ...(keepExcludedInSums ? {} : { excludeFromAnalysis: false }),
+  }
 
   const [rows, total, sums] = await Promise.all([
     prisma.finTransaction.findMany({
@@ -252,6 +270,7 @@ export async function queryTransactions(spaceId: string, opts: QueryTransactions
         approvalNo: true,
         cancelFlag: true,
         isTransfer: true,
+        excludeFromAnalysis: true,
         classStatus: true,
         matchedRuleId: true,
         categoryId: true,
@@ -306,6 +325,8 @@ export interface QueryCashflowOptions {
   periods?: string[]
   /** 계산에서 제외할 계정과목(리프) id — 표·손익 지표 모두에서 빠진다. */
   exclude?: string[]
+  /** 분석 제외 거래 포함 여부. 기본 false(제외). 계정과목 제외(exclude)와 별개 — 거래 단위. */
+  includeExcluded?: boolean
 }
 
 export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions) {
@@ -325,7 +346,11 @@ export async function queryCashflow(spaceId: string, opts: QueryCashflowOptions)
 
   const [txns, categories] = await Promise.all([
     prisma.finTransaction.findMany({
-      where: { spaceId, txnDate: { gte, lt } },
+      where: {
+        spaceId,
+        txnDate: { gte, lt },
+        ...(opts.includeExcluded ? {} : { excludeFromAnalysis: false }),
+      },
       select: {
         txnDate: true,
         direction: true,
@@ -590,6 +615,8 @@ export async function queryAccounts(spaceId: string) {
 export interface QueryDashboardOptions {
   period: 'month' | 'quarter' | 'year'
   anchor?: string | null
+  /** 분석 제외 거래 포함 여부. 기본 false(제외). 잔액·부채·상환 감지에는 영향 없음. */
+  includeExcluded?: boolean
 }
 
 export async function queryDashboard(spaceId: string, opts: QueryDashboardOptions) {
@@ -650,60 +677,77 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
   )
 
   // ── 데이터 로드 ──
-  const [txns, accounts, snapshots, liabilities, repaymentTxns, contra] = await Promise.all([
-    prisma.finTransaction.findMany({
-      where: { spaceId, txnDate: { gte, lt } },
-      select: {
-        txnDate: true,
-        direction: true,
-        amount: true,
-        isTransfer: true,
-        cancelFlag: true,
-        categoryId: true,
-      },
-    }),
-    prisma.finAccount.findMany({
-      where: { spaceId },
-      select: {
-        id: true,
-        name: true,
-        kind: true,
-        institution: true,
-        accountNumber: true,
-        openingBalance: true,
-      },
-      orderBy: { createdAt: 'asc' },
-    }),
-    prisma.finBalanceSnapshot.findMany({
-      where: { spaceId },
-      select: { accountId: true, yearMonth: true, balance: true },
-      orderBy: { yearMonth: 'asc' },
-    }),
-    prisma.finLiability.findMany({
-      where: { spaceId },
-      select: {
-        id: true,
-        name: true,
-        lender: true,
-        principal: true,
-        balance: true,
-        rate: true,
-        dueDate: true,
-        monthlyPayment: true,
-        memo: true,
-        accountId: true,
-        balanceAsOf: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'asc' },
-    }),
-    // 부채에 연결된 상환 거래(감지용) — 링크된 것만이라 경량.
-    prisma.finTransaction.findMany({
-      where: { spaceId, liabilityId: { not: null } },
-      select: { liabilityId: true, amount: true, txnDate: true, direction: true },
-    }),
-    loadFixedSections(spaceId),
-  ])
+  // 현재 기간에서 빠진 분석 제외 건수(이체 제외) — 잔액 변동과 수입−지출 불일치 안내용.
+  const curRange = rangeBounds(curMonths[0], curEndYm)
+  const [txns, accounts, snapshots, liabilities, repaymentTxns, contra, excludedCount] =
+    await Promise.all([
+      prisma.finTransaction.findMany({
+        where: {
+          spaceId,
+          txnDate: { gte, lt },
+          ...(opts.includeExcluded ? {} : { excludeFromAnalysis: false }),
+        },
+        select: {
+          txnDate: true,
+          direction: true,
+          amount: true,
+          isTransfer: true,
+          cancelFlag: true,
+          categoryId: true,
+        },
+      }),
+      prisma.finAccount.findMany({
+        where: { spaceId },
+        select: {
+          id: true,
+          name: true,
+          kind: true,
+          institution: true,
+          accountNumber: true,
+          openingBalance: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.finBalanceSnapshot.findMany({
+        where: { spaceId },
+        select: { accountId: true, yearMonth: true, balance: true },
+        orderBy: { yearMonth: 'asc' },
+      }),
+      prisma.finLiability.findMany({
+        where: { spaceId },
+        select: {
+          id: true,
+          name: true,
+          lender: true,
+          principal: true,
+          balance: true,
+          rate: true,
+          dueDate: true,
+          monthlyPayment: true,
+          memo: true,
+          accountId: true,
+          balanceAsOf: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      // 부채에 연결된 상환 거래(감지용) — 링크된 것만이라 경량.
+      prisma.finTransaction.findMany({
+        where: { spaceId, liabilityId: { not: null } },
+        select: { liabilityId: true, amount: true, txnDate: true, direction: true },
+      }),
+      loadFixedSections(spaceId),
+      opts.includeExcluded
+        ? Promise.resolve(0)
+        : prisma.finTransaction.count({
+            where: {
+              spaceId,
+              isTransfer: false,
+              excludeFromAnalysis: true,
+              txnDate: { gte: curRange.gte, lt: curRange.lt },
+            },
+          }),
+    ])
 
   const rows: AggRow[] = txns.map((t) => ({
     txnDate: t.txnDate,
@@ -861,5 +905,6 @@ export async function queryDashboard(spaceId: string, opts: QueryDashboardOption
     accountSnapshots,
     expenseTop,
     liabilities: liabilityList,
+    excludedCount,
   }
 }

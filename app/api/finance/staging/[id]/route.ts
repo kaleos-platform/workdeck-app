@@ -3,6 +3,7 @@
  * 스테이징 행의 분류/중복 처리를 갱신한다.
  *   - categoryId 지정 → 분류 확정(CLASSIFIED). learn !== false 면 EXACT 규칙 학습(동일 적요 자동분류).
  *   - resolution 지정 → 중복 처리(NEW=유지/반영, DUP_SAME=제외, DUP_CHANGED=자동반영, DUP_OVERWRITE=유지·덮어쓰기).
+ *   - excludeFromAnalysis 지정 → 분석 제외 지정/해제(저장 처리 시 확정 거래로 이관).
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
@@ -38,6 +39,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     matchedRuleId?: string | null
     resolution?: FinStagedResolution
     memo?: string | null
+    excludeFromAnalysis?: boolean
   } = {}
 
   // 메모 — 저장 처리 시 확정 거래로 이관. 규칙 학습(learnRule)이 정규화된 memo를 함께
@@ -84,6 +86,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.resolution === 'DUP_OVERWRITE') data.classStatus = 'CLASSIFIED'
   }
 
+  // 분석 제외 — 저장 처리 시 확정 거래로 이관(staging/commit)
+  if (typeof body?.excludeFromAnalysis === 'boolean')
+    data.excludeFromAnalysis = body.excludeFromAnalysis
+
   if (Object.keys(data).length === 0) return errorResponse('변경할 내용이 없습니다', 400)
 
   const updated = await prisma.finStagedRow.update({
@@ -96,6 +102,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       resolution: true,
       matchedRuleId: true,
       memo: true,
+      excludeFromAnalysis: true,
       category: { select: { id: true, name: true, parent: { select: { name: true } } } },
     },
   })

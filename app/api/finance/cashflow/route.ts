@@ -4,7 +4,8 @@
  * 수입 섹션 / 지출 섹션 / 순현금흐름 + 직전 기간 대비 증감%.
  *
  * query: grain?(month|quarter|year, 기본 month),
- *        periods?(콤마 구분 버킷키, 예 2026-01,2026-06 — 비연속 다중선택 가능. 없으면 직전월까지 기본 N개)
+ *        periods?(콤마 구분 버킷키, 예 2026-01,2026-06 — 비연속 다중선택 가능. 없으면 직전월까지 기본 N개),
+ *        includeExcluded?(1=분석 제외 거래 포함)
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
@@ -26,5 +27,9 @@ export async function GET(req: NextRequest) {
   const periods = sp.get('periods')?.split(',') ?? []
   const exclude = sp.get('exclude')?.split(',').filter(Boolean) ?? []
 
-  return NextResponse.json(await queryCashflow(spaceId, { grain, periods, exclude }))
+  const includeExcluded = sp.get('includeExcluded') === '1'
+
+  return NextResponse.json(
+    await queryCashflow(spaceId, { grain, periods, exclude, includeExcluded })
+  )
 }

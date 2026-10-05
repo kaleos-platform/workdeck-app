@@ -2,6 +2,7 @@
  * POST /api/finance/transactions/bulk
  * 선택한 확정 거래(FinTransaction)들을 일괄 처리한다.
  *   - { ids, categoryId }         → 일괄 계정과목 분류(CLASSIFIED, isTransfer 반영, 자동 학습 안 함)
+ *   - { ids, excludeFromAnalysis } → 일괄 분석 제외 지정(true)/해제(false)
  *   - { ids, liabilityId }        → 일괄 부채 상환 연결(문자열=연결, null=연결 해제)
  *   - { ids, action: 'delete' }   → 일괄 삭제 + 영향 계좌의 DERIVED 월말 스냅샷 재계산(MANUAL 보존)
  * 보안: 서버에서 spaceId 스코프로만 처리(클라이언트 id 신뢰 안 함).
@@ -62,6 +63,15 @@ export async function POST(req: NextRequest) {
         // 일괄 분류는 규칙 학습을 하지 않으므로 기존 규칙 힌트를 정리한다.
         matchedRuleId: null,
       },
+    })
+    return NextResponse.json({ updated: result.count })
+  }
+
+  // ── 일괄 분석 제외 지정/해제 ──
+  if (typeof body?.excludeFromAnalysis === 'boolean') {
+    const result = await prisma.finTransaction.updateMany({
+      where: { id: { in: ids }, spaceId },
+      data: { excludeFromAnalysis: body.excludeFromAnalysis },
     })
     return NextResponse.json({ updated: result.count })
   }

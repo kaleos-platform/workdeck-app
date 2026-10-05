@@ -67,7 +67,15 @@ function SankeyNodeShape(props: {
 
   return (
     <Layer>
-      <Rectangle x={x} y={y} width={width} height={height} fill={color} fillOpacity={0.95} radius={2} />
+      <Rectangle
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill={color}
+        fillOpacity={0.95}
+        radius={2}
+      />
       <text
         x={labelX}
         y={midY - 4}
@@ -127,14 +135,24 @@ function SummaryChip({ label, value, color }: { label: string; value: number; co
   )
 }
 
-export function FinanceCashflowSankey({ grain, period }: { grain: Grain; period: string }) {
+export function FinanceCashflowSankey({
+  grain,
+  period,
+  includeExcluded,
+}: {
+  grain: Grain
+  period: string
+  /** 분석 제외 거래 포함 여부(현금흐름 토글). */
+  includeExcluded: boolean
+}) {
   const [data, setData] = useState<SankeyData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const load = useCallback(async (g: Grain, p: string) => {
+  const load = useCallback(async (g: Grain, p: string, incl: boolean) => {
     setLoading(true)
     try {
       const qs = new URLSearchParams({ grain: g, period: p })
+      if (incl) qs.set('includeExcluded', '1')
       const res = await fetch(`/api/finance/cashflow/sankey?${qs}`)
       if (!res.ok) throw new Error('흐름도 데이터 조회 실패')
       const json: SankeyData = await res.json()
@@ -147,8 +165,8 @@ export function FinanceCashflowSankey({ grain, period }: { grain: Grain; period:
   }, [])
 
   useEffect(() => {
-    void load(grain, period)
-  }, [load, grain, period])
+    void load(grain, period, includeExcluded)
+  }, [load, grain, period, includeExcluded])
 
   if (loading) {
     return <p className="text-sm text-muted-foreground">불러오는 중...</p>
@@ -167,7 +185,9 @@ export function FinanceCashflowSankey({ grain, period }: { grain: Grain; period:
         <SummaryChip label="매출총이익" value={t.grossProfit} color="var(--chart-2)" />
         <SummaryChip label="영업이익" value={t.operatingProfit} color="var(--chart-4)" />
         <SummaryChip label="순현금흐름" value={t.net} color="var(--chart-2)" />
-        <span className="ml-auto text-xs text-muted-foreground">{data.period.label} 기준 · 손익 흐름</span>
+        <span className="ml-auto text-xs text-muted-foreground">
+          {data.period.label} 기준 · 손익 흐름
+        </span>
       </div>
 
       {/* 흐름도 or 경고 */}

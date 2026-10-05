@@ -292,17 +292,31 @@ export function FinanceCashflowView() {
     [pathname, router, searchParams]
   )
 
+  // 분석 제외 거래 포함 — URL(?includeExcluded=1) 단일 소스. 계정 제외(?exclude=)와 별개(거래 단위).
+  const includeExcluded = searchParams.get('includeExcluded') === '1'
+  const setIncludeExcluded = useCallback(
+    (next: boolean) => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (next) params.set('includeExcluded', '1')
+      else params.delete('includeExcluded')
+      const qs = params.toString()
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    },
+    [pathname, router, searchParams]
+  )
+
   // 계정과목 트리 — 패널 내역 편집(재분류) 콤보 옵션 소스.
   const [categoryTree, setCategoryTree] = useState<CategoryTreeNode[]>([])
   const categoryOptions = useMemo(() => buildClassifyOptions(categoryTree), [categoryTree])
 
   const fetchCashflow = useCallback(
-    async (g: Grain, periods: string[], exclude: string, showLoading: boolean) => {
+    async (g: Grain, periods: string[], exclude: string, incl: boolean, showLoading: boolean) => {
       if (periods.length === 0) return
       if (showLoading) setLoading(true)
       try {
         const qs = new URLSearchParams({ grain: g, periods: periods.join(',') })
         if (exclude) qs.set('exclude', exclude)
+        if (incl) qs.set('includeExcluded', '1')
         const res = await fetch(`/api/finance/cashflow?${qs}`)
         if (!res.ok) throw new Error('현금흐름 데이터 조회 실패')
         const json: CashflowData = await res.json()
@@ -318,22 +332,22 @@ export function FinanceCashflowView() {
 
   // 초기·기간/제외 변경 — 선택(우측 패널) 초기화 + 로딩 표시.
   const load = useCallback(
-    (g: Grain, periods: string[], exclude: string) => {
+    (g: Grain, periods: string[], exclude: string, incl: boolean) => {
       setSelected(null)
-      return fetchCashflow(g, periods, exclude, true)
+      return fetchCashflow(g, periods, exclude, incl, true)
     },
     [fetchCashflow]
   )
 
   // 편집 후 표·요약 조용히 갱신 — 선택(패널) 유지, 스피너 없음.
   const refreshData = useCallback(
-    () => fetchCashflow(grain, selectedPeriods, excludeParam, false),
-    [fetchCashflow, grain, selectedPeriods, excludeParam]
+    () => fetchCashflow(grain, selectedPeriods, excludeParam, includeExcluded, false),
+    [fetchCashflow, grain, selectedPeriods, excludeParam, includeExcluded]
   )
 
   useEffect(() => {
-    void load(grain, selectedPeriods, excludeParam)
-  }, [load, grain, selectedPeriods, excludeParam])
+    void load(grain, selectedPeriods, excludeParam, includeExcluded)
+  }, [load, grain, selectedPeriods, excludeParam, includeExcluded])
 
   // 계정과목 옵션 로드. 편집 팝오버에서 신규 추가 후 재호출로 목록 갱신.
   const loadCategories = useCallback(async () => {
@@ -449,11 +463,24 @@ export function FinanceCashflowView() {
             </SelectContent>
           </Select>
         )}
+        {/* 분석 제외 거래 포함 — 기본 off(분석 제외 거래는 표·손익 지표·흐름도에서 빠짐). */}
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+          <Checkbox
+            checked={includeExcluded}
+            onCheckedChange={(v) => setIncludeExcluded(v === true)}
+            aria-label="분석 제외 거래 포함"
+          />
+          분석 제외 거래 포함
+        </label>
       </div>
 
       {/* 본문: 흐름도 or 테이블 */}
       {view === 'flow' ? (
-        <FinanceCashflowSankey grain={grain} period={flowPeriod} />
+        <FinanceCashflowSankey
+          grain={grain}
+          period={flowPeriod}
+          includeExcluded={includeExcluded}
+        />
       ) : loading ? (
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
       ) : !data || (data.incomeRows.length === 0 && data.expenseRows.length === 0) ? (
@@ -477,6 +504,7 @@ export function FinanceCashflowView() {
               selected={selected}
               from={data.from}
               to={data.to}
+              includeExcluded={includeExcluded}
               options={categoryOptions}
               categoryTree={categoryTree}
               onCategoryAdded={loadCategories}
@@ -1273,6 +1301,8 @@ interface PanelTxn {
   classStatus: FinClassStatus
   categoryId: string | null
   memo: string | null
+  /** 분석 제외 — 「분석 제외 거래 포함」 토글 on 일 때만 패널에 나타난다. */
+  excludeFromAnalysis: boolean
   category: { name: string; parent: { name: string } | null } | null
   account: { name: string; kind: FinAccountKind }
 }
@@ -1305,7 +1335,12 @@ function monthRangeToDays(from: string, to: string): { fromDay: string; toDay: s
  *  - 단일 대분류     → categoryId=<대분류>&expandCategory=1 (서버가 자손 리프로 확장)
  *  - 다중 대분류     → null (숨김)
  */
-function buildTxnDeepLink(selected: Selection, from: string, to: string): string | null {
+function buildTxnDeepLink(
+  selected: Selection,
+  from: string,
+  to: string,
+  includeExcluded: boolean
+): string | null {
   const { fromDay, toDay } = monthRangeToDays(from, to)
   const p = new URLSearchParams({
     from: fromDay,
@@ -1313,6 +1348,9 @@ function buildTxnDeepLink(selected: Selection, from: string, to: string): string
     direction: selected.direction,
     excludeTransfer: '1',
   })
+  // 표 셀과 같은 모집단 — 토글 off 면 분석 대상만, on 이면 전부 + 합계 포함.
+  if (includeExcluded) p.set('includeExcluded', '1')
+  else p.set('scope', 'included')
   if (selected.uncategorized && selected.categoryIds.length === 0) {
     p.set('uncategorized', '1')
   } else if (selected.categoryIds.length === 1 && !selected.uncategorized) {
@@ -1364,6 +1402,7 @@ function CashflowTxnPanel({
   selected,
   from,
   to,
+  includeExcluded,
   options,
   categoryTree,
   onCategoryAdded,
@@ -1373,6 +1412,8 @@ function CashflowTxnPanel({
   selected: Selection
   from: string
   to: string
+  /** 현금흐름 「분석 제외 거래 포함」 토글 — 패널 모집단을 표 셀과 맞춘다. */
+  includeExcluded: boolean
   options: ComboOption[]
   categoryTree: CategoryTreeNode[]
   /** 신규 계정과목 추가 후 옵션 재조회. */
@@ -1435,6 +1476,9 @@ function CashflowTxnPanel({
       })
       if (selected.categoryIds.length) params.set('categoryIds', selected.categoryIds.join(','))
       if (selected.uncategorized) params.set('uncategorized', '1')
+      // 표 셀과 같은 모집단 — 토글 off 면 분석 대상만, on 이면 전부 + 합계 포함.
+      if (includeExcluded) params.set('includeExcluded', '1')
+      else params.set('scope', 'included')
 
       try {
         const res = await fetch(`/api/finance/transactions?${params.toString()}`, { signal })
@@ -1449,7 +1493,7 @@ function CashflowTxnPanel({
         if (!signal.aborted) setLoading(false)
       }
     },
-    [selected.categoryIds, selected.uncategorized, selected.direction, from, to]
+    [selected.categoryIds, selected.uncategorized, selected.direction, from, to, includeExcluded]
   )
 
   useEffect(() => {
@@ -1466,7 +1510,7 @@ function CashflowTxnPanel({
 
   const isIncome = selected.direction === 'IN'
   // 거래내역 딥링크 — 단일 스칼라로 안 떨어지는 선택(다중 대분류)이면 null → 버튼 숨김.
-  const txnHref = buildTxnDeepLink(selected, from, to)
+  const txnHref = buildTxnDeepLink(selected, from, to, includeExcluded)
   // 검색 중이면 합계도 필터 결과(visibleRows) 기준 — 건수와 정합. 미검색 시 서버 전체 합계(대사용).
   const sum = !data
     ? 0
@@ -1674,6 +1718,11 @@ function PanelTxnRow({
                   {status.label}
                 </Badge>
               )}
+              {txn.excludeFromAnalysis && (
+                <span className="shrink-0 rounded-full border border-border bg-muted px-1.5 py-0 text-[10px] text-muted-foreground">
+                  분석 제외
+                </span>
+              )}
             </span>
             {txn.memo && (
               <span
@@ -1731,6 +1780,7 @@ function TxnEditPopover({
 }) {
   const [categoryId, setCategoryId] = useState<string | null>(txn.categoryId)
   const [memo, setMemo] = useState(txn.memo ?? '')
+  const [excluded, setExcluded] = useState(txn.excludeFromAnalysis)
   // 규칙 저장은 명시적 선택만(기본 해제) — 일회성 분류가 규칙으로 굳어 다음 업로드를 오분류하지 않게.
   const [learn, setLearn] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -1739,19 +1789,26 @@ function TxnEditPopover({
   const normMemo = memo.trim() === '' ? null : memo.trim()
   const dirtyCategory = categoryId != null && categoryId !== txn.categoryId
   const dirtyMemo = normMemo !== (txn.memo ?? null)
-  const dirty = dirtyCategory || dirtyMemo
+  const dirtyExcluded = excluded !== txn.excludeFromAnalysis
+  const dirty = dirtyCategory || dirtyMemo || dirtyExcluded
 
   const save = async () => {
     if (!dirty) {
       onSaved()
       return
     }
-    const body: { categoryId?: string; memo?: string | null; learn?: boolean } = {}
+    const body: {
+      categoryId?: string
+      memo?: string | null
+      learn?: boolean
+      excludeFromAnalysis?: boolean
+    } = {}
     if (dirtyCategory && categoryId) {
       body.categoryId = categoryId
       body.learn = learn
     }
     if (dirtyMemo) body.memo = normMemo
+    if (dirtyExcluded) body.excludeFromAnalysis = excluded
     setSaving(true)
     try {
       const res = await fetch(`/api/finance/transactions/${txn.id}`, {
@@ -1825,6 +1882,19 @@ function TxnEditPopover({
           {memo.length}/{MEMO_MAX}
         </p>
       </div>
+      <label className="flex items-start gap-2 text-xs">
+        <Checkbox
+          checked={excluded}
+          onCheckedChange={(v) => setExcluded(v === true)}
+          className="mt-0.5"
+        />
+        <span>
+          분석 제외
+          <span className="block text-[11px] text-muted-foreground">
+            개인 목적·외부 계약 등 본 사업 외 거래 — 현금흐름·손익 집계에서 기본 제외됩니다
+          </span>
+        </span>
+      </label>
       <Button size="sm" className="w-full" onClick={() => void save()} disabled={saving || !dirty}>
         {saving ? '저장 중...' : '저장'}
       </Button>

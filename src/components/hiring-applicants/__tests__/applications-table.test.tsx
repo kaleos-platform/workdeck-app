@@ -1,7 +1,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { toast } from 'sonner'
+import { createApplicantSearch } from '@/lib/hiring/application-search-action'
 import { ApplicationsTable } from '../applications-table'
 
+jest.mock('@/lib/hiring/application-search-action', () => ({
+  createApplicantSearch: jest.fn(),
+}))
 const refresh = jest.fn()
 const push = jest.fn()
 jest.mock('next/navigation', () => ({ useRouter: () => ({ refresh, push }) }))
@@ -137,4 +141,23 @@ it('범위 밖 페이지는 날짜 필터를 유지한 채 첫 페이지로 복�
   render(<ApplicationsTable {...props} rows={[]} page={999} />)
   fireEvent.click(screen.getByRole('button', { name: '첫 페이지로 이동' }))
   expect(push).toHaveBeenCalledWith('/d/recruiting/applications?from=2026-09-27')
+})
+
+it('검색 원문은 server action에만 전달하고 URL에는 검색 토큰만 포함한다', async () => {
+  ;(createApplicantSearch as jest.Mock).mockResolvedValue('a'.repeat(64))
+  render(<ApplicationsTable {...props} />)
+  fireEvent.change(screen.getByRole('textbox', { name: '지원자 이름 또는 휴대전화 검색' }), {
+    target: { value: '홍길동' },
+  })
+  await act(async () => fireEvent.submit(screen.getByRole('search')))
+  expect(createApplicantSearch).toHaveBeenCalledWith('홍길동')
+  expect(push).toHaveBeenCalledWith(expect.stringContaining('search=' + 'a'.repeat(64)))
+  expect(push.mock.calls[0][0]).not.toContain(encodeURIComponent('홍길동'))
+})
+
+it('검색 해제는 다른 필터를 유지한다', () => {
+  render(<ApplicationsTable {...props} filters={{ ...props.filters, search: 'a'.repeat(64) }} />)
+  fireEvent.click(screen.getByRole('button', { name: '검색 해제' }))
+  expect(push).toHaveBeenCalledWith(expect.stringContaining('from=2026-09-27'))
+  expect(push.mock.calls[0][0]).not.toContain('search=')
 })

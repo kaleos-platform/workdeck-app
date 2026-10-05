@@ -51,6 +51,7 @@ export type FinTransactionMinAggregateOutputType = {
   categoryId: string | null
   liabilityId: string | null
   isTransfer: boolean | null
+  excludeFromAnalysis: boolean | null
   classStatus: $Enums.FinClassStatus | null
   matchedRuleId: string | null
   approvalNo: string | null
@@ -76,6 +77,7 @@ export type FinTransactionMaxAggregateOutputType = {
   categoryId: string | null
   liabilityId: string | null
   isTransfer: boolean | null
+  excludeFromAnalysis: boolean | null
   classStatus: $Enums.FinClassStatus | null
   matchedRuleId: string | null
   approvalNo: string | null
@@ -101,6 +103,7 @@ export type FinTransactionCountAggregateOutputType = {
   categoryId: number
   liabilityId: number
   isTransfer: number
+  excludeFromAnalysis: number
   classStatus: number
   matchedRuleId: number
   approvalNo: number
@@ -138,6 +141,7 @@ export type FinTransactionMinAggregateInputType = {
   categoryId?: true
   liabilityId?: true
   isTransfer?: true
+  excludeFromAnalysis?: true
   classStatus?: true
   matchedRuleId?: true
   approvalNo?: true
@@ -163,6 +167,7 @@ export type FinTransactionMaxAggregateInputType = {
   categoryId?: true
   liabilityId?: true
   isTransfer?: true
+  excludeFromAnalysis?: true
   classStatus?: true
   matchedRuleId?: true
   approvalNo?: true
@@ -188,6 +193,7 @@ export type FinTransactionCountAggregateInputType = {
   categoryId?: true
   liabilityId?: true
   isTransfer?: true
+  excludeFromAnalysis?: true
   classStatus?: true
   matchedRuleId?: true
   approvalNo?: true
@@ -300,6 +306,7 @@ export type FinTransactionGroupByOutputType = {
   categoryId: string | null
   liabilityId: string | null
   isTransfer: boolean
+  excludeFromAnalysis: boolean
   classStatus: $Enums.FinClassStatus
   matchedRuleId: string | null
   approvalNo: string | null
@@ -348,6 +355,7 @@ export type FinTransactionWhereInput = {
   categoryId?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
   liabilityId?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
   isTransfer?: Prisma.BoolFilter<"FinTransaction"> | boolean
+  excludeFromAnalysis?: Prisma.BoolFilter<"FinTransaction"> | boolean
   classStatus?: Prisma.EnumFinClassStatusFilter<"FinTransaction"> | $Enums.FinClassStatus
   matchedRuleId?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
   approvalNo?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
@@ -378,6 +386,7 @@ export type FinTransactionOrderByWithRelationInput = {
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   liabilityId?: Prisma.SortOrderInput | Prisma.SortOrder
   isTransfer?: Prisma.SortOrder
+  excludeFromAnalysis?: Prisma.SortOrder
   classStatus?: Prisma.SortOrder
   matchedRuleId?: Prisma.SortOrderInput | Prisma.SortOrder
   approvalNo?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -412,6 +421,7 @@ export type FinTransactionWhereUniqueInput = Prisma.AtLeast<{
   categoryId?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
   liabilityId?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
   isTransfer?: Prisma.BoolFilter<"FinTransaction"> | boolean
+  excludeFromAnalysis?: Prisma.BoolFilter<"FinTransaction"> | boolean
   classStatus?: Prisma.EnumFinClassStatusFilter<"FinTransaction"> | $Enums.FinClassStatus
   matchedRuleId?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
   approvalNo?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
@@ -442,6 +452,7 @@ export type FinTransactionOrderByWithAggregationInput = {
   categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   liabilityId?: Prisma.SortOrderInput | Prisma.SortOrder
   isTransfer?: Prisma.SortOrder
+  excludeFromAnalysis?: Prisma.SortOrder
   classStatus?: Prisma.SortOrder
   matchedRuleId?: Prisma.SortOrderInput | Prisma.SortOrder
   approvalNo?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -475,6 +486,7 @@ export type FinTransactionScalarWhereWithAggregatesInput = {
   categoryId?: Prisma.StringNullableWithAggregatesFilter<"FinTransaction"> | string | null
   liabilityId?: Prisma.StringNullableWithAggregatesFilter<"FinTransaction"> | string | null
   isTransfer?: Prisma.BoolWithAggregatesFilter<"FinTransaction"> | boolean
+  excludeFromAnalysis?: Prisma.BoolWithAggregatesFilter<"FinTransaction"> | boolean
   classStatus?: Prisma.EnumFinClassStatusWithAggregatesFilter<"FinTransaction"> | $Enums.FinClassStatus
   matchedRuleId?: Prisma.StringNullableWithAggregatesFilter<"FinTransaction"> | string | null
   approvalNo?: Prisma.StringNullableWithAggregatesFilter<"FinTransaction"> | string | null
@@ -495,6 +507,7 @@ export type FinTransactionCreateInput = {
   counterparty?: string | null
   memo?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -525,6 +538,7 @@ export type FinTransactionUncheckedCreateInput = {
   categoryId?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -545,6 +559,7 @@ export type FinTransactionUpdateInput = {
   counterparty?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -575,6 +590,7 @@ export type FinTransactionUncheckedUpdateInput = {
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -600,6 +616,7 @@ export type FinTransactionCreateManyInput = {
   categoryId?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -620,6 +637,7 @@ export type FinTransactionUpdateManyMutationInput = {
   counterparty?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -645,6 +663,7 @@ export type FinTransactionUncheckedUpdateManyInput = {
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -686,6 +705,7 @@ export type FinTransactionCountOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
   liabilityId?: Prisma.SortOrder
   isTransfer?: Prisma.SortOrder
+  excludeFromAnalysis?: Prisma.SortOrder
   classStatus?: Prisma.SortOrder
   matchedRuleId?: Prisma.SortOrder
   approvalNo?: Prisma.SortOrder
@@ -716,6 +736,7 @@ export type FinTransactionMaxOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
   liabilityId?: Prisma.SortOrder
   isTransfer?: Prisma.SortOrder
+  excludeFromAnalysis?: Prisma.SortOrder
   classStatus?: Prisma.SortOrder
   matchedRuleId?: Prisma.SortOrder
   approvalNo?: Prisma.SortOrder
@@ -741,6 +762,7 @@ export type FinTransactionMinOrderByAggregateInput = {
   categoryId?: Prisma.SortOrder
   liabilityId?: Prisma.SortOrder
   isTransfer?: Prisma.SortOrder
+  excludeFromAnalysis?: Prisma.SortOrder
   classStatus?: Prisma.SortOrder
   matchedRuleId?: Prisma.SortOrder
   approvalNo?: Prisma.SortOrder
@@ -976,6 +998,7 @@ export type FinTransactionCreateWithoutSpaceInput = {
   counterparty?: string | null
   memo?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1004,6 +1027,7 @@ export type FinTransactionUncheckedCreateWithoutSpaceInput = {
   categoryId?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1058,6 +1082,7 @@ export type FinTransactionScalarWhereInput = {
   categoryId?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
   liabilityId?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
   isTransfer?: Prisma.BoolFilter<"FinTransaction"> | boolean
+  excludeFromAnalysis?: Prisma.BoolFilter<"FinTransaction"> | boolean
   classStatus?: Prisma.EnumFinClassStatusFilter<"FinTransaction"> | $Enums.FinClassStatus
   matchedRuleId?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
   approvalNo?: Prisma.StringNullableFilter<"FinTransaction"> | string | null
@@ -1078,6 +1103,7 @@ export type FinTransactionCreateWithoutAccountInput = {
   counterparty?: string | null
   memo?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1106,6 +1132,7 @@ export type FinTransactionUncheckedCreateWithoutAccountInput = {
   categoryId?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1152,6 +1179,7 @@ export type FinTransactionCreateWithoutLiabilityInput = {
   counterparty?: string | null
   memo?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1180,6 +1208,7 @@ export type FinTransactionUncheckedCreateWithoutLiabilityInput = {
   memo?: string | null
   categoryId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1226,6 +1255,7 @@ export type FinTransactionCreateWithoutCategoryInput = {
   counterparty?: string | null
   memo?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1254,6 +1284,7 @@ export type FinTransactionUncheckedCreateWithoutCategoryInput = {
   memo?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1300,6 +1331,7 @@ export type FinTransactionCreateWithoutImportInput = {
   counterparty?: string | null
   memo?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1328,6 +1360,7 @@ export type FinTransactionUncheckedCreateWithoutImportInput = {
   categoryId?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1378,6 +1411,7 @@ export type FinTransactionCreateManySpaceInput = {
   categoryId?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1398,6 +1432,7 @@ export type FinTransactionUpdateWithoutSpaceInput = {
   counterparty?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1426,6 +1461,7 @@ export type FinTransactionUncheckedUpdateWithoutSpaceInput = {
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1450,6 +1486,7 @@ export type FinTransactionUncheckedUpdateManyWithoutSpaceInput = {
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1474,6 +1511,7 @@ export type FinTransactionCreateManyAccountInput = {
   categoryId?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1494,6 +1532,7 @@ export type FinTransactionUpdateWithoutAccountInput = {
   counterparty?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1522,6 +1561,7 @@ export type FinTransactionUncheckedUpdateWithoutAccountInput = {
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1546,6 +1586,7 @@ export type FinTransactionUncheckedUpdateManyWithoutAccountInput = {
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1570,6 +1611,7 @@ export type FinTransactionCreateManyLiabilityInput = {
   memo?: string | null
   categoryId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1590,6 +1632,7 @@ export type FinTransactionUpdateWithoutLiabilityInput = {
   counterparty?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1618,6 +1661,7 @@ export type FinTransactionUncheckedUpdateWithoutLiabilityInput = {
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1642,6 +1686,7 @@ export type FinTransactionUncheckedUpdateManyWithoutLiabilityInput = {
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1666,6 +1711,7 @@ export type FinTransactionCreateManyCategoryInput = {
   memo?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1686,6 +1732,7 @@ export type FinTransactionUpdateWithoutCategoryInput = {
   counterparty?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1714,6 +1761,7 @@ export type FinTransactionUncheckedUpdateWithoutCategoryInput = {
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1738,6 +1786,7 @@ export type FinTransactionUncheckedUpdateManyWithoutCategoryInput = {
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1762,6 +1811,7 @@ export type FinTransactionCreateManyImportInput = {
   categoryId?: string | null
   liabilityId?: string | null
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: $Enums.FinClassStatus
   matchedRuleId?: string | null
   approvalNo?: string | null
@@ -1782,6 +1832,7 @@ export type FinTransactionUpdateWithoutImportInput = {
   counterparty?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1810,6 +1861,7 @@ export type FinTransactionUncheckedUpdateWithoutImportInput = {
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1834,6 +1886,7 @@ export type FinTransactionUncheckedUpdateManyWithoutImportInput = {
   categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   liabilityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isTransfer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  excludeFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
   classStatus?: Prisma.EnumFinClassStatusFieldUpdateOperationsInput | $Enums.FinClassStatus
   matchedRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvalNo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1861,6 +1914,7 @@ export type FinTransactionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   categoryId?: boolean
   liabilityId?: boolean
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: boolean
   matchedRuleId?: boolean
   approvalNo?: boolean
@@ -1891,6 +1945,7 @@ export type FinTransactionSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   categoryId?: boolean
   liabilityId?: boolean
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: boolean
   matchedRuleId?: boolean
   approvalNo?: boolean
@@ -1921,6 +1976,7 @@ export type FinTransactionSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   categoryId?: boolean
   liabilityId?: boolean
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: boolean
   matchedRuleId?: boolean
   approvalNo?: boolean
@@ -1951,6 +2007,7 @@ export type FinTransactionSelectScalar = {
   categoryId?: boolean
   liabilityId?: boolean
   isTransfer?: boolean
+  excludeFromAnalysis?: boolean
   classStatus?: boolean
   matchedRuleId?: boolean
   approvalNo?: boolean
@@ -1961,7 +2018,7 @@ export type FinTransactionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type FinTransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "accountId" | "importId" | "txnDate" | "direction" | "amount" | "balanceAfter" | "description" | "counterparty" | "memo" | "categoryId" | "liabilityId" | "isTransfer" | "classStatus" | "matchedRuleId" | "approvalNo" | "cancelFlag" | "identityKey" | "contentHash" | "createdAt" | "updatedAt", ExtArgs["result"]["finTransaction"]>
+export type FinTransactionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "accountId" | "importId" | "txnDate" | "direction" | "amount" | "balanceAfter" | "description" | "counterparty" | "memo" | "categoryId" | "liabilityId" | "isTransfer" | "excludeFromAnalysis" | "classStatus" | "matchedRuleId" | "approvalNo" | "cancelFlag" | "identityKey" | "contentHash" | "createdAt" | "updatedAt", ExtArgs["result"]["finTransaction"]>
 export type FinTransactionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   account?: boolean | Prisma.FinAccountDefaultArgs<ExtArgs>
@@ -2008,6 +2065,7 @@ export type $FinTransactionPayload<ExtArgs extends runtime.Types.Extensions.Inte
     categoryId: string | null
     liabilityId: string | null
     isTransfer: boolean
+    excludeFromAnalysis: boolean
     classStatus: $Enums.FinClassStatus
     matchedRuleId: string | null
     approvalNo: string | null
@@ -2458,6 +2516,7 @@ export interface FinTransactionFieldRefs {
   readonly categoryId: Prisma.FieldRef<"FinTransaction", 'String'>
   readonly liabilityId: Prisma.FieldRef<"FinTransaction", 'String'>
   readonly isTransfer: Prisma.FieldRef<"FinTransaction", 'Boolean'>
+  readonly excludeFromAnalysis: Prisma.FieldRef<"FinTransaction", 'Boolean'>
   readonly classStatus: Prisma.FieldRef<"FinTransaction", 'FinClassStatus'>
   readonly matchedRuleId: Prisma.FieldRef<"FinTransaction", 'String'>
   readonly approvalNo: Prisma.FieldRef<"FinTransaction", 'String'>

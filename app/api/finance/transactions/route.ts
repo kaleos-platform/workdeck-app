@@ -4,7 +4,8 @@
  *
  * query: accountId?, categoryId?, from?(YYYY-MM-DD), to?, direction?(IN|OUT),
  *        classStatus?(CLASSIFIED|REVIEW|UNCLASSIFIED), q?, take?, skip?,
- *        sort?(txnDate|amount|balanceAfter|account|category|classStatus|description), order?(asc|desc)
+ *        sort?(txnDate|amount|balanceAfter|account|category|classStatus|description), order?(asc|desc),
+ *        scope?(all|included|excluded — 분석 제외 행 범위), includeExcluded?(1=요약 합계에 분석 제외 포함)
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
@@ -32,6 +33,8 @@ export async function GET(req: NextRequest) {
       categoryId: sp.get('categoryId'),
       expandCategory: sp.get('expandCategory') === '1',
       excludeTransfer: sp.get('excludeTransfer') === '1',
+      scope: (['included', 'excluded'] as const).find((s) => s === sp.get('scope')) ?? 'all',
+      includeExcluded: sp.get('includeExcluded') === '1',
       q: sp.get('q'),
       take,
       skip,

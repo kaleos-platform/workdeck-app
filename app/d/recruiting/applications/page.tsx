@@ -13,6 +13,7 @@ const VALID_STAGES = new Set(['HIRING', 'ACCEPTED', 'REJECTED'])
 
 type Props = {
   searchParams: Promise<{
+    search?: string | string[]
     posting?: string | string[]
     stage?: string | string[]
     from?: string | string[]
@@ -28,6 +29,7 @@ export default async function ApplicationsPage({ searchParams }: Props) {
 
   const raw = await searchParams
   const sp = {
+    search: typeof raw.search === 'string' ? raw.search : raw.search ? 'invalid' : '',
     posting: typeof raw.posting === 'string' ? raw.posting : '',
     stage: typeof raw.stage === 'string' ? raw.stage : '',
     from: typeof raw.from === 'string' ? raw.from : '',
@@ -51,6 +53,7 @@ export default async function ApplicationsPage({ searchParams }: Props) {
 
   const [{ rows, total }, postings] = await Promise.all([
     listApplications(spaceId, {
+      search: sp.search,
       postingId: sp.posting || undefined,
       stage,
       from,
@@ -75,13 +78,14 @@ export default async function ApplicationsPage({ searchParams }: Props) {
       </div>
 
       <ApplicationsTable
-        key={JSON.stringify([sp.posting, stage, sp.from, sp.to, page])}
+        key={JSON.stringify([sp.search, sp.posting, stage, sp.from, sp.to, page])}
         rows={rows}
         total={total}
         pageSize={PAGE_SIZE}
         page={page}
         postings={postings}
         filters={{
+          search: sp.search,
           posting: sp.posting ?? '',
           stage: stage ?? '',
           from: from ? (sp.from ?? '') : '',
