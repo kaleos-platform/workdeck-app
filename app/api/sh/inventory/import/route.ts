@@ -9,7 +9,7 @@ import { parseImportFile, ImportColumnError } from '@/lib/inv/import-parser'
 import { processImport } from '@/lib/inv/import-processor'
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   let formData: FormData

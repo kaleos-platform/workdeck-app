@@ -32,7 +32,7 @@ const RESULT_KEY: Record<ApplyField, keyof ExtractedProductInfo> = {
 }
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { productId, jobId } = await params

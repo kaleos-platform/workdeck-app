@@ -33,7 +33,7 @@ async function hasNonZeroStock(locationId: string) {
 
 // PATCH /api/inv/locations/[locationId] { name?, isActive? }
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { locationId } = await ctx.params
@@ -129,7 +129,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
 
 // DELETE /api/inv/locations/[locationId] — soft delete (isActive = false)
 export async function DELETE(_req: NextRequest, ctx: RouteContext) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { locationId } = await ctx.params

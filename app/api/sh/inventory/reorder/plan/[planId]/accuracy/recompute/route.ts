@@ -10,7 +10,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { settlePlanAccuracy } from '@/lib/inv/forecast/settle-accuracy'
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ planId: string }> }) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const spaceId = resolved.space.id

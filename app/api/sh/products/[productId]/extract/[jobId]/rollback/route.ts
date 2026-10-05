@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma'
 type Params = { params: Promise<{ productId: string; jobId: string }> }
 
 export async function POST(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { productId, jobId } = await params

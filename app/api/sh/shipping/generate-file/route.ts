@@ -49,7 +49,7 @@ async function computeOptionRowCount(
 const PREVIEW_LIMIT = 10
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => ({}))

@@ -4,7 +4,7 @@ import { previewFile } from '@/lib/del/channel-import-parser'
 import { decryptXlsxBuffer, isEncryptedXlsx, WrongPasswordError } from '@/lib/sh/xlsx-encryption'
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const formData = await req.formData().catch(() => null)

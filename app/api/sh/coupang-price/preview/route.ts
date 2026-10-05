@@ -4,7 +4,7 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { computePriceTargets, priceInputSchema } from '@/lib/sh/coupang-price/compute-targets'
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const parsed = priceInputSchema.safeParse(await req.json().catch(() => ({})))

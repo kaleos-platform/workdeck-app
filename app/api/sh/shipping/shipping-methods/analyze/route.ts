@@ -6,7 +6,7 @@ import { analyzeFormat } from '@/lib/del/format-analyzer'
 const MAX_SIZE = 10 * 1024 * 1024
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const formData = await req.formData().catch(() => null)

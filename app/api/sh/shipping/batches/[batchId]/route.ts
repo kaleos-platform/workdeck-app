@@ -34,7 +34,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { batchId } = await params
@@ -156,7 +156,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 // DELETE — 배송 묶음 + 주문 + 연동 InvMovement(이력 이전 OUTBOUND) 함께 삭제.
 // DRAFT/COMPLETED 모두 허용. 실수 방지 확인은 UI(label 타이핑)에서 담당.
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { batchId } = await params

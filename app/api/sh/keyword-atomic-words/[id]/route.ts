@@ -3,7 +3,7 @@ import { errorResponse, resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await params

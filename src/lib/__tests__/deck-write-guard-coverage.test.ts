@@ -20,6 +20,7 @@ const GUARDED_DECKS: { deck: string; call: string }[] = [
   { deck: 'finance', call: "resolveDeckContext('finance'" },
   { deck: 'recruiting', call: "resolveDeckContext('recruiting'" },
   { deck: 'sales-content', call: "resolveDeckContext('sales-content'" },
+  { deck: 'seller-hub', call: "resolveDeckContext('seller-hub'" },
   // coupang-ads — 세션 경로만 가드(워커 키 경로는 Phase 4 워커 정책 대상)
   { deck: 'coupang-ads', call: 'resolveWorkspace(' },
 ]

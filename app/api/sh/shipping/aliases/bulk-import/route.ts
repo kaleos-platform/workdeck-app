@@ -19,7 +19,7 @@ import { normalizeAlias } from '@/lib/sh/product-matching'
  * 응답: { created, updated, skipped, errors: [{ row, message }] }
  */
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => ({}))

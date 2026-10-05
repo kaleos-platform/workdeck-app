@@ -45,7 +45,7 @@ export async function GET() {
 
 // 저장: 이름이 같으면 upsert, 다르면 새로 생성
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => ({}))

@@ -9,7 +9,7 @@ import { productListingBulkPatchSchema } from '@/lib/sh/schemas'
  * 그룹 상세 화면의 bulk edit 바에서 호출.
  */
 export async function PATCH(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => ({}))

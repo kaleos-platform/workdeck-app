@@ -13,7 +13,7 @@ import { loadKeywordRules, serializeKeywordRules } from '@/lib/sh/keyword-rules-
  * "서버가 실제로 보는 결과"를 확인할 수 있어야 한다.
  */
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => ({}))

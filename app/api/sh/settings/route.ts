@@ -83,7 +83,7 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   let body: unknown

@@ -46,7 +46,7 @@ type Params = { params: Promise<{ productId: string }> }
 const STALE_RUNNING_MS = 10 * 60 * 1000
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { productId } = await params

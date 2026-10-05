@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
 // - multipart/form-data: file, locationId, snapshotDate?           (파일 업로드)
 // - application/json: { source: 'coupang', locationId, snapshotDate? } (Deck 연동)
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const contentType = req.headers.get('content-type') ?? ''

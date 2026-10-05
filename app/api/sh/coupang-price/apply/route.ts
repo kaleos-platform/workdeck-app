@@ -13,10 +13,12 @@ import { computePriceTargets, priceInputSchema } from '@/lib/sh/coupang-price/co
  * 실제 쿠팡 호출은 IP allowlist 때문에 워커가 한다 — 여기서는 잡만 만든다.
  */
 // 미리보기에서 사용자가 본 반영 대상. 생략하면 검사하지 않는다(미리보기 스키마와 분리).
-const applyInputSchema = priceInputSchema.extend({ expectedListingIds: z.array(z.string()).optional() })
+const applyInputSchema = priceInputSchema.extend({
+  expectedListingIds: z.array(z.string()).optional(),
+})
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
   const denied = assertRole(resolved.role, 'ADMIN')
   if (denied) return denied
@@ -31,7 +33,8 @@ export async function POST(req: NextRequest) {
   const computed = await computePriceTargets(spaceId, parsed.data)
   if ('error' in computed) return errorResponse(computed.error, computed.status)
   const writable = computed.targets.filter(
-    (t): t is typeof t & { vendorItemId: string } => t.blockedReason == null && t.vendorItemId != null
+    (t): t is typeof t & { vendorItemId: string } =>
+      t.blockedReason == null && t.vendorItemId != null
   )
   // 미리보기 이후 다른 탭에서 매칭이 확정·해제되면 사용자가 본 대상과 달라진다. 0개 검사보다
   // 먼저 해야 '본 대상이 전부 사라진' 경우도 미리보기 재로딩으로 이어진다.

@@ -10,7 +10,7 @@ import { requireCoupangWorkspaceId } from '@/lib/coupang/workspace-space'
  * (v1 후속과제 "수동 재실행이 조용히 스킵됨" 해소).
  */
 export async function POST() {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
   // 불러온 스냅샷이 매칭·가격 반영의 기준이 된다 — 매칭·반영 API 와 같은 ADMIN.
   const denied = assertRole(resolved.role, 'ADMIN')
