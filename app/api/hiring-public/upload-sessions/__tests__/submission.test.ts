@@ -204,3 +204,19 @@ it('동시 완료 claim을 놓쳐도 먼저 저장된 같은 지원서를 반환
   expect(await (await complete(request(payload))).json()).toEqual({ uuid: 'original' })
   expect(prisma.hiringApplication.create).not.toHaveBeenCalled()
 })
+
+it('마감일이 지난 공고에는 업로드 URL이나 제출을 허용하지 않는다', async () => {
+  jest
+    .mocked(prisma.hiringPosting.findUnique)
+    .mockResolvedValue({
+      id: 'post',
+      uuid: 'qa-post',
+      spaceId: 'space',
+      status: 'ACTIVE',
+      closingDate: new Date('2023-11-30'),
+    } as never)
+  expect((await initiate(request({ postingUuid: 'qa-post', files: [file] }))).status).toBe(404)
+  expect((await complete(request(payload))).status).toBe(410)
+  expect(createApplicantUploadUrl).not.toHaveBeenCalled()
+  expect(prisma.hiringApplication.create).not.toHaveBeenCalled()
+})

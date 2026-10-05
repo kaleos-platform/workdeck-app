@@ -35,9 +35,12 @@ function formatClosingDate(value: string | null): string | null {
   return `마감 ${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`
 }
 
-function copyText(value: string, successMessage: string) {
+function copyText(value: string, successMessage: string, description?: string) {
   navigator.clipboard.writeText(value).then(
-    () => toast.success(successMessage),
+    () =>
+      description
+        ? toast.success(successMessage, { description, duration: 8000 })
+        : toast.success(successMessage),
     () => toast.error('복사에 실패했습니다')
   )
 }
@@ -101,6 +104,11 @@ export function PostingDetail({
           )}
         </div>
         <div className="flex items-center gap-2">
+          {isDraft && (
+            <Button asChild>
+              <Link href={getRecruitingPostingBuildPath(posting.id)}>발행 설정</Link>
+            </Button>
+          )}
           {status === 'ACTIVE' && (
             <Button variant="outline" onClick={() => runAction('close')} disabled={busy}>
               <Lock /> 마감
@@ -122,7 +130,8 @@ export function PostingDetail({
       {isDraft && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-900/40 dark:text-amber-200">
           HTML은 발행 전에도 복사할 수 있습니다. Workdeck 지원서·공고 링크는 발행 후 공개되므로,
-          HTML에 지원서 연결 버튼이 있으면 발행 상태를 확인하세요.
+          HTML에 지원서 연결 버튼이 있으면 발행 상태를 확인하세요. 발행 설정에서 공고 꾸미기 단계의
+          공고 등록 버튼을 이용하세요.
         </div>
       )}
 
@@ -169,7 +178,13 @@ export function PostingDetail({
             )}
             <Button
               disabled={hasOutputErrors}
-              onClick={() => copyText(embedHtml, 'HTML 코드를 복사했습니다')}
+              onClick={() =>
+                copyText(
+                  embedHtml,
+                  'HTML 코드를 복사했습니다',
+                  isDraft ? '초안 공고는 발행 전까지 지원서 링크로 접수할 수 없습니다.' : undefined
+                )
+              }
             >
               <Copy /> HTML 복사
             </Button>

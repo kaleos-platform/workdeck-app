@@ -1,3 +1,4 @@
+import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   switch (parsed.data.action) {
     case 'publish': {
       // 마감일이 지난 공고는 발행(재발행) 불가 — reopen 과 동일 규칙 적용
-      if (posting.closingDate && posting.closingDate.getTime() < now.getTime()) {
+      if (isHiringDeadlinePassed(posting.closingDate, now)) {
         return errorResponse('마감일이 지나 발행할 수 없습니다', 400)
       }
       const check = await checkPublishable(resolved.space.id, id)
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
     case 'reopen': {
       // 마감일이 지났으면 재개 불가
-      if (posting.closingDate && posting.closingDate.getTime() < now.getTime()) {
+      if (isHiringDeadlinePassed(posting.closingDate, now)) {
         return errorResponse('마감일이 지나 재개할 수 없습니다', 400)
       }
       const updated = await prisma.hiringPosting.update({
