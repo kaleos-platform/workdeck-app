@@ -1,5 +1,7 @@
 // 지원자 엑셀 내보내기 — PII 복호화 포함이므로 쓰기 권한(hiring-applicants) + spaceId 스코프.
 // 서버에서만 복호화하고 xlsx 바이너리로 스트림한다(복호화 값이 클라이언트 번들로 넘어가지 않음).
+import { projectApplicationHistory } from '@/lib/hiring/migration/application-history'
+import { decodeMigrationSnapshot } from '@/lib/hiring/migration/ledger'
 import { NextRequest } from 'next/server'
 import * as XLSX from 'xlsx'
 import { prisma } from '@/lib/prisma'
@@ -51,7 +53,12 @@ export async function GET(req: NextRequest) {
         : {}),
     },
     orderBy: { createdAt: 'desc' },
-    include: { posting: { select: { title: true } } },
+    include: {
+      posting: { select: { title: true } },
+      files: {
+        select: { id: true, applicationId: true, spaceId: true, fileName: true, sizeBytes: true },
+      },
+    },
     // 전량 복호화 export 는 가장 무거운 연산 — 상한으로 메모리/지연 폭주 방지.
     // 초과 시 기간 필터로 나눠 받도록 안내한다.
     take: EXPORT_ROW_CAP + 1,
@@ -110,12 +117,115 @@ export async function GET(req: NextRequest) {
   const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows])
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, '지원자')
+  // 현재 양식으로 해석하지 않고, 권한 검사를 통과한 지원서의 이전 원문만 별도 제공한다.
+  const records = applications.length
+    ? await prisma.hiringMigrationRecord.findMany({
+        where: {
+          spaceId,
+          targetModel: 'HiringApplication',
+          targetId: { in: applications.map((a) => a.id) },
+        },
+        select: {
+          targetId: true,
+          sourceSnapshotAt: true,
+          sourceSnapshotEnc: true,
+          sourceSnapshotIv: true,
+          sourceHash: true,
+        },
+      })
+    : []
+  const historyRows: (string | number)[][] = [
+    [
+      '지원서ID',
+      '이름',
+      '공고',
+      '원본수집일',
+      '항목순서',
+      '질문',
+      '원본유형',
+      '원본값',
+      '해석',
+      '검증된선택라벨',
+      '원본기타표시',
+      '첨부파일',
+      '미확정첨부수',
+    ],
+  ]
+  const appsById = new Map(applications.map((app) => [app.id, app]))
+  try {
+    for (const record of records) {
+      const app = appsById.get(record.targetId)
+      if (!app) throw new Error('History scope mismatch')
+      const history = projectApplicationHistory(decodeMigrationSnapshot(record), {
+        applicationId: app.id,
+        spaceId,
+        sourceSnapshotAt: record.sourceSnapshotAt.toISOString(),
+        files: app.files,
+      })
+      if (!history) throw new Error('History unavailable')
+      const name = decryptApplicationPii(app).name ?? ''
+      for (const entry of history.entries) {
+        if (entry.kind === 'value' && entry.value.kind === 'unsupported') {
+          throw new Error('Unsupported history entry')
+        }
+        const value =
+          entry.kind === 'files'
+            ? ''
+            : entry.value.kind === 'scalar'
+              ? JSON.stringify(entry.value.value)
+              : entry.value.kind === 'array'
+                ? JSON.stringify(entry.value.values)
+                : entry.value.kind === 'missing'
+                  ? '값 누락'
+                  : '표시할 수 없는 원본 값 형식'
+        historyRows.push([
+          app.id,
+          name,
+          app.posting?.title ?? '',
+          history.sourceSnapshotAt,
+          entry.index + 1,
+          entry.label ?? '',
+          entry.sourceType ?? '',
+          value,
+          entry.kind === 'files'
+            ? '첨부 대응'
+            : entry.interpretation === 'unresolved'
+              ? '미확정'
+              : entry.interpretation === 'verified'
+                ? '검증됨'
+                : '원문',
+          entry.kind === 'value' ? JSON.stringify(entry.verifiedLabels ?? []) : '',
+          entry.otherMarker,
+          entry.kind === 'files' ? JSON.stringify(entry.files.map((f) => f.fileName)) : '',
+          entry.kind === 'files' ? entry.unresolvedCount : 0,
+        ])
+      }
+    }
+  } catch {
+    return errorResponse(
+      '이전 원문을 확인할 수 없어 내보내기를 중단했습니다. 다시 시도해 주세요',
+      422
+    )
+  }
+  if (
+    historyRows.some((row) =>
+      row.some((value) => typeof value === 'string' && value.length > 32767)
+    )
+  ) {
+    return errorResponse(
+      '이전 원문이 엑셀 셀 길이 한도를 초과합니다. 지원자 상세에서 원문을 확인해 주세요',
+      422
+    )
+  }
+  if (records.length)
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(historyRows), '이전 원문')
   const buf: Buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
 
   const filename = `applicants_${formatDateToYmdKst(new Date())}.xlsx`
   return new Response(new Uint8Array(buf), {
     status: 200,
     headers: {
+      'Cache-Control': 'private, no-store',
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="${filename}"`,
     },

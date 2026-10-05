@@ -244,3 +244,29 @@ it.each([
   expect(plan.ok).toBe(expected)
   if (!plan.ok) expect(plan.code).toBe('FIELD_COUNT_LIMIT')
 })
+
+it('명시한 반복 custom 질문은 순서별 식별자로 모두 보존한다', () => {
+  const source = [
+    { ...fields[1], type: 'multiselect' },
+    { ...fields[1], type: 'multiselect' },
+  ]
+  const plan = planOpeningForm('qa', source, { preserveRepeatedCustomFields: true })
+  const repeat = planOpeningForm('qa', source, { preserveRepeatedCustomFields: true })
+  expect(plan.ok).toBe(true)
+  if (!plan.ok || !repeat.ok) throw Error('plan failed')
+  expect(plan.fields).toHaveLength(2)
+  expect(new Set(plan.fields.map((field) => field.key)).size).toBe(2)
+  expect(plan.fields.map((field) => field.label)).toEqual(['직무', '직무'])
+  expect(plan.fields).toEqual(repeat.fields)
+  expect(plan.fields.every((field) => field.options?.[0] === '매장 운영')).toBe(true)
+  expect(convertOpeningSubmission(plan, [], verified)).toEqual({
+    ok: false,
+    code: 'AMBIGUOUS_FIELD',
+  })
+})
+
+it('반복 질문 보존을 지정해도 표준 개인정보 중복은 차단한다', () => {
+  expect(
+    planOpeningForm('qa', [fields[0], fields[0]], { preserveRepeatedCustomFields: true })
+  ).toEqual({ ok: false, code: 'AMBIGUOUS_FIELD', index: 1 })
+})

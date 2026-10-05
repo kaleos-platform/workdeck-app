@@ -9,16 +9,21 @@ import { listApplications } from '@/lib/hiring/applications'
 jest.mock('@/lib/api-helpers', () => ({
   resolveDeckContext: jest.fn(async () => ({ space: { id: 'qa-space' }, role: 'ADMIN' })),
   assertRole: jest.fn(),
+  errorResponse: (message: string, status: number) => Response.json({ message }, { status }),
 }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     hiringApplication: { findMany: jest.fn() },
     hiringPosting: { findMany: jest.fn(async () => []) },
+    hiringMigrationRecord: { findMany: jest.fn(async () => []) },
   },
 }))
 jest.mock('@/lib/hiring/applications', () => ({
   ...jest.requireActual('@/lib/hiring/application-shared'),
   listApplications: jest.fn(async () => ({ rows: [], total: 0 })),
+}))
+jest.mock('@/lib/hiring/migration/ledger', () => ({
+  decodeMigrationSnapshot: jest.fn((r) => r.snapshot),
 }))
 jest.mock('@/lib/hiring/pii', () => ({ decryptApplicationPii: () => ({ name: 'QA' }) }))
 jest.mock('@/components/hiring-applicants/applications-table', () => ({
@@ -27,6 +32,7 @@ jest.mock('@/components/hiring-applicants/applications-table', () => ({
 
 beforeEach(() => {
   jest.clearAllMocks()
+  ;(prisma.hiringMigrationRecord.findMany as jest.Mock).mockResolvedValue([])
   ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([])
 })
 
@@ -141,3 +147,206 @@ it('중복 질문명과 기본 열 이름이 충돌해도 모든 값을 독립�
   }
   expect(headers).toHaveLength(13)
 })
+
+const legacySnapshot = {
+  schemaVersion: 'opening-application-v1',
+  application: {
+    id: 'source-app',
+    status: 1,
+    stage: 4,
+    hiring_stage: 1,
+    created_at: '2026-09-01T00:00:00.000Z',
+    updated_at: '2026-09-01T00:00:00.000Z',
+    required_privacy_agreed_at: null,
+    optional_privacy_agreed_at: null,
+    cancelled_at: null,
+    deleted_at: null,
+    application_entries: [
+      { label: '중복 질문', type: 'multiselect', value: [0, 2] },
+      { label: '중복 질문', type: 'string', value: '=SUM(1,2)' },
+      { label: '빈 값', type: 'string', value: null },
+    ],
+  },
+  entryInterpretation: [],
+  fileMappings: [],
+}
+
+it('이전 원문을 질문 순서와 타입 그대로 별도 시트에 보존한다', async () => {
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 'app-1',
+      spaceId: 'qa-space',
+      files: [],
+      createdAt: new Date('2026-09-01'),
+      stage: 'REJECTED',
+      hiringStage: 'APPLIED',
+      posting: { title: 'QA' },
+      applicationEntries: [],
+    },
+  ])
+  ;(prisma.hiringMigrationRecord.findMany as jest.Mock).mockResolvedValue([
+    {
+      targetId: 'app-1',
+      sourceSnapshotAt: new Date('2026-09-01'),
+      snapshot: legacySnapshot,
+    },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  expect(workbook.SheetNames).toContain('이전 원문')
+  const rows = XLSX.utils.sheet_to_json(workbook.Sheets['이전 원문'])
+  expect(rows).toEqual([
+    expect.objectContaining({
+      지원서ID: 'app-1',
+      항목순서: 1,
+      질문: '중복 질문',
+      원본값: '[0,2]',
+      해석: '미확정',
+    }),
+    expect.objectContaining({ 항목순서: 2, 질문: '중복 질문', 원본값: '"=SUM(1,2)"' }),
+    expect.objectContaining({ 항목순서: 3, 원본값: 'null' }),
+  ])
+  expect(prisma.hiringMigrationRecord.findMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: { spaceId: 'qa-space', targetModel: 'HiringApplication', targetId: { in: ['app-1'] } },
+    })
+  )
+})
+
+it('이전 원장 해석 실패 시 누락된 엑셀을 성공 응답하지 않는다', async () => {
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 'app-1',
+      spaceId: 'qa-space',
+      files: [],
+      createdAt: new Date('2026-09-01'),
+      stage: 'REJECTED',
+      hiringStage: 'APPLIED',
+      posting: { title: 'QA' },
+      applicationEntries: [],
+    },
+  ])
+  ;(prisma.hiringMigrationRecord.findMany as jest.Mock).mockResolvedValue([
+    {
+      targetId: 'app-1',
+      sourceSnapshotAt: new Date('2026-09-01'),
+      snapshot: {},
+    },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  expect(response!.status).toBe(422)
+})
+
+it('첨부는 검증된 파일명만 내보내고 Storage 경로와 미확정 참조를 노출하지 않는다', async () => {
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 'app-1',
+      spaceId: 'qa-space',
+      files: [
+        {
+          id: 'file-1',
+          applicationId: 'app-1',
+          spaceId: 'qa-space',
+          fileName: 'resume.pdf',
+          sizeBytes: 10,
+        },
+      ],
+      createdAt: new Date('2026-09-01'),
+      stage: 'REJECTED',
+      hiringStage: 'APPLIED',
+      posting: { title: 'QA' },
+      applicationEntries: [],
+    },
+  ])
+  ;(prisma.hiringMigrationRecord.findMany as jest.Mock).mockResolvedValue([
+    {
+      targetId: 'app-1',
+      sourceSnapshotAt: new Date('2026-09-01'),
+      snapshot: {
+        ...legacySnapshot,
+        application: {
+          ...legacySnapshot.application,
+          application_entries: [
+            { label: '첨부', type: 'file', value: ['private/source-key', 'unmatched-key'] },
+          ],
+        },
+        fileMappings: [
+          {
+            entryIndex: 0,
+            sourceFileKey: 'private/source-key',
+            targetFileId: 'file-1',
+            sha256: 'a'.repeat(64),
+            sizeBytes: 10,
+            verified: true,
+          },
+        ],
+      },
+    },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  expect(response!.headers.get('Cache-Control')).toBe('private, no-store')
+  const workbook = XLSX.read(Buffer.from(await response!.arrayBuffer()), { type: 'buffer' })
+  const rows = XLSX.utils.sheet_to_json(workbook.Sheets['이전 원문'])
+  expect(rows).toEqual([expect.objectContaining({ 첨부파일: '["resume.pdf"]', 미확정첨부수: 1 })])
+  expect(JSON.stringify(rows)).not.toMatch(/private\/source-key|unmatched-key/)
+})
+
+it('긴 원문을 잘라내거나 손상된 엑셀로 내려주지 않는다', async () => {
+  ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+    {
+      id: 'app-1',
+      spaceId: 'qa-space',
+      files: [],
+      createdAt: new Date('2026-09-01'),
+      stage: 'REJECTED',
+      hiringStage: 'APPLIED',
+      posting: { title: 'QA' },
+      applicationEntries: [],
+    },
+  ])
+  ;(prisma.hiringMigrationRecord.findMany as jest.Mock).mockResolvedValue([
+    {
+      targetId: 'app-1',
+      sourceSnapshotAt: new Date('2026-09-01'),
+      snapshot: {
+        ...legacySnapshot,
+        application: {
+          ...legacySnapshot.application,
+          application_entries: [{ type: 'string', value: 'x'.repeat(32768) }],
+        },
+      },
+    },
+  ])
+  const response = await GET(new NextRequest('http://localhost/api/export'))
+  expect(response!.status).toBe(422)
+})
+
+it.each([null, { type: 'string', value: { invalid: true } }])(
+  '손상된 개별 원문 항목은 성공 export하지 않는다: %s',
+  async (entry) => {
+    ;(prisma.hiringApplication.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: 'app-1',
+        spaceId: 'qa-space',
+        files: [],
+        createdAt: new Date('2026-09-01'),
+        stage: 'REJECTED',
+        hiringStage: 'APPLIED',
+        posting: { title: 'QA' },
+        applicationEntries: [],
+      },
+    ])
+    ;(prisma.hiringMigrationRecord.findMany as jest.Mock).mockResolvedValue([
+      {
+        targetId: 'app-1',
+        sourceSnapshotAt: new Date('2026-09-01'),
+        snapshot: {
+          ...legacySnapshot,
+          application: { ...legacySnapshot.application, application_entries: [entry] },
+        },
+      },
+    ])
+    const response = await GET(new NextRequest('http://localhost/api/export'))
+    expect(response!.status).toBe(422)
+  }
+)
