@@ -104,6 +104,12 @@ export async function POST(req: NextRequest) {
       ? await approveAndExecute(actionId, decider)
       : await rejectAction(actionId, decider)
 
+  // 구독 만료로 차단 — 결정이 없었으므로 원본 메시지를 건드리지 않는다.
+  if (outcome.status === 'BLOCKED') {
+    if (payload.response_url) await postEphemeral(payload.response_url, outcome.message)
+    return NextResponse.json({ ok: true })
+  }
+
   await syncSlackDecision(actionId)
 
   // 경합 패자·이미 처리된 요청 → ephemeral 안내(원본 메시지는 sync가 최종 상태 유지).
