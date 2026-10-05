@@ -104,7 +104,9 @@ async function savePresetForFormat(args: {
       institution,
       kind,
       mapping: pairs,
-      defaultAccountId: accountId,
+      // defaultAccountId 는 더 이상 기록하지 않는다 — 한 은행에 계좌가 여럿이면 매핑 규칙은
+      // 하나인데 계좌는 파일마다 다르다. "방금 쓴 계좌"를 규칙에 박아두면 다음 파일이 그 계좌로
+      // 미리 채워져 조용히 잘못 적재된다(실제 사고: 새활용 22건이 주거래로). 계좌는 매번 선택한다.
       ...(presetName !== match.name && !nameTaken ? { name: presetName } : {}),
     }
     try {
@@ -128,7 +130,8 @@ async function savePresetForFormat(args: {
   }
   const create = (name: string) =>
     prisma.finMappingPreset.create({
-      data: { spaceId, name, institution, kind, mapping: pairs, defaultAccountId: accountId },
+      // defaultAccountId 미기록 — 위 갱신 경로 주석 참조
+      data: { spaceId, name, institution, kind, mapping: pairs },
     })
   try {
     await create(nextName(presetName, 1))

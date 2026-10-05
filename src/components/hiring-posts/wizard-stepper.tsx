@@ -58,13 +58,17 @@ export function WizardStepper({ current, onSelect, disabled = false }: Props) {
       <Button
         type="button"
         size="sm"
-        variant={current === 'form' ? 'secondary' : 'ghost'}
+        variant={current === 'form' ? 'secondary' : 'outline'}
         aria-pressed={current === 'form'}
         disabled={disabled}
         onClick={() => onSelect('form')}
       >
         지원서 설정
       </Button>
+      <p className="w-full text-center text-xs leading-relaxed text-muted-foreground">
+        지원서 설정은 HTML 공고 작성과 별도로 관리합니다. 발행 여부와 관계없이 버튼을 눌러 수정할 수
+        있습니다.
+      </p>
     </nav>
   )
 }

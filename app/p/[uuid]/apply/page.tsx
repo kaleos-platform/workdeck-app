@@ -1,6 +1,7 @@
+import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 // 공개 지원 폼 페이지(server wrapper) — posting.applicationEntries 스키마를 파싱해 클라이언트 폼에 전달.
 // ?preview=1 + 스페이스 멤버인 경우 DRAFT/CLOSED 여도 폼 화면을 볼 수 있다(제출은 불가).
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { getHiringPublicPostingPath } from '@/lib/deck-routes'
@@ -30,6 +31,7 @@ export default async function ApplyPage({ params, searchParams }: Params) {
       spaceId: true,
       title: true,
       status: true,
+      closingDate: true,
       applicationEntries: true,
       positions: { orderBy: { createdAt: 'asc' }, select: { id: true, name: true } },
       stores: { include: { store: { select: { id: true, name: true } } } },
@@ -40,9 +42,19 @@ export default async function ApplyPage({ params, searchParams }: Params) {
 
   const isPreview = await isSpaceMemberPreview(preview, posting.spaceId)
 
-  if (posting.status === 'DRAFT' && !isPreview) notFound()
-  // ACTIVE 아니면 공고 페이지로(마감 안내) — preview 모드에서는 그대로 폼 화면을 보여준다
-  if (posting.status !== 'ACTIVE' && !isPreview) redirect(getHiringPublicPostingPath(uuid))
+  if ((posting.status !== 'ACTIVE' || isHiringDeadlinePassed(posting.closingDate)) && !isPreview) {
+    return (
+      <section className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center gap-3 px-4 text-center">
+        <h1 className="text-xl font-semibold">현재 지원할 수 없는 공고입니다</h1>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          아직 접수가 시작되지 않았거나 모집이 마감되어 지원서를 제출할 수 없습니다.
+        </p>
+        <p className="text-sm text-muted-foreground">
+          자세한 사항은 채용 담당자에게 문의해 주세요.
+        </p>
+      </section>
+    )
+  }
 
   const fields = parseApplicationEntriesSchema(posting.applicationEntries)
   const positions = posting.positions.map((p) => ({ id: p.id, name: p.name }))

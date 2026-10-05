@@ -91,7 +91,10 @@ describe('resolveInitialSelection', () => {
     expect(result.accountId).toBe('')
   })
 
-  it('프리셋 기본 계좌는 파일 계좌 매칭 다음 순위', () => {
+  // prod 사고 재현: 신한 grid export 는 계좌번호가 없어 파일 매칭이 실패하는데,
+  // 프리셋 defaultAccountId(= 직전에 올린 계좌)가 미리 채워져 새활용 파일 22건이
+  // 주거래로 조용히 적재됐다. 이제는 비워서 사용자가 고르게 한다.
+  it('계좌번호 없는 파일 + 계좌 후보 여럿 → 프리셋 기본 계좌를 쓰지 않고 비운다', () => {
     const a1 = makeAccount({ id: 'a1', accountNumber: '111' })
     const a2 = makeAccount({ id: 'a2', accountNumber: '222' })
     const result = resolveInitialSelection(
@@ -111,8 +114,8 @@ describe('resolveInitialSelection', () => {
         },
       })
     )
-    expect(result.accountId).toBe('a2')
-    // 프리셋 매핑이 suggestedMapping보다 우선 — withdrawal 미포함
+    expect(result.accountId).toBe('')
+    // 프리셋 매핑은 여전히 suggestedMapping보다 우선 — withdrawal 미포함
     expect(result.mapping['withdrawal']).toBeUndefined()
   })
 })
@@ -395,5 +398,13 @@ describe('mappingWarnings — grid_exceldata (16).xlsx 실제 사고 재현', ()
       memo: [10],
     }
     expect(mappingWarnings(fixed, HEADERS, EMPTY, 'BANK')).toEqual([])
+  })
+})
+
+describe('resolveInitialSelection — 계좌 후보가 하나뿐일 때', () => {
+  it('후보가 1개면 자동 선택한다 — 틀릴 수 없으므로 유지', () => {
+    const only = makeAccount({ id: 'solo', accountNumber: '999' })
+    const result = resolveInitialSelection(makePreview({ accounts: [only], matchedPreset: null }))
+    expect(result.accountId).toBe('solo')
   })
 })

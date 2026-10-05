@@ -52,6 +52,22 @@ export type Account = {
   currentBalanceAsOf?: string | null
 }
 
+/** 파일 最古 거래(BANK만) — 계좌 추론·잔액 검증 근거 */
+export type FirstTxnProbe = {
+  txnDate: string
+  direction: 'IN' | 'OUT'
+  amount: number
+  balanceAfter: number | null
+}
+
+/**
+ * 계좌별 추론 근거.
+ *   exact   = 最古 거래가 이미 이 계좌에 있다(재업로드)
+ *   balance = 最古 거래 직전 잔액이 이 계좌에서 이어진다(신규 구간)
+ * 비어 있으면 판단 불가 — 사용자가 직접 고른다.
+ */
+export type AccountHints = Record<string, 'exact' | 'balance' | undefined>
+
 export type PreviewResponse = {
   fileName: string
   preview: PreviewData
@@ -60,6 +76,8 @@ export type PreviewResponse = {
   suggestedMapping: MappingEntry[]
   matchedPreset: MatchedPreset | null
   accounts: Account[]
+  firstTxn?: FirstTxnProbe | null
+  accountHints?: AccountHints
 }
 
 export type CommitCounts = {
@@ -314,11 +332,15 @@ export function resolveInitialSelection(data: PreviewResponse): {
     resolvedKind
   )
 
-  // 계좌 초기 선택(종류 일치 후보만): 파일 계좌/카드번호 매칭 > 프리셋 기본 계좌 > 유일 후보
+  // 계좌 초기 선택(종류 일치 후보만): 파일 계좌/카드번호 매칭 > 유일 후보.
+  //
+  // 프리셋의 defaultAccountId 는 쓰지 않는다. 한 은행에 계좌가 여럿이면 매핑 규칙은 하나인데
+  // 계좌는 파일마다 다르다. 그런데 defaultAccountId 는 커밋할 때마다 "방금 쓴 계좌"로 덮여서,
+  // 계좌번호가 없는 export(신한 grid 등)에서는 직전에 올린 계좌가 그대로 미리 채워진다.
+  // 실제로 새활용 계좌 파일 22건이 주거래로 조용히 적재된 사고가 이 경로로 일어났다.
+  // 근거 없이 채우느니 비워서 사용자가 고르게 한다(계좌 미선택 = needs_review = 등록 차단).
   const candidates = data.accounts.filter((a) => a.kind === resolvedKind)
-  const presetAccount = candidates.find((a) => a.id === data.matchedPreset?.defaultAccountId)
-  const defaultAccount =
-    matched?.id ?? presetAccount?.id ?? (candidates.length === 1 ? candidates[0]?.id : null)
+  const defaultAccount = matched?.id ?? (candidates.length === 1 ? candidates[0]?.id : null)
   const selectedAccount = candidates.find((a) => a.id === defaultAccount) ?? null
 
   return {

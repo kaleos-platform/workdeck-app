@@ -249,7 +249,56 @@ export type FinPreview = {
   preamble: FinPreamble
 }
 
-export function previewFinanceFile(buffer: ArrayBuffer, sheetName?: string): FinPreview {
+/** 파일에서 가장 오래된 거래 1건 — 적재 계좌 추론·잔액 연속성 검증용. */
+export type FirstTxnProbe = {
+  /** "YYYY-MM-DD HH:MM:SS" | "YYYY-MM-DD" */
+  txnDate: string
+  direction: 'IN' | 'OUT'
+  amount: number
+  balanceAfter: number | null
+}
+
+/**
+ * 미리보기 행에서 가장 오래된 거래를 뽑는다. 계좌번호가 없는 export(신한 grid 등)에서
+ * 적재 계좌를 추론·검증하는 근거로 쓴다.
+ *
+ * 매핑은 preview 시점의 추정값(프리셋 또는 automap)이라 사용자가 나중에 바꿔도 재계산하지
+ * 않는다. 날짜·금액·잔액 컬럼은 추정이 거의 틀리지 않고, 틀리면 추론이 안 될 뿐 해는 없다.
+ * BANK 전용 — 카드는 잔액 개념이 없어 추론 근거가 되지 못한다.
+ */
+export function extractFirstTxn(
+  rows: unknown[][],
+  mapping: FinColumnMapping,
+  kind: FinKind
+): FirstTxnProbe | null {
+  if (kind !== 'BANK') return null
+  let oldest: FirstTxnProbe | null = null
+  for (const row of rows) {
+    const txnDate = normalizeDateTime(getCell(mapping.txnDate, row))
+    if (!txnDate || !isValidTxnDate(txnDate)) continue
+    const deposit = parseAmount(getCell(mapping.deposit, row))
+    const withdrawal = parseAmount(getCell(mapping.withdrawal, row))
+    if (deposit <= 0 && withdrawal <= 0) continue
+    const balRaw = getCell(mapping.balanceAfter, row)
+    const probe: FirstTxnProbe = {
+      txnDate,
+      direction: deposit > 0 ? 'IN' : 'OUT',
+      amount: deposit > 0 ? deposit : withdrawal,
+      balanceAfter: balRaw ? parseAmount(balRaw) : null,
+    }
+    if (!oldest || probe.txnDate < oldest.txnDate) oldest = probe
+  }
+  return oldest
+}
+
+/**
+ * dataRows 는 응답에 싣지 않는다 — 호출부에서 구조분해로 떼어내 계좌 추론에만 쓰고 버린다.
+ * (전체 행을 API 응답에 넣으면 수천 행짜리 파일에서 페이로드가 폭증한다.)
+ */
+export function previewFinanceFile(
+  buffer: ArrayBuffer,
+  sheetName?: string
+): FinPreview & { dataRows: unknown[][] } {
   const wb = readWorkbook(buffer)
   const { rows, activeSheet } = sheetRows(wb, sheetName)
   const headerRowIndex = detectHeaderRowIndex(rows)
@@ -278,6 +327,7 @@ export function previewFinanceFile(buffer: ArrayBuffer, sheetName?: string): Fin
     sheetNames: wb.SheetNames,
     activeSheet,
     preamble: extractPreamble(rows, headerRowIndex),
+    dataRows,
   }
 }
 

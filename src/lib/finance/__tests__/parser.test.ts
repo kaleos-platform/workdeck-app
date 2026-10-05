@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 import {
+  extractFirstTxn,
   previewFinanceFile,
   parseFinanceWithMapping,
   parseAmount,
@@ -425,5 +426,28 @@ describe('identity / content 키', () => {
     const b = parseFinanceWithMapping(toBuf(changed), CARD_MAP, 'CARD', 'acc-card').rows[0]
     expect(a.identityKey).toBe(b.identityKey)
     expect(a.contentHash).not.toBe(b.contentHash)
+  })
+})
+
+describe('extractFirstTxn — 계좌 추론용 最古 거래', () => {
+  // SHINHAN: 헤더 0행, [No, 전체선택, 거래일시, 적요, 입금액, 출금액, 내용, 잔액]
+  const rows = SHINHAN.slice(1)
+  const mapping = { txnDate: 2, deposit: 4, withdrawal: 5, balanceAfter: 7 }
+
+  test('가장 오래된 거래를 방향·금액·잔액과 함께 뽑는다', () => {
+    const p = extractFirstTxn(rows, mapping, 'BANK')
+    // 두 행 모두 2026.05.28 18:45:11 — 먼저 만난 행(출금 6,575,000) 유지
+    expect(p).toMatchObject({ txnDate: '2026-05-28 18:45:11', direction: 'OUT', amount: 6575000 })
+    expect(p?.balanceAfter).toBe(365000)
+  })
+
+  test('카드는 잔액 개념이 없어 추론 근거가 되지 못한다', () => {
+    expect(extractFirstTxn(rows, mapping, 'CARD')).toBeNull()
+  })
+
+  test('금액이 0인 행(합계·안내)은 건너뛴다', () => {
+    const withNoise = [['', '', '2026.01.01 00:00:00', '합계', '0', '0', '', '0'], ...rows]
+    const p = extractFirstTxn(withNoise, mapping, 'BANK')
+    expect(p?.txnDate).toBe('2026-05-28 18:45:11')
   })
 })
