@@ -1,5 +1,6 @@
 'use client'
 
+import { createApplicantSearch } from '@/lib/hiring/application-search-action'
 import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Download, Loader2 } from 'lucide-react'
@@ -47,7 +48,7 @@ type Props = {
   pageSize: number
   page: number
   postings: Array<{ id: string; title: string }>
-  filters: { posting: string; stage: string; from: string; to: string }
+  filters: { search?: string; posting: string; stage: string; from: string; to: string }
 }
 
 const ALL = '__all__'
@@ -62,7 +63,10 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
   const lastIndex = useRef<number | null>(null)
   const bulkInFlight = useRef(false)
   const exportInFlight = useRef(false)
-  const busy = bulkLoading || pending
+  const [searchText, setSearchText] = useState('')
+  const [searching, setSearching] = useState(false)
+  const searchInFlight = useRef(false)
+  const busy = bulkLoading || pending || searching
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const allKeys = rows.map((r) => r.id)
@@ -74,6 +78,7 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
     lastIndex.current = null
     const params = new URLSearchParams()
     const next = { ...filters, page: '1', ...patch }
+    if (next.search) params.set('search', next.search)
     if (next.posting) params.set('posting', next.posting)
     if (next.stage) params.set('stage', next.stage)
     if (next.from) params.set('from', next.from)
@@ -129,11 +134,28 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
     }
   }
 
+  async function searchApplicants(event: React.FormEvent) {
+    event.preventDefault()
+    if (busy || searchInFlight.current) return
+    searchInFlight.current = true
+    setSearching(true)
+    try {
+      const search = await createApplicantSearch(searchText)
+      updateQuery({ search })
+    } catch {
+      toast.error('검색하지 못했습니다. 입력과 로그인 상태를 확인해 주세요')
+    } finally {
+      searchInFlight.current = false
+      setSearching(false)
+    }
+  }
+
   async function exportExcel() {
     if (exportInFlight.current || busy) return
     exportInFlight.current = true
     setExporting(true)
     const params = new URLSearchParams()
+    if (filters.search) params.set('search', filters.search)
     if (filters.posting) params.set('posting', filters.posting)
     if (filters.stage) params.set('stage', filters.stage)
     if (filters.from) params.set('from', filters.from)
@@ -176,6 +198,36 @@ export function ApplicationsTable({ rows, total, pageSize, page, postings, filte
 
   return (
     <div className="space-y-3">
+      <form onSubmit={searchApplicants} className="flex flex-wrap items-center gap-2" role="search">
+        <Input
+          aria-label="지원자 이름 또는 휴대전화 검색"
+          placeholder="이름 전체 · 휴대전화 · 끝 4자리"
+          maxLength={200}
+          value={searchText}
+          onChange={(event) => setSearchText(event.target.value)}
+          disabled={busy}
+          className="w-full sm:w-72"
+        />
+        <Button type="submit" variant="outline" disabled={busy}>
+          검색
+        </Button>
+        {filters.search && (
+          <>
+            <span className="text-sm text-muted-foreground">검색 적용 중</span>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => {
+                setSearchText('')
+                updateQuery({ search: '' })
+              }}
+            >
+              검색 해제
+            </Button>
+          </>
+        )}
+      </form>
       {/* 필터 */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-wrap items-end gap-2">
