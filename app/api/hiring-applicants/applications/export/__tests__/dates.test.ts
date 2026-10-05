@@ -350,3 +350,30 @@ it.each([null, { type: 'string', value: { invalid: true } }])(
     expect(response!.status).toBe(422)
   }
 )
+
+it('목록과 엑셀에 동일한 이름 검색 조건을 적용한다', async () => {
+  const search = 'a'.repeat(64)
+  await ApplicationsPage({ searchParams: Promise.resolve({ search }) })
+  await GET(new NextRequest('http://localhost/api/export?search=' + search))
+  expect(listApplications).toHaveBeenCalledWith('qa-space', expect.objectContaining({ search }))
+  expect(prisma.hiringApplication.findMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: expect.objectContaining({ spaceId: 'qa-space', OR: [{ nameHash: search }] }),
+    })
+  )
+})
+
+it('잘못된 검색 토큰을 전체 지원자 엑셀로 확대하지 않는다', async () => {
+  await GET(new NextRequest('http://localhost/api/export?search=invalid'))
+  expect(prisma.hiringApplication.findMany).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: expect.objectContaining({ spaceId: 'qa-space', id: { in: [] } }),
+    })
+  )
+})
+
+it('검색 기록 이동 시 다른 검색의 선택 상태가 재사용되지 않는다', async () => {
+  const a = await ApplicationsPage({ searchParams: Promise.resolve({ search: 'a'.repeat(64) }) })
+  const b = await ApplicationsPage({ searchParams: Promise.resolve({ search: 'b'.repeat(64) }) })
+  expect(a.props.children[1].key).not.toBe(b.props.children[1].key)
+})

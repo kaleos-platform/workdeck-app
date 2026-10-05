@@ -2,6 +2,7 @@
 // 서버에서만 복호화하고 xlsx 바이너리로 스트림한다(복호화 값이 클라이언트 번들로 넘어가지 않음).
 import { projectApplicationHistory } from '@/lib/hiring/migration/application-history'
 import { decodeMigrationSnapshot } from '@/lib/hiring/migration/ledger'
+import { applicantSearchWhere } from '@/lib/hiring/application-search'
 import { NextRequest } from 'next/server'
 import * as XLSX from 'xlsx'
 import { prisma } from '@/lib/prisma'
@@ -39,6 +40,9 @@ export async function GET(req: NextRequest) {
 
   const applications = await prisma.hiringApplication.findMany({
     where: {
+      ...applicantSearchWhere(
+        sp.getAll('search').length > 1 ? 'invalid' : (sp.get('search') ?? '')
+      ),
       spaceId,
       deletedAt: null,
       ...(posting ? { postingId: posting } : {}),
