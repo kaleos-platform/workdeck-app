@@ -33,8 +33,14 @@ export async function POST(req: NextRequest, { params }: Params) {
   const now = new Date()
   switch (parsed.data.action) {
     case 'publish': {
+      const closingDate =
+        parsed.data.closingDate === undefined
+          ? posting.closingDate
+          : parsed.data.closingDate === null
+            ? null
+            : new Date(parsed.data.closingDate)
       // 마감일이 지난 공고는 발행(재발행) 불가 — reopen 과 동일 규칙 적용
-      if (isHiringDeadlinePassed(posting.closingDate, now)) {
+      if (isHiringDeadlinePassed(closingDate, now)) {
         return errorResponse('마감일이 지나 발행할 수 없습니다', 400)
       }
       const check = await checkPublishable(resolved.space.id, id)
@@ -42,8 +48,8 @@ export async function POST(req: NextRequest, { params }: Params) {
         return errorResponse('발행 요건을 충족하지 않았습니다', 400, { errors: check.errors })
       const updated = await prisma.hiringPosting.update({
         where: { id },
-        data: { status: 'ACTIVE', publishedAt: posting.publishedAt ?? now },
-        select: { id: true, uuid: true, status: true, publishedAt: true },
+        data: { status: 'ACTIVE', publishedAt: posting.publishedAt ?? now, closingDate },
+        select: { id: true, uuid: true, status: true, publishedAt: true, closingDate: true },
       })
       return NextResponse.json({ posting: updated })
     }
