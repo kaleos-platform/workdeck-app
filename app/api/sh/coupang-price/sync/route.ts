@@ -35,3 +35,19 @@ export async function POST() {
   })
   return NextResponse.json({ job: { id: job.id } }, { status: 201 })
 }
+
+/**
+ * GET /api/sh/coupang-price/sync — 이 space 의 가장 최근 쿠팡 상품 불러오기 잡.
+ * 매칭 화면이 불러오기 완료를 기다렸다가 목록을 다시 조회하는 데 쓴다.
+ */
+export async function GET() {
+  const resolved = await resolveDeckContext('seller-hub')
+  if ('error' in resolved) return resolved.error
+
+  const job = await prisma.coupangWriteJob.findFirst({
+    where: { spaceId: resolved.space.id, kind: 'PRODUCT_SYNC' },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, status: true, error: true, createdAt: true, executedAt: true },
+  })
+  return NextResponse.json({ job })
+}

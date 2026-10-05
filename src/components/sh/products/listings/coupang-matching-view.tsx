@@ -6,7 +6,14 @@ import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { wingListingUrl } from '@/lib/coupang/wing-link'
 import type { MatchingRow } from '@/lib/sh/coupang-price/load-matching'
 import type { MatchStatus } from '@/lib/sh/coupang-price/match-candidates'
@@ -37,10 +44,24 @@ async function send(url: string, method: string, body?: unknown) {
   return data
 }
 
+type SyncJob = {
+  id: string
+  status: 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'PARTIAL' | 'FAILED'
+  error: string | null
+}
+
+const SYNC_POLL_MS = 5_000
+// 상품 API 수집은 실측 약 1.5분(55상품) — 넉넉히 5분.
+const SYNC_POLL_LIMIT_MS = 5 * 60_000
+
 export function CoupangMatchingView() {
   const [rows, setRows] = useState<MatchingRow[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  // 진행 중인 쿠팡 상품 불러오기(워커 잡) id — 끝나면 목록을 자동으로 다시 조회한다.
+  // 불리언이 아니라 id 로 들고 있어야 이전 잡의 결과를 새 잡으로 착각하지 않는다.
+  const [syncJobId, setSyncJobId] = useState<string | null>(null)
+  const syncing = syncJobId != null
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -57,8 +78,71 @@ export function CoupangMatchingView() {
     void load()
   }, [load])
 
+  // 화면을 열었을 때 이미 불러오는 중이면 이어서 기다린다.
+  useEffect(() => {
+    let cancelled = false
+    send('/api/sh/coupang-price/sync', 'GET')
+      .then((d) => {
+        const job = (d as { job: SyncJob | null }).job
+        if (!cancelled && job && (job.status === 'PENDING' || job.status === 'RUNNING')) {
+          setSyncJobId((cur) => cur ?? job.id)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // 불러오는 동안 5초 간격으로 잡 상태 확인 — 끝나면 목록 재조회 + 결과 안내.
+  useEffect(() => {
+    if (!syncJobId) return
+    const startedAt = Date.now()
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout>
+    const poll = async () => {
+      try {
+        const d = (await send('/api/sh/coupang-price/sync', 'GET')) as { job: SyncJob | null }
+        if (cancelled) return
+        // 최근 잡이 우리가 기다리는 잡일 때만 판정한다.
+        const job = d.job?.id === syncJobId ? d.job : null
+        if (job && (job.status === 'SUCCEEDED' || job.status === 'PARTIAL')) {
+          setSyncJobId(null)
+          toast.success('쿠팡 상품을 불러왔습니다')
+          void load()
+          return
+        }
+        if (job && job.status === 'FAILED') {
+          setSyncJobId(null)
+          toast.error(`쿠팡 상품 불러오기 실패: ${job.error ?? '알 수 없는 오류'}`)
+          return
+        }
+      } catch {
+        // 일시적 조회 실패 — 다음 주기에 다시 확인
+      }
+      if (cancelled) return
+      if (Date.now() - startedAt > SYNC_POLL_LIMIT_MS) {
+        setSyncJobId(null)
+        toast.error('워커가 아직 처리하지 않았습니다. 워커가 멈췄을 수 있습니다')
+        return
+      }
+      timer = setTimeout(poll, SYNC_POLL_MS)
+    }
+    timer = setTimeout(poll, SYNC_POLL_MS)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [syncJobId, load])
+
   const counts = useMemo(() => {
-    const c: Record<MatchStatus, number> = { NEEDS_REVIEW: 0, CANDIDATE: 0, AMBIGUOUS: 0, NONE: 0, CONFIRMED: 0 }
+    const c: Record<MatchStatus, number> = {
+      NEEDS_REVIEW: 0,
+      CANDIDATE: 0,
+      AMBIGUOUS: 0,
+      NONE: 0,
+      CONFIRMED: 0,
+    }
     for (const r of rows) c[r.status] += 1
     return c
   }, [rows])
@@ -70,7 +154,9 @@ export function CoupangMatchingView() {
         confirmed: number
         skipped: Array<{ reason: string }>
       }
-      toast.success(`${r.confirmed}건 확정${r.skipped.length ? ` · ${r.skipped.length}건 건너뜀` : ''}`)
+      toast.success(
+        `${r.confirmed}건 확정${r.skipped.length ? ` · ${r.skipped.length}건 건너뜀` : ''}`
+      )
       if (r.skipped.length) toast.warning(r.skipped[0].reason)
       await load()
     } catch (err) {
@@ -95,8 +181,9 @@ export function CoupangMatchingView() {
   async function syncNow() {
     setBusy(true)
     try {
-      await send('/api/sh/coupang-price/sync', 'POST')
-      toast.success('쿠팡 상품을 불러오는 중입니다. 1~2분 뒤 새로고침하세요')
+      const d = (await send('/api/sh/coupang-price/sync', 'POST')) as { job: { id: string } }
+      toast.success('쿠팡 상품을 불러오는 중입니다. 끝나면 목록이 자동으로 갱신됩니다')
+      setSyncJobId(d.job.id)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '불러오기 실패')
     } finally {
@@ -117,11 +204,15 @@ export function CoupangMatchingView() {
           </Badge>
         ))}
         <div className="ml-auto flex gap-2">
-          <Button size="sm" variant="outline" disabled={busy} onClick={syncNow}>
-            <RefreshCw className="mr-1 h-3.5 w-3.5" />
-            지금 쿠팡 상품 불러오기
+          <Button size="sm" variant="outline" disabled={busy || syncing} onClick={syncNow}>
+            <RefreshCw className={`mr-1 h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? '쿠팡 상품 불러오는 중…' : '지금 쿠팡 상품 불러오기'}
           </Button>
-          <Button size="sm" disabled={busy || candidatePairs.length === 0} onClick={() => confirm(candidatePairs)}>
+          <Button
+            size="sm"
+            disabled={busy || candidatePairs.length === 0}
+            onClick={() => confirm(candidatePairs)}
+          >
             후보 {candidatePairs.length}건 일괄 확정
           </Button>
         </div>
@@ -132,7 +223,11 @@ export function CoupangMatchingView() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[34%]">쿠팡 옵션</TableHead>
-              <TableHead className="w-[150px] text-right">쿠팡 현재가 (RG / 판매자배송)</TableHead>
+              <TableHead className="w-[170px] text-right whitespace-normal">
+                쿠팡 현재가
+                <br />
+                RG / 판매자배송
+              </TableHead>
               <TableHead className="w-[90px]">상태</TableHead>
               <TableHead>판매채널 상품</TableHead>
               <TableHead className="w-[90px]" />
@@ -154,7 +249,7 @@ export function CoupangMatchingView() {
             ) : (
               rows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="whitespace-normal break-words">
+                  <TableCell className="break-words whitespace-normal">
                     <span className="flex items-center gap-1 font-medium">
                       {r.itemName ?? r.sellerProductId}
                       <a
@@ -172,19 +267,22 @@ export function CoupangMatchingView() {
                     </span>
                   </TableCell>
                   <TableCell className="text-right text-sm tabular-nums">
-                    {r.rgSalePrice?.toLocaleString('ko-KR') ?? '—'} / {r.mpSalePrice?.toLocaleString('ko-KR') ?? '—'}
+                    {r.rgSalePrice?.toLocaleString('ko-KR') ?? '—'} /{' '}
+                    {r.mpSalePrice?.toLocaleString('ko-KR') ?? '—'}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={STATUS_CLASS[r.status]}>
                       {STATUS_LABEL[r.status]}
                     </Badge>
                   </TableCell>
-                  <TableCell className="whitespace-normal break-words text-sm">
+                  <TableCell className="text-sm break-words whitespace-normal">
                     {r.listing ? (
                       <>
                         {r.listing.name}
                         {r.status === 'NEEDS_REVIEW' && r.candidates[0] && (
-                          <p className="text-xs text-amber-700">재고 매핑 기준 후보: {r.candidates[0].name}</p>
+                          <p className="text-xs text-amber-700">
+                            재고 매핑 기준 후보: {r.candidates[0].name}
+                          </p>
                         )}
                       </>
                     ) : r.candidates.length > 0 ? (
@@ -194,9 +292,11 @@ export function CoupangMatchingView() {
                             key={c.id}
                             size="sm"
                             variant="ghost"
-                            className="h-auto justify-start whitespace-normal px-1 py-0.5 text-left text-xs"
+                            className="h-auto justify-start px-1 py-0.5 text-left text-xs whitespace-normal"
                             disabled={busy}
-                            onClick={() => confirm([{ coupangProductItemId: r.id, listingId: c.id }])}
+                            onClick={() =>
+                              confirm([{ coupangProductItemId: r.id, listingId: c.id }])
+                            }
                           >
                             {c.name} — 이걸로 확정
                           </Button>
@@ -210,7 +310,13 @@ export function CoupangMatchingView() {
                   </TableCell>
                   <TableCell>
                     {r.listing && (
-                      <Button size="sm" variant="ghost" className="h-7 text-xs" disabled={busy} onClick={() => unlink(r.id)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs"
+                        disabled={busy}
+                        onClick={() => unlink(r.id)}
+                      >
                         연결 해제
                       </Button>
                     )}
