@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
+import { shouldPreserveClassification } from '@/lib/finance/staging-resolution'
 
 /** Date → "YYYY-MM" (로컬). */
 function yearMonth(d: Date): string {
@@ -139,10 +140,14 @@ export async function POST(req: NextRequest) {
           matchedRuleId: s.matchedRuleId,
           isTransfer,
         }
-        // 재임포트 자동분류(DUP_CHANGED 포함)가 사용자 분류를 덮어쓰지 않도록 보존.
-        // 단, 사용자가 "유지"로 명시 선택한 중복(DUP_OVERWRITE)은 덮어쓰기 의도이므로 분류를 반영한다.
-        const preserve =
-          classifiedKeys.has(`${s.accountId}|${s.identityKey}`) && s.resolution !== 'DUP_OVERWRITE'
+        // 재임포트 자동분류가 사용자 분류를 덮어쓰지 않도록 보존. 판정은 shouldPreserveClassification
+        // 한곳에서 — 「유지」(DUP_OVERWRITE)는 덮어쓰기 의도지만, 재업로드분이 미분류면
+        // 반영할 분류가 없으므로 기존 분류를 지우지 않는다.
+        const preserve = shouldPreserveClassification({
+          priorClassified: classifiedKeys.has(`${s.accountId}|${s.identityKey}`),
+          resolution: s.resolution,
+          stagedCategoryId: s.categoryId,
+        })
         // 메모는 content/classification 어느 쪽도 아닌 조건부 필드 — staged에 메모가 있고
         // 기존 확정 거래에 메모가 없을 때만 반영한다. content에 넣으면 재업로드분(memo=null)
         // 재커밋이 기존 메모를 지우고, classification에 넣으면 preserve 시 유실된다.
