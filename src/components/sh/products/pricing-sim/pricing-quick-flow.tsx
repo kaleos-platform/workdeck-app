@@ -1396,6 +1396,21 @@ export function PricingQuickFlow({
     })
   }, [])
 
+  // ── 상단 고정 헤더(제목·버튼·조합 탭) 높이 + 스크롤 영역(main) 높이 ──
+  // 좌측 스텝 패널은 헤더 아래에 붙고, 남은 높이를 넘으면 패널 안에서 스크롤한다
+  // (안 그러면 고정된 패널 하단이 페이지 끝까지 가려진다).
+  const [stickyLayout, setStickyLayout] = useState({ headerH: 0, viewH: 0 })
+  const stickyHeaderRef = useCallback((el: HTMLDivElement | null) => {
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const scroller = el.closest('main') ?? document.documentElement
+    const ro = new ResizeObserver(() =>
+      setStickyLayout({ headerH: el.offsetHeight, viewH: scroller.clientHeight })
+    )
+    ro.observe(el)
+    ro.observe(scroller)
+    return () => ro.disconnect()
+  }, [])
+
   // ── 조합 한눈에 보기 ──────────────────────────────────────────────────────
   // 활성 탭은 라이브 상태(buildVariant), 비활성 탭은 보관 data로 채널별 가격을 계산한다.
   // 채널 보드 카드와 같은 computeChannelPrice를 써서 숫자가 어긋나지 않는다. 열려 있을 때만 계산.
@@ -1874,98 +1889,101 @@ export function PricingQuickFlow({
         </Link>
       </Button>
 
-      {/* ── 헤더 ── */}
-      <div className="mb-6 flex items-start justify-between gap-4">
-        {/* 제목 = 시나리오 이름 (인라인 편집) */}
-        <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground">가격 시뮬레이션</p>
-          {titleEditing ? (
-            <Input
-              autoFocus
-              value={titleDraft}
-              maxLength={100}
-              onChange={(e) => setTitleDraft(e.target.value)}
-              onBlur={() => void commitTitle()}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  void commitTitle()
-                } else if (e.key === 'Escape') {
-                  e.preventDefault()
-                  setTitleEditing(false)
-                }
-              }}
-              placeholder={bundleName || '시나리오 이름'}
-              className="mt-0.5 h-9 max-w-md text-2xl font-bold tracking-tight md:text-2xl"
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={startTitleEdit}
-              disabled={titleSaving}
-              title="클릭하여 시나리오 이름 수정"
-              className="group mt-0.5 flex max-w-full items-center gap-2 text-left"
-            >
-              <h1
-                className={cn(
-                  'truncate text-2xl font-bold tracking-tight',
-                  !loadedName && 'text-muted-foreground'
-                )}
+      {/* ── 상단 고정: 헤더 + 조합 탭 — 스크롤해도 저장·탭 전환 가능 ── */}
+      <div ref={stickyHeaderRef} className="sticky top-0 z-20 mb-6 border-b bg-background pt-3">
+        {/* ── 헤더 ── */}
+        <div className="mb-4 flex items-start justify-between gap-4">
+          {/* 제목 = 시나리오 이름 (인라인 편집) */}
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground">가격 시뮬레이션</p>
+            {titleEditing ? (
+              <Input
+                autoFocus
+                value={titleDraft}
+                maxLength={100}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onBlur={() => void commitTitle()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    void commitTitle()
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault()
+                    setTitleEditing(false)
+                  }
+                }}
+                placeholder={bundleName || '시나리오 이름'}
+                className="mt-0.5 h-9 max-w-md text-2xl font-bold tracking-tight md:text-2xl"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={startTitleEdit}
+                disabled={titleSaving}
+                title="클릭하여 시나리오 이름 수정"
+                className="group mt-0.5 flex max-w-full items-center gap-2 text-left"
               >
-                {loadedName || bundleName || '제목 없음'}
-              </h1>
-              <Pencil className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-            </button>
-          )}
+                <h1
+                  className={cn(
+                    'truncate text-2xl font-bold tracking-tight',
+                    !loadedName && 'text-muted-foreground'
+                  )}
+                >
+                  {loadedName || bundleName || '제목 없음'}
+                </h1>
+                <Pencil className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+              </button>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5"
+              onClick={() => setSettingsOpen(true)}
+              disabled={!settingsLoaded}
+            >
+              <Settings2 className="h-3.5 w-3.5" /> 기본값 설정
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5"
+              onClick={handleReset}
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> 초기화
+            </Button>
+            <Button type="button" size="sm" className="h-8 gap-1.5" onClick={openSaveDialog}>
+              <Save className="h-3.5 w-3.5" /> 시나리오 저장
+            </Button>
+          </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1.5"
-            onClick={() => setSettingsOpen(true)}
-            disabled={!settingsLoaded}
-          >
-            <Settings2 className="h-3.5 w-3.5" /> 기본값 설정
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1.5"
-            onClick={handleReset}
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> 초기화
-          </Button>
-          <Button type="button" size="sm" className="h-8 gap-1.5" onClick={openSaveDialog}>
-            <Save className="h-3.5 w-3.5" /> 시나리오 저장
-          </Button>
-        </div>
-      </div>
 
-      {/* ── 옵션 조합(탭) 바 — 제목 바로 아래. KPI·보드는 활성 탭의 하위 정보 ── */}
-      <PricingVariantTabs
-        tabs={variants.map((v) => ({ id: v.id, name: v.name }))}
-        activeId={activeVariantId}
-        onSelect={switchVariant}
-        onAdd={addVariant}
-        onRename={renameVariant}
-        onRemove={removeVariant}
-        onDuplicate={duplicateVariant}
-        onReorder={reorderVariants}
-        extra={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setOverviewOpen(true)}
-            className="ml-auto h-8 shrink-0 gap-1"
-          >
-            <Table2 className="h-3.5 w-3.5" /> 한번에 확인하기
-          </Button>
-        }
-      />
+        {/* ── 옵션 조합(탭) 바 — 제목 바로 아래. KPI·보드는 활성 탭의 하위 정보 ── */}
+        <PricingVariantTabs
+          tabs={variants.map((v) => ({ id: v.id, name: v.name }))}
+          activeId={activeVariantId}
+          onSelect={switchVariant}
+          onAdd={addVariant}
+          onRename={renameVariant}
+          onRemove={removeVariant}
+          onDuplicate={duplicateVariant}
+          onReorder={reorderVariants}
+          extra={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setOverviewOpen(true)}
+              className="ml-auto h-8 shrink-0 gap-1"
+            >
+              <Table2 className="h-3.5 w-3.5" /> 한번에 확인하기
+            </Button>
+          }
+        />
+      </div>
       <PricingVariantOverviewDialog
         open={overviewOpen}
         onOpenChange={setOverviewOpen}
@@ -2083,7 +2101,17 @@ export function PricingQuickFlow({
       {/* ── 본문 2단 ── */}
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         {/* ── 좌측: 스텝 패널 ── */}
-        <div className="space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <div
+          className="space-y-4 lg:sticky lg:top-[var(--ps-left-top)] lg:max-h-[var(--ps-left-max)] lg:self-start lg:overflow-y-auto"
+          style={
+            {
+              '--ps-left-top': `${stickyLayout.headerH + 16}px`,
+              '--ps-left-max': stickyLayout.viewH
+                ? `${stickyLayout.viewH - stickyLayout.headerH - 32}px`
+                : 'none',
+            } as React.CSSProperties
+          }
+        >
           {/* ① 상품 선택 */}
           <StepCard
             step={1}
