@@ -95,8 +95,13 @@ type StagedRow = {
   account: { id: string; name: string; kind: FinAccountKind }
   /** 미분류 행의 룰(키워드) 추천 — 서버가 배치 계산. 매칭 없으면 null. 버튼 없이 자동 표시. */
   ruleSuggestion: { categoryId: string; categoryName: string; reason: string } | null
-  /** 중복 행의 기존 확정 거래 값 — 저장 시 이 값이 아래 description/counterparty로 덮인다 */
-  prev: { description: string | null; counterparty: string | null } | null
+  /** 중복 행의 기존 확정 거래 값 — 저장 시 적요는 덮이고, 분류는 preserve 규칙을 따른다 */
+  prev: {
+    description: string | null
+    counterparty: string | null
+    categoryName: string | null
+    categoryParentName: string | null
+  } | null
 }
 
 type StagedCounts = {
@@ -1412,6 +1417,17 @@ function StagingRow({
               ruleSuggestion={row.ruleSuggestion}
               onApply={(categoryId) => onClassify(row.id, categoryId)}
             />
+          )}
+          {/* 중복 행의 기존 분류 — 적요와 달리 저장 시 자동으로 덮이지 않는다.
+              기존 분류가 있으면 유지되고, 「유지」(DUP_OVERWRITE)를 누른 행만 교체된다. */}
+          {row.prev?.categoryName && row.prev.categoryName !== row.category?.name && (
+            <span className="block text-[10px] text-amber-600 dark:text-amber-400">
+              기존:{' '}
+              {row.prev.categoryParentName
+                ? `${row.prev.categoryParentName} › ${row.prev.categoryName}`
+                : row.prev.categoryName}
+              {row.resolution === 'DUP_OVERWRITE' ? ' (교체됨)' : ' (유지됨)'}
+            </span>
           )}
         </div>
       </TableCell>
