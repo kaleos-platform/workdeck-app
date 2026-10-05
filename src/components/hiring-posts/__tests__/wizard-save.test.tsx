@@ -8,7 +8,6 @@ jest.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh: jest.fn
 jest.mock('sonner', () => ({ toast: { error: jest.fn(), success: jest.fn() } }))
 jest.mock('../step-positions', () => ({ StepPositions: () => null }))
 jest.mock('../application-form-preview', () => ({ ApplicationFormPreview: () => null }))
-jest.mock('../step-publish', () => ({ PublishBar: () => null }))
 jest.mock('../posting-preview', () => ({ PostingPreview: () => null }))
 jest.mock('../content-block-editor', () => ({ ContentBlockEditor: () => <div>본문 편집</div> }))
 

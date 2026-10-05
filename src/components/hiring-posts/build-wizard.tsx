@@ -13,7 +13,7 @@ import {
   getHiringPublicPostingPath,
   getRecruitingPostingDetailPath,
 } from '@/lib/deck-routes'
-import { PostingStatusBadge, type PostingStatus } from './status-badge'
+import { PostingStatusBadge } from './status-badge'
 import { WizardStepper, WIZARD_STEPS, type WizardStepKey } from './wizard-stepper'
 import { StepBasic, type StepBasicHandle } from './step-basic'
 import { StepFormSettings } from './step-form-settings'
@@ -22,7 +22,6 @@ import { StepStores } from './step-stores'
 import { useWizardNavigation } from './use-wizard-navigation'
 import type { SaveHandle } from './use-queued-save'
 import { StepForm, type StepFormHandle } from './step-form'
-import { PublishBar } from './step-publish'
 import { ApplicationFormPreview } from './application-form-preview'
 import { ContentBlockEditor, type ContentBlockEditorHandle } from './content-block-editor'
 import { PostingPreview } from './posting-preview'
@@ -348,17 +347,6 @@ export function BuildWizard({ data }: { data: WizardData }) {
             </Button>
           ) : step === 'decorate' ? (
             <>
-              <PublishBar
-                disabled={leaving}
-                runWithSaving={afterSaving}
-                postingId={data.posting.id}
-                uuid={data.posting.uuid}
-                title={state.title}
-                status={state.status}
-                positionCount={state.positions.length}
-                formFields={state.formFields}
-                onStatusChange={(status: PostingStatus) => patch({ status })}
-              />
               <Button
                 className="min-w-28"
                 disabled={leaving}
@@ -369,7 +357,7 @@ export function BuildWizard({ data }: { data: WizardData }) {
                   })
                 }
               >
-                {leaving ? '저장 중…' : '저장하고 HTML 확인'}
+                {leaving ? '저장 중…' : '저장'}
               </Button>
             </>
           ) : (

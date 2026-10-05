@@ -56,6 +56,7 @@ export type UpdatePostingInput = z.infer<typeof updatePostingSchema>
 // 발행/마감/재개 액션
 export const postingActionSchema = z.object({
   action: z.enum(['publish', 'close', 'reopen', 'archive']),
+  closingDate: z.string().date('올바른 마감일을 입력하세요').nullable().optional(),
 })
 export type PostingActionInput = z.infer<typeof postingActionSchema>
 
