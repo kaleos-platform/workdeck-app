@@ -91,6 +91,17 @@ export function FileItemCard({
         item.kind
       )
     : []
+  // 계좌 추론 근거(서버 계산) — 선택은 사용자가 하고, 여기서는 판단 재료만 보여준다
+  const accountHints = preview?.accountHints ?? {}
+  const hintedAccountIds = kindAccounts.filter((a) => accountHints[a.id]).map((a) => a.id)
+  // 선택한 계좌가 어느 근거에도 걸리지 않으면 경고. 근거 자체가 없으면(신규 계좌 첫 등록 등)
+  // 비교 대상이 없다는 뜻이므로 침묵한다.
+  const accountMismatch =
+    !!item.accountId &&
+    item.accountId !== NONE_ACCOUNT &&
+    hintedAccountIds.length > 0 &&
+    !accountHints[item.accountId]
+
   const preamble = preview?.preview.preamble
   const matchedPreset = preview?.matchedPreset ?? null
   // 기억된 규칙과 매핑이 달라졌는지 — 저장하지 않으면 다음 업로드에 옛 매핑이 되살아난다
@@ -280,6 +291,22 @@ export function FileItemCard({
               <span>{w}</span>
             </p>
           ))}
+          {/* 계좌 불일치 — 매핑 경고와 같은 자리(접힘 상태)에 둔다. 펼쳐야 보이면 아무도 못 본다 */}
+          {accountMismatch && (
+            <p className="mt-0.5 flex items-start gap-1 text-xs text-amber-700 dark:text-amber-400">
+              <AlertTriangle className="mt-0.5 size-3 shrink-0" />
+              <span>
+                선택한 계좌에서 잔액이 이어지지 않습니다 — 이 파일은{' '}
+                <strong>
+                  {kindAccounts
+                    .filter((a) => accountHints[a.id])
+                    .map((a) => a.name)
+                    .join(', ')}
+                </strong>{' '}
+                내역으로 보입니다
+              </span>
+            </p>
+          )}
           {warnings.length > 0 && !expanded && canEdit && (
             <button
               type="button"
@@ -428,6 +455,17 @@ export function FileItemCard({
                             {a.accountNumber && (
                               <span className="text-xs text-muted-foreground">
                                 · {a.accountNumber}
+                              </span>
+                            )}
+                            {/* 서버 추론 근거 — 선택은 사용자가 한다 */}
+                            {accountHints[a.id] === 'exact' && (
+                              <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                이 계좌에 있는 거래
+                              </span>
+                            )}
+                            {accountHints[a.id] === 'balance' && (
+                              <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                잔액 이어짐
                               </span>
                             )}
                           </span>
