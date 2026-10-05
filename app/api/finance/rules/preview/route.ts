@@ -14,7 +14,7 @@ import { classifyRow, loadMatchTexts, loadSpaceRules } from '@/lib/finance/class
 import { matchingTexts } from '@/lib/finance/rule-usage'
 
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
