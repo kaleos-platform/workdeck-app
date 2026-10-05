@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   })
 
   const derived = deriveListings(
-    { optionIds: input.optionIds, quantity: input.quantity },
+    [{ optionIds: input.optionIds, quantity: input.quantity }],
     listings.map((l) => ({ id: l.id, items: l.items }))
   )
 
