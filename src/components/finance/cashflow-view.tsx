@@ -1301,6 +1301,8 @@ interface PanelTxn {
   classStatus: FinClassStatus
   categoryId: string | null
   memo: string | null
+  /** 분석 제외 — 「분석 제외 거래 포함」 토글 on 일 때만 패널에 나타난다. */
+  excludeFromAnalysis: boolean
   category: { name: string; parent: { name: string } | null } | null
   account: { name: string; kind: FinAccountKind }
 }
@@ -1715,6 +1717,11 @@ function PanelTxnRow({
                 <Badge variant="outline" className={cn('text-[10px]', status.className)}>
                   {status.label}
                 </Badge>
+              )}
+              {txn.excludeFromAnalysis && (
+                <span className="shrink-0 rounded-full border border-border bg-muted px-1.5 py-0 text-[10px] text-muted-foreground">
+                  분석 제외
+                </span>
               )}
             </span>
             {txn.memo && (
