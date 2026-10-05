@@ -45,7 +45,7 @@ export function ApprovalDetailSheet({
 }: ApprovalDetailSheetProps) {
   const [isDeciding, setIsDeciding] = useState(false)
   const [outcomeNote, setOutcomeNote] = useState<{
-    kind: 'executed' | 'failed' | 'conflict'
+    kind: 'executed' | 'failed' | 'conflict' | 'expired'
     message: string
   } | null>(null)
 
@@ -82,6 +82,16 @@ export function ApprovalDetailSheet({
 
       const data = await res.json().catch(() => null)
       const outcome = data?.outcome
+
+      if (outcome?.status === 'EXPIRED') {
+        setOutcomeNote({
+          kind: 'expired',
+          message: outcome.message ?? '승인 유효기간이 지난 액션입니다.',
+        })
+        toast.error('승인 유효기간이 지났습니다')
+        notifyDecided()
+        return
+      }
 
       if (res.status === 409 || outcome?.status === 'CONFLICT') {
         setOutcomeNote({ kind: 'conflict', message: '이미 처리되었습니다.' })
@@ -232,7 +242,7 @@ export function ApprovalDetailSheet({
   )
 }
 
-function cnOutcome(kind: 'executed' | 'failed' | 'conflict') {
+function cnOutcome(kind: 'executed' | 'failed' | 'conflict' | 'expired') {
   const base = 'rounded-md border p-3 text-sm'
   if (kind === 'executed') return `${base} border-emerald-300 bg-emerald-50 text-emerald-700`
   if (kind === 'failed') return `${base} border-destructive/30 bg-destructive/5 text-destructive`

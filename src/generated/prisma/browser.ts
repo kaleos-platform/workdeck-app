@@ -130,6 +130,16 @@ export type CoupangApiCredential = Prisma.CoupangApiCredentialModel
  */
 export type CoupangSourceSetting = Prisma.CoupangSourceSettingModel
 /**
+ * Model CoupangProductItem
+ * 
+ */
+export type CoupangProductItem = Prisma.CoupangProductItemModel
+/**
+ * Model CoupangWriteJob
+ * 
+ */
+export type CoupangWriteJob = Prisma.CoupangWriteJobModel
+/**
  * Model CollectionSchedule
  * 
  */

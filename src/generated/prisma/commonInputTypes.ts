@@ -487,6 +487,40 @@ export type EnumCoupangDataSourceWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumCoupangDataSourceFilter<$PrismaModel>
 }
 
+export type EnumCoupangWriteJobKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangWriteJobKind | Prisma.EnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangWriteJobKind[] | Prisma.ListEnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangWriteJobKind[] | Prisma.ListEnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangWriteJobKindFilter<$PrismaModel> | $Enums.CoupangWriteJobKind
+}
+
+export type EnumCoupangWriteJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangWriteJobStatus | Prisma.EnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangWriteJobStatus[] | Prisma.ListEnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangWriteJobStatus[] | Prisma.ListEnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangWriteJobStatusFilter<$PrismaModel> | $Enums.CoupangWriteJobStatus
+}
+
+export type EnumCoupangWriteJobKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangWriteJobKind | Prisma.EnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangWriteJobKind[] | Prisma.ListEnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangWriteJobKind[] | Prisma.ListEnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangWriteJobKindWithAggregatesFilter<$PrismaModel> | $Enums.CoupangWriteJobKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCoupangWriteJobKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCoupangWriteJobKindFilter<$PrismaModel>
+}
+
+export type EnumCoupangWriteJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangWriteJobStatus | Prisma.EnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangWriteJobStatus[] | Prisma.ListEnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangWriteJobStatus[] | Prisma.ListEnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangWriteJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.CoupangWriteJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCoupangWriteJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCoupangWriteJobStatusFilter<$PrismaModel>
+}
+
 export type EnumCoupangBackfillStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.CoupangBackfillStatus | Prisma.EnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
   in?: $Enums.CoupangBackfillStatus[] | Prisma.ListEnumCoupangBackfillStatusFieldRefInput<$PrismaModel>
@@ -2177,6 +2211,40 @@ export type NestedEnumCoupangDataSourceWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCoupangDataSourceFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCoupangDataSourceFilter<$PrismaModel>
+}
+
+export type NestedEnumCoupangWriteJobKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangWriteJobKind | Prisma.EnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangWriteJobKind[] | Prisma.ListEnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangWriteJobKind[] | Prisma.ListEnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangWriteJobKindFilter<$PrismaModel> | $Enums.CoupangWriteJobKind
+}
+
+export type NestedEnumCoupangWriteJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangWriteJobStatus | Prisma.EnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangWriteJobStatus[] | Prisma.ListEnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangWriteJobStatus[] | Prisma.ListEnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangWriteJobStatusFilter<$PrismaModel> | $Enums.CoupangWriteJobStatus
+}
+
+export type NestedEnumCoupangWriteJobKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangWriteJobKind | Prisma.EnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangWriteJobKind[] | Prisma.ListEnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangWriteJobKind[] | Prisma.ListEnumCoupangWriteJobKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangWriteJobKindWithAggregatesFilter<$PrismaModel> | $Enums.CoupangWriteJobKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCoupangWriteJobKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCoupangWriteJobKindFilter<$PrismaModel>
+}
+
+export type NestedEnumCoupangWriteJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CoupangWriteJobStatus | Prisma.EnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.CoupangWriteJobStatus[] | Prisma.ListEnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CoupangWriteJobStatus[] | Prisma.ListEnumCoupangWriteJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCoupangWriteJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.CoupangWriteJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCoupangWriteJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCoupangWriteJobStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumCoupangBackfillStatusFilter<$PrismaModel = never> = {

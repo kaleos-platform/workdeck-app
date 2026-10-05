@@ -61,6 +61,14 @@
     {
       "path": "/api/cron/hiring-upload-sweep",
       "schedule": "30 * * * *"
+    },
+    {
+      "path": "/api/cron/coupang-product-sync",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/coupang-write-jobs-reap",
+      "schedule": "*/10 * * * *"
     }
   ]
 }

@@ -406,6 +406,8 @@ export const ModelName = {
   CoupangCredential: 'CoupangCredential',
   CoupangApiCredential: 'CoupangApiCredential',
   CoupangSourceSetting: 'CoupangSourceSetting',
+  CoupangProductItem: 'CoupangProductItem',
+  CoupangWriteJob: 'CoupangWriteJob',
   CollectionSchedule: 'CollectionSchedule',
   CoupangBackfillJob: 'CoupangBackfillJob',
   CollectionRun: 'CollectionRun',
@@ -543,7 +545,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2172,6 +2174,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CoupangSourceSettingCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CoupangSourceSettingCountAggregateOutputType> | number
+        }
+      }
+    }
+    CoupangProductItem: {
+      payload: Prisma.$CoupangProductItemPayload<ExtArgs>
+      fields: Prisma.CoupangProductItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CoupangProductItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CoupangProductItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload>
+        }
+        findFirst: {
+          args: Prisma.CoupangProductItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CoupangProductItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload>
+        }
+        findMany: {
+          args: Prisma.CoupangProductItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload>[]
+        }
+        create: {
+          args: Prisma.CoupangProductItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload>
+        }
+        createMany: {
+          args: Prisma.CoupangProductItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CoupangProductItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload>[]
+        }
+        delete: {
+          args: Prisma.CoupangProductItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload>
+        }
+        update: {
+          args: Prisma.CoupangProductItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.CoupangProductItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CoupangProductItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CoupangProductItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.CoupangProductItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangProductItemPayload>
+        }
+        aggregate: {
+          args: Prisma.CoupangProductItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCoupangProductItem>
+        }
+        groupBy: {
+          args: Prisma.CoupangProductItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoupangProductItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CoupangProductItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoupangProductItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    CoupangWriteJob: {
+      payload: Prisma.$CoupangWriteJobPayload<ExtArgs>
+      fields: Prisma.CoupangWriteJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CoupangWriteJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CoupangWriteJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload>
+        }
+        findFirst: {
+          args: Prisma.CoupangWriteJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CoupangWriteJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload>
+        }
+        findMany: {
+          args: Prisma.CoupangWriteJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload>[]
+        }
+        create: {
+          args: Prisma.CoupangWriteJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload>
+        }
+        createMany: {
+          args: Prisma.CoupangWriteJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CoupangWriteJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload>[]
+        }
+        delete: {
+          args: Prisma.CoupangWriteJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload>
+        }
+        update: {
+          args: Prisma.CoupangWriteJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.CoupangWriteJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CoupangWriteJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CoupangWriteJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.CoupangWriteJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoupangWriteJobPayload>
+        }
+        aggregate: {
+          args: Prisma.CoupangWriteJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCoupangWriteJob>
+        }
+        groupBy: {
+          args: Prisma.CoupangWriteJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoupangWriteJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CoupangWriteJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoupangWriteJobCountAggregateOutputType> | number
         }
       }
     }
@@ -11575,6 +11725,47 @@ export const CoupangSourceSettingScalarFieldEnum = {
 export type CoupangSourceSettingScalarFieldEnum = (typeof CoupangSourceSettingScalarFieldEnum)[keyof typeof CoupangSourceSettingScalarFieldEnum]
 
 
+export const CoupangProductItemScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  sellerProductId: 'sellerProductId',
+  itemName: 'itemName',
+  rgVendorItemId: 'rgVendorItemId',
+  rgSalePrice: 'rgSalePrice',
+  mpVendorItemId: 'mpVendorItemId',
+  mpSalePrice: 'mpSalePrice',
+  barcode: 'barcode',
+  skuInfo: 'skuInfo',
+  statusName: 'statusName',
+  listingId: 'listingId',
+  collectedAt: 'collectedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CoupangProductItemScalarFieldEnum = (typeof CoupangProductItemScalarFieldEnum)[keyof typeof CoupangProductItemScalarFieldEnum]
+
+
+export const CoupangWriteJobScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  spaceId: 'spaceId',
+  actionId: 'actionId',
+  kind: 'kind',
+  status: 'status',
+  payload: 'payload',
+  results: 'results',
+  error: 'error',
+  attempts: 'attempts',
+  claimedAt: 'claimedAt',
+  executedAt: 'executedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CoupangWriteJobScalarFieldEnum = (typeof CoupangWriteJobScalarFieldEnum)[keyof typeof CoupangWriteJobScalarFieldEnum]
+
+
 export const CollectionScheduleScalarFieldEnum = {
   id: 'id',
   workspaceId: 'workspaceId',
@@ -13892,6 +14083,34 @@ export type ListEnumCoupangDataSourceFieldRefInput<$PrismaModel> = FieldRefInput
 
 
 /**
+ * Reference to a field of type 'CoupangWriteJobKind'
+ */
+export type EnumCoupangWriteJobKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CoupangWriteJobKind'>
+    
+
+
+/**
+ * Reference to a field of type 'CoupangWriteJobKind[]'
+ */
+export type ListEnumCoupangWriteJobKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CoupangWriteJobKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CoupangWriteJobStatus'
+ */
+export type EnumCoupangWriteJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CoupangWriteJobStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CoupangWriteJobStatus[]'
+ */
+export type ListEnumCoupangWriteJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CoupangWriteJobStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'CoupangBackfillStatus'
  */
 export type EnumCoupangBackfillStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CoupangBackfillStatus'>
@@ -15029,6 +15248,8 @@ export type GlobalOmitConfig = {
   coupangCredential?: Prisma.CoupangCredentialOmit
   coupangApiCredential?: Prisma.CoupangApiCredentialOmit
   coupangSourceSetting?: Prisma.CoupangSourceSettingOmit
+  coupangProductItem?: Prisma.CoupangProductItemOmit
+  coupangWriteJob?: Prisma.CoupangWriteJobOmit
   collectionSchedule?: Prisma.CollectionScheduleOmit
   coupangBackfillJob?: Prisma.CoupangBackfillJobOmit
   collectionRun?: Prisma.CollectionRunOmit

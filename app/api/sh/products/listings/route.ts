@@ -42,6 +42,8 @@ type ListingListRow = {
   discountPercent: number | null
   availableStock: number
   itemCount: number
+  /** Wing 딥링크용 — CoupangProductItem.sellerProductId(=vendorInventoryId). 미연결이면 null */
+  sellerProductId: string | null
   product: ProductUnion
   items: Array<{
     optionId: string
@@ -99,6 +101,7 @@ export async function GET(req: NextRequest) {
         },
       },
     },
+    coupangProductItem: { select: { sellerProductId: true } },
   }
 
   let listings: Awaited<
@@ -200,6 +203,7 @@ export async function GET(req: NextRequest) {
       autoAvailableStock: available,
       channelStock: l.channelStock,
       itemCount: l.items.length,
+      sellerProductId: l.coupangProductItem?.sellerProductId ?? null,
       product,
       items: l.items.map((it) => ({
         optionId: it.optionId,

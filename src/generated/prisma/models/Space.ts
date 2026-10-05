@@ -221,6 +221,8 @@ export type SpaceWhereInput = {
   pricingScenarios?: Prisma.PricingScenarioListRelationFilter
   adCampaignProductMaps?: Prisma.AdCampaignProductMapListRelationFilter
   productExtractionJobs?: Prisma.ProductExtractionJobListRelationFilter
+  coupangProductItems?: Prisma.CoupangProductItemListRelationFilter
+  coupangWriteJobs?: Prisma.CoupangWriteJobListRelationFilter
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
   keywordMasters?: Prisma.KeywordMasterListRelationFilter
   channelKeywordRules?: Prisma.ChannelKeywordRuleListRelationFilter
@@ -313,6 +315,8 @@ export type SpaceOrderByWithRelationInput = {
   pricingScenarios?: Prisma.PricingScenarioOrderByRelationAggregateInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapOrderByRelationAggregateInput
   productExtractionJobs?: Prisma.ProductExtractionJobOrderByRelationAggregateInput
+  coupangProductItems?: Prisma.CoupangProductItemOrderByRelationAggregateInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobOrderByRelationAggregateInput
   reorderPlans?: Prisma.ReorderPlanOrderByRelationAggregateInput
   keywordMasters?: Prisma.KeywordMasterOrderByRelationAggregateInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleOrderByRelationAggregateInput
@@ -408,6 +412,8 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   pricingScenarios?: Prisma.PricingScenarioListRelationFilter
   adCampaignProductMaps?: Prisma.AdCampaignProductMapListRelationFilter
   productExtractionJobs?: Prisma.ProductExtractionJobListRelationFilter
+  coupangProductItems?: Prisma.CoupangProductItemListRelationFilter
+  coupangWriteJobs?: Prisma.CoupangWriteJobListRelationFilter
   reorderPlans?: Prisma.ReorderPlanListRelationFilter
   keywordMasters?: Prisma.KeywordMasterListRelationFilter
   channelKeywordRules?: Prisma.ChannelKeywordRuleListRelationFilter
@@ -524,6 +530,8 @@ export type SpaceCreateInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -616,6 +624,8 @@ export type SpaceUncheckedCreateInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -708,6 +718,8 @@ export type SpaceUpdateInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -800,6 +812,8 @@ export type SpaceUncheckedUpdateInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -1004,6 +1018,34 @@ export type SpaceUpdateOneRequiredWithoutDeckInstancesNestedInput = {
   upsert?: Prisma.SpaceUpsertWithoutDeckInstancesInput
   connect?: Prisma.SpaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutDeckInstancesInput, Prisma.SpaceUpdateWithoutDeckInstancesInput>, Prisma.SpaceUncheckedUpdateWithoutDeckInstancesInput>
+}
+
+export type SpaceCreateNestedOneWithoutCoupangProductItemsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutCoupangProductItemsInput, Prisma.SpaceUncheckedCreateWithoutCoupangProductItemsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutCoupangProductItemsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutCoupangProductItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutCoupangProductItemsInput, Prisma.SpaceUncheckedCreateWithoutCoupangProductItemsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutCoupangProductItemsInput
+  upsert?: Prisma.SpaceUpsertWithoutCoupangProductItemsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutCoupangProductItemsInput, Prisma.SpaceUpdateWithoutCoupangProductItemsInput>, Prisma.SpaceUncheckedUpdateWithoutCoupangProductItemsInput>
+}
+
+export type SpaceCreateNestedOneWithoutCoupangWriteJobsInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutCoupangWriteJobsInput, Prisma.SpaceUncheckedCreateWithoutCoupangWriteJobsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutCoupangWriteJobsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutCoupangWriteJobsNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutCoupangWriteJobsInput, Prisma.SpaceUncheckedCreateWithoutCoupangWriteJobsInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutCoupangWriteJobsInput
+  upsert?: Prisma.SpaceUpsertWithoutCoupangWriteJobsInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutCoupangWriteJobsInput, Prisma.SpaceUpdateWithoutCoupangWriteJobsInput>, Prisma.SpaceUncheckedUpdateWithoutCoupangWriteJobsInput>
 }
 
 export type SpaceCreateNestedOneWithoutInvProductGroupsInput = {
@@ -2127,6 +2169,8 @@ export type SpaceCreateWithoutMembersInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -2218,6 +2262,8 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -2325,6 +2371,8 @@ export type SpaceUpdateWithoutMembersInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -2416,6 +2464,8 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2508,6 +2558,8 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -2599,6 +2651,8 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -2706,6 +2760,8 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -2797,6 +2853,8 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2888,6 +2946,8 @@ export type SpaceCreateWithoutAgentToggleInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -2979,6 +3039,8 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -3086,6 +3148,8 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -3177,6 +3241,8 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3268,6 +3334,8 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -3359,6 +3427,8 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -3466,6 +3536,8 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -3557,6 +3629,8 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3648,6 +3722,8 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -3739,6 +3815,8 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -3846,6 +3924,8 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -3937,6 +4017,8 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4027,6 +4109,8 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -4118,6 +4202,8 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -4225,6 +4311,8 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -4316,6 +4404,784 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutCoupangProductItemsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutCoupangProductItemsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutCoupangProductItemsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutCoupangProductItemsInput, Prisma.SpaceUncheckedCreateWithoutCoupangProductItemsInput>
+}
+
+export type SpaceUpsertWithoutCoupangProductItemsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutCoupangProductItemsInput, Prisma.SpaceUncheckedUpdateWithoutCoupangProductItemsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutCoupangProductItemsInput, Prisma.SpaceUncheckedCreateWithoutCoupangProductItemsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutCoupangProductItemsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutCoupangProductItemsInput, Prisma.SpaceUncheckedUpdateWithoutCoupangProductItemsInput>
+}
+
+export type SpaceUpdateWithoutCoupangProductItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutCoupangProductItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutCoupangWriteJobsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutCoupangWriteJobsInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutCoupangWriteJobsInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutCoupangWriteJobsInput, Prisma.SpaceUncheckedCreateWithoutCoupangWriteJobsInput>
+}
+
+export type SpaceUpsertWithoutCoupangWriteJobsInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutCoupangWriteJobsInput, Prisma.SpaceUncheckedUpdateWithoutCoupangWriteJobsInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutCoupangWriteJobsInput, Prisma.SpaceUncheckedCreateWithoutCoupangWriteJobsInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutCoupangWriteJobsInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutCoupangWriteJobsInput, Prisma.SpaceUncheckedUpdateWithoutCoupangWriteJobsInput>
+}
+
+export type SpaceUpdateWithoutCoupangWriteJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4407,6 +5273,8 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -4498,6 +5366,8 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -4605,6 +5475,8 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -4696,6 +5568,8 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4787,6 +5661,8 @@ export type SpaceCreateWithoutInvProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -4878,6 +5754,8 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -4985,6 +5863,8 @@ export type SpaceUpdateWithoutInvProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -5076,6 +5956,8 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5167,6 +6049,8 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -5258,6 +6142,8 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -5365,6 +6251,8 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -5456,6 +6344,8 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5547,6 +6437,8 @@ export type SpaceCreateWithoutProductExtractionJobsInput = {
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -5638,6 +6530,8 @@ export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -5745,6 +6639,8 @@ export type SpaceUpdateWithoutProductExtractionJobsInput = {
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -5836,6 +6732,8 @@ export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5927,6 +6825,8 @@ export type SpaceCreateWithoutInvLocationsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -6018,6 +6918,8 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -6125,6 +7027,8 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -6216,6 +7120,8 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6307,6 +7213,8 @@ export type SpaceCreateWithoutInvMovementsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -6398,6 +7306,8 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -6505,6 +7415,8 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -6596,6 +7508,8 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6687,6 +7601,8 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -6778,6 +7694,8 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -6885,6 +7803,8 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -6976,6 +7896,8 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7067,6 +7989,8 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -7158,6 +8082,8 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -7265,6 +8191,8 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -7356,6 +8284,8 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7447,6 +8377,8 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -7538,6 +8470,8 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -7645,6 +8579,8 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -7736,6 +8672,8 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7827,6 +8765,8 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -7918,6 +8858,8 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -8025,6 +8967,8 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -8116,6 +9060,8 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8207,6 +9153,8 @@ export type SpaceCreateWithoutInvSettingsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -8298,6 +9246,8 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -8405,6 +9355,8 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -8496,6 +9448,8 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8587,6 +9541,8 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -8678,6 +9634,8 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -8785,6 +9743,8 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -8876,6 +9836,8 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8967,6 +9929,8 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -9058,6 +10022,8 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -9165,6 +10131,8 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -9256,6 +10224,8 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9347,6 +10317,8 @@ export type SpaceCreateWithoutDelBatchesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -9438,6 +10410,8 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -9545,6 +10519,8 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -9636,6 +10612,8 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9727,6 +10705,8 @@ export type SpaceCreateWithoutDelOrdersInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -9818,6 +10798,8 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -9925,6 +10907,8 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -10016,6 +11000,8 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10107,6 +11093,8 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -10198,6 +11186,8 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -10305,6 +11295,8 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -10396,6 +11388,8 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10487,6 +11481,8 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -10578,6 +11574,8 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -10685,6 +11683,8 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -10776,6 +11776,8 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10867,6 +11869,8 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -10958,6 +11962,8 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -11065,6 +12071,8 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -11156,6 +12164,8 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11247,6 +12257,8 @@ export type SpaceCreateWithoutBrandsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -11338,6 +12350,8 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -11445,6 +12459,8 @@ export type SpaceUpdateWithoutBrandsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -11536,6 +12552,8 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11627,6 +12645,8 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -11718,6 +12738,8 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -11825,6 +12847,8 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -11916,6 +12940,8 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12007,6 +13033,8 @@ export type SpaceCreateWithoutChannelsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -12098,6 +13126,8 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -12205,6 +13235,8 @@ export type SpaceUpdateWithoutChannelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -12296,6 +13328,8 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12387,6 +13421,8 @@ export type SpaceCreateWithoutProductionRunsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -12478,6 +13514,8 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -12585,6 +13623,8 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -12676,6 +13716,8 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12767,6 +13809,8 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -12858,6 +13902,8 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -12965,6 +14011,8 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -13056,6 +14104,8 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13147,6 +14197,8 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -13238,6 +14290,8 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -13345,6 +14399,8 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -13436,6 +14492,8 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13527,6 +14585,8 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -13618,6 +14678,8 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -13725,6 +14787,8 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -13816,6 +14880,8 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13907,6 +14973,8 @@ export type SpaceCreateWithoutAtomicWordsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -13998,6 +15066,8 @@ export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -14105,6 +15175,8 @@ export type SpaceUpdateWithoutAtomicWordsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -14196,6 +15268,8 @@ export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14287,6 +15361,8 @@ export type SpaceCreateWithoutProductListingsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -14378,6 +15454,8 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -14485,6 +15563,8 @@ export type SpaceUpdateWithoutProductListingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -14576,6 +15656,8 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14667,6 +15749,8 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -14758,6 +15842,8 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -14865,6 +15951,8 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -14956,6 +16044,8 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15047,6 +16137,8 @@ export type SpaceCreateWithoutChannelProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -15138,6 +16230,8 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -15245,6 +16339,8 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -15336,6 +16432,8 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15428,6 +16526,8 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
   keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
@@ -15519,6 +16619,8 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
   keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
@@ -15626,6 +16728,8 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
   keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
@@ -15717,6 +16821,8 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
   keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15808,6 +16914,8 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
@@ -15899,6 +17007,8 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
@@ -16006,6 +17116,8 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
@@ -16097,6 +17209,8 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16188,6 +17302,8 @@ export type SpaceCreateWithoutKeywordChangeLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -16279,6 +17395,8 @@ export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -16386,6 +17504,8 @@ export type SpaceUpdateWithoutKeywordChangeLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -16477,6 +17597,8 @@ export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16568,6 +17690,8 @@ export type SpaceCreateWithoutProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -16659,6 +17783,8 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -16766,6 +17892,8 @@ export type SpaceUpdateWithoutProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -16857,6 +17985,8 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16948,6 +18078,8 @@ export type SpaceCreateWithoutPersonasInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -17039,6 +18171,8 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -17146,6 +18280,8 @@ export type SpaceUpdateWithoutPersonasInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -17237,6 +18373,8 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17328,6 +18466,8 @@ export type SpaceCreateWithoutBrandProfileInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -17419,6 +18559,8 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -17526,6 +18668,8 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -17617,6 +18761,8 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17708,6 +18854,8 @@ export type SpaceCreateWithoutSalesContentOnboardingInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -17799,6 +18947,8 @@ export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -17906,6 +19056,8 @@ export type SpaceUpdateWithoutSalesContentOnboardingInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -17997,6 +19149,8 @@ export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18088,6 +19242,8 @@ export type SpaceCreateWithoutScOnboardingResourcesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -18179,6 +19335,8 @@ export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -18286,6 +19444,8 @@ export type SpaceUpdateWithoutScOnboardingResourcesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -18377,6 +19537,8 @@ export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18468,6 +19630,8 @@ export type SpaceCreateWithoutAiSettingInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -18559,6 +19723,8 @@ export type SpaceUncheckedCreateWithoutAiSettingInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -18666,6 +19832,8 @@ export type SpaceUpdateWithoutAiSettingInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -18757,6 +19925,8 @@ export type SpaceUncheckedUpdateWithoutAiSettingInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18848,6 +20018,8 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -18939,6 +20111,8 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -19046,6 +20220,8 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -19137,6 +20313,8 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19228,6 +20406,8 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -19319,6 +20499,8 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -19426,6 +20608,8 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -19517,6 +20701,8 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19608,6 +20794,8 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -19699,6 +20887,8 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -19806,6 +20996,8 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -19897,6 +21089,8 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19988,6 +21182,8 @@ export type SpaceCreateWithoutTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -20079,6 +21275,8 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -20186,6 +21384,8 @@ export type SpaceUpdateWithoutTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -20277,6 +21477,8 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20368,6 +21570,8 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -20459,6 +21663,8 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -20566,6 +21772,8 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -20657,6 +21865,8 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20748,6 +21958,8 @@ export type SpaceCreateWithoutContentsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -20839,6 +22051,8 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -20946,6 +22160,8 @@ export type SpaceUpdateWithoutContentsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -21037,6 +22253,8 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21128,6 +22346,8 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -21219,6 +22439,8 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -21326,6 +22548,8 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -21417,6 +22641,8 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21508,6 +22734,8 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -21599,6 +22827,8 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -21706,6 +22936,8 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -21797,6 +23029,8 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21888,6 +23122,8 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -21979,6 +23215,8 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -22086,6 +23324,8 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -22177,6 +23417,8 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22268,6 +23510,8 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -22359,6 +23603,8 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -22466,6 +23712,8 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -22557,6 +23805,8 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22648,6 +23898,8 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -22739,6 +23991,8 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -22846,6 +24100,8 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -22937,6 +24193,8 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23028,6 +24286,8 @@ export type SpaceCreateWithoutContentVersionsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -23119,6 +24379,8 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -23226,6 +24488,8 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -23317,6 +24581,8 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23408,6 +24674,8 @@ export type SpaceCreateWithoutContentAssetsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -23499,6 +24767,8 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -23606,6 +24876,8 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -23697,6 +24969,8 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23788,6 +25062,8 @@ export type SpaceCreateWithoutIdeationsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -23879,6 +25155,8 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -23986,6 +25264,8 @@ export type SpaceUpdateWithoutIdeationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -24077,6 +25357,8 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24168,6 +25450,8 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -24259,6 +25543,8 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -24366,6 +25652,8 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -24457,6 +25745,8 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24548,6 +25838,8 @@ export type SpaceCreateWithoutReorderPlansInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
   keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
@@ -24639,6 +25931,8 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
   keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
@@ -24746,6 +26040,8 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
   keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
@@ -24837,6 +26133,8 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
   keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24928,6 +26226,8 @@ export type SpaceCreateWithoutFinAccountsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -25019,6 +26319,8 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -25126,6 +26428,8 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -25217,6 +26521,8 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25308,6 +26614,8 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -25399,6 +26707,8 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -25506,6 +26816,8 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -25597,6 +26909,8 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25688,6 +27002,8 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -25779,6 +27095,8 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -25886,6 +27204,8 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -25977,6 +27297,8 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26068,6 +27390,8 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -26159,6 +27483,8 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -26266,6 +27592,8 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -26357,6 +27685,8 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26448,6 +27778,8 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -26539,6 +27871,8 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -26646,6 +27980,8 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -26737,6 +28073,8 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26828,6 +28166,8 @@ export type SpaceCreateWithoutFinImportsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -26919,6 +28259,8 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -27026,6 +28368,8 @@ export type SpaceUpdateWithoutFinImportsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -27117,6 +28461,8 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27208,6 +28554,8 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -27299,6 +28647,8 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -27406,6 +28756,8 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -27497,6 +28849,8 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27588,6 +28942,8 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -27679,6 +29035,8 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -27786,6 +29144,8 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -27877,6 +29237,8 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27968,6 +29330,8 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -28059,6 +29423,8 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -28166,6 +29532,8 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -28257,6 +29625,8 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28348,6 +29718,8 @@ export type SpaceCreateWithoutHiringStoresInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -28439,6 +29811,8 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -28546,6 +29920,8 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -28637,6 +30013,8 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28728,6 +30106,8 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -28819,6 +30199,8 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -28926,6 +30308,8 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -29017,6 +30401,8 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29108,6 +30494,8 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -29199,6 +30587,8 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -29306,6 +30696,8 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -29397,6 +30789,8 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29488,6 +30882,8 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -29579,6 +30975,8 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -29686,6 +31084,8 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -29777,6 +31177,8 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29868,6 +31270,8 @@ export type SpaceCreateWithoutHiringContentsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -29959,6 +31363,8 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -30066,6 +31472,8 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -30157,6 +31565,8 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30248,6 +31658,8 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -30339,6 +31751,8 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -30446,6 +31860,8 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -30537,6 +31953,8 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30628,6 +32046,8 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -30719,6 +32139,8 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -30826,6 +32248,8 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -30917,6 +32341,8 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31008,6 +32434,8 @@ export type SpaceCreateWithoutHiringUploadSessionsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -31099,6 +32527,8 @@ export type SpaceUncheckedCreateWithoutHiringUploadSessionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -31206,6 +32636,8 @@ export type SpaceUpdateWithoutHiringUploadSessionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -31297,6 +32729,8 @@ export type SpaceUncheckedUpdateWithoutHiringUploadSessionsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31388,6 +32822,8 @@ export type SpaceCreateWithoutHiringMigrationRecordsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -31479,6 +32915,8 @@ export type SpaceUncheckedCreateWithoutHiringMigrationRecordsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -31586,6 +33024,8 @@ export type SpaceUpdateWithoutHiringMigrationRecordsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -31677,6 +33117,8 @@ export type SpaceUncheckedUpdateWithoutHiringMigrationRecordsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31768,6 +33210,8 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -31859,6 +33303,8 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -31966,6 +33412,8 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -32057,6 +33505,8 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32148,6 +33598,8 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -32239,6 +33691,8 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -32346,6 +33800,8 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -32437,6 +33893,8 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32528,6 +33986,8 @@ export type SpaceCreateWithoutSubscriptionInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -32619,6 +34079,8 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -32726,6 +34188,8 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -32817,6 +34281,8 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32908,6 +34374,8 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -32999,6 +34467,8 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -33106,6 +34576,8 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -33197,6 +34669,8 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33288,6 +34762,8 @@ export type SpaceCreateWithoutBillingChargesInput = {
   pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
@@ -33379,6 +34855,8 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
   reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
   keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
@@ -33486,6 +34964,8 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
@@ -33577,6 +35057,8 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
   adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
   productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
   reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
   keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
   channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33665,6 +35147,8 @@ export type SpaceCountOutputType = {
   pricingScenarios: number
   adCampaignProductMaps: number
   productExtractionJobs: number
+  coupangProductItems: number
+  coupangWriteJobs: number
   reorderPlans: number
   keywordMasters: number
   channelKeywordRules: number
@@ -33743,6 +35227,8 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   pricingScenarios?: boolean | SpaceCountOutputTypeCountPricingScenariosArgs
   adCampaignProductMaps?: boolean | SpaceCountOutputTypeCountAdCampaignProductMapsArgs
   productExtractionJobs?: boolean | SpaceCountOutputTypeCountProductExtractionJobsArgs
+  coupangProductItems?: boolean | SpaceCountOutputTypeCountCoupangProductItemsArgs
+  coupangWriteJobs?: boolean | SpaceCountOutputTypeCountCoupangWriteJobsArgs
   reorderPlans?: boolean | SpaceCountOutputTypeCountReorderPlansArgs
   keywordMasters?: boolean | SpaceCountOutputTypeCountKeywordMastersArgs
   channelKeywordRules?: boolean | SpaceCountOutputTypeCountChannelKeywordRulesArgs
@@ -34002,6 +35488,20 @@ export type SpaceCountOutputTypeCountAdCampaignProductMapsArgs<ExtArgs extends r
  */
 export type SpaceCountOutputTypeCountProductExtractionJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ProductExtractionJobWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountCoupangProductItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CoupangProductItemWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
+export type SpaceCountOutputTypeCountCoupangWriteJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CoupangWriteJobWhereInput
 }
 
 /**
@@ -34365,6 +35865,8 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   pricingScenarios?: boolean | Prisma.Space$pricingScenariosArgs<ExtArgs>
   adCampaignProductMaps?: boolean | Prisma.Space$adCampaignProductMapsArgs<ExtArgs>
   productExtractionJobs?: boolean | Prisma.Space$productExtractionJobsArgs<ExtArgs>
+  coupangProductItems?: boolean | Prisma.Space$coupangProductItemsArgs<ExtArgs>
+  coupangWriteJobs?: boolean | Prisma.Space$coupangWriteJobsArgs<ExtArgs>
   reorderPlans?: boolean | Prisma.Space$reorderPlansArgs<ExtArgs>
   keywordMasters?: boolean | Prisma.Space$keywordMastersArgs<ExtArgs>
   channelKeywordRules?: boolean | Prisma.Space$channelKeywordRulesArgs<ExtArgs>
@@ -34480,6 +35982,8 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   pricingScenarios?: boolean | Prisma.Space$pricingScenariosArgs<ExtArgs>
   adCampaignProductMaps?: boolean | Prisma.Space$adCampaignProductMapsArgs<ExtArgs>
   productExtractionJobs?: boolean | Prisma.Space$productExtractionJobsArgs<ExtArgs>
+  coupangProductItems?: boolean | Prisma.Space$coupangProductItemsArgs<ExtArgs>
+  coupangWriteJobs?: boolean | Prisma.Space$coupangWriteJobsArgs<ExtArgs>
   reorderPlans?: boolean | Prisma.Space$reorderPlansArgs<ExtArgs>
   keywordMasters?: boolean | Prisma.Space$keywordMastersArgs<ExtArgs>
   channelKeywordRules?: boolean | Prisma.Space$channelKeywordRulesArgs<ExtArgs>
@@ -34571,6 +36075,8 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     pricingScenarios: Prisma.$PricingScenarioPayload<ExtArgs>[]
     adCampaignProductMaps: Prisma.$AdCampaignProductMapPayload<ExtArgs>[]
     productExtractionJobs: Prisma.$ProductExtractionJobPayload<ExtArgs>[]
+    coupangProductItems: Prisma.$CoupangProductItemPayload<ExtArgs>[]
+    coupangWriteJobs: Prisma.$CoupangWriteJobPayload<ExtArgs>[]
     reorderPlans: Prisma.$ReorderPlanPayload<ExtArgs>[]
     keywordMasters: Prisma.$KeywordMasterPayload<ExtArgs>[]
     channelKeywordRules: Prisma.$ChannelKeywordRulePayload<ExtArgs>[]
@@ -35056,6 +36562,8 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   pricingScenarios<T extends Prisma.Space$pricingScenariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$pricingScenariosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PricingScenarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   adCampaignProductMaps<T extends Prisma.Space$adCampaignProductMapsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$adCampaignProductMapsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdCampaignProductMapPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productExtractionJobs<T extends Prisma.Space$productExtractionJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$productExtractionJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductExtractionJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  coupangProductItems<T extends Prisma.Space$coupangProductItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$coupangProductItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CoupangProductItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  coupangWriteJobs<T extends Prisma.Space$coupangWriteJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$coupangWriteJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CoupangWriteJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reorderPlans<T extends Prisma.Space$reorderPlansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$reorderPlansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReorderPlanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   keywordMasters<T extends Prisma.Space$keywordMastersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$keywordMastersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KeywordMasterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   channelKeywordRules<T extends Prisma.Space$channelKeywordRulesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$channelKeywordRulesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelKeywordRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -36262,6 +37770,54 @@ export type Space$productExtractionJobsArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.ProductExtractionJobScalarFieldEnum | Prisma.ProductExtractionJobScalarFieldEnum[]
+}
+
+/**
+ * Space.coupangProductItems
+ */
+export type Space$coupangProductItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CoupangProductItem
+   */
+  select?: Prisma.CoupangProductItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CoupangProductItem
+   */
+  omit?: Prisma.CoupangProductItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CoupangProductItemInclude<ExtArgs> | null
+  where?: Prisma.CoupangProductItemWhereInput
+  orderBy?: Prisma.CoupangProductItemOrderByWithRelationInput | Prisma.CoupangProductItemOrderByWithRelationInput[]
+  cursor?: Prisma.CoupangProductItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CoupangProductItemScalarFieldEnum | Prisma.CoupangProductItemScalarFieldEnum[]
+}
+
+/**
+ * Space.coupangWriteJobs
+ */
+export type Space$coupangWriteJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CoupangWriteJob
+   */
+  select?: Prisma.CoupangWriteJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CoupangWriteJob
+   */
+  omit?: Prisma.CoupangWriteJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CoupangWriteJobInclude<ExtArgs> | null
+  where?: Prisma.CoupangWriteJobWhereInput
+  orderBy?: Prisma.CoupangWriteJobOrderByWithRelationInput | Prisma.CoupangWriteJobOrderByWithRelationInput[]
+  cursor?: Prisma.CoupangWriteJobWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CoupangWriteJobScalarFieldEnum | Prisma.CoupangWriteJobScalarFieldEnum[]
 }
 
 /**
