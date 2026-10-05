@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { assertRole, resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { requireCoupangWorkspaceId } from '@/lib/coupang/workspace-space'
 
@@ -12,6 +12,9 @@ import { requireCoupangWorkspaceId } from '@/lib/coupang/workspace-space'
 export async function POST() {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
+  // 불러온 스냅샷이 매칭·가격 반영의 기준이 된다 — 매칭·반영 API 와 같은 ADMIN.
+  const denied = assertRole(resolved.role, 'ADMIN')
+  if (denied) return denied
   const spaceId = resolved.space.id
 
   let workspaceId: string

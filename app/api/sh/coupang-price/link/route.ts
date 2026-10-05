@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { assertRole, resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { linkCoupangItem } from '@/lib/sh/coupang-price/link-item'
 
@@ -14,6 +14,9 @@ const unlinkBodySchema = z.object({ coupangProductItemId: z.string().min(1) })
 export async function POST(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
+  // 매칭은 쿠팡의 어느 옵션에 돈(가격)이 쓰일지를 정한다 — 반영 API 와 같은 ADMIN.
+  const denied = assertRole(resolved.role, 'ADMIN')
+  if (denied) return denied
   const parsed = linkBodySchema.safeParse(await req.json().catch(() => ({})))
   if (!parsed.success) {
     return errorResponse(parsed.error.issues[0]?.message ?? '입력값이 올바르지 않습니다', 400)
@@ -27,6 +30,9 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
   if ('error' in resolved) return resolved.error
+  // 매칭은 쿠팡의 어느 옵션에 돈(가격)이 쓰일지를 정한다 — 반영 API 와 같은 ADMIN.
+  const denied = assertRole(resolved.role, 'ADMIN')
+  if (denied) return denied
   const parsed = unlinkBodySchema.safeParse(await req.json().catch(() => ({})))
   if (!parsed.success) return errorResponse('coupangProductItemId 가 필요합니다', 400)
   const r = await prisma.coupangProductItem.updateMany({
