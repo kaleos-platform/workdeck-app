@@ -18,6 +18,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
+import { Checkbox } from '@/components/ui/checkbox'
+import { InfoHint } from '@/components/finance/info-hint'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from '@/components/ui/card'
@@ -112,6 +114,8 @@ interface DashboardData {
   accountSnapshots: AccountSnapshot[]
   expenseTop: ExpenseTop[]
   liabilities: LiabilityItem[]
+  /** 현재 기간 수입·지출에서 빠진 분석 제외 거래 수(포함 토글 on 이면 0). */
+  excludedCount: number
 }
 
 // ─── 앵커 헬퍼 ────────────────────────────────────────────────────────────────
@@ -232,6 +236,9 @@ export function DashboardView() {
   const [period, setPeriod] = useState<'month' | 'quarter' | 'year'>('month')
   // 기본 표시월 = 직전월(당월은 데이터가 비어 보임).
   const [anchor, setAnchor] = useState<string>(addMonthsToYm(currentYm(), -1))
+  // 분석 제외 거래 포함 — 기본 off. 잔액(스냅샷)은 항상 전체 기준이라 영향 없음.
+  // 이 화면은 URL 상태를 쓰지 않아(useSearchParams→Suspense 경계 필요) 로컬 state 로 둔다.
+  const [includeExcluded, setIncludeExcluded] = useState(false)
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -250,6 +257,7 @@ export function DashboardView() {
     setLoading(true)
     try {
       const params = new URLSearchParams({ period, anchor })
+      if (includeExcluded) params.set('includeExcluded', '1')
       const res = await fetch(`/api/finance/dashboard?${params}`)
       if (!res.ok) throw new Error('대시보드 조회 실패')
       const json = (await res.json()) as DashboardData
@@ -259,7 +267,7 @@ export function DashboardView() {
     } finally {
       setLoading(false)
     }
-  }, [period, anchor])
+  }, [period, anchor, includeExcluded])
 
   useEffect(() => {
     void load()
@@ -395,6 +403,15 @@ export function DashboardView() {
           </Button>
         </div>
 
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+          <Checkbox
+            checked={includeExcluded}
+            onCheckedChange={(v) => setIncludeExcluded(v === true)}
+            aria-label="분석 제외 거래 포함"
+          />
+          분석 제외 거래 포함
+        </label>
+
         {loading && <span className="text-xs text-muted-foreground">불러오는 중...</span>}
       </div>
 
@@ -439,7 +456,14 @@ export function DashboardView() {
             {/* ② 수입 */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">수입</CardTitle>
+                <CardTitle className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
+                  수입
+                  {data.excludedCount > 0 && (
+                    <InfoHint
+                      content={`분석 제외 거래 ${data.excludedCount}건이 수입·지출에서 빠졌습니다. 총현금(잔액)은 실제 잔액이라 포함되므로 수입−지출과 잔액 변동이 다를 수 있습니다.`}
+                    />
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
                 <p className="font-mono text-2xl font-semibold text-emerald-700 dark:text-emerald-400">

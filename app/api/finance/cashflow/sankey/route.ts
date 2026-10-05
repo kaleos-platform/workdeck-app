@@ -11,6 +11,7 @@
  *
  * 단일 기간: grain(month|quarter|year). 기본은 직전월이 속한 버킷. `period`(버킷키, 예 2026-05/
  *  2026-Q1/2025)로 특정 기간 지정 가능. 유효하지 않으면 기본(직전월)으로 폴백.
+ * includeExcluded=1 이면 분석 제외 거래 포함(기본 제외).
  *
  * recharts Sankey는 음수 링크를 못 그리므로, 적자·비정상 기간은 renderable:false로 반환한다.
  */
@@ -54,7 +55,11 @@ export async function GET(req: NextRequest) {
 
   const [txns, categories] = await Promise.all([
     prisma.finTransaction.findMany({
-      where: { spaceId, txnDate: { gte, lt } },
+      where: {
+        spaceId,
+        txnDate: { gte, lt },
+        ...(sp.get('includeExcluded') === '1' ? {} : { excludeFromAnalysis: false }),
+      },
       select: {
         direction: true,
         amount: true,

@@ -60,6 +60,7 @@ export async function GET(req: NextRequest) {
       description: true,
       counterparty: true,
       isTransfer: true,
+      excludeFromAnalysis: true,
       cancelFlag: true,
       account: { select: { name: true } },
       category: {
@@ -85,6 +86,7 @@ export async function GET(req: NextRequest) {
     'K-IFRS코드',
     'K-IFRS계정',
     '현금흐름분류',
+    '분석제외',
   ]
 
   const lines: string[] = [headers.map(cell).join(',')]
@@ -113,6 +115,7 @@ export async function GET(req: NextRequest) {
         cell(code ?? ''),
         cell(kifrsAccountName(code)),
         cell(cf),
+        cell(t.excludeFromAnalysis ? 'Y' : ''),
       ].join(',')
     )
   }

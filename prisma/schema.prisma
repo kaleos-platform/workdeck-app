@@ -3583,6 +3583,10 @@ model FinTransaction {
   categoryId    String?
   liabilityId   String? // 상환으로 귀속된 부채 (선택)
   isTransfer    Boolean         @default(false)
+  // 분석 제외 — 개인 목적 급여·외부 계약 등 본 사업과 무관한 거래(수동 지정).
+  // true면 현금흐름·대시보드·손익 지표 집계에서 기본 제외(includeExcluded=1 로 포함). 잔액에는 영향 없음.
+  // 계정과목과 독립 — 재분류·재업로드가 이 값을 바꾸지 않는다.
+  excludeFromAnalysis Boolean @default(false)
   classStatus   FinClassStatus  @default(UNCLASSIFIED)
   matchedRuleId String? // soft ref
   approvalNo    String?
