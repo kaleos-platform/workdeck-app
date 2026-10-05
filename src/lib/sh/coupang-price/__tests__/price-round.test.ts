@@ -32,3 +32,10 @@ describe('가드', () => {
     })
   })
 })
+
+test('10원 반올림은 5에서 올린다(half-up) — 돈 경계 고정', () => {
+  expect(roundPriceTo10(19_995)).toBe(20_000)
+  expect(roundPriceTo10(19_994)).toBe(19_990)
+  expect(ceilMinPriceTo10(15_001)).toBe(15_010)
+  expect(ceilMinPriceTo10(15_000)).toBe(15_000)
+})
