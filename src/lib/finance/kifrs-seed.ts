@@ -424,9 +424,10 @@ async function upsertSeedRule(
 ): Promise<void> {
   const matchKey = normalizeFinKey(keyword)
   if (!matchKey) return
-  // (spaceId, matchKey, direction) 멱등 — nullable 복합 unique upsert 회피 위해 findFirst 사용.
+  // (spaceId, accountId=null, matchKey, direction) 멱등 — 시드는 전체 공통. accountId 를 명시해야
+  // 같은 키의 계좌 학습 규칙 때문에 공통 시드 생성이 누락되지 않는다. nullable 복합 unique 라 findFirst.
   const existing = await prisma.finClassRule.findFirst({
-    where: { spaceId, matchKey, direction },
+    where: { spaceId, accountId: null, matchKey, direction },
     select: { id: true },
   })
   if (existing) return

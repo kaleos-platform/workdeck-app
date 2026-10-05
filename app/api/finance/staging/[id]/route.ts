@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { learnRule, matchKeyOf } from '@/lib/finance/classify'
+import { learnRule, matchKeyOf, ruleNoticeFor, type RuleNotice } from '@/lib/finance/classify'
 import { normalizeMemoInput } from '@/lib/finance/memo'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
 
@@ -25,6 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     select: {
       id: true,
       importId: true,
+      accountId: true,
       description: true,
       counterparty: true,
       direction: true,
@@ -33,6 +34,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!row) return errorResponse('스테이징 행을 찾을 수 없습니다', 404)
 
   const body = await req.json().catch(() => ({}))
+  // 규칙 학습 시 덮어쓰기·우선 적용 알림(학습 안 하면 null)
+  let ruleNotice: RuleNotice | null = null
   const data: {
     categoryId?: string
     classStatus?: 'CLASSIFIED'
@@ -62,15 +65,27 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     data.classStatus = 'CLASSIFIED'
 
     if (body.learn !== false) {
-      const ruleId = await learnRule(
+      ruleNotice = await ruleNoticeFor(
+        spaceId,
+        { description: row.description, counterparty: row.counterparty },
+        row.direction,
+        row.accountId,
+        body.categoryId
+      )
+      const learned = await learnRule(
         spaceId,
         { description: row.description, counterparty: row.counterparty },
         body.categoryId,
         row.direction,
+        row.accountId,
         // 메모가 함께 오면 규칙에도 저장(자동분류 시 행 memo로 복사). 미전달이면 규칙 memo 유지.
         body.memo !== undefined ? (data.memo ?? null) : undefined
       )
-      data.matchedRuleId = ruleId
+      data.matchedRuleId = learned?.ruleId ?? null
+    } else {
+      // 규칙 저장 없이 직접 분류 — 이전 자동분류 규칙 참조를 끊는다(staging/bulk 와 동일).
+      // 남겨 두면 그 규칙을 수정·삭제할 때 재분류 대상이 되어 사용자가 고른 계정과목이 사라진다.
+      data.matchedRuleId = null
     }
   }
 
@@ -131,5 +146,5 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   }
 
-  return NextResponse.json({ row: updated, siblingIds })
+  return NextResponse.json({ row: updated, siblingIds, ruleNotice })
 }

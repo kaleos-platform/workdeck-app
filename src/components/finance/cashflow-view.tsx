@@ -65,9 +65,11 @@ import {
 } from '@/lib/finance/periods'
 import {
   buildClassifyOptions,
+  comboOptionLabel,
   type CategoryTreeNode,
   type ComboOption,
 } from '@/lib/finance/category-options'
+import { useRuleNotice, ruleNoticeText } from '@/components/finance/use-rule-notice'
 import { MEMO_MAX } from '@/lib/finance/memo'
 import { finTxnLabel } from '@/lib/finance/txn-label'
 import { FINANCE_UPLOAD_PATH, FINANCE_TRANSACTIONS_PATH } from '@/lib/deck-routes'
@@ -1292,6 +1294,7 @@ function NetRow({ entry, columns }: { entry: CashflowTotalEntry; columns: Displa
 
 interface PanelTxn {
   id: string
+  accountId: string
   txnDate: string
   direction: 'IN' | 'OUT'
   amount: number
@@ -1791,6 +1794,18 @@ function TxnEditPopover({
   const dirtyMemo = normMemo !== (txn.memo ?? null)
   const dirtyExcluded = excluded !== txn.excludeFromAnalysis
   const dirty = dirtyCategory || dirtyMemo || dirtyExcluded
+  // 규칙 저장을 켰을 때만 기존 규칙과 부딪히는지 조회(덮어쓰기·우선 적용 경고).
+  const notice = useRuleNotice(
+    dirtyCategory && learn && categoryId
+      ? {
+          accountId: txn.accountId,
+          direction: txn.direction,
+          description: txn.description,
+          counterparty: txn.counterparty,
+          categoryId,
+        }
+      : null
+  )
 
   const save = async () => {
     if (!dirty) {
@@ -1863,8 +1878,13 @@ function TxnEditPopover({
           <span>
             이 분류를 규칙으로 저장
             <span className="block text-[11px] text-muted-foreground">
-              동일 적요는 다음 업로드부터 자동 분류됩니다
+              이 계좌의 동일 적요는 다음 업로드부터 자동 분류됩니다
             </span>
+            {notice && categoryId && (
+              <span className="mt-1 block text-[11px] text-amber-700 dark:text-amber-400">
+                {ruleNoticeText(notice, comboOptionLabel(options, categoryId) || '선택한 계정과목')}
+              </span>
+            )}
           </span>
         </label>
       )}

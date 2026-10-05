@@ -3474,6 +3474,7 @@ model FinAccount {
   balanceSnapshots FinBalanceSnapshot[]
   mappingPresets   FinMappingPreset[]
   liabilities      FinLiability[]
+  classRules       FinClassRule[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3552,14 +3553,18 @@ model FinClassRule {
   direction   FinTxnDirection?
   learnedFrom FinClassRuleSource    @default(USER)
   memo        String? // 규칙 학습 시 함께 저장한 메모 — 자동분류 시 스테이징 행 memo로 복사
+  // 적용 계좌 — null = 전체 계좌 공통. 지정 시 그 계좌 거래에만 매칭(분류 시 학습 규칙은 계좌 전용).
+  accountId   String?
 
   space    Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   category FinCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  account  FinAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([spaceId, matchKey, direction])
+  @@unique([spaceId, accountId, matchKey, direction])
+  @@index([spaceId, accountId])
   @@index([spaceId])
   @@index([categoryId])
 }

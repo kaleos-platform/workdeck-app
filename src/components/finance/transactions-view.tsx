@@ -45,6 +45,11 @@ import { MEMO_MAX } from '@/lib/finance/memo'
 import { ymdOf } from '@/lib/finance/aggregate'
 import { finTxnLabel } from '@/lib/finance/txn-label'
 import { InfoHint } from '@/components/finance/info-hint'
+import {
+  useRuleNotice,
+  ruleNoticeText,
+  type RuleNoticeParams,
+} from '@/components/finance/use-rule-notice'
 import { CategoryCombobox } from '@/components/finance/category-combobox'
 import { useShiftSelect } from '@/components/finance/use-shift-select'
 import { ImportDeleteDialog } from '@/components/finance/import-delete-dialog'
@@ -287,6 +292,8 @@ export function TransactionsView() {
     categoryId: string
     categoryLabel: string
     memo: string | null
+    /** 규칙 저장 시 기존 규칙과의 관계 조회용 행 정보 */
+    noticeParams: Omit<RuleNoticeParams, 'categoryId'> | null
   } | null>(null)
   const [classifySaving, setClassifySaving] = useState(false)
 
@@ -486,6 +493,14 @@ export function TransactionsView() {
       categoryId,
       categoryLabel: comboOptionLabel(leafTargets, categoryId) || '선택한 계정과목',
       memo: row?.memo ?? null,
+      noticeParams: row
+        ? {
+            accountId: row.accountId,
+            direction: row.direction,
+            description: row.description,
+            counterparty: row.counterparty,
+          }
+        : null,
     })
   }
 
@@ -708,7 +723,16 @@ export function TransactionsView() {
         body: JSON.stringify({ categoryId }),
       })
       if (!res.ok) throw new Error('분류 저장 실패')
+      const json = await res.json().catch(() => ({}))
       toast.success('계정과목이 변경되었습니다')
+      // 인라인 분류는 확인 팝업 없이 규칙을 학습하므로, 기존 규칙과 부딪혔으면 사후 안내.
+      if (json?.ruleNotice)
+        toast.info(
+          ruleNoticeText(
+            json.ruleNotice,
+            comboOptionLabel(leafTargets, categoryId) || '선택한 계정과목'
+          )
+        )
       void loadTransactions()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '분류 저장 실패')
@@ -980,6 +1004,8 @@ export function TransactionsView() {
         <ClassifyConfirmDialog
           key={`${classifyConfirm.rowId}:${classifyConfirm.categoryId}`}
           categoryLabel={classifyConfirm.categoryLabel}
+          categoryId={classifyConfirm.categoryId}
+          noticeParams={classifyConfirm.noticeParams}
           initialMemo={classifyConfirm.memo}
           saving={classifySaving}
           onCancel={() => setClassifyConfirm(null)}
@@ -2451,12 +2477,16 @@ function TransactionRow({
  */
 function ClassifyConfirmDialog({
   categoryLabel,
+  categoryId,
+  noticeParams,
   initialMemo,
   saving,
   onCancel,
   onApply,
 }: {
   categoryLabel: string
+  categoryId: string
+  noticeParams: Omit<RuleNoticeParams, 'categoryId'> | null
   initialMemo: string | null
   saving: boolean
   onCancel: () => void
@@ -2465,6 +2495,8 @@ function ClassifyConfirmDialog({
   // 규칙 저장은 명시적 선택만(기본 해제) — 일회성 분류가 규칙으로 굳어 다음 업로드를 오분류하지 않게.
   const [learn, setLearn] = useState(false)
   const [memoDraft, setMemoDraft] = useState(initialMemo ?? '')
+  // 규칙 저장을 켰을 때만 기존 규칙과 부딪히는지 조회(덮어쓰기·우선 적용 경고).
+  const notice = useRuleNotice(learn && noticeParams ? { ...noticeParams, categoryId } : null)
 
   return (
     <Dialog open onOpenChange={(open) => !open && !saving && onCancel()}>
@@ -2485,8 +2517,13 @@ function ClassifyConfirmDialog({
             <span>
               이 분류를 규칙으로 저장
               <span className="block text-xs text-muted-foreground">
-                동일 적요는 다음 업로드부터 자동 분류되고, 메모도 함께 적용됩니다
+                이 계좌의 동일 적요는 다음 업로드부터 자동 분류되고, 메모도 함께 적용됩니다
               </span>
+              {learn && notice && (
+                <span className="mt-1 block text-xs text-amber-700 dark:text-amber-400">
+                  {ruleNoticeText(notice, categoryLabel)}
+                </span>
+              )}
             </span>
           </label>
           <div className="space-y-1">

@@ -211,3 +211,11 @@ export function comboOptionLabel(options: ComboOption[], id: string | null): str
   if (!opt) return ''
   return opt.hint ? `${opt.hint} › ${opt.label}` : opt.label
 }
+
+/** 「대분류 › 계정」 라벨 — 규칙 충돌·알림 문구용(category + parent.name 형태 입력). */
+export function categoryLabelOf(
+  c: { name: string; parent: { name: string } | null } | null | undefined
+): string {
+  if (!c) return ''
+  return c.parent ? `${c.parent.name} › ${c.name}` : c.name
+}

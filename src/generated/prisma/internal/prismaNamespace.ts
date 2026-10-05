@@ -13363,6 +13363,7 @@ export const FinClassRuleScalarFieldEnum = {
   direction: 'direction',
   learnedFrom: 'learnedFrom',
   memo: 'memo',
+  accountId: 'accountId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

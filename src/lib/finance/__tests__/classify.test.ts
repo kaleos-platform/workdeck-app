@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { classifyRow, type ClassRuleLite } from '../classify'
+import { classifyRow, ruleMatchesText, type ClassRuleLite } from '../classify'
 import type { FinTxnDirection } from '@/generated/prisma/enums'
 
 // matchKey는 저장 시 정규화된 형태(소문자·공백정리)로 가정. direction 기본 null(방향 무관).
@@ -9,7 +9,8 @@ const rule = (
   matchType: 'EXACT' | 'KEYWORD',
   categoryId: string,
   direction: FinTxnDirection | null = null,
-  memo: string | null = null
+  memo: string | null = null,
+  accountId: string | null = null
 ): ClassRuleLite => ({
   id,
   matchKey,
@@ -17,6 +18,7 @@ const rule = (
   categoryId,
   direction,
   memo,
+  accountId,
 })
 
 describe('classifyRow — 결정적 규칙 매칭', () => {
@@ -121,5 +123,63 @@ describe('classifyRow — 결정적 규칙 매칭', () => {
   test('반대 방향 전용 규칙은 매칭하지 않음', () => {
     const rules = [rule('out', '쿠팡', 'EXACT', 'cat-out', 'OUT')]
     expect(classifyRow({ description: '쿠팡' }, rules, 'IN').classStatus).toBe('UNCLASSIFIED')
+  })
+})
+
+describe('classifyRow — 계좌 범위', () => {
+  test('다른 계좌 전용 규칙은 매칭하지 않음', () => {
+    const rules = [rule('a', '쿠팡', 'EXACT', 'cat-a', 'OUT', null, 'acc-A')]
+    expect(classifyRow({ description: '쿠팡' }, rules, 'OUT', 'acc-B').categoryId).toBeNull()
+  })
+
+  test('EXACT 계좌 > EXACT 공통', () => {
+    const rules = [
+      rule('common', '쿠팡', 'EXACT', 'cat-common', 'OUT'),
+      rule('acct', '쿠팡', 'EXACT', 'cat-acct', 'OUT', null, 'acc-A'),
+    ]
+    expect(classifyRow({ description: '쿠팡' }, rules, 'OUT', 'acc-A').matchedRuleId).toBe('acct')
+  })
+
+  test('EXACT 공통 > KEYWORD 계좌 (일치 정확도 우선)', () => {
+    const rules = [
+      rule('kw-acct', '쿠', 'KEYWORD', 'cat-kw', 'OUT', null, 'acc-A'),
+      rule('exact-common', '쿠팡', 'EXACT', 'cat-exact', 'OUT'),
+    ]
+    const res = classifyRow({ description: '쿠팡' }, rules, 'OUT', 'acc-A')
+    expect(res.matchedRuleId).toBe('exact-common')
+    expect(res.classStatus).toBe('CLASSIFIED')
+  })
+
+  test('KEYWORD 계좌 > KEYWORD 공통 (공통이 더 길어도)', () => {
+    const rules = [
+      rule('kw-common', '쿠팡 결제', 'KEYWORD', 'cat-common', 'OUT'),
+      rule('kw-acct', '쿠팡', 'KEYWORD', 'cat-acct', 'OUT', null, 'acc-A'),
+    ]
+    const res = classifyRow({ description: '쿠팡 결제 대금' }, rules, 'OUT', 'acc-A')
+    expect(res.matchedRuleId).toBe('kw-acct')
+    expect(res.classStatus).toBe('REVIEW')
+  })
+
+  test('계좌 인자 생략 시 공통 규칙만', () => {
+    const rules = [rule('acct', '쿠팡', 'EXACT', 'cat-acct', 'OUT', null, 'acc-A')]
+    expect(classifyRow({ description: '쿠팡' }, rules, 'OUT').categoryId).toBeNull()
+  })
+})
+
+describe('ruleMatchesText', () => {
+  test('EXACT 전체 일치·KEYWORD 포함·반대 방향 제외', () => {
+    const c = (
+      matchKey: string,
+      matchType: 'EXACT' | 'KEYWORD',
+      direction: FinTxnDirection | null
+    ) => ({
+      matchKey,
+      matchType,
+      direction,
+    })
+    expect(ruleMatchesText(c('쿠팡', 'EXACT', null), '쿠팡', 'OUT')).toBe(true)
+    expect(ruleMatchesText(c('쿠팡', 'EXACT', null), '쿠팡 결제', 'OUT')).toBe(false)
+    expect(ruleMatchesText(c('쿠팡', 'KEYWORD', null), '쿠팡 결제', 'OUT')).toBe(true)
+    expect(ruleMatchesText(c('쿠팡', 'KEYWORD', 'IN'), '쿠팡 결제', 'OUT')).toBe(false)
   })
 })
