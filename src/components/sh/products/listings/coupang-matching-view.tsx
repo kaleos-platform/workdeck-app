@@ -126,8 +126,8 @@ export function CoupangMatchingView() {
   const [rows, setRows] = useState<MatchingRow[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
-  // 일괄 확정 전 확인 팝업
-  const [bulkOpen, setBulkOpen] = useState(false)
+  // 일괄 확정 전 확인 팝업 — 열 때의 목록을 고정해, 보는 목록과 확정되는 목록이 어긋나지 않게 한다.
+  const [bulkRows, setBulkRows] = useState<MatchingRow[] | null>(null)
   // 진행 중인 쿠팡 상품 불러오기(워커 잡) id — 끝나면 목록을 자동으로 다시 조회한다.
   // 불리언이 아니라 id 로 들고 있어야 이전 잡의 결과를 새 잡으로 착각하지 않는다.
   const [syncJobId, setSyncJobId] = useState<string | null>(null)
@@ -217,7 +217,9 @@ export function CoupangMatchingView() {
     return c
   }, [rows])
 
-  async function confirm(pairs: Array<{ coupangProductItemId: string; listingId: string }>) {
+  async function confirm(
+    pairs: Array<{ coupangProductItemId: string; listingId: string }>
+  ): Promise<boolean> {
     setBusy(true)
     try {
       const r = (await send('/api/sh/coupang-price/matching/confirm', 'POST', { pairs })) as {
@@ -229,8 +231,10 @@ export function CoupangMatchingView() {
       )
       if (r.skipped.length) toast.warning(r.skipped[0].reason)
       await load()
+      return true
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '확정 실패')
+      return false
     } finally {
       setBusy(false)
     }
@@ -283,7 +287,7 @@ export function CoupangMatchingView() {
           <Button
             size="sm"
             disabled={busy || candidatePairs.length === 0}
-            onClick={() => setBulkOpen(true)}
+            onClick={() => setBulkRows(candidateRows)}
           >
             후보 {candidatePairs.length}건 일괄 확정
           </Button>
@@ -402,10 +406,10 @@ export function CoupangMatchingView() {
         </Table>
       </div>
 
-      <Dialog open={bulkOpen} onOpenChange={(v) => !busy && setBulkOpen(v)}>
+      <Dialog open={bulkRows != null} onOpenChange={(v) => !busy && !v && setBulkRows(null)}>
         <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>후보 {candidatePairs.length}건 일괄 확정</DialogTitle>
+            <DialogTitle>후보 {bulkRows?.length ?? 0}건 일괄 확정</DialogTitle>
             <DialogDescription>
               아래 쿠팡 옵션과 판매채널 상품을 연결합니다. 연결된 상품은 가격시뮬에서 쿠팡 판매가로
               반영할 때 이 쿠팡 옵션에 가격이 쓰입니다.
@@ -420,7 +424,7 @@ export function CoupangMatchingView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {candidateRows.map((r) => (
+                {(bulkRows ?? []).map((r) => (
                   <TableRow key={r.id}>
                     <TableCell className="break-words whitespace-normal">
                       <CoupangItemLabel r={r} />
@@ -434,17 +438,23 @@ export function CoupangMatchingView() {
             </Table>
           </div>
           <DialogFooter>
-            <Button variant="outline" disabled={busy} onClick={() => setBulkOpen(false)}>
+            <Button variant="outline" disabled={busy} onClick={() => setBulkRows(null)}>
               취소
             </Button>
             <Button
-              disabled={busy || candidatePairs.length === 0}
+              disabled={busy || !bulkRows?.length}
               onClick={async () => {
-                await confirm(candidatePairs)
-                setBulkOpen(false)
+                if (!bulkRows) return
+                const ok = await confirm(
+                  bulkRows.map((r) => ({
+                    coupangProductItemId: r.id,
+                    listingId: r.candidates[0].id,
+                  }))
+                )
+                if (ok) setBulkRows(null)
               }}
             >
-              {busy ? '확정 중...' : `${candidatePairs.length}건 확정`}
+              {busy ? '확정 중...' : `${bulkRows?.length ?? 0}건 확정`}
             </Button>
           </DialogFooter>
         </DialogContent>
