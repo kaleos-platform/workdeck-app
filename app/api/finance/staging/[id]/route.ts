@@ -77,6 +77,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!RESOLUTIONS.includes(body.resolution))
       return errorResponse('유효하지 않은 처리 값입니다', 400)
     data.resolution = body.resolution
+    // 「유지」 = 이 행을 저장하겠다는 의사표시다. 저장 처리는 classStatus='CLASSIFIED'만
+    // 대상으로 삼으므로(commit 라우트 where), 미분류·검토 행은 눌러도 조용히 건너뛰었다.
+    // 완료로 올려 실제 저장 대상이 되게 한다. 분류가 비어 있어도 기존 확정 거래의 분류는
+    // shouldPreserveClassification 가드로 보존된다.
+    if (body.resolution === 'DUP_OVERWRITE') data.classStatus = 'CLASSIFIED'
   }
 
   if (Object.keys(data).length === 0) return errorResponse('변경할 내용이 없습니다', 400)
