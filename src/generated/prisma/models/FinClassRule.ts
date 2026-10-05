@@ -33,6 +33,7 @@ export type FinClassRuleMinAggregateOutputType = {
   direction: $Enums.FinTxnDirection | null
   learnedFrom: $Enums.FinClassRuleSource | null
   memo: string | null
+  accountId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -46,6 +47,7 @@ export type FinClassRuleMaxAggregateOutputType = {
   direction: $Enums.FinTxnDirection | null
   learnedFrom: $Enums.FinClassRuleSource | null
   memo: string | null
+  accountId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -59,6 +61,7 @@ export type FinClassRuleCountAggregateOutputType = {
   direction: number
   learnedFrom: number
   memo: number
+  accountId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -74,6 +77,7 @@ export type FinClassRuleMinAggregateInputType = {
   direction?: true
   learnedFrom?: true
   memo?: true
+  accountId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -87,6 +91,7 @@ export type FinClassRuleMaxAggregateInputType = {
   direction?: true
   learnedFrom?: true
   memo?: true
+  accountId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +105,7 @@ export type FinClassRuleCountAggregateInputType = {
   direction?: true
   learnedFrom?: true
   memo?: true
+  accountId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -186,6 +192,7 @@ export type FinClassRuleGroupByOutputType = {
   direction: $Enums.FinTxnDirection | null
   learnedFrom: $Enums.FinClassRuleSource
   memo: string | null
+  accountId: string | null
   createdAt: Date
   updatedAt: Date
   _count: FinClassRuleCountAggregateOutputType | null
@@ -220,10 +227,12 @@ export type FinClassRuleWhereInput = {
   direction?: Prisma.EnumFinTxnDirectionNullableFilter<"FinClassRule"> | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFilter<"FinClassRule"> | $Enums.FinClassRuleSource
   memo?: Prisma.StringNullableFilter<"FinClassRule"> | string | null
+  accountId?: Prisma.StringNullableFilter<"FinClassRule"> | string | null
   createdAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   category?: Prisma.XOR<Prisma.FinCategoryScalarRelationFilter, Prisma.FinCategoryWhereInput>
+  account?: Prisma.XOR<Prisma.FinAccountNullableScalarRelationFilter, Prisma.FinAccountWhereInput> | null
 }
 
 export type FinClassRuleOrderByWithRelationInput = {
@@ -235,15 +244,17 @@ export type FinClassRuleOrderByWithRelationInput = {
   direction?: Prisma.SortOrderInput | Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
+  accountId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   category?: Prisma.FinCategoryOrderByWithRelationInput
+  account?: Prisma.FinAccountOrderByWithRelationInput
 }
 
 export type FinClassRuleWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  spaceId_matchKey_direction?: Prisma.FinClassRuleSpaceIdMatchKeyDirectionCompoundUniqueInput
+  spaceId_accountId_matchKey_direction?: Prisma.FinClassRuleSpaceIdAccountIdMatchKeyDirectionCompoundUniqueInput
   AND?: Prisma.FinClassRuleWhereInput | Prisma.FinClassRuleWhereInput[]
   OR?: Prisma.FinClassRuleWhereInput[]
   NOT?: Prisma.FinClassRuleWhereInput | Prisma.FinClassRuleWhereInput[]
@@ -254,11 +265,13 @@ export type FinClassRuleWhereUniqueInput = Prisma.AtLeast<{
   direction?: Prisma.EnumFinTxnDirectionNullableFilter<"FinClassRule"> | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFilter<"FinClassRule"> | $Enums.FinClassRuleSource
   memo?: Prisma.StringNullableFilter<"FinClassRule"> | string | null
+  accountId?: Prisma.StringNullableFilter<"FinClassRule"> | string | null
   createdAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   category?: Prisma.XOR<Prisma.FinCategoryScalarRelationFilter, Prisma.FinCategoryWhereInput>
-}, "id" | "spaceId_matchKey_direction">
+  account?: Prisma.XOR<Prisma.FinAccountNullableScalarRelationFilter, Prisma.FinAccountWhereInput> | null
+}, "id" | "spaceId_accountId_matchKey_direction">
 
 export type FinClassRuleOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -269,6 +282,7 @@ export type FinClassRuleOrderByWithAggregationInput = {
   direction?: Prisma.SortOrderInput | Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   memo?: Prisma.SortOrderInput | Prisma.SortOrder
+  accountId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.FinClassRuleCountOrderByAggregateInput
@@ -288,6 +302,7 @@ export type FinClassRuleScalarWhereWithAggregatesInput = {
   direction?: Prisma.EnumFinTxnDirectionNullableWithAggregatesFilter<"FinClassRule"> | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceWithAggregatesFilter<"FinClassRule"> | $Enums.FinClassRuleSource
   memo?: Prisma.StringNullableWithAggregatesFilter<"FinClassRule"> | string | null
+  accountId?: Prisma.StringNullableWithAggregatesFilter<"FinClassRule"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"FinClassRule"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"FinClassRule"> | Date | string
 }
@@ -303,6 +318,7 @@ export type FinClassRuleCreateInput = {
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinClassRulesInput
   category: Prisma.FinCategoryCreateNestedOneWithoutClassRulesInput
+  account?: Prisma.FinAccountCreateNestedOneWithoutClassRulesInput
 }
 
 export type FinClassRuleUncheckedCreateInput = {
@@ -314,6 +330,7 @@ export type FinClassRuleUncheckedCreateInput = {
   direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -329,6 +346,7 @@ export type FinClassRuleUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinClassRulesNestedInput
   category?: Prisma.FinCategoryUpdateOneRequiredWithoutClassRulesNestedInput
+  account?: Prisma.FinAccountUpdateOneWithoutClassRulesNestedInput
 }
 
 export type FinClassRuleUncheckedUpdateInput = {
@@ -340,6 +358,7 @@ export type FinClassRuleUncheckedUpdateInput = {
   direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -353,6 +372,7 @@ export type FinClassRuleCreateManyInput = {
   direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -377,6 +397,7 @@ export type FinClassRuleUncheckedUpdateManyInput = {
   direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -391,8 +412,9 @@ export type FinClassRuleOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type FinClassRuleSpaceIdMatchKeyDirectionCompoundUniqueInput = {
+export type FinClassRuleSpaceIdAccountIdMatchKeyDirectionCompoundUniqueInput = {
   spaceId: string
+  accountId: string
   matchKey: string
   direction: $Enums.FinTxnDirection
 }
@@ -406,6 +428,7 @@ export type FinClassRuleCountOrderByAggregateInput = {
   direction?: Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  accountId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -419,6 +442,7 @@ export type FinClassRuleMaxOrderByAggregateInput = {
   direction?: Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  accountId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -432,6 +456,7 @@ export type FinClassRuleMinOrderByAggregateInput = {
   direction?: Prisma.SortOrder
   learnedFrom?: Prisma.SortOrder
   memo?: Prisma.SortOrder
+  accountId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -475,6 +500,48 @@ export type FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput = {
   connect?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
   update?: Prisma.FinClassRuleUpdateWithWhereUniqueWithoutSpaceInput | Prisma.FinClassRuleUpdateWithWhereUniqueWithoutSpaceInput[]
   updateMany?: Prisma.FinClassRuleUpdateManyWithWhereWithoutSpaceInput | Prisma.FinClassRuleUpdateManyWithWhereWithoutSpaceInput[]
+  deleteMany?: Prisma.FinClassRuleScalarWhereInput | Prisma.FinClassRuleScalarWhereInput[]
+}
+
+export type FinClassRuleCreateNestedManyWithoutAccountInput = {
+  create?: Prisma.XOR<Prisma.FinClassRuleCreateWithoutAccountInput, Prisma.FinClassRuleUncheckedCreateWithoutAccountInput> | Prisma.FinClassRuleCreateWithoutAccountInput[] | Prisma.FinClassRuleUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.FinClassRuleCreateOrConnectWithoutAccountInput | Prisma.FinClassRuleCreateOrConnectWithoutAccountInput[]
+  createMany?: Prisma.FinClassRuleCreateManyAccountInputEnvelope
+  connect?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+}
+
+export type FinClassRuleUncheckedCreateNestedManyWithoutAccountInput = {
+  create?: Prisma.XOR<Prisma.FinClassRuleCreateWithoutAccountInput, Prisma.FinClassRuleUncheckedCreateWithoutAccountInput> | Prisma.FinClassRuleCreateWithoutAccountInput[] | Prisma.FinClassRuleUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.FinClassRuleCreateOrConnectWithoutAccountInput | Prisma.FinClassRuleCreateOrConnectWithoutAccountInput[]
+  createMany?: Prisma.FinClassRuleCreateManyAccountInputEnvelope
+  connect?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+}
+
+export type FinClassRuleUpdateManyWithoutAccountNestedInput = {
+  create?: Prisma.XOR<Prisma.FinClassRuleCreateWithoutAccountInput, Prisma.FinClassRuleUncheckedCreateWithoutAccountInput> | Prisma.FinClassRuleCreateWithoutAccountInput[] | Prisma.FinClassRuleUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.FinClassRuleCreateOrConnectWithoutAccountInput | Prisma.FinClassRuleCreateOrConnectWithoutAccountInput[]
+  upsert?: Prisma.FinClassRuleUpsertWithWhereUniqueWithoutAccountInput | Prisma.FinClassRuleUpsertWithWhereUniqueWithoutAccountInput[]
+  createMany?: Prisma.FinClassRuleCreateManyAccountInputEnvelope
+  set?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+  disconnect?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+  delete?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+  connect?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+  update?: Prisma.FinClassRuleUpdateWithWhereUniqueWithoutAccountInput | Prisma.FinClassRuleUpdateWithWhereUniqueWithoutAccountInput[]
+  updateMany?: Prisma.FinClassRuleUpdateManyWithWhereWithoutAccountInput | Prisma.FinClassRuleUpdateManyWithWhereWithoutAccountInput[]
+  deleteMany?: Prisma.FinClassRuleScalarWhereInput | Prisma.FinClassRuleScalarWhereInput[]
+}
+
+export type FinClassRuleUncheckedUpdateManyWithoutAccountNestedInput = {
+  create?: Prisma.XOR<Prisma.FinClassRuleCreateWithoutAccountInput, Prisma.FinClassRuleUncheckedCreateWithoutAccountInput> | Prisma.FinClassRuleCreateWithoutAccountInput[] | Prisma.FinClassRuleUncheckedCreateWithoutAccountInput[]
+  connectOrCreate?: Prisma.FinClassRuleCreateOrConnectWithoutAccountInput | Prisma.FinClassRuleCreateOrConnectWithoutAccountInput[]
+  upsert?: Prisma.FinClassRuleUpsertWithWhereUniqueWithoutAccountInput | Prisma.FinClassRuleUpsertWithWhereUniqueWithoutAccountInput[]
+  createMany?: Prisma.FinClassRuleCreateManyAccountInputEnvelope
+  set?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+  disconnect?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+  delete?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+  connect?: Prisma.FinClassRuleWhereUniqueInput | Prisma.FinClassRuleWhereUniqueInput[]
+  update?: Prisma.FinClassRuleUpdateWithWhereUniqueWithoutAccountInput | Prisma.FinClassRuleUpdateWithWhereUniqueWithoutAccountInput[]
+  updateMany?: Prisma.FinClassRuleUpdateManyWithWhereWithoutAccountInput | Prisma.FinClassRuleUpdateManyWithWhereWithoutAccountInput[]
   deleteMany?: Prisma.FinClassRuleScalarWhereInput | Prisma.FinClassRuleScalarWhereInput[]
 }
 
@@ -542,6 +609,7 @@ export type FinClassRuleCreateWithoutSpaceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   category: Prisma.FinCategoryCreateNestedOneWithoutClassRulesInput
+  account?: Prisma.FinAccountCreateNestedOneWithoutClassRulesInput
 }
 
 export type FinClassRuleUncheckedCreateWithoutSpaceInput = {
@@ -552,6 +620,7 @@ export type FinClassRuleUncheckedCreateWithoutSpaceInput = {
   direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -594,8 +663,61 @@ export type FinClassRuleScalarWhereInput = {
   direction?: Prisma.EnumFinTxnDirectionNullableFilter<"FinClassRule"> | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFilter<"FinClassRule"> | $Enums.FinClassRuleSource
   memo?: Prisma.StringNullableFilter<"FinClassRule"> | string | null
+  accountId?: Prisma.StringNullableFilter<"FinClassRule"> | string | null
   createdAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FinClassRule"> | Date | string
+}
+
+export type FinClassRuleCreateWithoutAccountInput = {
+  id?: string
+  matchKey: string
+  matchType?: $Enums.FinClassRuleMatchType
+  direction?: $Enums.FinTxnDirection | null
+  learnedFrom?: $Enums.FinClassRuleSource
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutFinClassRulesInput
+  category: Prisma.FinCategoryCreateNestedOneWithoutClassRulesInput
+}
+
+export type FinClassRuleUncheckedCreateWithoutAccountInput = {
+  id?: string
+  spaceId: string
+  matchKey: string
+  matchType?: $Enums.FinClassRuleMatchType
+  categoryId: string
+  direction?: $Enums.FinTxnDirection | null
+  learnedFrom?: $Enums.FinClassRuleSource
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type FinClassRuleCreateOrConnectWithoutAccountInput = {
+  where: Prisma.FinClassRuleWhereUniqueInput
+  create: Prisma.XOR<Prisma.FinClassRuleCreateWithoutAccountInput, Prisma.FinClassRuleUncheckedCreateWithoutAccountInput>
+}
+
+export type FinClassRuleCreateManyAccountInputEnvelope = {
+  data: Prisma.FinClassRuleCreateManyAccountInput | Prisma.FinClassRuleCreateManyAccountInput[]
+  skipDuplicates?: boolean
+}
+
+export type FinClassRuleUpsertWithWhereUniqueWithoutAccountInput = {
+  where: Prisma.FinClassRuleWhereUniqueInput
+  update: Prisma.XOR<Prisma.FinClassRuleUpdateWithoutAccountInput, Prisma.FinClassRuleUncheckedUpdateWithoutAccountInput>
+  create: Prisma.XOR<Prisma.FinClassRuleCreateWithoutAccountInput, Prisma.FinClassRuleUncheckedCreateWithoutAccountInput>
+}
+
+export type FinClassRuleUpdateWithWhereUniqueWithoutAccountInput = {
+  where: Prisma.FinClassRuleWhereUniqueInput
+  data: Prisma.XOR<Prisma.FinClassRuleUpdateWithoutAccountInput, Prisma.FinClassRuleUncheckedUpdateWithoutAccountInput>
+}
+
+export type FinClassRuleUpdateManyWithWhereWithoutAccountInput = {
+  where: Prisma.FinClassRuleScalarWhereInput
+  data: Prisma.XOR<Prisma.FinClassRuleUpdateManyMutationInput, Prisma.FinClassRuleUncheckedUpdateManyWithoutAccountInput>
 }
 
 export type FinClassRuleCreateWithoutCategoryInput = {
@@ -608,6 +730,7 @@ export type FinClassRuleCreateWithoutCategoryInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutFinClassRulesInput
+  account?: Prisma.FinAccountCreateNestedOneWithoutClassRulesInput
 }
 
 export type FinClassRuleUncheckedCreateWithoutCategoryInput = {
@@ -618,6 +741,7 @@ export type FinClassRuleUncheckedCreateWithoutCategoryInput = {
   direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -656,6 +780,7 @@ export type FinClassRuleCreateManySpaceInput = {
   direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -670,6 +795,7 @@ export type FinClassRuleUpdateWithoutSpaceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.FinCategoryUpdateOneRequiredWithoutClassRulesNestedInput
+  account?: Prisma.FinAccountUpdateOneWithoutClassRulesNestedInput
 }
 
 export type FinClassRuleUncheckedUpdateWithoutSpaceInput = {
@@ -680,12 +806,66 @@ export type FinClassRuleUncheckedUpdateWithoutSpaceInput = {
   direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type FinClassRuleUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  matchKey?: Prisma.StringFieldUpdateOperationsInput | string
+  matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
+  learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FinClassRuleCreateManyAccountInput = {
+  id?: string
+  spaceId: string
+  matchKey: string
+  matchType?: $Enums.FinClassRuleMatchType
+  categoryId: string
+  direction?: $Enums.FinTxnDirection | null
+  learnedFrom?: $Enums.FinClassRuleSource
+  memo?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type FinClassRuleUpdateWithoutAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  matchKey?: Prisma.StringFieldUpdateOperationsInput | string
+  matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
+  learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutFinClassRulesNestedInput
+  category?: Prisma.FinCategoryUpdateOneRequiredWithoutClassRulesNestedInput
+}
+
+export type FinClassRuleUncheckedUpdateWithoutAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  matchKey?: Prisma.StringFieldUpdateOperationsInput | string
+  matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
+  learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
+  memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FinClassRuleUncheckedUpdateManyWithoutAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   matchKey?: Prisma.StringFieldUpdateOperationsInput | string
   matchType?: Prisma.EnumFinClassRuleMatchTypeFieldUpdateOperationsInput | $Enums.FinClassRuleMatchType
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -704,6 +884,7 @@ export type FinClassRuleCreateManyCategoryInput = {
   direction?: $Enums.FinTxnDirection | null
   learnedFrom?: $Enums.FinClassRuleSource
   memo?: string | null
+  accountId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -718,6 +899,7 @@ export type FinClassRuleUpdateWithoutCategoryInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutFinClassRulesNestedInput
+  account?: Prisma.FinAccountUpdateOneWithoutClassRulesNestedInput
 }
 
 export type FinClassRuleUncheckedUpdateWithoutCategoryInput = {
@@ -728,6 +910,7 @@ export type FinClassRuleUncheckedUpdateWithoutCategoryInput = {
   direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -740,6 +923,7 @@ export type FinClassRuleUncheckedUpdateManyWithoutCategoryInput = {
   direction?: Prisma.NullableEnumFinTxnDirectionFieldUpdateOperationsInput | $Enums.FinTxnDirection | null
   learnedFrom?: Prisma.EnumFinClassRuleSourceFieldUpdateOperationsInput | $Enums.FinClassRuleSource
   memo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -755,10 +939,12 @@ export type FinClassRuleSelect<ExtArgs extends runtime.Types.Extensions.Internal
   direction?: boolean
   learnedFrom?: boolean
   memo?: boolean
+  accountId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   category?: boolean | Prisma.FinCategoryDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinClassRule$accountArgs<ExtArgs>
 }, ExtArgs["result"]["finClassRule"]>
 
 export type FinClassRuleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -770,10 +956,12 @@ export type FinClassRuleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   direction?: boolean
   learnedFrom?: boolean
   memo?: boolean
+  accountId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   category?: boolean | Prisma.FinCategoryDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinClassRule$accountArgs<ExtArgs>
 }, ExtArgs["result"]["finClassRule"]>
 
 export type FinClassRuleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -785,10 +973,12 @@ export type FinClassRuleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   direction?: boolean
   learnedFrom?: boolean
   memo?: boolean
+  accountId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   category?: boolean | Prisma.FinCategoryDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinClassRule$accountArgs<ExtArgs>
 }, ExtArgs["result"]["finClassRule"]>
 
 export type FinClassRuleSelectScalar = {
@@ -800,22 +990,26 @@ export type FinClassRuleSelectScalar = {
   direction?: boolean
   learnedFrom?: boolean
   memo?: boolean
+  accountId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FinClassRuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "matchKey" | "matchType" | "categoryId" | "direction" | "learnedFrom" | "memo" | "createdAt" | "updatedAt", ExtArgs["result"]["finClassRule"]>
+export type FinClassRuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "matchKey" | "matchType" | "categoryId" | "direction" | "learnedFrom" | "memo" | "accountId" | "createdAt" | "updatedAt", ExtArgs["result"]["finClassRule"]>
 export type FinClassRuleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   category?: boolean | Prisma.FinCategoryDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinClassRule$accountArgs<ExtArgs>
 }
 export type FinClassRuleIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   category?: boolean | Prisma.FinCategoryDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinClassRule$accountArgs<ExtArgs>
 }
 export type FinClassRuleIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   category?: boolean | Prisma.FinCategoryDefaultArgs<ExtArgs>
+  account?: boolean | Prisma.FinClassRule$accountArgs<ExtArgs>
 }
 
 export type $FinClassRulePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -823,6 +1017,7 @@ export type $FinClassRulePayload<ExtArgs extends runtime.Types.Extensions.Intern
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
     category: Prisma.$FinCategoryPayload<ExtArgs>
+    account: Prisma.$FinAccountPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -833,6 +1028,7 @@ export type $FinClassRulePayload<ExtArgs extends runtime.Types.Extensions.Intern
     direction: $Enums.FinTxnDirection | null
     learnedFrom: $Enums.FinClassRuleSource
     memo: string | null
+    accountId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["finClassRule"]>
@@ -1231,6 +1427,7 @@ export interface Prisma__FinClassRuleClient<T, Null = never, ExtArgs extends run
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   category<T extends Prisma.FinCategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FinCategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__FinCategoryClient<runtime.Types.Result.GetResult<Prisma.$FinCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  account<T extends Prisma.FinClassRule$accountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FinClassRule$accountArgs<ExtArgs>>): Prisma.Prisma__FinAccountClient<runtime.Types.Result.GetResult<Prisma.$FinAccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1268,6 +1465,7 @@ export interface FinClassRuleFieldRefs {
   readonly direction: Prisma.FieldRef<"FinClassRule", 'FinTxnDirection'>
   readonly learnedFrom: Prisma.FieldRef<"FinClassRule", 'FinClassRuleSource'>
   readonly memo: Prisma.FieldRef<"FinClassRule", 'String'>
+  readonly accountId: Prisma.FieldRef<"FinClassRule", 'String'>
   readonly createdAt: Prisma.FieldRef<"FinClassRule", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"FinClassRule", 'DateTime'>
 }
@@ -1663,6 +1861,25 @@ export type FinClassRuleDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many FinClassRules to delete.
    */
   limit?: number
+}
+
+/**
+ * FinClassRule.account
+ */
+export type FinClassRule$accountArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FinAccount
+   */
+  select?: Prisma.FinAccountSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FinAccount
+   */
+  omit?: Prisma.FinAccountOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FinAccountInclude<ExtArgs> | null
+  where?: Prisma.FinAccountWhereInput
 }
 
 /**

@@ -20,6 +20,8 @@ import type {
 } from '@/generated/prisma/enums'
 import { fixedSectionOf } from '@/lib/finance/contra'
 
+export { ruleMatchesText } from '@/lib/finance/classify-core'
+
 /** 매칭에 필요한 규칙 최소 형태 */
 export type ClassRuleLite = {
   id: string
@@ -30,6 +32,8 @@ export type ClassRuleLite = {
   direction: FinTxnDirection | null
   /** 규칙 학습 시 저장한 메모 — 자동분류(확정) 시 행 memo로 복사 */
   memo: string | null
+  /** 적용 계좌 — null = 전체 계좌 공통 */
+  accountId: string | null
 }
 
 export type ClassifyInput = {
@@ -60,6 +64,7 @@ export async function loadSpaceRules(spaceId: string): Promise<ClassRuleLite[]> 
       categoryId: true,
       direction: true,
       memo: true,
+      accountId: true,
       category: { select: { type: true } },
     },
   })
@@ -75,6 +80,7 @@ export async function loadSpaceRules(spaceId: string): Promise<ClassRuleLite[]> 
       categoryId: r.categoryId,
       direction: r.direction,
       memo: r.memo,
+      accountId: r.accountId,
     }))
 }
 
@@ -85,78 +91,80 @@ function buildMatchText(input: ClassifyInput): string {
 
 /**
  * 규칙 집합으로 입력을 분류한다(결정적·순수 함수).
- * 우선순위: EXACT(전체 일치) > KEYWORD(가장 긴 matchKey = 가장 구체적).
- * 방향(IN/OUT) 인지: 같은 적요라도 방향-특정 규칙을 우선하고, 없으면 방향 무관(null) 규칙으로 폴백한다.
- * 반대 방향 전용 규칙은 매칭하지 않는다(비용/수입 분리).
+ * 우선순위: EXACT(계좌) > EXACT(공통) > KEYWORD(계좌) > KEYWORD(공통) — 일치 정확도가 계좌 범위보다 먼저.
+ * 같은 단계 안에서는 방향-특정 > 방향무관(null), KEYWORD 는 가장 긴 matchKey.
+ * 다른 계좌 전용 규칙·반대 방향 전용 규칙은 매칭하지 않는다. accountId 생략 시 공통 규칙만.
  */
 export function classifyRow(
   input: ClassifyInput,
   rules: ClassRuleLite[],
-  direction: FinTxnDirection
+  direction: FinTxnDirection,
+  accountId: string | null = null
 ): ClassifyResult {
   const text = buildMatchText(input)
-  if (!text)
-    return { categoryId: null, classStatus: 'UNCLASSIFIED', matchedRuleId: null, ruleMemo: null }
+  if (!text) return NO_MATCH
+  const own = accountId ? rules.filter((r) => r.accountId === accountId) : []
+  const common = rules.filter((r) => (r.accountId ?? null) === null)
 
-  // 1) EXACT — 정규화 전체 일치. 방향-특정 > 방향무관(null).
-  let exactSpecific: ClassRuleLite | null = null
-  let exactAny: ClassRuleLite | null = null
-  for (const rule of rules) {
-    if (rule.matchType !== 'EXACT' || rule.matchKey !== text) continue
-    if (rule.direction === direction) {
-      exactSpecific = rule
-      break
-    }
-    if (rule.direction === null && !exactAny) exactAny = rule
-  }
-  const exact = exactSpecific ?? exactAny
-  if (exact) {
-    return {
-      categoryId: exact.categoryId,
-      classStatus: 'CLASSIFIED',
-      matchedRuleId: exact.id,
-      ruleMemo: exact.memo,
-    }
-  }
+  const exact = pickExact(own, text, direction) ?? pickExact(common, text, direction)
+  if (exact) return matched(exact, 'CLASSIFIED')
+  const keyword = pickKeyword(own, text, direction) ?? pickKeyword(common, text, direction)
+  if (keyword) return matched(keyword, 'REVIEW')
+  return NO_MATCH
+}
 
-  // 2) KEYWORD — 부분 포함, 방향-특정 우선 그 안에서 가장 긴(구체적) 키워드.
-  let bestSpecific: ClassRuleLite | null = null
-  let bestAny: ClassRuleLite | null = null
-  for (const rule of rules) {
-    if (rule.matchType !== 'KEYWORD' || !rule.matchKey || !text.includes(rule.matchKey)) continue
-    if (rule.direction === direction) {
-      if (!bestSpecific || rule.matchKey.length > bestSpecific.matchKey.length) bestSpecific = rule
-    } else if (rule.direction === null) {
-      if (!bestAny || rule.matchKey.length > bestAny.matchKey.length) bestAny = rule
-    }
-  }
-  const best = bestSpecific ?? bestAny
-  if (best) {
-    return {
-      categoryId: best.categoryId,
-      classStatus: 'REVIEW',
-      matchedRuleId: best.id,
-      ruleMemo: best.memo,
-    }
-  }
+const NO_MATCH: ClassifyResult = {
+  categoryId: null,
+  classStatus: 'UNCLASSIFIED',
+  matchedRuleId: null,
+  ruleMemo: null,
+}
 
-  return { categoryId: null, classStatus: 'UNCLASSIFIED', matchedRuleId: null, ruleMemo: null }
+function matched(rule: ClassRuleLite, classStatus: FinClassStatus): ClassifyResult {
+  return { categoryId: rule.categoryId, classStatus, matchedRuleId: rule.id, ruleMemo: rule.memo }
+}
+
+/** EXACT 후보 — 방향-특정 우선, 없으면 방향무관. */
+function pickExact(rules: ClassRuleLite[], text: string, direction: FinTxnDirection) {
+  let any: ClassRuleLite | null = null
+  for (const r of rules) {
+    if (r.matchType !== 'EXACT' || r.matchKey !== text) continue
+    if (r.direction === direction) return r
+    if (r.direction === null && !any) any = r
+  }
+  return any
+}
+
+/** KEYWORD 후보 — 방향-특정 우선, 각각 가장 긴(구체적) 키워드. */
+function pickKeyword(rules: ClassRuleLite[], text: string, direction: FinTxnDirection) {
+  let specific: ClassRuleLite | null = null
+  let any: ClassRuleLite | null = null
+  for (const r of rules) {
+    if (r.matchType !== 'KEYWORD' || !r.matchKey || !text.includes(r.matchKey)) continue
+    if (r.direction === direction) {
+      if (!specific || r.matchKey.length > specific.matchKey.length) specific = r
+    } else if (r.direction === null) {
+      if (!any || r.matchKey.length > any.matchKey.length) any = r
+    }
+  }
+  return specific ?? any
 }
 
 /**
- * 사용자 분류를 EXACT 규칙으로 학습한다(동일 적요·동일 방향 다음부터 자동 분류).
- * matchKey = 정규화한 적요(+상대), 방향(IN/OUT)별로 별개 규칙. 같은 적요라도 비용/수입 분리.
- * (spaceId, matchKey, direction) 충돌 시 categoryId 갱신(사용자 정정 우선).
+ * 사용자 분류를 그 거래 계좌 전용 EXACT 규칙으로 학습한다(같은 계좌·적요·방향 다음부터 자동 분류).
+ * 키 (spaceId, accountId, matchKey, direction) — 다른 계좌의 같은 적요 규칙은 건드리지 않는다.
+ * 같은 키 규칙이 있으면 계정과목을 갱신(사용자 정정 우선)하고 이전 계정과목을 돌려준다(덮어쓰기 알림용).
  * memo: undefined=기존 유지, null=삭제, string=설정 (memo 미전달 호출부가 규칙 메모를 지우지 않도록).
- * 반환: 학습된 규칙 id (적요가 비어 학습 불가하면 null).
+ * 반환 null: 적요가 비었거나 환불 방향(학습 제외).
  */
 export async function learnRule(
   spaceId: string,
   input: ClassifyInput,
   categoryId: string,
   direction: FinTxnDirection,
+  accountId: string,
   memo?: string | null
-): Promise<string | null> {
+): Promise<{ ruleId: string; previousCategoryId: string | null } | null> {
   const matchKey = buildMatchText(input)
   if (!matchKey) return null
 
@@ -168,26 +176,42 @@ export async function learnRule(
   const fixed = fixedSectionOf(category)
   if (fixed && fixed !== direction) return null
 
-  const rule = await prisma.finClassRule.upsert({
-    where: { spaceId_matchKey_direction: { spaceId, matchKey, direction } },
-    update: {
-      categoryId,
-      matchType: 'EXACT',
-      learnedFrom: 'USER',
-      ...(memo !== undefined ? { memo } : {}),
-    },
-    create: {
-      spaceId,
-      matchKey,
-      categoryId,
-      matchType: 'EXACT',
-      learnedFrom: 'USER',
-      direction,
-      memo: memo ?? null,
-    },
-    select: { id: true },
+  const key = { spaceId, accountId, matchKey, direction }
+  return prisma.$transaction(async (tx) => {
+    const prev = await tx.finClassRule.findUnique({
+      where: { spaceId_accountId_matchKey_direction: key },
+      select: { categoryId: true },
+    })
+    const rule = await tx.finClassRule.upsert({
+      where: { spaceId_accountId_matchKey_direction: key },
+      update: {
+        categoryId,
+        matchType: 'EXACT',
+        learnedFrom: 'USER',
+        ...(memo !== undefined ? { memo } : {}),
+      },
+      create: { ...key, categoryId, matchType: 'EXACT', learnedFrom: 'USER', memo: memo ?? null },
+      select: { id: true },
+    })
+    return {
+      ruleId: rule.id,
+      previousCategoryId: prev && prev.categoryId !== categoryId ? prev.categoryId : null,
+    }
   })
-  return rule.id
+}
+
+/**
+ * 분류 결과를 스테이징 행 필드로 — 업로드·규칙 수정/삭제 재분류 공용.
+ * 행 메모가 있으면 유지, 없을 때만 규칙 메모를 쓰고 규칙 메모는 확정(EXACT) 자동분류에만 복사한다
+ * (REVIEW 는 제안 단계라 미복사).
+ */
+export function stagedClassificationPatch(cls: ClassifyResult, currentMemo: string | null) {
+  return {
+    categoryId: cls.categoryId,
+    classStatus: cls.classStatus,
+    matchedRuleId: cls.matchedRuleId,
+    memo: currentMemo ?? (cls.classStatus === 'CLASSIFIED' ? (cls.ruleMemo ?? null) : null),
+  }
 }
 
 /** 적요+상대를 정규화한 매칭 키(외부에서 sibling 계산 등에 재사용). */

@@ -213,12 +213,23 @@ describe('환불은 규칙 학습·자동분류에서 제외', () => {
 
   test('learnRule: 환불 분류는 학습하지 않음, 정상 방향은 학습', async () => {
     const upsert = jest.fn(async () => ({ id: 'rule-1' }))
-    mockPrisma.finClassRule = { upsert }
+    mockPrisma.finClassRule = { upsert, findUnique: jest.fn(async () => null) }
+    // learnRule 은 조회+upsert 를 $transaction 으로 묶는다 — tx 로 같은 mock 을 넘긴다.
+    ;(mockPrisma as unknown as Record<string, unknown>).$transaction = jest.fn(
+      async (fn: (tx: unknown) => unknown) => fn(mockPrisma)
+    )
     const { learnRule } = await import('@/lib/finance/classify')
     mockPrisma.finCategory.findUnique.mockResolvedValueOnce({ type: 'INCOME' })
-    expect(await learnRule('space-1', { description: '홍길동 환불' }, 'l-sales', 'OUT')).toBeNull()
+    expect(
+      await learnRule('space-1', { description: '홍길동 환불' }, 'l-sales', 'OUT', 'acc-1')
+    ).toBeNull()
     expect(upsert).not.toHaveBeenCalled()
     mockPrisma.finCategory.findUnique.mockResolvedValueOnce({ type: 'INCOME' })
-    expect(await learnRule('space-1', { description: '쿠팡 정산' }, 'l-sales', 'IN')).toBe('rule-1')
+    expect(
+      await learnRule('space-1', { description: '쿠팡 정산' }, 'l-sales', 'IN', 'acc-1')
+    ).toEqual({
+      ruleId: 'rule-1',
+      previousCategoryId: null,
+    })
   })
 })

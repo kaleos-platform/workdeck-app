@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     category: { select: { id: true, name: true, parent: { select: { name: true } } } },
   }
   const existing = await prisma.finClassRule.findFirst({
-    where: { spaceId, matchKey: normalizedKey, direction },
+    where: { spaceId, accountId: null, matchKey: normalizedKey, direction },
     select: { id: true },
   })
   // 기존 규칙 갱신(덮어쓰기) vs 신규 생성 — 클라이언트가 토스트를 구분하도록 created 반환.

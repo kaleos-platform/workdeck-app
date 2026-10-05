@@ -25,6 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     select: {
       id: true,
       importId: true,
+      accountId: true,
       description: true,
       counterparty: true,
       direction: true,
@@ -62,15 +63,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     data.classStatus = 'CLASSIFIED'
 
     if (body.learn !== false) {
-      const ruleId = await learnRule(
+      const learned = await learnRule(
         spaceId,
         { description: row.description, counterparty: row.counterparty },
         body.categoryId,
         row.direction,
+        row.accountId,
         // 메모가 함께 오면 규칙에도 저장(자동분류 시 행 memo로 복사). 미전달이면 규칙 memo 유지.
         body.memo !== undefined ? (data.memo ?? null) : undefined
       )
-      data.matchedRuleId = ruleId
+      data.matchedRuleId = learned?.ruleId ?? null
     }
   }
 

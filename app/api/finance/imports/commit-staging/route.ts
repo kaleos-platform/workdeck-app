@@ -24,7 +24,7 @@ import {
   type MappingPair,
   type PresetLike,
 } from '@/lib/finance/automap'
-import { loadSpaceRules, classifyRow } from '@/lib/finance/classify'
+import { loadSpaceRules, classifyRow, stagedClassificationPatch } from '@/lib/finance/classify'
 import type { FinStagedResolution } from '@/generated/prisma/enums'
 
 /** 'YYYY-MM-DD HH:MM:SS' | 'YYYY-MM-DD' → Date(KST 벽시계를 UTC 자릿수로). */
@@ -245,7 +245,8 @@ export async function POST(req: NextRequest) {
       const cls = classifyRow(
         { description: r.description, counterparty: r.counterparty },
         rules,
-        r.direction
+        r.direction,
+        accountId
       )
       if (cls.classStatus === 'CLASSIFIED') cClassified++
       else if (cls.classStatus === 'REVIEW') cReview++
@@ -293,12 +294,8 @@ export async function POST(req: NextRequest) {
         counterparty: r.counterparty ?? null,
         approvalNo: r.approvalNo ?? null,
         cancelFlag: r.cancelFlag ?? null,
-        categoryId: cls.categoryId,
-        classStatus: cls.classStatus,
-        matchedRuleId: cls.matchedRuleId,
-        // 업로드 파일의 메모 컬럼이 최우선. 없을 때만 규칙 메모를 쓰고, 규칙 메모는
-        // 확정(EXACT) 자동분류에만 복사한다 — REVIEW는 제안 단계라 미복사.
-        memo: r.memo ?? (cls.classStatus === 'CLASSIFIED' ? (cls.ruleMemo ?? null) : null),
+        // 분류 결과 + 메모(업로드 파일의 메모 컬럼이 최우선, 없을 때만 확정 규칙 메모).
+        ...stagedClassificationPatch(cls, r.memo ?? null),
         identityKey: r.identityKey,
         contentHash: r.contentHash,
         resolution,
