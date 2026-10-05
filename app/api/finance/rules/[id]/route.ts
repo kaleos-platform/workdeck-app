@@ -121,7 +121,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         category: {
           select: { id: true, name: true, type: true, parent: { select: { name: true } } },
         },
-        account: { select: { id: true, name: true, kind: true } },
+        account: { select: { id: true, name: true, kind: true, accountNumber: true } },
       },
     }),
     prisma.finTransaction.updateMany({
