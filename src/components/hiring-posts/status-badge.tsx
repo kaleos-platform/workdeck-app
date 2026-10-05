@@ -1,5 +1,4 @@
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 
 export type PostingStatus = 'DRAFT' | 'ACTIVE' | 'CLOSED' | 'ARCHIVED'
 
@@ -16,7 +15,7 @@ export function PostingStatusBadge({ status }: { status: PostingStatus }) {
     return (
       <Badge
         variant="outline"
-        className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-900/40 dark:text-emerald-400"
+        className="border-emerald-300 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-900/40 dark:text-emerald-400"
       >
         {STATUS_LABELS.ACTIVE}
       </Badge>
@@ -24,7 +23,10 @@ export function PostingStatusBadge({ status }: { status: PostingStatus }) {
   }
   if (status === 'CLOSED') {
     return (
-      <Badge variant="outline" className={cn('text-muted-foreground')}>
+      <Badge
+        variant="outline"
+        className="border-slate-400 bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-100"
+      >
         {STATUS_LABELS.CLOSED}
       </Badge>
     )
@@ -32,5 +34,12 @@ export function PostingStatusBadge({ status }: { status: PostingStatus }) {
   if (status === 'ARCHIVED') {
     return <Badge variant="ghost">{STATUS_LABELS.ARCHIVED}</Badge>
   }
-  return <Badge variant="secondary">{STATUS_LABELS.DRAFT}</Badge>
+  return (
+    <Badge
+      variant="outline"
+      className="border-amber-400 bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+    >
+      {STATUS_LABELS.DRAFT}
+    </Badge>
+  )
 }

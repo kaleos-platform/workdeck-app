@@ -1,10 +1,12 @@
 'use client'
 
+import { PublishDialog } from './publish-dialog'
+import { isHiringDeadlinePassed } from '@/lib/hiring/closing-date'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ArrowLeft, Copy, ExternalLink, Lock, Pencil, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Copy, ExternalLink, Lock, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -54,6 +56,8 @@ export function PostingDetail({
 }: Props) {
   const router = useRouter()
   const [status, setStatus] = useState<PostingStatus>(posting.status)
+  const [closingDate, setClosingDate] = useState(posting.closingDate)
+  const expired = isHiringDeadlinePassed(closingDate ? new Date(closingDate) : null)
   const [busy, setBusy] = useState(false)
 
   const hasOutputErrors = embedIssues.some((issue) => issue.severity === 'error')
@@ -62,7 +66,7 @@ export function PostingDetail({
   const postingUrl = `${origin}/p/${posting.uuid}`
   const previewSuffix = isDraft ? '?preview=1' : ''
 
-  async function runAction(action: 'close' | 'reopen') {
+  async function runAction(action: 'close') {
     setBusy(true)
     try {
       const res = await fetch(`/api/hiring-posts/postings/${posting.id}/actions`, {
@@ -76,7 +80,7 @@ export function PostingDetail({
       }
       const { posting: updated } = await res.json()
       setStatus(updated.status)
-      toast.success(action === 'close' ? '공고를 마감했습니다' : '공고를 재개했습니다')
+      toast.success('공고를 마감했습니다')
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '처리에 실패했습니다')
@@ -97,26 +101,23 @@ export function PostingDetail({
           </Button>
           <h1 className="text-2xl font-semibold">{posting.title}</h1>
           <PostingStatusBadge status={status} />
-          {formatClosingDate(posting.closingDate) && (
-            <span className="text-sm text-muted-foreground">
-              {formatClosingDate(posting.closingDate)}
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-2">
-          {isDraft && (
-            <Button asChild>
-              <Link href={getRecruitingPostingBuildPath(posting.id)}>발행 설정</Link>
-            </Button>
+          {(isDraft || status === 'CLOSED' || (status === 'ACTIVE' && expired)) && (
+            <PublishDialog
+              postingId={posting.id}
+              closingDate={closingDate}
+              onPublished={(updated) => {
+                setStatus(updated.status)
+                setClosingDate(updated.closingDate)
+                toast.success('공고를 발행했습니다')
+                router.refresh()
+              }}
+            />
           )}
           {status === 'ACTIVE' && (
             <Button variant="outline" onClick={() => runAction('close')} disabled={busy}>
               <Lock /> 마감
-            </Button>
-          )}
-          {status === 'CLOSED' && (
-            <Button variant="outline" onClick={() => runAction('reopen')} disabled={busy}>
-              <RotateCcw /> 재개
             </Button>
           )}
           <Button asChild>
@@ -127,11 +128,40 @@ export function PostingDetail({
         </div>
       </div>
 
+      <section
+        aria-labelledby="recruiting-period-title"
+        className="space-y-3 rounded-lg border border-l-4 border-primary/30 bg-muted/40 p-5"
+      >
+        <h2 id="recruiting-period-title" className="text-base font-semibold">
+          모집 기간 및 접수 상태
+        </h2>
+        <p className="text-xl font-bold tabular-nums">
+          {closingDate ? formatClosingDate(closingDate) : '상시 모집 · 마감일 없음'}
+        </p>
+        <p className="text-sm font-medium">
+          {isDraft
+            ? '접수 시작 전 · 공고를 발행해야 지원서를 받을 수 있습니다.'
+            : status === 'ACTIVE' && !expired
+              ? '지원서 접수 중'
+              : '접수 마감 · 현재 지원서를 받지 않습니다.'}
+        </p>
+        {expired && (
+          <p className="text-sm font-semibold text-destructive">
+            마감일이 지났습니다. 다시 모집하려면 공고 발행에서 마감일을 변경해 주세요.
+          </p>
+        )}
+        <p className="text-sm text-muted-foreground">
+          {closingDate
+            ? '발행 후 한국 시간 기준 마감일 23:59까지 접수합니다.'
+            : '발행 후 직접 마감할 때까지 접수합니다.'}
+        </p>
+      </section>
+
       {isDraft && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-900/40 dark:text-amber-200">
           HTML은 발행 전에도 복사할 수 있습니다. Workdeck 지원서·공고 링크는 발행 후 공개되므로,
-          HTML에 지원서 연결 버튼이 있으면 발행 상태를 확인하세요. 발행 설정에서 공고 꾸미기 단계의
-          공고 등록 버튼을 이용하세요.
+          HTML에 지원서 연결 버튼이 있으면 발행 상태를 확인하세요. 상단의 공고 발행 버튼에서
+          마감일을 확인하고 발행해 주세요.
         </div>
       )}
 
