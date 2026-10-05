@@ -1,4 +1,3 @@
-import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { runPriceChange } from '../price-change.js'
 import { CoupangApiError } from '../../coupang-api/client.js'

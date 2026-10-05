@@ -1,4 +1,3 @@
-import { test, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { CoupangApiClient } from '../client.js'
 import { changeVendorItemPrice, fetchVendorItemStatus } from '../endpoints.js'

@@ -31,6 +31,6 @@
 ## 이번 작업에서 드러난 레포 사실 (다음 사람용)
 
 - **`tsconfig.json` 이 `worker` 를 exclude 한다.** 루트 `npx tsc --noEmit` 은 워커 코드를 타입체크하지 않는다. 워커를 고쳤으면 `cd worker && npx tsc --noEmit` 을 따로 돌려야 한다. 현재 그쪽에 `analysis-poller.ts` 기존 에러 4건이 있다.
-- **워커 테스트는 `node:test` 기반**이라 Jest 로 돌리면 통과해도 실패로 보고된다. `npx tsx --test <file>` 을 쓴다.
+- **워커 테스트도 루트 Jest 로 돈다**(`jest.config.ts` 가 `worker/` 를 포함). 가격 쓰기 테스트 5개가 `node:test` 를 import 해 `npm test` 에서 "테스트 0개"로 실패하던 것을 Jest 전역으로 바꿨다(2026-10-05). `node:assert/strict` 는 그대로 쓴다.
 - **`*.e2e.test.ts` 는 `DATABASE_URL` 이 셸에 없으면 조용히 전건 skip 된다**(`describe.skip`). "28건 skip" 을 통과로 오인하기 쉽다. `export $(grep -E '^DATABASE_URL=' .env.local | head -1 | xargs)` 후 실행할 것.
 - **`prisma migrate dev` 는 이 레포에서 구조적으로 불가능하다.** shadow DB 에 Supabase 관리 `storage` 스키마가 없어 기존 마이그레이션 replay 가 실패한다. `migrate diff --from-schema <파일> --to-schema <파일> --script` + `migrate deploy` 가 정규 경로이고, **라이브 DB 기준 diff 는 절대 금지**(공유 dev DB 에 타 브랜치 객체가 올라가 있어 DROP 구문이 섞인다).

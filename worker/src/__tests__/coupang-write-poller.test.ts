@@ -1,4 +1,3 @@
-import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { buildApiClient } from '../coupang-write-poller.js'
 import { encrypt } from '../encryption.js'
