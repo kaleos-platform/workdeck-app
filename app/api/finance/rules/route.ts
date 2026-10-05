@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
 // 생성: 수동 분류 규칙 추가. 같은 (계좌, 키워드, 방향) 규칙이 있으면 409 — 조용히 덮어쓰지 않는다
 // (바꾸려면 그 규칙을 수정). accountId 생략/null = 전체 계좌 공통.
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 

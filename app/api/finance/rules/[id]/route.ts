@@ -25,7 +25,7 @@ const VALID_MATCH_TYPES = ['EXACT', 'KEYWORD'] as const
 type MatchType = (typeof VALID_MATCH_TYPES)[number]
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
   const { id } = await params
@@ -145,7 +145,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 // 삭제: 분류 규칙 제거
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 

@@ -10,7 +10,7 @@ import { learnRule, ruleNoticeFor, type RuleNotice } from '@/lib/finance/classif
 import { normalizeMemoInput } from '@/lib/finance/memo'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const resolved = await resolveDeckContext('finance')
+  const resolved = await resolveDeckContext('finance', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
   const { id } = await params
