@@ -58,8 +58,10 @@ export function CoupangMatchingView() {
   const [rows, setRows] = useState<MatchingRow[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
-  // 쿠팡 상품 불러오기(워커 잡) 진행 중 — 끝나면 목록을 자동으로 다시 조회한다.
-  const [syncing, setSyncing] = useState(false)
+  // 진행 중인 쿠팡 상품 불러오기(워커 잡) id — 끝나면 목록을 자동으로 다시 조회한다.
+  // 불리언이 아니라 id 로 들고 있어야 이전 잡의 결과를 새 잡으로 착각하지 않는다.
+  const [syncJobId, setSyncJobId] = useState<string | null>(null)
+  const syncing = syncJobId != null
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -81,8 +83,10 @@ export function CoupangMatchingView() {
     let cancelled = false
     send('/api/sh/coupang-price/sync', 'GET')
       .then((d) => {
-        const st = (d as { job: SyncJob | null }).job?.status
-        if (!cancelled && (st === 'PENDING' || st === 'RUNNING')) setSyncing(true)
+        const job = (d as { job: SyncJob | null }).job
+        if (!cancelled && job && (job.status === 'PENDING' || job.status === 'RUNNING')) {
+          setSyncJobId((cur) => cur ?? job.id)
+        }
       })
       .catch(() => {})
     return () => {
@@ -92,37 +96,44 @@ export function CoupangMatchingView() {
 
   // 불러오는 동안 5초 간격으로 잡 상태 확인 — 끝나면 목록 재조회 + 결과 안내.
   useEffect(() => {
-    if (!syncing) return
+    if (!syncJobId) return
     const startedAt = Date.now()
+    let cancelled = false
     let timer: ReturnType<typeof setTimeout>
     const poll = async () => {
       try {
         const d = (await send('/api/sh/coupang-price/sync', 'GET')) as { job: SyncJob | null }
-        const job = d.job
+        if (cancelled) return
+        // 최근 잡이 우리가 기다리는 잡일 때만 판정한다.
+        const job = d.job?.id === syncJobId ? d.job : null
         if (job && (job.status === 'SUCCEEDED' || job.status === 'PARTIAL')) {
-          setSyncing(false)
+          setSyncJobId(null)
           toast.success('쿠팡 상품을 불러왔습니다')
           void load()
           return
         }
         if (job && job.status === 'FAILED') {
-          setSyncing(false)
+          setSyncJobId(null)
           toast.error(`쿠팡 상품 불러오기 실패: ${job.error ?? '알 수 없는 오류'}`)
           return
         }
       } catch {
         // 일시적 조회 실패 — 다음 주기에 다시 확인
       }
+      if (cancelled) return
       if (Date.now() - startedAt > SYNC_POLL_LIMIT_MS) {
-        setSyncing(false)
+        setSyncJobId(null)
         toast.error('워커가 아직 처리하지 않았습니다. 워커가 멈췄을 수 있습니다')
         return
       }
       timer = setTimeout(poll, SYNC_POLL_MS)
     }
     timer = setTimeout(poll, SYNC_POLL_MS)
-    return () => clearTimeout(timer)
-  }, [syncing, load])
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [syncJobId, load])
 
   const counts = useMemo(() => {
     const c: Record<MatchStatus, number> = {
@@ -170,9 +181,9 @@ export function CoupangMatchingView() {
   async function syncNow() {
     setBusy(true)
     try {
-      await send('/api/sh/coupang-price/sync', 'POST')
+      const d = (await send('/api/sh/coupang-price/sync', 'POST')) as { job: { id: string } }
       toast.success('쿠팡 상품을 불러오는 중입니다. 끝나면 목록이 자동으로 갱신됩니다')
-      setSyncing(true)
+      setSyncJobId(d.job.id)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '불러오기 실패')
     } finally {
