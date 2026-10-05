@@ -88,6 +88,7 @@ type StagedRow = {
   approvalNo: string | null
   cancelFlag: string | null
   memo: string | null
+  excludeFromAnalysis: boolean
   classStatus: FinClassStatus
   resolution: FinStagedResolution
   matchedRuleId: string | null
@@ -627,6 +628,31 @@ export function TransactionsView() {
     setStagingRows((prev) => prev.map((r) => (r.id === rowId ? { ...r, memo } : r)))
   }
 
+  // 스테이징 분석 제외 지정/해제(행 체크·일괄) — 저장 처리 시 확정 거래로 이관된다.
+  const handleStagingExclude = async (ids: string[], excludeFromAnalysis: boolean) => {
+    try {
+      const res = await fetch('/api/finance/staging/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, excludeFromAnalysis }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.message ?? '처리 실패')
+      const idSet = new Set(ids)
+      setStagingRows((prev) =>
+        prev.map((r) => (idSet.has(r.id) ? { ...r, excludeFromAnalysis } : r))
+      )
+      if (ids.length > 1)
+        toast.success(
+          excludeFromAnalysis
+            ? `${data.updated ?? 0}건을 분석 제외로 지정했습니다`
+            : `${data.updated ?? 0}건의 분석 제외를 해제했습니다`
+        )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '처리 실패')
+    }
+  }
+
   // 확정 거래 메모 저장/삭제(null) → PATCH
   const handleTxnMemo = async (txnId: string, memo: string | null) => {
     const res = await fetch(`/api/finance/transactions/${txnId}`, {
@@ -854,6 +880,7 @@ export function TransactionsView() {
           onClassify={handleStagingClassify}
           onDupResolution={handleDupResolution}
           onMemoSave={handleStagingMemo}
+          onExclude={handleStagingExclude}
           onBulkClassify={handleBulkClassify}
           onBulkResolution={handleBulkResolution}
           onDelete={handleStagingDelete}
@@ -1005,6 +1032,7 @@ function StagingPanel({
   onClassify,
   onDupResolution,
   onMemoSave,
+  onExclude,
   onBulkClassify,
   onBulkResolution,
   onDelete,
@@ -1027,6 +1055,7 @@ function StagingPanel({
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
   onMemoSave: (rowId: string, memo: string | null) => Promise<void>
+  onExclude: (ids: string[], excludeFromAnalysis: boolean) => Promise<void>
   onBulkClassify: (ids: string[], categoryId: string) => Promise<void>
   onBulkResolution: (ids: string[], resolution: FinStagedResolution) => Promise<void>
   onDelete: (ids: string[]) => Promise<void>
@@ -1053,6 +1082,10 @@ function StagingPanel({
   }
   const runBulkResolution = async (resolution: FinStagedResolution) => {
     await onBulkResolution(selectedInView, resolution)
+    clearSelection()
+  }
+  const runBulkExclude = async (excludeFromAnalysis: boolean) => {
+    await onExclude(selectedInView, excludeFromAnalysis)
     clearSelection()
   }
 
@@ -1167,6 +1200,7 @@ function StagingPanel({
                 <TableHead className="w-44">계정과목</TableHead>
                 <TableHead className="w-24">상태</TableHead>
                 <TableHead className="w-28">중복 처리</TableHead>
+                <TableHead className="w-16 text-center">분석 제외</TableHead>
                 <TableHead className="w-40">메모</TableHead>
                 <TableHead className="w-9" />
               </TableRow>
@@ -1185,6 +1219,7 @@ function StagingPanel({
                   onClassify={onClassify}
                   onDupResolution={onDupResolution}
                   onMemoSave={onMemoSave}
+                  onExclude={(v) => void onExclude([row.id], v)}
                   onDeleteRequest={() => setDeleteTarget([row.id])}
                 />
               ))}
@@ -1217,6 +1252,7 @@ function StagingPanel({
         refundType={uniformRefundType(rows, selectedIds)}
         onClassify={runBulkClassify}
         onResolution={runBulkResolution}
+        onExclude={runBulkExclude}
         onDeleteRequest={() => setDeleteTarget(selectedInView)}
         onClear={clearSelection}
       />
@@ -1278,6 +1314,7 @@ function StagingBulkBar({
   refundType,
   onClassify,
   onResolution,
+  onExclude,
   onDeleteRequest,
   onClear,
 }: {
@@ -1286,6 +1323,7 @@ function StagingBulkBar({
   refundType: FinCategoryType | null
   onClassify: (categoryId: string) => Promise<void>
   onResolution: (resolution: FinStagedResolution) => Promise<void>
+  onExclude: (excludeFromAnalysis: boolean) => Promise<void>
   onDeleteRequest: () => void
   onClear: () => void
 }) {
@@ -1343,6 +1381,26 @@ function StagingBulkBar({
             type="button"
             size="sm"
             variant="ghost"
+            className={floatingActionButtonClass}
+            onClick={() => void run(() => onExclude(true))}
+            disabled={busy}
+          >
+            분석 제외 지정
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className={floatingActionButtonClass}
+            onClick={() => void run(() => onExclude(false))}
+            disabled={busy}
+          >
+            분석 제외 해제
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
             className="h-8 gap-1 px-2.5 text-xs text-red-300 hover:bg-red-500/20 hover:text-red-200"
             onClick={onDeleteRequest}
             disabled={busy}
@@ -1371,6 +1429,7 @@ function StagingRow({
   onClassify,
   onDupResolution,
   onMemoSave,
+  onExclude,
   onDeleteRequest,
 }: {
   row: StagedRow
@@ -1383,6 +1442,7 @@ function StagingRow({
   onClassify: (rowId: string, categoryId: string) => void
   onDupResolution: (rowId: string, resolution: FinStagedResolution) => void
   onMemoSave: (rowId: string, memo: string | null) => Promise<void>
+  onExclude: (excludeFromAnalysis: boolean) => void
   onDeleteRequest: () => void
 }) {
   const isDup =
@@ -1541,6 +1601,15 @@ function StagingRow({
             )}
           </div>
         ) : null}
+      </TableCell>
+
+      {/* 분석 제외 — 클릭 즉시 저장 */}
+      <TableCell className="text-center">
+        <Checkbox
+          checked={row.excludeFromAnalysis}
+          onCheckedChange={(v) => onExclude(v === true)}
+          aria-label="분석 제외"
+        />
       </TableCell>
 
       {/* 메모 */}
@@ -2005,6 +2074,7 @@ function TransactionsPanel({
                   onSort={onSort}
                   className="w-24"
                 />
+                <TableHead className="w-16 text-center">분석 제외</TableHead>
                 <TableHead className="w-40">메모</TableHead>
                 <TableHead className="w-9" />
               </TableRow>
@@ -2023,7 +2093,7 @@ function TransactionsPanel({
                   onClassify={onClassify}
                   onMemoSave={onMemoSave}
                   onUnlinkLiability={handleUnlinkLiability}
-                  onUnexclude={() => void onBulkExclude([txn.id], false)}
+                  onToggleExclude={(v) => void onBulkExclude([txn.id], v)}
                   onDeleteRequest={() => setDeleteTarget([txn.id])}
                 />
               ))}
@@ -2238,7 +2308,7 @@ function TransactionRow({
   onClassify,
   onMemoSave,
   onUnlinkLiability,
-  onUnexclude,
+  onToggleExclude,
   onDeleteRequest,
 }: {
   txn: Transaction
@@ -2251,7 +2321,7 @@ function TransactionRow({
   onClassify: (txnId: string, categoryId: string) => void
   onMemoSave: (txnId: string, memo: string | null) => Promise<void>
   onUnlinkLiability: (txnId: string) => Promise<void>
-  onUnexclude: () => void
+  onToggleExclude: (excludeFromAnalysis: boolean) => void
   onDeleteRequest: () => void
 }) {
   const statusBadge = classStatusBadge(txn.classStatus)
@@ -2292,19 +2362,6 @@ function TransactionRow({
               onClick={() => void onUnlinkLiability(txn.id)}
               aria-label="부채 연결 해제"
               className="ml-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900"
-            >
-              <X className="size-2.5" />
-            </button>
-          </span>
-        )}
-        {txn.excludeFromAnalysis && (
-          <span className="mt-0.5 ml-1 inline-flex items-center gap-0.5 rounded-full border border-border bg-muted px-1.5 py-0 text-[10px] text-muted-foreground">
-            분석 제외
-            <button
-              type="button"
-              onClick={onUnexclude}
-              aria-label="분석 제외 해제"
-              className="ml-0.5 rounded-full hover:bg-background"
             >
               <X className="size-2.5" />
             </button>
@@ -2353,6 +2410,15 @@ function TransactionRow({
         <Badge variant="outline" className={`text-xs ${statusBadge.className}`}>
           {statusBadge.label}
         </Badge>
+      </TableCell>
+
+      {/* 분석 제외 — 클릭 즉시 저장 */}
+      <TableCell className="text-center">
+        <Checkbox
+          checked={txn.excludeFromAnalysis}
+          onCheckedChange={(v) => onToggleExclude(v === true)}
+          aria-label="분석 제외"
+        />
       </TableCell>
 
       {/* 메모 */}
