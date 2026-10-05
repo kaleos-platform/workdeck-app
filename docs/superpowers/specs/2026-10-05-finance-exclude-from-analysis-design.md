@@ -100,13 +100,14 @@ model FinTransaction {
   즉 행 범위는 `scope`, 요약 합계 범위는 `includeExcluded`가 결정한다.
   요약 영역에 「분석 제외 거래는 합계에서 빠집니다」 힌트(`info-hint.tsx`) 추가.
 - 행 표시: 적요 옆 「분석 제외」 배지(muted).
-- 행 메뉴: 「분석 제외로 지정 / 해제」.
+- 행 단건: 배지의 X 로 해제. 지정은 행 체크 후 일괄 액션 바(이 화면엔 행 메뉴가 없어 새로 만들지 않음).
 - 일괄 액션 바(기존 shift 다중선택): 「분석 제외 지정」·「분석 제외 해제」 버튼.
 
 ## 7. 현금흐름·대시보드 토글
 
-- 상단 컨트롤 영역에 스위치 「분석 제외 거래 포함」. 상태 = URL `?includeExcluded=1`
-  (기존 `?exclude=`와 같은 URL 단일 소스 패턴 — 새로고침·링크공유 유지, 저장소 추가 없음).
+- 상단 컨트롤 영역에 체크박스 「분석 제외 거래 포함」.
+  - 현금흐름: 상태 = URL `?includeExcluded=1` (기존 `?exclude=`와 같은 URL 단일 소스 패턴 — 새로고침·링크공유 유지).
+  - 대시보드: 로컬 state (이 화면은 `useSearchParams` 를 쓰지 않아 URL 상태 도입 시 Suspense 경계가 추가로 필요 — 새로고침 시 off 로 복귀).
 - 현금흐름 우측 거래 패널(드릴다운, `cashflow-view.tsx:1314/1433`의 `excludeTransfer: '1'` 호출)은
   **현금흐름 토글 상태**를 그대로 전달한다 — 패널 합계가 표 셀 값과 일치해야 한다.
   패널 → `queryTransactions`는 토글 off면 `scope=included`, 토글 on이면 `scope=all&includeExcluded=1`.
@@ -116,7 +117,7 @@ model FinTransaction {
 
 ## 8. 엑셀 export
 
-- 행은 전체 유지. 기존 `구분` 값(이체/수입/지출) 옆에 별도 컬럼 「분석 제외」(Y/공란) 추가.
+- 행은 전체 유지. 마지막 컬럼으로 「분석제외」(Y/공란) 추가.
 
 ## 9. 테스트
 
