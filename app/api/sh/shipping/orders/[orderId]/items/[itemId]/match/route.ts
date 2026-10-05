@@ -16,7 +16,7 @@ type Params = { params: Promise<{ orderId: string; itemId: string }> }
  * 하위 호환: { optionId } 만 전달하면 'option' 모드로 처리.
  */
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { orderId, itemId } = await params

@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma'
  * body: { orderedIds: string[] }
  */
 export async function PUT(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const body = await req.json().catch(() => ({}))

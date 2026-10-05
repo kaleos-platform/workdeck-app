@@ -14,7 +14,7 @@ async function findMovement(spaceId: string, id: string) {
 
 // DELETE — 이동 기록 강제 삭제 + 재고 자동 역산
 export async function DELETE(_req: NextRequest, ctx: RouteContext) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await ctx.params
@@ -45,7 +45,7 @@ export async function DELETE(_req: NextRequest, ctx: RouteContext) {
 
 // PATCH — quantity/movementDate/reason/orderDate만 변경 가능
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await ctx.params

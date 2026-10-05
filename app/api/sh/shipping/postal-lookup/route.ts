@@ -21,7 +21,7 @@ type Item = { id: string; address: string }
  * 개별 실패는 null (전체 실패화 금지). 429는 남은 항목 null + rateLimited:true 로 조기 종료.
  */
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   if (!isPostalLookupConfigured()) {

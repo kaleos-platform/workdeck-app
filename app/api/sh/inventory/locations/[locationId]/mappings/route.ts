@@ -59,7 +59,7 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
 // POST /api/inv/locations/[locationId]/mappings
 // { items: [{optionId, quantity?}], externalCode, externalName?, externalOptionName? }
 export async function POST(req: NextRequest, ctx: RouteContext) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { locationId } = await ctx.params
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 // PATCH /api/inv/locations/[locationId]/mappings?mappingId=xxx
 // body: { items: [{optionId, quantity?}] }
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { locationId } = await ctx.params
@@ -211,7 +211,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
 
 // DELETE /api/inv/locations/[locationId]/mappings?mappingId=xxx
 export async function DELETE(req: NextRequest, ctx: RouteContext) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { locationId } = await ctx.params

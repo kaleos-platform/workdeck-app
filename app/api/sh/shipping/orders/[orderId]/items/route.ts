@@ -13,7 +13,7 @@ type Params = { params: Promise<{ orderId: string }> }
  * body: { name: string, quantity: number }
  */
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { orderId } = await params

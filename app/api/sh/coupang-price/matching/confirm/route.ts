@@ -13,7 +13,7 @@ const bodySchema = z.object({
 
 /** 후보 일괄 확정 — 한 건 충돌이 나머지를 막지 않는다(건별 결과 반환). */
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
   // 매칭은 쿠팡의 어느 옵션에 돈(가격)이 쓰일지를 정한다 — 반영 API 와 같은 ADMIN.
   const denied = assertRole(resolved.role, 'ADMIN')

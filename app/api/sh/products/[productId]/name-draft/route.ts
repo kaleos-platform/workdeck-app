@@ -49,7 +49,7 @@ function summarizeOptionAttributes(raw: unknown): string[] {
 type ScoredCandidate = { value: string; violations: Violation[] }
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { productId } = await params

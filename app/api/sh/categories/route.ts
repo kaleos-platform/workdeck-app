@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/sh/categories
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   let body: { name?: string; excludeFromSalesAnalytics?: boolean }

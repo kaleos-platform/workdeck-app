@@ -15,7 +15,7 @@ import { generatePlanNo } from '@/lib/inv/reorder-seq'
 import { MovementError } from '@/lib/inv/movement-processor'
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ planId: string }> }) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const spaceId = resolved.space.id

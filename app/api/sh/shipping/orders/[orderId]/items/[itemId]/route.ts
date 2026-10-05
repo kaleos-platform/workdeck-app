@@ -17,7 +17,7 @@ type Params = { params: Promise<{ orderId: string; itemId: string }> }
  * name은 사용자 편집값(원문 상품명)으로, 매칭 메타와 독립. 변경 시 단순 update.
  */
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { orderId, itemId } = await params
@@ -147,7 +147,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
  * 주문 아이템 삭제. DelOrderItemFulfillment는 cascade로 함께 삭제됨.
  */
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { orderId, itemId } = await params

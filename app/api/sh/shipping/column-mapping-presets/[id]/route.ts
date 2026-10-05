@@ -3,11 +3,8 @@ import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
 // 프리셋 삭제 — 본인 space의 preset만 삭제 가능
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const resolved = await resolveDeckContext('seller-hub')
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await params

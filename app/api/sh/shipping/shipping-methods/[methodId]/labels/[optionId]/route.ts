@@ -10,7 +10,7 @@ type Params = { params: Promise<{ methodId: string; optionId: string }> }
  * - 빈 overrides 로 보내면 레코드 삭제 (사용자가 모든 필드 해제한 경우)
  */
 export async function PUT(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { methodId, optionId } = await params
@@ -57,7 +57,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { methodId, optionId } = await params
