@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   // 세션 인증: 현재 Space 만 대상
   if (!isWorker) {
-    const resolved = await resolveDeckContext('sales-content')
+    const resolved = await resolveDeckContext('sales-content', { write: true })
     if ('error' in resolved) return resolved.error
     const result = await scheduleInsightSweep({
       spaceId: resolved.space.id,

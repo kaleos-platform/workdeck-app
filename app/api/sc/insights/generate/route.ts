@@ -18,8 +18,8 @@ async function resolveSpaceId(
     if (!spaceId) return { error: errorResponse('x-workspace-id 헤더가 필요합니다', 400) }
     return { spaceId }
   }
-  // 2) 세션 경로: Deck 활성 공간 컨텍스트
-  const resolved = await resolveDeckContext('sales-content')
+  // 2) 세션 경로: Deck 활성 공간 컨텍스트 — POST 전용 보조 함수라 쓰기 가드(구독 만료 402)
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved && resolved.error) return { error: resolved.error }
   if ('space' in resolved) return { spaceId: resolved.space.id }
   return { error: errorResponse('공간을 찾을 수 없습니다', 404) }

@@ -34,7 +34,7 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 

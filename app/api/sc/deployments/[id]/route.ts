@@ -26,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await params
@@ -53,7 +53,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!allowed.includes(parsed.data.status)) {
       return errorResponse(
         `${existing.status} → ${parsed.data.status} 전이는 허용되지 않습니다`,
-        409,
+        409
       )
     }
   }
@@ -76,7 +76,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await params

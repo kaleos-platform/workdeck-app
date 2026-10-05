@@ -41,7 +41,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id: contentId } = await params
@@ -195,7 +195,11 @@ export async function POST(req: NextRequest, { params }: Params) {
       try {
         await deleteAsset(uploadedStoragePath)
       } catch (deleteErr) {
-        console.warn('[assets] 고아 Storage 파일 삭제 실패 — 수동 정리 필요:', uploadedStoragePath, deleteErr)
+        console.warn(
+          '[assets] 고아 Storage 파일 삭제 실패 — 수동 정리 필요:',
+          uploadedStoragePath,
+          deleteErr
+        )
       }
     }
 
@@ -204,7 +208,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id: contentId } = await params

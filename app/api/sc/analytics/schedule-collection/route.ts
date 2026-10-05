@@ -7,7 +7,7 @@ import { resolveDeckContext } from '@/lib/api-helpers'
 import { scheduleDailyMetricCollection } from '@/lib/sc/collector-scheduler'
 
 export async function POST() {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   await scheduleDailyMetricCollection(resolved.space.id)

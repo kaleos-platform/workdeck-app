@@ -19,6 +19,7 @@ import { join } from 'node:path'
 const GUARDED_DECKS: { deck: string; call: string }[] = [
   { deck: 'finance', call: "resolveDeckContext('finance'" },
   { deck: 'recruiting', call: "resolveDeckContext('recruiting'" },
+  { deck: 'sales-content', call: "resolveDeckContext('sales-content'" },
 ]
 
 const API_ROOT = join(process.cwd(), 'app', 'api')

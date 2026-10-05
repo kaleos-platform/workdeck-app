@@ -9,7 +9,7 @@ import { enqueueJob } from '@/lib/sc/jobs'
 type Params = { params: Promise<{ id: string }> }
 
 export async function POST(_req: NextRequest, { params }: Params) {
-  const resolved = await resolveDeckContext('sales-content')
+  const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
 
   const { id } = await params
