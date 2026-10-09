@@ -115,3 +115,38 @@ test('IP 거부면 남은 타깃을 시도하지 않고 중단한다', async () 
   )
   assert.match(results[1].error ?? '', /시도하지 않음/)
 })
+
+test('응답을 실패로 해석해도 재조회 가격이 목표가면 성공으로 확정한다', async () => {
+  let written = false
+  const client = {
+    get: async () => ({
+      data: { sellerItemId: 1, amountInStock: 1, salePrice: written ? 87610 : 88200, onSale: true },
+    }),
+    put: async () => {
+      written = true
+      return { body: { code: '400', message: '알 수 없는 응답' }, status: 200 }
+    },
+  } as never
+  const r = await runPriceChange(client, {
+    apActive: true,
+    targets: [{ listingId: 'L1', vendorItemId: '1', targetPrice: 87610, apMinSalePrice: 87600 }],
+  })
+  assert.deepEqual(r, [
+    { vendorItemId: '1', listingId: 'L1', observedPrice: 88200, ok: true, error: null },
+  ])
+})
+
+test('재조회 가격이 목표가와 다르면 실패 유지', async () => {
+  const client = {
+    get: async () => ({
+      data: { sellerItemId: 1, amountInStock: 1, salePrice: 88200, onSale: true },
+    }),
+    put: async () => ({ body: { code: '400', message: '거부됨' }, status: 400 }),
+  } as never
+  const r = await runPriceChange(client, {
+    apActive: true,
+    targets: [{ listingId: 'L1', vendorItemId: '1', targetPrice: 87610, apMinSalePrice: 87600 }],
+  })
+  assert.equal(r[0].ok, false)
+  assert.match(r[0].error ?? '', /거부됨/)
+})

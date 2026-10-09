@@ -9,6 +9,7 @@
  */
 import { CoupangApiError, type CoupangApiClient } from '../coupang-api/client.js'
 import { changeVendorItemPrice, fetchVendorItemStatus } from '../coupang-api/endpoints.js'
+import { CoupangWriteError } from '../coupang-api/write-result.js'
 
 export type PriceTargetResult = {
   vendorItemId: string
@@ -63,6 +64,27 @@ export async function runPriceChange(
         error: null,
       })
     } catch (err) {
+      // 응답 해석이 실패여도 실제로는 반영됐을 수 있다(2026-10-09: 성공 응답을 실패로 오판).
+      // 쓰기 후 현재가를 다시 읽어 목표가와 같으면 성공으로 확정한다 — 사실이 응답 해석보다 우선.
+      if (err instanceof CoupangWriteError) {
+        console.warn(
+          `[price-change] 쓰기 응답 실패 판정(vendorItemId=${t.vendorItemId}): ${err.coupangMessage} raw=${err.rawBody ?? ''}`
+        )
+        const after = await fetchVendorItemStatus(client, t.vendorItemId).catch(() => null)
+        if (after && after.salePrice === t.targetPrice) {
+          console.warn(
+            `[price-change] 재조회 결과 반영 확인 — 성공으로 처리(vendorItemId=${t.vendorItemId}, ${after.salePrice})`
+          )
+          results.push({
+            vendorItemId: t.vendorItemId,
+            listingId: t.listingId,
+            observedPrice,
+            ok: true,
+            error: null,
+          })
+          continue
+        }
+      }
       results.push({
         vendorItemId: t.vendorItemId,
         listingId: t.listingId,
