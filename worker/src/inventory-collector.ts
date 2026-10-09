@@ -777,12 +777,16 @@ async function verifyPeriodApplied(
  * 캘린더 경로에선 이 버튼을 눌러야 기간이 적용된다(안 누르면 picker 가 열린 채 남고
  * 기본 기간으로 export → 백필이 전부 어제 데이터로 채워지는 silent 과대집계).
  * 프리셋은 즉시 적용일 수도 있어 존재 여부로 분기한다.
- * 버튼 라벨은 "'06.05 (금)' 선택 완료"처럼 날짜 prefix 가 가변이라 substring 매칭.
+ * 버튼 라벨은 날짜 prefix 가 가변이고 문구도 바뀐다 — "'06.05 (금)' 선택 완료" →
+ * 2026-10-08 부터 "'10.07 (수) 선택". "MM.DD … 선택" 형태로 매칭한다(프리셋 "어제"·
+ * "최근 7일"이나 다른 "…선택" 버튼과 겹치지 않도록 날짜 prefix 를 요구).
  */
+export const PERIOD_CONFIRM_LABEL = /\d{1,2}\.\d{1,2}[^]*선택(\s*완료)?\s*$/
+
 async function clickPeriodConfirmIfPresent(page: Page): Promise<boolean> {
-  const confirmBtn = page.locator('button:has-text("선택 완료")').first()
+  const confirmBtn = page.locator('button').filter({ hasText: PERIOD_CONFIRM_LABEL }).first()
   if (!(await confirmBtn.isVisible().catch(() => false))) return false
-  await clickWithJsFallback(confirmBtn, '선택 완료')
+  await clickWithJsFallback(confirmBtn, '기간 선택 확인')
   await page.waitForTimeout(500)
   return true
 }
@@ -907,7 +911,7 @@ async function selectSalesAnalysisOneDay(
   if (!(await clickPeriodConfirmIfPresent(page))) {
     await saveScreenshot(page, 'sales-analysis-no-confirm-btn')
     throw new Error(
-      `[inventory] 판매분석 기간 "선택 완료" 버튼을 찾지 못했습니다 (${targetDateKst}) — DOM 변경 의심`
+      `[inventory] 판매분석 기간 확인("…선택") 버튼을 찾지 못했습니다 (${targetDateKst}) — DOM 변경 의심`
     )
   }
 
