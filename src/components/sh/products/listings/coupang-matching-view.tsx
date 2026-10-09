@@ -168,6 +168,10 @@ export function CoupangMatchingView() {
     try {
       const data = (await send('/api/sh/coupang-price/matching', 'GET')) as { rows: MatchingRow[] }
       setRows(data.rows)
+      // 재조회로 사라진 항목은 선택에서 빼고, 순서가 바뀌었을 수 있으니 범위 기준점도 초기화한다.
+      const ids = new Set(data.rows.map((r) => r.id))
+      setSelected((prev) => new Set([...prev].filter((id) => ids.has(id))))
+      lastClickedIndex.current = null
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '매칭 목록 조회 실패')
     } finally {
@@ -302,7 +306,8 @@ export function CoupangMatchingView() {
           ? `${r.updated}건을 매칭 안 함으로 바꿨습니다`
           : `${r.updated}건의 매칭 안 함을 해제했습니다`
       )
-      setSelected(new Set())
+      // 처리한 항목만 선택에서 뺀다 — 행 버튼 하나로 만들어 둔 다중 선택이 날아가지 않게.
+      setSelected((prev) => new Set([...prev].filter((id) => !ids.includes(id))))
       await load({ silent: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '변경 실패')
@@ -339,7 +344,8 @@ export function CoupangMatchingView() {
   )
   const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((r) => selected.has(r.id))
   const someVisibleSelected = visibleRows.some((r) => selected.has(r.id)) && !allVisibleSelected
-  const selectedRows = rows.filter((r) => selected.has(r.id))
+  // 화면에 보이는 선택만 처리 대상 — 재조회로 필터 밖으로 나간 항목이 몰래 처리되지 않게.
+  const selectedRows = visibleRows.filter((r) => selected.has(r.id))
   const toExclude = selectedRows.filter((r) => r.status !== 'EXCLUDED').map((r) => r.id)
   const toRestore = selectedRows.filter((r) => r.status === 'EXCLUDED').map((r) => r.id)
 
@@ -349,16 +355,10 @@ export function CoupangMatchingView() {
   }
 
   function toggleOne(id: string, index: number, shiftKey: boolean) {
-    setSelected((prev) =>
-      applyRangeSelection(
-        prev,
-        visibleRows.map((r) => r.id),
-        id,
-        index,
-        shiftKey,
-        lastClickedIndex.current
-      )
-    )
+    // updater 가 나중에 실행돼도 이번 클릭 기준점을 쓰도록 미리 잡아둔다.
+    const last = lastClickedIndex.current
+    const keys = visibleRows.map((r) => r.id)
+    setSelected((prev) => applyRangeSelection(prev, keys, id, index, shiftKey, last))
     lastClickedIndex.current = index
   }
 
@@ -654,7 +654,7 @@ export function CoupangMatchingView() {
       </Dialog>
 
       <FloatingActionBar
-        open={selected.size > 0}
+        open={selectedRows.length > 0}
         onClear={() => setSelected(new Set())}
         clearDisabled={busy}
         actions={
@@ -684,7 +684,7 @@ export function CoupangMatchingView() {
           </>
         }
       >
-        <span className="text-sm font-semibold">{selected.size}개</span>
+        <span className="text-sm font-semibold">{selectedRows.length}개</span>
         <span className="text-xs text-background/70">선택됨 · Shift+클릭으로 범위 선택</span>
       </FloatingActionBar>
 
