@@ -45,6 +45,8 @@ type ChannelWithCount = {
   id: string
   name: string
   externalSource: string | null
+  /** 연동 채널(로켓그로스 등)이 대표로 지정한 채널 id — 쿠팡 연동 채널 판별용 */
+  representativeChannelId?: string | null
   listingCount: number
 }
 
@@ -83,7 +85,12 @@ export function ChannelRail({
         ])
         if (!chRes.ok) throw new Error('채널 조회 실패')
         const data: {
-          channels: Array<{ id: string; name: string; externalSource: string | null }>
+          channels: Array<{
+            id: string
+            name: string
+            externalSource: string | null
+            representativeChannelId?: string | null
+          }>
         } = await chRes.json()
         if (typeRes.ok) {
           const td: { types: ChannelTypeDef[] } = await typeRes.json()
