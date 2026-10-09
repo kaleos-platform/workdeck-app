@@ -98,12 +98,16 @@ export function WorkspaceSetupForm({ redirectTo }: { redirectTo: string | null }
           </form>
         </Form>
         <div className="mt-6 border-t pt-4 text-center text-sm text-muted-foreground">
-          {user?.email && <p className="mb-1">{user.email} 계정으로 로그인됨</p>}
+          {user?.email && (
+            <p className="mb-2">
+              로그인 계정: <span className="break-all text-foreground">{user.email}</span>
+            </p>
+          )}
           <button
             type="button"
             onClick={signOut}
             disabled={isLoading}
-            className="underline-offset-4 hover:text-foreground hover:underline"
+            className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
           >
             로그아웃하고 다른 계정으로 로그인
           </button>
