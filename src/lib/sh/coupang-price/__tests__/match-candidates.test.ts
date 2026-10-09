@@ -24,12 +24,12 @@ test('재고 매핑 구성과 같은 리스팅 1개 → 후보 (세트 포함)',
     { id: 'i1', rgVendorItemId: 'rg-a1', listingId: null },
     { id: 'i2', rgVendorItemId: 'rg-set', listingId: null },
   ])
-  expect(r.get('i1')).toEqual({ status: 'CANDIDATE', candidateListingIds: ['L-A1'] })
-  expect(r.get('i2')).toEqual({ status: 'CANDIDATE', candidateListingIds: ['L-SET'] })
+  expect(r.get('i1')).toMatchObject({ status: 'CANDIDATE', candidateListingIds: ['L-A1'] })
+  expect(r.get('i2')).toMatchObject({ status: 'CANDIDATE', candidateListingIds: ['L-SET'] })
 })
 
 test('같은 구성 리스팅 2개 → 모호', () => {
-  expect(run([{ id: 'i', rgVendorItemId: 'rg-b1', listingId: null }]).get('i')).toEqual({
+  expect(run([{ id: 'i', rgVendorItemId: 'rg-b1', listingId: null }]).get('i')).toMatchObject({
     status: 'AMBIGUOUS',
     candidateListingIds: ['L-B1a', 'L-B1b'],
   })
@@ -40,8 +40,8 @@ test('RG 축이 없거나 재고 매핑이 없으면 없음(수동)', () => {
     { id: 'mp-only', rgVendorItemId: null, listingId: null },
     { id: 'no-sku', rgVendorItemId: 'rg-unknown', listingId: null },
   ])
-  expect(r.get('mp-only')).toEqual({ status: 'NONE', candidateListingIds: [] })
-  expect(r.get('no-sku')).toEqual({ status: 'NONE', candidateListingIds: [] })
+  expect(r.get('mp-only')).toMatchObject({ status: 'NONE', candidateListingIds: [] })
+  expect(r.get('no-sku')).toMatchObject({ status: 'NONE', candidateListingIds: [] })
 })
 
 test('확정된 매칭은 덮지 않는다 — 후보가 다르면 확인 필요만 표시', () => {
@@ -50,9 +50,9 @@ test('확정된 매칭은 덮지 않는다 — 후보가 다르면 확인 필요
     { id: 'diff', rgVendorItemId: 'rg-a1', listingId: 'L-SET' },
     { id: 'manual', rgVendorItemId: null, listingId: 'L-A1' },
   ])
-  expect(r.get('same')).toEqual({ status: 'CONFIRMED', candidateListingIds: ['L-A1'] })
-  expect(r.get('diff')).toEqual({ status: 'NEEDS_REVIEW', candidateListingIds: ['L-A1'] })
-  expect(r.get('manual')).toEqual({ status: 'CONFIRMED', candidateListingIds: [] })
+  expect(r.get('same')).toMatchObject({ status: 'CONFIRMED', candidateListingIds: ['L-A1'] })
+  expect(r.get('diff')).toMatchObject({ status: 'NEEDS_REVIEW', candidateListingIds: ['L-A1'] })
+  expect(r.get('manual')).toMatchObject({ status: 'CONFIRMED', candidateListingIds: [] })
 })
 
 test('여러 미연결 옵션이 같은 리스팅을 유일 후보로 가지면 모호 — 일괄 확정이 둘 다 잇지 않게', () => {
@@ -71,8 +71,8 @@ test('여러 미연결 옵션이 같은 리스팅을 유일 후보로 가지면 
     ]),
     listings,
   })
-  expect(r.get('x')).toEqual({ status: 'AMBIGUOUS', candidateListingIds: ['L-A1'] })
-  expect(r.get('y')).toEqual({ status: 'AMBIGUOUS', candidateListingIds: ['L-A1'] })
+  expect(r.get('x')).toMatchObject({ status: 'AMBIGUOUS', candidateListingIds: ['L-A1'] })
+  expect(r.get('y')).toMatchObject({ status: 'AMBIGUOUS', candidateListingIds: ['L-A1'] })
 })
 
 test('유일 후보 리스팅이 이미 다른 옵션에 연결돼 있으면 모호', () => {
@@ -80,6 +80,40 @@ test('유일 후보 리스팅이 이미 다른 옵션에 연결돼 있으면 모
     { id: 'linked', rgVendorItemId: null, listingId: 'L-A1' },
     { id: 'i', rgVendorItemId: 'rg-a1', listingId: null },
   ])
-  expect(r.get('i')).toEqual({ status: 'AMBIGUOUS', candidateListingIds: ['L-A1'] })
-  expect(r.get('linked')).toEqual({ status: 'CONFIRMED', candidateListingIds: [] })
+  expect(r.get('i')).toMatchObject({ status: 'AMBIGUOUS', candidateListingIds: ['L-A1'] })
+  expect(r.get('linked')).toMatchObject({ status: 'CONFIRMED', candidateListingIds: [] })
+})
+
+describe('매칭 안 함(제외)', () => {
+  const base = { listingId: null, excluded: false }
+  test('제외 항목은 EXCLUDED 이고 같은 리스팅을 노리는 다른 항목의 경쟁자로 세지 않는다', () => {
+    const r = computeMatchCandidates({
+      items: [
+        { id: 'keep', rgVendorItemId: 'rg-a1', ...base },
+        { id: 'dup', rgVendorItemId: 'rg-a1b', ...base, excluded: true },
+      ],
+      skuByVendorItemId: new Map([...skuByVendorItemId, ['rg-a1b', 'sku-a1b']]),
+      compositionBySku: new Map([...compositionBySku, ['sku-a1b', [{ optionId: 'A1', quantity: 1 }]]]),
+      listings,
+    })
+    expect(r.get('dup')?.status).toBe('EXCLUDED')
+    expect(r.get('keep')).toMatchObject({ status: 'CANDIDATE', candidateListingIds: ['L-A1'], conflictItemIds: [] })
+  })
+
+  test('같은 리스팅을 노리는 다른 항목·이미 연결된 항목을 충돌로 알려준다', () => {
+    const r = computeMatchCandidates({
+      items: [
+        { id: 'x', rgVendorItemId: 'rg-a1', ...base },
+        { id: 'y', rgVendorItemId: 'rg-a1b', ...base },
+        { id: 'z', rgVendorItemId: 'rg-set', ...base },
+        { id: 'w', rgVendorItemId: null, listingId: 'L-SET', excluded: false },
+      ],
+      skuByVendorItemId: new Map([...skuByVendorItemId, ['rg-a1b', 'sku-a1b']]),
+      compositionBySku: new Map([...compositionBySku, ['sku-a1b', [{ optionId: 'A1', quantity: 1 }]]]),
+      listings,
+    })
+    expect(r.get('x')).toMatchObject({ status: 'AMBIGUOUS', conflictItemIds: ['y'] })
+    expect(r.get('y')).toMatchObject({ status: 'AMBIGUOUS', conflictItemIds: ['x'] })
+    expect(r.get('z')).toMatchObject({ status: 'AMBIGUOUS', conflictItemIds: ['w'] })
+  })
 })

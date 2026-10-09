@@ -762,6 +762,8 @@ model CoupangProductItem {
 
   // 지연 매핑 저장소 — 사용 시점에 사람이 확정한 ProductListing 연결.
   listingId String? @unique
+  // 매칭 안 함 — 판매중지·중복 리스팅 등 가격 반영 대상이 아닌 쿠팡 옵션. 수집 upsert 가 건드리지 않는다.
+  excludedAt DateTime?
 
   collectedAt DateTime
   createdAt   DateTime @default(now())

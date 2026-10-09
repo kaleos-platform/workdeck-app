@@ -94,7 +94,9 @@ export async function computePriceTargets(
     channelId: channel.id,
     channelAxis,
     targets,
-    ambiguous: derived.ambiguous.map((ids) => ids.map((id) => ({ id, name: nameById.get(id) ?? '' }))),
+    ambiguous: derived.ambiguous.map((ids) =>
+      ids.map((id) => ({ id, name: nameById.get(id) ?? '' }))
+    ),
     unmatched: derived.unmatched.map((id) => ({
       id,
       name: unmatchedOptions.find((o) => o.id === id)?.name ?? id,

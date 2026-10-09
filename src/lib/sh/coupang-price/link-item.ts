@@ -9,7 +9,10 @@ export async function linkCoupangItem(
   coupangProductItemId: string,
   listingId: string
 ): Promise<{ ok: true } | { ok: false; reason: string; status: number }> {
-  const listing = await prisma.productListing.findFirst({ where: { id: listingId, spaceId }, select: { id: true } })
+  const listing = await prisma.productListing.findFirst({
+    where: { id: listingId, spaceId },
+    select: { id: true },
+  })
   if (!listing) return { ok: false, reason: '판매채널 상품을 찾을 수 없습니다', status: 404 }
 
   const item = await prisma.coupangProductItem.findFirst({
@@ -18,14 +21,25 @@ export async function linkCoupangItem(
   })
   if (!item) return { ok: false, reason: '쿠팡 옵션을 찾을 수 없습니다', status: 404 }
   if (item.listingId === listingId) return { ok: true }
-  if (item.listingId) return { ok: false, reason: '이미 다른 판매채널 상품에 연결된 쿠팡 옵션입니다', status: 400 }
+  if (item.listingId)
+    return { ok: false, reason: '이미 다른 판매채널 상품에 연결된 쿠팡 옵션입니다', status: 400 }
 
   const conflicting = await prisma.coupangProductItem.findFirst({
     where: { listingId, spaceId, NOT: { id: coupangProductItemId } },
     select: { id: true },
   })
-  if (conflicting) return { ok: false, reason: '이미 다른 쿠팡 옵션이 연결된 판매채널 상품입니다', status: 400 }
+  if (conflicting)
+    return {
+      ok: false,
+      reason:
+        '이미 다른 쿠팡 옵션이 연결된 판매채널 상품입니다 — 쿠팡 상품 매칭 화면에서 그 연결을 해제하거나 매칭 안 함으로 바꾼 뒤 다시 시도하세요',
+      status: 400,
+    }
 
-  await prisma.coupangProductItem.update({ where: { id: coupangProductItemId }, data: { listingId } })
+  // 연결은 곧 "매칭함" 결정이다 — 매칭 안 함 표시가 있었다면 함께 푼다.
+  await prisma.coupangProductItem.update({
+    where: { id: coupangProductItemId },
+    data: { listingId, excludedAt: null },
+  })
   return { ok: true }
 }

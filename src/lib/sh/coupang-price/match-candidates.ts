@@ -1,6 +1,19 @@
 import { signatureOf, type ListingSignature } from './listing-derive'
 
-export type MatchStatus = 'CONFIRMED' | 'NEEDS_REVIEW' | 'CANDIDATE' | 'AMBIGUOUS' | 'NONE'
+export type MatchStatus =
+  | 'CONFIRMED'
+  | 'NEEDS_REVIEW'
+  | 'CANDIDATE'
+  | 'AMBIGUOUS'
+  | 'NONE'
+  | 'EXCLUDED'
+
+export type MatchResult = {
+  status: MatchStatus
+  candidateListingIds: string[]
+  /** 같은 리스팅을 유일 후보로 노리는 다른 미연결 항목·그 리스팅에 이미 연결된 항목 */
+  conflictItemIds: string[]
+}
 
 /**
  * 쿠팡 옵션 → 워크덱 리스팅 자동 후보.
@@ -13,11 +26,17 @@ export type MatchStatus = 'CONFIRMED' | 'NEEDS_REVIEW' | 'CANDIDATE' | 'AMBIGUOU
  * 상태는 저장하지 않고 조회 시 계산한다 — 저장하면 매핑 변경마다 무효화가 필요하다.
  */
 export function computeMatchCandidates(args: {
-  items: Array<{ id: string; rgVendorItemId: string | null; listingId: string | null }>
+  /** excluded = 매칭 안 함. 상태는 EXCLUDED 이고 다른 항목의 경쟁자로 세지 않는다. */
+  items: Array<{
+    id: string
+    rgVendorItemId: string | null
+    listingId: string | null
+    excluded?: boolean
+  }>
   skuByVendorItemId: Map<string, string>
   compositionBySku: Map<string, ListingSignature[]>
   listings: Array<{ id: string; items: ListingSignature[] }>
-}): Map<string, { status: MatchStatus; candidateListingIds: string[] }> {
+}): Map<string, MatchResult> {
   const listingsBySig = new Map<string, string[]>()
   for (const l of args.listings) {
     if (l.items.length === 0) continue
@@ -25,36 +44,47 @@ export function computeMatchCandidates(args: {
     listingsBySig.set(sig, [...(listingsBySig.get(sig) ?? []), l.id])
   }
 
-  const out = new Map<string, { status: MatchStatus; candidateListingIds: string[] }>()
+  const out = new Map<string, MatchResult>()
   for (const item of args.items) {
     const sku = item.rgVendorItemId ? args.skuByVendorItemId.get(item.rgVendorItemId) : undefined
     const composition = sku ? args.compositionBySku.get(sku) : undefined
-    const candidates = composition ? [...(listingsBySig.get(signatureOf(composition)) ?? [])].sort() : []
+    const candidates = composition
+      ? [...(listingsBySig.get(signatureOf(composition)) ?? [])].sort()
+      : []
 
     let status: MatchStatus
-    if (item.listingId) {
+    if (item.excluded) status = 'EXCLUDED'
+    else if (item.listingId) {
       status =
         candidates.length === 1 && candidates[0] !== item.listingId ? 'NEEDS_REVIEW' : 'CONFIRMED'
     } else if (candidates.length === 1) status = 'CANDIDATE'
     else if (candidates.length > 1) status = 'AMBIGUOUS'
     else status = 'NONE'
 
-    out.set(item.id, { status, candidateListingIds: candidates })
+    out.set(item.id, { status, candidateListingIds: candidates, conflictItemIds: [] })
   }
 
   // 일괄 확정이 엉뚱한 옵션을 잇지 않게 — 같은 리스팅을 유일 후보로 가진 미연결 옵션이 둘 이상이거나
   // (여러 RG SKU 가 같은 구성에 매핑), 그 리스팅이 이미 다른 옵션에 연결돼 있으면 사람이 골라야 한다.
-  const claimants = new Map<string, number>()
-  for (const r of out.values()) {
+  const claimants = new Map<string, string[]>()
+  for (const [id, r] of out) {
     if (r.status === 'CANDIDATE') {
-      claimants.set(r.candidateListingIds[0], (claimants.get(r.candidateListingIds[0]) ?? 0) + 1)
+      const l = r.candidateListingIds[0]
+      claimants.set(l, [...(claimants.get(l) ?? []), id])
     }
   }
-  const linked = new Set(args.items.map((i) => i.listingId).filter((id): id is string => id != null))
-  for (const r of out.values()) {
+  const linkedBy = new Map<string, string>()
+  for (const i of args.items) if (i.listingId && !i.excluded) linkedBy.set(i.listingId, i.id)
+  for (const [id, r] of out) {
     if (r.status !== 'CANDIDATE') continue
     const l = r.candidateListingIds[0]
-    if ((claimants.get(l) ?? 0) > 1 || linked.has(l)) r.status = 'AMBIGUOUS'
+    const others = (claimants.get(l) ?? []).filter((o) => o !== id)
+    const owner = linkedBy.get(l)
+    if (owner) others.push(owner)
+    if (others.length > 0) {
+      r.status = 'AMBIGUOUS'
+      r.conflictItemIds = others
+    }
   }
   return out
 }
