@@ -9,6 +9,13 @@
  */
 import { CoupangApiError, type CoupangApiClient } from '../coupang-api/client.js'
 import { changeVendorItemPrice, fetchVendorItemStatus } from '../coupang-api/endpoints.js'
+import { CoupangWriteError } from '../coupang-api/write-result.js'
+
+/** 재조회 재시도 대기 — 쿠팡 조회가 쓰기보다 늦게 반영되는 경우 대비. 테스트에서 0 으로 덮는다. */
+export let REREAD_RETRY_MS = 1500
+export function setRereadRetryMs(ms: number) {
+  REREAD_RETRY_MS = ms
+}
 
 export type PriceTargetResult = {
   vendorItemId: string
@@ -63,6 +70,47 @@ export async function runPriceChange(
         error: null,
       })
     } catch (err) {
+      // 응답 해석이 실패여도 실제로는 반영됐을 수 있다(2026-10-09: 성공 응답을 실패로 오판).
+      // 쓰기 후 현재가를 다시 읽어 목표가와 같으면 성공으로 확정한다 — 사실이 응답 해석보다 우선.
+      // 단, 쓰기 전 가격이 이미 목표가였거나(또는 못 읽었으면) 재조회 일치가 아무것도 증명하지 못한다
+      // — 그땐 실패로 둔다(안전한 쪽 오류는 '거짓 실패'). 최저가(apMinSalePrice)는 읽을 API 가 없어
+      // 이 확인은 판매가 반영만 증명한다.
+      if (
+        err instanceof CoupangWriteError &&
+        observedPrice !== null &&
+        observedPrice !== t.targetPrice
+      ) {
+        console.warn(
+          `[price-change] 쓰기 응답 실패 판정(vendorItemId=${t.vendorItemId}): ${err.coupangMessage} raw=${err.rawBody ?? ''}`
+        )
+        let confirmed = false
+        // 쿠팡 조회가 쓰기보다 늦게 반영될 수 있어 한 번 더 기다렸다 읽는다.
+        for (const waitMs of [0, REREAD_RETRY_MS]) {
+          if (waitMs) await new Promise((r) => setTimeout(r, waitMs))
+          const after = await fetchVendorItemStatus(client, t.vendorItemId).catch(() => null)
+          if (after && after.salePrice === t.targetPrice) {
+            confirmed = true
+            break
+          }
+        }
+        if (confirmed) {
+          console.warn(
+            `[price-change] 재조회로 판매가 반영 확인 — 성공 처리(vendorItemId=${t.vendorItemId}, ${t.targetPrice}; 최저가는 확인 불가)`
+          )
+          results.push({
+            vendorItemId: t.vendorItemId,
+            listingId: t.listingId,
+            observedPrice,
+            ok: true,
+            error: null,
+          })
+          continue
+        }
+      } else if (err instanceof CoupangWriteError) {
+        console.warn(
+          `[price-change] 쓰기 실패(vendorItemId=${t.vendorItemId}): ${err.coupangMessage} raw=${err.rawBody ?? ''}`
+        )
+      }
       results.push({
         vendorItemId: t.vendorItemId,
         listingId: t.listingId,
