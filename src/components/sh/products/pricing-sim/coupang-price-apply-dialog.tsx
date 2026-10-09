@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { AlertTriangle, ExternalLink } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -58,6 +58,7 @@ type JobView = {
 
 const POLL_MS = 2_000
 const POLL_LIMIT_MS = 3 * 60_000
+const SLOW_POLL_MS = 10_000
 const isDone = (s: JobView['status']) => s === 'SUCCEEDED' || s === 'PARTIAL' || s === 'FAILED'
 
 function fmt(n: number): string {
@@ -117,6 +118,10 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   const [unmatched, setUnmatched] = useState<PreviewResponse['unmatched']>([])
   const [pickerListing, setPickerListing] = useState<{ id: string; name: string } | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  // 팝업 단계 — 수정(미리보기) → 반영 중 → 결과. 결과를 수정 화면에 섞지 않는다.
+  const [step, setStep] = useState<'edit' | 'applying' | 'result'>('edit')
+  // 모호 매칭 목록은 길어서 접어 둔다
+  const [showAmbiguous, setShowAmbiguous] = useState(false)
   // 팝업 안에서 고치는 판매가·자동조정 최저가 — 기본값은 시뮬 판매가·최소마진 가격(10원 단위).
   // 고쳐도 시뮬 화면 값은 바뀌지 않는다(이 반영에만 쓰인다).
   const [price, setPrice] = useState(0)
@@ -205,6 +210,13 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   const [pollAnchor, setPollAnchor] = useState<number | null>(null)
   const [timedOut, setTimedOut] = useState(false)
   const [tick, setTick] = useState(0)
+  // 열 때 최근 잡 조회가 끝나기 전엔 반영을 막는다(진행 중 잡 위에 또 쓰지 않게).
+  const [jobLoaded, setJobLoaded] = useState(false)
+  // 비동기 응답이 돌아왔을 때 대상이 바뀌었는지 판단용
+  const targetRef = useRef(target)
+  useEffect(() => {
+    targetRef.current = target
+  }, [target])
 
   const fetchLatestJob = useCallback(async (channelId: string): Promise<JobView | null> => {
     const res = await fetch(`/api/sh/coupang-price/jobs?channelId=${encodeURIComponent(channelId)}`)
@@ -215,20 +227,28 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   // 열 때 미리보기와 함께 이 채널의 최근 반영 결과를 불러온다(닫은 사이 끝난 결과 확인용).
   useEffect(() => {
     setTimedOut(false)
-    if (!target) {
-      setJob(null)
-      setPollAnchor(null)
-      return
-    }
+    setStep('edit')
+    setShowAmbiguous(false)
+    setJobLoaded(false)
+    // 다른 대상으로 바뀌면 이전 대상의 잡을 즉시 비운다(이전 잡 기준 폴링이 새 대상에 붙지 않게).
+    setJob(null)
+    setPollAnchor(null)
+    if (!target) return
     let cancelled = false
     fetchLatestJob(target.channelId)
       .then((j) => {
         if (cancelled) return
         setJob(j)
-        // 미완료 job 은 생성 시각 기준으로 3분을 센다.
-        if (j && !isDone(j.status)) setPollAnchor(new Date(j.createdAt).getTime())
+        setJobLoaded(true)
+        // 미완료 job 은 생성 시각 기준으로 3분을 세고, 바로 '반영 중' 단계로 연다.
+        if (j && !isDone(j.status)) {
+          setPollAnchor(new Date(j.createdAt).getTime())
+          setStep('applying')
+        }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setJobLoaded(true)
+      })
     return () => {
       cancelled = true
     }
@@ -246,21 +266,32 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
     return () => clearTimeout(t)
   }, [running, pollAnchor])
 
-  // 진행 중이면 2초 간격 폴링. 실패해도 타임아웃까지 계속 재시도한다.
+  // 진행 중이면 2초 간격 폴링. 3분이 지나도 멈추지 않고 10초 간격으로 계속 확인한다
+  // (워커가 늦게 처리해도 결과 단계로 넘어가게). 실패해도 다음 틱에 재시도.
   useEffect(() => {
-    if (!target || !running || timedOut) return
-    const t = setTimeout(async () => {
-      try {
-        const next = await fetchLatestJob(target.channelId)
-        if (next) setJob(next)
-        if (next && isDone(next.status))
-          void loadPreview(target, priceRef.current.priceR, priceRef.current.floorR)
-      } catch {
-        // 일시 오류 — 다음 틱에 재시도
-      }
-      setTick((n) => n + 1)
-    }, POLL_MS)
-    return () => clearTimeout(t)
+    if (!target || !running) return
+    let cancelled = false
+    const t = setTimeout(
+      async () => {
+        try {
+          const next = await fetchLatestJob(target.channelId)
+          if (cancelled || targetRef.current?.channelId !== target.channelId) return
+          if (next) setJob(next)
+          if (next && isDone(next.status)) {
+            setStep((cur) => (cur === 'applying' ? 'result' : cur))
+            void loadPreview(target, priceRef.current.priceR, priceRef.current.floorR)
+          }
+        } catch {
+          // 일시 오류 — 다음 틱에 재시도
+        }
+        if (!cancelled) setTick((n) => n + 1)
+      },
+      timedOut ? SLOW_POLL_MS : POLL_MS
+    )
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
   }, [target, running, timedOut, tick, fetchLatestJob, loadPreview])
 
   async function handleSubmit() {
@@ -283,6 +314,8 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
         }),
       })
       const data = await res.json().catch(() => ({}))
+      // 응답이 오는 사이 다른 채널로 바뀌었으면 이 화면 상태를 건드리지 않는다.
+      if (targetRef.current?.channelId !== target.channelId) return
       if (res.status === 409 && data?.code === 'TARGETS_CHANGED')
         void loadPreview(target, priceR, floorR)
       if (!res.ok) throw new Error(data?.message ?? `반영 요청 실패 (HTTP ${res.status})`)
@@ -306,6 +339,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
       })
       setTimedOut(false)
       setPollAnchor(Date.now())
+      setStep('applying')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '반영 요청 실패')
     } finally {
@@ -321,7 +355,15 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   // 쿠팡 규칙: 자동조정 최저가 < 판매가.
   const floorTooHigh = priceR > 0 && floorR >= priceR
   const previewFresh = previewedKey === currentKey && !loading
-  const canSubmit = priceValid && floorValid && !floorTooHigh && previewFresh && writableCount > 0
+  // 진행 중인 잡이 있으면(3분 초과 포함) 새 반영을 막는다 — 같은 옵션에 쓰기가 겹치지 않게.
+  const canSubmit =
+    jobLoaded &&
+    !running &&
+    priceValid &&
+    floorValid &&
+    !floorTooHigh &&
+    previewFresh &&
+    writableCount > 0
   const simFloor = target ? ceilMinPriceTo10(target.minMarginPrice) : 0
   const simPrice = target ? roundPriceTo10(target.salePrice) : 0
 
@@ -330,286 +372,402 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
       <Dialog open={open} onOpenChange={(v) => !v && onOpenChange(false)}>
         <DialogContent className="max-h-[90vh] w-[95vw] max-w-6xl overflow-y-auto sm:max-w-6xl">
           <DialogHeader>
-            <DialogTitle>쿠팡 판매가 반영</DialogTitle>
+            <DialogTitle>
+              {step === 'edit'
+                ? '쿠팡 판매가 반영'
+                : step === 'applying'
+                  ? '쿠팡에 반영 중'
+                  : '쿠팡 반영 결과'}
+            </DialogTitle>
             <DialogDescription>
-              {target?.channelName} 채널에 {target && target.rows.length > 1 ? '세트' : '옵션'}{' '}
-              가격을 반영합니다. 확인하면 바로 쿠팡에 반영됩니다(보통 1분 안).
+              {step === 'edit' ? (
+                <>
+                  {target?.channelName} 채널에 {target && target.rows.length > 1 ? '세트' : '옵션'}{' '}
+                  가격을 반영합니다. 확인하면 바로 쿠팡에 반영됩니다(보통 1분 안).
+                </>
+              ) : step === 'applying' ? (
+                '보통 1분 안에 끝납니다. 팝업을 닫아도 반영은 계속되고, 다시 열면 결과를 볼 수 있습니다.'
+              ) : (
+                job && `${new Date(job.createdAt).toLocaleString('ko-KR')} 반영 요청`
+              )}
             </DialogDescription>
           </DialogHeader>
 
-          {target && (target.discountRate > 0 || target.promotionLabel) && (
-            <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <p>
-                이 시나리오에는 할인 {(target.discountRate * 100).toFixed(0)}%
-                {target.promotionLabel ? ` / 프로모션 ${target.promotionLabel}` : ''}가 있으나 쿠팡
-                판매가에는 반영되지 않습니다. (판매가는 할인·프로모션 적용 전 기준)
-              </p>
-            </div>
-          )}
-
-          <div className="grid gap-3 rounded-md border bg-muted/30 px-3 py-3 text-sm sm:grid-cols-2">
-            <label className="space-y-1">
-              <span className="font-medium">쿠팡 판매가</span>
-              <Input
-                type="number"
-                inputMode="numeric"
-                step={10}
-                value={price || ''}
-                onChange={(e) => setPrice(Number(e.target.value))}
-                disabled={inFlight || submitting}
-                className="h-9 tabular-nums"
-              />
-              <span className="block text-xs text-muted-foreground">
-                시뮬 판매가 ₩{fmt(simPrice)}
-                {priceR !== simPrice && ' — 이 반영에만 바뀐 값을 씁니다'}
-              </span>
-            </label>
-            <label className="space-y-1">
-              <span className="font-medium">자동조정 최저가 (자동 가격조정 켜짐)</span>
-              <Input
-                type="number"
-                inputMode="numeric"
-                step={10}
-                value={floor || ''}
-                onChange={(e) => setFloor(Number(e.target.value))}
-                disabled={inFlight || submitting}
-                className="h-9 tabular-nums"
-              />
-              <span className="block text-xs text-muted-foreground">
-                기본값 = 최소마진 {target ? (target.minMarginPct * 100).toFixed(0) : 0}% 가격 ₩
-                {fmt(simFloor)}
-              </span>
-            </label>
-            <p className="flex items-start gap-1 text-xs text-amber-700 sm:col-span-2">
-              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
-              꺼져 있던 옵션도 자동조정이 켜지고, Wing 에서 정한 최저가는 이 값으로 바뀝니다.
-            </p>
-          </div>
-
-          {floorTooHigh && (
-            <div className="space-y-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
-              <p className="text-destructive">
-                쿠팡은 <b>자동조정 최저가가 판매가보다 낮아야</b> 반영됩니다. 지금 최저가 ₩
-                {fmt(floorR)}가 판매가 ₩{fmt(priceR)}보다 높거나 같습니다. 판매가를 더 낮추면 오히려
-                계속 막힙니다.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs"
-                  onClick={() => setPrice(floorR + 10)}
-                >
-                  판매가를 ₩{fmt(floorR + 10)}로 올리기
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs"
-                  disabled={priceR <= 10}
-                  onClick={() => setFloor(priceR - 10)}
-                >
-                  최저가를 ₩{fmt(Math.max(0, priceR - 10))}로 내리기
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {!floorTooHigh && floorR > 0 && floorR < simFloor && (
-            <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              최저가 ₩{fmt(floorR)}가 최소마진 {target ? (target.minMarginPct * 100).toFixed(0) : 0}
-              % 가격 ₩{fmt(simFloor)}보다 낮습니다 — 쿠팡 자동조정이 마진 하한 아래까지 가격을 내릴
-              수 있습니다.
-            </div>
-          )}
-
-          {unlinkedCount > 0 && (
-            <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              {targets.length}개 중 {unlinkedCount}개는 쿠팡 옵션과 연결되지 않아 반영되지 않습니다
-              — 쿠팡 상품 매칭에서 확정하거나 행의 [쿠팡 옵션 연결]을 누르세요.
-            </div>
-          )}
-
-          {unmatched.length > 0 && (
-            <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-              판매채널 상품이 없어 반영할 수 없는 옵션 {unmatched.length}개:{' '}
-              {unmatched.map((o) => o.name).join(', ')}
-            </div>
-          )}
-
-          {ambiguous.length > 0 && (
-            <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-              같은 옵션에 판매채널 상품이 여러 개 매칭되어 자동으로 고를 수 없습니다:{' '}
-              {ambiguous.map((g) => g.map((l) => l.name).join(' / ')).join(', ')}
-            </div>
-          )}
-
-          <Link
-            href={SELLER_HUB_COUPANG_MATCHING_PATH}
-            className="text-xs text-muted-foreground underline"
-          >
-            쿠팡 상품 매칭 관리
-          </Link>
-
-          <div className="rounded-md border">
-            <Table className="table-fixed">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>리스팅명</TableHead>
-                  <TableHead className="w-[100px] text-right">현재가</TableHead>
-                  <TableHead className="w-[100px] text-right">목표가</TableHead>
-                  <TableHead className="w-[110px] text-right whitespace-normal">
-                    자동조정 최저가
-                  </TableHead>
-                  <TableHead className="w-[70px] text-right">Δ%</TableHead>
-                  <TableHead className="w-[100px]">스냅샷</TableHead>
-                  <TableHead className="w-[150px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="py-8 text-center text-sm text-muted-foreground"
-                    >
-                      불러오는 중...
-                    </TableCell>
-                  </TableRow>
-                ) : targets.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="py-8 text-center text-sm text-muted-foreground"
-                    >
-                      대상이 없습니다
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  targets.map((t) => (
-                    <TableRow
-                      key={t.listingId}
-                      className={t.blockedReason ? 'opacity-60' : undefined}
-                    >
-                      <TableCell className="font-medium break-words whitespace-normal">
-                        <span className="flex items-center gap-1">
-                          {t.listingName}
-                          {t.sellerProductId && (
-                            <a
-                              href={wingListingUrl(t.sellerProductId)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title="쿠팡 Wing에서 보기"
-                              className="text-muted-foreground hover:text-foreground"
-                            >
-                              <ExternalLink className="h-3.5 w-3.5" />
-                            </a>
-                          )}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {t.currentPrice != null ? `₩${fmt(t.currentPrice)}` : '—'}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        ₩{fmt(t.targetPrice)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        ₩{fmt(t.apMinSalePrice)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {t.deltaPct != null ? `${(t.deltaPct * 100).toFixed(1)}%` : '—'}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {ageLabel(t.snapshotAgeHours)}
-                      </TableCell>
-                      <TableCell>
-                        {t.vendorItemId == null ? (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs"
-                            onClick={() =>
-                              setPickerListing({ id: t.listingId, name: t.listingName })
-                            }
-                          >
-                            쿠팡 옵션 연결
-                          </Button>
-                        ) : t.blockedReason && t.blockedReason !== FLOOR_RULE_REASON ? (
-                          // 최저가 규칙 위반은 위 안내 박스에서 한 번만 설명한다.
-                          <Badge
-                            variant="outline"
-                            className="border-destructive/40 whitespace-normal text-destructive"
-                          >
-                            {t.blockedReason}
-                          </Badge>
-                        ) : null}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {job && (
-            <div className="rounded-md border px-3 py-2 text-sm">
-              <p className="font-medium">
-                {inFlight
-                  ? '쿠팡에 반영 중…'
-                  : pollTimedOut
-                    ? '워커가 아직 처리하지 않았습니다 — 워커가 멈췄을 수 있습니다'
-                    : job.status === 'SUCCEEDED'
-                      ? '최근 반영: 모두 성공'
-                      : job.status === 'PARTIAL'
-                        ? '최근 반영: 일부 실패'
-                        : '최근 반영: 실패'}
-                <span className="ml-2 text-xs text-muted-foreground">
-                  {new Date(job.createdAt).toLocaleString('ko-KR')}
-                </span>
-              </p>
-              {job.error && <p className="mt-1 text-xs text-destructive">{job.error}</p>}
-              {job.results && (
-                <ul className="mt-1 space-y-0.5 text-xs">
-                  {job.results.map((r) => {
-                    const t = job.targets.find((x) => x.listingId === r.listingId)
-                    return (
-                      <li
-                        key={r.listingId}
-                        className={r.ok ? 'text-emerald-700' : 'text-destructive'}
-                      >
-                        {t?.listingName ?? r.listingId} —{' '}
-                        {r.ok
-                          ? `₩${fmt(t?.targetPrice ?? 0)} 반영`
-                          : `실패: ${r.error ?? '알 수 없음'}`}
-                      </li>
-                    )
-                  })}
-                </ul>
+          {step === 'edit' && (
+            <>
+              {target && (target.discountRate > 0 || target.promotionLabel) && (
+                <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>
+                    이 시나리오에는 할인 {(target.discountRate * 100).toFixed(0)}%
+                    {target.promotionLabel ? ` / 프로모션 ${target.promotionLabel}` : ''}가 있으나
+                    쿠팡 판매가에는 반영되지 않습니다. (판매가는 할인·프로모션 적용 전 기준)
+                  </p>
+                </div>
               )}
-            </div>
+
+              <div className="grid gap-3 rounded-md border bg-muted/30 px-3 py-3 text-sm sm:grid-cols-2">
+                <label className="space-y-1">
+                  <span className="font-medium">쿠팡 판매가</span>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    step={10}
+                    value={price || ''}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                    disabled={inFlight || submitting}
+                    className="h-9 tabular-nums"
+                  />
+                  <span className="block text-xs text-muted-foreground">
+                    시뮬 판매가 ₩{fmt(simPrice)}
+                    {priceR !== simPrice && ' — 이 반영에만 바뀐 값을 씁니다'}
+                  </span>
+                </label>
+                <label className="space-y-1">
+                  <span className="font-medium">자동조정 최저가 (자동 가격조정 켜짐)</span>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    step={10}
+                    value={floor || ''}
+                    onChange={(e) => setFloor(Number(e.target.value))}
+                    disabled={inFlight || submitting}
+                    className="h-9 tabular-nums"
+                  />
+                  <span className="block text-xs text-muted-foreground">
+                    기본값 = 최소마진 {target ? (target.minMarginPct * 100).toFixed(0) : 0}% 가격 ₩
+                    {fmt(simFloor)}
+                  </span>
+                </label>
+                <p className="flex items-start gap-1 text-xs text-amber-700 sm:col-span-2">
+                  <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+                  꺼져 있던 옵션도 자동조정이 켜지고, Wing 에서 정한 최저가는 이 값으로 바뀝니다.
+                </p>
+              </div>
+
+              {floorTooHigh && (
+                <div className="space-y-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
+                  <p className="text-destructive">
+                    쿠팡은 <b>자동조정 최저가가 판매가보다 낮아야</b> 반영됩니다. 지금 최저가 ₩
+                    {fmt(floorR)}가 판매가 ₩{fmt(priceR)}보다 높거나 같습니다. 판매가를 더 낮추면
+                    오히려 계속 막힙니다.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs"
+                      onClick={() => setPrice(floorR + 10)}
+                    >
+                      판매가를 ₩{fmt(floorR + 10)}로 올리기
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs"
+                      disabled={priceR <= 10}
+                      onClick={() => setFloor(priceR - 10)}
+                    >
+                      최저가를 ₩{fmt(Math.max(0, priceR - 10))}로 내리기
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {!floorTooHigh && floorR > 0 && floorR < simFloor && (
+                <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  최저가 ₩{fmt(floorR)}가 최소마진{' '}
+                  {target ? (target.minMarginPct * 100).toFixed(0) : 0}% 가격 ₩{fmt(simFloor)}보다
+                  낮습니다 — 쿠팡 자동조정이 마진 하한 아래까지 가격을 내릴 수 있습니다.
+                </div>
+              )}
+
+              {unlinkedCount > 0 && (
+                <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  {targets.length}개 중 {unlinkedCount}개는 쿠팡 옵션과 연결되지 않아 반영되지
+                  않습니다 — 쿠팡 상품 매칭에서 확정하거나 행의 [쿠팡 옵션 연결]을 누르세요.
+                </div>
+              )}
+
+              {unmatched.length > 0 && (
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                  판매채널 상품이 없어 반영할 수 없는 옵션 {unmatched.length}개:{' '}
+                  {unmatched.map((o) => o.name).join(', ')}
+                </div>
+              )}
+
+              {ambiguous.length > 0 && (
+                <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  같은 구성의 판매채널 상품이 여러 개라 자동으로 고를 수 없는 옵션{' '}
+                  {ambiguous.length}건 — 반영 대상에서 빠집니다.{' '}
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={() => setShowAmbiguous((v) => !v)}
+                  >
+                    {showAmbiguous ? '접기' : '목록 보기'}
+                  </button>
+                  {showAmbiguous && (
+                    <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs">
+                      {ambiguous.map((g, i) => (
+                        <li key={i}>{g.map((l) => l.name).join(' / ')}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
+              <Link
+                href={SELLER_HUB_COUPANG_MATCHING_PATH}
+                className="text-xs text-muted-foreground underline"
+              >
+                쿠팡 상품 매칭 관리
+              </Link>
+
+              <div className="rounded-md border">
+                <Table className="table-fixed">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>리스팅명</TableHead>
+                      <TableHead className="w-[100px] text-right">현재가</TableHead>
+                      <TableHead className="w-[100px] text-right">목표가</TableHead>
+                      <TableHead className="w-[110px] text-right whitespace-normal">
+                        자동조정 최저가
+                      </TableHead>
+                      <TableHead className="w-[70px] text-right">Δ%</TableHead>
+                      <TableHead className="w-[100px]">스냅샷</TableHead>
+                      <TableHead className="w-[150px]" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="py-8 text-center text-sm text-muted-foreground"
+                        >
+                          불러오는 중...
+                        </TableCell>
+                      </TableRow>
+                    ) : targets.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="py-8 text-center text-sm text-muted-foreground"
+                        >
+                          대상이 없습니다
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      targets.map((t) => (
+                        <TableRow
+                          key={t.listingId}
+                          className={t.blockedReason ? 'opacity-60' : undefined}
+                        >
+                          <TableCell className="font-medium break-words whitespace-normal">
+                            <span className="flex items-center gap-1">
+                              {t.listingName}
+                              {t.sellerProductId && (
+                                <a
+                                  href={wingListingUrl(t.sellerProductId)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="쿠팡 Wing에서 보기"
+                                  className="text-muted-foreground hover:text-foreground"
+                                >
+                                  <ExternalLink className="h-3.5 w-3.5" />
+                                </a>
+                              )}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {t.currentPrice != null ? `₩${fmt(t.currentPrice)}` : '—'}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            ₩{fmt(t.targetPrice)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            ₩{fmt(t.apMinSalePrice)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {t.deltaPct != null ? `${(t.deltaPct * 100).toFixed(1)}%` : '—'}
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {ageLabel(t.snapshotAgeHours)}
+                          </TableCell>
+                          <TableCell>
+                            {t.vendorItemId == null ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs"
+                                onClick={() =>
+                                  setPickerListing({ id: t.listingId, name: t.listingName })
+                                }
+                              >
+                                쿠팡 옵션 연결
+                              </Button>
+                            ) : t.blockedReason && t.blockedReason !== FLOOR_RULE_REASON ? (
+                              // 최저가 규칙 위반은 위 안내 박스에서 한 번만 설명한다.
+                              <Badge
+                                variant="outline"
+                                className="border-destructive/40 whitespace-normal text-destructive"
+                              >
+                                {t.blockedReason}
+                              </Badge>
+                            ) : null}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {job && isDone(job.status) && (
+                <button
+                  type="button"
+                  className="self-start text-xs text-muted-foreground underline"
+                  onClick={() => setStep('result')}
+                >
+                  최근 반영 결과 보기 ({new Date(job.createdAt).toLocaleString('ko-KR')})
+                </button>
+              )}
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
+                  취소
+                </Button>
+                <Button onClick={handleSubmit} disabled={submitting || !canSubmit}>
+                  {submitting
+                    ? '요청 중...'
+                    : !jobLoaded
+                      ? '확인 중...'
+                      : running
+                        ? '이전 반영 처리 중...'
+                        : !priceValid || !floorValid
+                          ? '가격을 입력하세요'
+                          : !previewFresh
+                            ? '미리보기 갱신 중...'
+                            : `쿠팡에 반영 (${writableCount}개)`}
+                </Button>
+              </DialogFooter>
+            </>
           )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
-              취소
-            </Button>
-            <Button onClick={handleSubmit} disabled={submitting || inFlight || !canSubmit}>
-              {submitting
-                ? '요청 중...'
-                : inFlight
-                  ? '반영 중...'
-                  : !priceValid || !floorValid
-                    ? '가격을 입력하세요'
-                    : !previewFresh
-                      ? '미리보기 갱신 중...'
-                      : `쿠팡에 반영 (${writableCount}개)`}
-            </Button>
-          </DialogFooter>
+          {step === 'applying' && job && (
+            <>
+              <div className="flex items-center gap-3 rounded-md border px-4 py-4 text-sm">
+                {pollTimedOut ? (
+                  <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
+                ) : (
+                  <Loader2 className="h-5 w-5 shrink-0 animate-spin text-muted-foreground" />
+                )}
+                <p>
+                  {pollTimedOut
+                    ? '3분이 지나도 워커가 처리하지 않았습니다 — 워커가 멈췄을 수 있습니다. 15분 안에 처리되지 않으면 이 요청은 자동으로 취소됩니다.'
+                    : `${job.targets.length}개 옵션을 쿠팡에 반영하고 있습니다…`}
+                </p>
+              </div>
+              <ul className="space-y-1 rounded-md border px-4 py-3 text-sm">
+                {job.targets.map((t) => (
+                  <li key={t.listingId} className="flex items-start justify-between gap-3">
+                    <span className="break-words">{t.listingName}</span>
+                    <span className="shrink-0 text-muted-foreground tabular-nums">
+                      ₩{fmt(t.targetPrice)} · 최저가 ₩{fmt(t.apMinSalePrice)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <DialogFooter>
+                {pollTimedOut && (
+                  <Button variant="outline" onClick={() => setStep('edit')}>
+                    이전 단계로
+                  </Button>
+                )}
+                <Button onClick={() => onOpenChange(false)}>닫기</Button>
+              </DialogFooter>
+            </>
+          )}
+
+          {step === 'result' && job && (
+            <>
+              {(() => {
+                const results = job.results ?? []
+                const okCount = results.filter((r) => r.ok).length
+                const failCount = results.length - okCount
+                const allOk = job.status === 'SUCCEEDED' && failCount === 0
+                return (
+                  <>
+                    <div
+                      className={`flex items-center gap-3 rounded-md border px-4 py-4 text-sm ${
+                        allOk
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                          : 'border-destructive/30 bg-destructive/5 text-destructive'
+                      }`}
+                    >
+                      {allOk ? (
+                        <CheckCircle2 className="h-5 w-5 shrink-0" />
+                      ) : (
+                        <XCircle className="h-5 w-5 shrink-0" />
+                      )}
+                      <p className="font-medium">
+                        {allOk
+                          ? `${okCount}개 옵션 모두 쿠팡에 반영했습니다`
+                          : results.length === 0
+                            ? '반영하지 못했습니다'
+                            : `${results.length}개 중 ${okCount}개 반영 · ${failCount}개 실패`}
+                      </p>
+                    </div>
+                    {job.error && <p className="text-xs text-destructive">{job.error}</p>}
+                    {results.length > 0 && (
+                      <ul className="space-y-1 rounded-md border px-4 py-3 text-sm">
+                        {results.map((r) => {
+                          const t = job.targets.find((x) => x.listingId === r.listingId)
+                          return (
+                            <li key={r.listingId} className="flex items-start gap-2">
+                              {r.ok ? (
+                                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                              ) : (
+                                <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                              )}
+                              <span className="min-w-0 flex-1 break-words">
+                                {t?.listingName ?? r.listingId}
+                                {!r.ok && (
+                                  <span className="block text-xs text-destructive">
+                                    {r.error ?? '알 수 없는 오류'}
+                                  </span>
+                                )}
+                              </span>
+                              {r.ok && t && (
+                                <span className="shrink-0 text-muted-foreground tabular-nums">
+                                  ₩{fmt(t.targetPrice)} · 최저가 ₩{fmt(t.apMinSalePrice)}
+                                </span>
+                              )}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      판매가는 쿠팡에서 다시 확인했습니다. 자동조정 최저가는 쿠팡이 조회 API 를
+                      제공하지 않아 Wing 에서 확인하세요.
+                    </p>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setStep('edit')}>
+                        {allOk ? '이전 단계로' : '이전 단계로 — 확인 후 다시 반영'}
+                      </Button>
+                      <Button onClick={() => onOpenChange(false)}>닫기</Button>
+                    </DialogFooter>
+                  </>
+                )
+              })()}
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
