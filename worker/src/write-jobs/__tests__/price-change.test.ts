@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
-import { runPriceChange } from '../price-change.js'
+import { runPriceChange, setRereadRetryMs } from '../price-change.js'
+
+setRereadRetryMs(0)
 import { CoupangApiError } from '../../coupang-api/client.js'
 
 // client 를 최소 stub 으로 대체 — 네트워크를 타지 않는다.
@@ -141,6 +143,40 @@ test('재조회 가격이 목표가와 다르면 실패 유지', async () => {
     get: async () => ({
       data: { sellerItemId: 1, amountInStock: 1, salePrice: 88200, onSale: true },
     }),
+    put: async () => ({ body: { code: '400', message: '거부됨' }, status: 400 }),
+  } as never
+  const r = await runPriceChange(client, {
+    apActive: true,
+    targets: [{ listingId: 'L1', vendorItemId: '1', targetPrice: 87610, apMinSalePrice: 87600 }],
+  })
+  assert.equal(r[0].ok, false)
+  assert.match(r[0].error ?? '', /거부됨/)
+})
+
+test('쓰기 전 가격이 이미 목표가면 응답 실패를 재조회로 뒤집지 않는다 — 최저가 미반영일 수 있음', async () => {
+  const client = {
+    get: async () => ({
+      data: { sellerItemId: 1, amountInStock: 1, salePrice: 87610, onSale: true },
+    }),
+    put: async () => ({ body: { code: '400', message: '최저가 거부' }, status: 400 }),
+  } as never
+  const r = await runPriceChange(client, {
+    apActive: true,
+    targets: [{ listingId: 'L1', vendorItemId: '1', targetPrice: 87610, apMinSalePrice: 87600 }],
+  })
+  assert.equal(r[0].ok, false)
+  assert.match(r[0].error ?? '', /최저가 거부/)
+})
+
+test('재조회 자체가 실패하면 원래 오류를 유지한다', async () => {
+  let calls = 0
+  const client = {
+    get: async () => {
+      calls += 1
+      if (calls === 1)
+        return { data: { sellerItemId: 1, amountInStock: 1, salePrice: 88200, onSale: true } }
+      throw new Error('조회 실패')
+    },
     put: async () => ({ body: { code: '400', message: '거부됨' }, status: 400 }),
   } as never
   const r = await runPriceChange(client, {
