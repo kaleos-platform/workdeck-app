@@ -63,3 +63,22 @@ test('SUCCESS 이어도 내부 data 가 숫자가 아니면 0 을 돌려준다',
   }
   assert.equal(unwrapWriteResult(body, 200), 0)
 })
+
+test('실측 성공 형태 — 최상위 code 가 SUCCESS 면 성공 (2026-10-09 오판 사고)', () => {
+  const body = { code: 'SUCCESS', message: '가격 변경을 완료했습니다.', data: null }
+  assert.equal(unwrapWriteResult(body, 200), 0)
+})
+
+test('최상위 SUCCESS 라도 중첩 data.code 가 ERROR 면 실패', () => {
+  const body = { code: 'SUCCESS', message: '', data: { code: 'ERROR', message: '거부' } }
+  assert.throws(() => unwrapWriteResult(body, 200), CoupangWriteError)
+})
+
+test('실패 오류에 원문이 남는다', () => {
+  try {
+    unwrapWriteResult({ code: '400', message: '잘못된 요청' }, 400)
+    assert.fail('throw 해야 함')
+  } catch (err) {
+    assert.ok(err instanceof CoupangWriteError && err.rawBody?.includes('잘못된 요청'))
+  }
+})
