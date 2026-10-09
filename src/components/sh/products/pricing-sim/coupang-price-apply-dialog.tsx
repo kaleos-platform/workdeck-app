@@ -230,11 +230,10 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
     setStep('edit')
     setShowAmbiguous(false)
     setJobLoaded(false)
-    if (!target) {
-      setJob(null)
-      setPollAnchor(null)
-      return
-    }
+    // 다른 대상으로 바뀌면 이전 대상의 잡을 즉시 비운다(이전 잡 기준 폴링이 새 대상에 붙지 않게).
+    setJob(null)
+    setPollAnchor(null)
+    if (!target) return
     let cancelled = false
     fetchLatestJob(target.channelId)
       .then((j) => {
