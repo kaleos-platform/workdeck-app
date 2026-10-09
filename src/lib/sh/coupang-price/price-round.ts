@@ -10,6 +10,9 @@ export function ceilMinPriceTo10(v: number): number {
   return Math.ceil(v / 10) * 10
 }
 
+/** 쿠팡 규칙 apMinSalePrice < price 위반 사유 — 반영 팝업이 상단 안내로 따로 설명한다. */
+export const FLOOR_RULE_REASON = '자동조정 최저가가 판매가보다 낮아야 합니다'
+
 export type PriceGuardResult = { ok: true } | { ok: false; reason: string }
 
 export function checkPriceGuards(args: {
@@ -28,7 +31,7 @@ export function checkPriceGuards(args: {
   if (!(args.apMinSalePrice < args.price)) {
     return {
       ok: false,
-      reason: '자동조정 최저가가 판매가보다 낮아야 합니다',
+      reason: FLOOR_RULE_REASON,
     }
   }
   return { ok: true }

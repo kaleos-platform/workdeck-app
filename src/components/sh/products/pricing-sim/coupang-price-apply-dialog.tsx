@@ -25,7 +25,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { PreviewTarget } from '@/lib/sh/coupang-price/build-targets'
-import { ceilMinPriceTo10, roundPriceTo10 } from '@/lib/sh/coupang-price/price-round'
+import {
+  ceilMinPriceTo10,
+  FLOOR_RULE_REASON,
+  roundPriceTo10,
+} from '@/lib/sh/coupang-price/price-round'
 import type { PriceRow } from '@/lib/sh/coupang-price/listing-derive'
 import { SELLER_HUB_COUPANG_MATCHING_PATH } from '@/lib/deck-routes'
 import { wingListingUrl } from '@/lib/coupang/wing-link'
@@ -55,9 +59,6 @@ type JobView = {
 const POLL_MS = 2_000
 const POLL_LIMIT_MS = 3 * 60_000
 const isDone = (s: JobView['status']) => s === 'SUCCEEDED' || s === 'PARTIAL' || s === 'FAILED'
-
-// price-round.ts checkPriceGuards 의 최저가 규칙 사유 — 이 사유는 상단 안내 박스에서 한 번만 설명한다.
-const FLOOR_RULE_REASON = '자동조정 최저가가 판매가보다 낮아야 합니다'
 
 function fmt(n: number): string {
   return Math.round(n).toLocaleString('ko-KR')
@@ -149,7 +150,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
         setTargets(preview.targets)
         setAmbiguous(preview.ambiguous)
         setUnmatched(preview.unmatched ?? [])
-        setPreviewedKey(`${salePrice}:${minMarginPrice}`)
+        setPreviewedKey(`${t.channelId}:${salePrice}:${minMarginPrice}`)
       } catch (err) {
         if (seq !== previewSeq.current) return
         toast.error(err instanceof Error ? err.message : '미리보기 조회 실패')
@@ -165,6 +166,9 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
 
   // 열 때(대상이 바뀔 때) 시뮬 값으로 초기화하고 이전 대상의 표를 비운다.
   useEffect(() => {
+    // 진행 중이던 이전 대상의 미리보기 응답이 도착해도 버려지게 순번을 올린다.
+    previewSeq.current += 1
+    setLoading(false)
     setTargets([])
     setAmbiguous([])
     setUnmatched([])
@@ -176,11 +180,12 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   }, [target])
 
   // 서버와 같은 10원 규칙으로 맞춘 값 — 미리보기·반영·판정 모두 이 값을 쓴다.
-  const priceValid = Number.isFinite(price) && price > 0
-  const floorValid = Number.isFinite(floor) && floor > 0
-  const priceR = priceValid ? roundPriceTo10(price) : 0
-  const floorR = floorValid ? ceilMinPriceTo10(floor) : 0
-  const currentKey = `${priceR}:${floorR}`
+  const priceR = Number.isFinite(price) && price > 0 ? roundPriceTo10(price) : 0
+  const floorR = Number.isFinite(floor) && floor > 0 ? ceilMinPriceTo10(floor) : 0
+  // 10원 반올림 후에도 0보다 커야 유효(1~4원은 0원이 된다).
+  const priceValid = priceR > 0
+  const floorValid = floorR > 0
+  const currentKey = `${target?.channelId ?? ''}:${priceR}:${floorR}`
 
   // 가격을 고치면 잠시 뒤 미리보기를 다시 계산한다. 그 사이엔 반영 버튼이 잠긴다(previewedKey 불일치).
   useEffect(() => {
