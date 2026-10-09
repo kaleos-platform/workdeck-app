@@ -1,11 +1,13 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ExternalLink, RefreshCw, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { FloatingActionBar, floatingActionButtonClass } from '@/components/ui/floating-action-bar'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
@@ -24,6 +26,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { wingListingUrl } from '@/lib/coupang/wing-link'
+import { applyRangeSelection } from '@/lib/range-selection'
 import type { MatchingListing, MatchingRow } from '@/lib/sh/coupang-price/load-matching'
 import type { MatchStatus } from '@/lib/sh/coupang-price/match-candidates'
 
@@ -150,12 +153,25 @@ export function CoupangMatchingView() {
   const [query, setQuery] = useState('')
   // 다른 상품 선택 팝업 대상
   const [pickRow, setPickRow] = useState<MatchingRow | null>(null)
+  // 다중 선택 — 체크박스 + Shift 범위 선택, 하단 일괄 액션 바(판매채널 상품 화면과 같은 패턴)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const lastClickedIndex = useRef<number | null>(null)
+  // 필터·검색을 바꾸면 보이지 않는 항목이 선택된 채 일괄 처리되지 않게 선택을 비운다.
+  useEffect(() => {
+    setSelected(new Set())
+    lastClickedIndex.current = null
+  }, [filter, query])
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  // silent: 처리 후 재조회는 표를 "불러오는 중"으로 갈아끼우지 않는다(스크롤·맥락 유지).
+  const load = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true)
     try {
       const data = (await send('/api/sh/coupang-price/matching', 'GET')) as { rows: MatchingRow[] }
       setRows(data.rows)
+      // 재조회로 사라진 항목은 선택에서 빼고, 순서가 바뀌었을 수 있으니 범위 기준점도 초기화한다.
+      const ids = new Set(data.rows.map((r) => r.id))
+      setSelected((prev) => new Set([...prev].filter((id) => ids.has(id))))
+      lastClickedIndex.current = null
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '매칭 목록 조회 실패')
     } finally {
@@ -197,7 +213,7 @@ export function CoupangMatchingView() {
         if (job && (job.status === 'SUCCEEDED' || job.status === 'PARTIAL')) {
           setSyncJobId(null)
           toast.success('쿠팡 상품을 불러왔습니다')
-          void load()
+          void load({ silent: true })
           return
         }
         if (job && job.status === 'FAILED') {
@@ -255,7 +271,7 @@ export function CoupangMatchingView() {
         )
       }
       if (r.skipped.length) toast.warning(r.skipped[0].reason)
-      await load()
+      await load({ silent: true })
       return r.confirmed > 0
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '확정 실패')
@@ -269,7 +285,7 @@ export function CoupangMatchingView() {
     setBusy(true)
     try {
       await send('/api/sh/coupang-price/link', 'DELETE', { coupangProductItemId: id })
-      await load()
+      await load({ silent: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '해제 실패')
     } finally {
@@ -277,15 +293,22 @@ export function CoupangMatchingView() {
     }
   }
 
-  async function setExcluded(id: string, excluded: boolean) {
+  async function setExcluded(ids: string[], excluded: boolean) {
+    if (ids.length === 0) return
     setBusy(true)
     try {
-      await send('/api/sh/coupang-price/matching/exclude', 'POST', {
-        coupangProductItemId: id,
+      const r = (await send('/api/sh/coupang-price/matching/exclude', 'POST', {
+        coupangProductItemIds: ids,
         excluded,
-      })
-      toast.success(excluded ? '매칭 안 함으로 바꿨습니다' : '매칭 안 함을 해제했습니다')
-      await load()
+      })) as { updated: number }
+      toast.success(
+        excluded
+          ? `${r.updated}건을 매칭 안 함으로 바꿨습니다`
+          : `${r.updated}건의 매칭 안 함을 해제했습니다`
+      )
+      // 처리한 항목만 선택에서 뺀다 — 행 버튼 하나로 만들어 둔 다중 선택이 날아가지 않게.
+      setSelected((prev) => new Set([...prev].filter((id) => !ids.includes(id))))
+      await load({ silent: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '변경 실패')
     } finally {
@@ -319,6 +342,26 @@ export function CoupangMatchingView() {
   const candidateRows = visibleRows.filter(
     (r) => r.status === 'CANDIDATE' && r.candidates.length === 1
   )
+  const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((r) => selected.has(r.id))
+  const someVisibleSelected = visibleRows.some((r) => selected.has(r.id)) && !allVisibleSelected
+  // 화면에 보이는 선택만 처리 대상 — 재조회로 필터 밖으로 나간 항목이 몰래 처리되지 않게.
+  const selectedRows = visibleRows.filter((r) => selected.has(r.id))
+  const toExclude = selectedRows.filter((r) => r.status !== 'EXCLUDED').map((r) => r.id)
+  const toRestore = selectedRows.filter((r) => r.status === 'EXCLUDED').map((r) => r.id)
+
+  function toggleAllVisible(checked: boolean) {
+    setSelected(checked ? new Set(visibleRows.map((r) => r.id)) : new Set())
+    lastClickedIndex.current = null
+  }
+
+  function toggleOne(id: string, index: number, shiftKey: boolean) {
+    // updater 가 나중에 실행돼도 이번 클릭 기준점을 쓰도록 미리 잡아둔다.
+    const last = lastClickedIndex.current
+    const keys = visibleRows.map((r) => r.id)
+    setSelected((prev) => applyRangeSelection(prev, keys, id, index, shiftKey, last))
+    lastClickedIndex.current = index
+  }
+
   const candidatePairs = candidateRows.map((r) => ({
     coupangProductItemId: r.id,
     listingId: r.candidates[0].id,
@@ -370,6 +413,14 @@ export function CoupangMatchingView() {
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allVisibleSelected || (someVisibleSelected ? 'indeterminate' : false)}
+                  onCheckedChange={(v) => toggleAllVisible(v === true)}
+                  aria-label="보이는 항목 전체 선택"
+                  disabled={busy}
+                />
+              </TableHead>
               <TableHead className="w-[34%]">쿠팡 옵션</TableHead>
               <TableHead className="w-[170px] text-right whitespace-normal">
                 쿠팡 현재가
@@ -384,25 +435,43 @@ export function CoupangMatchingView() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
                   수집된 쿠팡 상품이 없습니다. “지금 쿠팡 상품 불러오기”를 눌러주세요
                 </TableCell>
               </TableRow>
             ) : visibleRows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
                   조건에 맞는 쿠팡 옵션이 없습니다
                 </TableCell>
               </TableRow>
             ) : (
-              visibleRows.map((r) => (
-                <TableRow key={r.id} className={r.status === 'EXCLUDED' ? 'opacity-60' : undefined}>
+              visibleRows.map((r, ri) => (
+                <TableRow
+                  key={r.id}
+                  className={
+                    selected.has(r.id)
+                      ? 'bg-primary/5'
+                      : r.status === 'EXCLUDED'
+                        ? 'opacity-60'
+                        : undefined
+                  }
+                >
+                  <TableCell>
+                    <Checkbox
+                      checked={selected.has(r.id)}
+                      onClick={(e: React.MouseEvent) => toggleOne(r.id, ri, e.shiftKey)}
+                      onCheckedChange={() => {}}
+                      aria-label={`${r.productName ?? r.itemName ?? r.id} 선택`}
+                      disabled={busy}
+                    />
+                  </TableCell>
                   <TableCell className="break-words whitespace-normal">
                     <CoupangItemLabel r={r} />
                   </TableCell>
@@ -484,7 +553,7 @@ export function CoupangMatchingView() {
                           variant="outline"
                           className="h-7 text-xs"
                           disabled={busy}
-                          onClick={() => setExcluded(r.id, false)}
+                          onClick={() => setExcluded([r.id], false)}
                         >
                           매칭 안 함 해제
                         </Button>
@@ -515,7 +584,7 @@ export function CoupangMatchingView() {
                             variant="ghost"
                             className="h-7 text-xs text-muted-foreground"
                             disabled={busy}
-                            onClick={() => setExcluded(r.id, true)}
+                            onClick={() => setExcluded([r.id], true)}
                           >
                             매칭 안 함
                           </Button>
@@ -583,6 +652,41 @@ export function CoupangMatchingView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <FloatingActionBar
+        open={selectedRows.length > 0}
+        onClear={() => setSelected(new Set())}
+        clearDisabled={busy}
+        actions={
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className={floatingActionButtonClass}
+              disabled={busy || toExclude.length === 0}
+              onClick={() => setExcluded(toExclude, true)}
+            >
+              매칭 안 함 ({toExclude.length})
+            </Button>
+            {toRestore.length > 0 && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className={floatingActionButtonClass}
+                disabled={busy}
+                onClick={() => setExcluded(toRestore, false)}
+              >
+                매칭 안 함 해제 ({toRestore.length})
+              </Button>
+            )}
+          </>
+        }
+      >
+        <span className="text-sm font-semibold">{selectedRows.length}개</span>
+        <span className="text-xs text-background/70">선택됨 · Shift+클릭으로 범위 선택</span>
+      </FloatingActionBar>
 
       <ListingPickerDialog
         row={pickRow}
