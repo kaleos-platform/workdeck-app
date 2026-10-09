@@ -521,10 +521,10 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
               )}
 
               <Link
-                href={SELLER_HUB_COUPANG_MATCHING_PATH}
+                href={`${SELLER_HUB_COUPANG_MATCHING_PATH}${target ? `?channel=${target.listingChannelId}` : ''}`}
                 className="text-xs text-muted-foreground underline"
               >
-                쿠팡 상품 매칭 관리
+                상품 매칭 관리
               </Link>
 
               <div className="rounded-md border">
