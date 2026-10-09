@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { resolveRedirectPath } from '@/lib/auth-redirect'
+import { useAuth } from '@/hooks/use-auth'
 import {
   Form,
   FormControl,
@@ -23,8 +24,8 @@ import {
 const workspaceSetupSchema = z.object({
   name: z
     .string()
-    .min(1, '사업자명을 입력해주세요')
-    .max(100, '사업자명은 100자 이하로 입력해주세요'),
+    .min(1, '워크스페이스 이름을 입력해주세요')
+    .max(100, '워크스페이스 이름은 100자 이하로 입력해주세요'),
 })
 
 type WorkspaceSetupInput = z.infer<typeof workspaceSetupSchema>
@@ -32,6 +33,7 @@ type WorkspaceSetupInput = z.infer<typeof workspaceSetupSchema>
 export function WorkspaceSetupForm({ redirectTo }: { redirectTo: string | null }) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { user, signOut } = useAuth()
   // 마케팅 랜딩에서 특정 업무를 보고 가입한 경우 워크스페이스 생성 후 그 업무로 이어진다.
   const nextPath = resolveRedirectPath(redirectTo)
 
@@ -71,7 +73,7 @@ export function WorkspaceSetupForm({ redirectTo }: { redirectTo: string | null }
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">워크스페이스 설정</CardTitle>
-        <CardDescription>쿠팡 사업자명을 입력하여 워크스페이스를 생성하세요</CardDescription>
+        <CardDescription>사업자명(상호)을 워크스페이스 이름으로 입력하세요</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -81,7 +83,7 @@ export function WorkspaceSetupForm({ redirectTo }: { redirectTo: string | null }
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>쿠팡 사업자명</FormLabel>
+                  <FormLabel>워크스페이스 이름</FormLabel>
                   <FormControl>
                     <Input placeholder="예: 홍길동 스토어" disabled={isLoading} {...field} />
                   </FormControl>
@@ -95,6 +97,17 @@ export function WorkspaceSetupForm({ redirectTo }: { redirectTo: string | null }
             </Button>
           </form>
         </Form>
+        <div className="mt-6 border-t pt-4 text-center text-sm text-muted-foreground">
+          {user?.email && <p className="mb-1">{user.email} 계정으로 로그인됨</p>}
+          <button
+            type="button"
+            onClick={signOut}
+            disabled={isLoading}
+            className="underline-offset-4 hover:text-foreground hover:underline"
+          >
+            로그아웃하고 다른 계정으로 로그인
+          </button>
+        </div>
       </CardContent>
     </Card>
   )
