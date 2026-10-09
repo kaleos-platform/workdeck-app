@@ -983,6 +983,13 @@ export function TransactionsView() {
                 </span>
               </div>
             )}
+            {/* 제외된 중복은 저장 대상이 아니라 정리 대상 — 건수를 따로 보여준다 */}
+            {(stagingCounts.dupTotal ?? 0) > 0 && (
+              <div className="flex justify-between rounded-md border px-3 py-2">
+                <span className="text-muted-foreground">중복 정리(대기열에서 제거)</span>
+                <span className="font-mono font-medium">{stagingCounts.dupTotal}건</span>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button
@@ -1088,7 +1095,12 @@ function StagingPanel({
   onImportDeleted: (deletedTransactions: number) => void
   onCommitRequest: () => void
 }) {
-  const hasDraft = counts.total > 0
+  // DUP_SAME(제외된 중복)은 활성 큐(counts.total)에서 빠진다. 그것만 남으면 total=0 이 되어
+  // 어느 탭을 눌러도 "대기 내역 없음"이 뜨고, 중복 배지(미결정만 집계)도 0이라 접근 경로가
+  // 사라진다. 실제로 875건이 그렇게 숨은 채 남았다. dupTotal 도 함께 보고 큐를 연다.
+  const hasDraft = counts.total > 0 || (counts.dupTotal ?? 0) > 0
+  /** 분류완료가 없고 제외된 중복만 남은 상태 — 저장할 건 없지만 정리는 해야 한다 */
+  const onlyDupSame = counts.total === 0 && (counts.dupTotal ?? 0) > 0
 
   // 다중 선택 상태(shift 연속 선택). selectedInView가 현재 탭의 행으로 스코프하므로 탭 전환 시 자연히 정리된다.
   const rowIds = rows.map((r) => r.id)
@@ -1257,17 +1269,30 @@ function StagingPanel({
       {/* 하단 저장 처리 버튼 — 스크롤 위치와 무관하게 접근 가능하도록 하단 고정 */}
       <div className="sticky bottom-0 z-20 -mx-1 flex items-center justify-between border-t bg-background px-1 py-2">
         <p className="text-xs text-muted-foreground">
-          분류완료 <span className="font-medium text-foreground">{classifiedCount}</span>건 저장
-          가능
-          {heldBack > 0 && ` · 미처리 ${heldBack}건 보류`}
+          {onlyDupSame ? (
+            <>
+              제외된 중복 <span className="font-medium text-foreground">{counts.dupTotal}</span>건만
+              남았습니다 — 저장할 내역은 없고 대기열만 정리합니다
+            </>
+          ) : (
+            <>
+              분류완료 <span className="font-medium text-foreground">{classifiedCount}</span>건 저장
+              가능
+              {heldBack > 0 && ` · 미처리 ${heldBack}건 보류`}
+            </>
+          )}
           {searchQ && (
             <span className="ml-1 text-amber-600 dark:text-amber-400">
               — 검색은 화면 표시만 거릅니다. 저장 처리는 검색과 무관하게 대기열 전체를 확정합니다
             </span>
           )}
         </p>
-        <Button onClick={onCommitRequest} disabled={classifiedCount === 0} size="sm">
-          저장 처리
+        <Button
+          onClick={onCommitRequest}
+          disabled={classifiedCount === 0 && !onlyDupSame}
+          size="sm"
+        >
+          {onlyDupSame ? '중복 정리' : '저장 처리'}
         </Button>
       </div>
 
