@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
@@ -55,6 +55,9 @@ type JobView = {
 const POLL_MS = 2_000
 const POLL_LIMIT_MS = 3 * 60_000
 const isDone = (s: JobView['status']) => s === 'SUCCEEDED' || s === 'PARTIAL' || s === 'FAILED'
+
+// price-round.ts checkPriceGuards 의 최저가 규칙 사유 — 이 사유는 상단 안내 박스에서 한 번만 설명한다.
+const FLOOR_RULE_REASON = '자동조정 최저가가 판매가보다 낮아야 합니다'
 
 function fmt(n: number): string {
   return Math.round(n).toLocaleString('ko-KR')
@@ -117,9 +120,15 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   // 고쳐도 시뮬 화면 값은 바뀌지 않는다(이 반영에만 쓰인다).
   const [price, setPrice] = useState(0)
   const [floor, setFloor] = useState(0)
+  // 화면 표가 어떤 (판매가:최저가) 로 계산된 것인지 — 반영은 이 값이 지금 입력과 같을 때만 허용.
+  // 가격을 고친 직후(미리보기 갱신 전) 눌러 화면에 없던 가격이 나가는 것을 막는다.
+  const [previewedKey, setPreviewedKey] = useState<string | null>(null)
+  // 늦게 도착한 이전 요청 응답이 최신 미리보기를 덮지 않게 요청 순번을 센다.
+  const previewSeq = useRef(0)
 
   const loadPreview = useMemo(
     () => async (t: CoupangApplyTarget, salePrice: number, minMarginPrice: number) => {
+      const seq = ++previewSeq.current
       setLoading(true)
       try {
         const res = await fetch('/api/sh/coupang-price/preview', {
@@ -135,40 +144,56 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
         })
         const data = await res.json().catch(() => ({}))
         if (!res.ok) throw new Error(data?.message ?? data?.error ?? '미리보기 조회 실패')
+        if (seq !== previewSeq.current) return
         const preview = data as PreviewResponse
         setTargets(preview.targets)
         setAmbiguous(preview.ambiguous)
         setUnmatched(preview.unmatched ?? [])
+        setPreviewedKey(`${salePrice}:${minMarginPrice}`)
       } catch (err) {
+        if (seq !== previewSeq.current) return
         toast.error(err instanceof Error ? err.message : '미리보기 조회 실패')
         setTargets([])
         setAmbiguous([])
         setUnmatched([])
       } finally {
-        setLoading(false)
+        if (seq === previewSeq.current) setLoading(false)
       }
     },
     []
   )
 
-  // 열 때 시뮬 값으로 초기화
+  // 열 때(대상이 바뀔 때) 시뮬 값으로 초기화하고 이전 대상의 표를 비운다.
   useEffect(() => {
+    setTargets([])
+    setAmbiguous([])
+    setUnmatched([])
+    setPreviewedKey(null)
     if (target) {
       setPrice(roundPriceTo10(target.salePrice))
       setFloor(ceilMinPriceTo10(target.minMarginPrice))
-    } else {
-      setTargets([])
-      setAmbiguous([])
-      setUnmatched([])
     }
   }, [target])
 
-  // 가격을 고치면 잠시 뒤 미리보기를 다시 계산한다(서버가 같은 규칙으로 판정).
+  // 서버와 같은 10원 규칙으로 맞춘 값 — 미리보기·반영·판정 모두 이 값을 쓴다.
+  const priceValid = Number.isFinite(price) && price > 0
+  const floorValid = Number.isFinite(floor) && floor > 0
+  const priceR = priceValid ? roundPriceTo10(price) : 0
+  const floorR = floorValid ? ceilMinPriceTo10(floor) : 0
+  const currentKey = `${priceR}:${floorR}`
+
+  // 가격을 고치면 잠시 뒤 미리보기를 다시 계산한다. 그 사이엔 반영 버튼이 잠긴다(previewedKey 불일치).
   useEffect(() => {
-    if (!target || price <= 0 || floor <= 0) return
-    const t = setTimeout(() => void loadPreview(target, price, floor), 400)
+    if (!target || !priceValid || !floorValid) return
+    const t = setTimeout(() => void loadPreview(target, priceR, floorR), 400)
     return () => clearTimeout(t)
-  }, [target, price, floor, loadPreview])
+  }, [target, priceR, floorR, priceValid, floorValid, loadPreview])
+
+  // 폴러가 완료 시 최신 입력으로 미리보기를 다시 부르도록 ref 로 둔다(키 입력마다 폴링 타이머가 리셋되지 않게).
+  const priceRef = useRef({ priceR, floorR })
+  useEffect(() => {
+    priceRef.current = { priceR, floorR }
+  }, [priceR, floorR])
 
   const [job, setJob] = useState<JobView | null>(null)
   // 폴링 기준 시각(ms). 타임아웃 상태는 이 값에서 타이머로 만든다(렌더 중 Date.now() 금지).
@@ -223,14 +248,15 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
       try {
         const next = await fetchLatestJob(target.channelId)
         if (next) setJob(next)
-        if (next && isDone(next.status)) void loadPreview(target, price, floor)
+        if (next && isDone(next.status))
+          void loadPreview(target, priceRef.current.priceR, priceRef.current.floorR)
       } catch {
         // 일시 오류 — 다음 틱에 재시도
       }
       setTick((n) => n + 1)
     }, POLL_MS)
     return () => clearTimeout(t)
-  }, [target, running, timedOut, tick, fetchLatestJob, loadPreview, price, floor])
+  }, [target, running, timedOut, tick, fetchLatestJob, loadPreview])
 
   async function handleSubmit() {
     if (!target) return
@@ -242,8 +268,8 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
         body: JSON.stringify({
           channelId: target.channelId,
           rows: target.rows,
-          salePrice: price,
-          minMarginPrice: floor,
+          salePrice: priceR,
+          minMarginPrice: floorR,
           includeVat: target.includeVat,
           // 서버가 다시 계산한 대상이 미리보기와 다르면 409 — 보지 못한 대상이 반영되지 않게.
           expectedListingIds: targets
@@ -253,7 +279,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
       })
       const data = await res.json().catch(() => ({}))
       if (res.status === 409 && data?.code === 'TARGETS_CHANGED')
-        void loadPreview(target, price, floor)
+        void loadPreview(target, priceR, floorR)
       if (!res.ok) throw new Error(data?.message ?? `반영 요청 실패 (HTTP ${res.status})`)
       // 201 본문으로 임시 job 을 즉시 보여주고, 이후는 폴링이 갱신한다.
       const jobId = (data as { job?: { id?: string } }).job?.id ?? ''
@@ -287,10 +313,10 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
 
   const writableCount = targets.filter((t) => t.blockedReason == null).length
   const unlinkedCount = targets.filter((t) => t.vendorItemId == null).length
-  // 쿠팡 규칙: 자동조정 최저가 < 판매가. 화면 값은 서버와 같은 10원 규칙으로 맞춰 비교한다.
-  const priceR = roundPriceTo10(price)
-  const floorR = ceilMinPriceTo10(floor)
+  // 쿠팡 규칙: 자동조정 최저가 < 판매가.
   const floorTooHigh = priceR > 0 && floorR >= priceR
+  const previewFresh = previewedKey === currentKey && !loading
+  const canSubmit = priceValid && floorValid && !floorTooHigh && previewFresh && writableCount > 0
   const simFloor = target ? ceilMinPriceTo10(target.minMarginPrice) : 0
   const simPrice = target ? roundPriceTo10(target.salePrice) : 0
 
@@ -326,6 +352,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                 step={10}
                 value={price || ''}
                 onChange={(e) => setPrice(Number(e.target.value))}
+                disabled={inFlight || submitting}
                 className="h-9 tabular-nums"
               />
               <span className="block text-xs text-muted-foreground">
@@ -341,6 +368,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                 step={10}
                 value={floor || ''}
                 onChange={(e) => setFloor(Number(e.target.value))}
+                disabled={inFlight || submitting}
                 className="h-9 tabular-nums"
               />
               <span className="block text-xs text-muted-foreground">
@@ -506,7 +534,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                           >
                             쿠팡 옵션 연결
                           </Button>
-                        ) : t.blockedReason && !floorTooHigh ? (
+                        ) : t.blockedReason && t.blockedReason !== FLOOR_RULE_REASON ? (
                           // 최저가 규칙 위반은 위 안내 박스에서 한 번만 설명한다.
                           <Badge
                             variant="outline"
@@ -565,15 +593,16 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
               취소
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={submitting || loading || inFlight || writableCount === 0}
-            >
+            <Button onClick={handleSubmit} disabled={submitting || inFlight || !canSubmit}>
               {submitting
                 ? '요청 중...'
                 : inFlight
                   ? '반영 중...'
-                  : `쿠팡에 반영 (${writableCount}개)`}
+                  : !priceValid || !floorValid
+                    ? '가격을 입력하세요'
+                    : !previewFresh
+                      ? '미리보기 갱신 중...'
+                      : `쿠팡에 반영 (${writableCount}개)`}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -587,7 +616,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
           listingName={pickerListing.name}
           onLinked={() => {
             setPickerListing(null)
-            if (target) void loadPreview(target, price, floor)
+            if (target) void loadPreview(target, priceR, floorR)
           }}
         />
       )}
