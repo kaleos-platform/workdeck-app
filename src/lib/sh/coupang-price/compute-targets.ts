@@ -58,7 +58,8 @@ export async function computePriceTargets(
   const nameById = new Map(listings.map((l) => [l.id, l.displayName]))
 
   const items = await prisma.coupangProductItem.findMany({
-    where: { spaceId, listingId: { in: derived.matched } },
+    // 매칭 안 함 항목엔 절대 가격을 쓰지 않는다 — 제외 시 연결도 끊지만 이중 방어.
+    where: { spaceId, listingId: { in: derived.matched }, excludedAt: null },
     select: {
       listingId: true,
       rgVendorItemId: true,

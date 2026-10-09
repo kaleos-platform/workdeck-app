@@ -7,7 +7,13 @@ import { prisma } from '@/lib/prisma'
 export async function linkCoupangItem(
   spaceId: string,
   coupangProductItemId: string,
-  listingId: string
+  listingId: string,
+  /**
+   * explicit = 사람이 "다른 상품 선택"으로 직접 고른 경우. 기존 연결을 한 번의 update 로
+   * 갈아끼우고(해제→확정 두 번 호출하다 중간 실패로 연결이 사라지지 않게), 매칭 안 함도 푼다.
+   * 기본(후보 확정·일괄 확정)은 기존 연결·매칭 안 함 항목을 건드리지 않는다.
+   */
+  opts: { explicit?: boolean } = {}
 ): Promise<{ ok: true } | { ok: false; reason: string; status: number }> {
   const listing = await prisma.productListing.findFirst({
     where: { id: listingId, spaceId },
@@ -17,7 +23,7 @@ export async function linkCoupangItem(
 
   const item = await prisma.coupangProductItem.findFirst({
     where: { id: coupangProductItemId, spaceId },
-    select: { id: true, listingId: true },
+    select: { id: true, listingId: true, excludedAt: true },
   })
   if (!item) return { ok: false, reason: '쿠팡 옵션을 찾을 수 없습니다', status: 404 }
   if (item.listingId === listingId) return { ok: true }

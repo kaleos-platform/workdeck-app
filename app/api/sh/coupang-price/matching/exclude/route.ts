@@ -15,7 +15,7 @@ const bodySchema = z.object({
  * 제외하면 기존 연결도 끊는다 — 제외된 옵션에 가격이 쓰이면 안 된다.
  */
 export async function POST(req: NextRequest) {
-  const resolved = await resolveDeckContext('seller-hub')
+  const resolved = await resolveDeckContext('seller-hub', { write: true })
   if ('error' in resolved) return resolved.error
   // 매칭과 같은 이유로 ADMIN — 어느 쿠팡 옵션에 가격을 쓸지 결정한다.
   const denied = assertRole(resolved.role, 'ADMIN')

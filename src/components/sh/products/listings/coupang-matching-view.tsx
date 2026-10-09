@@ -237,11 +237,15 @@ export function CoupangMatchingView() {
   }, [rows])
 
   async function confirm(
-    pairs: Array<{ coupangProductItemId: string; listingId: string }>
+    pairs: Array<{ coupangProductItemId: string; listingId: string }>,
+    explicit = false
   ): Promise<boolean> {
     setBusy(true)
     try {
-      const r = (await send('/api/sh/coupang-price/matching/confirm', 'POST', { pairs })) as {
+      const r = (await send('/api/sh/coupang-price/matching/confirm', 'POST', {
+        pairs,
+        explicit,
+      })) as {
         confirmed: number
         skipped: Array<{ reason: string }>
       }
@@ -250,7 +254,7 @@ export function CoupangMatchingView() {
       )
       if (r.skipped.length) toast.warning(r.skipped[0].reason)
       await load()
-      return true
+      return r.confirmed > 0
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '확정 실패')
       return false
@@ -309,7 +313,10 @@ export function CoupangMatchingView() {
       .some((t) => t!.toLowerCase().includes(q))
   })
 
-  const candidateRows = rows.filter((r) => r.status === 'CANDIDATE' && r.candidates.length === 1)
+  // 보이는 목록 기준 — 필터·검색 중엔 화면에 보이는 후보만 일괄 확정한다.
+  const candidateRows = visibleRows.filter(
+    (r) => r.status === 'CANDIDATE' && r.candidates.length === 1
+  )
   const candidatePairs = candidateRows.map((r) => ({
     coupangProductItemId: r.id,
     listingId: r.candidates[0].id,
@@ -581,9 +588,8 @@ export function CoupangMatchingView() {
         onClose={() => setPickRow(null)}
         onPick={async (listingId) => {
           if (!pickRow) return
-          // 이미 다른 상품에 연결돼 있으면 해제 후 새로 잇는다(연결은 양방향 모두 명시적 해제가 필요).
-          if (pickRow.listing && pickRow.listing.id !== listingId) await unlink(pickRow.id)
-          const ok = await confirm([{ coupangProductItemId: pickRow.id, listingId }])
+          // 서버가 기존 연결 교체·매칭 안 함 해제를 한 번의 update 로 처리한다(explicit).
+          const ok = await confirm([{ coupangProductItemId: pickRow.id, listingId }], true)
           if (ok) setPickRow(null)
         }}
       />
@@ -607,8 +613,9 @@ function ListingPickerDialog({
   const [results, setResults] = useState<PickListing[]>([])
   const [loading, setLoading] = useState(false)
 
-  // 열릴 때 쿠팡 옵션명으로 검색을 시작한다.
+  // 열릴 때 쿠팡 옵션명으로 검색을 시작한다. 이전 행의 결과가 잠깐이라도 보이지 않게 비운다.
   useEffect(() => {
+    setResults([])
     if (row) setSearch(row.itemName ?? '')
   }, [row])
 
@@ -619,7 +626,7 @@ function ListingPickerDialog({
       setLoading(true)
       try {
         const d = (await send(
-          `/api/sh/coupang-price/listings?search=${encodeURIComponent(search)}`,
+          `/api/sh/coupang-price/listings?search=${encodeURIComponent(search)}&itemId=${encodeURIComponent(row.id)}`,
           'GET'
         )) as { listings: PickListing[] }
         if (!cancelled) setResults(d.listings)
@@ -646,7 +653,8 @@ function ListingPickerDialog({
                 <span className="font-medium text-foreground">
                   {[row.productName, row.itemName].filter(Boolean).join(' / ')}
                 </span>{' '}
-                에 연결할 판매채널 상품을 고르세요. 구성(옵션×수량)이 같은지 확인하세요.
+                에 연결할 판매채널 상품을 고르세요. 구성(옵션×수량)이 같은지 확인하세요. 다른 쿠팡
+                옵션에 이미 연결된 상품은 목록에 나오지 않습니다.
               </>
             )}
           </DialogDescription>

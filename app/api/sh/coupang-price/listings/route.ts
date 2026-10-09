@@ -10,11 +10,11 @@ import {
   type LoadedListing,
 } from '@/lib/sh/coupang-price/load-matching'
 
-const PAGE_SIZE = 30
+const PAGE_SIZE = 50
 
 /**
  * GET /api/sh/coupang-price/listings?search= — 매칭 화면 "다른 상품 선택" 팝업용.
- * 쿠팡 리스팅 채널의 판매채널 상품을 구성·판매가와 함께, 이미 연결된 쿠팡 옵션 id 도 싣는다.
+ * 쿠팡 리스팅 채널의 판매채널 상품 중 아직 연결되지 않은(또는 이 옵션에 연결된) 것을 구성·판매가와 함께 돌려준다.
  */
 export async function GET(req: NextRequest) {
   const resolved = await resolveDeckContext('seller-hub')
@@ -24,11 +24,17 @@ export async function GET(req: NextRequest) {
   const channelId = await resolveCoupangListingChannelId(spaceId)
   if (!channelId) return NextResponse.json({ listings: [] })
 
+  // 고르는 쿠팡 옵션 — 다른 쿠팡 옵션에 이미 연결된 상품은 고를 수 없으니 결과에서 뺀다.
+  const itemId = req.nextUrl.searchParams.get('itemId')
   const tokens = tokenizeProductName((req.nextUrl.searchParams.get('search') ?? '').trim())
   const listings = await prisma.productListing.findMany({
     where: {
       spaceId,
       channelId,
+      OR: [
+        { coupangProductItem: null },
+        ...(itemId ? [{ coupangProductItem: { id: itemId } }] : []),
+      ],
       ...(tokens.length > 0
         ? {
             AND: tokens.map((t) => ({

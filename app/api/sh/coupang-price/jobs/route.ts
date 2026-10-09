@@ -20,12 +20,25 @@ export async function GET(req: NextRequest) {
       payload: { path: ['channelId'], equals: channelId },
     },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, status: true, results: true, error: true, createdAt: true, executedAt: true, payload: true },
+    select: {
+      id: true,
+      status: true,
+      results: true,
+      error: true,
+      createdAt: true,
+      executedAt: true,
+      payload: true,
+    },
   })
   if (!job) return NextResponse.json({ job: null })
 
   const payload = job.payload as {
-    targets: Array<{ listingId: string; listingName: string; targetPrice: number; apMinSalePrice: number }>
+    targets: Array<{
+      listingId: string
+      listingName: string
+      targetPrice: number
+      apMinSalePrice: number
+    }>
   }
   return NextResponse.json({
     job: {

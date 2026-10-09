@@ -2,7 +2,13 @@ import { computeMatchCandidates } from '../match-candidates'
 
 const listings = [
   { id: 'L-A1', items: [{ optionId: 'A1', quantity: 1 }] },
-  { id: 'L-SET', items: [{ optionId: 'A1', quantity: 1 }, { optionId: 'B1', quantity: 2 }] },
+  {
+    id: 'L-SET',
+    items: [
+      { optionId: 'A1', quantity: 1 },
+      { optionId: 'B1', quantity: 2 },
+    ],
+  },
   { id: 'L-B1a', items: [{ optionId: 'B1', quantity: 1 }] },
   { id: 'L-B1b', items: [{ optionId: 'B1', quantity: 1 }] },
 ]
@@ -13,11 +19,18 @@ const skuByVendorItemId = new Map([
 ])
 const compositionBySku = new Map([
   ['sku-a1', [{ optionId: 'A1', quantity: 1 }]],
-  ['sku-set', [{ optionId: 'B1', quantity: 2 }, { optionId: 'A1', quantity: 1 }]],
+  [
+    'sku-set',
+    [
+      { optionId: 'B1', quantity: 2 },
+      { optionId: 'A1', quantity: 1 },
+    ],
+  ],
   ['sku-b1', [{ optionId: 'B1', quantity: 1 }]],
 ])
-const run = (items: Array<{ id: string; rgVendorItemId: string | null; listingId: string | null }>) =>
-  computeMatchCandidates({ items, skuByVendorItemId, compositionBySku, listings })
+const run = (
+  items: Array<{ id: string; rgVendorItemId: string | null; listingId: string | null }>
+) => computeMatchCandidates({ items, skuByVendorItemId, compositionBySku, listings })
 
 test('재고 매핑 구성과 같은 리스팅 1개 → 후보 (세트 포함)', () => {
   const r = run([
@@ -93,11 +106,18 @@ describe('매칭 안 함(제외)', () => {
         { id: 'dup', rgVendorItemId: 'rg-a1b', ...base, excluded: true },
       ],
       skuByVendorItemId: new Map([...skuByVendorItemId, ['rg-a1b', 'sku-a1b']]),
-      compositionBySku: new Map([...compositionBySku, ['sku-a1b', [{ optionId: 'A1', quantity: 1 }]]]),
+      compositionBySku: new Map([
+        ...compositionBySku,
+        ['sku-a1b', [{ optionId: 'A1', quantity: 1 }]],
+      ]),
       listings,
     })
     expect(r.get('dup')?.status).toBe('EXCLUDED')
-    expect(r.get('keep')).toMatchObject({ status: 'CANDIDATE', candidateListingIds: ['L-A1'], conflictItemIds: [] })
+    expect(r.get('keep')).toMatchObject({
+      status: 'CANDIDATE',
+      candidateListingIds: ['L-A1'],
+      conflictItemIds: [],
+    })
   })
 
   test('같은 리스팅을 노리는 다른 항목·이미 연결된 항목을 충돌로 알려준다', () => {
@@ -109,7 +129,10 @@ describe('매칭 안 함(제외)', () => {
         { id: 'w', rgVendorItemId: null, listingId: 'L-SET', excluded: false },
       ],
       skuByVendorItemId: new Map([...skuByVendorItemId, ['rg-a1b', 'sku-a1b']]),
-      compositionBySku: new Map([...compositionBySku, ['sku-a1b', [{ optionId: 'A1', quantity: 1 }]]]),
+      compositionBySku: new Map([
+        ...compositionBySku,
+        ['sku-a1b', [{ optionId: 'A1', quantity: 1 }]],
+      ]),
       listings,
     })
     expect(r.get('x')).toMatchObject({ status: 'AMBIGUOUS', conflictItemIds: ['y'] })
