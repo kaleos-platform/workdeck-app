@@ -1155,7 +1155,9 @@ function StagingPanel({
           { value: 'all', label: '전체', count: counts.total },
           { value: 'unclassified', label: '미분류', count: counts.unclassified },
           { value: 'review', label: '검토', count: counts.review },
-          { value: 'dup', label: '중복', count: counts.dup },
+          // 미결정(DUP_CHANGED)이 0이어도 제외된 중복이 남아 있으면 건수를 보여준다.
+          // 배지가 0이면 그 탭에 뭔가 있다는 단서가 사라져 875건이 묻힌다.
+          { value: 'dup', label: '중복', count: counts.dup || (counts.dupTotal ?? 0) },
           { value: 'classified', label: '완료', count: counts.classified },
         ].map((t) => (
           <button
@@ -1215,9 +1217,19 @@ function StagingPanel({
           처리 대기 중인 내역이 없습니다
         </p>
       ) : rows.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          {searchQ ? `"${searchQ}" 검색 결과가 없습니다` : '해당 탭에 내역이 없습니다'}
-        </p>
+        <div className="py-8 text-center text-sm text-muted-foreground">
+          <p>{searchQ ? `"${searchQ}" 검색 결과가 없습니다` : '해당 탭에 내역이 없습니다'}</p>
+          {/* 제외된 중복은 활성 큐에서 빠진다 — 어디에 있는지 알려주지 않으면 사라진 것처럼 보인다 */}
+          {!searchQ && tab !== 'dup' && onlyDupSame && (
+            <button
+              type="button"
+              onClick={() => onTabChange('dup')}
+              className="mt-1 text-xs text-amber-700 underline underline-offset-2 dark:text-amber-400"
+            >
+              제외된 중복 {counts.dupTotal}건은 「중복」 탭에 있습니다
+            </button>
+          )}
+        </div>
       ) : (
         <div className="rounded-lg border">
           <Table>
