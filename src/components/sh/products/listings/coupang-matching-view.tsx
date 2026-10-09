@@ -249,9 +249,11 @@ export function CoupangMatchingView() {
         confirmed: number
         skipped: Array<{ reason: string }>
       }
-      toast.success(
-        `${r.confirmed}건 확정${r.skipped.length ? ` · ${r.skipped.length}건 건너뜀` : ''}`
-      )
+      if (r.confirmed > 0) {
+        toast.success(
+          `${r.confirmed}건 확정${r.skipped.length ? ` · ${r.skipped.length}건 건너뜀` : ''}`
+        )
+      }
       if (r.skipped.length) toast.warning(r.skipped[0].reason)
       await load()
       return r.confirmed > 0
