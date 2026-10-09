@@ -4,8 +4,9 @@ import { z } from 'zod'
 import { assertRole, errorResponse, resolveDeckContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 
+// 여러 개를 한 번에 — 매칭 화면 다중 선택 일괄 처리.
 const bodySchema = z.object({
-  coupangProductItemId: z.string().min(1),
+  coupangProductItemIds: z.array(z.string().min(1)).min(1).max(1000),
   excluded: z.boolean(),
 })
 
@@ -25,12 +26,12 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return errorResponse(parsed.error.issues[0]?.message ?? '입력값이 올바르지 않습니다', 400)
   }
-  const { coupangProductItemId, excluded } = parsed.data
+  const { coupangProductItemIds, excluded } = parsed.data
 
   const r = await prisma.coupangProductItem.updateMany({
-    where: { id: coupangProductItemId, spaceId: resolved.space.id },
+    where: { id: { in: coupangProductItemIds }, spaceId: resolved.space.id },
     data: excluded ? { excludedAt: new Date(), listingId: null } : { excludedAt: null },
   })
   if (r.count === 0) return errorResponse('쿠팡 옵션을 찾을 수 없습니다', 404)
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ updated: r.count })
 }
