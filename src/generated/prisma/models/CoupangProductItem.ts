@@ -48,6 +48,7 @@ export type CoupangProductItemMinAggregateOutputType = {
   barcode: string | null
   statusName: string | null
   listingId: string | null
+  excludedAt: Date | null
   collectedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -65,6 +66,7 @@ export type CoupangProductItemMaxAggregateOutputType = {
   barcode: string | null
   statusName: string | null
   listingId: string | null
+  excludedAt: Date | null
   collectedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -83,6 +85,7 @@ export type CoupangProductItemCountAggregateOutputType = {
   skuInfo: number
   statusName: number
   listingId: number
+  excludedAt: number
   collectedAt: number
   createdAt: number
   updatedAt: number
@@ -112,6 +115,7 @@ export type CoupangProductItemMinAggregateInputType = {
   barcode?: true
   statusName?: true
   listingId?: true
+  excludedAt?: true
   collectedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -129,6 +133,7 @@ export type CoupangProductItemMaxAggregateInputType = {
   barcode?: true
   statusName?: true
   listingId?: true
+  excludedAt?: true
   collectedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -147,6 +152,7 @@ export type CoupangProductItemCountAggregateInputType = {
   skuInfo?: true
   statusName?: true
   listingId?: true
+  excludedAt?: true
   collectedAt?: true
   createdAt?: true
   updatedAt?: true
@@ -252,6 +258,7 @@ export type CoupangProductItemGroupByOutputType = {
   skuInfo: runtime.JsonValue | null
   statusName: string | null
   listingId: string | null
+  excludedAt: Date | null
   collectedAt: Date
   createdAt: Date
   updatedAt: Date
@@ -293,6 +300,7 @@ export type CoupangProductItemWhereInput = {
   skuInfo?: Prisma.JsonNullableFilter<"CoupangProductItem">
   statusName?: Prisma.StringNullableFilter<"CoupangProductItem"> | string | null
   listingId?: Prisma.StringNullableFilter<"CoupangProductItem"> | string | null
+  excludedAt?: Prisma.DateTimeNullableFilter<"CoupangProductItem"> | Date | string | null
   collectedAt?: Prisma.DateTimeFilter<"CoupangProductItem"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"CoupangProductItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CoupangProductItem"> | Date | string
@@ -313,6 +321,7 @@ export type CoupangProductItemOrderByWithRelationInput = {
   skuInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   statusName?: Prisma.SortOrderInput | Prisma.SortOrder
   listingId?: Prisma.SortOrderInput | Prisma.SortOrder
+  excludedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   collectedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -338,6 +347,7 @@ export type CoupangProductItemWhereUniqueInput = Prisma.AtLeast<{
   barcode?: Prisma.StringNullableFilter<"CoupangProductItem"> | string | null
   skuInfo?: Prisma.JsonNullableFilter<"CoupangProductItem">
   statusName?: Prisma.StringNullableFilter<"CoupangProductItem"> | string | null
+  excludedAt?: Prisma.DateTimeNullableFilter<"CoupangProductItem"> | Date | string | null
   collectedAt?: Prisma.DateTimeFilter<"CoupangProductItem"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"CoupangProductItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CoupangProductItem"> | Date | string
@@ -358,6 +368,7 @@ export type CoupangProductItemOrderByWithAggregationInput = {
   skuInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   statusName?: Prisma.SortOrderInput | Prisma.SortOrder
   listingId?: Prisma.SortOrderInput | Prisma.SortOrder
+  excludedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   collectedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -384,6 +395,7 @@ export type CoupangProductItemScalarWhereWithAggregatesInput = {
   skuInfo?: Prisma.JsonNullableWithAggregatesFilter<"CoupangProductItem">
   statusName?: Prisma.StringNullableWithAggregatesFilter<"CoupangProductItem"> | string | null
   listingId?: Prisma.StringNullableWithAggregatesFilter<"CoupangProductItem"> | string | null
+  excludedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CoupangProductItem"> | Date | string | null
   collectedAt?: Prisma.DateTimeWithAggregatesFilter<"CoupangProductItem"> | Date | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CoupangProductItem"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"CoupangProductItem"> | Date | string
@@ -400,6 +412,7 @@ export type CoupangProductItemCreateInput = {
   barcode?: string | null
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: string | null
+  excludedAt?: Date | string | null
   collectedAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -420,6 +433,7 @@ export type CoupangProductItemUncheckedCreateInput = {
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: string | null
   listingId?: string | null
+  excludedAt?: Date | string | null
   collectedAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -436,6 +450,7 @@ export type CoupangProductItemUpdateInput = {
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -456,6 +471,7 @@ export type CoupangProductItemUncheckedUpdateInput = {
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -474,6 +490,7 @@ export type CoupangProductItemCreateManyInput = {
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: string | null
   listingId?: string | null
+  excludedAt?: Date | string | null
   collectedAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -490,6 +507,7 @@ export type CoupangProductItemUpdateManyMutationInput = {
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -508,6 +526,7 @@ export type CoupangProductItemUncheckedUpdateManyInput = {
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -546,6 +565,7 @@ export type CoupangProductItemCountOrderByAggregateInput = {
   skuInfo?: Prisma.SortOrder
   statusName?: Prisma.SortOrder
   listingId?: Prisma.SortOrder
+  excludedAt?: Prisma.SortOrder
   collectedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -568,6 +588,7 @@ export type CoupangProductItemMaxOrderByAggregateInput = {
   barcode?: Prisma.SortOrder
   statusName?: Prisma.SortOrder
   listingId?: Prisma.SortOrder
+  excludedAt?: Prisma.SortOrder
   collectedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -585,6 +606,7 @@ export type CoupangProductItemMinOrderByAggregateInput = {
   barcode?: Prisma.SortOrder
   statusName?: Prisma.SortOrder
   listingId?: Prisma.SortOrder
+  excludedAt?: Prisma.SortOrder
   collectedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -685,6 +707,7 @@ export type CoupangProductItemCreateWithoutSpaceInput = {
   barcode?: string | null
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: string | null
+  excludedAt?: Date | string | null
   collectedAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -703,6 +726,7 @@ export type CoupangProductItemUncheckedCreateWithoutSpaceInput = {
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: string | null
   listingId?: string | null
+  excludedAt?: Date | string | null
   collectedAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -750,6 +774,7 @@ export type CoupangProductItemScalarWhereInput = {
   skuInfo?: Prisma.JsonNullableFilter<"CoupangProductItem">
   statusName?: Prisma.StringNullableFilter<"CoupangProductItem"> | string | null
   listingId?: Prisma.StringNullableFilter<"CoupangProductItem"> | string | null
+  excludedAt?: Prisma.DateTimeNullableFilter<"CoupangProductItem"> | Date | string | null
   collectedAt?: Prisma.DateTimeFilter<"CoupangProductItem"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"CoupangProductItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CoupangProductItem"> | Date | string
@@ -766,6 +791,7 @@ export type CoupangProductItemCreateWithoutListingInput = {
   barcode?: string | null
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: string | null
+  excludedAt?: Date | string | null
   collectedAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -784,6 +810,7 @@ export type CoupangProductItemUncheckedCreateWithoutListingInput = {
   barcode?: string | null
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: string | null
+  excludedAt?: Date | string | null
   collectedAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -816,6 +843,7 @@ export type CoupangProductItemUpdateWithoutListingInput = {
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -834,6 +862,7 @@ export type CoupangProductItemUncheckedUpdateWithoutListingInput = {
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -851,6 +880,7 @@ export type CoupangProductItemCreateManySpaceInput = {
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: string | null
   listingId?: string | null
+  excludedAt?: Date | string | null
   collectedAt: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -867,6 +897,7 @@ export type CoupangProductItemUpdateWithoutSpaceInput = {
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -885,6 +916,7 @@ export type CoupangProductItemUncheckedUpdateWithoutSpaceInput = {
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -902,6 +934,7 @@ export type CoupangProductItemUncheckedUpdateManyWithoutSpaceInput = {
   skuInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   statusName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   listingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   collectedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -922,6 +955,7 @@ export type CoupangProductItemSelect<ExtArgs extends runtime.Types.Extensions.In
   skuInfo?: boolean
   statusName?: boolean
   listingId?: boolean
+  excludedAt?: boolean
   collectedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -942,6 +976,7 @@ export type CoupangProductItemSelectCreateManyAndReturn<ExtArgs extends runtime.
   skuInfo?: boolean
   statusName?: boolean
   listingId?: boolean
+  excludedAt?: boolean
   collectedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -962,6 +997,7 @@ export type CoupangProductItemSelectUpdateManyAndReturn<ExtArgs extends runtime.
   skuInfo?: boolean
   statusName?: boolean
   listingId?: boolean
+  excludedAt?: boolean
   collectedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -982,12 +1018,13 @@ export type CoupangProductItemSelectScalar = {
   skuInfo?: boolean
   statusName?: boolean
   listingId?: boolean
+  excludedAt?: boolean
   collectedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CoupangProductItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "sellerProductId" | "itemName" | "rgVendorItemId" | "rgSalePrice" | "mpVendorItemId" | "mpSalePrice" | "barcode" | "skuInfo" | "statusName" | "listingId" | "collectedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["coupangProductItem"]>
+export type CoupangProductItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "sellerProductId" | "itemName" | "rgVendorItemId" | "rgSalePrice" | "mpVendorItemId" | "mpSalePrice" | "barcode" | "skuInfo" | "statusName" | "listingId" | "excludedAt" | "collectedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["coupangProductItem"]>
 export type CoupangProductItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   listing?: boolean | Prisma.CoupangProductItem$listingArgs<ExtArgs>
@@ -1020,6 +1057,7 @@ export type $CoupangProductItemPayload<ExtArgs extends runtime.Types.Extensions.
     skuInfo: runtime.JsonValue | null
     statusName: string | null
     listingId: string | null
+    excludedAt: Date | null
     collectedAt: Date
     createdAt: Date
     updatedAt: Date
@@ -1460,6 +1498,7 @@ export interface CoupangProductItemFieldRefs {
   readonly skuInfo: Prisma.FieldRef<"CoupangProductItem", 'Json'>
   readonly statusName: Prisma.FieldRef<"CoupangProductItem", 'String'>
   readonly listingId: Prisma.FieldRef<"CoupangProductItem", 'String'>
+  readonly excludedAt: Prisma.FieldRef<"CoupangProductItem", 'DateTime'>
   readonly collectedAt: Prisma.FieldRef<"CoupangProductItem", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"CoupangProductItem", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"CoupangProductItem", 'DateTime'>

@@ -20,6 +20,8 @@ export async function GET(req: NextRequest) {
     where: {
       spaceId: resolved.space.id,
       listingId: null,
+      // 매칭 안 함으로 지정한 옵션은 연결 후보로 보이지 않게 한다.
+      excludedAt: null,
       ...(tokens.length > 0
         ? { AND: tokens.map((t) => ({ itemName: { contains: t, mode: 'insensitive' as const } })) }
         : {}),
