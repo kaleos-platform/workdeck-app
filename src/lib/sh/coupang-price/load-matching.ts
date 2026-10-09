@@ -26,13 +26,17 @@ export type MatchingRow = {
   mpSalePrice: number | null
   collectedAt: string
   status: MatchStatus
+  /** 같은 판매채널 상품을 노리는(또는 이미 연결된) 다른 쿠팡 옵션 — 중복 리스팅 판단용 */
+  conflicts: Array<{ id: string; label: string }>
+  /** 상품명에 '판매중지' — 매칭 안 함 추천 */
+  stopSuggested: boolean
   /** 자동 후보의 근거 — 이 쿠팡 옵션의 SKU 가 재고 매핑에 있으면 그 SKU */
   basisSku: string | null
   listing: MatchingListing | null
   candidates: MatchingListing[]
 }
 
-const LISTING_SELECT = {
+export const LISTING_SELECT = {
   id: true,
   displayName: true,
   retailPrice: true,
@@ -45,7 +49,7 @@ const LISTING_SELECT = {
   },
 } as const
 
-type LoadedListing = {
+export type LoadedListing = {
   id: string
   displayName: string
   retailPrice: unknown
@@ -56,7 +60,7 @@ type LoadedListing = {
   }>
 }
 
-function summarize(l: LoadedListing): MatchingListing {
+export function summarize(l: LoadedListing): MatchingListing {
   // 세트가 여러 상품으로 구성되면 옵션명만으로는 구분이 안 된다 — 그때만 상품명을 붙인다.
   const multiProduct = new Set(l.items.map((it) => productDisplayName(it.option.product))).size > 1
   return {
@@ -78,6 +82,16 @@ const STATUS_ORDER: Record<MatchStatus, number> = {
   AMBIGUOUS: 2,
   NONE: 3,
   CONFIRMED: 4,
+  EXCLUDED: 5,
+}
+
+/** 쿠팡 리스팅 채널 = 로켓그로스 채널의 대표 채널(판매자배송). 대표가 없으면 RG 채널 자신. */
+export async function resolveCoupangListingChannelId(spaceId: string): Promise<string | null> {
+  const rgChannel = await prisma.channel.findFirst({
+    where: { spaceId, externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH },
+    select: { id: true, representativeChannelId: true },
+  })
+  return rgChannel ? (rgChannel.representativeChannelId ?? rgChannel.id) : null
 }
 
 export async function loadMatchingRows(spaceId: string): Promise<MatchingRow[]> {
@@ -93,16 +107,12 @@ export async function loadMatchingRows(spaceId: string): Promise<MatchingRow[]> 
       mpSalePrice: true,
       collectedAt: true,
       listingId: true,
+      excludedAt: true,
     },
   })
   if (items.length === 0) return []
 
-  // 쿠팡 리스팅 채널 = 로켓그로스 채널의 대표 채널(판매자배송). 대표가 없으면 RG 채널 자신.
-  const rgChannel = await prisma.channel.findFirst({
-    where: { spaceId, externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH },
-    select: { id: true, representativeChannelId: true },
-  })
-  const listingChannelId = rgChannel ? (rgChannel.representativeChannelId ?? rgChannel.id) : null
+  const listingChannelId = await resolveCoupangListingChannelId(spaceId)
   const listings = listingChannelId
     ? await prisma.productListing.findMany({
         where: { spaceId, channelId: listingChannelId },
@@ -144,7 +154,7 @@ export async function loadMatchingRows(spaceId: string): Promise<MatchingRow[]> 
   }
 
   const computed = computeMatchCandidates({
-    items,
+    items: items.map((i) => ({ ...i, excluded: i.excludedAt != null })),
     skuByVendorItemId,
     compositionBySku,
     listings: listings.map((l) => ({ id: l.id, items: l.items })),
@@ -164,14 +174,21 @@ export async function loadMatchingRows(spaceId: string): Promise<MatchingRow[]> 
   const listingOf = (id: string): MatchingListing =>
     listingById.get(id) ?? { id, name: id, retailPrice: null, composition: [] }
 
+  const productNameOf = (i: { rgVendorItemId: string | null }) =>
+    i.rgVendorItemId ? (productNameByVendorItemId.get(i.rgVendorItemId) ?? null) : null
+  const itemById = new Map(items.map((i) => [i.id, i]))
+  const labelOf = (id: string) => {
+    const it = itemById.get(id)
+    if (!it) return id
+    return [productNameOf(it), it.itemName].filter(Boolean).join(' / ') || it.sellerProductId
+  }
+
   return items
     .map((i) => {
       const c = computed.get(i.id)!
       return {
         id: i.id,
-        productName: i.rgVendorItemId
-          ? (productNameByVendorItemId.get(i.rgVendorItemId) ?? null)
-          : null,
+        productName: productNameOf(i),
         itemName: i.itemName,
         sellerProductId: i.sellerProductId,
         rgVendorItemId: i.rgVendorItemId,
@@ -180,6 +197,8 @@ export async function loadMatchingRows(spaceId: string): Promise<MatchingRow[]> 
         mpSalePrice: i.mpSalePrice,
         collectedAt: i.collectedAt.toISOString(),
         status: c.status,
+        conflicts: c.conflictItemIds.map((id) => ({ id, label: labelOf(id) })),
+        stopSuggested: (productNameOf(i) ?? i.itemName ?? '').includes('판매중지'),
         basisSku:
           i.rgVendorItemId && compositionBySku.has(skuByVendorItemId.get(i.rgVendorItemId) ?? '')
             ? (skuByVendorItemId.get(i.rgVendorItemId) ?? null)

@@ -55,7 +55,10 @@ beforeEach(() => {
   ;(computePriceTargets as jest.Mock).mockResolvedValue({
     channelId: 'ch',
     channelAxis: 'RG',
-    targets: [target(), target({ listingId: 'L2', vendorItemId: null, blockedReason: '연결 안 됨' })],
+    targets: [
+      target(),
+      target({ listingId: 'L2', vendorItemId: null, blockedReason: '연결 안 됨' }),
+    ],
     ambiguous: [],
     unmatched: [],
   })
@@ -75,7 +78,14 @@ test('반영 가능한 타깃만 담아 apActive=true 잡을 승인 없이 만�
     channelId: 'ch',
     apActive: true,
     targets: [
-      { listingId: 'L1', vendorItemId: 'rg-1', listingName: 'A1', currentPrice: 21_000, targetPrice: 20_000, apMinSalePrice: 15_000 },
+      {
+        listingId: 'L1',
+        vendorItemId: 'rg-1',
+        listingName: 'A1',
+        currentPrice: 21_000,
+        targetPrice: 20_000,
+        apMinSalePrice: 15_000,
+      },
     ],
   })
 })
@@ -94,7 +104,11 @@ test('MEMBER 는 403', async () => {
 
 test('반영 가능한 타깃이 0개면 400', async () => {
   ;(computePriceTargets as jest.Mock).mockResolvedValue({
-    channelId: 'ch', channelAxis: 'RG', targets: [target({ blockedReason: 'VAT 미포함' })], ambiguous: [], unmatched: [],
+    channelId: 'ch',
+    channelAxis: 'RG',
+    targets: [target({ blockedReason: 'VAT 미포함' })],
+    ambiguous: [],
+    unmatched: [],
   })
   expect((await call()).status).toBe(400)
 })
@@ -102,7 +116,9 @@ test('반영 가능한 타깃이 0개면 400', async () => {
 test('미리보기 이후 반영 대상이 바뀌면 409 — 사용자가 못 본 대상이 끼어들지 않게', async () => {
   const res = await call({ expectedListingIds: ['L1', 'L9'] })
   expect(res.status).toBe(409)
-  expect((await res.json()).message).toBe('미리보기 이후 반영 대상이 바뀌었습니다. 미리보기를 다시 불러온 뒤 시도하세요')
+  expect((await res.json()).message).toBe(
+    '미리보기 이후 반영 대상이 바뀌었습니다. 미리보기를 다시 불러온 뒤 시도하세요'
+  )
   expect(job.findFirst).not.toHaveBeenCalled()
   expect(job.create).not.toHaveBeenCalled()
 })
@@ -113,7 +129,11 @@ test('미리보기 대상과 같으면 그대로 반영', async () => {
 
 test('미리보기 대상이 전부 막혔어도(다른 탭에서 해제) 400 이 아니라 409 — 미리보기를 다시 불러오게', async () => {
   ;(computePriceTargets as jest.Mock).mockResolvedValue({
-    channelId: 'ch', channelAxis: 'RG', targets: [target({ vendorItemId: null, blockedReason: '연결 안 됨' })], ambiguous: [], unmatched: [],
+    channelId: 'ch',
+    channelAxis: 'RG',
+    targets: [target({ vendorItemId: null, blockedReason: '연결 안 됨' })],
+    ambiguous: [],
+    unmatched: [],
   })
   const res = await call({ expectedListingIds: ['L1'] })
   expect(res.status).toBe(409)

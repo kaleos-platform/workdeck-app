@@ -1,11 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ExternalLink, RefreshCw } from 'lucide-react'
+import { ExternalLink, RefreshCw, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ const STATUS_LABEL: Record<MatchStatus, string> = {
   AMBIGUOUS: '모호',
   NONE: '수동',
   CONFIRMED: '확정',
+  EXCLUDED: '매칭 안 함',
 }
 const STATUS_CLASS: Record<MatchStatus, string> = {
   NEEDS_REVIEW: 'border-amber-400 text-amber-700',
@@ -39,7 +41,13 @@ const STATUS_CLASS: Record<MatchStatus, string> = {
   AMBIGUOUS: 'border-amber-300 text-amber-700',
   NONE: 'text-muted-foreground',
   CONFIRMED: 'border-emerald-300 text-emerald-700',
+  EXCLUDED: 'border-slate-300 text-slate-500',
 }
+
+type Filter = MatchStatus | 'ALL'
+
+/** 다른 상품 선택 팝업의 검색 결과 행 */
+type PickListing = MatchingListing & { linkedItemId: string | null }
 
 async function send(url: string, method: string, body?: unknown) {
   const res = await fetch(url, {
@@ -81,6 +89,11 @@ function CoupangItemLabel({ r }: { r: MatchingRow }) {
         </a>
       </span>
       {r.productName && r.itemName && <span className="block text-sm">옵션: {r.itemName}</span>}
+      {r.stopSuggested && r.status !== 'EXCLUDED' && (
+        <Badge variant="outline" className="mt-0.5 border-slate-300 text-[11px] text-slate-500">
+          판매중지 — 매칭 안 함 추천
+        </Badge>
+      )}
       <span className="block text-xs text-muted-foreground">
         RG {r.rgVendorItemId ?? '—'} · 판매자배송 {r.mpVendorItemId ?? '—'}
       </span>
@@ -132,6 +145,11 @@ export function CoupangMatchingView() {
   // 불리언이 아니라 id 로 들고 있어야 이전 잡의 결과를 새 잡으로 착각하지 않는다.
   const [syncJobId, setSyncJobId] = useState<string | null>(null)
   const syncing = syncJobId != null
+  // 목록 필터 — ALL 은 매칭 안 함을 뺀 전체
+  const [filter, setFilter] = useState<Filter>('ALL')
+  const [query, setQuery] = useState('')
+  // 다른 상품 선택 팝업 대상
+  const [pickRow, setPickRow] = useState<MatchingRow | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -212,26 +230,33 @@ export function CoupangMatchingView() {
       AMBIGUOUS: 0,
       NONE: 0,
       CONFIRMED: 0,
+      EXCLUDED: 0,
     }
     for (const r of rows) c[r.status] += 1
     return c
   }, [rows])
 
   async function confirm(
-    pairs: Array<{ coupangProductItemId: string; listingId: string }>
+    pairs: Array<{ coupangProductItemId: string; listingId: string }>,
+    explicit = false
   ): Promise<boolean> {
     setBusy(true)
     try {
-      const r = (await send('/api/sh/coupang-price/matching/confirm', 'POST', { pairs })) as {
+      const r = (await send('/api/sh/coupang-price/matching/confirm', 'POST', {
+        pairs,
+        explicit,
+      })) as {
         confirmed: number
         skipped: Array<{ reason: string }>
       }
-      toast.success(
-        `${r.confirmed}건 확정${r.skipped.length ? ` · ${r.skipped.length}건 건너뜀` : ''}`
-      )
+      if (r.confirmed > 0) {
+        toast.success(
+          `${r.confirmed}건 확정${r.skipped.length ? ` · ${r.skipped.length}건 건너뜀` : ''}`
+        )
+      }
       if (r.skipped.length) toast.warning(r.skipped[0].reason)
       await load()
-      return true
+      return r.confirmed > 0
     } catch (err) {
       toast.error(err instanceof Error ? err.message : '확정 실패')
       return false
@@ -252,6 +277,22 @@ export function CoupangMatchingView() {
     }
   }
 
+  async function setExcluded(id: string, excluded: boolean) {
+    setBusy(true)
+    try {
+      await send('/api/sh/coupang-price/matching/exclude', 'POST', {
+        coupangProductItemId: id,
+        excluded,
+      })
+      toast.success(excluded ? '매칭 안 함으로 바꿨습니다' : '매칭 안 함을 해제했습니다')
+      await load()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '변경 실패')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function syncNow() {
     setBusy(true)
     try {
@@ -265,7 +306,19 @@ export function CoupangMatchingView() {
     }
   }
 
-  const candidateRows = rows.filter((r) => r.status === 'CANDIDATE' && r.candidates.length === 1)
+  const q = query.trim().toLowerCase()
+  const visibleRows = rows.filter((r) => {
+    if (filter === 'ALL' ? r.status === 'EXCLUDED' : r.status !== filter) return false
+    if (!q) return true
+    return [r.productName, r.itemName, r.listing?.name, ...r.candidates.map((c) => c.name)]
+      .filter(Boolean)
+      .some((t) => t!.toLowerCase().includes(q))
+  })
+
+  // 보이는 목록 기준 — 필터·검색 중엔 화면에 보이는 후보만 일괄 확정한다.
+  const candidateRows = visibleRows.filter(
+    (r) => r.status === 'CANDIDATE' && r.candidates.length === 1
+  )
   const candidatePairs = candidateRows.map((r) => ({
     coupangProductItemId: r.id,
     listingId: r.candidates[0].id,
@@ -274,11 +327,30 @@ export function CoupangMatchingView() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        {(Object.keys(STATUS_LABEL) as MatchStatus[]).map((s) => (
-          <Badge key={s} variant="outline" className={STATUS_CLASS[s]}>
-            {STATUS_LABEL[s]} {counts[s]}
+        <button type="button" onClick={() => setFilter('ALL')}>
+          <Badge variant={filter === 'ALL' ? 'default' : 'outline'}>
+            전체 {rows.length - counts.EXCLUDED}
           </Badge>
+        </button>
+        {(Object.keys(STATUS_LABEL) as MatchStatus[]).map((s) => (
+          <button key={s} type="button" onClick={() => setFilter(filter === s ? 'ALL' : s)}>
+            <Badge
+              variant="outline"
+              className={`${STATUS_CLASS[s]} ${filter === s ? 'ring-2 ring-offset-1' : ''}`}
+            >
+              {STATUS_LABEL[s]} {counts[s]}
+            </Badge>
+          </button>
         ))}
+        <div className="relative w-56">
+          <Search className="absolute top-1/2 left-2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="상품명·옵션 검색"
+            className="h-8 pl-7 text-sm"
+          />
+        </div>
         <div className="ml-auto flex gap-2">
           <Button size="sm" variant="outline" disabled={busy || syncing} onClick={syncNow}>
             <RefreshCw className={`mr-1 h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
@@ -306,7 +378,7 @@ export function CoupangMatchingView() {
               </TableHead>
               <TableHead className="w-[90px]">상태</TableHead>
               <TableHead>판매채널 상품</TableHead>
-              <TableHead className="w-[90px]" />
+              <TableHead className="w-[120px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -322,9 +394,15 @@ export function CoupangMatchingView() {
                   수집된 쿠팡 상품이 없습니다. “지금 쿠팡 상품 불러오기”를 눌러주세요
                 </TableCell>
               </TableRow>
+            ) : visibleRows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
+                  조건에 맞는 쿠팡 옵션이 없습니다
+                </TableCell>
+              </TableRow>
             ) : (
-              rows.map((r) => (
-                <TableRow key={r.id}>
+              visibleRows.map((r) => (
+                <TableRow key={r.id} className={r.status === 'EXCLUDED' ? 'opacity-60' : undefined}>
                   <TableCell className="break-words whitespace-normal">
                     <CoupangItemLabel r={r} />
                   </TableCell>
@@ -353,10 +431,18 @@ export function CoupangMatchingView() {
                       </div>
                     ) : r.candidates.length > 0 ? (
                       <div className="space-y-1">
-                        {r.status === 'AMBIGUOUS' && (
+                        {r.status === 'AMBIGUOUS' && r.conflicts.length > 0 && (
                           <p className="text-xs text-amber-700">
-                            같은 구성의 판매채널 상품이 여러 개이거나 다른 쿠팡 옵션도 이 상품을
-                            가리킵니다 — 맞는 것을 골라 확정하세요
+                            같은 판매채널 상품을 다른 쿠팡 옵션도 가리킵니다:{' '}
+                            <span className="font-medium">
+                              {r.conflicts.map((c) => c.label).join(', ')}
+                            </span>{' '}
+                            — 가격을 쓸 쪽 하나만 확정하고, 나머지는 매칭 안 함으로 바꾸세요
+                          </p>
+                        )}
+                        {r.status === 'AMBIGUOUS' && r.conflicts.length === 0 && (
+                          <p className="text-xs text-amber-700">
+                            같은 구성의 판매채널 상품이 여러 개입니다 — 맞는 것을 골라 확정하세요
                           </p>
                         )}
                         {r.candidates.map((c) => (
@@ -382,22 +468,60 @@ export function CoupangMatchingView() {
                       </div>
                     ) : (
                       <span className="text-xs text-muted-foreground">
-                        가격시뮬 반영 화면의 “쿠팡 옵션 연결”로 직접 연결하세요
+                        {r.status === 'EXCLUDED'
+                          ? '매칭 안 함 — 가격 반영 대상이 아닙니다'
+                          : r.basisSku
+                            ? `재고 매핑 SKU ${r.basisSku} 와 같은 구성의 판매채널 상품이 없습니다 — “다른 상품 선택”으로 고르세요`
+                            : '자동 후보가 없습니다 — “다른 상품 선택”으로 고르세요'}
                       </span>
                     )}
                   </TableCell>
                   <TableCell>
-                    {r.listing && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs"
-                        disabled={busy}
-                        onClick={() => unlink(r.id)}
-                      >
-                        연결 해제
-                      </Button>
-                    )}
+                    <div className="flex flex-col items-stretch gap-1">
+                      {r.status === 'EXCLUDED' ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs"
+                          disabled={busy}
+                          onClick={() => setExcluded(r.id, false)}
+                        >
+                          매칭 안 함 해제
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs"
+                            disabled={busy}
+                            onClick={() => setPickRow(r)}
+                          >
+                            다른 상품 선택
+                          </Button>
+                          {r.listing && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-xs"
+                              disabled={busy}
+                              onClick={() => unlink(r.id)}
+                            >
+                              연결 해제
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-muted-foreground"
+                            disabled={busy}
+                            onClick={() => setExcluded(r.id, true)}
+                          >
+                            매칭 안 함
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -459,6 +583,127 @@ export function CoupangMatchingView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ListingPickerDialog
+        row={pickRow}
+        busy={busy}
+        onClose={() => setPickRow(null)}
+        onPick={async (listingId) => {
+          if (!pickRow) return
+          // 서버가 기존 연결 교체·매칭 안 함 해제를 한 번의 update 로 처리한다(explicit).
+          const ok = await confirm([{ coupangProductItemId: pickRow.id, listingId }], true)
+          if (ok) setPickRow(null)
+        }}
+      />
     </div>
+  )
+}
+
+/** 다른 상품 선택 — 쿠팡 리스팅 채널의 판매채널 상품을 검색해 고른다. */
+function ListingPickerDialog({
+  row,
+  busy,
+  onClose,
+  onPick,
+}: {
+  row: MatchingRow | null
+  busy: boolean
+  onClose: () => void
+  onPick: (listingId: string) => void | Promise<void>
+}) {
+  const [search, setSearch] = useState('')
+  const [results, setResults] = useState<PickListing[]>([])
+  const [loading, setLoading] = useState(false)
+
+  // 열릴 때 쿠팡 옵션명으로 검색을 시작한다. 이전 행의 결과가 잠깐이라도 보이지 않게 비운다.
+  useEffect(() => {
+    setResults([])
+    if (row) setSearch(row.itemName ?? '')
+  }, [row])
+
+  useEffect(() => {
+    if (!row) return
+    let cancelled = false
+    const t = setTimeout(async () => {
+      setLoading(true)
+      try {
+        const d = (await send(
+          `/api/sh/coupang-price/listings?search=${encodeURIComponent(search)}&itemId=${encodeURIComponent(row.id)}`,
+          'GET'
+        )) as { listings: PickListing[] }
+        if (!cancelled) setResults(d.listings)
+      } catch (err) {
+        if (!cancelled) toast.error(err instanceof Error ? err.message : '검색 실패')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }, 300)
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
+  }, [row, search])
+
+  return (
+    <Dialog open={row != null} onOpenChange={(v) => !busy && !v && onClose()}>
+      <DialogContent className="max-h-[85vh] max-w-3xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>판매채널 상품 선택</DialogTitle>
+          <DialogDescription>
+            {row && (
+              <>
+                <span className="font-medium text-foreground">
+                  {[row.productName, row.itemName].filter(Boolean).join(' / ')}
+                </span>{' '}
+                에 연결할 판매채널 상품을 고르세요. 구성(옵션×수량)이 같은지 확인하세요. 다른 쿠팡
+                옵션에 이미 연결된 상품은 목록에 나오지 않습니다.
+              </>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="판매채널 상품명 검색"
+          className="h-9"
+        />
+        <div className="space-y-1">
+          {loading ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">검색 중...</p>
+          ) : results.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              검색 결과가 없습니다 — 검색어를 줄여보세요
+            </p>
+          ) : (
+            results.map((l) => {
+              const takenByOther = l.linkedItemId != null && l.linkedItemId !== row?.id
+              return (
+                <ListingCard
+                  key={l.id}
+                  listing={l}
+                  action={
+                    takenByOther ? (
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        다른 쿠팡 옵션에 연결됨
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 shrink-0 text-xs"
+                        disabled={busy || l.linkedItemId === row?.id}
+                        onClick={() => onPick(l.id)}
+                      >
+                        {l.linkedItemId === row?.id ? '연결됨' : '이 상품으로 확정'}
+                      </Button>
+                    )
+                  }
+                />
+              )
+            })
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -11738,6 +11738,7 @@ export const CoupangProductItemScalarFieldEnum = {
   skuInfo: 'skuInfo',
   statusName: 'statusName',
   listingId: 'listingId',
+  excludedAt: 'excludedAt',
   collectedAt: 'collectedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
