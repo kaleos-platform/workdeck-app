@@ -58,6 +58,7 @@ type JobView = {
 
 const POLL_MS = 2_000
 const POLL_LIMIT_MS = 3 * 60_000
+const SLOW_POLL_MS = 10_000
 const isDone = (s: JobView['status']) => s === 'SUCCEEDED' || s === 'PARTIAL' || s === 'FAILED'
 
 function fmt(n: number): string {
@@ -209,6 +210,13 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   const [pollAnchor, setPollAnchor] = useState<number | null>(null)
   const [timedOut, setTimedOut] = useState(false)
   const [tick, setTick] = useState(0)
+  // 열 때 최근 잡 조회가 끝나기 전엔 반영을 막는다(진행 중 잡 위에 또 쓰지 않게).
+  const [jobLoaded, setJobLoaded] = useState(false)
+  // 비동기 응답이 돌아왔을 때 대상이 바뀌었는지 판단용
+  const targetRef = useRef(target)
+  useEffect(() => {
+    targetRef.current = target
+  }, [target])
 
   const fetchLatestJob = useCallback(async (channelId: string): Promise<JobView | null> => {
     const res = await fetch(`/api/sh/coupang-price/jobs?channelId=${encodeURIComponent(channelId)}`)
@@ -221,6 +229,7 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
     setTimedOut(false)
     setStep('edit')
     setShowAmbiguous(false)
+    setJobLoaded(false)
     if (!target) {
       setJob(null)
       setPollAnchor(null)
@@ -231,13 +240,16 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
       .then((j) => {
         if (cancelled) return
         setJob(j)
+        setJobLoaded(true)
         // 미완료 job 은 생성 시각 기준으로 3분을 세고, 바로 '반영 중' 단계로 연다.
         if (j && !isDone(j.status)) {
           setPollAnchor(new Date(j.createdAt).getTime())
           setStep('applying')
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setJobLoaded(true)
+      })
     return () => {
       cancelled = true
     }
@@ -255,23 +267,32 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
     return () => clearTimeout(t)
   }, [running, pollAnchor])
 
-  // 진행 중이면 2초 간격 폴링. 실패해도 타임아웃까지 계속 재시도한다.
+  // 진행 중이면 2초 간격 폴링. 3분이 지나도 멈추지 않고 10초 간격으로 계속 확인한다
+  // (워커가 늦게 처리해도 결과 단계로 넘어가게). 실패해도 다음 틱에 재시도.
   useEffect(() => {
-    if (!target || !running || timedOut) return
-    const t = setTimeout(async () => {
-      try {
-        const next = await fetchLatestJob(target.channelId)
-        if (next) setJob(next)
-        if (next && isDone(next.status)) {
-          setStep('result')
-          void loadPreview(target, priceRef.current.priceR, priceRef.current.floorR)
+    if (!target || !running) return
+    let cancelled = false
+    const t = setTimeout(
+      async () => {
+        try {
+          const next = await fetchLatestJob(target.channelId)
+          if (cancelled || targetRef.current?.channelId !== target.channelId) return
+          if (next) setJob(next)
+          if (next && isDone(next.status)) {
+            setStep((cur) => (cur === 'applying' ? 'result' : cur))
+            void loadPreview(target, priceRef.current.priceR, priceRef.current.floorR)
+          }
+        } catch {
+          // 일시 오류 — 다음 틱에 재시도
         }
-      } catch {
-        // 일시 오류 — 다음 틱에 재시도
-      }
-      setTick((n) => n + 1)
-    }, POLL_MS)
-    return () => clearTimeout(t)
+        if (!cancelled) setTick((n) => n + 1)
+      },
+      timedOut ? SLOW_POLL_MS : POLL_MS
+    )
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
   }, [target, running, timedOut, tick, fetchLatestJob, loadPreview])
 
   async function handleSubmit() {
@@ -294,6 +315,8 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
         }),
       })
       const data = await res.json().catch(() => ({}))
+      // 응답이 오는 사이 다른 채널로 바뀌었으면 이 화면 상태를 건드리지 않는다.
+      if (targetRef.current?.channelId !== target.channelId) return
       if (res.status === 409 && data?.code === 'TARGETS_CHANGED')
         void loadPreview(target, priceR, floorR)
       if (!res.ok) throw new Error(data?.message ?? `반영 요청 실패 (HTTP ${res.status})`)
@@ -333,7 +356,15 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
   // 쿠팡 규칙: 자동조정 최저가 < 판매가.
   const floorTooHigh = priceR > 0 && floorR >= priceR
   const previewFresh = previewedKey === currentKey && !loading
-  const canSubmit = priceValid && floorValid && !floorTooHigh && previewFresh && writableCount > 0
+  // 진행 중인 잡이 있으면(3분 초과 포함) 새 반영을 막는다 — 같은 옵션에 쓰기가 겹치지 않게.
+  const canSubmit =
+    jobLoaded &&
+    !running &&
+    priceValid &&
+    floorValid &&
+    !floorTooHigh &&
+    previewFresh &&
+    writableCount > 0
   const simFloor = target ? ceilMinPriceTo10(target.minMarginPrice) : 0
   const simPrice = target ? roundPriceTo10(target.salePrice) : 0
 
@@ -612,14 +643,18 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                 <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
                   취소
                 </Button>
-                <Button onClick={handleSubmit} disabled={submitting || inFlight || !canSubmit}>
+                <Button onClick={handleSubmit} disabled={submitting || !canSubmit}>
                   {submitting
                     ? '요청 중...'
-                    : !priceValid || !floorValid
-                      ? '가격을 입력하세요'
-                      : !previewFresh
-                        ? '미리보기 갱신 중...'
-                        : `쿠팡에 반영 (${writableCount}개)`}
+                    : !jobLoaded
+                      ? '확인 중...'
+                      : running
+                        ? '이전 반영 처리 중...'
+                        : !priceValid || !floorValid
+                          ? '가격을 입력하세요'
+                          : !previewFresh
+                            ? '미리보기 갱신 중...'
+                            : `쿠팡에 반영 (${writableCount}개)`}
                 </Button>
               </DialogFooter>
             </>
@@ -725,17 +760,8 @@ export function CoupangPriceApplyDialog({ target, onOpenChange }: Props) {
                     </p>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setStep('edit')}>
-                        이전 단계로
+                        {allOk ? '이전 단계로' : '이전 단계로 — 확인 후 다시 반영'}
                       </Button>
-                      {!allOk && (
-                        <Button
-                          variant="outline"
-                          onClick={handleSubmit}
-                          disabled={submitting || !canSubmit}
-                        >
-                          {submitting ? '요청 중...' : `다시 반영 (₩${fmt(priceR)})`}
-                        </Button>
-                      )}
                       <Button onClick={() => onOpenChange(false)}>닫기</Button>
                     </DialogFooter>
                   </>
