@@ -65,6 +65,7 @@ const db = { $transaction: jest.fn(async (fn) => fn(tx)) } as unknown as Pick<
 beforeEach(() => {
   jest.clearAllMocks()
   process.env.ENCRYPTION_KEY = 'ab'.repeat(32)
+  process.env.ENCRYPTION_KEY_V1 = 'd'.repeat(64) // v1 루트 — v0 키(ENCRYPTION_KEY)와 다른 값
   process.env.HIRING_HMAC_KEY = 'cd'.repeat(32)
   application = null
   records = []

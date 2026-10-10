@@ -11,7 +11,7 @@ import { z } from 'zod'
 import { getUser } from '@/hooks/use-user'
 import { errorResponse, assertRole, resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
-import { encryptPii } from '@/lib/del/encryption'
+import { encryptField } from '@/lib/crypto/field-crypto'
 import { getMonthUsage } from '@/lib/ai/credit'
 import { workdeckProvider } from '@/lib/ai/resolve'
 
@@ -105,7 +105,7 @@ export async function PUT(req: NextRequest) {
 
   const keyFields = apiKey
     ? (() => {
-        const { encrypted, iv } = encryptPii(apiKey)
+        const { encrypted, iv } = encryptField('ai-key', apiKey)
         return { encryptedApiKey: encrypted, apiKeyIv: iv }
       })()
     : {}
@@ -113,7 +113,7 @@ export async function PUT(req: NextRequest) {
   const data = {
     mode,
     provider: mode === 'BYOK' ? (provider ?? null) : null,
-    model: mode === 'BYOK' ? (model || null) : null,
+    model: mode === 'BYOK' ? model || null : null,
     ...keyFields,
     // 키나 provider 가 바뀌면 이전 검증 결과는 무의미
     ...(apiKey || provider ? { lastVerifiedAt: null, lastError: null } : {}),

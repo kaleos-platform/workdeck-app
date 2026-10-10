@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { errorResponse, assertRole } from '@/lib/api-helpers'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
+import { decryptField, fieldWriteVersion, isV1, V1_IV_MARKER } from '@/lib/crypto/field-crypto'
 import { resolveCollectionAuth } from '@/lib/collection/resolve-workspace'
 
 // accessKey 마스킹 — 앞 4자만 노출
@@ -101,18 +102,36 @@ export async function PUT(request: NextRequest) {
   let secretKeyUpdate: { secretKey: string; encryptionIv: string } | Record<string, never> = {}
   let secretKeyCreate: { secretKey: string; encryptionIv: string } | null = null
 
+  // 암호문 직접 입력은 워커만, 인증되는 v1(GCM) 암호문만 받는다.
+  if (body.encryptionIv !== undefined && auth.kind !== 'worker') {
+    return errorResponse('encryptionIv 는 받을 수 없습니다. secretKey 를 평문으로 보내 주세요', 400)
+  }
+
   if (body.secretKey) {
-    if (body.encryptionIv) {
-      // 워커에서 이미 암호화된 값을 재전달
+    if (body.encryptionIv !== undefined) {
+      // v0(CBC)는 IV 를 바꿔도 첫 블록만 달라져 복호화가 성공한다 — 재전달은 v1 만.
+      // v0 쓰기 기간(4a)에는 v1 행을 만들지 않는다 — CBC 전용 배포로 롤백해도 읽을 수 있게.
+      if (
+        fieldWriteVersion('collection-credential') === 'v0' ||
+        !isV1(body.secretKey) ||
+        body.encryptionIv !== V1_IV_MARKER
+      ) {
+        return errorResponse('암호문 형식이 올바르지 않습니다', 400)
+      }
+      try {
+        decryptField('collection-credential', body.secretKey, body.encryptionIv)
+      } catch {
+        return errorResponse('암호문 형식이 올바르지 않습니다', 400)
+      }
       secretKeyUpdate = { secretKey: body.secretKey, encryptionIv: body.encryptionIv }
     } else {
       // 폼에서 평문 전달 → 암호화
       let encrypted: { encrypted: string; iv: string }
       try {
         encrypted = encryptSecret(body.secretKey)
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : 'secretKey 암호화에 실패했습니다'
-        return errorResponse(msg, 500)
+      } catch {
+        // 오류 원문은 응답에 넣지 않는다(키 이름·내부 상태 노출 방지).
+        return errorResponse('secretKey 암호화에 실패했습니다', 500)
       }
       secretKeyUpdate = { secretKey: encrypted.encrypted, encryptionIv: encrypted.iv }
     }

@@ -40,7 +40,8 @@ import {
 import { resolveEntitlement, ensureTrialStarted } from '@/lib/billing/entitlement'
 
 const SPACE_ID = 'e2e-billing-space-0001'
-const RUN = !!(process.env.DATABASE_URL || process.env.DIRECT_URL) && !!process.env.ENCRYPTION_KEY
+const RUN =
+  !!(process.env.DATABASE_URL || process.env.DIRECT_URL) && !!process.env.ENCRYPTION_KEY_V1
 
 async function cleanup() {
   await prisma.billingCharge.deleteMany({ where: { spaceId: SPACE_ID } })

@@ -112,6 +112,8 @@ function encryptV0(plaintext: string): StoredField {
 
 // 부팅 검사(src/instrumentation.ts) — v0 쓰기는 K0 보존 기간 전용이다. K0 폐기 뒤 v0 전환 배포는 서버 요청이 모두 실패한다(롤포워드만).
 export function assertFieldCryptoBootConfig(): void {
+  // v1 쓰기면 활성 kid 형식을 부팅에서 검사한다(잘못된 값이 첫 쓰기에서야 터지지 않게).
+  if (fieldWriteVersion() === 'v1') activeKid()
   if (fieldWriteVersion() === 'v0' && !readHexKey('ENCRYPTION_KEY')) {
     throw new Error(
       'ENCRYPTION_KEY 미설정 — ENCRYPTION_WRITE_VERSION=v0 은 K0 보존 기간에만 쓸 수 있습니다'
