@@ -34,6 +34,17 @@ describe('sanitizeRedirectPath — 오픈 리다이렉트 차단', () => {
     }
   })
 
+  test('dot-segment 정규화 뒤 프로토콜 상대 경로가 되는 값은 거부', () => {
+    for (const value of [
+      '/..//evil.com',
+      '/.//evil.com',
+      '/%2e%2e//evil.com',
+      '/a/../..//evil.com',
+    ]) {
+      expect(sanitizeRedirectPath(value)).toBeNull()
+    }
+  })
+
   test('경로·쿼리·해시를 보존한다', () => {
     expect(sanitizeRedirectPath('/admin?x=1#y')).toBe('/admin?x=1#y')
   })

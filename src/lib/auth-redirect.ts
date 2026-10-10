@@ -20,7 +20,11 @@ export function sanitizeRedirectPath(value?: string | null): string | null {
   }
   if (url.origin !== base) return null
 
-  return url.pathname + url.search + url.hash
+  // 정규화('/..//evil.com' → '//evil.com') 결과를 다시 검사한다 — 반환값은 다시 URL 로 해석되기 때문이다.
+  const path = url.pathname + url.search + url.hash
+  if (!path.startsWith('/') || path.startsWith('//') || path.startsWith('/\\')) return null
+
+  return path
 }
 
 export function resolveRedirectPath(
