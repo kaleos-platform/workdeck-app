@@ -17,6 +17,17 @@ function toResult(action: { id: string; expiresAt: Date }): PendingActionResult 
   }
 }
 
+// idempotencyKey 는 전역 unique 라 다른 Space 의 액션과 부딪힐 수 있다 — 그 액션은 돌려주지 않고 거부한다.
+function toResultInSpace(
+  action: { id: string; spaceId: string; expiresAt: Date },
+  spaceId: string
+): PendingActionResult {
+  if (action.spaceId !== spaceId) {
+    throw new Error('이미 다른 공간에서 사용한 idempotencyKey 입니다')
+  }
+  return toResult(action)
+}
+
 /**
  * 승인 대기 액션을 생성한다. write tool·에이전트가 이 함수만 호출하고 즉시 mutate하지 않는다.
  *
@@ -47,9 +58,9 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
   if (draft.idempotencyKey) {
     const existing = await prisma.agentPendingAction.findUnique({
       where: { idempotencyKey: draft.idempotencyKey },
-      select: { id: true, expiresAt: true },
+      select: { id: true, spaceId: true, expiresAt: true },
     })
-    if (existing) return toResult(existing)
+    if (existing) return toResultInSpace(existing, draft.spaceId)
   }
 
   const ctx = { spaceId: draft.spaceId, requestedBy: draft.requestedBy }
@@ -102,9 +113,9 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
     ) {
       const winner = await prisma.agentPendingAction.findUnique({
         where: { idempotencyKey: draft.idempotencyKey },
-        select: { id: true, expiresAt: true },
+        select: { id: true, spaceId: true, expiresAt: true },
       })
-      if (winner) return toResult(winner)
+      if (winner) return toResultInSpace(winner, draft.spaceId)
     }
     throw err
   }

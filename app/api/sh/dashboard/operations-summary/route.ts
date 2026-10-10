@@ -50,8 +50,12 @@ export async function GET() {
         : Promise.resolve(0),
       // WorkerHeartbeat 는 전역 — 임계(10분) 이전 ~ recentCutoff(14일) 이후 사이.
       // (임계 이전 = 끊김, recentCutoff 이후 = 최근까지 살아있던 워커 → 진짜 "최근 다운".)
+      // Space 별 키(`svc:<spaceId>`, Space 토큰 실행)는 자기 Space 것만 — 다른 Space 의 id 를 노출하지 않는다.
       prisma.workerHeartbeat.findMany({
-        where: { lastPingAt: { lt: heartbeatCutoff, gte: recentCutoff } },
+        where: {
+          lastPingAt: { lt: heartbeatCutoff, gte: recentCutoff },
+          OR: [{ service: { not: { contains: ':' } } }, { service: { endsWith: `:${spaceId}` } }],
+        },
         select: { service: true, lastPingAt: true },
       }),
       // 생산: 발주완료(ORDERED) + 입고 미처리(stockedInAt=null)

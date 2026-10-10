@@ -6,6 +6,7 @@ import { ensureWorkspaceForUser } from '@/lib/workspace'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { decryptField, fieldWriteVersion, isV1, V1_IV_MARKER } from '@/lib/crypto/field-crypto'
 import { canWorkspaceCollect } from '@/lib/billing/entitlement'
+import { authenticateWorker, workerWorkspaceWhere } from '@/lib/worker-auth'
 
 // worker/src/login-guard.ts 의 CREDENTIAL_INVALID 사유 문구 — 워커가 run.error 에 남긴다.
 const CREDENTIAL_INVALID_MARK = '아이디/비밀번호 불일치'
@@ -13,13 +14,12 @@ const CREDENTIAL_INVALID_MARK = '아이디/비밀번호 불일치'
 // GET /api/collection/credentials — 쿠팡 자격증명 조회
 // 사용자 인증 또는 Worker 인증 모두 지원
 export async function GET(request: NextRequest) {
-  const workerKey = request.headers.get('x-worker-api-key')
-  const expectedKey = process.env.WORKER_API_KEY
-
-  if (workerKey && expectedKey && workerKey === expectedKey) {
-    // Worker 인증: 모든 활성 크레덴셜 반환 (암호화된 비밀번호 포함)
+  if (request.headers.get('x-worker-api-key')) {
+    const auth = await authenticateWorker(request.headers)
+    if ('error' in auth) return auth.error
+    // Worker 인증: 토큰 범위의 활성 크레덴셜 1건(암호문 그대로)
     const credential = await prisma.coupangCredential.findFirst({
-      where: { isActive: true },
+      where: { isActive: true, ...workerWorkspaceWhere(auth.scope) },
       select: {
         id: true,
         workspaceId: true,
@@ -73,12 +73,8 @@ export async function PUT(request: NextRequest) {
   // 워크스페이스 해석 — 워커 인증이면 기존 경로, 세션 유저면 없을 때 자동 생성.
   // (seller-ops 에서 쿠팡 연동을 먼저 설정하는 경우 Workspace 가 아직 없을 수 있음.
   //  계정당 1 Workspace 라 이렇게 만든 워크스페이스는 coupang-ads 와 공유된다.)
-  const workerKey = request.headers.get('x-worker-api-key')
-  const isWorker = !!(
-    workerKey &&
-    process.env.WORKER_API_KEY &&
-    workerKey === process.env.WORKER_API_KEY
-  )
+  // 워커 여부는 헤더 존재로 정한다 — 인증과 토큰 범위 검사는 resolveWorkspace 가 한다(틀린 키는 401).
+  const isWorker = !!request.headers.get('x-worker-api-key')
 
   let workspace: { id: string }
   if (isWorker) {

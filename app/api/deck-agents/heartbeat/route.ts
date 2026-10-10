@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 
 // 에이전트 heartbeat — lastActiveAt 갱신 + 설정 반환
 // Worker API Key로 인증 (x-worker-api-key 헤더)
 export async function POST(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const body = await request.json()
@@ -14,6 +14,8 @@ export async function POST(request: NextRequest) {
   if (!workspaceId) {
     return NextResponse.json({ error: 'workspaceId is required' }, { status: 400 })
   }
+  const denied = assertWorkerOwns(auth.scope, { workspaceId })
+  if (denied) return denied
 
   const agent = await prisma.businessAgent.findUnique({
     where: { workspaceId },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerHeartbeatServices } from '@/lib/worker-auth'
 
 export const runtime = 'nodejs'
 
@@ -15,23 +16,35 @@ export const runtime = 'nodejs'
  * Auth: x-worker-api-key 헤더 필수.
  */
 export async function POST(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const body = await request.json().catch(() => ({}))
   const service: string | undefined = body.service
   const metadata = body.metadata ?? null
 
-  if (!service || typeof service !== 'string') {
+  // ':' 는 Space 별 키 구분자 — 다른 Space 의 키(`svc:<spaceId>`)를 대신 갱신하지 못하게 막는다.
+  if (!service || typeof service !== 'string' || service.includes(':')) {
     return errorResponse('service 필드가 필요합니다', 400)
   }
 
   const now = new Date()
+  const [globalService, ...spaceServices] = workerHeartbeatServices(
+    service,
+    auth.scope.kind === 'space' ? auth.scope.spaceId : undefined
+  )
   const row = await prisma.workerHeartbeat.upsert({
-    where: { service },
-    create: { service, lastPingAt: now, metadata },
+    where: { service: globalService },
+    create: { service: globalService, lastPingAt: now, metadata },
     update: { lastPingAt: now, metadata },
   })
+  for (const s of spaceServices) {
+    await prisma.workerHeartbeat.upsert({
+      where: { service: s },
+      create: { service: s, lastPingAt: now, metadata },
+      update: { lastPingAt: now, metadata },
+    })
+  }
 
   return NextResponse.json({
     service: row.service,

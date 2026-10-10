@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkspace, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import type { AnalysisType } from '@/generated/prisma/client'
 
 const VALID_TYPES: AnalysisType[] = [
@@ -14,21 +15,29 @@ const VALID_TYPES: AnalysisType[] = [
 
 export async function POST(request: NextRequest) {
   // Worker 인증 또는 사용자 세션 인증
-  const workerKey = request.headers.get('x-worker-api-key')
-  const expectedKey = process.env.WORKER_API_KEY
-  const isWorker = Boolean(workerKey && expectedKey && workerKey === expectedKey)
+  // 워커 여부는 헤더 존재로 정한다 — 키가 틀리면 세션으로 폴백하지 않고 401.
+  const isWorker = !!request.headers.get('x-worker-api-key')
 
   let workspaceId: string
   let bodyData: Record<string, unknown> | undefined
 
   if (isWorker) {
+    const auth = await authenticateWorker(request.headers)
+    if ('error' in auth) return auth.error
     // Worker: body에서 workspaceId 읽기
-    const rawBody = await request.text()
-    const parsed = JSON.parse(rawBody)
+    let parsed: Record<string, unknown> & { workspaceId?: string }
+    try {
+      parsed = JSON.parse(await request.text())
+    } catch {
+      return errorResponse('잘못된 요청 형식입니다', 400)
+    }
+    if (!parsed || typeof parsed !== 'object') return errorResponse('잘못된 요청 형식입니다', 400)
     if (!parsed.workspaceId) {
       return errorResponse('workspaceId가 필요합니다', 400)
     }
     workspaceId = parsed.workspaceId
+    const denied = assertWorkerOwns(auth.scope, { workspaceId })
+    if (denied) return denied
     // 워크스페이스 실재 검증 — 유효 워커 키만으로 임의 UUID 트리거 방지
     const ws = await prisma.workspace.findUnique({
       where: { id: workspaceId },

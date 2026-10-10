@@ -64,7 +64,14 @@ export async function syncSlackDecision(actionId: string): Promise<void> {
     const token = decryptBotToken(installation.botToken, installation.botTokenIv)
 
     const contextParts: string[] = [statusLine(action.status)]
-    if (action.decidedBy) contextParts.push(`결정자 ${action.decidedBy}`)
+    if (action.decidedBy) {
+      // decidedBy 는 User.id(2026-10 이전 Slack 결정은 'slack:U…' 문자열) — 사람이 읽는 이름으로 표시
+      const decider = await prisma.user.findUnique({
+        where: { id: action.decidedBy },
+        select: { name: true, email: true },
+      })
+      contextParts.push(`결정자 ${decider?.name ?? decider?.email ?? action.decidedBy}`)
+    }
     if (action.decidedAt) contextParts.push(formatKst(action.decidedAt))
     if (action.status === 'FAILED' && action.error) {
       contextParts.push(`오류: ${action.error.slice(0, 200)}`)

@@ -42,3 +42,47 @@ export async function resolveCoupangWorkspaceForSpace(
 
   return { workspaceId: workspace.id, locationId: location.id }
 }
+
+/**
+ * 인증 경계(워커 토큰)용 엄격 해석. cron 경로(resolveCoupangWorkspaceForSpace)는 그대로 둔다.
+ * 모호하면 null(fail closed) — Space 안에 서로 다른 키가 둘 이상이거나,
+ * 같은 키를 다른 Space 의 활성 로켓그로스 위치도 쓰면 어느 쪽 데이터인지 결정할 수 없다.
+ */
+export async function resolveCoupangWorkspaceForSpaceStrict(
+  spaceId: string
+): Promise<ResolvedCoupangWorkspace | null> {
+  const locations = await prisma.invStorageLocation.findMany({
+    where: {
+      spaceId,
+      externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
+      isActive: true,
+      externalIntegrationKey: { not: null },
+    },
+    orderBy: { createdAt: 'asc' },
+    select: { id: true, externalIntegrationKey: true },
+  })
+  const keys = new Set(locations.map((l) => l.externalIntegrationKey))
+  if (keys.size !== 1) return null
+  const [location] = locations
+  const workspaceId = location.externalIntegrationKey as string
+
+  const shared = await prisma.invStorageLocation.findMany({
+    where: {
+      spaceId: { not: spaceId },
+      externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
+      isActive: true,
+      externalIntegrationKey: workspaceId,
+    },
+    select: { id: true },
+    take: 1,
+  })
+  if (shared.length > 0) return null
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { id: true },
+  })
+  if (!workspace) return null
+
+  return { workspaceId: workspace.id, locationId: location.id }
+}

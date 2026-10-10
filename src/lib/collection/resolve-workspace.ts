@@ -22,74 +22,25 @@
  * `ensureWorkspaceForUser`로 자동 생성하지 않는다 — 유령 워크스페이스가 생기면 UI 는
  * "등록됨"인데 워커는 영원히 못 보는 무음 실패가 된다. 해석 실패는 409 로 명시한다.
  */
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { errorResponse, resolveSpaceContext, type SpaceMemberRole } from '@/lib/api-helpers'
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
-import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
+import { authenticateWorker, resolveWorkerWorkspaceId } from '@/lib/worker-auth'
 
 export type CollectionAuthContext =
   | { kind: 'worker'; workspaceId: string }
   | { kind: 'session'; workspaceId: string; role: SpaceMemberRole }
 
-function isWorkerRequest(request: NextRequest): boolean {
-  const key = request.headers.get('x-worker-api-key')
-  const expected = process.env.WORKER_API_KEY
-  return !!(key && expected && key === expected)
-}
-
 export async function resolveCollectionAuth(
   request: NextRequest
-): Promise<{ error: ReturnType<typeof errorResponse> } | CollectionAuthContext> {
-  if (isWorkerRequest(request)) {
-    // 워커 폴백 체인: x-workspace-id 헤더 → WORKER_DEFAULT_WORKSPACE_ID → findFirst.
-    // resolveWorkspace()(src/lib/api-helpers.ts)의 워커 분기와 동일한 순서.
-    const headerWorkspaceId = request.headers.get('x-workspace-id')
-    if (headerWorkspaceId) {
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: headerWorkspaceId },
-        select: { id: true },
-      })
-      if (workspace) return { kind: 'worker', workspaceId: workspace.id }
-    }
-    const defaultId = process.env.WORKER_DEFAULT_WORKSPACE_ID
-    if (defaultId) {
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: defaultId },
-        select: { id: true },
-      })
-      if (workspace) return { kind: 'worker', workspaceId: workspace.id }
-    }
-    // 마지막 폴백: 쿠팡 연동 위치가 가리키는 워크스페이스를 우선한다.
-    //
-    // 그냥 workspace.findFirst() 를 쓰면 워크스페이스가 여러 개일 때(운영 3개) 순서가
-    // 정해지지 않아 어느 워크스페이스를 볼지 매번 달라진다. 그러면 세션 쪽이 올바른
-    // 워크스페이스에 저장해도 워커가 다른 워크스페이스를 조회해 "자격 없음"으로 실패한다.
-    // 쿠팡 데이터가 실제로 사는 곳은 InvStorageLocation.externalIntegrationKey 가 가리키는
-    // 워크스페이스이므로(cron 의 resolveCoupangWorkspaceForSpace 와 동일 축) 그쪽을 먼저 본다.
-    const linked = await prisma.invStorageLocation.findFirst({
-      where: {
-        externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
-        isActive: true,
-        externalIntegrationKey: { not: null },
-      },
-      orderBy: { createdAt: 'asc' },
-      select: { externalIntegrationKey: true },
-    })
-    if (linked?.externalIntegrationKey) {
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: linked.externalIntegrationKey },
-        select: { id: true },
-      })
-      if (workspace) return { kind: 'worker', workspaceId: workspace.id }
-    }
-    // 그래도 없으면 결정적 순서로 1개 — 무순서 findFirst 는 쓰지 않는다.
-    const workspace = await prisma.workspace.findFirst({
-      orderBy: { createdAt: 'asc' },
-      select: { id: true },
-    })
-    if (workspace) return { kind: 'worker', workspaceId: workspace.id }
-    return { error: errorResponse('워크스페이스가 없습니다', 404) }
+): Promise<{ error: NextResponse } | CollectionAuthContext> {
+  if (request.headers.get('x-worker-api-key')) {
+    const auth = await authenticateWorker(request.headers)
+    if ('error' in auth) return { error: auth.error }
+    const ws = await resolveWorkerWorkspaceId(auth.scope, request.headers.get('x-workspace-id'))
+    if ('error' in ws) return { error: ws.error }
+    return { kind: 'worker', workspaceId: ws.workspaceId }
   }
 
   const spaceCtx = await resolveSpaceContext()

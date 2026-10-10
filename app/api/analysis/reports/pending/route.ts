@@ -2,15 +2,16 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerWorkspaceWhere } from '@/lib/worker-auth'
 
 /** GET — 가장 오래된 PENDING 리포트 1건 반환 */
 export async function GET(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const report = await prisma.analysisReport.findFirst({
-    where: { status: 'PENDING' },
+    where: { status: 'PENDING', ...workerWorkspaceWhere(auth.scope) },
     orderBy: { createdAt: 'asc' },
     select: {
       id: true,

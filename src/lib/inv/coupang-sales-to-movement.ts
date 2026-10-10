@@ -22,7 +22,10 @@ import { splitRocketBundle } from '@/lib/inv/rocket-bundle-split'
 import { lockStockLevel } from '@/lib/inv/movement-processor'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
-import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
+import {
+  resolveCoupangWorkspaceForSpace,
+  resolveCoupangWorkspaceForSpaceStrict,
+} from '@/lib/inv/resolve-coupang-workspace'
 
 const ROCKET_GROWTH_FULFILLMENT = '로켓그로스'
 
@@ -330,13 +333,18 @@ export type SalesSyncSpaceSummary = {
  * 일일 cron(어제 1일)과 백필 range(과거 N일)가 동일 경로를 공유한다 — 둘 다 재고 미차감.
  *
  * @param dates 변환 대상 일자(KST 자정 Date) 배열
+ * @param opts.spaceId 지정 시 그 Space 만 처리한다(워커 Space 토큰 범위)
  */
-export async function runCoupangSalesSyncForDates(dates: Date[]): Promise<SalesSyncSpaceSummary[]> {
+export async function runCoupangSalesSyncForDates(
+  dates: Date[],
+  opts: { spaceId?: string } = {}
+): Promise<SalesSyncSpaceSummary[]> {
   const locations = await prisma.invStorageLocation.findMany({
     where: {
       externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
       isActive: true,
       locationMappings: { some: {} },
+      ...(opts.spaceId ? { spaceId: opts.spaceId } : {}),
     },
     select: { spaceId: true },
     distinct: ['spaceId'],
@@ -355,7 +363,10 @@ export async function runCoupangSalesSyncForDates(dates: Date[]): Promise<SalesS
         continue
       }
 
-      const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
+      // Space 토큰 스윕은 인증 경계와 같은 엄격 해석 — 공유·모호한 연결이면 건너뛴다.
+      const resolved = opts.spaceId
+        ? await resolveCoupangWorkspaceForSpaceStrict(spaceId)
+        : await resolveCoupangWorkspaceForSpace(spaceId)
       if (!resolved) {
         summary.push({ spaceId, status: 'skip:no-workspace-link' })
         continue

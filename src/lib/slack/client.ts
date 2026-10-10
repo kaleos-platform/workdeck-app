@@ -43,6 +43,21 @@ export async function slackApi(
   return (await res.json()) as SlackApiResponse
 }
 
+/** 조회용 Web API(GET, 쿼리스트링). users.info 처럼 JSON body 를 받지 않는 메서드에 쓴다. */
+export async function slackGet(
+  token: string,
+  method: string,
+  params: Record<string, string>,
+  timeoutMs = DEFAULT_TIMEOUT_MS
+): Promise<SlackApiResponse> {
+  const res = await fetchWithTimeout(
+    `${SLACK_API_BASE}/${method}?${new URLSearchParams(params)}`,
+    { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
+    timeoutMs
+  )
+  return (await res.json()) as SlackApiResponse
+}
+
 /** chat.postMessage — 성공 시 { ok, ts, channel } 반환. thread_ts 지정 시 스레드 답글. */
 export async function postMessage(
   token: string,

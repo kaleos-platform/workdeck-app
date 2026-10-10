@@ -2,20 +2,22 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerWorkspaceWhere } from '@/lib/worker-auth'
 
 /** POST — 분석 결과를 저장하고 COMPLETED로 전환 */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ reportId: string }> }
 ) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const { reportId } = await params
 
   const report = await prisma.analysisReport.findFirst({
-    where: { id: reportId, status: 'PROCESSING' },
+    // 토큰 범위 밖 리포트는 없는 것으로 본다(404, 존재 은닉)
+    where: { id: reportId, status: 'PROCESSING', ...workerWorkspaceWhere(auth.scope) },
   })
 
   if (!report) {

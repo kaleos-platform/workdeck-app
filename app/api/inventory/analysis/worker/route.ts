@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { runAndSaveInventoryAnalysis } from '@/lib/inventory-analyzer'
 
 // POST /api/inventory/analysis/worker — 워커 전용 재분석 엔드포인트
 export async function POST(request: NextRequest) {
-  const workerAuth = resolveWorkerAuth(request)
+  const workerAuth = await authenticateWorker(request.headers)
   if ('error' in workerAuth) {
     return workerAuth.error
   }
@@ -13,6 +14,8 @@ export async function POST(request: NextRequest) {
   if (!body.workspaceId) {
     return errorResponse('workspaceId가 필요합니다', 400)
   }
+  const denied = assertWorkerOwns(workerAuth.scope, { workspaceId: body.workspaceId })
+  if (denied) return denied
 
   const result = await runAndSaveInventoryAnalysis({
     workspaceId: body.workspaceId,

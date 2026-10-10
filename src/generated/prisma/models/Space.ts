@@ -20,8 +20,18 @@ export type SpaceModel = runtime.Types.Result.DefaultSelection<Prisma.$SpacePayl
 
 export type AggregateSpace = {
   _count: SpaceCountAggregateOutputType | null
+  _avg: SpaceAvgAggregateOutputType | null
+  _sum: SpaceSumAggregateOutputType | null
   _min: SpaceMinAggregateOutputType | null
   _max: SpaceMaxAggregateOutputType | null
+}
+
+export type SpaceAvgAggregateOutputType = {
+  approvalLimitKrw: number | null
+}
+
+export type SpaceSumAggregateOutputType = {
+  approvalLimitKrw: number | null
 }
 
 export type SpaceMinAggregateOutputType = {
@@ -29,6 +39,7 @@ export type SpaceMinAggregateOutputType = {
   name: string | null
   type: $Enums.SpaceType | null
   onboardingDismissedAt: Date | null
+  approvalLimitKrw: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +49,7 @@ export type SpaceMaxAggregateOutputType = {
   name: string | null
   type: $Enums.SpaceType | null
   onboardingDismissedAt: Date | null
+  approvalLimitKrw: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,17 +59,27 @@ export type SpaceCountAggregateOutputType = {
   name: number
   type: number
   onboardingDismissedAt: number
+  approvalLimitKrw: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
+export type SpaceAvgAggregateInputType = {
+  approvalLimitKrw?: true
+}
+
+export type SpaceSumAggregateInputType = {
+  approvalLimitKrw?: true
+}
+
 export type SpaceMinAggregateInputType = {
   id?: true
   name?: true
   type?: true
   onboardingDismissedAt?: true
+  approvalLimitKrw?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -67,6 +89,7 @@ export type SpaceMaxAggregateInputType = {
   name?: true
   type?: true
   onboardingDismissedAt?: true
+  approvalLimitKrw?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -76,6 +99,7 @@ export type SpaceCountAggregateInputType = {
   name?: true
   type?: true
   onboardingDismissedAt?: true
+  approvalLimitKrw?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -119,6 +143,18 @@ export type SpaceAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: SpaceAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: SpaceSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: SpaceMinAggregateInputType
@@ -149,6 +185,8 @@ export type SpaceGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: SpaceCountAggregateInputType | true
+  _avg?: SpaceAvgAggregateInputType
+  _sum?: SpaceSumAggregateInputType
   _min?: SpaceMinAggregateInputType
   _max?: SpaceMaxAggregateInputType
 }
@@ -158,9 +196,12 @@ export type SpaceGroupByOutputType = {
   name: string
   type: $Enums.SpaceType
   onboardingDismissedAt: Date | null
+  approvalLimitKrw: number | null
   createdAt: Date
   updatedAt: Date
   _count: SpaceCountAggregateOutputType | null
+  _avg: SpaceAvgAggregateOutputType | null
+  _sum: SpaceSumAggregateOutputType | null
   _min: SpaceMinAggregateOutputType | null
   _max: SpaceMaxAggregateOutputType | null
 }
@@ -188,6 +229,7 @@ export type SpaceWhereInput = {
   name?: Prisma.StringFilter<"Space"> | string
   type?: Prisma.EnumSpaceTypeFilter<"Space"> | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.DateTimeNullableFilter<"Space"> | Date | string | null
+  approvalLimitKrw?: Prisma.IntNullableFilter<"Space"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   members?: Prisma.SpaceMemberListRelationFilter
@@ -272,6 +314,7 @@ export type SpaceWhereInput = {
   agentPendingActions?: Prisma.AgentPendingActionListRelationFilter
   agentToggle?: Prisma.XOR<Prisma.SpaceAgentNullableScalarRelationFilter, Prisma.SpaceAgentWhereInput> | null
   agentLlmUsages?: Prisma.AgentLlmUsageListRelationFilter
+  workerTokens?: Prisma.WorkerTokenListRelationFilter
   subscription?: Prisma.XOR<Prisma.SpaceSubscriptionNullableScalarRelationFilter, Prisma.SpaceSubscriptionWhereInput> | null
   billingMethods?: Prisma.BillingMethodListRelationFilter
   billingCharges?: Prisma.BillingChargeListRelationFilter
@@ -282,6 +325,7 @@ export type SpaceOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   members?: Prisma.SpaceMemberOrderByRelationAggregateInput
@@ -366,6 +410,7 @@ export type SpaceOrderByWithRelationInput = {
   agentPendingActions?: Prisma.AgentPendingActionOrderByRelationAggregateInput
   agentToggle?: Prisma.SpaceAgentOrderByWithRelationInput
   agentLlmUsages?: Prisma.AgentLlmUsageOrderByRelationAggregateInput
+  workerTokens?: Prisma.WorkerTokenOrderByRelationAggregateInput
   subscription?: Prisma.SpaceSubscriptionOrderByWithRelationInput
   billingMethods?: Prisma.BillingMethodOrderByRelationAggregateInput
   billingCharges?: Prisma.BillingChargeOrderByRelationAggregateInput
@@ -379,6 +424,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Space"> | string
   type?: Prisma.EnumSpaceTypeFilter<"Space"> | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.DateTimeNullableFilter<"Space"> | Date | string | null
+  approvalLimitKrw?: Prisma.IntNullableFilter<"Space"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   members?: Prisma.SpaceMemberListRelationFilter
@@ -463,6 +509,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   agentPendingActions?: Prisma.AgentPendingActionListRelationFilter
   agentToggle?: Prisma.XOR<Prisma.SpaceAgentNullableScalarRelationFilter, Prisma.SpaceAgentWhereInput> | null
   agentLlmUsages?: Prisma.AgentLlmUsageListRelationFilter
+  workerTokens?: Prisma.WorkerTokenListRelationFilter
   subscription?: Prisma.XOR<Prisma.SpaceSubscriptionNullableScalarRelationFilter, Prisma.SpaceSubscriptionWhereInput> | null
   billingMethods?: Prisma.BillingMethodListRelationFilter
   billingCharges?: Prisma.BillingChargeListRelationFilter
@@ -473,11 +520,14 @@ export type SpaceOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SpaceCountOrderByAggregateInput
+  _avg?: Prisma.SpaceAvgOrderByAggregateInput
   _max?: Prisma.SpaceMaxOrderByAggregateInput
   _min?: Prisma.SpaceMinOrderByAggregateInput
+  _sum?: Prisma.SpaceSumOrderByAggregateInput
 }
 
 export type SpaceScalarWhereWithAggregatesInput = {
@@ -488,6 +538,7 @@ export type SpaceScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Space"> | string
   type?: Prisma.EnumSpaceTypeWithAggregatesFilter<"Space"> | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Space"> | Date | string | null
+  approvalLimitKrw?: Prisma.IntNullableWithAggregatesFilter<"Space"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Space"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Space"> | Date | string
 }
@@ -497,6 +548,7 @@ export type SpaceCreateInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -581,6 +633,7 @@ export type SpaceCreateInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -591,6 +644,7 @@ export type SpaceUncheckedCreateInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -675,6 +729,7 @@ export type SpaceUncheckedCreateInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -685,6 +740,7 @@ export type SpaceUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -769,6 +825,7 @@ export type SpaceUpdateInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -779,6 +836,7 @@ export type SpaceUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -863,6 +921,7 @@ export type SpaceUncheckedUpdateInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -873,6 +932,7 @@ export type SpaceCreateManyInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -882,6 +942,7 @@ export type SpaceUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -891,6 +952,7 @@ export type SpaceUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -900,8 +962,13 @@ export type SpaceCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type SpaceAvgOrderByAggregateInput = {
+  approvalLimitKrw?: Prisma.SortOrder
 }
 
 export type SpaceMaxOrderByAggregateInput = {
@@ -909,6 +976,7 @@ export type SpaceMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -918,8 +986,13 @@ export type SpaceMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type SpaceSumOrderByAggregateInput = {
+  approvalLimitKrw?: Prisma.SortOrder
 }
 
 export type SpaceScalarRelationFilter = {
@@ -2132,11 +2205,26 @@ export type SpaceUpdateOneRequiredWithoutBillingChargesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutBillingChargesInput, Prisma.SpaceUpdateWithoutBillingChargesInput>, Prisma.SpaceUncheckedUpdateWithoutBillingChargesInput>
 }
 
+export type SpaceCreateNestedOneWithoutWorkerTokensInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutWorkerTokensInput, Prisma.SpaceUncheckedCreateWithoutWorkerTokensInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutWorkerTokensInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneRequiredWithoutWorkerTokensNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutWorkerTokensInput, Prisma.SpaceUncheckedCreateWithoutWorkerTokensInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutWorkerTokensInput
+  upsert?: Prisma.SpaceUpsertWithoutWorkerTokensInput
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutWorkerTokensInput, Prisma.SpaceUpdateWithoutWorkerTokensInput>, Prisma.SpaceUncheckedUpdateWithoutWorkerTokensInput>
+}
+
 export type SpaceCreateWithoutMembersInput = {
   id?: string
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
@@ -2220,6 +2308,7 @@ export type SpaceCreateWithoutMembersInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -2230,6 +2319,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
@@ -2313,6 +2403,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -2339,6 +2430,7 @@ export type SpaceUpdateWithoutMembersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
@@ -2422,6 +2514,7 @@ export type SpaceUpdateWithoutMembersInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -2432,6 +2525,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2515,6 +2609,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2525,6 +2620,7 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -2608,6 +2704,7 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -2618,6 +2715,7 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -2701,6 +2799,7 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -2727,6 +2826,7 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -2810,6 +2910,7 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -2820,6 +2921,7 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2903,6 +3005,7 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2913,6 +3016,7 @@ export type SpaceCreateWithoutAgentToggleInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -2996,6 +3100,7 @@ export type SpaceCreateWithoutAgentToggleInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -3006,6 +3111,7 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -3089,6 +3195,7 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -3115,6 +3222,7 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -3198,6 +3306,7 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -3208,6 +3317,7 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3291,6 +3401,7 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3301,6 +3412,7 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -3384,6 +3496,7 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -3394,6 +3507,7 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -3477,6 +3591,7 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -3503,6 +3618,7 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -3586,6 +3702,7 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -3596,6 +3713,7 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3679,6 +3797,7 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3689,6 +3808,7 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -3772,6 +3892,7 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -3782,6 +3903,7 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -3865,6 +3987,7 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -3891,6 +4014,7 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -3974,6 +4098,7 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -3984,6 +4109,7 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4067,6 +4193,7 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4077,6 +4204,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -4160,6 +4288,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -4170,6 +4299,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -4253,6 +4383,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -4279,6 +4410,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -4362,6 +4494,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -4372,6 +4505,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4455,6 +4589,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4465,6 +4600,7 @@ export type SpaceCreateWithoutCoupangProductItemsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -4548,6 +4684,7 @@ export type SpaceCreateWithoutCoupangProductItemsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -4558,6 +4695,7 @@ export type SpaceUncheckedCreateWithoutCoupangProductItemsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -4641,6 +4779,7 @@ export type SpaceUncheckedCreateWithoutCoupangProductItemsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -4667,6 +4806,7 @@ export type SpaceUpdateWithoutCoupangProductItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -4750,6 +4890,7 @@ export type SpaceUpdateWithoutCoupangProductItemsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -4760,6 +4901,7 @@ export type SpaceUncheckedUpdateWithoutCoupangProductItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4843,6 +4985,7 @@ export type SpaceUncheckedUpdateWithoutCoupangProductItemsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4853,6 +4996,7 @@ export type SpaceCreateWithoutCoupangWriteJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -4936,6 +5080,7 @@ export type SpaceCreateWithoutCoupangWriteJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -4946,6 +5091,7 @@ export type SpaceUncheckedCreateWithoutCoupangWriteJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -5029,6 +5175,7 @@ export type SpaceUncheckedCreateWithoutCoupangWriteJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -5055,6 +5202,7 @@ export type SpaceUpdateWithoutCoupangWriteJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -5138,6 +5286,7 @@ export type SpaceUpdateWithoutCoupangWriteJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -5148,6 +5297,7 @@ export type SpaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5231,6 +5381,7 @@ export type SpaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5241,6 +5392,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -5324,6 +5476,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -5334,6 +5487,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -5417,6 +5571,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -5443,6 +5598,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -5526,6 +5682,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -5536,6 +5693,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5619,6 +5777,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5629,6 +5788,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -5712,6 +5872,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -5722,6 +5883,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -5805,6 +5967,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -5831,6 +5994,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -5914,6 +6078,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -5924,6 +6089,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6007,6 +6173,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6017,6 +6184,7 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -6100,6 +6268,7 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -6110,6 +6279,7 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -6193,6 +6363,7 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -6219,6 +6390,7 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -6302,6 +6474,7 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -6312,6 +6485,7 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6395,6 +6569,7 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6405,6 +6580,7 @@ export type SpaceCreateWithoutProductExtractionJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -6488,6 +6664,7 @@ export type SpaceCreateWithoutProductExtractionJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -6498,6 +6675,7 @@ export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -6581,6 +6759,7 @@ export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -6607,6 +6786,7 @@ export type SpaceUpdateWithoutProductExtractionJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -6690,6 +6870,7 @@ export type SpaceUpdateWithoutProductExtractionJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -6700,6 +6881,7 @@ export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6783,6 +6965,7 @@ export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6793,6 +6976,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -6876,6 +7060,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -6886,6 +7071,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -6969,6 +7155,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -6995,6 +7182,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -7078,6 +7266,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -7088,6 +7277,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7171,6 +7361,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7181,6 +7372,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -7264,6 +7456,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -7274,6 +7467,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -7357,6 +7551,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -7383,6 +7578,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -7466,6 +7662,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -7476,6 +7673,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7559,6 +7757,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7569,6 +7768,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -7652,6 +7852,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -7662,6 +7863,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -7745,6 +7947,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -7771,6 +7974,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -7854,6 +8058,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -7864,6 +8069,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7947,6 +8153,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7957,6 +8164,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -8040,6 +8248,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -8050,6 +8259,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -8133,6 +8343,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -8159,6 +8370,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -8242,6 +8454,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -8252,6 +8465,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8335,6 +8549,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8345,6 +8560,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -8428,6 +8644,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -8438,6 +8655,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -8521,6 +8739,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -8547,6 +8766,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -8630,6 +8850,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -8640,6 +8861,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8723,6 +8945,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8733,6 +8956,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -8816,6 +9040,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -8826,6 +9051,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -8909,6 +9135,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -8935,6 +9162,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -9018,6 +9246,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -9028,6 +9257,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9111,6 +9341,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9121,6 +9352,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -9204,6 +9436,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -9214,6 +9447,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -9297,6 +9531,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -9323,6 +9558,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -9406,6 +9642,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -9416,6 +9653,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9499,6 +9737,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9509,6 +9748,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -9592,6 +9832,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -9602,6 +9843,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -9685,6 +9927,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -9711,6 +9954,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -9794,6 +10038,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -9804,6 +10049,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9887,6 +10133,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9897,6 +10144,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -9980,6 +10228,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -9990,6 +10239,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -10073,6 +10323,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -10099,6 +10350,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -10182,6 +10434,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -10192,6 +10445,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10275,6 +10529,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10285,6 +10540,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -10368,6 +10624,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -10378,6 +10635,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -10461,6 +10719,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -10487,6 +10746,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -10570,6 +10830,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -10580,6 +10841,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10663,6 +10925,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10673,6 +10936,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -10756,6 +11020,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -10766,6 +11031,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -10849,6 +11115,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -10875,6 +11142,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -10958,6 +11226,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -10968,6 +11237,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11051,6 +11321,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11061,6 +11332,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -11144,6 +11416,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -11154,6 +11427,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -11237,6 +11511,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -11263,6 +11538,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -11346,6 +11622,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -11356,6 +11633,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11439,6 +11717,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11449,6 +11728,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -11532,6 +11812,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -11542,6 +11823,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -11625,6 +11907,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -11651,6 +11934,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -11734,6 +12018,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -11744,6 +12029,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11827,6 +12113,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11837,6 +12124,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -11920,6 +12208,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -11930,6 +12219,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -12013,6 +12303,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -12039,6 +12330,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -12122,6 +12414,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -12132,6 +12425,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12215,6 +12509,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12225,6 +12520,7 @@ export type SpaceCreateWithoutBrandsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -12308,6 +12604,7 @@ export type SpaceCreateWithoutBrandsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -12318,6 +12615,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -12401,6 +12699,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -12427,6 +12726,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -12510,6 +12810,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -12520,6 +12821,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12603,6 +12905,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12613,6 +12916,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -12696,6 +13000,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -12706,6 +13011,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -12789,6 +13095,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -12815,6 +13122,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -12898,6 +13206,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -12908,6 +13217,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12991,6 +13301,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13001,6 +13312,7 @@ export type SpaceCreateWithoutChannelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -13084,6 +13396,7 @@ export type SpaceCreateWithoutChannelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -13094,6 +13407,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -13177,6 +13491,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -13203,6 +13518,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -13286,6 +13602,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -13296,6 +13613,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13379,6 +13697,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13389,6 +13708,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -13472,6 +13792,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -13482,6 +13803,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -13565,6 +13887,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -13591,6 +13914,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -13674,6 +13998,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -13684,6 +14009,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13767,6 +14093,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13777,6 +14104,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -13860,6 +14188,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -13870,6 +14199,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -13953,6 +14283,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -13979,6 +14310,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -14062,6 +14394,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -14072,6 +14405,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14155,6 +14489,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14165,6 +14500,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -14248,6 +14584,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -14258,6 +14595,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -14341,6 +14679,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -14367,6 +14706,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -14450,6 +14790,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -14460,6 +14801,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14543,6 +14885,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14553,6 +14896,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -14636,6 +14980,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -14646,6 +14991,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -14729,6 +15075,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -14755,6 +15102,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -14838,6 +15186,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -14848,6 +15197,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14931,6 +15281,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14941,6 +15292,7 @@ export type SpaceCreateWithoutAtomicWordsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -15024,6 +15376,7 @@ export type SpaceCreateWithoutAtomicWordsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -15034,6 +15387,7 @@ export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -15117,6 +15471,7 @@ export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -15143,6 +15498,7 @@ export type SpaceUpdateWithoutAtomicWordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -15226,6 +15582,7 @@ export type SpaceUpdateWithoutAtomicWordsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -15236,6 +15593,7 @@ export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15319,6 +15677,7 @@ export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15329,6 +15688,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -15412,6 +15772,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -15422,6 +15783,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -15505,6 +15867,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -15531,6 +15894,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -15614,6 +15978,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -15624,6 +15989,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15707,6 +16073,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15717,6 +16084,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -15800,6 +16168,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -15810,6 +16179,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -15893,6 +16263,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -15919,6 +16290,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -16002,6 +16374,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -16012,6 +16385,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16095,6 +16469,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16105,6 +16480,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -16188,6 +16564,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -16198,6 +16575,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -16281,6 +16659,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -16307,6 +16686,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -16390,6 +16770,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -16400,6 +16781,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16483,6 +16865,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16493,6 +16876,7 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -16576,6 +16960,7 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -16586,6 +16971,7 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -16669,6 +17055,7 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -16695,6 +17082,7 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -16778,6 +17166,7 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -16788,6 +17177,7 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16871,6 +17261,7 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16881,6 +17272,7 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -16964,6 +17356,7 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -16974,6 +17367,7 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -17057,6 +17451,7 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -17083,6 +17478,7 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -17166,6 +17562,7 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -17176,6 +17573,7 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17259,6 +17657,7 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17269,6 +17668,7 @@ export type SpaceCreateWithoutKeywordChangeLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -17352,6 +17752,7 @@ export type SpaceCreateWithoutKeywordChangeLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -17362,6 +17763,7 @@ export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -17445,6 +17847,7 @@ export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -17471,6 +17874,7 @@ export type SpaceUpdateWithoutKeywordChangeLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -17554,6 +17958,7 @@ export type SpaceUpdateWithoutKeywordChangeLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -17564,6 +17969,7 @@ export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17647,6 +18053,7 @@ export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17657,6 +18064,7 @@ export type SpaceCreateWithoutProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -17740,6 +18148,7 @@ export type SpaceCreateWithoutProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -17750,6 +18159,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -17833,6 +18243,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -17859,6 +18270,7 @@ export type SpaceUpdateWithoutProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -17942,6 +18354,7 @@ export type SpaceUpdateWithoutProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -17952,6 +18365,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18035,6 +18449,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18045,6 +18460,7 @@ export type SpaceCreateWithoutPersonasInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -18128,6 +18544,7 @@ export type SpaceCreateWithoutPersonasInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -18138,6 +18555,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -18221,6 +18639,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -18247,6 +18666,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -18330,6 +18750,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -18340,6 +18761,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18423,6 +18845,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18433,6 +18856,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -18516,6 +18940,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -18526,6 +18951,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -18609,6 +19035,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -18635,6 +19062,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -18718,6 +19146,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -18728,6 +19157,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18811,6 +19241,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18821,6 +19252,7 @@ export type SpaceCreateWithoutSalesContentOnboardingInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -18904,6 +19336,7 @@ export type SpaceCreateWithoutSalesContentOnboardingInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -18914,6 +19347,7 @@ export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -18997,6 +19431,7 @@ export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -19023,6 +19458,7 @@ export type SpaceUpdateWithoutSalesContentOnboardingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -19106,6 +19542,7 @@ export type SpaceUpdateWithoutSalesContentOnboardingInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -19116,6 +19553,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19199,6 +19637,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19209,6 +19648,7 @@ export type SpaceCreateWithoutScOnboardingResourcesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -19292,6 +19732,7 @@ export type SpaceCreateWithoutScOnboardingResourcesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -19302,6 +19743,7 @@ export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -19385,6 +19827,7 @@ export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -19411,6 +19854,7 @@ export type SpaceUpdateWithoutScOnboardingResourcesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -19494,6 +19938,7 @@ export type SpaceUpdateWithoutScOnboardingResourcesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -19504,6 +19949,7 @@ export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19587,6 +20033,7 @@ export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19597,6 +20044,7 @@ export type SpaceCreateWithoutAiSettingInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -19680,6 +20128,7 @@ export type SpaceCreateWithoutAiSettingInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -19690,6 +20139,7 @@ export type SpaceUncheckedCreateWithoutAiSettingInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -19773,6 +20223,7 @@ export type SpaceUncheckedCreateWithoutAiSettingInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -19799,6 +20250,7 @@ export type SpaceUpdateWithoutAiSettingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -19882,6 +20334,7 @@ export type SpaceUpdateWithoutAiSettingInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -19892,6 +20345,7 @@ export type SpaceUncheckedUpdateWithoutAiSettingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19975,6 +20429,7 @@ export type SpaceUncheckedUpdateWithoutAiSettingInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19985,6 +20440,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -20068,6 +20524,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -20078,6 +20535,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -20161,6 +20619,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -20187,6 +20646,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -20270,6 +20730,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -20280,6 +20741,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20363,6 +20825,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20373,6 +20836,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -20456,6 +20920,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -20466,6 +20931,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -20549,6 +21015,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -20575,6 +21042,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -20658,6 +21126,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -20668,6 +21137,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20751,6 +21221,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20761,6 +21232,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -20844,6 +21316,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -20854,6 +21327,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -20937,6 +21411,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -20963,6 +21438,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -21046,6 +21522,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -21056,6 +21533,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21139,6 +21617,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21149,6 +21628,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -21232,6 +21712,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -21242,6 +21723,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -21325,6 +21807,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -21351,6 +21834,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -21434,6 +21918,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -21444,6 +21929,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21527,6 +22013,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21537,6 +22024,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -21620,6 +22108,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -21630,6 +22119,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -21713,6 +22203,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -21739,6 +22230,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -21822,6 +22314,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -21832,6 +22325,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21915,6 +22409,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21925,6 +22420,7 @@ export type SpaceCreateWithoutContentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -22008,6 +22504,7 @@ export type SpaceCreateWithoutContentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -22018,6 +22515,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -22101,6 +22599,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -22127,6 +22626,7 @@ export type SpaceUpdateWithoutContentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -22210,6 +22710,7 @@ export type SpaceUpdateWithoutContentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -22220,6 +22721,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22303,6 +22805,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22313,6 +22816,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -22396,6 +22900,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -22406,6 +22911,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -22489,6 +22995,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -22515,6 +23022,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -22598,6 +23106,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -22608,6 +23117,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22691,6 +23201,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22701,6 +23212,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -22784,6 +23296,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -22794,6 +23307,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -22877,6 +23391,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -22903,6 +23418,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -22986,6 +23502,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -22996,6 +23513,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23079,6 +23597,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23089,6 +23608,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -23172,6 +23692,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -23182,6 +23703,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -23265,6 +23787,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -23291,6 +23814,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -23374,6 +23898,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -23384,6 +23909,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23467,6 +23993,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23477,6 +24004,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -23560,6 +24088,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -23570,6 +24099,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -23653,6 +24183,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -23679,6 +24210,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -23762,6 +24294,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -23772,6 +24305,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23855,6 +24389,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23865,6 +24400,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -23948,6 +24484,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -23958,6 +24495,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -24041,6 +24579,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -24067,6 +24606,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -24150,6 +24690,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -24160,6 +24701,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24243,6 +24785,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24253,6 +24796,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -24336,6 +24880,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -24346,6 +24891,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -24429,6 +24975,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -24455,6 +25002,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -24538,6 +25086,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -24548,6 +25097,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24631,6 +25181,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24641,6 +25192,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -24724,6 +25276,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -24734,6 +25287,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -24817,6 +25371,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -24843,6 +25398,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -24926,6 +25482,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -24936,6 +25493,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25019,6 +25577,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25029,6 +25588,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -25112,6 +25672,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -25122,6 +25683,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -25205,6 +25767,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -25231,6 +25794,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -25314,6 +25878,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -25324,6 +25889,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25407,6 +25973,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25417,6 +25984,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -25500,6 +26068,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -25510,6 +26079,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -25593,6 +26163,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -25619,6 +26190,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -25702,6 +26274,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -25712,6 +26285,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25795,6 +26369,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25805,6 +26380,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -25888,6 +26464,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -25898,6 +26475,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -25981,6 +26559,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -26007,6 +26586,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -26090,6 +26670,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -26100,6 +26681,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26183,6 +26765,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26193,6 +26776,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -26276,6 +26860,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -26286,6 +26871,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -26369,6 +26955,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -26395,6 +26982,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -26478,6 +27066,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -26488,6 +27077,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26571,6 +27161,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26581,6 +27172,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -26664,6 +27256,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -26674,6 +27267,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -26757,6 +27351,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -26783,6 +27378,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -26866,6 +27462,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -26876,6 +27473,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26959,6 +27557,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26969,6 +27568,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -27052,6 +27652,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -27062,6 +27663,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -27145,6 +27747,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -27171,6 +27774,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -27254,6 +27858,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -27264,6 +27869,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27347,6 +27953,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27357,6 +27964,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -27440,6 +28048,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -27450,6 +28059,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -27533,6 +28143,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -27559,6 +28170,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -27642,6 +28254,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -27652,6 +28265,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27735,6 +28349,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27745,6 +28360,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -27828,6 +28444,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -27838,6 +28455,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -27921,6 +28539,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -27947,6 +28566,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -28030,6 +28650,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -28040,6 +28661,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28123,6 +28745,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28133,6 +28756,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -28216,6 +28840,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -28226,6 +28851,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -28309,6 +28935,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -28335,6 +28962,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -28418,6 +29046,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -28428,6 +29057,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28511,6 +29141,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28521,6 +29152,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -28604,6 +29236,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -28614,6 +29247,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -28697,6 +29331,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -28723,6 +29358,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -28806,6 +29442,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -28816,6 +29453,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28899,6 +29537,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28909,6 +29548,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -28992,6 +29632,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -29002,6 +29643,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -29085,6 +29727,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -29111,6 +29754,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -29194,6 +29838,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -29204,6 +29849,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29287,6 +29933,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29297,6 +29944,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -29380,6 +30028,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -29390,6 +30039,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -29473,6 +30123,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -29499,6 +30150,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -29582,6 +30234,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -29592,6 +30245,7 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29675,6 +30329,7 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29685,6 +30340,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -29768,6 +30424,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -29778,6 +30435,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -29861,6 +30519,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -29887,6 +30546,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -29970,6 +30630,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -29980,6 +30641,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30063,6 +30725,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30073,6 +30736,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -30156,6 +30820,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -30166,6 +30831,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -30249,6 +30915,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -30275,6 +30942,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -30358,6 +31026,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -30368,6 +31037,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30451,6 +31121,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30461,6 +31132,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -30544,6 +31216,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -30554,6 +31227,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -30637,6 +31311,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -30663,6 +31338,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -30746,6 +31422,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -30756,6 +31433,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30839,6 +31517,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30849,6 +31528,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -30932,6 +31612,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -30942,6 +31623,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -31025,6 +31707,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -31051,6 +31734,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -31134,6 +31818,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -31144,6 +31829,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31227,6 +31913,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31237,6 +31924,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -31320,6 +32008,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -31330,6 +32019,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -31413,6 +32103,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -31439,6 +32130,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -31522,6 +32214,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -31532,6 +32225,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31615,6 +32309,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31625,6 +32320,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -31708,6 +32404,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -31718,6 +32415,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -31801,6 +32499,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -31827,6 +32526,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -31910,6 +32610,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -31920,6 +32621,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32003,6 +32705,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32013,6 +32716,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -32096,6 +32800,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -32106,6 +32811,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -32189,6 +32895,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -32215,6 +32922,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -32298,6 +33006,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -32308,6 +33017,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32391,6 +33101,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32401,6 +33112,7 @@ export type SpaceCreateWithoutHiringUploadSessionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -32484,6 +33196,7 @@ export type SpaceCreateWithoutHiringUploadSessionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -32494,6 +33207,7 @@ export type SpaceUncheckedCreateWithoutHiringUploadSessionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -32577,6 +33291,7 @@ export type SpaceUncheckedCreateWithoutHiringUploadSessionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -32603,6 +33318,7 @@ export type SpaceUpdateWithoutHiringUploadSessionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -32686,6 +33402,7 @@ export type SpaceUpdateWithoutHiringUploadSessionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -32696,6 +33413,7 @@ export type SpaceUncheckedUpdateWithoutHiringUploadSessionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32779,6 +33497,7 @@ export type SpaceUncheckedUpdateWithoutHiringUploadSessionsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32789,6 +33508,7 @@ export type SpaceCreateWithoutHiringMigrationRecordsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -32872,6 +33592,7 @@ export type SpaceCreateWithoutHiringMigrationRecordsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -32882,6 +33603,7 @@ export type SpaceUncheckedCreateWithoutHiringMigrationRecordsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -32965,6 +33687,7 @@ export type SpaceUncheckedCreateWithoutHiringMigrationRecordsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -32991,6 +33714,7 @@ export type SpaceUpdateWithoutHiringMigrationRecordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -33074,6 +33798,7 @@ export type SpaceUpdateWithoutHiringMigrationRecordsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -33084,6 +33809,7 @@ export type SpaceUncheckedUpdateWithoutHiringMigrationRecordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33167,6 +33893,7 @@ export type SpaceUncheckedUpdateWithoutHiringMigrationRecordsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33177,6 +33904,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -33260,6 +33988,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -33270,6 +33999,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -33353,6 +34083,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -33379,6 +34110,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -33462,6 +34194,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -33472,6 +34205,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33555,6 +34289,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33565,6 +34300,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -33648,6 +34384,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
@@ -33658,6 +34395,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -33741,6 +34479,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
@@ -33767,6 +34506,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -33850,6 +34590,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
@@ -33860,6 +34601,7 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33943,6 +34685,7 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33953,6 +34696,7 @@ export type SpaceCreateWithoutSubscriptionInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -34037,6 +34781,7 @@ export type SpaceCreateWithoutSubscriptionInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
 }
@@ -34046,6 +34791,7 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -34130,6 +34876,7 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
 }
@@ -34155,6 +34902,7 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -34239,6 +34987,7 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
 }
@@ -34248,6 +34997,7 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34332,6 +35082,7 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
 }
@@ -34341,6 +35092,7 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -34425,6 +35177,7 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
 }
@@ -34434,6 +35187,7 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -34518,6 +35272,7 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
   agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
 }
@@ -34543,6 +35298,7 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -34627,6 +35383,7 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
 }
@@ -34636,6 +35393,7 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34720,6 +35478,7 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
   agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
 }
@@ -34729,6 +35488,403 @@ export type SpaceCreateWithoutBillingChargesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutBillingChargesInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutBillingChargesInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutBillingChargesInput, Prisma.SpaceUncheckedCreateWithoutBillingChargesInput>
+}
+
+export type SpaceUpsertWithoutBillingChargesInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBillingChargesInput, Prisma.SpaceUncheckedUpdateWithoutBillingChargesInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutBillingChargesInput, Prisma.SpaceUncheckedCreateWithoutBillingChargesInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutBillingChargesInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBillingChargesInput, Prisma.SpaceUncheckedUpdateWithoutBillingChargesInput>
+}
+
+export type SpaceUpdateWithoutBillingChargesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceCreateWithoutWorkerTokensInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -34815,13 +35971,15 @@ export type SpaceCreateWithoutBillingChargesInput = {
   agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
 }
 
-export type SpaceUncheckedCreateWithoutBillingChargesInput = {
+export type SpaceUncheckedCreateWithoutWorkerTokensInput = {
   id?: string
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -34908,29 +36066,31 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
   subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
   billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
 }
 
-export type SpaceCreateOrConnectWithoutBillingChargesInput = {
+export type SpaceCreateOrConnectWithoutWorkerTokensInput = {
   where: Prisma.SpaceWhereUniqueInput
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBillingChargesInput, Prisma.SpaceUncheckedCreateWithoutBillingChargesInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutWorkerTokensInput, Prisma.SpaceUncheckedCreateWithoutWorkerTokensInput>
 }
 
-export type SpaceUpsertWithoutBillingChargesInput = {
-  update: Prisma.XOR<Prisma.SpaceUpdateWithoutBillingChargesInput, Prisma.SpaceUncheckedUpdateWithoutBillingChargesInput>
-  create: Prisma.XOR<Prisma.SpaceCreateWithoutBillingChargesInput, Prisma.SpaceUncheckedCreateWithoutBillingChargesInput>
+export type SpaceUpsertWithoutWorkerTokensInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutWorkerTokensInput, Prisma.SpaceUncheckedUpdateWithoutWorkerTokensInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutWorkerTokensInput, Prisma.SpaceUncheckedCreateWithoutWorkerTokensInput>
   where?: Prisma.SpaceWhereInput
 }
 
-export type SpaceUpdateToOneWithWhereWithoutBillingChargesInput = {
+export type SpaceUpdateToOneWithWhereWithoutWorkerTokensInput = {
   where?: Prisma.SpaceWhereInput
-  data: Prisma.XOR<Prisma.SpaceUpdateWithoutBillingChargesInput, Prisma.SpaceUncheckedUpdateWithoutBillingChargesInput>
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutWorkerTokensInput, Prisma.SpaceUncheckedUpdateWithoutWorkerTokensInput>
 }
 
-export type SpaceUpdateWithoutBillingChargesInput = {
+export type SpaceUpdateWithoutWorkerTokensInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -35017,13 +36177,15 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
 }
 
-export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
+export type SpaceUncheckedUpdateWithoutWorkerTokensInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35110,6 +36272,7 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
   subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
   billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
 }
 
 
@@ -35193,6 +36356,7 @@ export type SpaceCountOutputType = {
   hiringMessageTemplates: number
   agentPendingActions: number
   agentLlmUsages: number
+  workerTokens: number
   billingMethods: number
   billingCharges: number
 }
@@ -35273,6 +36437,7 @@ export type SpaceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   hiringMessageTemplates?: boolean | SpaceCountOutputTypeCountHiringMessageTemplatesArgs
   agentPendingActions?: boolean | SpaceCountOutputTypeCountAgentPendingActionsArgs
   agentLlmUsages?: boolean | SpaceCountOutputTypeCountAgentLlmUsagesArgs
+  workerTokens?: boolean | SpaceCountOutputTypeCountWorkerTokensArgs
   billingMethods?: boolean | SpaceCountOutputTypeCountBillingMethodsArgs
   billingCharges?: boolean | SpaceCountOutputTypeCountBillingChargesArgs
 }
@@ -35815,6 +36980,13 @@ export type SpaceCountOutputTypeCountAgentLlmUsagesArgs<ExtArgs extends runtime.
 /**
  * SpaceCountOutputType without action
  */
+export type SpaceCountOutputTypeCountWorkerTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WorkerTokenWhereInput
+}
+
+/**
+ * SpaceCountOutputType without action
+ */
 export type SpaceCountOutputTypeCountBillingMethodsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.BillingMethodWhereInput
 }
@@ -35832,6 +37004,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   name?: boolean
   type?: boolean
   onboardingDismissedAt?: boolean
+  approvalLimitKrw?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   members?: boolean | Prisma.Space$membersArgs<ExtArgs>
@@ -35916,6 +37089,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   agentPendingActions?: boolean | Prisma.Space$agentPendingActionsArgs<ExtArgs>
   agentToggle?: boolean | Prisma.Space$agentToggleArgs<ExtArgs>
   agentLlmUsages?: boolean | Prisma.Space$agentLlmUsagesArgs<ExtArgs>
+  workerTokens?: boolean | Prisma.Space$workerTokensArgs<ExtArgs>
   subscription?: boolean | Prisma.Space$subscriptionArgs<ExtArgs>
   billingMethods?: boolean | Prisma.Space$billingMethodsArgs<ExtArgs>
   billingCharges?: boolean | Prisma.Space$billingChargesArgs<ExtArgs>
@@ -35927,6 +37101,7 @@ export type SpaceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   name?: boolean
   type?: boolean
   onboardingDismissedAt?: boolean
+  approvalLimitKrw?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["space"]>
@@ -35936,6 +37111,7 @@ export type SpaceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   name?: boolean
   type?: boolean
   onboardingDismissedAt?: boolean
+  approvalLimitKrw?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["space"]>
@@ -35945,11 +37121,12 @@ export type SpaceSelectScalar = {
   name?: boolean
   type?: boolean
   onboardingDismissedAt?: boolean
+  approvalLimitKrw?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SpaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "onboardingDismissedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["space"]>
+export type SpaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "onboardingDismissedAt" | "approvalLimitKrw" | "createdAt" | "updatedAt", ExtArgs["result"]["space"]>
 export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | Prisma.Space$membersArgs<ExtArgs>
   deckInstances?: boolean | Prisma.Space$deckInstancesArgs<ExtArgs>
@@ -36033,6 +37210,7 @@ export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   agentPendingActions?: boolean | Prisma.Space$agentPendingActionsArgs<ExtArgs>
   agentToggle?: boolean | Prisma.Space$agentToggleArgs<ExtArgs>
   agentLlmUsages?: boolean | Prisma.Space$agentLlmUsagesArgs<ExtArgs>
+  workerTokens?: boolean | Prisma.Space$workerTokensArgs<ExtArgs>
   subscription?: boolean | Prisma.Space$subscriptionArgs<ExtArgs>
   billingMethods?: boolean | Prisma.Space$billingMethodsArgs<ExtArgs>
   billingCharges?: boolean | Prisma.Space$billingChargesArgs<ExtArgs>
@@ -36126,6 +37304,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     agentPendingActions: Prisma.$AgentPendingActionPayload<ExtArgs>[]
     agentToggle: Prisma.$SpaceAgentPayload<ExtArgs> | null
     agentLlmUsages: Prisma.$AgentLlmUsagePayload<ExtArgs>[]
+    workerTokens: Prisma.$WorkerTokenPayload<ExtArgs>[]
     subscription: Prisma.$SpaceSubscriptionPayload<ExtArgs> | null
     billingMethods: Prisma.$BillingMethodPayload<ExtArgs>[]
     billingCharges: Prisma.$BillingChargePayload<ExtArgs>[]
@@ -36135,6 +37314,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     name: string
     type: $Enums.SpaceType
     onboardingDismissedAt: Date | null
+    approvalLimitKrw: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["space"]>
@@ -36613,6 +37793,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   agentPendingActions<T extends Prisma.Space$agentPendingActionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$agentPendingActionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentPendingActionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   agentToggle<T extends Prisma.Space$agentToggleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$agentToggleArgs<ExtArgs>>): Prisma.Prisma__SpaceAgentClient<runtime.Types.Result.GetResult<Prisma.$SpaceAgentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   agentLlmUsages<T extends Prisma.Space$agentLlmUsagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$agentLlmUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentLlmUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  workerTokens<T extends Prisma.Space$workerTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$workerTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkerTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   subscription<T extends Prisma.Space$subscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$subscriptionArgs<ExtArgs>>): Prisma.Prisma__SpaceSubscriptionClient<runtime.Types.Result.GetResult<Prisma.$SpaceSubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   billingMethods<T extends Prisma.Space$billingMethodsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$billingMethodsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BillingMethodPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   billingCharges<T extends Prisma.Space$billingChargesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$billingChargesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BillingChargePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -36649,6 +37830,7 @@ export interface SpaceFieldRefs {
   readonly name: Prisma.FieldRef<"Space", 'String'>
   readonly type: Prisma.FieldRef<"Space", 'SpaceType'>
   readonly onboardingDismissedAt: Prisma.FieldRef<"Space", 'DateTime'>
+  readonly approvalLimitKrw: Prisma.FieldRef<"Space", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Space", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Space", 'DateTime'>
 }
@@ -38969,6 +40151,30 @@ export type Space$agentLlmUsagesArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.AgentLlmUsageScalarFieldEnum | Prisma.AgentLlmUsageScalarFieldEnum[]
+}
+
+/**
+ * Space.workerTokens
+ */
+export type Space$workerTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WorkerToken
+   */
+  select?: Prisma.WorkerTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WorkerToken
+   */
+  omit?: Prisma.WorkerTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkerTokenInclude<ExtArgs> | null
+  where?: Prisma.WorkerTokenWhereInput
+  orderBy?: Prisma.WorkerTokenOrderByWithRelationInput | Prisma.WorkerTokenOrderByWithRelationInput[]
+  cursor?: Prisma.WorkerTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WorkerTokenScalarFieldEnum | Prisma.WorkerTokenScalarFieldEnum[]
 }
 
 /**

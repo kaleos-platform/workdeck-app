@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkspace, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerOwns } from '@/lib/worker-auth'
 import { CollectionStatus, Prisma } from '@/generated/prisma/client'
 
 // probeResult(Json) 스키마 — probeApi=true 인 CollectionRun 에만 기록된다.
@@ -55,7 +56,7 @@ export async function PATCH(
   { params }: { params: Promise<{ runId: string }> }
 ) {
   // 워커 인증
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const { runId } = await params
@@ -80,7 +81,7 @@ export async function PATCH(
   const run = await prisma.collectionRun.findUnique({
     where: { id: runId },
   })
-  if (!run) {
+  if (!run || !workerOwns(auth.scope, { workspaceId: run.workspaceId })) {
     return errorResponse('수집 실행을 찾을 수 없습니다', 404)
   }
 

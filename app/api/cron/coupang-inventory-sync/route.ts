@@ -1,8 +1,13 @@
+import type { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { withCronRun } from '@/lib/cron/with-cron-run'
+import { withCronRun, type SweepScope } from '@/lib/cron/with-cron-run'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
-import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
+import {
+  resolveCoupangWorkspaceForSpace,
+  resolveCoupangWorkspaceForSpaceStrict,
+} from '@/lib/inv/resolve-coupang-workspace'
+import { workerHeartbeatServices } from '@/lib/worker-auth'
 import { getCoupangInventoryRows } from '@/lib/inv/reconciliation-sources'
 import { aggregateMatchedByOption } from '@/lib/inv/reconciliation-resolve'
 import {
@@ -31,7 +36,7 @@ const MAX_SYSTEM_ONLY_RATIO = 0.2 // 스냅샷에 없는 재고 보유 옵션 �
 const MIN_ABS_FOR_RATIO_GUARD = 10
 
 /**
- * GET /api/cron/coupang-inventory-sync — 워커 체이닝 전용(x-worker-api-key).
+ * GET /api/cron/coupang-inventory-sync — 워커 체이닝 전용(x-worker-api-key). 워커 Space 토큰은 자기 Space 만 처리한다.
  *
  * 쿠팡 로켓그로스 최신 재고현황(inventory_health) 스냅샷을 자동 대조·반영해
  * InvStockLevel 을 실측 기준으로 보정한다. 수동 '데이터 연동' 버튼 없이 매일 동작.
@@ -56,12 +61,13 @@ const MIN_ABS_FOR_RATIO_GUARD = 10
  * withCronRun 으로 감싸 CronRun 에 실행 이력을 남긴다. 등록 cron 이 아니라서
  * "워커가 안 불렀다"와 "불렀는데 실패했다"를 구별할 다른 수단이 없다.
  */
-async function runInventorySync() {
+async function runInventorySync(_request: NextRequest, scope: SweepScope) {
   const locations = await prisma.invStorageLocation.findMany({
     where: {
       externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
       isActive: true,
       locationMappings: { some: {} },
+      ...(scope.spaceId ? { spaceId: scope.spaceId } : {}),
     },
     select: { spaceId: true },
     distinct: ['spaceId'],
@@ -88,7 +94,10 @@ async function runInventorySync() {
         continue
       }
 
-      const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
+      // Space 토큰 스윕은 인증 경계와 같은 엄격 해석 — 공유·모호한 연결이면 건너뛴다.
+      const resolved = scope.spaceId
+        ? await resolveCoupangWorkspaceForSpaceStrict(spaceId)
+        : await resolveCoupangWorkspaceForSpace(spaceId)
       if (!resolved) {
         summary.push({ spaceId, status: 'skip:no-workspace-link' })
         continue
@@ -287,13 +296,15 @@ async function runInventorySync() {
     }
   }
 
-  await prisma.workerHeartbeat
-    .upsert({
-      where: { service: WORKER_SERVICE },
-      create: { service: WORKER_SERVICE, lastPingAt: new Date() },
-      update: { lastPingAt: new Date() },
-    })
-    .catch(() => {})
+  for (const service of workerHeartbeatServices(WORKER_SERVICE, scope.spaceId)) {
+    await prisma.workerHeartbeat
+      .upsert({
+        where: { service },
+        create: { service, lastPingAt: new Date() },
+        update: { lastPingAt: new Date() },
+      })
+      .catch(() => {})
+  }
 
   return { spaces: summary }
 }

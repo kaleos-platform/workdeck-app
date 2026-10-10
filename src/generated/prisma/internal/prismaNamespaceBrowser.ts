@@ -196,7 +196,8 @@ export const ModelName = {
   SubscriptionItem: 'SubscriptionItem',
   BillingMethod: 'BillingMethod',
   BillingCharge: 'BillingCharge',
-  AdminAuditLog: 'AdminAuditLog'
+  AdminAuditLog: 'AdminAuditLog',
+  WorkerToken: 'WorkerToken'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -365,6 +366,7 @@ export const SpaceScalarFieldEnum = {
   name: 'name',
   type: 'type',
   onboardingDismissedAt: 'onboardingDismissedAt',
+  approvalLimitKrw: 'approvalLimitKrw',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -377,6 +379,7 @@ export const SpaceMemberScalarFieldEnum = {
   spaceId: 'spaceId',
   userId: 'userId',
   role: 'role',
+  slackUserId: 'slackUserId',
   createdAt: 'createdAt'
 } as const
 
@@ -2678,6 +2681,20 @@ export const AdminAuditLogScalarFieldEnum = {
 } as const
 
 export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
+export const WorkerTokenScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  tokenHash: 'tokenHash',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  lastUsedAt: 'lastUsedAt'
+} as const
+
+export type WorkerTokenScalarFieldEnum = (typeof WorkerTokenScalarFieldEnum)[keyof typeof WorkerTokenScalarFieldEnum]
 
 
 export const SortOrder = {
