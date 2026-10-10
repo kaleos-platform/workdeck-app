@@ -6,7 +6,8 @@
  *   1) payload.team.id로 조회한 SlackInstallation.spaceId === action.spaceId
  *      (cross-team 위조 차단 — 다른 Slack workspace가 남의 액션을 결정할 수 없다).
  *   2) payload.channel.id === action.slackChannelId (원본 알림 채널에서만 결정).
- *   Slack 사용자 → 워크덱 역할 매핑은 M3 범위 밖(채널 접근권=승인권으로 간주).
+ *   3) 누른 사람이 Slack 연결된 구성원이고 역할이 충분해야 한다(ADMIN 이상, 지출 제안은 OWNER).
+ *      승인자는 구성원 User.id 로 기록한다.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
@@ -14,6 +15,8 @@ import { verifySlackSignature } from '@/lib/slack/verify'
 import { postResponseUrl } from '@/lib/slack/client'
 import { approveAndExecute, rejectAction } from '@/lib/agent/actions/execute'
 import { syncSlackDecision } from '@/lib/slack/sync-decision'
+import { decryptBotToken } from '@/lib/slack/token-crypto'
+import { resolveSlackMember } from '@/lib/slack/member-link'
 
 export const runtime = 'nodejs'
 
@@ -76,7 +79,7 @@ export async function POST(req: NextRequest) {
   // 액션 로드 — 없으면 조용히 200.
   const pending = await prisma.agentPendingAction.findUnique({
     where: { id: actionId },
-    select: { id: true, spaceId: true, slackChannelId: true },
+    select: { id: true, spaceId: true, slackChannelId: true, actionType: true, payload: true },
   })
   if (!pending) return NextResponse.json({ ok: true })
 
@@ -86,7 +89,7 @@ export async function POST(req: NextRequest) {
 
   const installation = await prisma.slackInstallation.findUnique({
     where: { teamId },
-    select: { spaceId: true },
+    select: { spaceId: true, botToken: true, botTokenIv: true },
   })
   if (!installation || installation.spaceId !== pending.spaceId) {
     // cross-team 위조 — 조용히 무시(공격자에게 정보 노출 안 함).
@@ -98,14 +101,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
-  const decider = `slack:${payload.user?.id ?? 'unknown'}`
+  const slackUserId = payload.user?.id
+  if (!slackUserId) return NextResponse.json({ ok: true })
+
+  // 승인자 확인: Slack 연결된 구성원 + 역할.
+  const member = await resolveSlackMember({
+    spaceId: pending.spaceId,
+    slackUserId,
+    getBotToken: () => decryptBotToken(installation.botToken, installation.botTokenIv),
+  })
+  if (!member) {
+    if (payload.response_url) {
+      await postEphemeral(
+        payload.response_url,
+        '워크덱 구성원과 Slack 연결이 없어 승인할 수 없습니다. 관리자에게 Slack 연결을 요청하세요.'
+      )
+    }
+    return NextResponse.json({ ok: true })
+  }
+
+  // 역할 검사(ADMIN 이상, 지출 제안 승인은 OWNER)는 approveAndExecute/rejectAction 안에서 한다.
   const outcome =
     decision === 'approve'
-      ? await approveAndExecute(actionId, decider)
-      : await rejectAction(actionId, decider)
+      ? await approveAndExecute(actionId, member.userId)
+      : await rejectAction(actionId, member.userId)
 
-  // 구독 만료로 차단 — 결정이 없었으므로 원본 메시지를 건드리지 않는다.
-  if (outcome.status === 'BLOCKED') {
+  // 역할 부족·구독 만료 — 결정이 없었으므로 원본 메시지를 건드리지 않는다.
+  if (outcome.status === 'FORBIDDEN' || outcome.status === 'BLOCKED') {
     if (payload.response_url) await postEphemeral(payload.response_url, outcome.message)
     return NextResponse.json({ ok: true })
   }

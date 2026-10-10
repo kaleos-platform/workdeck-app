@@ -33,6 +33,9 @@ oauth_config:
       - channels:read
       # M4: app_mention 이벤트 수신에 필요.
       - app_mentions:read
+      # 0.5단계: Slack 승인자를 구성원과 이메일로 자동 연결(users.info)
+      - users:read
+      - users:read.email
 
 settings:
   interactivity:

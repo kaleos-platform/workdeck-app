@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { getActionDefinition } from './registry'
+import { deciderDenial } from './decision-policy'
 
 // 결정 결과 — API·Slack 핸들러가 그대로 응답에 쓴다.
 export type DecisionOutcome =
@@ -13,6 +14,8 @@ export type DecisionOutcome =
   | { ok: false; status: 'BLOCKED'; message: string }
   // PENDING이지만 expiresAt이 지남 — EXPIRED 전환(lazy expire·cron) 전이라도 승인 차단.
   | { ok: false; status: 'EXPIRED'; message: string }
+  // 결정자가 Space 구성원이 아니거나 역할 부족(지출 제안은 OWNER) — 상태를 바꾸지 않는다.
+  | { ok: false; status: 'FORBIDDEN'; message: string }
 
 /**
  * 액션 승인 + 즉시 실행. 동시 승인 경합을 조건부 update로 차단한다.
@@ -38,9 +41,12 @@ export async function approveAndExecute(
   // 승인 게이트의 "updateMany count===1" 불변식도 건드리지 않는다.
   const pre = await prisma.agentPendingAction.findUnique({
     where: { id: actionId },
-    select: { status: true, spaceId: true, deckKey: true },
+    select: { status: true, spaceId: true, deckKey: true, actionType: true, payload: true },
   })
   if (pre?.status === 'PENDING') {
+    // 결정자 역할 검사 — Slack·웹·MCP 승인 경로가 모두 이 함수를 지나므로 여기서 한 번에 닫는다.
+    const denial = await deciderDenial(pre, deciderId, 'approve')
+    if (denial) return { ok: false, status: 'FORBIDDEN', message: denial }
     const blocked = await assertDeckWritable(pre.spaceId, pre.deckKey)
     if (blocked) return { ok: false, status: 'BLOCKED', message: blocked }
   }
@@ -117,6 +123,14 @@ export async function approveAndExecute(
  * 액션 거부. 승인과 동일한 조건부 전이로 경합을 차단한다.
  */
 export async function rejectAction(actionId: string, deciderId: string): Promise<DecisionOutcome> {
+  const pre = await prisma.agentPendingAction.findUnique({
+    where: { id: actionId },
+    select: { status: true, spaceId: true, actionType: true, payload: true },
+  })
+  if (pre?.status === 'PENDING') {
+    const denial = await deciderDenial(pre, deciderId, 'reject')
+    if (denial) return { ok: false, status: 'FORBIDDEN', message: denial }
+  }
   const gate = await prisma.agentPendingAction.updateMany({
     where: { id: actionId, status: 'PENDING' },
     data: { status: 'REJECTED', decidedBy: deciderId, decidedAt: new Date() },

@@ -9,10 +9,9 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
-import { errorResponse, assertRole } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { approveAndExecute, rejectAction } from '@/lib/agent/actions/execute'
-import { getActionDefinition } from '@/lib/agent/actions/registry'
 import { syncSlackDecision } from '@/lib/slack/sync-decision'
 import type { SpaceMemberRole } from '@/lib/api-helpers'
 
@@ -67,16 +66,15 @@ export async function PATCH(
   const role = await callerRoleInSpace(user.id, action.spaceId)
   if (!role) return errorResponse('권한이 없습니다', 403)
 
-  // 액션 정의의 requiredRole 이상이어야 결정 가능(기본 ADMIN).
-  const def = getActionDefinition(action.actionType)
-  const required: SpaceMemberRole = def?.requiredRole ?? 'ADMIN'
-  const roleError = assertRole(role, required)
-  if (roleError) return roleError
-
   const outcome =
     decision === 'approve'
       ? await approveAndExecute(actionId, user.id)
       : await rejectAction(actionId, user.id)
+
+  // 역할 부족(지출 제안은 OWNER) — 상태 변화 없음.
+  if (outcome.status === 'FORBIDDEN') {
+    return NextResponse.json({ outcome }, { status: 403 })
+  }
 
   // 구독 만료로 차단 — 아무 상태도 바뀌지 않았으므로 Slack 동기화도 하지 않는다.
   if (outcome.status === 'BLOCKED') {

@@ -20,8 +20,18 @@ export type SpaceModel = runtime.Types.Result.DefaultSelection<Prisma.$SpacePayl
 
 export type AggregateSpace = {
   _count: SpaceCountAggregateOutputType | null
+  _avg: SpaceAvgAggregateOutputType | null
+  _sum: SpaceSumAggregateOutputType | null
   _min: SpaceMinAggregateOutputType | null
   _max: SpaceMaxAggregateOutputType | null
+}
+
+export type SpaceAvgAggregateOutputType = {
+  approvalLimitKrw: number | null
+}
+
+export type SpaceSumAggregateOutputType = {
+  approvalLimitKrw: number | null
 }
 
 export type SpaceMinAggregateOutputType = {
@@ -29,6 +39,7 @@ export type SpaceMinAggregateOutputType = {
   name: string | null
   type: $Enums.SpaceType | null
   onboardingDismissedAt: Date | null
+  approvalLimitKrw: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -38,6 +49,7 @@ export type SpaceMaxAggregateOutputType = {
   name: string | null
   type: $Enums.SpaceType | null
   onboardingDismissedAt: Date | null
+  approvalLimitKrw: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -47,17 +59,27 @@ export type SpaceCountAggregateOutputType = {
   name: number
   type: number
   onboardingDismissedAt: number
+  approvalLimitKrw: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
+export type SpaceAvgAggregateInputType = {
+  approvalLimitKrw?: true
+}
+
+export type SpaceSumAggregateInputType = {
+  approvalLimitKrw?: true
+}
+
 export type SpaceMinAggregateInputType = {
   id?: true
   name?: true
   type?: true
   onboardingDismissedAt?: true
+  approvalLimitKrw?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -67,6 +89,7 @@ export type SpaceMaxAggregateInputType = {
   name?: true
   type?: true
   onboardingDismissedAt?: true
+  approvalLimitKrw?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -76,6 +99,7 @@ export type SpaceCountAggregateInputType = {
   name?: true
   type?: true
   onboardingDismissedAt?: true
+  approvalLimitKrw?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -119,6 +143,18 @@ export type SpaceAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: SpaceAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: SpaceSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: SpaceMinAggregateInputType
@@ -149,6 +185,8 @@ export type SpaceGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: SpaceCountAggregateInputType | true
+  _avg?: SpaceAvgAggregateInputType
+  _sum?: SpaceSumAggregateInputType
   _min?: SpaceMinAggregateInputType
   _max?: SpaceMaxAggregateInputType
 }
@@ -158,9 +196,12 @@ export type SpaceGroupByOutputType = {
   name: string
   type: $Enums.SpaceType
   onboardingDismissedAt: Date | null
+  approvalLimitKrw: number | null
   createdAt: Date
   updatedAt: Date
   _count: SpaceCountAggregateOutputType | null
+  _avg: SpaceAvgAggregateOutputType | null
+  _sum: SpaceSumAggregateOutputType | null
   _min: SpaceMinAggregateOutputType | null
   _max: SpaceMaxAggregateOutputType | null
 }
@@ -188,6 +229,7 @@ export type SpaceWhereInput = {
   name?: Prisma.StringFilter<"Space"> | string
   type?: Prisma.EnumSpaceTypeFilter<"Space"> | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.DateTimeNullableFilter<"Space"> | Date | string | null
+  approvalLimitKrw?: Prisma.IntNullableFilter<"Space"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   members?: Prisma.SpaceMemberListRelationFilter
@@ -283,6 +325,7 @@ export type SpaceOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   members?: Prisma.SpaceMemberOrderByRelationAggregateInput
@@ -381,6 +424,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Space"> | string
   type?: Prisma.EnumSpaceTypeFilter<"Space"> | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.DateTimeNullableFilter<"Space"> | Date | string | null
+  approvalLimitKrw?: Prisma.IntNullableFilter<"Space"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   members?: Prisma.SpaceMemberListRelationFilter
@@ -476,11 +520,14 @@ export type SpaceOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SpaceCountOrderByAggregateInput
+  _avg?: Prisma.SpaceAvgOrderByAggregateInput
   _max?: Prisma.SpaceMaxOrderByAggregateInput
   _min?: Prisma.SpaceMinOrderByAggregateInput
+  _sum?: Prisma.SpaceSumOrderByAggregateInput
 }
 
 export type SpaceScalarWhereWithAggregatesInput = {
@@ -491,6 +538,7 @@ export type SpaceScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Space"> | string
   type?: Prisma.EnumSpaceTypeWithAggregatesFilter<"Space"> | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Space"> | Date | string | null
+  approvalLimitKrw?: Prisma.IntNullableWithAggregatesFilter<"Space"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Space"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Space"> | Date | string
 }
@@ -500,6 +548,7 @@ export type SpaceCreateInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -595,6 +644,7 @@ export type SpaceUncheckedCreateInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -690,6 +740,7 @@ export type SpaceUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -785,6 +836,7 @@ export type SpaceUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -880,6 +932,7 @@ export type SpaceCreateManyInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -889,6 +942,7 @@ export type SpaceUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -898,6 +952,7 @@ export type SpaceUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -907,8 +962,13 @@ export type SpaceCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type SpaceAvgOrderByAggregateInput = {
+  approvalLimitKrw?: Prisma.SortOrder
 }
 
 export type SpaceMaxOrderByAggregateInput = {
@@ -916,6 +976,7 @@ export type SpaceMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -925,8 +986,13 @@ export type SpaceMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   onboardingDismissedAt?: Prisma.SortOrder
+  approvalLimitKrw?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type SpaceSumOrderByAggregateInput = {
+  approvalLimitKrw?: Prisma.SortOrder
 }
 
 export type SpaceScalarRelationFilter = {
@@ -2158,6 +2224,7 @@ export type SpaceCreateWithoutMembersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
@@ -2252,6 +2319,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
@@ -2362,6 +2430,7 @@ export type SpaceUpdateWithoutMembersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
@@ -2456,6 +2525,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2550,6 +2620,7 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -2644,6 +2715,7 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -2754,6 +2826,7 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -2848,6 +2921,7 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2942,6 +3016,7 @@ export type SpaceCreateWithoutAgentToggleInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -3036,6 +3111,7 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -3146,6 +3222,7 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -3240,6 +3317,7 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3334,6 +3412,7 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -3428,6 +3507,7 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -3538,6 +3618,7 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -3632,6 +3713,7 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3726,6 +3808,7 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -3820,6 +3903,7 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -3930,6 +4014,7 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -4024,6 +4109,7 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4118,6 +4204,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -4212,6 +4299,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -4322,6 +4410,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -4416,6 +4505,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4510,6 +4600,7 @@ export type SpaceCreateWithoutCoupangProductItemsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -4604,6 +4695,7 @@ export type SpaceUncheckedCreateWithoutCoupangProductItemsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -4714,6 +4806,7 @@ export type SpaceUpdateWithoutCoupangProductItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -4808,6 +4901,7 @@ export type SpaceUncheckedUpdateWithoutCoupangProductItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4902,6 +4996,7 @@ export type SpaceCreateWithoutCoupangWriteJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -4996,6 +5091,7 @@ export type SpaceUncheckedCreateWithoutCoupangWriteJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -5106,6 +5202,7 @@ export type SpaceUpdateWithoutCoupangWriteJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -5200,6 +5297,7 @@ export type SpaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5294,6 +5392,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -5388,6 +5487,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -5498,6 +5598,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -5592,6 +5693,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5686,6 +5788,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -5780,6 +5883,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -5890,6 +5994,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -5984,6 +6089,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6078,6 +6184,7 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -6172,6 +6279,7 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -6282,6 +6390,7 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -6376,6 +6485,7 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6470,6 +6580,7 @@ export type SpaceCreateWithoutProductExtractionJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -6564,6 +6675,7 @@ export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -6674,6 +6786,7 @@ export type SpaceUpdateWithoutProductExtractionJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -6768,6 +6881,7 @@ export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6862,6 +6976,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -6956,6 +7071,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -7066,6 +7182,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -7160,6 +7277,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7254,6 +7372,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -7348,6 +7467,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -7458,6 +7578,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -7552,6 +7673,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7646,6 +7768,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -7740,6 +7863,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -7850,6 +7974,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -7944,6 +8069,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8038,6 +8164,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -8132,6 +8259,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -8242,6 +8370,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -8336,6 +8465,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8430,6 +8560,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -8524,6 +8655,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -8634,6 +8766,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -8728,6 +8861,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8822,6 +8956,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -8916,6 +9051,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -9026,6 +9162,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -9120,6 +9257,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9214,6 +9352,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -9308,6 +9447,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -9418,6 +9558,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -9512,6 +9653,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9606,6 +9748,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -9700,6 +9843,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -9810,6 +9954,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -9904,6 +10049,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9998,6 +10144,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -10092,6 +10239,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -10202,6 +10350,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -10296,6 +10445,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10390,6 +10540,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -10484,6 +10635,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -10594,6 +10746,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -10688,6 +10841,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10782,6 +10936,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -10876,6 +11031,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -10986,6 +11142,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -11080,6 +11237,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11174,6 +11332,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -11268,6 +11427,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -11378,6 +11538,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -11472,6 +11633,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11566,6 +11728,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -11660,6 +11823,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -11770,6 +11934,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -11864,6 +12029,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11958,6 +12124,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -12052,6 +12219,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -12162,6 +12330,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -12256,6 +12425,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12350,6 +12520,7 @@ export type SpaceCreateWithoutBrandsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -12444,6 +12615,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -12554,6 +12726,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -12648,6 +12821,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12742,6 +12916,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -12836,6 +13011,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -12946,6 +13122,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -13040,6 +13217,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13134,6 +13312,7 @@ export type SpaceCreateWithoutChannelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -13228,6 +13407,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -13338,6 +13518,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -13432,6 +13613,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13526,6 +13708,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -13620,6 +13803,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -13730,6 +13914,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -13824,6 +14009,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13918,6 +14104,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -14012,6 +14199,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -14122,6 +14310,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -14216,6 +14405,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14310,6 +14500,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -14404,6 +14595,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -14514,6 +14706,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -14608,6 +14801,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14702,6 +14896,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -14796,6 +14991,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -14906,6 +15102,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -15000,6 +15197,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15094,6 +15292,7 @@ export type SpaceCreateWithoutAtomicWordsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -15188,6 +15387,7 @@ export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -15298,6 +15498,7 @@ export type SpaceUpdateWithoutAtomicWordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -15392,6 +15593,7 @@ export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15486,6 +15688,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -15580,6 +15783,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -15690,6 +15894,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -15784,6 +15989,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15878,6 +16084,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -15972,6 +16179,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -16082,6 +16290,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -16176,6 +16385,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16270,6 +16480,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -16364,6 +16575,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -16474,6 +16686,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -16568,6 +16781,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16662,6 +16876,7 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -16756,6 +16971,7 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -16866,6 +17082,7 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -16960,6 +17177,7 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17054,6 +17272,7 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -17148,6 +17367,7 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -17258,6 +17478,7 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -17352,6 +17573,7 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17446,6 +17668,7 @@ export type SpaceCreateWithoutKeywordChangeLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -17540,6 +17763,7 @@ export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -17650,6 +17874,7 @@ export type SpaceUpdateWithoutKeywordChangeLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -17744,6 +17969,7 @@ export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17838,6 +18064,7 @@ export type SpaceCreateWithoutProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -17932,6 +18159,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -18042,6 +18270,7 @@ export type SpaceUpdateWithoutProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -18136,6 +18365,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18230,6 +18460,7 @@ export type SpaceCreateWithoutPersonasInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -18324,6 +18555,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -18434,6 +18666,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -18528,6 +18761,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18622,6 +18856,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -18716,6 +18951,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -18826,6 +19062,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -18920,6 +19157,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19014,6 +19252,7 @@ export type SpaceCreateWithoutSalesContentOnboardingInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -19108,6 +19347,7 @@ export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -19218,6 +19458,7 @@ export type SpaceUpdateWithoutSalesContentOnboardingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -19312,6 +19553,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19406,6 +19648,7 @@ export type SpaceCreateWithoutScOnboardingResourcesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -19500,6 +19743,7 @@ export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -19610,6 +19854,7 @@ export type SpaceUpdateWithoutScOnboardingResourcesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -19704,6 +19949,7 @@ export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19798,6 +20044,7 @@ export type SpaceCreateWithoutAiSettingInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -19892,6 +20139,7 @@ export type SpaceUncheckedCreateWithoutAiSettingInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -20002,6 +20250,7 @@ export type SpaceUpdateWithoutAiSettingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -20096,6 +20345,7 @@ export type SpaceUncheckedUpdateWithoutAiSettingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20190,6 +20440,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -20284,6 +20535,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -20394,6 +20646,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -20488,6 +20741,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20582,6 +20836,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -20676,6 +20931,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -20786,6 +21042,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -20880,6 +21137,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20974,6 +21232,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -21068,6 +21327,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -21178,6 +21438,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -21272,6 +21533,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21366,6 +21628,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -21460,6 +21723,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -21570,6 +21834,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -21664,6 +21929,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21758,6 +22024,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -21852,6 +22119,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -21962,6 +22230,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -22056,6 +22325,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22150,6 +22420,7 @@ export type SpaceCreateWithoutContentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -22244,6 +22515,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -22354,6 +22626,7 @@ export type SpaceUpdateWithoutContentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -22448,6 +22721,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22542,6 +22816,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -22636,6 +22911,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -22746,6 +23022,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -22840,6 +23117,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22934,6 +23212,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -23028,6 +23307,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -23138,6 +23418,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -23232,6 +23513,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23326,6 +23608,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -23420,6 +23703,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -23530,6 +23814,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -23624,6 +23909,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23718,6 +24004,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -23812,6 +24099,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -23922,6 +24210,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -24016,6 +24305,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24110,6 +24400,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -24204,6 +24495,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -24314,6 +24606,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -24408,6 +24701,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24502,6 +24796,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -24596,6 +24891,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -24706,6 +25002,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -24800,6 +25097,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24894,6 +25192,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -24988,6 +25287,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -25098,6 +25398,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -25192,6 +25493,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25286,6 +25588,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -25380,6 +25683,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -25490,6 +25794,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -25584,6 +25889,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25678,6 +25984,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -25772,6 +26079,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -25882,6 +26190,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -25976,6 +26285,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26070,6 +26380,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -26164,6 +26475,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -26274,6 +26586,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -26368,6 +26681,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26462,6 +26776,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -26556,6 +26871,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -26666,6 +26982,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -26760,6 +27077,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26854,6 +27172,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -26948,6 +27267,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -27058,6 +27378,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -27152,6 +27473,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27246,6 +27568,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -27340,6 +27663,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -27450,6 +27774,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -27544,6 +27869,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27638,6 +27964,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -27732,6 +28059,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -27842,6 +28170,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -27936,6 +28265,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28030,6 +28360,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -28124,6 +28455,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -28234,6 +28566,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -28328,6 +28661,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28422,6 +28756,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -28516,6 +28851,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -28626,6 +28962,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -28720,6 +29057,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28814,6 +29152,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -28908,6 +29247,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -29018,6 +29358,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -29112,6 +29453,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29206,6 +29548,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -29300,6 +29643,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -29410,6 +29754,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -29504,6 +29849,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29598,6 +29944,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -29692,6 +30039,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -29802,6 +30150,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -29896,6 +30245,7 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29990,6 +30340,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -30084,6 +30435,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -30194,6 +30546,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -30288,6 +30641,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30382,6 +30736,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -30476,6 +30831,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -30586,6 +30942,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -30680,6 +31037,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30774,6 +31132,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -30868,6 +31227,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -30978,6 +31338,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -31072,6 +31433,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31166,6 +31528,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -31260,6 +31623,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -31370,6 +31734,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -31464,6 +31829,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31558,6 +31924,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -31652,6 +32019,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -31762,6 +32130,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -31856,6 +32225,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31950,6 +32320,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -32044,6 +32415,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -32154,6 +32526,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -32248,6 +32621,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32342,6 +32716,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -32436,6 +32811,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -32546,6 +32922,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -32640,6 +33017,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32734,6 +33112,7 @@ export type SpaceCreateWithoutHiringUploadSessionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -32828,6 +33207,7 @@ export type SpaceUncheckedCreateWithoutHiringUploadSessionsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -32938,6 +33318,7 @@ export type SpaceUpdateWithoutHiringUploadSessionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -33032,6 +33413,7 @@ export type SpaceUncheckedUpdateWithoutHiringUploadSessionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33126,6 +33508,7 @@ export type SpaceCreateWithoutHiringMigrationRecordsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -33220,6 +33603,7 @@ export type SpaceUncheckedCreateWithoutHiringMigrationRecordsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -33330,6 +33714,7 @@ export type SpaceUpdateWithoutHiringMigrationRecordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -33424,6 +33809,7 @@ export type SpaceUncheckedUpdateWithoutHiringMigrationRecordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33518,6 +33904,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -33612,6 +33999,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -33722,6 +34110,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -33816,6 +34205,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33910,6 +34300,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -34004,6 +34395,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -34114,6 +34506,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -34208,6 +34601,7 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34302,6 +34696,7 @@ export type SpaceCreateWithoutSubscriptionInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -34396,6 +34791,7 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -34506,6 +34902,7 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -34600,6 +34997,7 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34694,6 +35092,7 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -34788,6 +35187,7 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -34898,6 +35298,7 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -34992,6 +35393,7 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35086,6 +35488,7 @@ export type SpaceCreateWithoutBillingChargesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -35180,6 +35583,7 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -35290,6 +35694,7 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -35384,6 +35789,7 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35478,6 +35884,7 @@ export type SpaceCreateWithoutWorkerTokensInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
@@ -35572,6 +35979,7 @@ export type SpaceUncheckedCreateWithoutWorkerTokensInput = {
   name: string
   type?: $Enums.SpaceType
   onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
@@ -35682,6 +36090,7 @@ export type SpaceUpdateWithoutWorkerTokensInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
@@ -35776,6 +36185,7 @@ export type SpaceUncheckedUpdateWithoutWorkerTokensInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
   onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
@@ -36594,6 +37004,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   name?: boolean
   type?: boolean
   onboardingDismissedAt?: boolean
+  approvalLimitKrw?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   members?: boolean | Prisma.Space$membersArgs<ExtArgs>
@@ -36690,6 +37101,7 @@ export type SpaceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   name?: boolean
   type?: boolean
   onboardingDismissedAt?: boolean
+  approvalLimitKrw?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["space"]>
@@ -36699,6 +37111,7 @@ export type SpaceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   name?: boolean
   type?: boolean
   onboardingDismissedAt?: boolean
+  approvalLimitKrw?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["space"]>
@@ -36708,11 +37121,12 @@ export type SpaceSelectScalar = {
   name?: boolean
   type?: boolean
   onboardingDismissedAt?: boolean
+  approvalLimitKrw?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SpaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "onboardingDismissedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["space"]>
+export type SpaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "onboardingDismissedAt" | "approvalLimitKrw" | "createdAt" | "updatedAt", ExtArgs["result"]["space"]>
 export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | Prisma.Space$membersArgs<ExtArgs>
   deckInstances?: boolean | Prisma.Space$deckInstancesArgs<ExtArgs>
@@ -36900,6 +37314,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     name: string
     type: $Enums.SpaceType
     onboardingDismissedAt: Date | null
+    approvalLimitKrw: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["space"]>
@@ -37415,6 +37830,7 @@ export interface SpaceFieldRefs {
   readonly name: Prisma.FieldRef<"Space", 'String'>
   readonly type: Prisma.FieldRef<"Space", 'SpaceType'>
   readonly onboardingDismissedAt: Prisma.FieldRef<"Space", 'DateTime'>
+  readonly approvalLimitKrw: Prisma.FieldRef<"Space", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Space", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Space", 'DateTime'>
 }
