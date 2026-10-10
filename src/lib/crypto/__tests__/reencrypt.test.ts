@@ -1,6 +1,12 @@
 /** @jest-environment node */
 import crypto from 'node:crypto'
-import { decryptField, encryptField, isV1 } from '../field-crypto'
+import {
+  decryptField,
+  encryptField,
+  isV1,
+  purposeEnvName,
+  type CryptoPurpose,
+} from '../field-crypto'
 import { reencryptLegacyFields, upgradeIfLegacy } from '../reencrypt'
 
 const LEGACY = 'c'.repeat(64)
@@ -10,13 +16,26 @@ function legacyCbc(plaintext: string) {
   return { encrypted: c.update(plaintext, 'utf8', 'hex') + c.final('hex'), iv: iv.toString('hex') }
 }
 
+const PURPOSES: CryptoPurpose[] = [
+  'collection-credential',
+  'channel-credential',
+  'pii',
+  'slack-token',
+  'billing-key',
+  'ai-key',
+  'space-credential',
+]
+// field-crypto.test.ts 의 ENV_KEYS 와 같은 목록 — 용도별 직접 키가 남아 있으면 루트 파생 대신 그 키를 쓴다.
+const ENV_KEYS = [
+  'ENCRYPTION_WRITE_VERSION',
+  'VERCEL_ENV',
+  'ENCRYPTION_KEY_V1_K2',
+  'ENCRYPTION_KEY_V1_ACTIVE_KID',
+  ...PURPOSES.flatMap((p) => [purposeEnvName(p), purposeEnvName(p, 'k2')]),
+]
+
 beforeEach(() => {
-  for (const k of [
-    'ENCRYPTION_WRITE_VERSION',
-    'VERCEL_ENV',
-    'ENCRYPTION_KEY_V1_K2',
-    'ENCRYPTION_KEY_V1_ACTIVE_KID',
-  ]) {
+  for (const k of ENV_KEYS) {
     delete process.env[k]
   }
   process.env.ENCRYPTION_KEY_V1 = 'a'.repeat(64)
@@ -96,6 +115,18 @@ describe('upgradeIfLegacy', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     await expect(upgradeIfLegacy('ai-key', legacyCbc('sk'), 'sk', save)).resolves.toBeUndefined()
     expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  test.each([
+    ['Error', new Error('connect failed password=SYNTHETIC-SECRET-1')],
+    ['비 Error 값', 'SYNTHETIC-SECRET-2 token'],
+  ])('저장 실패 로그에 오류 메시지(비밀값 가능)를 남기지 않는다 — %s', async (_kind, reason) => {
+    const save = jest.fn().mockRejectedValue(reason)
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    await upgradeIfLegacy('ai-key', legacyCbc('sk'), 'sk', save)
+    expect(warn).toHaveBeenCalled()
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('SYNTHETIC-SECRET')
     warn.mockRestore()
   })
 })

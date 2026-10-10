@@ -37,7 +37,8 @@ const GCM_TAG_BYTES = 16
 const CBC_IV_BYTES = 16
 
 function readHexKey(name: string): Buffer | null {
-  const hex = process.env[name]
+  // K0 은 기존 getKeyBuffer(src/lib/del/encryption.ts)처럼 앞뒤 공백·줄바꿈을 허용한다(운영 값 그대로 읽기). v1 키는 엄격.
+  const hex = name === 'ENCRYPTION_KEY' ? process.env[name]?.trim() : process.env[name]
   if (!hex) return null
   const buf = Buffer.from(hex, 'hex')
   if (hex.length !== KEY_BYTES * 2 || buf.length !== KEY_BYTES) {
@@ -78,11 +79,11 @@ function purposeKey(purpose: CryptoPurpose, kid: string): Buffer {
 }
 
 export function fieldWriteVersion(purpose?: CryptoPurpose): 'v0' | 'v1' {
-  if (purpose === 'space-credential') return 'v1' // 이 용도를 읽는 구버전 코드가 없다
   const v =
     process.env.ENCRYPTION_WRITE_VERSION || (process.env.VERCEL_ENV === 'production' ? 'v0' : 'v1')
   if (v !== 'v0' && v !== 'v1')
     throw new Error('ENCRYPTION_WRITE_VERSION 은 v0 또는 v1 이어야 합니다')
+  if (purpose === 'space-credential') return 'v1' // 이 용도를 읽는 구버전 코드가 없다
   return v
 }
 
@@ -133,13 +134,21 @@ export function encryptField(purpose: CryptoPurpose, plaintext: string): StoredF
   }
 }
 
+// Buffer.from(…, 'base64') 는 잘못된 문자를 조용히 버린다 — 다시 인코딩해 같을 때만 받는다(빈 문자열 허용).
+function strictBase64(s: string): Buffer {
+  const buf = Buffer.from(s, 'base64')
+  if (buf.toString('base64') !== s) throw new Error('v1 암호문 형식이 올바르지 않습니다')
+  return buf
+}
+
 function decryptV1(purpose: CryptoPurpose, encrypted: string): string {
   const parts = encrypted.split(':')
   if (parts.length !== 5 || !KID_RE.test(parts[1])) {
     throw new Error('v1 암호문 형식이 올바르지 않습니다')
   }
-  const iv = Buffer.from(parts[2], 'base64')
-  const tag = Buffer.from(parts[3], 'base64')
+  const iv = strictBase64(parts[2])
+  const tag = strictBase64(parts[3])
+  const ct = strictBase64(parts[4])
   // 짧은 태그를 받아주면 위조 난이도가 떨어진다 — 길이를 고정 검사한다.
   if (iv.length !== GCM_IV_BYTES || tag.length !== GCM_TAG_BYTES) {
     throw new Error('v1 암호문 형식이 올바르지 않습니다')
@@ -148,10 +157,7 @@ function decryptV1(purpose: CryptoPurpose, encrypted: string): string {
     authTagLength: GCM_TAG_BYTES,
   })
   decipher.setAuthTag(tag)
-  return Buffer.concat([
-    decipher.update(Buffer.from(parts[4], 'base64')),
-    decipher.final(),
-  ]).toString('utf8')
+  return Buffer.concat([decipher.update(ct), decipher.final()]).toString('utf8')
 }
 
 function decryptV0(encrypted: string, iv: string): string {
@@ -164,6 +170,9 @@ function decryptV0(encrypted: string, iv: string): string {
 export function decryptField(purpose: CryptoPurpose, encrypted: string, iv: string): string {
   if (iv === 'none') {
     throw new Error('평문으로 저장된 값입니다(iv=none). 자격증명을 다시 등록해 주세요')
+  }
+  if (iv === V1_IV_MARKER && !isV1(encrypted)) {
+    throw new Error('v1 암호문 형식이 올바르지 않습니다')
   }
   return isV1(encrypted) ? decryptV1(purpose, encrypted) : decryptV0(encrypted, iv)
 }

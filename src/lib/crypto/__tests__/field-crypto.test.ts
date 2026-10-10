@@ -258,3 +258,61 @@ describe('쓰기 버전(ENCRYPTION_WRITE_VERSION) — 롤백 호환', () => {
     expect(() => assertFieldCryptoBootConfig()).toThrow('ENCRYPTION_KEY 미설정')
   })
 })
+
+describe('검토 반영(1차)', () => {
+  test('ENCRYPTION_KEY(K0) 끝의 줄바꿈·공백은 무시하고 v0 를 읽는다(기존 getKeyBuffer 와 같은 관용)', () => {
+    const v0 = legacyCbc('old', LEGACY)
+    process.env.ENCRYPTION_KEY = `${LEGACY}\n`
+    expect(decryptField('pii', v0.encrypted, v0.iv)).toBe('old')
+    process.env.ENCRYPTION_KEY = ` ${LEGACY} `
+    expect(decryptField('pii', v0.encrypted, v0.iv)).toBe('old')
+  })
+
+  test('v1 키는 줄바꿈이 붙어도 엄격하게 거부한다', () => {
+    process.env.ENCRYPTION_KEY_V1 = `${ROOT}\n`
+    expect(() => encryptField('pii', 'x')).toThrow('32바이트')
+  })
+
+  test("iv='v1' 인데 암호문이 v1 형식이 아니면 v0 로 풀지 않고 형식 오류", () => {
+    const v0 = legacyCbc('x', LEGACY)
+    expect(() => decryptField('pii', v0.encrypted, V1_IV_MARKER)).toThrow('v1 암호문 형식')
+  })
+
+  test('잘못된 ENCRYPTION_WRITE_VERSION 은 space-credential 에서도 오류', () => {
+    process.env.ENCRYPTION_WRITE_VERSION = 'v2'
+    expect(() => fieldWriteVersion('space-credential')).toThrow('ENCRYPTION_WRITE_VERSION')
+  })
+
+  test.each([2, 3, 4] as const)('구간 %i 에 비정규 base64(!) 를 붙이면 거부한다', (part) => {
+    const parts = encryptField('pii', 'x').encrypted.split(':')
+    parts[part] += '!'
+    expect(() => decryptField('pii', parts.join(':'), 'v1')).toThrow('v1 암호문 형식')
+  })
+
+  test('HKDF 파생 키 고정 벡터(독립 계산값)', () => {
+    // 기대값은 python3 hmac 으로 RFC 5869 를 직접 계산했다(salt=32바이트 0, L=32 → T(1) 한 블록):
+    //   prk = HMAC-SHA256(b'\0'*32, bytes.fromhex('a'*64)); HMAC-SHA256(prk, b'workdeck:field:pii:v1\x01')
+    expect(derivePurposeKey(Buffer.from(ROOT, 'hex'), 'pii').toString('hex')).toBe(
+      '00d7120b23f49fb7401cd5ae1765dd1180a10f943dfa8fbf4c9c440d3155b3d6'
+    )
+  })
+
+  test('형식은 맞지만 설정되지 않은 키 ID(k99) → ENCRYPTION_KEY 문구 오류', () => {
+    const parts = encryptField('pii', 'x').encrypted.split(':')
+    parts[1] = 'k99'
+    expect(() => decryptField('pii', parts.join(':'), 'v1')).toThrow('ENCRYPTION_KEY_V1_K99')
+  })
+
+  test.each([
+    ['iv', 2, 11],
+    ['iv', 2, 13],
+    ['tag', 3, 0],
+    ['tag', 3, 12],
+    ['tag', 3, 15],
+    ['tag', 3, 17],
+  ] as const)('%s 길이 %#(%i 구간, %i 바이트) 는 거부한다', (_name, part, len) => {
+    const parts = encryptField('pii', 'x').encrypted.split(':')
+    parts[part] = crypto.randomBytes(len).toString('base64')
+    expect(() => decryptField('pii', parts.join(':'), 'v1')).toThrow('v1 암호문 형식')
+  })
+})

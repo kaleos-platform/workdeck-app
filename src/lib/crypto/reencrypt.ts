@@ -45,9 +45,10 @@ export async function upgradeIfLegacy(
   try {
     await save(encryptField(purpose, plaintext))
   } catch (err) {
+    // 오류 메시지에는 DB 값·비밀값이 섞일 수 있다 — 종류만 남긴다.
     console.warn(
       `[field-crypto] ${purpose} v1 재암호화 실패 — 다음 읽기에서 재시도`,
-      err instanceof Error ? err.message : String(err)
+      err instanceof Error ? err.name : typeof err
     )
   }
 }
