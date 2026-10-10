@@ -72,7 +72,7 @@ test('OWNER 본인은 자기 연결을 바꿀 수 있다', async () => {
 })
 
 test('이미 다른 구성원에 연결된 Slack ID → 409', async () => {
-  m.findFirst.mockResolvedValue({ id: 'm1', role: 'MEMBER' })
+  m.findFirst.mockResolvedValue({ id: 'm1', role: 'ADMIN', userId: 'u' })
   m.update.mockRejectedValue(Object.assign(new Error('unique'), { code: 'P2002' }))
   expect((await PUT(req({ slackUserId: 'U12345' }), params)).status).toBe(409)
 })
@@ -81,4 +81,16 @@ test('ADMIN 은 OWNER 가 아닌 구성원의 연결·해제를 할 수 있다',
   m.findFirst.mockResolvedValue({ id: 'm1', role: 'ADMIN' })
   m.update.mockResolvedValue({ id: 'm1', slackUserId: null })
   expect((await PUT(req({ slackUserId: null }), params)).status).toBe(200)
+})
+
+test('다른 구성원 기록에는 Slack ID 를 연결할 수 없다(해제만) → 403, 갱신 없음', async () => {
+  m.findFirst.mockResolvedValue({ id: 'm1', role: 'MEMBER', userId: 'u-other' })
+  expect((await PUT(req({ slackUserId: 'U12345' }), params)).status).toBe(403)
+  expect(m.update).not.toHaveBeenCalled()
+})
+
+test('ADMIN 은 자기 기록에 Slack ID 를 연결할 수 있다', async () => {
+  m.findFirst.mockResolvedValue({ id: 'm1', role: 'ADMIN', userId: 'u' })
+  m.update.mockResolvedValue({ id: 'm1', slackUserId: 'U12345' })
+  expect((await PUT(req({ slackUserId: 'U12345' }), params)).status).toBe(200)
 })

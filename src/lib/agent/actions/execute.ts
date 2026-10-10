@@ -45,6 +45,8 @@ export async function approveAndExecute(
   })
   if (pre?.status === 'PENDING') {
     // 결정자 역할 검사 — Slack·웹·MCP 승인 경로가 모두 이 함수를 지나므로 여기서 한 번에 닫는다.
+    // 검사와 아래 updateMany 게이트 사이에 짧은 창이 있다: 그 사이 결정자 역할 강등이나
+    // approvalLimitKrw·payload 변경은 반영되지 않는다(payload 는 생성 후 불변, 역할 변경은 드묾).
     const denial = await deciderDenial(pre, deciderId, 'approve')
     if (denial) return { ok: false, status: 'FORBIDDEN', message: denial }
     const blocked = await assertDeckWritable(pre.spaceId, pre.deckKey)

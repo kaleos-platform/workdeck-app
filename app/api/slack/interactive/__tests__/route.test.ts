@@ -58,6 +58,7 @@ beforeEach(() => {
   jest.clearAllMocks()
   p.agentPendingAction.findUnique.mockResolvedValue({
     id: 'act-1',
+    status: 'PENDING',
     spaceId: 'space-1',
     slackChannelId: 'C1',
     actionType: 'x',
@@ -82,6 +83,9 @@ test('Slack 연결이 없는 사용자 → 결정 없음 + 안내', async () => 
 test('승인자는 연결된 구성원의 User.id 로 넘어간다', async () => {
   member.mockResolvedValue({ userId: 'u-admin', role: 'ADMIN' })
   await POST(click())
+  expect(member).toHaveBeenCalledWith(
+    expect.objectContaining({ spaceId: 'space-1', teamId: 'T1', slackUserId: 'U1' })
+  )
   expect(approve).toHaveBeenCalledWith('act-1', 'u-admin')
   expect(sync).toHaveBeenCalledWith('act-1')
 })
@@ -125,4 +129,19 @@ test('다른 team 의 설치 → 조용히 무시(기존 테넌트 가드 유지
   await POST(click())
   expect(member).not.toHaveBeenCalled()
   expect(approve).not.toHaveBeenCalled()
+})
+
+test('대기 상태가 아닌 액션 → 연결 조회·결정 없이 안내만', async () => {
+  p.agentPendingAction.findUnique.mockResolvedValue({
+    id: 'act-1',
+    status: 'EXECUTED',
+    spaceId: 'space-1',
+    slackChannelId: 'C1',
+    actionType: 'x',
+    payload: {},
+  })
+  await POST(click())
+  expect(member).not.toHaveBeenCalled()
+  expect(approve).not.toHaveBeenCalled()
+  expect(ephemeral.mock.calls[0][1].text).toContain('이미 처리')
 })

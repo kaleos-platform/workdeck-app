@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   // 액션 로드 — 없으면 조용히 200.
   const pending = await prisma.agentPendingAction.findUnique({
     where: { id: actionId },
-    select: { id: true, spaceId: true, slackChannelId: true, actionType: true, payload: true },
+    select: { id: true, status: true, spaceId: true, slackChannelId: true },
   })
   if (!pending) return NextResponse.json({ ok: true })
 
@@ -101,12 +101,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
+  // 이미 결정된 액션 — Slack 연결 조회(users.info·자동 연결) 전에 끝낸다.
+  if (pending.status !== 'PENDING') {
+    if (payload.response_url) await postEphemeral(payload.response_url, '이미 처리된 요청입니다.')
+    return NextResponse.json({ ok: true })
+  }
+
   const slackUserId = payload.user?.id
   if (!slackUserId) return NextResponse.json({ ok: true })
 
   // 승인자 확인: Slack 연결된 구성원 + 역할.
   const member = await resolveSlackMember({
     spaceId: pending.spaceId,
+    teamId,
     slackUserId,
     getBotToken: () => decryptBotToken(installation.botToken, installation.botTokenIv),
   })

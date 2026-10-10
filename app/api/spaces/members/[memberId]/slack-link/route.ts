@@ -1,4 +1,4 @@
-// PUT /api/spaces/members/:memberId/slack-link — ADMIN 이 구성원의 Slack 연결을 수동 지정/해제한다.
+// PUT /api/spaces/members/:memberId/slack-link — ADMIN 이상이 자기 Slack 연결을 지정하거나 구성원의 연결을 해제한다.
 // body: { slackUserId: "U…" | null }. 같은 Space 안에서 Slack 사용자 1명은 구성원 1명에만 연결된다.
 // OWNER 구성원의 연결은 그 OWNER 본인만 바꾼다 — ADMIN·다른 OWNER 가 OWNER 연결을 자기 Slack ID 로 바꿔 지출 제안을 승인하는 우회를 막는다.
 import { NextRequest, NextResponse } from 'next/server'
@@ -31,6 +31,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ memb
   if (!member) return errorResponse('구성원을 찾을 수 없습니다', 404)
   if (member.role === 'OWNER' && member.userId !== ctx.user.id) {
     return errorResponse('OWNER 구성원의 Slack 연결은 본인만 바꿀 수 있습니다', 403)
+  }
+  // 다른 구성원 기록은 해제만 — 남의 기록에 임의 Slack ID 를 붙이면 그 Slack 사용자가 그 구성원으로 승인한다.
+  // 다른 구성원은 이메일 자동 연결(member-link)이나 본인 지정으로 연결된다.
+  if (parsed.data.slackUserId !== null && member.userId !== ctx.user.id) {
+    return errorResponse('다른 구성원의 Slack 연결은 해제만 할 수 있습니다', 403)
   }
 
   try {
