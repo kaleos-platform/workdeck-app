@@ -4,7 +4,7 @@ import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { getUser } from '@/hooks/use-user'
 import { ensureWorkspaceForUser } from '@/lib/workspace'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
-import { decryptField, isV1, V1_IV_MARKER } from '@/lib/crypto/field-crypto'
+import { decryptField, fieldWriteVersion, isV1, V1_IV_MARKER } from '@/lib/crypto/field-crypto'
 import { canWorkspaceCollect } from '@/lib/billing/entitlement'
 
 // worker/src/login-guard.ts 의 CREDENTIAL_INVALID 사유 문구 — 워커가 run.error 에 남긴다.
@@ -127,7 +127,12 @@ export async function PUT(request: NextRequest) {
     }
     if (!body.loginPassword) return errorResponse('로그인 ID와 비밀번호가 필요합니다', 400)
     // v0(CBC)는 IV 를 바꿔도 첫 블록만 달라져 복호화가 성공한다 — 재전달은 v1 만.
-    if (!isV1(body.loginPassword) || body.encryptionIv !== V1_IV_MARKER) {
+    // v0 쓰기 기간(4a)에는 v1 행을 만들지 않는다 — CBC 전용 배포로 롤백해도 읽을 수 있게.
+    if (
+      fieldWriteVersion('collection-credential') === 'v0' ||
+      !isV1(body.loginPassword) ||
+      body.encryptionIv !== V1_IV_MARKER
+    ) {
       return errorResponse('암호문 형식이 올바르지 않습니다', 400)
     }
     try {
@@ -142,9 +147,9 @@ export async function PUT(request: NextRequest) {
     let encrypted: { encrypted: string; iv: string }
     try {
       encrypted = encryptSecret(rawPassword)
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : '자격증명 암호화에 실패했습니다'
-      return errorResponse(msg, 500)
+    } catch {
+      // 오류 원문은 응답에 넣지 않는다(키 이름·내부 상태 노출 방지).
+      return errorResponse('자격증명 암호화에 실패했습니다', 500)
     }
     loginPassword = encrypted.encrypted
     encryptionIv = encrypted.iv

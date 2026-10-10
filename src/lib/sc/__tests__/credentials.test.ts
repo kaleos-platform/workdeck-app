@@ -24,8 +24,18 @@ function legacyCbc(plaintext: string) {
   return { encrypted: c.update(plaintext, 'utf8', 'hex') + c.final('hex'), iv: iv.toString('hex') }
 }
 
+const ENV_KEYS = ['ENCRYPTION_WRITE_VERSION', 'VERCEL_ENV', 'ENCRYPTION_KEY', 'ENCRYPTION_KEY_V1']
+const savedEnv = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]))
+afterAll(() => {
+  for (const k of ENV_KEYS) {
+    if (savedEnv[k] === undefined) delete process.env[k]
+    else process.env[k] = savedEnv[k]
+  }
+})
 beforeEach(() => {
   jest.clearAllMocks()
+  delete process.env.ENCRYPTION_WRITE_VERSION
+  delete process.env.VERCEL_ENV
   process.env.ENCRYPTION_KEY_V1 = 'a'.repeat(64)
   process.env.ENCRYPTION_KEY = LEGACY
 })
@@ -73,5 +83,37 @@ test('sealed 읽기는 평문을 만들지 않고 암호문을 그대로 돌려�
     encryptedPayload: 'v1:k1:aaa:bbb:ccc',
     iv: 'v1',
     expiresAt: null,
+  })
+})
+
+describe('지연 재암호화 경계', () => {
+  const v0Row = () => {
+    const v0 = legacyCbc('{"accessToken":"t"}')
+    mock.channelCredential.findUnique.mockResolvedValue({
+      id: 'cred-1',
+      encryptedPayload: v0.encrypted,
+      iv: v0.iv,
+      expiresAt: null,
+    })
+  }
+
+  test('v0 쓰기 기간(4a)에는 갱신하지 않는다', async () => {
+    process.env.ENCRYPTION_WRITE_VERSION = 'v0'
+    v0Row()
+    expect((await readChannelCredential('ch1', 'OAUTH'))?.payload).toEqual({ accessToken: 't' })
+    expect(mock.channelCredential.updateMany).not.toHaveBeenCalled()
+  })
+
+  test('그 사이 재등록돼 갱신 0건이어도 읽은 값을 돌려준다', async () => {
+    v0Row()
+    mock.channelCredential.updateMany.mockResolvedValue({ count: 0 })
+    expect((await readChannelCredential('ch1', 'OAUTH'))?.payload).toEqual({ accessToken: 't' })
+  })
+
+  test('저장이 실패해도 읽기는 성공한다', async () => {
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+    v0Row()
+    mock.channelCredential.updateMany.mockRejectedValue(new Error('db down'))
+    expect((await readChannelCredential('ch1', 'OAUTH'))?.payload).toEqual({ accessToken: 't' })
   })
 })

@@ -4,11 +4,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveCollectionAuth } from '@/lib/collection/resolve-workspace'
 import { encryptField } from '@/lib/crypto/field-crypto'
+import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { PUT } from '../route'
 
 jest.mock('@/lib/api-helpers', () => ({
   errorResponse: (message: string, status: number) => NextResponse.json({ message }, { status }),
   assertRole: () => null,
+}))
+jest.mock('@/lib/collection/secret-crypto', () => ({
+  encryptSecret: jest.fn(jest.requireActual('@/lib/collection/secret-crypto').encryptSecret),
 }))
 jest.mock('@/lib/collection/resolve-workspace', () => ({ resolveCollectionAuth: jest.fn() }))
 jest.mock('@/lib/prisma', () => ({
@@ -80,4 +84,25 @@ test('워커 재전달은 복호화되는 암호문만 그대로 저장한다', 
     secretKey: sealed.encrypted,
     encryptionIv: 'v1',
   })
+})
+
+test('암호화 실패 500 응답 본문에 오류 원문이 들어가지 않는다', async () => {
+  auth.mockResolvedValue({ kind: 'session', role: 'ADMIN', workspaceId: 'ws' })
+  ;(encryptSecret as jest.Mock).mockImplementationOnce(() => {
+    throw new Error('ENCRYPTION_KEY SYNTHETIC-SECRET-123')
+  })
+  const res = await put({ ...base, secretKey: 'sk-plain' })
+  expect(res.status).toBe(500)
+  expect(await res.text()).not.toContain('SYNTHETIC-SECRET-123')
+})
+
+test('v0 쓰기 기간(4a)에는 워커 v1 재전달도 400 — v1 행을 만들지 않는다', async () => {
+  auth.mockResolvedValue({ kind: 'worker', workspaceId: 'ws' })
+  const sealed = encryptField('collection-credential', 'sk')
+  process.env.ENCRYPTION_WRITE_VERSION = 'v0'
+  process.env.ENCRYPTION_KEY = 'c'.repeat(64)
+  expect(
+    (await put({ ...base, secretKey: sealed.encrypted, encryptionIv: sealed.iv })).status
+  ).toBe(400)
+  expect(cred.upsert).not.toHaveBeenCalled()
 })

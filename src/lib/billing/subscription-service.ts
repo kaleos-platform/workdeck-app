@@ -184,7 +184,11 @@ export async function removeBillingMethod(spaceId: string, methodId: string | nu
     const billingKey = decryptField('billing-key', method.billingKey, method.billingKeyIv)
     await getBillingProvider().deleteBillingKey(billingKey)
   } catch (e) {
-    console.error('[billing] 빌링키 폐기 실패 — DB 행은 삭제한다', e)
+    // PG 오류 원문에는 빌링키가 섞일 수 있다 — 종류만 남긴다.
+    console.error(
+      '[billing] 빌링키 폐기 실패 — DB 행은 삭제한다',
+      e instanceof Error ? e.name : typeof e
+    )
   }
 
   await prisma.billingMethod.delete({ where: { id: method.id } })
