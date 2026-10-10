@@ -330,13 +330,18 @@ export type SalesSyncSpaceSummary = {
  * 일일 cron(어제 1일)과 백필 range(과거 N일)가 동일 경로를 공유한다 — 둘 다 재고 미차감.
  *
  * @param dates 변환 대상 일자(KST 자정 Date) 배열
+ * @param opts.spaceId 지정 시 그 Space 만 처리한다(워커 Space 토큰 범위)
  */
-export async function runCoupangSalesSyncForDates(dates: Date[]): Promise<SalesSyncSpaceSummary[]> {
+export async function runCoupangSalesSyncForDates(
+  dates: Date[],
+  opts: { spaceId?: string } = {}
+): Promise<SalesSyncSpaceSummary[]> {
   const locations = await prisma.invStorageLocation.findMany({
     where: {
       externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
       isActive: true,
       locationMappings: { some: {} },
+      ...(opts.spaceId ? { spaceId: opts.spaceId } : {}),
     },
     select: { spaceId: true },
     distinct: ['spaceId'],

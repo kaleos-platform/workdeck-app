@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { processUpload } from '@/lib/upload-processor'
 
 // POST /api/collection/upload — 워커가 수집한 Excel 파일 업로드
 export async function POST(request: NextRequest) {
   // 워커 인증
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   try {
@@ -16,6 +17,8 @@ export async function POST(request: NextRequest) {
     if (!file || !workspaceId) {
       return errorResponse('file과 workspaceId가 필요합니다', 400)
     }
+    const denied = assertWorkerOwns(auth.scope, { workspaceId })
+    if (denied) return denied
 
     // arrayBuffer 로드 전 크기 검사 — OOM/타임아웃 방지
     const MAX_SIZE = 10 * 1024 * 1024 // 10MB

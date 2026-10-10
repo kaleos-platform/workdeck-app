@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker, workerWorkspaceWhere } from '@/lib/worker-auth'
 
 export const runtime = 'nodejs'
 
@@ -18,18 +19,21 @@ const MAX_DAYS = 60
  * 오늘(아직 미수집)·어제(cron 이 방금 수집)는 호출자가 필요 시 제외한다.
  */
 export async function GET(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const sp = request.nextUrl.searchParams
   const daysRaw = Number(sp.get('days')) || DEFAULT_DAYS
   const days = Math.min(Math.max(1, Math.floor(daysRaw)), MAX_DAYS)
 
-  // workspace 해석 — 명시 우선, 없으면 첫 활성 credential.
+  // workspace 해석 — 명시 우선(토큰 범위 검사), 없으면 토큰 범위의 첫 활성 credential.
   let workspaceId = sp.get('workspaceId') ?? ''
-  if (!workspaceId) {
+  if (workspaceId) {
+    const denied = assertWorkerOwns(auth.scope, { workspaceId })
+    if (denied) return denied
+  } else {
     const cred = await prisma.coupangCredential.findFirst({
-      where: { isActive: true },
+      where: { isActive: true, ...workerWorkspaceWhere(auth.scope) },
       select: { workspaceId: true },
     })
     if (!cred) return errorResponse('활성 워크스페이스가 없습니다', 404)

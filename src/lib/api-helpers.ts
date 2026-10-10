@@ -1,24 +1,15 @@
 import { cache } from 'react'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
-import { timingSafeEqualString } from '@/lib/crypto/timing-safe'
+import { authenticateWorker, resolveWorkerWorkspaceId } from '@/lib/worker-auth'
 
 // 에러 응답 생성 헬퍼 — extra 필드를 병합해 추가 정보를 포함할 수 있음
 export function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
   return NextResponse.json({ message, ...extra }, { status })
-}
-
-/** x-worker-api-key 헤더가 유효한지 확인 (request 객체 없이 headers()로) */
-async function isWorkerAuthenticated(): Promise<boolean> {
-  const h = await headers()
-  const apiKey = h.get('x-worker-api-key')
-  const expected = process.env.WORKER_API_KEY
-  if (!expected || !apiKey) return false
-  return timingSafeEqualString(apiKey, expected)
 }
 
 /**
@@ -35,37 +26,14 @@ export interface DeckContextOptions {
 
 // 인증 + 워크스페이스 소유권 검증 (세션 또는 worker key)
 export async function resolveWorkspace(opts?: DeckContextOptions) {
-  // Worker/Agent key 인증 fallback — 세션 없이 API key로 접근하는 경우
-  if (await isWorkerAuthenticated()) {
-    const h = await headers()
-    const workspaceId = h.get('x-workspace-id')
-    if (workspaceId) {
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: workspaceId },
-        select: { id: true },
-      })
-      if (workspace) return { workspace }
-    }
-    // 폴백 체인:
-    //  1. x-workspace-id 헤더 (위에서 처리)
-    //  2. WORKER_DEFAULT_WORKSPACE_ID 환경 변수 — 설정된 경우 findUnique로 결정적 조회
-    //  3. findFirst 폴백 — 다중 워크스페이스 환경에서 비결정적이므로 권장하지 않음
-    const defaultId = process.env.WORKER_DEFAULT_WORKSPACE_ID
-    if (defaultId) {
-      const workspace = await prisma.workspace.findUnique({
-        where: { id: defaultId },
-        select: { id: true },
-      })
-      if (workspace) return { workspace }
-      console.warn(
-        `[resolveWorkspace] WORKER_DEFAULT_WORKSPACE_ID="${defaultId}" 에 해당하는 워크스페이스가 없습니다 — findFirst 폴백으로 진행`
-      )
-    }
-    console.warn(
-      '[resolveWorkspace] x-workspace-id 헤더와 WORKER_DEFAULT_WORKSPACE_ID 없이 findFirst 폴백 사용 — 다중 워크스페이스 환경에서 비결정적'
-    )
-    const workspace = await prisma.workspace.findFirst({ select: { id: true } })
-    if (workspace) return { workspace }
+  // 워커 요청(x-worker-api-key 헤더 존재) — 세션으로 폴백하지 않는다. 키가 틀리면 401.
+  const h = await headers()
+  if (h.get('x-worker-api-key')) {
+    const auth = await authenticateWorker(h)
+    if ('error' in auth) return { error: auth.error }
+    const ws = await resolveWorkerWorkspaceId(auth.scope, h.get('x-workspace-id'))
+    if ('error' in ws) return { error: ws.error }
+    return { workspace: { id: ws.workspaceId } }
   }
 
   const deckContext = await resolveDeckContext('coupang-ads', opts)
@@ -177,16 +145,4 @@ export function assertSameSpace(sourceSpaceId: string, targetSpaceId: string) {
   if (sourceSpaceId !== targetSpaceId)
     return errorResponse('cross-space 통신은 허용되지 않습니다', 403)
   return null
-}
-
-// ─── Worker 인증 ─────────────────────────────────────────────────────────────
-
-// 워커 프로세스의 x-worker-api-key 헤더로 인증
-export function resolveWorkerAuth(request: NextRequest) {
-  const apiKey = request.headers.get('x-worker-api-key')
-  const expected = process.env.WORKER_API_KEY
-  if (!expected || !apiKey || !timingSafeEqualString(apiKey, expected)) {
-    return { error: errorResponse('워커 인증에 실패했습니다', 401) }
-  }
-  return { authenticated: true as const }
 }

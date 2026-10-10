@@ -3,13 +3,13 @@
  * 워커 전용(x-worker-api-key). listingId 는 여기서 절대 건드리지 않는다(product-items.ts).
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveWorkerAuth } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { upsertCoupangProductItems } from '@/lib/coupang/product-items'
 
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const body = (await request.json()) as {
@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
   if (!body.spaceId || !Array.isArray(body.rows)) {
     return NextResponse.json({ error: 'spaceId 와 rows 가 필요합니다' }, { status: 400 })
   }
+  const denied = assertWorkerOwns(auth.scope, { spaceId: body.spaceId })
+  if (denied) return denied
   const upserted = await upsertCoupangProductItems(body.spaceId, body.rows)
   return NextResponse.json({ upserted })
 }

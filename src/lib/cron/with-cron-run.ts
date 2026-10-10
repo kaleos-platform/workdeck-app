@@ -1,12 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth } from '@/lib/api-helpers'
+import { authenticateWorker } from '@/lib/worker-auth'
+import { timingSafeEqualString } from '@/lib/crypto/timing-safe'
 
 /** detail JSON 상한 — 초과하면 절단 마커로 대체 (거대 결과가 테이블을 부풀리지 않게). */
 const MAX_DETAIL_BYTES = 8_192
 
-type CronHandler = (request: NextRequest) => Promise<Record<string, unknown>>
+/** 스윕 범위 — spaceId 가 있으면 그 Space 만, 없으면 전체 Space. */
+export type SweepScope = { spaceId?: string }
+
+type CronHandler = (request: NextRequest, scope: SweepScope) => Promise<Record<string, unknown>>
+
+/**
+ * 체이닝 cron 의 스윕 범위.
+ *  - Authorization: Bearer ${CRON_SECRET} → 전체 Space(서버 전용. 워커에는 이 값을 주지 않는다)
+ *  - 워커 Space 토큰 → 그 Space 만(재고 차감·응답 집계 모두)
+ *  - 레거시 단일 키(전환 기간) → 원래 권한대로 전체. Task 7 Step 8-7 에서 분기와 함께 삭제한다.
+ */
+export async function resolveSweepScope(
+  request: NextRequest
+): Promise<{ scope: SweepScope } | { error: NextResponse }> {
+  const cronSecret = process.env.CRON_SECRET
+  const bearer = request.headers.get('authorization')
+  if (cronSecret && bearer && timingSafeEqualString(bearer, `Bearer ${cronSecret}`)) {
+    return { scope: {} }
+  }
+  const auth = await authenticateWorker(request.headers)
+  if ('error' in auth) return { error: auth.error }
+  return { scope: auth.scope.kind === 'space' ? { spaceId: auth.scope.spaceId } : {} }
+}
 
 /**
  * 인증 방식.
@@ -28,9 +51,11 @@ type CronAuth = 'cron-secret' | 'worker'
  */
 export function withCronRun(path: string, handler: CronHandler, auth: CronAuth = 'cron-secret') {
   return async function GET(request: NextRequest) {
+    let scope: SweepScope = {}
     if (auth === 'worker') {
-      const workerAuth = resolveWorkerAuth(request)
-      if ('error' in workerAuth) return workerAuth.error
+      const sweep = await resolveSweepScope(request)
+      if ('error' in sweep) return sweep.error
+      scope = sweep.scope
     } else {
       const cronSecret = process.env.CRON_SECRET
       if (!cronSecret) {
@@ -43,17 +68,14 @@ export function withCronRun(path: string, handler: CronHandler, auth: CronAuth =
 
     const startedAt = new Date()
     try {
-      const detail = await handler(request)
+      const detail = await handler(request, scope)
       await recordRun({ path, startedAt, ok: true, detail })
       return NextResponse.json({ ranAt: startedAt.toISOString(), ...detail })
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       console.error(`[cron${path}] 실패:`, err)
       await recordRun({ path, startedAt, ok: false, error: message })
-      return NextResponse.json(
-        { ranAt: startedAt.toISOString(), error: message },
-        { status: 500 }
-      )
+      return NextResponse.json({ ranAt: startedAt.toISOString(), error: message }, { status: 500 })
     }
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker, type WorkerScope } from '@/lib/worker-auth'
 import { processInventoryUpload, processInventoryApiRows } from '@/lib/inventory-upload-processor'
 import type { InventoryApiRowInput } from '@/lib/inventory-upload-processor'
 import type { ApiOptionIdentity } from '@/lib/collection/resolve-product-id'
@@ -9,20 +10,20 @@ import type { InventoryFileType } from '@/lib/inventory-parser'
 // multipart/form-data(기존 크롤링 Excel 경로, 절대 건드리지 않는다) / application/json
 // (쿠팡 재고 API rows 경로, 신규) 두 갈래로 분기한다.
 export async function POST(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const contentType = request.headers.get('content-type') ?? ''
 
   if (contentType.includes('application/json')) {
-    return handleApiRowsUpload(request)
+    return handleApiRowsUpload(request, auth.scope)
   }
 
-  return handleFileUpload(request)
+  return handleFileUpload(request, auth.scope)
 }
 
 // 기존 경로 — 크롤링 Excel 업로드. 동작을 절대 바꾸지 않는다.
-async function handleFileUpload(request: NextRequest) {
+async function handleFileUpload(request: NextRequest, scope: WorkerScope) {
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
@@ -33,6 +34,8 @@ async function handleFileUpload(request: NextRequest) {
     if (!file || !workspaceId) {
       return errorResponse('file과 workspaceId가 필요합니다', 400)
     }
+    const denied = assertWorkerOwns(scope, { workspaceId })
+    if (denied) return denied
 
     const buffer = await file.arrayBuffer()
 
@@ -72,7 +75,7 @@ type ApiRowsBody = {
   truncated?: boolean
 }
 
-async function handleApiRowsUpload(request: NextRequest) {
+async function handleApiRowsUpload(request: NextRequest, scope: WorkerScope) {
   try {
     const body = (await request.json()) as ApiRowsBody
     const { workspaceId, fileType, rows, apiProductMap, truncated } = body
@@ -80,6 +83,8 @@ async function handleApiRowsUpload(request: NextRequest) {
     if (!workspaceId || !fileType || !Array.isArray(rows)) {
       return errorResponse('workspaceId, fileType, rows가 필요합니다', 400)
     }
+    const denied = assertWorkerOwns(scope, { workspaceId })
+    if (denied) return denied
     if (body.source && body.source !== 'API') {
       return errorResponse('JSON 경로는 source=API 전용입니다', 400)
     }

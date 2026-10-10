@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { resolveDeckContext, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { runInsightGeneration } from '@/lib/sc/insights'
 
 const InputSchema = z.object({
@@ -11,11 +12,16 @@ const InputSchema = z.object({
 async function resolveSpaceId(
   req: NextRequest
 ): Promise<{ spaceId: string } | { error: NextResponse }> {
-  // 1) 워커 경로: x-worker-api-key + x-workspace-id 헤더
-  const workerAuth = resolveWorkerAuth(req)
-  if (!('error' in workerAuth)) {
-    const spaceId = req.headers.get('x-workspace-id')
+  // 1) 워커 경로: x-worker-api-key(+ x-workspace-id 헤더 — 실제로는 spaceId). 헤더가 있으면 세션으로 폴백하지 않는다.
+  //    Space 토큰이면 헤더가 없어도 토큰의 Space 를 쓰고, 헤더가 다르면 403.
+  if (req.headers.get('x-worker-api-key')) {
+    const workerAuth = await authenticateWorker(req.headers)
+    if ('error' in workerAuth) return { error: workerAuth.error }
+    const headerSpaceId = req.headers.get('x-workspace-id')
+    const spaceId = workerAuth.scope.kind === 'space' ? workerAuth.scope.spaceId : headerSpaceId
     if (!spaceId) return { error: errorResponse('x-workspace-id 헤더가 필요합니다', 400) }
+    const denied = assertWorkerOwns(workerAuth.scope, { spaceId: headerSpaceId ?? spaceId })
+    if (denied) return { error: denied }
     return { spaceId }
   }
   // 2) 세션 경로: Deck 활성 공간 컨텍스트 — POST 전용 보조 함수라 쓰기 가드(구독 만료 402)

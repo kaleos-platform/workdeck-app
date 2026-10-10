@@ -4,7 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkspace, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerOwns } from '@/lib/worker-auth'
 
 export async function GET(
   request: NextRequest,
@@ -12,14 +13,16 @@ export async function GET(
 ) {
   const { reportId } = await params
 
-  // Worker 인증 시도
-  const workerAuth = resolveWorkerAuth(request)
-  if (!('error' in workerAuth)) {
-    // Worker: workspaceId 필터 없이 조회
+  // Worker 요청(헤더 존재) — 세션으로 폴백하지 않는다. 토큰 범위 밖 리포트는 404(존재 은닉).
+  if (request.headers.get('x-worker-api-key')) {
+    const workerAuth = await authenticateWorker(request.headers)
+    if ('error' in workerAuth) return workerAuth.error
     const report = await prisma.analysisReport.findUnique({
       where: { id: reportId },
     })
-    if (!report) return errorResponse('리포트를 찾을 수 없습니다', 404)
+    if (!report || !workerOwns(workerAuth.scope, { workspaceId: report.workspaceId })) {
+      return errorResponse('리포트를 찾을 수 없습니다', 404)
+    }
     return NextResponse.json({ report })
   }
 

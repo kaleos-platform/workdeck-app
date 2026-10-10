@@ -1,5 +1,6 @@
+import type { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { withCronRun } from '@/lib/cron/with-cron-run'
+import { withCronRun, type SweepScope } from '@/lib/cron/with-cron-run'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
@@ -31,7 +32,7 @@ const MAX_SYSTEM_ONLY_RATIO = 0.2 // 스냅샷에 없는 재고 보유 옵션 �
 const MIN_ABS_FOR_RATIO_GUARD = 10
 
 /**
- * GET /api/cron/coupang-inventory-sync — 워커 체이닝 전용(x-worker-api-key).
+ * GET /api/cron/coupang-inventory-sync — 워커 체이닝 전용(x-worker-api-key). 워커 Space 토큰은 자기 Space 만 처리한다.
  *
  * 쿠팡 로켓그로스 최신 재고현황(inventory_health) 스냅샷을 자동 대조·반영해
  * InvStockLevel 을 실측 기준으로 보정한다. 수동 '데이터 연동' 버튼 없이 매일 동작.
@@ -56,12 +57,13 @@ const MIN_ABS_FOR_RATIO_GUARD = 10
  * withCronRun 으로 감싸 CronRun 에 실행 이력을 남긴다. 등록 cron 이 아니라서
  * "워커가 안 불렀다"와 "불렀는데 실패했다"를 구별할 다른 수단이 없다.
  */
-async function runInventorySync() {
+async function runInventorySync(_request: NextRequest, scope: SweepScope) {
   const locations = await prisma.invStorageLocation.findMany({
     where: {
       externalSource: EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH,
       isActive: true,
       locationMappings: { some: {} },
+      ...(scope.spaceId ? { spaceId: scope.spaceId } : {}),
     },
     select: { spaceId: true },
     distinct: ['spaceId'],

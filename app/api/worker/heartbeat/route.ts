@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker } from '@/lib/worker-auth'
 
 export const runtime = 'nodejs'
 
@@ -15,7 +16,7 @@ export const runtime = 'nodejs'
  * Auth: x-worker-api-key 헤더 필수.
  */
 export async function POST(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const body = await request.json().catch(() => ({}))

@@ -2,16 +2,17 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerWorkspaceWhere } from '@/lib/worker-auth'
 
 /** GET — 활성화된 모든 분석 스케줄 반환 (워커 크론에서 호출) */
 export async function GET(request: NextRequest) {
   // 워커 인증
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const schedules = await prisma.analysisSchedule.findMany({
-    where: { enabled: true },
+    where: { enabled: true, ...workerWorkspaceWhere(auth.scope) },
     select: {
       workspaceId: true,
       enabled: true,

@@ -4,7 +4,8 @@
  *  POST — 액션 생성 (세션 또는 x-worker-api-key). createPendingAction 경유.
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveSpaceContext, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { resolveSpaceContext, errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { prisma } from '@/lib/prisma'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { expirePendingActions } from '@/lib/agent/actions/execute'
@@ -57,14 +58,17 @@ export async function POST(req: NextRequest) {
     idempotencyKey?: string
   }
 
-  // 인증: 워커 키 또는 세션. 워커면 body.spaceId 신뢰, 세션이면 멤버십 검증.
-  const worker = resolveWorkerAuth(req)
   let requestedBy: string
   let resolvedSpaceId: string
   let resolvedSource: 'MCP' | 'WORKDECK_AGENT' | 'WEB' | 'SYSTEM'
 
-  if ('authenticated' in worker) {
+  // 인증: 워커 토큰(헤더가 있으면 워커 경로 — 실패 시 401) 또는 세션.
+  if (req.headers.get('x-worker-api-key')) {
+    const worker = await authenticateWorker(req.headers)
+    if ('error' in worker) return worker.error
     if (!spaceId) return errorResponse('spaceId가 필요합니다', 400)
+    const denied = assertWorkerOwns(worker.scope, { spaceId })
+    if (denied) return denied
     const space = await prisma.space.findUnique({ where: { id: spaceId }, select: { id: true } })
     if (!space) return errorResponse('공간을 찾을 수 없습니다', 404)
     resolvedSpaceId = spaceId

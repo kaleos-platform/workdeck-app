@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkspace, resolveWorkerAuth } from '@/lib/api-helpers'
+import { resolveWorkspace } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 
 // GET /api/deck-agents/logs — 에이전트 활동 로그 조회 (사용자 인증)
 export async function GET(request: NextRequest) {
@@ -15,10 +16,7 @@ export async function GET(request: NextRequest) {
 
   if (!agent) return NextResponse.json({ logs: [] })
 
-  const limit = Math.min(
-    parseInt(request.nextUrl.searchParams.get('limit') ?? '20', 10),
-    50,
-  )
+  const limit = Math.min(parseInt(request.nextUrl.searchParams.get('limit') ?? '20', 10), 50)
 
   const logs = await prisma.agentLog.findMany({
     where: { agentId: agent.id },
@@ -31,7 +29,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/deck-agents/logs — 에이전트 로그 기록 (Worker 인증)
 export async function POST(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const body = await request.json()
@@ -40,6 +38,8 @@ export async function POST(request: NextRequest) {
   if (!workspaceId || !type) {
     return NextResponse.json({ error: 'workspaceId and type are required' }, { status: 400 })
   }
+  const denied = assertWorkerOwns(auth.scope, { workspaceId })
+  if (denied) return denied
 
   const agent = await prisma.businessAgent.findUnique({
     where: { workspaceId },

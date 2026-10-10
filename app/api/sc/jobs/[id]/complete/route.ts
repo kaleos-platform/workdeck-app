@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { errorResponse, resolveWorkerAuth } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerOwns } from '@/lib/worker-auth'
 import { completeJob, failJob, isRetryableErrorCode, WORKER_ERROR_CODES } from '@/lib/sc/jobs'
 import { prisma } from '@/lib/prisma'
 import { notifyJobFailure } from '@/lib/sc/notifications'
@@ -18,12 +19,15 @@ const bodySchema = z.object({
 })
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const auth = resolveWorkerAuth(req)
+  const auth = await authenticateWorker(req.headers)
   if ('error' in auth) return auth.error
 
   const { id } = await params
   const job = await prisma.salesContentJob.findUnique({ where: { id } })
-  if (!job) return errorResponse('job 이 없습니다', 404)
+  // 토큰 범위 밖 job 은 없는 것으로 본다(404, 존재 은닉)
+  if (!job || !workerOwns(auth.scope, { spaceId: job.spaceId })) {
+    return errorResponse('job 이 없습니다', 404)
+  }
 
   let body: unknown
   try {

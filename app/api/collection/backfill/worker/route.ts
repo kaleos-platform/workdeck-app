@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerOwns, workerWorkspaceWhere } from '@/lib/worker-auth'
 
 /**
  * GET /api/collection/backfill/worker
@@ -12,7 +13,7 @@ import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
  *   job 이 있으면 credential 정보 포함 (워커가 Wing 세션에 사용).
  */
 export async function GET(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   // ?jobId=<id> 가 주어지면 claim 이 아니라 단순 상태 조회(워커의 취소 감지용).
@@ -20,17 +21,19 @@ export async function GET(request: NextRequest) {
   if (statusJobId) {
     const job = await prisma.coupangBackfillJob.findUnique({
       where: { id: statusJobId },
-      select: { id: true, status: true },
+      select: { id: true, status: true, workspaceId: true },
     })
-    if (!job) return errorResponse('잡을 찾을 수 없습니다', 404)
-    return NextResponse.json({ job })
+    if (!job || !workerOwns(auth.scope, { workspaceId: job.workspaceId })) {
+      return errorResponse('잡을 찾을 수 없습니다', 404)
+    }
+    return NextResponse.json({ job: { id: job.id, status: job.status } })
   }
 
   const workerId = request.nextUrl.searchParams.get('workerId') ?? `backfill-worker-unknown`
 
   // 1) 가장 오래된 PENDING 잡 찾기
   const candidate = await prisma.coupangBackfillJob.findFirst({
-    where: { status: 'PENDING' },
+    where: { status: 'PENDING', ...workerWorkspaceWhere(auth.scope) },
     orderBy: { createdAt: 'asc' },
     select: { id: true },
   })
@@ -124,7 +127,7 @@ export async function GET(request: NextRequest) {
  * }
  */
 export async function PATCH(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   let body: unknown
@@ -157,10 +160,10 @@ export async function PATCH(request: NextRequest) {
 
   const job = await prisma.coupangBackfillJob.findUnique({
     where: { id: jobId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, workspaceId: true },
   })
 
-  if (!job) {
+  if (!job || !workerOwns(auth.scope, { workspaceId: job.workspaceId })) {
     return errorResponse('잡을 찾을 수 없습니다', 404)
   }
   if (job.status !== 'RUNNING') {

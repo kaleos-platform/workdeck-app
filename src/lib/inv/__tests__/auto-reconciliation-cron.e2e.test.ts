@@ -77,6 +77,7 @@ function findSpace(body: Awaited<ReturnType<typeof runCron>>) {
 d('자동 재고 대조 cron 멱등성 (dev DB)', () => {
   beforeAll(async () => {
     process.env.WORKER_API_KEY = WORKER_KEY
+    process.env.WORKER_LEGACY_KEY_ENABLED = '1' // 레거시 단일 키 = 전체 Space 스윕(전환 기간)
     await cleanup()
 
     await prisma.space.create({

@@ -7,15 +7,15 @@
 import { NextRequest } from 'next/server'
 import { GET } from '../route'
 
-const resolveWorkerAuth = jest.fn()
+const authenticateWorker = jest.fn()
 const resolveSlackNotificationTarget = jest.fn()
 const resolveDeckNotifyEnabled = jest.fn()
 
-jest.mock('@/lib/api-helpers', () => {
-  const actual = jest.requireActual('@/lib/api-helpers')
+jest.mock('@/lib/worker-auth', () => {
+  const actual = jest.requireActual('@/lib/worker-auth')
   return {
     ...actual,
-    resolveWorkerAuth: (...a: unknown[]) => resolveWorkerAuth(...a),
+    authenticateWorker: (...a: unknown[]) => authenticateWorker(...a),
   }
 })
 jest.mock('@/lib/slack/notification-target', () => ({
@@ -33,13 +33,13 @@ async function callGet(qs: string) {
 describe('GET /api/slack/notification-target', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    resolveWorkerAuth.mockReturnValue({ authenticated: true })
+    authenticateWorker.mockResolvedValue({ scope: { kind: 'legacy' } })
     resolveSlackNotificationTarget.mockResolvedValue({ channelId: 'C1' })
   })
 
   it('워커 인증 실패면 그대로 반환', async () => {
     const err = { error: new Response('nope', { status: 401 }) }
-    resolveWorkerAuth.mockReturnValue(err)
+    authenticateWorker.mockResolvedValue(err)
     const res = await callGet('?workspaceId=ws1')
     expect(res.status).toBe(401)
   })

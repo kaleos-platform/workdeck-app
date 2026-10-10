@@ -6,8 +6,12 @@ import { NextRequest } from 'next/server'
 
 // jobs.ts 의 z.enum(WORKER_ERROR_CODES) 가 모듈 import 시점에 평가되므로
 // jest.mock 은 import 전에 선언되도록 호이스팅에 의존한다.
+jest.mock('@/lib/worker-auth', () => ({
+  ...jest.requireActual('@/lib/worker-auth'),
+  authenticateWorker: jest.fn().mockResolvedValue({ scope: { kind: 'legacy' } }),
+}))
+
 jest.mock('@/lib/api-helpers', () => ({
-  resolveWorkerAuth: jest.fn(() => ({ workerId: 'test-worker' })),
   errorResponse: (msg: string, status: number, extra?: Record<string, unknown>) =>
     new Response(JSON.stringify({ error: msg, ...extra }), { status }),
 }))
