@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth } from '@/lib/api-helpers'
+import { resolveSweepScope } from '@/lib/cron/with-cron-run'
+import { workerHeartbeatServices } from '@/lib/worker-auth'
 import { runCoupangSalesSyncForDates } from '@/lib/inv/coupang-sales-to-movement'
 
 export const runtime = 'nodejs'
@@ -21,11 +22,11 @@ const WORKER_SERVICE = 'coupang-sales-sync'
  *
  * 백필 모드(콜드스타트): ?from=YYYY-MM-DD&to=YYYY-MM-DD 지정 시 해당 KST 일자 범위를 변환.
  *
- * 인증: 워커(x-worker-api-key) 전용 — 수집 후 워커가 직접 체이닝 호출.
+ * 인증: 워커 Space 토큰(자기 Space만) 또는 CRON_SECRET(전체, 서버 전용) — 수집 후 워커가 직접 체이닝 호출.
  */
 export async function GET(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
-  if ('error' in auth) return auth.error
+  const sweep = await resolveSweepScope(request)
+  if ('error' in sweep) return sweep.error
 
   const { searchParams } = request.nextUrl
   const fromStr = searchParams.get('from')
@@ -56,17 +57,19 @@ export async function GET(request: NextRequest) {
     mode = 'daily'
   }
 
-  const spaces = await runCoupangSalesSyncForDates(dates)
+  const spaces = await runCoupangSalesSyncForDates(dates, sweep.scope)
 
-  await prisma.workerHeartbeat
-    .upsert({
-      where: { service: WORKER_SERVICE },
-      create: { service: WORKER_SERVICE, lastPingAt: new Date() },
-      update: { lastPingAt: new Date() },
-    })
-    .catch(() => {})
+  for (const service of workerHeartbeatServices(WORKER_SERVICE, sweep.scope.spaceId)) {
+    await prisma.workerHeartbeat
+      .upsert({
+        where: { service },
+        create: { service, lastPingAt: new Date() },
+        update: { lastPingAt: new Date() },
+      })
+      .catch(() => {})
+  }
 
-  // 전 Space 누적 집계 — 워커(Slack·이력)가 단일 숫자로 소비.
+  // 스윕 범위(토큰의 Space 또는 전체) 누적 집계 — 워커(Slack·이력)가 단일 숫자로 소비.
   const totals = spaces.reduce(
     (acc, s) => ({
       converted: acc.converted + (s.created ?? 0) + (s.updated ?? 0),

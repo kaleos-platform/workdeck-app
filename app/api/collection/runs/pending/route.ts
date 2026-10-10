@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth } from '@/lib/api-helpers'
+import { authenticateWorker, workerWorkspaceWhere } from '@/lib/worker-auth'
 import { canWorkspaceCollect } from '@/lib/billing/entitlement'
 
 // 10분 이상 된 PENDING은 무시 (stale)
@@ -9,7 +9,7 @@ const STALE_THRESHOLD_MS = 10 * 60 * 1000
 
 // GET /api/collection/runs/pending — Worker가 미처리 수동 수집을 폴링
 export async function GET(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const staleThreshold = new Date(Date.now() - STALE_THRESHOLD_MS)
@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     where: {
       status: 'PENDING',
       createdAt: { gt: staleThreshold },
+      ...workerWorkspaceWhere(auth.scope),
     },
     orderBy: { createdAt: 'asc' },
     take: 10,

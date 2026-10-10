@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveWorkspace, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { prisma } from '@/lib/prisma'
 import { runAndSaveInventoryAnalysis } from '@/lib/inventory-analyzer'
 
@@ -25,31 +26,27 @@ export async function GET() {
 
 // POST /api/inventory/analysis — 분석 실행
 export async function POST(request: NextRequest) {
-  // 워커 인증 또는 사용자 세션 인증
-  const workerAuth = resolveWorkerAuth(request)
+  // 워커 인증(헤더 존재 — 키가 틀리면 세션으로 폴백하지 않고 401) 또는 사용자 세션 인증
+  const isManual = !request.headers.get('x-worker-api-key')
   let workspaceId: string
 
-  if ('error' in workerAuth) {
-    // 워커 키가 제공되었으나 인증 실패 시 경고 로그
-    if (request.headers.get('x-worker-api-key')) {
-      console.warn(
-        '[inventory/analysis] x-worker-api-key 제공되었으나 인증 실패 — 세션 인증으로 폴백'
-      )
-    }
-    // 워커 인증 실패 → 사용자 세션 인증 시도
+  if (isManual) {
     const resolved = await resolveWorkspace({ write: true })
     if ('error' in resolved) return resolved.error
     workspaceId = resolved.workspace.id
   } else {
+    const workerAuth = await authenticateWorker(request.headers)
+    if ('error' in workerAuth) return workerAuth.error
     // 워커 인증 성공 → body에서 workspaceId 읽기
     const body = await request.json().catch(() => ({}))
     if (!body.workspaceId) {
       return errorResponse('workspaceId가 필요합니다', 400)
     }
+    const denied = assertWorkerOwns(workerAuth.scope, { workspaceId: body.workspaceId })
+    if (denied) return denied
     workspaceId = body.workspaceId
   }
 
-  const isManual = 'error' in workerAuth
   const triggeredBy = isManual ? 'manual' : 'worker'
 
   const result = await runAndSaveInventoryAnalysis({

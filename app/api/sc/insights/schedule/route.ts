@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { resolveDeckContext, resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { scheduleInsightSweep } from '@/lib/sc/insight-scheduler'
 
 const InputSchema = z.object({
@@ -22,11 +23,8 @@ export async function POST(req: NextRequest) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
-  const workerAuth = resolveWorkerAuth(req)
-  const isWorker = !('error' in workerAuth)
-
-  // 세션 인증: 현재 Space 만 대상
-  if (!isWorker) {
+  // 세션 인증: 현재 Space 만 대상. 워커 헤더가 있으면 세션으로 폴백하지 않는다(틀린 키는 401).
+  if (!req.headers.get('x-worker-api-key')) {
     const resolved = await resolveDeckContext('sales-content', { write: true })
     if ('error' in resolved) return resolved.error
     const result = await scheduleInsightSweep({
@@ -38,8 +36,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result)
   }
 
-  // 워커 인증: allSpaces=true 면 전체 스윕, 아니면 x-workspace-id 지정 공간만
-  if (parsed.data.allSpaces) {
+  const workerAuth = await authenticateWorker(req.headers)
+  if ('error' in workerAuth) return workerAuth.error
+
+  // 워커 인증: allSpaces=true 면 전체 스윕, 아니면 x-workspace-id 지정 공간만.
+  // Space 토큰은 allSpaces 를 무시하고 토큰의 Space 만 처리한다.
+  if (parsed.data.allSpaces && workerAuth.scope.kind === 'legacy') {
     const result = await scheduleInsightSweep({
       sinceDays: parsed.data.sinceDays,
       maxProposals: parsed.data.maxProposals,
@@ -48,8 +50,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result)
   }
 
-  const spaceId = req.headers.get('x-workspace-id')
+  const headerSpaceId = req.headers.get('x-workspace-id')
+  const spaceId = workerAuth.scope.kind === 'space' ? workerAuth.scope.spaceId : headerSpaceId
   if (!spaceId) return errorResponse('x-workspace-id 또는 allSpaces=true 가 필요합니다', 400)
+  const denied = assertWorkerOwns(workerAuth.scope, { spaceId: headerSpaceId ?? spaceId })
+  if (denied) return denied
   const result = await scheduleInsightSweep({
     spaceId,
     sinceDays: parsed.data.sinceDays,

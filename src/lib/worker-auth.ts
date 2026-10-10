@@ -121,6 +121,14 @@ export function workerWorkspaceWhere(scope: WorkerScope): {
   return scope.workspaceId ? { workspaceId: scope.workspaceId } : { workspaceId: { in: [] } }
 }
 
+/**
+ * 하트비트 service 키. Space 토큰 실행은 전역 키와 함께 `${service}:${spaceId}` 도 갱신한다 —
+ * 전역 키만 있으면 다른 Space 가 살아 있는 동안 멈춘 Space 가 가려진다. 전역 키는 기존 stale 검사가 읽는다.
+ */
+export function workerHeartbeatServices(service: string, spaceId?: string): string[] {
+  return spaceId ? [service, `${service}:${spaceId}`] : [service]
+}
+
 export function workerSpaceWhere(scope: WorkerScope): { spaceId?: string } {
   return scope.kind === 'legacy' ? {} : { spaceId: scope.spaceId }
 }

@@ -1,10 +1,11 @@
-// Worker 전용 엔드포인트 — x-worker-api-key 인증.
+// Worker 전용 엔드포인트 — x-worker-api-key 인증(Space 토큰은 자기 Space 의 job 만).
 // GET  ?kinds=PUBLISH,COLLECT_METRIC&limit=5&workerId=sc-worker-01 → claim 결과
 // POST                                                            → enqueue (관리용)
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { errorResponse, resolveWorkerAuth } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { claimJobs, enqueueJob, reapStaleClaims } from '@/lib/sc/jobs'
 import { prisma } from '@/lib/prisma'
 import { readChannelCredential } from '@/lib/sc/credentials'
@@ -13,7 +14,7 @@ import { getAppOrigin } from '@/lib/domain'
 const KINDS = ['PUBLISH', 'COLLECT_METRIC', 'INSIGHT_SWEEP'] as const
 
 export async function GET(req: NextRequest) {
-  const auth = resolveWorkerAuth(req)
+  const auth = await authenticateWorker(req.headers)
   if ('error' in auth) return auth.error
 
   const url = new URL(req.url)
@@ -36,7 +37,12 @@ export async function GET(req: NextRequest) {
     console.log(`[sc-jobs-worker] stale CLAIMED ${reaped}건 회복`)
   }
 
-  const jobs = await claimJobs({ workerId, kinds, limit })
+  const jobs = await claimJobs({
+    workerId,
+    kinds,
+    limit,
+    spaceId: auth.scope.kind === 'space' ? auth.scope.spaceId : undefined,
+  })
 
   // 각 job 에 대해 필요한 배포·채널·자격증명 컨텍스트를 함께 돌려준다.
   // 워커가 개별 콜 없이 바로 시작할 수 있도록.
@@ -48,8 +54,14 @@ export async function GET(req: NextRequest) {
       if (!usesDeploymentContext || typeof job.targetId !== 'string') {
         return { job }
       }
-      const deployment = await prisma.contentDeployment.findUnique({
-        where: { id: job.targetId },
+      // targetId 에는 FK 가 없다 — 배포·콘텐츠·채널이 모두 job 의 Space 소속일 때만 컨텍스트(자격증명 포함)를 붙인다.
+      const deployment = await prisma.contentDeployment.findFirst({
+        where: {
+          id: job.targetId,
+          spaceId: job.spaceId,
+          content: { spaceId: job.spaceId },
+          channel: { spaceId: job.spaceId },
+        },
         include: {
           content: { include: { assets: true } },
           channel: true,
@@ -83,7 +95,7 @@ const enqueueSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const auth = resolveWorkerAuth(req)
+  const auth = await authenticateWorker(req.headers)
   if ('error' in auth) return auth.error
 
   let body: unknown
@@ -95,6 +107,19 @@ export async function POST(req: NextRequest) {
   const parsed = enqueueSchema.safeParse(body)
   if (!parsed.success) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
+  }
+  const denied = assertWorkerOwns(auth.scope, { spaceId: parsed.data.spaceId })
+  if (denied) return denied
+  // 다른 Space 의 배포를 targetId 로 넣지 못하게 한다(존재 여부는 숨긴다).
+  if (
+    parsed.data.targetId &&
+    (parsed.data.kind === 'PUBLISH' || parsed.data.kind === 'COLLECT_METRIC')
+  ) {
+    const target = await prisma.contentDeployment.findFirst({
+      where: { id: parsed.data.targetId, spaceId: parsed.data.spaceId },
+      select: { id: true },
+    })
+    if (!target) return errorResponse('대상 배포를 찾을 수 없습니다', 404)
   }
 
   const job = await enqueueJob({

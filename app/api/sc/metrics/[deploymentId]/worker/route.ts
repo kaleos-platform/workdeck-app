@@ -7,7 +7,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { errorResponse, resolveWorkerAuth } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerOwns } from '@/lib/worker-auth'
 import { prisma } from '@/lib/prisma'
 import { upsertDeploymentMetric } from '@/lib/sc/metrics'
 
@@ -33,7 +34,7 @@ const bodySchema = z.object({
 })
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const auth = resolveWorkerAuth(req)
+  const auth = await authenticateWorker(req.headers)
   if ('error' in auth) return auth.error
 
   const { deploymentId } = await params
@@ -41,7 +42,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     where: { id: deploymentId },
     select: { id: true, spaceId: true },
   })
-  if (!deployment) return errorResponse('배포를 찾을 수 없습니다', 404)
+  if (!deployment || !workerOwns(auth.scope, { spaceId: deployment.spaceId })) {
+    return errorResponse('배포를 찾을 수 없습니다', 404)
+  }
 
   let body: unknown
   try {

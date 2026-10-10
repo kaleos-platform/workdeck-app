@@ -3,7 +3,7 @@
  *
  * PENDING 리포트에 두 요청이 동시에 도달하면 정확히 하나만 claim 성공(200)하고
  * 나머지는 404를 받아야 한다. DB에서 PROCESSING 전환도 정확히 1회만 발생해야 한다.
- * resolveWorkerAuth mock + buildAnalysisContext/getSystemPrompt mock. DB URL 없으면 skip.
+ * authenticateWorker mock(레거시 범위) + buildAnalysisContext/getSystemPrompt mock. DB URL 없으면 skip.
  */
 import path from 'path'
 import { config } from 'dotenv'
@@ -13,10 +13,10 @@ config({ path: path.resolve(process.cwd(), '.env.local') })
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// resolveWorkerAuth만 mock, errorResponse는 실제 사용
-jest.mock('@/lib/api-helpers', () => {
-  const actual = jest.requireActual('@/lib/api-helpers')
-  return { __esModule: true, ...actual, resolveWorkerAuth: jest.fn() }
+// authenticateWorker만 mock, 나머지(workerWorkspaceWhere 등)는 실제 사용
+jest.mock('@/lib/worker-auth', () => {
+  const actual = jest.requireActual('@/lib/worker-auth')
+  return { __esModule: true, ...actual, authenticateWorker: jest.fn() }
 })
 
 // buildAnalysisContext — DB 의존 최소화를 위해 mock
@@ -31,7 +31,7 @@ jest.mock('@/lib/ai/prompts', () => ({
   getSystemPrompt: jest.fn(),
 }))
 
-import { resolveWorkerAuth } from '@/lib/api-helpers'
+import { authenticateWorker } from '@/lib/worker-auth'
 import { buildAnalysisContext } from '@/lib/analysis/data-builder'
 import { getSystemPrompt } from '@/lib/ai/prompts'
 import { POST } from '../../../../app/api/analysis/reports/[reportId]/run/route'
@@ -79,7 +79,7 @@ d('POST /analysis/reports/[reportId]/run — 동시 claim 원자성 (dev DB)', (
     reportId = report.id
 
     // 워커 인증 항상 통과
-    ;(resolveWorkerAuth as jest.Mock).mockReturnValue({ authenticated: true as const })
+    ;(authenticateWorker as jest.Mock).mockResolvedValue({ scope: { kind: 'legacy' } })
 
     // buildAnalysisContext — 최소 응답 반환
     ;(buildAnalysisContext as jest.Mock).mockResolvedValue({

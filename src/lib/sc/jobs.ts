@@ -67,9 +67,21 @@ export async function claimJobs(params: {
   workerId: string
   kinds?: SalesContentJobKind[]
   limit?: number
+  spaceId?: string // 워커 토큰 범위 — 지정 시 해당 Space 의 job 만 점유
 }): Promise<SalesContentJob[]> {
   const limit = Math.min(params.limit ?? 5, 25)
   const kinds = params.kinds
+
+  const args: unknown[] = [limit]
+  let filters = ''
+  if (kinds && kinds.length > 0) {
+    args.push(kinds)
+    filters += ` AND "kind" = ANY($${args.length}::text[]::"SalesContentJobKind"[])`
+  }
+  if (params.spaceId) {
+    args.push(params.spaceId)
+    filters += ` AND "spaceId" = $${args.length}`
+  }
 
   // SELECT ... FOR UPDATE SKIP LOCKED 로 후보 id 확보 후 UPDATE RETURNING.
   // 동시 워커가 같은 job 을 잡는 레이스를 방지한다.
@@ -77,13 +89,11 @@ export async function claimJobs(params: {
     await prisma.$queryRawUnsafe<{ id: string }[]>(
       `SELECT "id" FROM "SalesContentJob"
      WHERE "status" = 'PENDING'
-       AND "scheduledAt" <= NOW()
-       ${kinds && kinds.length > 0 ? `AND "kind" = ANY($2::text[]::"SalesContentJobKind"[])` : ''}
+       AND "scheduledAt" <= NOW()${filters}
      ORDER BY "scheduledAt" ASC
      FOR UPDATE SKIP LOCKED
      LIMIT $1`,
-      limit,
-      ...(kinds && kinds.length > 0 ? [kinds] : [])
+      ...args
     )
   ).map((r) => r.id)
 

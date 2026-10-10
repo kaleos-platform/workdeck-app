@@ -3,7 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { authenticateWorker, workerWorkspaceWhere } from '@/lib/worker-auth'
 import { buildAnalysisContext } from '@/lib/analysis/data-builder'
 import { getSystemPrompt } from '@/lib/ai/prompts'
 
@@ -12,14 +13,15 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ reportId: string }> }
 ) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const { reportId } = await params
 
-  // 원자적 claim: PENDING인 경우에만 PROCESSING 전환 (동시 요청 중 하나만 성공)
+  // 원자적 claim: PENDING인 경우에만 PROCESSING 전환 (동시 요청 중 하나만 성공).
+  // 토큰 범위 밖 리포트는 갱신하지 않고 404(존재 은닉).
   const claimed = await prisma.analysisReport.updateMany({
-    where: { id: reportId, status: 'PENDING' },
+    where: { id: reportId, status: 'PENDING', ...workerWorkspaceWhere(auth.scope) },
     data: { status: 'PROCESSING' },
   })
   if (claimed.count !== 1) {

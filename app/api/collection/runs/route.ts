@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { queryCollectionRuns } from '@/lib/coupang-ads/queries'
 import { canWorkspaceCollect } from '@/lib/billing/entitlement'
+import { assertWorkerOwns, authenticateWorker, workerWorkspaceWhere } from '@/lib/worker-auth'
 
 // GET /api/collection/runs — 수집 실행 이력 조회
 export async function GET(request: NextRequest) {
@@ -21,24 +22,27 @@ export async function GET(request: NextRequest) {
 // POST /api/collection/runs — 수집 트리거 (사용자 세션 OR Worker 인증)
 export async function POST(request: NextRequest) {
   // Worker 인증 시 body에서 workspaceId + triggeredBy 읽기
-  const workerKey = request.headers.get('x-worker-api-key')
-  const expectedKey = process.env.WORKER_API_KEY
-  const isWorker = Boolean(workerKey && expectedKey && workerKey === expectedKey)
+  // 워커 여부는 헤더 존재로 정한다 — 키가 틀리면 세션으로 폴백하지 않고 401.
+  const isWorker = !!request.headers.get('x-worker-api-key')
 
   let workspaceId: string
   let triggeredBy = 'manual'
 
   if (isWorker) {
+    const auth = await authenticateWorker(request.headers)
+    if ('error' in auth) return auth.error
     const body = await request.json().catch(() => ({}))
     if (!body.workspaceId) {
-      // Worker가 workspaceId 없이 호출 시 첫 번째 활성 자격증명의 workspace 사용
+      // Worker가 workspaceId 없이 호출 시 토큰 범위의 첫 번째 활성 자격증명의 workspace 사용
       const cred = await prisma.coupangCredential.findFirst({
-        where: { isActive: true },
+        where: { isActive: true, ...workerWorkspaceWhere(auth.scope) },
         select: { workspaceId: true },
       })
       if (!cred) return errorResponse('활성 워크스페이스가 없습니다', 404)
       workspaceId = cred.workspaceId
     } else {
+      const denied = assertWorkerOwns(auth.scope, { workspaceId: body.workspaceId })
+      if (denied) return denied
       workspaceId = body.workspaceId
     }
     triggeredBy = body.triggeredBy ?? 'scheduled'

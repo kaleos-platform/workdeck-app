@@ -4,15 +4,19 @@
 
 import { NextRequest } from 'next/server'
 
+jest.mock('@/lib/worker-auth', () => ({
+  authenticateWorker: jest.fn().mockResolvedValue({ scope: { kind: 'legacy' } }),
+  assertWorkerOwns: jest.fn().mockReturnValue(null),
+}))
+
 jest.mock('@/lib/api-helpers', () => ({
-  resolveWorkerAuth: jest.fn(() => ({ workerId: 'test-worker' })),
   errorResponse: (msg: string, status: number, extra?: Record<string, unknown>) =>
     new Response(JSON.stringify({ error: msg, ...extra }), { status }),
 }))
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    contentDeployment: { findUnique: jest.fn() },
+    contentDeployment: { findFirst: jest.fn() },
     salesContentJob: {},
   },
 }))
@@ -36,7 +40,7 @@ import { prisma } from '@/lib/prisma'
 import { claimJobs, reapStaleClaims } from '@/lib/sc/jobs'
 import { readChannelCredential } from '@/lib/sc/credentials'
 
-const findUnique = prisma.contentDeployment.findUnique as jest.Mock
+const findFirst = prisma.contentDeployment.findFirst as jest.Mock
 const mockClaim = claimJobs as jest.Mock
 const mockReap = reapStaleClaims as jest.Mock
 const mockReadCred = readChannelCredential as jest.Mock
@@ -89,7 +93,7 @@ describe('GET /api/sc/jobs/worker', () => {
     mockClaim.mockResolvedValue([
       { id: 'j1', kind: 'PUBLISH', targetId: 'd1', payload: {}, attempts: 1 },
     ])
-    findUnique.mockResolvedValue(baseDeployment)
+    findFirst.mockResolvedValue(baseDeployment)
 
     const res = (await GET(makeReq()))!
     const body = (await res.json()) as { jobs: Array<Record<string, unknown>> }
@@ -110,7 +114,7 @@ describe('GET /api/sc/jobs/worker', () => {
     ])
 
     const res = (await GET(makeReq()))!
-    expect(findUnique).not.toHaveBeenCalled()
+    expect(findFirst).not.toHaveBeenCalled()
     const body = (await res.json()) as { jobs: Array<Record<string, unknown>> }
     expect(body.jobs[0]).toEqual({
       job: expect.objectContaining({ kind: 'INSIGHT_SWEEP' }),
@@ -121,7 +125,7 @@ describe('GET /api/sc/jobs/worker', () => {
     mockClaim.mockResolvedValue([
       { id: 'j3', kind: 'PUBLISH', targetId: 'd-gone', payload: {}, attempts: 1 },
     ])
-    findUnique.mockResolvedValue(null)
+    findFirst.mockResolvedValue(null)
 
     const res = (await GET(makeReq()))!
     const body = (await res.json()) as { jobs: Array<Record<string, unknown>> }
@@ -133,7 +137,7 @@ describe('GET /api/sc/jobs/worker', () => {
     mockClaim.mockResolvedValue([
       { id: 'j4', kind: 'PUBLISH', targetId: 'd1', payload: {}, attempts: 1 },
     ])
-    findUnique.mockResolvedValue(baseDeployment)
+    findFirst.mockResolvedValue(baseDeployment)
     mockReadCred.mockRejectedValue(new Error('decrypt fail'))
 
     const res = (await GET(makeReq()))!

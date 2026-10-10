@@ -16,10 +16,11 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkerAuth, errorResponse } from '@/lib/api-helpers'
+import { errorResponse } from '@/lib/api-helpers'
+import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 
 export async function GET(request: NextRequest) {
-  const auth = resolveWorkerAuth(request)
+  const auth = await authenticateWorker(request.headers)
   if ('error' in auth) return auth.error
 
   const url = new URL(request.url)
@@ -27,6 +28,8 @@ export async function GET(request: NextRequest) {
   if (!workspaceId) {
     return errorResponse('workspaceId 쿼리 파라미터가 필요합니다', 400)
   }
+  const denied = assertWorkerOwns(auth.scope, { workspaceId })
+  if (denied) return denied
 
   const latestUpload = await prisma.inventoryUpload.findFirst({
     where: { workspaceId, fileType: 'INVENTORY_HEALTH' },
