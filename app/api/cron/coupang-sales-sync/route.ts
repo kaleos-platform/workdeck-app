@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveSweepScope } from '@/lib/cron/with-cron-run'
+import { workerHeartbeatServices } from '@/lib/worker-auth'
 import { runCoupangSalesSyncForDates } from '@/lib/inv/coupang-sales-to-movement'
 
 export const runtime = 'nodejs'
@@ -58,13 +59,15 @@ export async function GET(request: NextRequest) {
 
   const spaces = await runCoupangSalesSyncForDates(dates, sweep.scope)
 
-  await prisma.workerHeartbeat
-    .upsert({
-      where: { service: WORKER_SERVICE },
-      create: { service: WORKER_SERVICE, lastPingAt: new Date() },
-      update: { lastPingAt: new Date() },
-    })
-    .catch(() => {})
+  for (const service of workerHeartbeatServices(WORKER_SERVICE, sweep.scope.spaceId)) {
+    await prisma.workerHeartbeat
+      .upsert({
+        where: { service },
+        create: { service, lastPingAt: new Date() },
+        update: { lastPingAt: new Date() },
+      })
+      .catch(() => {})
+  }
 
   // 스윕 범위(토큰의 Space 또는 전체) 누적 집계 — 워커(Slack·이력)가 단일 숫자로 소비.
   const totals = spaces.reduce(

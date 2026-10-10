@@ -40,6 +40,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     return errorResponse('invalid input', 400, { errors: parsed.error.flatten() })
   }
 
+  // targetId 에는 FK 가 없다 — 다른 Space 의 배포를 가리키는 job 은 job·배포 어느 쪽도 갱신하지 않는다.
+  // (배포가 이미 삭제됐으면 아래 updateMany 가 0건이라 job 만 종료한다 — 재선점 루프 방지)
+  if (job.kind === 'PUBLISH' && job.targetId) {
+    const target = await prisma.contentDeployment.findUnique({
+      where: { id: job.targetId },
+      select: { spaceId: true },
+    })
+    if (target && target.spaceId !== job.spaceId) return errorResponse('job 이 없습니다', 404)
+  }
+
   if (parsed.data.ok) {
     const { updated } = await completeJob(id)
     if (!updated) {
@@ -49,7 +59,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (job.kind === 'PUBLISH' && job.targetId) {
       // updateMany 로 status filter 적용 — 이미 PUBLISHED/FAILED 인 deployment 는 덮어쓰지 않음.
       await prisma.contentDeployment.updateMany({
-        where: { id: job.targetId, status: 'PUBLISHING' },
+        where: { id: job.targetId, spaceId: job.spaceId, status: 'PUBLISHING' },
         data: {
           status: 'PUBLISHED',
           publishedAt: new Date(),
@@ -75,7 +85,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (finalized && job.kind === 'PUBLISH' && job.targetId) {
     try {
       await prisma.contentDeployment.updateMany({
-        where: { id: job.targetId, status: 'PUBLISHING' },
+        where: { id: job.targetId, spaceId: job.spaceId, status: 'PUBLISHING' },
         data: {
           status: 'FAILED',
           errorMessage: errorMessage.slice(0, 1000),

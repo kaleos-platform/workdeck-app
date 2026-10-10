@@ -3,7 +3,11 @@ import { prisma } from '@/lib/prisma'
 import { withCronRun, type SweepScope } from '@/lib/cron/with-cron-run'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
-import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
+import {
+  resolveCoupangWorkspaceForSpace,
+  resolveCoupangWorkspaceForSpaceStrict,
+} from '@/lib/inv/resolve-coupang-workspace'
+import { workerHeartbeatServices } from '@/lib/worker-auth'
 import { getCoupangInventoryRows } from '@/lib/inv/reconciliation-sources'
 import { aggregateMatchedByOption } from '@/lib/inv/reconciliation-resolve'
 import {
@@ -90,7 +94,10 @@ async function runInventorySync(_request: NextRequest, scope: SweepScope) {
         continue
       }
 
-      const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
+      // Space 토큰 스윕은 인증 경계와 같은 엄격 해석 — 공유·모호한 연결이면 건너뛴다.
+      const resolved = scope.spaceId
+        ? await resolveCoupangWorkspaceForSpaceStrict(spaceId)
+        : await resolveCoupangWorkspaceForSpace(spaceId)
       if (!resolved) {
         summary.push({ spaceId, status: 'skip:no-workspace-link' })
         continue
@@ -289,13 +296,15 @@ async function runInventorySync(_request: NextRequest, scope: SweepScope) {
     }
   }
 
-  await prisma.workerHeartbeat
-    .upsert({
-      where: { service: WORKER_SERVICE },
-      create: { service: WORKER_SERVICE, lastPingAt: new Date() },
-      update: { lastPingAt: new Date() },
-    })
-    .catch(() => {})
+  for (const service of workerHeartbeatServices(WORKER_SERVICE, scope.spaceId)) {
+    await prisma.workerHeartbeat
+      .upsert({
+        where: { service },
+        create: { service, lastPingAt: new Date() },
+        update: { lastPingAt: new Date() },
+      })
+      .catch(() => {})
+  }
 
   return { spaces: summary }
 }

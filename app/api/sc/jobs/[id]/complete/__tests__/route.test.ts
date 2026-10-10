@@ -19,7 +19,7 @@ jest.mock('@/lib/api-helpers', () => ({
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     salesContentJob: { findUnique: jest.fn() },
-    contentDeployment: { updateMany: jest.fn() },
+    contentDeployment: { updateMany: jest.fn(), findUnique: jest.fn() },
   },
 }))
 
@@ -45,9 +45,11 @@ import { POST } from '../route'
 import { prisma } from '@/lib/prisma'
 import { completeJob, failJob, isRetryableErrorCode } from '@/lib/sc/jobs'
 import { notifyJobFailure } from '@/lib/sc/notifications'
+import { authenticateWorker } from '@/lib/worker-auth'
 
 const findUnique = prisma.salesContentJob.findUnique as jest.Mock
 const updateMany = prisma.contentDeployment.updateMany as jest.Mock
+const findDeployment = prisma.contentDeployment.findUnique as jest.Mock
 const mockComplete = completeJob as jest.Mock
 const mockFail = failJob as jest.Mock
 const mockRetryable = isRetryableErrorCode as jest.Mock
@@ -83,6 +85,7 @@ beforeEach(() => {
   jest.clearAllMocks()
   findUnique.mockResolvedValue(baseJob)
   updateMany.mockResolvedValue({ count: 1 })
+  findDeployment.mockResolvedValue({ spaceId: 'space-1' })
 })
 
 // ────────────────────────────────────────────────
@@ -97,7 +100,7 @@ describe('POST /complete — ok:true (PUBLISH)', () => {
     expect(res.status).toBe(200)
     expect(updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 'd1', status: 'PUBLISHING' },
+        where: { id: 'd1', spaceId: 'space-1', status: 'PUBLISHING' },
         data: expect.objectContaining({
           status: 'PUBLISHED',
           platformUrl: 'https://blog.naver.com/p/1',
@@ -138,7 +141,7 @@ describe('POST /complete — ok:false', () => {
     await call({ ok: false, errorCode: 'AUTH_FAILED', errorMessage: '세션 만료' })
     expect(updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 'd1', status: 'PUBLISHING' },
+        where: { id: 'd1', spaceId: 'space-1', status: 'PUBLISHING' },
         data: expect.objectContaining({ status: 'FAILED' }),
       })
     )
@@ -189,5 +192,35 @@ describe('POST /complete — 입력 검증', () => {
     findUnique.mockResolvedValue(null)
     const res = await call({ ok: true })
     expect(res.status).toBe(404)
+  })
+})
+
+// ────────────────────────────────────────────────
+// Space 경계 — targetId 에는 FK 가 없다
+// ────────────────────────────────────────────────
+
+describe('POST /complete — 다른 Space 배포를 가리키는 job', () => {
+  beforeEach(() => {
+    ;(authenticateWorker as jest.Mock).mockResolvedValue({
+      scope: { kind: 'space', tokenId: 't1', spaceId: 'space-1', workspaceId: 'ws-1' },
+    })
+    findDeployment.mockResolvedValue({ spaceId: 'space-2' })
+  })
+  afterAll(() => {
+    ;(authenticateWorker as jest.Mock).mockResolvedValue({ scope: { kind: 'legacy' } })
+  })
+
+  it.each([
+    ['성공 보고', { ok: true, platformUrl: 'https://x' }],
+    ['실패 보고', { ok: false, errorCode: 'AUTH_FAILED', errorMessage: 'x' }],
+  ])('%s → 404, job·배포 모두 갱신 없음', async (_name, body) => {
+    mockRetryable.mockReturnValue(false)
+    const res = await call(body)
+    expect(res.status).toBe(404)
+    expect(findDeployment).toHaveBeenCalledWith({ where: { id: 'd1' }, select: { spaceId: true } })
+    expect(mockComplete).not.toHaveBeenCalled()
+    expect(mockFail).not.toHaveBeenCalled()
+    expect(updateMany).not.toHaveBeenCalled()
+    expect(mockNotify).not.toHaveBeenCalled()
   })
 })

@@ -11,7 +11,12 @@ import {
   GET as scJobsWorkerGet,
   POST as scJobsWorkerPost,
 } from '../../../app/api/sc/jobs/worker/route'
+import { POST as analysisTrigger } from '../../../app/api/analysis/trigger/route'
+import { headers } from 'next/headers'
+import { resolveWorkspace } from '@/lib/api-helpers'
+import { resolveCollectionAuth } from '@/lib/collection/resolve-workspace'
 
+jest.mock('next/headers', () => ({ headers: jest.fn() }))
 jest.mock('@/lib/worker-auth', () => {
   const actual = jest.requireActual('@/lib/worker-auth')
   return { ...actual, authenticateWorker: jest.fn() }
@@ -128,4 +133,32 @@ test('인증 실패는 그대로 401', async () => {
   auth.mockResolvedValue({ error: NextResponse.json({}, { status: 401 }) })
   const res = await pendingRuns(new NextRequest('http://t/api/collection/runs/pending'))
   expect(res.status).toBe(401)
+})
+
+test('resolveWorkspace: x-workspace-id 가 다른 Space 의 워크스페이스면 403', async () => {
+  ;(headers as jest.Mock).mockResolvedValue(
+    new Headers({ 'x-worker-api-key': 'wdw_a', 'x-workspace-id': 'ws-b' })
+  )
+  const res = await resolveWorkspace()
+  expect('error' in res && res.error?.status).toBe(403)
+})
+
+test('resolveCollectionAuth: x-workspace-id 가 다른 Space 의 워크스페이스면 403', async () => {
+  const res = await resolveCollectionAuth(
+    new NextRequest('http://t/api/collection/source-setting', {
+      headers: { 'x-worker-api-key': 'wdw_a', 'x-workspace-id': 'ws-b' },
+    })
+  )
+  expect('error' in res && res.error.status).toBe(403)
+})
+
+test('analysis/trigger: 워커 요청 본문이 JSON 이 아니면 400', async () => {
+  const res = await analysisTrigger(
+    new NextRequest('http://t/api/analysis/trigger', {
+      method: 'POST',
+      headers: { 'x-worker-api-key': 'wdw_a' },
+      body: '{not json',
+    })
+  )
+  expect(res?.status).toBe(400)
 })

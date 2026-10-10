@@ -22,7 +22,10 @@ import { splitRocketBundle } from '@/lib/inv/rocket-bundle-split'
 import { lockStockLevel } from '@/lib/inv/movement-processor'
 import { COUPANG_ADS_DECK_ID } from '@/lib/deck-routes'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
-import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
+import {
+  resolveCoupangWorkspaceForSpace,
+  resolveCoupangWorkspaceForSpaceStrict,
+} from '@/lib/inv/resolve-coupang-workspace'
 
 const ROCKET_GROWTH_FULFILLMENT = '로켓그로스'
 
@@ -360,7 +363,10 @@ export async function runCoupangSalesSyncForDates(
         continue
       }
 
-      const resolved = await resolveCoupangWorkspaceForSpace(spaceId)
+      // Space 토큰 스윕은 인증 경계와 같은 엄격 해석 — 공유·모호한 연결이면 건너뛴다.
+      const resolved = opts.spaceId
+        ? await resolveCoupangWorkspaceForSpaceStrict(spaceId)
+        : await resolveCoupangWorkspaceForSpace(spaceId)
       if (!resolved) {
         summary.push({ spaceId, status: 'skip:no-workspace-link' })
         continue

@@ -25,8 +25,13 @@ export async function POST(request: NextRequest) {
     const auth = await authenticateWorker(request.headers)
     if ('error' in auth) return auth.error
     // Worker: body에서 workspaceId 읽기
-    const rawBody = await request.text()
-    const parsed = JSON.parse(rawBody)
+    let parsed: Record<string, unknown> & { workspaceId?: string }
+    try {
+      parsed = JSON.parse(await request.text())
+    } catch {
+      return errorResponse('잘못된 요청 형식입니다', 400)
+    }
+    if (!parsed || typeof parsed !== 'object') return errorResponse('잘못된 요청 형식입니다', 400)
     if (!parsed.workspaceId) {
       return errorResponse('workspaceId가 필요합니다', 400)
     }

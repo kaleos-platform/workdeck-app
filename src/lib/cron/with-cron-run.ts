@@ -69,12 +69,20 @@ export function withCronRun(path: string, handler: CronHandler, auth: CronAuth =
     const startedAt = new Date()
     try {
       const detail = await handler(request, scope)
-      await recordRun({ path, startedAt, ok: true, detail })
+      // Space 토큰 실행은 어느 Space 의 기록인지 남긴다 — 전체 스윕 기록과 섞여 멈춘 Space 가 가려지지 않게.
+      const recorded = scope.spaceId ? { ...detail, scopeSpaceId: scope.spaceId } : detail
+      await recordRun({ path, startedAt, ok: true, detail: recorded })
       return NextResponse.json({ ranAt: startedAt.toISOString(), ...detail })
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       console.error(`[cron${path}] 실패:`, err)
-      await recordRun({ path, startedAt, ok: false, error: message })
+      await recordRun({
+        path,
+        startedAt,
+        ok: false,
+        error: message,
+        detail: scope.spaceId ? { scopeSpaceId: scope.spaceId } : undefined,
+      })
       return NextResponse.json({ ranAt: startedAt.toISOString(), error: message }, { status: 500 })
     }
   }
