@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  encryptionEnv,
   parseOptions,
   validateDestination,
   verifyPreparedAssets,
@@ -36,7 +37,6 @@ test('검증 프로젝트와 DB 대응을 검사하고 개발 환경은 거부�
       ),
     /DATABASE_PROJECT/
   )
-  assert.throws(() => validateDestination({ ...env, ENCRYPTION_KEY: '' }, ref), /ENCRYPTION/)
 })
 
 test('실제 자산 내용과 checksum을 대조하고 누락·잘못된 manifest는 차단한다', async () => {
@@ -107,4 +107,41 @@ test('운영 파일럿은 명시적 모드와 환경 표시가 모두 일치할 
   assert.throws(() =>
     parseOptions(['--source-space', '1', '--target-space', 'space', '--target-mode', 'production'])
   )
+})
+
+const K = 'ab'.repeat(32)
+test('v0 쓰기(K0 유예 기간)는 ENCRYPTION_KEY 가 있어야 하고 ENCRYPTION_* 만 주입한다', () => {
+  const target = {
+    DIRECT_URL: 'x',
+    ENCRYPTION_WRITE_VERSION: 'v0',
+    ENCRYPTION_KEY: K,
+    ENCRYPTION_KEY_V1: K,
+  }
+  assert.deepEqual(encryptionEnv(target), {
+    ENCRYPTION_WRITE_VERSION: 'v0',
+    ENCRYPTION_KEY: K,
+    ENCRYPTION_KEY_V1: K,
+  })
+  const withoutK0 = { ...target, ENCRYPTION_KEY: undefined }
+  assert.throws(() => encryptionEnv(withoutK0), /ENCRYPTION_KEY_REQUIRED/)
+})
+test('v1 쓰기는 활성 kid 의 루트 키가 있어야 한다', () => {
+  assert.deepEqual(encryptionEnv({ ENCRYPTION_WRITE_VERSION: 'v1', ENCRYPTION_KEY_V1: K }), {
+    ENCRYPTION_WRITE_VERSION: 'v1',
+    ENCRYPTION_KEY_V1: K,
+  })
+  assert.throws(
+    () => encryptionEnv({ ENCRYPTION_WRITE_VERSION: 'v1', ENCRYPTION_KEY: K }),
+    /ENCRYPTION_KEY_V1_REQUIRED/
+  )
+  assert.throws(
+    () =>
+      encryptionEnv({
+        ENCRYPTION_WRITE_VERSION: 'v1',
+        ENCRYPTION_KEY_V1: K,
+        ENCRYPTION_KEY_V1_ACTIVE_KID: 'k2',
+      }),
+    /ENCRYPTION_KEY_V1_K2_REQUIRED/
+  )
+  assert.throws(() => encryptionEnv({ ENCRYPTION_KEY_V1: K }), /ENCRYPTION_WRITE_VERSION_REQUIRED/)
 })

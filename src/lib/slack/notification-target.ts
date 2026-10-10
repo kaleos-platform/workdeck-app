@@ -15,7 +15,7 @@ export const NOTIFICATION_CHANNEL_KIND = 'notifications'
 export type SlackNotificationTarget = {
   spaceId: string
   channelId: string
-  botToken: string // AES-256-CBC hex 암호문 (평문 아님 — 호출자가 ENCRYPTION_KEY로 복호화)
+  botToken: string // 'slack-token' 용도 암호문(v1 GCM 또는 v0 CBC, 평문 아님 — 호출자가 field-crypto 로 복호화)
   botTokenIv: string
 }
 

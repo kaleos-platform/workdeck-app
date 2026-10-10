@@ -71,6 +71,7 @@ const db = { $transaction: transaction } as unknown as Pick<PrismaClient, '$tran
 beforeEach(() => {
   jest.resetAllMocks()
   process.env.ENCRYPTION_KEY = 'ab'.repeat(32)
+  process.env.ENCRYPTION_KEY_V1 = 'd'.repeat(64) // v1 루트 — v0 키(ENCRYPTION_KEY)와 다른 값
   transaction.mockImplementation(async (fn) => fn(tx))
   tx.space.findUnique.mockResolvedValue({ id: 'space' })
   tx.spaceMember.findUnique.mockResolvedValue({ id: 'member' })

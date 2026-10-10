@@ -5,7 +5,7 @@
  * 지원서/블랙리스트의 모든 저장 경로는 반드시 이 모듈의 유틸을 거쳐
  * enc/iv/hash 컬럼을 만든 뒤 저장한다. (call-site 강제)
  *
- * - 암호화: AES-256-CBC — 기존 공용 유틸 재사용 (src/lib/del/encryption.ts, ENCRYPTION_KEY)
+ * - 암호화: 공용 유틸 재사용 (src/lib/del/encryption.ts — 공통 모듈 'pii' 용도 키)
  * - 매칭 해시: HMAC-SHA256, 키 HIRING_HMAC_KEY (AES 키와 분리 — 해시 브루트포스 방어 근거)
  * - 상태알림 토큰: 원문 미저장, HMAC 해시만 저장 + 상수시간 비교
  */

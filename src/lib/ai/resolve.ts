@@ -5,7 +5,8 @@
 
 import { prisma } from '@/lib/prisma'
 import type { SpaceAiProvider } from '@/generated/prisma/enums'
-import { decryptPii } from '@/lib/del/encryption'
+import { decryptField } from '@/lib/crypto/field-crypto'
+import { upgradeIfLegacy } from '@/lib/crypto/reencrypt'
 import type { TextGenerateRequest, TextGenerateResult, TextProvider } from './providers'
 import { OpenAiProvider } from './providers/text-openai'
 import { AnthropicProvider } from './providers/text-anthropic'
@@ -74,11 +75,22 @@ export async function resolveSpaceAiProvider(spaceId: string): Promise<SpaceAiRe
     }
     let apiKey: string
     try {
-      apiKey = decryptPii(setting.encryptedApiKey, setting.apiKeyIv)
+      apiKey = decryptField('ai-key', setting.encryptedApiKey, setting.apiKeyIv)
     } catch {
-      // 복호화 실패(ENCRYPTION_KEY 교체 등) — 원문이 로그·응답에 새지 않도록 메시지 고정
+      // 복호화 실패(키 교체·레거시 키 미설정 등) — 원문이 로그·응답에 새지 않도록 메시지 고정
       throw new ByokKeyError('저장된 AI 키를 복호화할 수 없습니다. 키를 다시 등록해주세요')
     }
+    const encryptedApiKey = setting.encryptedApiKey
+    await upgradeIfLegacy(
+      'ai-key',
+      { encrypted: encryptedApiKey, iv: setting.apiKeyIv },
+      apiKey,
+      (next) =>
+        prisma.spaceAiSetting.updateMany({
+          where: { spaceId, encryptedApiKey },
+          data: { encryptedApiKey: next.encrypted, apiKeyIv: next.iv },
+        })
+    )
     return {
       mode: 'BYOK',
       provider: byokProvider(setting.provider, apiKey, setting.model),

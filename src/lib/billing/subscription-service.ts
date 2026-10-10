@@ -3,7 +3,8 @@
 import { randomUUID } from 'node:crypto'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
-import { encryptPii, decryptPii } from '@/lib/del/encryption'
+import { decryptField, encryptField } from '@/lib/crypto/field-crypto'
+import { upgradeIfLegacy } from '@/lib/crypto/reencrypt'
 import { getBillingProvider } from './providers/toss'
 import {
   calcAmounts,
@@ -86,7 +87,18 @@ async function loadDefaultMethod(spaceId: string) {
     orderBy: { createdAt: 'desc' },
   })
   if (!method) throw new BillingError('등록된 결제수단이 없습니다', 400)
-  return { ...method, decryptedBillingKey: decryptPii(method.billingKey, method.billingKeyIv) }
+  const decryptedBillingKey = decryptField('billing-key', method.billingKey, method.billingKeyIv)
+  await upgradeIfLegacy(
+    'billing-key',
+    { encrypted: method.billingKey, iv: method.billingKeyIv },
+    decryptedBillingKey,
+    (next) =>
+      prisma.billingMethod.updateMany({
+        where: { id: method.id, billingKey: method.billingKey },
+        data: { billingKey: next.encrypted, billingKeyIv: next.iv },
+      })
+  )
+  return { ...method, decryptedBillingKey }
 }
 
 // SDK 호출 전 선행: 구독 레코드 + customerKey 확보 (SDK requestBillingAuth에 동일 키 사용 필수)
@@ -118,7 +130,7 @@ export async function registerBillingMethod(spaceId: string, authKey: string) {
   }
 
   const issued = await provider.issueBillingKey(authKey, subscription.customerKey)
-  const encrypted = encryptPii(issued.billingKey)
+  const encrypted = encryptField('billing-key', issued.billingKey)
 
   // 기존 기본 결제수단은 해제하고 새 카드를 기본으로
   await prisma.$transaction([
@@ -169,10 +181,14 @@ export async function removeBillingMethod(spaceId: string, methodId: string | nu
   // PG 폐기가 실패해도 사용자에게는 삭제를 보장해야 하므로 DB 삭제는 진행한다.
   // (남은 빌링키는 결제 시도 자체가 없으므로 사용되지 않는다.)
   try {
-    const billingKey = decryptPii(method.billingKey, method.billingKeyIv)
+    const billingKey = decryptField('billing-key', method.billingKey, method.billingKeyIv)
     await getBillingProvider().deleteBillingKey(billingKey)
   } catch (e) {
-    console.error('[billing] 빌링키 폐기 실패 — DB 행은 삭제한다', e)
+    // PG 오류 원문에는 빌링키가 섞일 수 있다 — 종류만 남긴다.
+    console.error(
+      '[billing] 빌링키 폐기 실패 — DB 행은 삭제한다',
+      e instanceof Error ? e.name : typeof e
+    )
   }
 
   await prisma.billingMethod.delete({ where: { id: method.id } })

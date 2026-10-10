@@ -8,7 +8,7 @@
  */
 
 import { runBackfill, type BackfillCreds } from './backfill-sales-vendor.js'
-import { decrypt } from './encryption.js'
+import { decryptSecret } from './encryption.js'
 import { notifyVendorSalesDone, notifyLoginFailed } from './slack-notifier.js'
 import {
   LoginError,
@@ -213,10 +213,11 @@ export function startBackfillPoller(): void {
 
     try {
       // 자격증명 복호화
-      const password =
-        job.credential.passwordIv === 'none'
-          ? job.credential.encryptedPassword
-          : decrypt(job.credential.encryptedPassword, job.credential.passwordIv)
+      const password = decryptSecret(
+        'collection-credential',
+        job.credential.encryptedPassword,
+        job.credential.passwordIv
+      )
 
       const creds: BackfillCreds = { loginId: job.credential.loginId, password }
 

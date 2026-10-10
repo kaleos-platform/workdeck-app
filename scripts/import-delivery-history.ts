@@ -15,7 +15,9 @@
  * - 재고(InvStockLevel) 차감 안 함. InvMovement OUTBOUND만 직접 createMany.
  * - 완전한 주문만 import. 채널/상품 미등록 → 보류 + 리포트.
  * - 멱등: content hash. 기존 referenceId(import:dh:<hash>) 있으면 skip.
- * - PII 암호화. ENCRYPTION_KEY 필요(실제 실행 시).
+ * - PII 암호화. ENCRYPTION_KEY_V1 필요(실제 실행 시).
+ *   운영 4a 기간(앱 v0 쓰기)에는 반드시 ENCRYPTION_WRITE_VERSION=v0 과 ENCRYPTION_KEY 로 실행한다
+ *   (로컬에는 VERCEL_ENV 가 없어 기본 쓰기 버전이 v1 이다).
  */
 
 import { readFileSync } from 'node:fs'
