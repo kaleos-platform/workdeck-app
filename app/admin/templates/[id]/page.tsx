@@ -1,18 +1,19 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/admin/auth'
+import { mfaStepUpPath } from '@/lib/auth/mfa-policy'
 import { TemplateBlockEditor } from '@/components/admin/template-block-editor'
 
 type Params = { params: Promise<{ id: string }> }
 
 export default async function AdminTemplateDetailPage({ params }: Params) {
-  // layout이 MFA_REQUIRED 상태에서도 children을 렌더하므로, prisma를 직접 읽는 이 페이지는 자체 가드가 필요하다.
+  // layout 과 page 는 병렬로 렌더되므로 layout 의 가드가 이 페이지의 prisma 읽기를 막아주지 않는다 — 자체 가드.
   const auth = await requireOperator()
-  if (!auth.ok) notFound()
-
   const { id } = await params
+  if (!auth.ok && auth.reason === 'MFA_REQUIRED') redirect(mfaStepUpPath(`/admin/templates/${id}`))
+  if (!auth.ok) notFound()
 
   const template = await prisma.hiringDetailTemplate.findFirst({
     where: { id, spaceId: null, isSample: true },

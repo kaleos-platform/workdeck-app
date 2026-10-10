@@ -11,6 +11,7 @@ import { errorResponse, assertRole } from '@/lib/api-helpers'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { decryptField, fieldWriteVersion, isV1, V1_IV_MARKER } from '@/lib/crypto/field-crypto'
 import { resolveCollectionAuth } from '@/lib/collection/resolve-workspace'
+import { requireAal2 } from '@/lib/auth/mfa'
 
 // accessKey 마스킹 — 앞 4자만 노출
 function maskAccessKey(accessKey: string): string {
@@ -79,6 +80,9 @@ export async function PUT(request: NextRequest) {
   if (auth.kind === 'session') {
     const permError = assertRole(auth.role, 'ADMIN')
     if (permError) return permError
+    // 사람(세션)의 쓰기만 aal2 를 요구한다. 워커는 토큰 인증이라 제외.
+    const mfaError = await requireAal2()
+    if (mfaError) return mfaError
   }
 
   let body: {
@@ -185,6 +189,9 @@ export async function DELETE(request: NextRequest) {
   if (auth.kind === 'session') {
     const permError = assertRole(auth.role, 'ADMIN')
     if (permError) return permError
+    // 사람(세션)의 쓰기만 aal2 를 요구한다. 워커는 토큰 인증이라 제외.
+    const mfaError = await requireAal2()
+    if (mfaError) return mfaError
   }
 
   const existing = await prisma.coupangApiCredential.findUnique({

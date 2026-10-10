@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
+import { requireAal2 } from '@/lib/auth/mfa'
 import { prisma } from '@/lib/prisma'
 import { deleteChannelCredential, upsertChannelCredential } from '@/lib/sc/credentials'
 
@@ -36,6 +37,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
+  // 자격증명 쓰기는 ADMIN 이상 — resolveDeckContext 는 역할을 보지 않는다.
+  const roleError = assertRole(resolved.role, 'ADMIN')
+  if (roleError) return roleError
+  const mfaError = await requireAal2()
+  if (mfaError) return mfaError
 
   const { id: channelId } = await params
   const channel = await prisma.salesContentChannel.findFirst({
@@ -80,6 +86,11 @@ export async function POST(req: NextRequest, { params }: Params) {
 export async function DELETE(req: NextRequest, { params }: Params) {
   const resolved = await resolveDeckContext('sales-content', { write: true })
   if ('error' in resolved) return resolved.error
+  // 자격증명 쓰기는 ADMIN 이상 — resolveDeckContext 는 역할을 보지 않는다.
+  const roleError = assertRole(resolved.role, 'ADMIN')
+  if (roleError) return roleError
+  const mfaError = await requireAal2()
+  if (mfaError) return mfaError
 
   const { id: channelId } = await params
   const url = new URL(req.url)

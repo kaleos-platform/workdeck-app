@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getUser } from '@/hooks/use-user'
+import { requireAal2 } from '@/lib/auth/mfa'
 import { errorResponse, assertRole, resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { encryptField } from '@/lib/crypto/field-crypto'
@@ -96,8 +97,17 @@ export async function PUT(req: NextRequest) {
 
   const existing = await prisma.spaceAiSetting.findUnique({
     where: { spaceId: ctx.spaceId },
-    select: { encryptedApiKey: true },
+    select: { mode: true, provider: true, encryptedApiKey: true },
   })
+
+  // 키 저장, 그리고 저장된 키를 새로 쓰기 시작하는 변경(BYOK 전환·공급자 변경)은 aal2.
+  // 같은 공급자에서 모델만 바꾸거나 워크덱 모드로 돌아가는 요청은 통과.
+  const keyUseChanged =
+    mode === 'BYOK' && (existing?.mode !== 'BYOK' || existing?.provider !== provider)
+  if (apiKey || keyUseChanged) {
+    const mfaError = await requireAal2()
+    if (mfaError) return mfaError
+  }
 
   if (mode === 'BYOK' && !apiKey && !existing?.encryptedApiKey) {
     return errorResponse('BYOK 모드로 전환하려면 API 키가 필요합니다', 400)
@@ -137,6 +147,8 @@ export async function PUT(req: NextRequest) {
 export async function DELETE() {
   const ctx = await requireAdminSpace()
   if ('error' in ctx) return ctx.error
+  const mfaError = await requireAal2()
+  if (mfaError) return mfaError
 
   const existing = await prisma.spaceAiSetting.findUnique({
     where: { spaceId: ctx.spaceId },

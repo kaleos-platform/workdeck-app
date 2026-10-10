@@ -257,8 +257,8 @@ function EmailSection({ currentEmail }: { currentEmail: string }) {
           <DialogHeader>
             <DialogTitle>이메일 변경 확인</DialogTitle>
             <DialogDescription>
-              <strong>{newEmail}</strong> 주소로 확인 메일이 발송됩니다. 확인 전까지는 기존
-              주소({currentEmail})로 로그인됩니다. 계속하려면 현재 이메일 주소를 입력하세요.
+              <strong>{newEmail}</strong> 주소로 확인 메일이 발송됩니다. 확인 전까지는 기존 주소(
+              {currentEmail})로 로그인됩니다. 계속하려면 현재 이메일 주소를 입력하세요.
             </DialogDescription>
           </DialogHeader>
           <Input
@@ -398,13 +398,6 @@ function MfaSection() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        {/* 로그인 폼에 MFA 챌린지 단계가 없어 재로그인은 항상 aal1 이다. 이 상태로 강제를 켜면
-            어드민 접근도 해제도 불가능해지므로, 승급 경로가 생기기 전까지는 등록만 지원한다. */}
-        <p className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
-          지금은 등록만 가능합니다. 로그인 화면에 코드 입력 단계가 아직 없어 재로그인 시에는 2단계
-          인증이 적용되지 않습니다. 운영자 잠금을 막기 위해 강제 설정(ADMIN_REQUIRE_MFA)은 켜지
-          마세요.
-        </p>
         {loading ? (
           <p className="text-sm text-muted-foreground">불러오는 중...</p>
         ) : verifiedFactor ? (
@@ -421,7 +414,7 @@ function MfaSection() {
           <div className="flex flex-col gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`data:image/svg+xml;utf-8,${encodeURIComponent(enrollment.qrCode)}`}
+              src={enrollment.qrCode}
               alt="TOTP QR 코드"
               className="size-40 self-start rounded border bg-white p-2"
             />
@@ -466,7 +459,7 @@ function MfaSection() {
           <DialogHeader>
             <DialogTitle>2단계 인증 해제</DialogTitle>
             <DialogDescription>
-              해제하면 ADMIN_REQUIRE_MFA가 켜져 있을 때 어드민 접근이 차단됩니다. 계속하시겠습니까?
+              해제하면 다음 어드민 접근 때 2단계 인증을 다시 등록해야 합니다. 계속하시겠습니까?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

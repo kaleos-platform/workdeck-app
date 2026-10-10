@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { requireOperator } from '@/lib/admin/auth'
+import { mfaStepUpPath } from '@/lib/auth/mfa-policy'
 import { getAdminMetrics } from '@/lib/admin/metrics'
 import { MetricCards } from '@/components/admin/metric-cards'
 
@@ -24,9 +25,9 @@ const SECTIONS = [
 ]
 
 export default async function AdminHomePage() {
-  // layout이 이미 requireOperator를 통과시키지만, MFA_REQUIRED 상태에서도 children이 렌더될 수 있어
-  // prisma를 직접 읽는 이 페이지는 자체 가드가 필요하다.
+  // layout 과 page 는 병렬로 렌더되므로 layout 의 가드가 이 페이지의 prisma 읽기를 막아주지 않는다 — 자체 가드.
   const auth = await requireOperator()
+  if (!auth.ok && auth.reason === 'MFA_REQUIRED') redirect(mfaStepUpPath('/admin'))
   if (!auth.ok) notFound()
 
   const metrics = await getAdminMetrics()

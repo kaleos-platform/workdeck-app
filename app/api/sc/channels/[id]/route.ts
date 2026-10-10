@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveDeckContext, errorResponse } from '@/lib/api-helpers'
+import { resolveDeckContext, errorResponse, assertRole } from '@/lib/api-helpers'
+import { requireAal2 } from '@/lib/auth/mfa'
 import { prisma } from '@/lib/prisma'
 import { salesContentChannelInputSchema } from '@/lib/sc/schemas'
 
@@ -78,6 +79,15 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     select: { id: true },
   })
   if (!existing) return errorResponse('채널을 찾을 수 없습니다', 404)
+
+  // 채널을 지우면 ChannelCredential 이 cascade 로 함께 지워진다 — 자격증명 삭제와 같은 게이트.
+  const credentialCount = await prisma.channelCredential.count({ where: { channelId: id } })
+  if (credentialCount > 0) {
+    const roleError = assertRole(resolved.role, 'ADMIN')
+    if (roleError) return roleError
+    const mfaError = await requireAal2()
+    if (mfaError) return mfaError
+  }
 
   await prisma.salesContentChannel.delete({ where: { id } })
   return NextResponse.json({ ok: true })
