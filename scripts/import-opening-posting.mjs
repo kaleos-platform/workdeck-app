@@ -58,11 +58,27 @@ export function validateDestination(env, expectedRef, developmentUrl, targetMode
     database.hostname.endsWith('.pooler.supabase.com') &&
     decodeURIComponent(database.username).endsWith(`.${expectedRef}`)
   if (!direct && !pooler) throw Error('DATABASE_PROJECT_MISMATCH')
-  if (!/^[a-f0-9]{64}$/i.test(env.ENCRYPTION_KEY ?? '')) throw Error('ENCRYPTION_KEY_REQUIRED')
   // 연결 문자열의 SSL 옵션이 명시적인 인증서 검증을 덮어쓰지 않게 한다.
   for (const key of ['sslmode', 'sslrootcert', 'sslcert', 'sslkey'])
     database.searchParams.delete(key)
   return database.toString()
+}
+
+// 대상 env 의 쓰기 버전·활성 kid 에 필요한 키를 검증하고, 주입할 ENCRYPTION_* 변수만 돌려준다.
+// 쓰기 버전은 대상 env 에 명시해야 한다(로컬에는 VERCEL_ENV 가 없어 기본값이 v1 이다).
+export function encryptionEnv(env) {
+  const version = env.ENCRYPTION_WRITE_VERSION
+  if (version !== 'v0' && version !== 'v1') throw Error('ENCRYPTION_WRITE_VERSION_REQUIRED')
+  const kid = env.ENCRYPTION_KEY_V1_ACTIVE_KID || 'k1'
+  if (!/^k[1-9][0-9]*$/.test(kid)) throw Error('ENCRYPTION_KEY_V1_ACTIVE_KID_INVALID')
+  const required =
+    version === 'v0'
+      ? 'ENCRYPTION_KEY'
+      : kid === 'k1'
+        ? 'ENCRYPTION_KEY_V1'
+        : `ENCRYPTION_KEY_V1_${kid.toUpperCase()}`
+  if (!/^[a-f0-9]{64}$/i.test(env[required] ?? '')) throw Error(`${required}_REQUIRED`)
+  return Object.fromEntries(Object.entries(env).filter(([k]) => k.startsWith('ENCRYPTION_')))
 }
 
 export async function verifyPreparedAssets(content, blocks, readObject) {
@@ -139,6 +155,7 @@ async function main() {
     local.NEXT_PUBLIC_SUPABASE_URL,
     options.targetMode
   )
+  const cryptoEnv = encryptionEnv(env)
   const { createClient } = await import('@supabase/supabase-js')
   const storage = createClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
@@ -150,7 +167,8 @@ async function main() {
     if (error || !data) throw Error('ASSET_UNAVAILABLE')
     return new Uint8Array(await data.arrayBuffer())
   })
-  process.env.ENCRYPTION_KEY = env.ENCRYPTION_KEY
+  for (const k of Object.keys(process.env)) if (k.startsWith('ENCRYPTION_')) delete process.env[k]
+  Object.assign(process.env, cryptoEnv)
   const { PrismaClient } = await jiti.import('../src/generated/prisma/client.ts')
   const { PrismaPg } = await import('@prisma/adapter-pg')
   const ssl = {

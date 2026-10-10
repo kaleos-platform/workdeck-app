@@ -43,6 +43,7 @@ const run = (overrides = {}) =>
 
 beforeEach(() => {
   process.env.ENCRYPTION_KEY = 'ab'.repeat(32)
+  process.env.ENCRYPTION_KEY_V1 = 'd'.repeat(64) // v1 루트 — v0 키(ENCRYPTION_KEY)와 다른 값
   row = null
   target = null
   jest.clearAllMocks()

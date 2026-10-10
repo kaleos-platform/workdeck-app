@@ -4,6 +4,7 @@ import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { getUser } from '@/hooks/use-user'
 import { ensureWorkspaceForUser } from '@/lib/workspace'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
+import { decryptField, isV1, V1_IV_MARKER } from '@/lib/crypto/field-crypto'
 import { canWorkspaceCollect } from '@/lib/billing/entitlement'
 
 // worker/src/login-guard.ts 의 CREDENTIAL_INVALID 사유 문구 — 워커가 run.error 에 남긴다.
@@ -116,12 +117,24 @@ export async function PUT(request: NextRequest) {
     return errorResponse('로그인 ID와 비밀번호가 필요합니다', 400)
   }
 
-  // 비밀번호 암호화 (encryptionIv가 없으면 새로 암호화)
+  // 암호문 직접 입력은 워커만, 인증되는 v1(GCM) 암호문만 받는다(iv='none'·임의 IV·v0 재조합 차단).
   let loginPassword: string
   let encryptionIv: string
 
-  if (body.encryptionIv && body.loginPassword) {
-    // Worker에서 이미 암호화된 값 전달
+  if (body.encryptionIv !== undefined) {
+    if (!isWorker) {
+      return errorResponse('encryptionIv 는 받을 수 없습니다. 비밀번호를 평문으로 보내 주세요', 400)
+    }
+    if (!body.loginPassword) return errorResponse('로그인 ID와 비밀번호가 필요합니다', 400)
+    // v0(CBC)는 IV 를 바꿔도 첫 블록만 달라져 복호화가 성공한다 — 재전달은 v1 만.
+    if (!isV1(body.loginPassword) || body.encryptionIv !== V1_IV_MARKER) {
+      return errorResponse('암호문 형식이 올바르지 않습니다', 400)
+    }
+    try {
+      decryptField('collection-credential', body.loginPassword, body.encryptionIv)
+    } catch {
+      return errorResponse('암호문 형식이 올바르지 않습니다', 400)
+    }
     loginPassword = body.loginPassword
     encryptionIv = body.encryptionIv
   } else {

@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { PUT } from '../route'
 import { prisma } from '@/lib/prisma'
 import { canWorkspaceCollect } from '@/lib/billing/entitlement'
+import { resolveWorkspace } from '@/lib/api-helpers'
 
 jest.mock('@/lib/api-helpers', () => ({
   resolveWorkspace: jest.fn(),
@@ -66,5 +67,33 @@ describe('PUT /api/collection/credentials — 비번 오류 후 재수집', () =
     ;(canWorkspaceCollect as jest.Mock).mockResolvedValue(false)
     expect((await save()).retriggered).toBe(false)
     expect(run.create).not.toHaveBeenCalled()
+  })
+})
+
+describe('PUT /api/collection/credentials — 암호문 직접 입력 차단', () => {
+  const put = (body: unknown, headers: Record<string, string> = {}) =>
+    PUT(
+      new NextRequest('http://localhost/api/collection/credentials', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(body),
+      })
+    )
+
+  it('세션 요청이 encryptionIv 를 보내면 400, 저장 없음', async () => {
+    const res = await put({ loginId: 'id', loginPassword: 'plain', encryptionIv: 'none' })
+    expect(res?.status).toBe(400)
+    expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
+  })
+
+  it('워커 재전달이라도 복호화되지 않는 값(iv=none)은 400, 저장 없음', async () => {
+    process.env.WORKER_API_KEY = 'wk'
+    ;(resolveWorkspace as jest.Mock).mockResolvedValue({ workspace: { id: 'ws' } })
+    const res = await put(
+      { loginId: 'id', loginPassword: 'plain', encryptionIv: 'none' },
+      { 'x-worker-api-key': 'wk' }
+    )
+    expect(res?.status).toBe(400)
+    expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
   })
 })

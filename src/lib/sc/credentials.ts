@@ -1,7 +1,8 @@
-// ChannelCredential 저장·복호화 헬퍼. del/encryption 의 AES-256-CBC 를 재사용.
+// ChannelCredential 저장·복호화 헬퍼. 공통 모듈의 'channel-credential' 용도 키.
 
 import { prisma } from '@/lib/prisma'
-import { decryptPii, encryptPii } from '@/lib/del/encryption'
+import { decryptField, encryptField } from '@/lib/crypto/field-crypto'
+import { upgradeIfLegacy } from '@/lib/crypto/reencrypt'
 import type { ChannelCredentialKind } from '@/generated/prisma/client'
 
 export interface CredentialPayload {
@@ -19,8 +20,7 @@ export async function upsertChannelCredential(input: {
   payload: CredentialPayload
   expiresAt?: Date | null
 }) {
-  const json = JSON.stringify(input.payload)
-  const { encrypted, iv } = encryptPii(json)
+  const { encrypted, iv } = encryptField('channel-credential', JSON.stringify(input.payload))
 
   return prisma.channelCredential.upsert({
     where: { channelId_kind: { channelId: input.channelId, kind: input.kind } },
@@ -49,9 +49,32 @@ export async function readChannelCredential<T extends CredentialPayload = Creden
     where: { channelId_kind: { channelId, kind } },
   })
   if (!row) return null
-  const json = decryptPii(row.encryptedPayload, row.iv)
-  const payload = JSON.parse(json) as T
-  return { payload, expiresAt: row.expiresAt }
+  const json = decryptField('channel-credential', row.encryptedPayload, row.iv)
+  // v0 면 v1 으로 올린다 — 같은 암호문일 때만(그 사이 재등록됐으면 덮어쓰지 않음).
+  await upgradeIfLegacy(
+    'channel-credential',
+    { encrypted: row.encryptedPayload, iv: row.iv },
+    json,
+    (next) =>
+      prisma.channelCredential.updateMany({
+        where: { id: row.id, encryptedPayload: row.encryptedPayload },
+        data: { encryptedPayload: next.encrypted, iv: next.iv },
+      })
+  )
+  return { payload: JSON.parse(json) as T, expiresAt: row.expiresAt }
+}
+
+// 워커 전달용 — 서버에서 평문을 만들지 않는다(워커가 channel-credential 용도 키로 복호화).
+export async function readChannelCredentialSealed(
+  channelId: string,
+  kind: ChannelCredentialKind
+): Promise<{ encryptedPayload: string; iv: string; expiresAt: Date | null } | null> {
+  const row = await prisma.channelCredential.findUnique({
+    where: { channelId_kind: { channelId, kind } },
+    select: { encryptedPayload: true, iv: true, expiresAt: true },
+  })
+  if (!row) return null
+  return { encryptedPayload: row.encryptedPayload, iv: row.iv, expiresAt: row.expiresAt }
 }
 
 export async function deleteChannelCredential(channelId: string, kind: ChannelCredentialKind) {
