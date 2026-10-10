@@ -17,7 +17,7 @@ import 'dotenv/config'
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { getCredentials, uploadInventory } from './api-client.js'
-import { decrypt } from './encryption.js'
+import { decryptSecret } from './encryption.js'
 import { openWingSession, downloadSalesAnalysisVendorOnPage } from './inventory-collector.js'
 import { renewProfileLock } from './browser.js'
 
@@ -250,10 +250,11 @@ async function main(): Promise<void> {
     process.exit(1)
   }
 
-  const password =
-    credential.passwordIv === 'none'
-      ? credential.encryptedPassword
-      : decrypt(credential.encryptedPassword, credential.passwordIv)
+  const password = decryptSecret(
+    'collection-credential',
+    credential.encryptedPassword,
+    credential.passwordIv
+  )
 
   const creds: BackfillCreds = { loginId: credential.loginId, password }
 

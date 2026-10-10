@@ -5,7 +5,7 @@
  * 레거시 env(SLACK_BOT_TOKEN/SLACK_CHANNEL_ID, 구 에밀리 봇) 이중 발송은 제거됐다.
  */
 import { getSlackNotificationTarget } from './api-client.js'
-import { decrypt } from './encryption.js'
+import { decryptSecret } from './encryption.js'
 
 const SLACK_API_URL = 'https://slack.com/api/chat.postMessage'
 
@@ -73,7 +73,7 @@ async function resolveNewPath(
   try {
     const lookup = await getSlackNotificationTarget(workspaceId, deckKey, eventKey)
     if (!lookup.target) return { notifyEnabled: lookup.notifyEnabled, channel: null }
-    const token = decrypt(lookup.target.botToken, lookup.target.botTokenIv)
+    const token = decryptSecret('slack-token', lookup.target.botToken, lookup.target.botTokenIv)
     return {
       notifyEnabled: lookup.notifyEnabled,
       channel: { token, channelId: lookup.target.channelId },

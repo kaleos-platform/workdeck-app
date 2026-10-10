@@ -18,7 +18,7 @@ import {
   type ProbeResult,
   type InventoryApiRowPayload,
 } from './api-client.js'
-import { decrypt } from './encryption.js'
+import { decryptSecret } from './encryption.js'
 import { collectCoupangReport } from './collector.js'
 import type { InventoryCollectorResult } from './inventory-collector.js'
 import { collectInventoryData } from './inventory-collector.js'
@@ -236,8 +236,7 @@ async function runApiProbe(runId: string): Promise<void> {
       return
     }
 
-    const secretKey =
-      cred.encryptionIv === 'none' ? cred.secretKey : decrypt(cred.secretKey, cred.encryptionIv)
+    const secretKey = decryptSecret('collection-credential', cred.secretKey, cred.encryptionIv)
     const apiCfg: CoupangApiConfig = {
       vendorId: cred.vendorId,
       accessKey: cred.accessKey,
@@ -379,11 +378,11 @@ async function executeCollectionPipeline(
   const credential = await getCredentials()
   // 실패 알림이 Deck 토글 게이트를 타도록 workspaceId를 컨텍스트에 채운다(이 시점 이후 실패만 해당).
   if (ctx) ctx.workspaceId = credential.workspaceId
-  // iv가 'none'이면 평문 저장 (ENCRYPTION_KEY 미설정 환경)
-  const password =
-    credential.passwordIv === 'none'
-      ? credential.encryptedPassword
-      : decrypt(credential.encryptedPassword, credential.passwordIv)
+  const password = decryptSecret(
+    'collection-credential',
+    credential.encryptedPassword,
+    credential.passwordIv
+  )
 
   // 수동 수집: 최근 7일. 자동 수집: 최근 14일(self-heal).
   // cron 1회 실패 = 그 날짜 영구 누락이므로(같은 날 재시도 불가), 자동 경로는
@@ -755,10 +754,11 @@ async function collectAndUploadInventory(credential: {
   ipBlocked?: boolean
   publicIp?: string
 }> {
-  const password =
-    credential.passwordIv === 'none'
-      ? credential.encryptedPassword
-      : decrypt(credential.encryptedPassword, credential.passwordIv)
+  const password = decryptSecret(
+    'collection-credential',
+    credential.encryptedPassword,
+    credential.passwordIv
+  )
 
   // 재고(inventory) 수집 소스 결정 — 실패해도 CRAWL(기존 동작)로 폴백해 조회 실패가
   // 크롤링까지 막지 않게 한다. API 로 명시 전환된 경우에만 아래 API 분기를 탄다.
@@ -829,8 +829,7 @@ async function collectAndUploadInventory(credential: {
       if (!cred || !cred.isActive) {
         throw new Error('쿠팡 API 자격증명이 없거나 비활성 상태입니다')
       }
-      const secretKey =
-        cred.encryptionIv === 'none' ? cred.secretKey : decrypt(cred.secretKey, cred.encryptionIv)
+      const secretKey = decryptSecret('collection-credential', cred.secretKey, cred.encryptionIv)
       const apiCfg: CoupangApiConfig = {
         vendorId: cred.vendorId,
         accessKey: cred.accessKey,

@@ -169,7 +169,7 @@ export async function getPendingRun(): Promise<{
 export type ApiCredentialResponse = {
   vendorId: string
   accessKey: string
-  secretKey: string // 암호문 hex (encryptionIv==='none' 이면 평문)
+  secretKey: string // 암호문 (v1 GCM 또는 v0 CBC hex)
   encryptionIv: string
   isActive: boolean
 } | null
@@ -278,7 +278,7 @@ export async function uploadReport(
 export type SlackNotificationTargetResponse = {
   spaceId: string
   channelId: string
-  botToken: string // AES-256-CBC hex 암호문 — 워커가 ENCRYPTION_KEY로 복호화
+  botToken: string // 암호문 (v1 GCM 또는 v0 CBC) — 워커가 slack-token 용도 키로 복호화
   botTokenIv: string
 } | null
 
