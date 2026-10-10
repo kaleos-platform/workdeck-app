@@ -1,12 +1,13 @@
 /** @jest-environment node */
 import { prisma } from '@/lib/prisma'
-import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
+import { resolveCoupangWorkspaceForSpaceStrict } from '@/lib/inv/resolve-coupang-workspace'
 import {
   assertWorkerOwns,
   authenticateWorker,
   generateWorkerToken,
   hashWorkerToken,
   resolveWorkerWorkspaceId,
+  workerSpaceWhere,
   workerTokenExpiry,
   workerWorkspaceWhere,
   type WorkerScope,
@@ -28,13 +29,13 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 jest.mock('@/lib/inv/resolve-coupang-workspace', () => ({
-  resolveCoupangWorkspaceForSpace: jest.fn(),
+  resolveCoupangWorkspaceForSpaceStrict: jest.fn(),
 }))
 
 const mock = prisma as unknown as {
   workerToken: { findUnique: jest.Mock; update: jest.Mock }
 }
-const resolveWs = resolveCoupangWorkspaceForSpace as jest.Mock
+const resolveWs = resolveCoupangWorkspaceForSpaceStrict as jest.Mock
 
 function h(key?: string) {
   return new Headers(key ? { 'x-worker-api-key': key } : {})
@@ -111,6 +112,66 @@ describe('authenticateWorker', () => {
     expect(workerTokenExpiry(90, now).toISOString()).toBe('2027-01-07T00:00:00.000Z')
     expect(() => workerTokenExpiry(0, now)).toThrow()
     expect(() => workerTokenExpiry(366, now)).toThrow()
+    expect(workerTokenExpiry(1, now).toISOString()).toBe('2026-10-10T00:00:00.000Z')
+    expect(workerTokenExpiry(365, now).toISOString()).toBe('2027-10-09T00:00:00.000Z')
+    expect(() => workerTokenExpiry(1.5, now)).toThrow()
+    expect(() => workerTokenExpiry(Number.NaN, now)).toThrow()
+  })
+
+  test('expiresAt 이 지금과 같으면 만료(401)', async () => {
+    const now = new Date('2026-10-09T00:00:00Z')
+    jest.useFakeTimers({ now })
+    try {
+      mock.workerToken.findUnique.mockResolvedValue({
+        id: 't1',
+        spaceId: 'space-a',
+        revokedAt: null,
+        expiresAt: new Date(now),
+        lastUsedAt: null,
+      })
+      const r = await authenticateWorker(h('wdw_edge'))
+      expect('error' in r && r.error.status).toBe(401)
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  test('레거시가 켜져 있어도 무효한 wdw_ 토큰은 레거시로 넘어가지 않는다', async () => {
+    process.env.WORKER_LEGACY_KEY_ENABLED = '1'
+    for (const row of [
+      null,
+      { id: 't1', spaceId: 'space-a', revokedAt: new Date(), expiresAt: FUTURE, lastUsedAt: null },
+      {
+        id: 't1',
+        spaceId: 'space-a',
+        revokedAt: null,
+        expiresAt: new Date(Date.now() - 1000),
+        lastUsedAt: null,
+      },
+    ]) {
+      mock.workerToken.findUnique.mockResolvedValue(row)
+      const r = await authenticateWorker(h('wdw_bad'))
+      expect('error' in r && r.error.status).toBe(401)
+    }
+  })
+
+  test('레거시 키가 wdw_ 로 시작하면 설정 오류로 throw', async () => {
+    process.env.WORKER_LEGACY_KEY_ENABLED = '1'
+    process.env.WORKER_API_KEY = 'wdw_legacy'
+    await expect(authenticateWorker(h('legacy-key'))).rejects.toThrow('WORKER_API_KEY')
+  })
+
+  test('lastUsedAt 갱신 실패는 인증을 막지 않는다', async () => {
+    mock.workerToken.findUnique.mockResolvedValue({
+      id: 't1',
+      spaceId: 'space-a',
+      revokedAt: null,
+      expiresAt: FUTURE,
+      lastUsedAt: null,
+    })
+    mock.workerToken.update.mockRejectedValue(new Error('db down'))
+    resolveWs.mockResolvedValue({ workspaceId: 'ws-a', locationId: 'loc' })
+    expect(await authenticateWorker(h('wdw_ok'))).toEqual({ scope: spaceA })
   })
 
   test('없는 토큰 → 401', async () => {
@@ -157,6 +218,11 @@ describe('범위 검사', () => {
   test('폴링 필터: legacy 는 전체, space 는 자기 워크스페이스', () => {
     expect(workerWorkspaceWhere({ kind: 'legacy' })).toEqual({})
     expect(workerWorkspaceWhere(spaceA)).toEqual({ workspaceId: 'ws-a' })
+  })
+
+  test('Space 필터: legacy 는 전체, space 는 자기 Space', () => {
+    expect(workerSpaceWhere({ kind: 'legacy' })).toEqual({})
+    expect(workerSpaceWhere(spaceA)).toEqual({ spaceId: 'space-a' })
   })
 
   test('x-workspace-id 가 다른 워크스페이스면 403, 없으면 토큰의 워크스페이스', async () => {

@@ -20,7 +20,7 @@ const [cmd, ...rest] = process.argv.slice(2)
 function arg(name: string): string {
   const i = rest.indexOf(`--${name}`)
   const v = i >= 0 ? rest[i + 1] : undefined
-  if (!v) throw new Error(`--${name} 필요`)
+  if (!v || v.startsWith('--')) throw new Error(`--${name} 필요`)
   return v
 }
 
@@ -30,15 +30,18 @@ const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString, max:
 
 async function main() {
   if (cmd === 'issue') {
+    // 인자 검증을 모두 끝낸 뒤에만 토큰을 만든다 — 실패한 발급이 평문을 남기지 않게.
     const spaceId = arg('space')
+    const name = arg('name')
+    const ttlDays = rest.includes('--ttl-days')
+      ? Number(arg('ttl-days'))
+      : WORKER_TOKEN_DEFAULT_TTL_DAYS
+    const expiresAt = workerTokenExpiry(ttlDays)
     const space = await prisma.space.findUnique({ where: { id: spaceId }, select: { name: true } })
     if (!space) throw new Error('Space 없음')
-    const ttlIdx = rest.indexOf('--ttl-days')
-    const ttlDays = ttlIdx >= 0 ? Number(rest[ttlIdx + 1]) : WORKER_TOKEN_DEFAULT_TTL_DAYS
-    const expiresAt = workerTokenExpiry(ttlDays)
     const { token, tokenHash } = generateWorkerToken()
     const row = await prisma.workerToken.create({
-      data: { spaceId, name: arg('name'), tokenHash, expiresAt },
+      data: { spaceId, name, tokenHash, expiresAt },
       select: { id: true },
     })
     console.log(`발급: ${row.id} (${space.name}), 만료 ${expiresAt.toISOString()}`)

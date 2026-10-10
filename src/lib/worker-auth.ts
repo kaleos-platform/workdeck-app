@@ -2,16 +2,17 @@
  * 워커 인증 — Space 범위 토큰(WorkerToken). 헤더는 기존과 같은 x-worker-api-key.
  *  - `wdw_` 로 시작하면 sha256 해시로 조회(평문 비저장). 폐기·미존재는 401.
  *  - 레거시 단일 키(WORKER_API_KEY)는 전환 기간에만(WORKER_LEGACY_KEY_ENABLED=1) 허용하고 범위 제한이 없다.
- *    전환 완료 후 이 분기는 삭제한다(Task 7 Step 8).
+ *    전환 완료 후 이 분기는 삭제한다(Task 7 Step 8). 레거시 키가 `wdw_` 로 시작하면 도달할 수 없으므로 설정 오류로 throw.
  * Space ↔ 레거시 Workspace 사이에 FK 가 없으므로(ADR-0002) 토큰의 워크스페이스는
- * resolveCoupangWorkspaceForSpace(로켓그로스 위치의 externalIntegrationKey)로 해석한다 — cron 과 같은 축.
- * ⚠️ api-helpers 를 import 하지 않는다(api-helpers 가 이 파일을 import 한다).
+ * 로켓그로스 위치의 externalIntegrationKey 로 해석한다 — cron 과 같은 축. 단, 인증 경계이므로
+ * 모호하면 연결 없음으로 보는 resolveCoupangWorkspaceForSpaceStrict 를 쓴다.
+ * ⚠️ api-helpers 를 import 하지 않는다(워커 라우트 연결 때 api-helpers 가 이 파일을 import 하면 순환이 된다).
  */
 import crypto from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { timingSafeEqualString } from '@/lib/crypto/timing-safe'
-import { resolveCoupangWorkspaceForSpace } from '@/lib/inv/resolve-coupang-workspace'
+import { resolveCoupangWorkspaceForSpaceStrict } from '@/lib/inv/resolve-coupang-workspace'
 import { EXTERNAL_SOURCE_COUPANG_ROCKET_GROWTH } from '@/lib/inv/external-sources'
 
 export type WorkerScope =
@@ -66,7 +67,7 @@ export async function authenticateWorker(
         .update({ where: { id: row.id }, data: { lastUsedAt: new Date() } })
         .catch(() => undefined) // 사용 시각 기록 실패가 인증을 막으면 안 된다
     }
-    const coupang = await resolveCoupangWorkspaceForSpace(row.spaceId)
+    const coupang = await resolveCoupangWorkspaceForSpaceStrict(row.spaceId)
     return {
       scope: {
         kind: 'space',
@@ -78,6 +79,11 @@ export async function authenticateWorker(
   }
 
   const legacy = process.env.WORKER_API_KEY
+  if (process.env.WORKER_LEGACY_KEY_ENABLED === '1' && legacy?.startsWith(WORKER_TOKEN_PREFIX)) {
+    throw new Error(
+      `WORKER_API_KEY 가 ${WORKER_TOKEN_PREFIX} 로 시작하면 레거시 키로 쓸 수 없습니다`
+    )
+  }
   if (
     process.env.WORKER_LEGACY_KEY_ENABLED === '1' &&
     legacy &&
