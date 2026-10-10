@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Loader2, CheckCircle2, XCircle, Eye, EyeOff, Pencil, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type CredentialFormValues = {
   loginId: string
@@ -96,6 +97,7 @@ export function CredentialForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       })
+      if (await redirectIfMfaRequired(res)) return
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))

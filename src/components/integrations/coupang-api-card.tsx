@@ -35,6 +35,7 @@ import {
   Check,
   AlertTriangle,
 } from 'lucide-react'
+import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type ApiCredentialResponse = {
   vendorId: string
@@ -147,6 +148,7 @@ export function CoupangApiCard() {
           ...(secretKey.trim() ? { secretKey: secretKey.trim() } : {}),
         }),
       })
+      if (await redirectIfMfaRequired(res)) return
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         const msg =
@@ -183,6 +185,7 @@ export function CoupangApiCard() {
     setIsDeleting(true)
     try {
       const res = await fetch('/api/collection/api-credentials', { method: 'DELETE' })
+      if (await redirectIfMfaRequired(res)) return
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         toast.error((body as { message?: string }).message ?? '삭제에 실패했습니다')

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Upload, AlertCircle, CheckCircle2, RefreshCw, Info } from 'lucide-react'
+import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Props = {
   channelId: string
@@ -87,6 +88,7 @@ export function NaverCredentialForm({ channelId, hasExistingCredential = false }
           },
         }),
       })
+      if (await redirectIfMfaRequired(res)) return
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         setError((data as { message?: string })?.message ?? '저장 실패')

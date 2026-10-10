@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Mode = 'WORKDECK' | 'BYOK'
 type Provider = 'OPENAI' | 'ANTHROPIC' | 'GEMINI'
@@ -35,7 +36,12 @@ type Settings = {
 
 const PROVIDERS: { value: Provider; label: string; defaultModel: string; keyHint: string }[] = [
   { value: 'OPENAI', label: 'OpenAI', defaultModel: 'gpt-4.1-mini', keyHint: 'sk-...' },
-  { value: 'ANTHROPIC', label: 'Anthropic', defaultModel: 'claude-sonnet-4-5', keyHint: 'sk-ant-...' },
+  {
+    value: 'ANTHROPIC',
+    label: 'Anthropic',
+    defaultModel: 'claude-sonnet-4-5',
+    keyHint: 'sk-ant-...',
+  },
   { value: 'GEMINI', label: 'Google Gemini', defaultModel: 'gemini-2.5-flash', keyHint: 'AIza...' },
 ]
 
@@ -86,6 +92,7 @@ export function AiSettingsForm() {
           apiKey: apiKey.trim() || undefined,
         }),
       })
+      if (await redirectIfMfaRequired(res)) return
       const json = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(json.message || '저장에 실패했습니다')
       toast.success('AI 설정을 저장했습니다.')
@@ -103,7 +110,8 @@ export function AiSettingsForm() {
       const res = await fetch('/api/settings/ai/verify', { method: 'POST' })
       const json = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(json.message || '연결 확인에 실패했습니다')
-      if (json.ok) toast.success(`연결 성공 — ${json.provider}${json.model ? ` / ${json.model}` : ''}`)
+      if (json.ok)
+        toast.success(`연결 성공 — ${json.provider}${json.model ? ` / ${json.model}` : ''}`)
       else toast.error(`연결 실패: ${json.error}`)
       await load()
     } catch (err) {
@@ -117,6 +125,7 @@ export function AiSettingsForm() {
     setSaving(true)
     try {
       const res = await fetch('/api/settings/ai', { method: 'DELETE' })
+      if (await redirectIfMfaRequired(res)) return
       if (!res.ok) throw new Error('해제에 실패했습니다')
       toast.success('저장된 키를 삭제하고 워크덱 제공 AI로 전환했습니다.')
       await load()
@@ -176,8 +185,8 @@ export function AiSettingsForm() {
           <CardContent className="space-y-3">
             <Progress value={percent} className="h-2" />
             <p className="text-sm text-muted-foreground">
-              {usage?.textTokensUsed.toLocaleString()} / {usage?.textTokenQuota.toLocaleString()} 토큰
-              사용
+              {usage?.textTokensUsed.toLocaleString()} / {usage?.textTokenQuota.toLocaleString()}{' '}
+              토큰 사용
             </p>
             {exhausted && (
               <p className="text-sm text-destructive">
@@ -307,7 +316,9 @@ function ModeCard({
       onClick={onClick}
       className={cn(
         'rounded-lg border p-4 text-left transition',
-        active ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:border-muted-foreground/40'
+        active
+          ? 'border-primary bg-primary/5 ring-1 ring-primary'
+          : 'hover:border-muted-foreground/40'
       )}
       aria-pressed={active}
     >
