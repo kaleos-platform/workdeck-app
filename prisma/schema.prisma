@@ -520,6 +520,9 @@ model Space {
   agentToggle    SpaceAgent?
   agentLlmUsages AgentLlmUsage[]
 
+  // ─── 워커 토큰 (Space 범위) ───
+  workerTokens WorkerToken[]
+
   // ─── 구독·결제 (Billing) ───
   subscription   SpaceSubscription?
   billingMethods BillingMethod[]
@@ -4300,4 +4303,20 @@ model AdminAuditLog {
 
   @@index([targetType, targetId])
   @@index([actorUserId, createdAt])
+}
+
+// 워커(맥미니 runner 등) 인증 토큰 — Space 범위. 평문은 발급 시 1회만 보여주고 sha256 해시만 저장한다.
+model WorkerToken {
+  id         String    @id @default(cuid())
+  spaceId    String
+  name       String // 식별용 이름, 예: "macmini-uisikjuui"
+  tokenHash  String    @unique
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime // 만료 — 지나면 401. 발급 TTL 기본 90일, 최대 365일(만료 없는 토큰은 만들지 않는다)
+  revokedAt  DateTime?
+  lastUsedAt DateTime?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId])
 }
