@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { redirectIfMfaRequired } from '@/lib/auth/mfa-client'
 
 type Kind = 'COOKIE' | 'OAUTH' | 'API_KEY'
 
@@ -62,6 +63,7 @@ export function CredentialForm({ channelId }: Props) {
           expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
         }),
       })
+      if (await redirectIfMfaRequired(res)) return
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         setError(data?.message ?? '저장 실패')

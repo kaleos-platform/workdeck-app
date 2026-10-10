@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getUser } from '@/hooks/use-user'
+import { requireAal2 } from '@/lib/auth/mfa'
 import { errorResponse, assertRole, resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { encryptField } from '@/lib/crypto/field-crypto'
@@ -93,6 +94,11 @@ export async function PUT(req: NextRequest) {
     return errorResponse('요청 본문이 올바르지 않습니다', 400, { issues: parsed.error.flatten() })
   }
   const { mode, provider, model, apiKey } = parsed.data
+  // 키를 저장할 때만 aal2 — 키 없이 모드만 바꾸는 요청은 통과.
+  if (apiKey) {
+    const mfaError = await requireAal2()
+    if (mfaError) return mfaError
+  }
 
   const existing = await prisma.spaceAiSetting.findUnique({
     where: { spaceId: ctx.spaceId },
@@ -137,6 +143,8 @@ export async function PUT(req: NextRequest) {
 export async function DELETE() {
   const ctx = await requireAdminSpace()
   if ('error' in ctx) return ctx.error
+  const mfaError = await requireAal2()
+  if (mfaError) return mfaError
 
   const existing = await prisma.spaceAiSetting.findUnique({
     where: { spaceId: ctx.spaceId },

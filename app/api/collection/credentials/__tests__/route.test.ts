@@ -6,11 +6,13 @@ import { canWorkspaceCollect } from '@/lib/billing/entitlement'
 import { resolveWorkspace } from '@/lib/api-helpers'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { encryptField } from '@/lib/crypto/field-crypto'
+import { requireAal2 } from '@/lib/auth/mfa'
 
 jest.mock('@/lib/api-helpers', () => ({
   resolveWorkspace: jest.fn(),
   errorResponse: (message: string, status: number) => Response.json({ message }, { status }),
 }))
+jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn().mockResolvedValue(null) }))
 jest.mock('@/hooks/use-user', () => ({ getUser: async () => ({ id: 'u', user_metadata: {} }) }))
 jest.mock('@/lib/workspace', () => ({
   ensureWorkspaceForUser: async () => ({ workspace: { id: 'ws' } }),
@@ -124,4 +126,18 @@ describe('PUT /api/collection/credentials — 암호문 직접 입력 차단', (
     expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
     delete process.env.ENCRYPTION_WRITE_VERSION
   })
+})
+
+it('세션 PUT 은 aal2 미충족이면 403, 저장 없음', async () => {
+  ;(requireAal2 as jest.Mock).mockResolvedValueOnce(
+    Response.json({ code: 'MFA_REQUIRED' }, { status: 403 })
+  )
+  const res = await PUT(
+    new NextRequest('http://localhost/api/collection/credentials', {
+      method: 'PUT',
+      body: JSON.stringify({ loginId: 'id', password: 'pw' }),
+    })
+  )
+  expect(res?.status).toBe(403)
+  expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
 })

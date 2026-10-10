@@ -5,7 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { resolveCollectionAuth } from '@/lib/collection/resolve-workspace'
 import { encryptField } from '@/lib/crypto/field-crypto'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
-import { PUT } from '../route'
+import { requireAal2 } from '@/lib/auth/mfa'
+import { DELETE, PUT } from '../route'
 
 jest.mock('@/lib/api-helpers', () => ({
   errorResponse: (message: string, status: number) => NextResponse.json({ message }, { status }),
@@ -14,9 +15,13 @@ jest.mock('@/lib/api-helpers', () => ({
 jest.mock('@/lib/collection/secret-crypto', () => ({
   encryptSecret: jest.fn(jest.requireActual('@/lib/collection/secret-crypto').encryptSecret),
 }))
+jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn().mockResolvedValue(null) }))
 jest.mock('@/lib/collection/resolve-workspace', () => ({ resolveCollectionAuth: jest.fn() }))
 jest.mock('@/lib/prisma', () => ({
-  prisma: { coupangApiCredential: { findUnique: jest.fn(), upsert: jest.fn() } },
+  prisma: {
+    coupangApiCredential: { findUnique: jest.fn(), upsert: jest.fn(), delete: jest.fn() },
+    $transaction: jest.fn(),
+  },
 }))
 
 const auth = resolveCollectionAuth as jest.Mock
@@ -105,4 +110,30 @@ test('v0 쓰기 기간(4a)에는 워커 v1 재전달도 400 — v1 행을 만들
     (await put({ ...base, secretKey: sealed.encrypted, encryptionIv: sealed.iv })).status
   ).toBe(400)
   expect(cred.upsert).not.toHaveBeenCalled()
+})
+
+test('세션 PUT·DELETE 는 aal2 미충족이면 403, 저장·삭제 없음', async () => {
+  auth.mockResolvedValue({ kind: 'session', role: 'ADMIN', workspaceId: 'ws' })
+  ;(requireAal2 as jest.Mock).mockResolvedValue(
+    NextResponse.json({ code: 'MFA_REQUIRED' }, { status: 403 })
+  )
+  expect((await put({ ...base, secretKey: 'sk' })).status).toBe(403)
+  const del = await DELETE(
+    new NextRequest('http://t/api/collection/api-credentials', { method: 'DELETE' })
+  )
+  expect(del.status).toBe(403)
+  expect(cred.upsert).not.toHaveBeenCalled()
+  expect(prisma.$transaction).not.toHaveBeenCalled()
+  ;(requireAal2 as jest.Mock).mockResolvedValue(null)
+})
+
+test('워커 PUT 은 MFA 를 요구하지 않는다', async () => {
+  auth.mockResolvedValue({ kind: 'worker', workspaceId: 'ws' })
+  ;(requireAal2 as jest.Mock).mockClear()
+  await put({
+    ...base,
+    secretKey: encryptField('collection-credential', 'sk').encrypted,
+    encryptionIv: 'v1',
+  })
+  expect(requireAal2).not.toHaveBeenCalled()
 })

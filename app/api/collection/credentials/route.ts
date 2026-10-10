@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
 import { getUser } from '@/hooks/use-user'
+import { requireAal2 } from '@/lib/auth/mfa'
 import { ensureWorkspaceForUser } from '@/lib/workspace'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { decryptField, fieldWriteVersion, isV1, V1_IV_MARKER } from '@/lib/crypto/field-crypto'
@@ -84,6 +85,9 @@ export async function PUT(request: NextRequest) {
   } else {
     const user = await getUser()
     if (!user) return errorResponse('인증이 필요합니다', 401)
+    // 사람(세션)의 자격증명 저장만 aal2 를 요구한다. 워커 재전달은 토큰 인증이라 제외.
+    const mfaError = await requireAal2()
+    if (mfaError) return mfaError
     const ensured = await ensureWorkspaceForUser({
       id: user.id,
       email: user.email,
