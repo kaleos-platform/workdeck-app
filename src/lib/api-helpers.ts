@@ -1,4 +1,3 @@
-import crypto from 'node:crypto'
 import { cache } from 'react'
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
@@ -6,18 +5,11 @@ import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
 import { measureCoupangAds } from '@/lib/coupang-ads/server-timing'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
+import { timingSafeEqualString } from '@/lib/crypto/timing-safe'
 
 // 에러 응답 생성 헬퍼 — extra 필드를 병합해 추가 정보를 포함할 수 있음
 export function errorResponse(message: string, status: number, extra?: Record<string, unknown>) {
   return NextResponse.json({ message, ...extra }, { status })
-}
-
-// 길이 검사 후 상수 시간 문자열 비교 — 타이밍 사이드채널 방지
-function timingSafeEqualString(a: string, b: string): boolean {
-  const aBuf = Buffer.from(a, 'utf8')
-  const bBuf = Buffer.from(b, 'utf8')
-  if (aBuf.length !== bBuf.length) return false
-  return crypto.timingSafeEqual(aBuf, bBuf)
 }
 
 /** x-worker-api-key 헤더가 유효한지 확인 (request 객체 없이 headers()로) */

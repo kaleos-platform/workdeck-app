@@ -771,3 +771,8 @@ export type BillingCharge = Prisma.BillingChargeModel
  * 
  */
 export type AdminAuditLog = Prisma.AdminAuditLogModel
+/**
+ * Model WorkerToken
+ * 
+ */
+export type WorkerToken = Prisma.WorkerTokenModel
