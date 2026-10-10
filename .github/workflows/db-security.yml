@@ -1,0 +1,46 @@
+name: DB security regression
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - 'prisma/**'
+      - 'scripts/db/**'
+      - 'src/lib/__tests__/rls-lockdown.e2e.test.ts'
+      - 'src/lib/__tests__/migration-rls-lint.test.ts'
+      - '.github/workflows/db-security.yml'
+
+jobs:
+  migration-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx jest src/lib/__tests__/migration-rls-lint.test.ts
+
+  rls-lockdown:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # bootstrap-local.sh 가 기준 커밋의 schema.prisma 를 git show 로 읽는다
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.84.2
+      - run: supabase init
+      - run: supabase start -x realtime,edge-runtime,logflare,vector,imgproxy,studio,inbucket
+      - run: npm ci
+      - run: ./scripts/db/bootstrap-local.sh
+      - run: npm run test:e2e:db

@@ -15,6 +15,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:e2e": "playwright test",
+    "test:e2e:db": "jest -c jest.config.e2e.ts src/lib/__tests__/rls-lockdown.e2e.test.ts",
     "prepare": "husky"
   },
   "lint-staged": {
