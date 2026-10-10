@@ -11617,6 +11617,7 @@ export const SpaceScalarFieldEnum = {
   name: 'name',
   type: 'type',
   onboardingDismissedAt: 'onboardingDismissedAt',
+  approvalLimitKrw: 'approvalLimitKrw',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -11629,6 +11630,7 @@ export const SpaceMemberScalarFieldEnum = {
   spaceId: 'spaceId',
   userId: 'userId',
   role: 'role',
+  slackUserId: 'slackUserId',
   createdAt: 'createdAt'
 } as const
 

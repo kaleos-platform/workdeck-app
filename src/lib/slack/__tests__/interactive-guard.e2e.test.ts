@@ -168,12 +168,12 @@ d('Slack interactive 테넌트 가드', () => {
       action: action!,
     })
     expect(allowed).toBe(true)
-    const out = await approveAndExecute(actionId, 'slack:U_A')
+    const out = await approveAndExecute(actionId, USER_ID)
     expect(out.status).toBe('EXECUTED')
     expect(execCount).toBe(1)
     const row = await prisma.agentPendingAction.findUnique({ where: { id: actionId } })
     expect(row?.status).toBe('EXECUTED')
-    expect(row?.decidedBy).toBe('slack:U_A')
+    expect(row?.decidedBy).toBe(USER_ID)
   })
 
   test('team은 맞으나 채널 불일치 → 차단', async () => {

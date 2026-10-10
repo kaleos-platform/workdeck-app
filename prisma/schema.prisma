@@ -460,6 +460,8 @@ model Space {
 
   // 온보딩 카드 닫힘 시각 (사용자가 명시적으로 X 클릭 시 기록)
   onboardingDismissedAt DateTime?
+  // 승인 한도(원) — 이 금액을 넘는 지출 제안은 OWNER 만 승인. null = 0(금액이 있는 제안은 모두 OWNER).
+  approvalLimitKrw      Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -536,12 +538,16 @@ model SpaceMember {
   userId  String
   role    SpaceMemberRole @default(MEMBER)
 
+  // Slack 연결 — 이 구성원의 Slack 사용자 ID(U…). 연결된 Slack 사용자만 Slack 에서 승인할 수 있다.
+  slackUserId String?
+
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
   @@unique([spaceId, userId])
+  @@unique([spaceId, slackUserId])
   @@index([userId])
 }
 

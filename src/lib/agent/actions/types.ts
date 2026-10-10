@@ -29,6 +29,12 @@ export interface ActionDefinition<TParams = Record<string, unknown>> {
   requiredRole: SpaceMemberRole // 승인에 필요한 최소 역할 (기본 ADMIN)
   /** 승인 유효기간(시간). 미지정 시 기본 72. 실판매가를 바꾸는 액션은 짧게 둔다. */
   expiryHours?: number
+  /**
+   * 지출 금액(원) — 돈이 나가는 액션만 정의한다(광고 예산 증액·결제 등).
+   * Space.approvalLimitKrw 를 넘으면 지출 제안으로 보고 OWNER 만 승인할 수 있다.
+   * null 을 반환하면 이번 요청은 지출이 아니다.
+   */
+  spendKrw?: (params: TParams) => number | null
   // 생성 시점 가드 (선택) — throw하면 액션 생성 자체가 거부된다.
   // snapshot과 달리 실패해도 생성이 진행되지 않는다 — 사람이 실행 불가능한
   // 액션(예: 연동 안 된 space)을 승인 큐에서 보는 사고를 막는다.

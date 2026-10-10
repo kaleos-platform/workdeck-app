@@ -29,6 +29,7 @@ export type SpaceMemberMinAggregateOutputType = {
   spaceId: string | null
   userId: string | null
   role: $Enums.SpaceMemberRole | null
+  slackUserId: string | null
   createdAt: Date | null
 }
 
@@ -37,6 +38,7 @@ export type SpaceMemberMaxAggregateOutputType = {
   spaceId: string | null
   userId: string | null
   role: $Enums.SpaceMemberRole | null
+  slackUserId: string | null
   createdAt: Date | null
 }
 
@@ -45,6 +47,7 @@ export type SpaceMemberCountAggregateOutputType = {
   spaceId: number
   userId: number
   role: number
+  slackUserId: number
   createdAt: number
   _all: number
 }
@@ -55,6 +58,7 @@ export type SpaceMemberMinAggregateInputType = {
   spaceId?: true
   userId?: true
   role?: true
+  slackUserId?: true
   createdAt?: true
 }
 
@@ -63,6 +67,7 @@ export type SpaceMemberMaxAggregateInputType = {
   spaceId?: true
   userId?: true
   role?: true
+  slackUserId?: true
   createdAt?: true
 }
 
@@ -71,6 +76,7 @@ export type SpaceMemberCountAggregateInputType = {
   spaceId?: true
   userId?: true
   role?: true
+  slackUserId?: true
   createdAt?: true
   _all?: true
 }
@@ -152,6 +158,7 @@ export type SpaceMemberGroupByOutputType = {
   spaceId: string
   userId: string
   role: $Enums.SpaceMemberRole
+  slackUserId: string | null
   createdAt: Date
   _count: SpaceMemberCountAggregateOutputType | null
   _min: SpaceMemberMinAggregateOutputType | null
@@ -181,6 +188,7 @@ export type SpaceMemberWhereInput = {
   spaceId?: Prisma.StringFilter<"SpaceMember"> | string
   userId?: Prisma.StringFilter<"SpaceMember"> | string
   role?: Prisma.EnumSpaceMemberRoleFilter<"SpaceMember"> | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.StringNullableFilter<"SpaceMember"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceMember"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -191,6 +199,7 @@ export type SpaceMemberOrderByWithRelationInput = {
   spaceId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  slackUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
@@ -199,22 +208,25 @@ export type SpaceMemberOrderByWithRelationInput = {
 export type SpaceMemberWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   spaceId_userId?: Prisma.SpaceMemberSpaceIdUserIdCompoundUniqueInput
+  spaceId_slackUserId?: Prisma.SpaceMemberSpaceIdSlackUserIdCompoundUniqueInput
   AND?: Prisma.SpaceMemberWhereInput | Prisma.SpaceMemberWhereInput[]
   OR?: Prisma.SpaceMemberWhereInput[]
   NOT?: Prisma.SpaceMemberWhereInput | Prisma.SpaceMemberWhereInput[]
   spaceId?: Prisma.StringFilter<"SpaceMember"> | string
   userId?: Prisma.StringFilter<"SpaceMember"> | string
   role?: Prisma.EnumSpaceMemberRoleFilter<"SpaceMember"> | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.StringNullableFilter<"SpaceMember"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceMember"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "id" | "spaceId_userId">
+}, "id" | "spaceId_userId" | "spaceId_slackUserId">
 
 export type SpaceMemberOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  slackUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.SpaceMemberCountOrderByAggregateInput
   _max?: Prisma.SpaceMemberMaxOrderByAggregateInput
@@ -229,12 +241,14 @@ export type SpaceMemberScalarWhereWithAggregatesInput = {
   spaceId?: Prisma.StringWithAggregatesFilter<"SpaceMember"> | string
   userId?: Prisma.StringWithAggregatesFilter<"SpaceMember"> | string
   role?: Prisma.EnumSpaceMemberRoleWithAggregatesFilter<"SpaceMember"> | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.StringNullableWithAggregatesFilter<"SpaceMember"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceMember"> | Date | string
 }
 
 export type SpaceMemberCreateInput = {
   id?: string
   role?: $Enums.SpaceMemberRole
+  slackUserId?: string | null
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutMembersInput
   user: Prisma.UserCreateNestedOneWithoutSpaceMembershipsInput
@@ -245,12 +259,14 @@ export type SpaceMemberUncheckedCreateInput = {
   spaceId: string
   userId: string
   role?: $Enums.SpaceMemberRole
+  slackUserId?: string | null
   createdAt?: Date | string
 }
 
 export type SpaceMemberUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutMembersNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutSpaceMembershipsNestedInput
@@ -261,6 +277,7 @@ export type SpaceMemberUncheckedUpdateInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -269,12 +286,14 @@ export type SpaceMemberCreateManyInput = {
   spaceId: string
   userId: string
   role?: $Enums.SpaceMemberRole
+  slackUserId?: string | null
   createdAt?: Date | string
 }
 
 export type SpaceMemberUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -283,6 +302,7 @@ export type SpaceMemberUncheckedUpdateManyInput = {
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -301,11 +321,17 @@ export type SpaceMemberSpaceIdUserIdCompoundUniqueInput = {
   userId: string
 }
 
+export type SpaceMemberSpaceIdSlackUserIdCompoundUniqueInput = {
+  spaceId: string
+  slackUserId: string
+}
+
 export type SpaceMemberCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  slackUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -314,6 +340,7 @@ export type SpaceMemberMaxOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  slackUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -322,6 +349,7 @@ export type SpaceMemberMinOrderByAggregateInput = {
   spaceId?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  slackUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -416,6 +444,7 @@ export type EnumSpaceMemberRoleFieldUpdateOperationsInput = {
 export type SpaceMemberCreateWithoutUserInput = {
   id?: string
   role?: $Enums.SpaceMemberRole
+  slackUserId?: string | null
   createdAt?: Date | string
   space: Prisma.SpaceCreateNestedOneWithoutMembersInput
 }
@@ -424,6 +453,7 @@ export type SpaceMemberUncheckedCreateWithoutUserInput = {
   id?: string
   spaceId: string
   role?: $Enums.SpaceMemberRole
+  slackUserId?: string | null
   createdAt?: Date | string
 }
 
@@ -461,12 +491,14 @@ export type SpaceMemberScalarWhereInput = {
   spaceId?: Prisma.StringFilter<"SpaceMember"> | string
   userId?: Prisma.StringFilter<"SpaceMember"> | string
   role?: Prisma.EnumSpaceMemberRoleFilter<"SpaceMember"> | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.StringNullableFilter<"SpaceMember"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceMember"> | Date | string
 }
 
 export type SpaceMemberCreateWithoutSpaceInput = {
   id?: string
   role?: $Enums.SpaceMemberRole
+  slackUserId?: string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutSpaceMembershipsInput
 }
@@ -475,6 +507,7 @@ export type SpaceMemberUncheckedCreateWithoutSpaceInput = {
   id?: string
   userId: string
   role?: $Enums.SpaceMemberRole
+  slackUserId?: string | null
   createdAt?: Date | string
 }
 
@@ -508,12 +541,14 @@ export type SpaceMemberCreateManyUserInput = {
   id?: string
   spaceId: string
   role?: $Enums.SpaceMemberRole
+  slackUserId?: string | null
   createdAt?: Date | string
 }
 
 export type SpaceMemberUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   space?: Prisma.SpaceUpdateOneRequiredWithoutMembersNestedInput
 }
@@ -522,6 +557,7 @@ export type SpaceMemberUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -529,6 +565,7 @@ export type SpaceMemberUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -536,12 +573,14 @@ export type SpaceMemberCreateManySpaceInput = {
   id?: string
   userId: string
   role?: $Enums.SpaceMemberRole
+  slackUserId?: string | null
   createdAt?: Date | string
 }
 
 export type SpaceMemberUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutSpaceMembershipsNestedInput
 }
@@ -550,6 +589,7 @@ export type SpaceMemberUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -557,6 +597,7 @@ export type SpaceMemberUncheckedUpdateManyWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumSpaceMemberRoleFieldUpdateOperationsInput | $Enums.SpaceMemberRole
+  slackUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -567,6 +608,7 @@ export type SpaceMemberSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   spaceId?: boolean
   userId?: boolean
   role?: boolean
+  slackUserId?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -577,6 +619,7 @@ export type SpaceMemberSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   spaceId?: boolean
   userId?: boolean
   role?: boolean
+  slackUserId?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -587,6 +630,7 @@ export type SpaceMemberSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   spaceId?: boolean
   userId?: boolean
   role?: boolean
+  slackUserId?: boolean
   createdAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -597,10 +641,11 @@ export type SpaceMemberSelectScalar = {
   spaceId?: boolean
   userId?: boolean
   role?: boolean
+  slackUserId?: boolean
   createdAt?: boolean
 }
 
-export type SpaceMemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "userId" | "role" | "createdAt", ExtArgs["result"]["spaceMember"]>
+export type SpaceMemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "userId" | "role" | "slackUserId" | "createdAt", ExtArgs["result"]["spaceMember"]>
 export type SpaceMemberInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -625,6 +670,7 @@ export type $SpaceMemberPayload<ExtArgs extends runtime.Types.Extensions.Interna
     spaceId: string
     userId: string
     role: $Enums.SpaceMemberRole
+    slackUserId: string | null
     createdAt: Date
   }, ExtArgs["result"]["spaceMember"]>
   composites: {}
@@ -1055,6 +1101,7 @@ export interface SpaceMemberFieldRefs {
   readonly spaceId: Prisma.FieldRef<"SpaceMember", 'String'>
   readonly userId: Prisma.FieldRef<"SpaceMember", 'String'>
   readonly role: Prisma.FieldRef<"SpaceMember", 'SpaceMemberRole'>
+  readonly slackUserId: Prisma.FieldRef<"SpaceMember", 'String'>
   readonly createdAt: Prisma.FieldRef<"SpaceMember", 'DateTime'>
 }
     
