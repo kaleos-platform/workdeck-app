@@ -5,7 +5,7 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
-import { createClient } from '@/lib/supabase/server'
+import { isAal2Fresh } from '@/lib/auth/mfa'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@/generated/prisma/client'
 
@@ -31,7 +31,7 @@ function mfaRequiredResponse(): NextResponse {
 /**
  * 운영자(OPERATOR) 여부를 확정 검증한다.
  * - 미로그인 / platformRole !== 'OPERATOR' → 404 (존재 은닉)
- * - ADMIN_REQUIRE_MFA=true 인데 aal2 미충족 → 403 MFA_REQUIRED
+ * - aal2(30일 이내 TOTP) 미충족 → 403 MFA_REQUIRED (ADMIN_REQUIRE_MFA='false' 면 비상 해제)
  */
 export async function requireOperator(): Promise<RequireOperatorResult> {
   const user = await getUser()
@@ -49,17 +49,10 @@ export async function requireOperator(): Promise<RequireOperatorResult> {
 
   const operator: OperatorContext = { id: user.id, email: dbUser.email }
 
-  // ⚠️ ADMIN_REQUIRE_MFA 는 아직 켜면 안 된다 — 켜는 순간 운영자가 영구 잠긴다.
-  // 로그인 폼에 MFA 챌린지 단계가 없어서, 등록 직후(aal2)를 제외하면 재로그인은 항상 aal1 이다.
-  // aal1 에서는 어드민 접근이 막히고, 해제(unenroll)마저 Supabase 가 aal2 를 요구해 실패한다.
-  // 켜려면 먼저 aal1 → aal2 승급 경로(계정 페이지의 코드 입력 또는 로그인 폼의 MFA 단계)가 필요하다.
-  // 그때까지 /admin/account 의 MFA 섹션은 "등록만 가능한" 상태로 둔다.
-  if (process.env.ADMIN_REQUIRE_MFA === 'true') {
-    const supabase = await createClient()
-    const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-    if (error || data?.currentLevel !== 'aal2') {
-      return { ok: false, reason: 'MFA_REQUIRED', user: operator, response: mfaRequiredResponse() }
-    }
+  // 기본 강제. /auth/mfa 가 등록(factor 없을 때)과 aal1→aal2 단계 인증을 모두 처리하므로 잠기지 않는다.
+  // ADMIN_REQUIRE_MFA='false' 는 장애 시 비상 해제 스위치다.
+  if (process.env.ADMIN_REQUIRE_MFA !== 'false' && !(await isAal2Fresh())) {
+    return { ok: false, reason: 'MFA_REQUIRED', user: operator, response: mfaRequiredResponse() }
   }
 
   return { ok: true, user: operator }
