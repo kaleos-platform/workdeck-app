@@ -1,11 +1,11 @@
 /** @jest-environment node */
 /**
- * 신규 마이그레이션 정적 검사 — Data API 잠금(20261009120000) 이후 마이그레이션은
+ * 신규 마이그레이션 정적 검사 — 기준 목록(scripts/db/baseline-migrations.txt) 밖의 마이그레이션은
  *   1) 만드는 테이블마다 ENABLE ROW LEVEL SECURITY 를 넣고
  *   2) anon/authenticated/PUBLIC 에 GRANT 하지 않고
  *   3) DISABLE ROW LEVEL SECURITY 를 쓰지 않고
  *   4) public 함수를 만들면 같은 마이그레이션에서 PUBLIC 의 EXECUTE 를 회수한다.
- * 정규식 휴리스틱이다 — 동적 SQL(EXECUTE format(...))로 만드는 객체는 e2e 테스트가 잡는다.
+ * 주석·문자열·달러 인용을 지운 뒤 정규식으로 본다 — 동적 SQL(EXECUTE format(...))로 만드는 객체는 e2e 테스트가 잡는다.
  *
  * rls-lockdown.e2e.test.ts 는 기준 스키마 부트스트랩 DB 를 검사하므로 신규 마이그레이션의 RLS 누락을
  * 놓칠 수 있다. 이 검사는 DB 없이 SQL 파일만 본다.
@@ -35,8 +35,62 @@ function names(code: string, pattern: string): string[] {
     .filter((n): n is string => n !== null)
 }
 
+// 주석, 문자열('' 이스케이프, E'' 백슬래시 이스케이프), 달러 인용($$…$$, $tag$…$tag$)을 공백으로 지운다.
+// "따옴표 식별자" 는 이름 매칭에 필요하므로 그대로 둔다.
+function stripSql(sql: string): string {
+  let out = ''
+  let i = 0
+  while (i < sql.length) {
+    const c = sql[i]
+    const rest = sql.slice(i)
+    if (rest.startsWith('--')) {
+      const end = sql.indexOf('\n', i)
+      i = end === -1 ? sql.length : end
+      out += ' '
+    } else if (rest.startsWith('/*')) {
+      // Postgres 블록 주석은 중첩된다.
+      let depth = 0
+      do {
+        if (sql.startsWith('/*', i)) {
+          depth++
+          i += 2
+        } else if (sql.startsWith('*/', i)) {
+          depth--
+          i += 2
+        } else i++
+      } while (depth > 0 && i < sql.length)
+      out += ' '
+    } else if (c === "'") {
+      const escapes = /[eE]/.test(sql[i - 1] ?? '') && !/\w/.test(sql[i - 2] ?? '')
+      i++
+      while (i < sql.length) {
+        if (escapes && sql[i] === '\\') i += 2
+        else if (sql[i] === "'" && sql[i + 1] === "'") i += 2
+        else if (sql[i] === "'") break
+        else i++
+      }
+      i++
+      out += ' '
+    } else if (c === '"') {
+      const end = sql.indexOf('"', i + 1)
+      const stop = end === -1 ? sql.length : end + 1
+      out += sql.slice(i, stop)
+      i = stop
+    } else if (c === '$' && !/\w/.test(sql[i - 1] ?? '') && /^\$(?:[A-Za-z_]\w*)?\$/.test(rest)) {
+      const tag = rest.match(/^\$(?:[A-Za-z_]\w*)?\$/)![0]
+      const end = sql.indexOf(tag, i + tag.length)
+      i = end === -1 ? sql.length : end + tag.length
+      out += ' '
+    } else {
+      out += c
+      i++
+    }
+  }
+  return out
+}
+
 function lintMigration(sql: string): string[] {
-  const code = sql.replace(/--.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')
+  const code = stripSql(sql)
   // TEMP/TEMPORARY 테이블은 public 에 생기지 않으므로 대상이 아니다.
   const created = names(
     code,
@@ -146,8 +200,32 @@ describe('lintMigration', () => {
     expect(lintMigration('CREATE TEMP TABLE t (id int);')).toEqual([])
   })
 
+  // Codex 리뷰 변이 케이스 회귀
+  test('문자열·달러 인용 안의 문구는 무시하고, 그 밖의 문장은 잡는다', () => {
+    expect(lintMigration('CREATE UNLOGGED TABLE "U" (id int);')).toEqual(['RLS 누락: U'])
+    expect(
+      lintMigration(
+        `CREATE TABLE "A" (id int);\nSELECT 'ALTER TABLE "A" ENABLE ROW LEVEL SECURITY';`
+      )
+    ).toEqual(['RLS 누락: A'])
+    expect(lintMigration(`SELECT '--'; GRANT SELECT ON "User" TO anon;`)).toEqual([
+      'anon/authenticated/PUBLIC GRANT',
+    ])
+    expect(lintMigration(`SELECT 'it''s /*'; GRANT SELECT ON "User" TO anon;`)).toEqual([
+      'anon/authenticated/PUBLIC GRANT',
+    ])
+    expect(lintMigration(`SELECT E'\\' --'; GRANT SELECT ON "User" TO anon;`)).toEqual([
+      'anon/authenticated/PUBLIC GRANT',
+    ])
+    expect(
+      lintMigration('DO $body$ BEGIN EXECUTE \'GRANT SELECT ON "A" TO anon\'; END $body$;')
+    ).toEqual([])
+    expect(lintMigration('SELECT $$ GRANT SELECT ON "A" TO anon; $$;')).toEqual([])
+  })
+
   test('주석 안의 문구는 무시한다', () => {
     expect(lintMigration('-- GRANT SELECT ON "A" TO anon;\n/* CREATE TABLE "B" */')).toEqual([])
+    expect(lintMigration('/* a /* b */ GRANT SELECT ON "A" TO anon; */')).toEqual([])
   })
 })
 
@@ -159,17 +237,29 @@ test('migrations/ 에는 타임스탬프 디렉터리와 migration_lock.toml 만
   expect(unexpected).toEqual([])
 })
 
-test(`${LOCKDOWN} 이후 마이그레이션은 RLS·권한 규칙을 지킨다`, () => {
-  const violations = fs
-    .readdirSync(MIGRATIONS_DIR)
-    .filter((dir) => /^\d{14}_/.test(dir) && dir.slice(0, 14) > LOCKDOWN)
-    .map(
-      (dir) =>
-        [
-          dir,
-          lintMigration(fs.readFileSync(path.join(MIGRATIONS_DIR, dir, 'migration.sql'), 'utf8')),
-        ] as const
-    )
-    .filter(([, errors]) => errors.length > 0)
+// 기준(baseline) 목록 = 8a2fdcdd 시점 20261009120000 이전 디렉터리. 부트스트랩은 이 목록만 적용됨으로 표시한다.
+// 목록 밖 디렉터리는 타임스탬프와 무관하게 모두 검사한다 — 날짜를 앞당긴 마이그레이션도 빠져나가지 못한다.
+const BASELINE = new Set(
+  fs
+    .readFileSync(path.resolve(process.cwd(), 'scripts/db/baseline-migrations.txt'), 'utf8')
+    .split('\n')
+    .filter(Boolean)
+)
+const NEW_DIRS = fs
+  .readdirSync(MIGRATIONS_DIR)
+  .filter((dir) => /^\d{14}_/.test(dir) && !BASELINE.has(dir))
+
+test(`기준 목록 밖 마이그레이션은 ${LOCKDOWN} 이후 타임스탬프를 쓴다`, () => {
+  expect(NEW_DIRS.filter((dir) => dir.slice(0, 14) < LOCKDOWN)).toEqual([])
+})
+
+test('기준 목록 밖 마이그레이션은 RLS·권한 규칙을 지킨다', () => {
+  const violations = NEW_DIRS.map(
+    (dir) =>
+      [
+        dir,
+        lintMigration(fs.readFileSync(path.join(MIGRATIONS_DIR, dir, 'migration.sql'), 'utf8')),
+      ] as const
+  ).filter(([, errors]) => errors.length > 0)
   expect(Object.fromEntries(violations)).toEqual({})
 })

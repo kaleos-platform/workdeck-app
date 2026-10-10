@@ -30,27 +30,30 @@ const TABLES_WITHOUT_RLS = `
   WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p') AND NOT c.relrowsecurity
   ORDER BY 1`
 
-// grantee 0 = PUBLIC 의사 역할(pg_roles 에 없음) — LEFT JOIN 으로 함께 잡는다.
-// ACL 이 NULL 이면 기본 권한(acldefault)이 적용된다 — 함수는 PUBLIC 에 EXECUTE 가 암묵 부여된다.
-const PUBLIC_ROLE_GRANTS = `
-  SELECT c.relname AS name, coalesce(r.rolname, 'PUBLIC') AS role, a.privilege_type AS privilege
+// ACL 을 직접 해석하지 않고 실효 권한(has_*_privilege)을 본다 — PUBLIC 경유 권한, NULL ACL 의 기본 권한,
+// 역할 상속까지 한 번에 반영된다.
+const ROLE_ACCESS = `
+  SELECT c.relname AS name, r.role, 'table' AS kind
   FROM pg_class c
   JOIN pg_namespace n ON n.oid = c.relnamespace
-  CROSS JOIN LATERAL aclexplode(
-    coalesce(c.relacl, acldefault(CASE WHEN c.relkind = 'S' THEN 's' ELSE 'r' END::"char", c.relowner))
-  ) a
-  LEFT JOIN pg_roles r ON r.oid = a.grantee
-  WHERE n.nspname = 'public'
-    AND c.relkind IN ('r', 'p', 'v', 'm', 'S')
-    AND (a.grantee = 0 OR r.rolname IN ('anon', 'authenticated'))
+  CROSS JOIN (VALUES ('anon'), ('authenticated')) r(role)
+  WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p', 'v', 'm', 'f')
+    AND (has_table_privilege(r.role, c.oid, 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+      OR has_any_column_privilege(r.role, c.oid, 'SELECT,INSERT,UPDATE,REFERENCES'))
   UNION ALL
-  SELECT p.proname, coalesce(r.rolname, 'PUBLIC'), a.privilege_type
+  SELECT c.relname, r.role, 'sequence'
+  FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  CROSS JOIN (VALUES ('anon'), ('authenticated')) r(role)
+  WHERE n.nspname = 'public' AND c.relkind = 'S'
+    AND has_sequence_privilege(r.role, c.oid, 'USAGE,SELECT,UPDATE')
+  UNION ALL
+  SELECT p.proname, r.role, 'function'
   FROM pg_proc p
   JOIN pg_namespace n ON n.oid = p.pronamespace
-  CROSS JOIN LATERAL aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a
-  LEFT JOIN pg_roles r ON r.oid = a.grantee
-  WHERE n.nspname = 'public' AND (a.grantee = 0 OR r.rolname IN ('anon', 'authenticated'))
-  ORDER BY 1`
+  CROSS JOIN (VALUES ('anon'), ('authenticated')) r(role)
+  WHERE n.nspname = 'public' AND has_function_privilege(r.role, p.oid, 'EXECUTE')
+  ORDER BY 1, 2`
 
 d('Data API 잠금 (RLS + 권한 회수)', () => {
   afterAll(async () => {
@@ -62,11 +65,9 @@ d('Data API 잠금 (RLS + 권한 회수)', () => {
     expect(rows.map((r) => r.name)).toEqual([])
   })
 
-  test('anon/authenticated/PUBLIC 에 부여된 public 객체 권한은 0건이다', async () => {
+  test('anon/authenticated 는 public 객체에 실효 권한이 없다 (PUBLIC 경유 포함)', async () => {
     const rows =
-      await prisma.$queryRawUnsafe<{ name: string; role: string; privilege: string }[]>(
-        PUBLIC_ROLE_GRANTS
-      )
+      await prisma.$queryRawUnsafe<{ name: string; role: string; kind: string }[]>(ROLE_ACCESS)
     expect(rows).toEqual([])
   })
 

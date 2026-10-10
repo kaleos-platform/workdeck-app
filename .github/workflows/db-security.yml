@@ -3,12 +3,6 @@ name: DB security regression
 on:
   pull_request:
     branches: [develop, main]
-    paths:
-      - 'prisma/**'
-      - 'scripts/db/**'
-      - 'src/lib/__tests__/rls-lockdown.e2e.test.ts'
-      - 'src/lib/__tests__/migration-rls-lint.test.ts'
-      - '.github/workflows/db-security.yml'
 
 jobs:
   migration-lint:
