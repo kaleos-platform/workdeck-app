@@ -22,6 +22,22 @@ describe('sanitizeRedirectPath — 오픈 리다이렉트 차단', () => {
     }
   })
 
+  test('백슬래시·제어문자로 프로토콜 상대 경로를 우회하면 거부', () => {
+    for (const value of [
+      '/\\evil.com',
+      '/\t/evil.com',
+      '/\n/evil.com',
+      '//evil.com',
+      'https://evil.com',
+    ]) {
+      expect(sanitizeRedirectPath(value)).toBeNull()
+    }
+  })
+
+  test('경로·쿼리·해시를 보존한다', () => {
+    expect(sanitizeRedirectPath('/admin?x=1#y')).toBe('/admin?x=1#y')
+  })
+
   test('빈 값은 null', () => {
     expect(sanitizeRedirectPath(null)).toBeNull()
     expect(sanitizeRedirectPath(undefined)).toBeNull()

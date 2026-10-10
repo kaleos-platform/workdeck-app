@@ -1,11 +1,13 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/admin/auth'
+import { mfaStepUpPath } from '@/lib/auth/mfa-policy'
 import { TemplatesList } from '@/components/admin/templates-list'
 
 export default async function AdminTemplatesPage() {
-  // layout이 MFA_REQUIRED 상태에서도 children을 렌더하므로, prisma를 직접 읽는 이 페이지는 자체 가드가 필요하다.
+  // layout 과 page 는 병렬로 렌더되므로 layout 의 가드가 이 페이지의 prisma 읽기를 막아주지 않는다 — 자체 가드.
   const auth = await requireOperator()
+  if (!auth.ok && auth.reason === 'MFA_REQUIRED') redirect(mfaStepUpPath('/admin/templates'))
   if (!auth.ok) notFound()
 
   const templates = await prisma.hiringDetailTemplate.findMany({

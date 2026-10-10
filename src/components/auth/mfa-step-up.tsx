@@ -17,14 +17,17 @@ export function MfaStepUp() {
   const search = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
   const [factorId, setFactorId] = useState<string | null>(null)
-  const [qrCode, setQrCode] = useState<string | null>(null)
+  const [enrollment, setEnrollment] = useState<{ qrCode: string; secret: string } | null>(null)
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // StrictMode 이중 마운트 등으로 정리된 실행은 등록까지 가지 않게 막는다(중복 enroll 방지).
+    let cancelled = false
     void (async () => {
       const { data, error: listError } = await supabase.auth.mfa.listFactors()
+      if (cancelled) return
       if (listError) {
         setError('인증 정보를 불러오지 못했습니다. 다시 로그인해 주세요.')
         return
@@ -34,6 +37,7 @@ export function MfaStepUp() {
       for (const f of totp.filter((f) => f.status !== 'verified')) {
         await supabase.auth.mfa.unenroll({ factorId: f.id })
       }
+      if (cancelled) return
       const verified = totp.find((f) => f.status === 'verified')
       if (verified) {
         setFactorId(verified.id)
@@ -43,14 +47,25 @@ export function MfaStepUp() {
         factorType: 'totp',
         friendlyName: `workdeck-${Date.now()}`,
       })
+      if (cancelled) return
       if (enrolled.error || !enrolled.data) {
         setError('2단계 인증 등록을 시작하지 못했습니다.')
         return
       }
       setFactorId(enrolled.data.id)
-      setQrCode(enrolled.data.totp.qr_code)
+      // qr_code 는 Supabase 가 이미 data URI(data:image/svg+xml;...) 로 준다 — 그대로 src 에 쓴다.
+      setEnrollment({ qrCode: enrolled.data.totp.qr_code, secret: enrolled.data.totp.secret })
     })()
+    return () => {
+      cancelled = true
+    }
   }, [supabase])
+
+  async function signOut() {
+    await supabase.auth.signOut()
+    router.replace('/login')
+    router.refresh()
+  }
 
   async function verify() {
     if (!factorId) return
@@ -63,7 +78,7 @@ export function MfaStepUp() {
       return
     }
     // 새로 등록한 경우 운영자 감사 로그(비운영자는 404 — 무해). account-settings.tsx 의 logAuditAction 과 같은 계약.
-    if (qrCode) {
+    if (enrollment) {
       void fetch('/api/admin/account/audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,17 +93,28 @@ export function MfaStepUp() {
     <div className="mx-auto flex w-full max-w-sm flex-col gap-4 py-16">
       <h1 className="text-lg font-semibold">2단계 인증</h1>
       <p className="text-sm text-muted-foreground">
-        {qrCode
+        {enrollment
           ? '인증 앱(Google Authenticator 등)으로 QR 코드를 스캔한 뒤 6자리 코드를 입력하세요.'
           : '인증 앱의 6자리 코드를 입력하세요. 이 기기에서는 30일 동안 다시 묻지 않습니다.'}
       </p>
-      {qrCode && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={`data:image/svg+xml;utf-8,${encodeURIComponent(qrCode)}`}
-          alt="TOTP QR 코드"
-          className="size-40 self-start rounded border bg-white p-2"
-        />
+      {enrollment && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={enrollment.qrCode}
+            alt="TOTP QR 코드"
+            className="size-40 self-start rounded border bg-white p-2"
+          />
+          <div className="space-y-1">
+            <Label htmlFor="mfa-secret">수동 입력용 비밀 키</Label>
+            <Input
+              id="mfa-secret"
+              readOnly
+              value={enrollment.secret}
+              className="font-mono text-xs"
+            />
+          </div>
+        </>
       )}
       <div className="space-y-1">
         <Label htmlFor="mfa-code">인증 코드</Label>
@@ -108,6 +134,9 @@ export function MfaStepUp() {
       )}
       <Button onClick={verify} disabled={busy || !factorId || code.length !== 6}>
         확인
+      </Button>
+      <Button variant="link" size="sm" className="self-start px-0" onClick={signOut}>
+        다른 계정으로 로그인(로그아웃)
       </Button>
     </div>
   )

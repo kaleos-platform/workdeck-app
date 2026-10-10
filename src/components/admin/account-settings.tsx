@@ -414,7 +414,7 @@ function MfaSection() {
           <div className="flex flex-col gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`data:image/svg+xml;utf-8,${encodeURIComponent(enrollment.qrCode)}`}
+              src={enrollment.qrCode}
               alt="TOTP QR 코드"
               className="size-40 self-start rounded border bg-white p-2"
             />
