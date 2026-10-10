@@ -40,7 +40,7 @@ jobs:
         with:
           version: 2.84.2
       - run: supabase init
-      - run: supabase start -x realtime,edge-runtime,logflare,vector,imgproxy,studio,inbucket
+      - run: supabase start -x realtime,edge-runtime,logflare,vector,imgproxy,studio,mailpit
       - run: npm ci
       - run: ./scripts/db/bootstrap-local.sh
       - run: npm run test:e2e:db

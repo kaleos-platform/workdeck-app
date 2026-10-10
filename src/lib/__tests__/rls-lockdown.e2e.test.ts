@@ -1,6 +1,6 @@
 /** @jest-environment node */
 /**
- * Data API 잠금 회귀 방지 — public 스키마 모든 테이블이 RLS 활성이고 anon/authenticated 권한이 0건인지 검사.
+ * Data API 잠금 회귀 방지 — public 스키마 모든 테이블이 RLS 활성이고 anon/authenticated/PUBLIC 권한이 0건인지 검사.
  * 신규 테이블은 기본 권한 회수(20261009120000)로 권한은 없지만 RLS 는 꺼진 채 생성된다.
  * 이 테스트는 적용된 DB 의 최종 상태를 검사한다. 마이그레이션마다 ENABLE ROW LEVEL SECURITY 를 넣었는지는
  * migration-rls-lint.test.ts 가 정적으로 강제한다(부트스트랩에서는 20261009120000 루프가 기준 테이블 RLS 를 켜 준다).
@@ -30,22 +30,26 @@ const TABLES_WITHOUT_RLS = `
   WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p') AND NOT c.relrowsecurity
   ORDER BY 1`
 
+// grantee 0 = PUBLIC 의사 역할(pg_roles 에 없음) — LEFT JOIN 으로 함께 잡는다.
+// ACL 이 NULL 이면 기본 권한(acldefault)이 적용된다 — 함수는 PUBLIC 에 EXECUTE 가 암묵 부여된다.
 const PUBLIC_ROLE_GRANTS = `
-  SELECT c.relname AS name, r.rolname AS role, a.privilege_type AS privilege
+  SELECT c.relname AS name, coalesce(r.rolname, 'PUBLIC') AS role, a.privilege_type AS privilege
   FROM pg_class c
   JOIN pg_namespace n ON n.oid = c.relnamespace
-  CROSS JOIN LATERAL aclexplode(c.relacl) a
-  JOIN pg_roles r ON r.oid = a.grantee
+  CROSS JOIN LATERAL aclexplode(
+    coalesce(c.relacl, acldefault(CASE WHEN c.relkind = 'S' THEN 's' ELSE 'r' END::"char", c.relowner))
+  ) a
+  LEFT JOIN pg_roles r ON r.oid = a.grantee
   WHERE n.nspname = 'public'
     AND c.relkind IN ('r', 'p', 'v', 'm', 'S')
-    AND r.rolname IN ('anon', 'authenticated')
+    AND (a.grantee = 0 OR r.rolname IN ('anon', 'authenticated'))
   UNION ALL
-  SELECT p.proname, r.rolname, a.privilege_type
+  SELECT p.proname, coalesce(r.rolname, 'PUBLIC'), a.privilege_type
   FROM pg_proc p
   JOIN pg_namespace n ON n.oid = p.pronamespace
-  CROSS JOIN LATERAL aclexplode(p.proacl) a
-  JOIN pg_roles r ON r.oid = a.grantee
-  WHERE n.nspname = 'public' AND r.rolname IN ('anon', 'authenticated')
+  CROSS JOIN LATERAL aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a
+  LEFT JOIN pg_roles r ON r.oid = a.grantee
+  WHERE n.nspname = 'public' AND (a.grantee = 0 OR r.rolname IN ('anon', 'authenticated'))
   ORDER BY 1`
 
 d('Data API 잠금 (RLS + 권한 회수)', () => {
@@ -58,7 +62,7 @@ d('Data API 잠금 (RLS + 권한 회수)', () => {
     expect(rows.map((r) => r.name)).toEqual([])
   })
 
-  test('anon/authenticated 에 부여된 public 객체 권한은 0건이다', async () => {
+  test('anon/authenticated/PUBLIC 에 부여된 public 객체 권한은 0건이다', async () => {
     const rows =
       await prisma.$queryRawUnsafe<{ name: string; role: string; privilege: string }[]>(
         PUBLIC_ROLE_GRANTS

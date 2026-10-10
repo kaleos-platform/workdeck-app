@@ -13,11 +13,17 @@ FIRST_REAL=20261009120000
 
 cd "$(git rev-parse --show-toplevel)"
 
-# prisma.config.ts 가 .env.local 을 override 로 읽으므로 같은 우선순위로 판정한다.
-DB_URL="$(grep -m1 '^DIRECT_URL=' .env.local 2>/dev/null | cut -d= -f2- || true)"
-DB_URL="${DB_URL:-${DIRECT_URL:-${DATABASE_URL:-}}}"
-if [[ ! "$DB_URL" =~ @(127\.0\.0\.1|localhost): ]]; then
-  echo "DIRECT_URL 이 로컬 Supabase 가 아닙니다 — 중단" >&2
+# prisma.config.ts 와 같은 방식(.env → .env.local override, DIRECT_URL ?? DATABASE_URL)으로 실제 접속 URL 을 구한다.
+DB_URL="$(node -e "
+const { config } = require('dotenv')
+config({ quiet: true })
+config({ path: '.env.local', override: true, quiet: true })
+process.stdout.write(process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? '')
+")"
+# supabase db reset 은 supabase/config.toml 의 스택을 초기화한다 — prisma 가 붙을 DB 도 그 스택이어야 한다.
+DB_PORT="$(awk '/^\[db\]/{f=1;next} /^\[/{f=0} f&&/^port *=/{print $3}' supabase/config.toml)"
+if [[ -z "$DB_PORT" || ! "$DB_URL" =~ @(127\.0\.0\.1|localhost):${DB_PORT}/ ]]; then
+  echo "접속 URL 이 supabase/config.toml 의 로컬 DB(포트 ${DB_PORT:-?})가 아닙니다 — 중단" >&2
   exit 1
 fi
 
