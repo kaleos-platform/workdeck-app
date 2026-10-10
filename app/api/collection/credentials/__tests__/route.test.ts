@@ -3,15 +3,22 @@ import { NextRequest } from 'next/server'
 import { PUT } from '../route'
 import { prisma } from '@/lib/prisma'
 import { canWorkspaceCollect } from '@/lib/billing/entitlement'
-import { resolveWorkspace } from '@/lib/api-helpers'
+import { resolveSpaceContext, resolveWorkspace } from '@/lib/api-helpers'
 import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { encryptField } from '@/lib/crypto/field-crypto'
 import { requireAal2 } from '@/lib/auth/mfa'
 
-jest.mock('@/lib/api-helpers', () => ({
-  resolveWorkspace: jest.fn(),
-  errorResponse: (message: string, status: number) => Response.json({ message }, { status }),
-}))
+jest.mock('@/lib/api-helpers', () => {
+  // 실제 역할 위계(OWNER > ADMIN > MEMBER)를 반영한 assertRole
+  const rank = { OWNER: 3, ADMIN: 2, MEMBER: 1 } as const
+  return {
+    resolveWorkspace: jest.fn(),
+    resolveSpaceContext: jest.fn(),
+    errorResponse: (message: string, status: number) => Response.json({ message }, { status }),
+    assertRole: (r: keyof typeof rank, req: keyof typeof rank) =>
+      rank[r] < rank[req] ? Response.json({ message: '권한이 없습니다' }, { status: 403 }) : null,
+  }
+})
 jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn().mockResolvedValue(null) }))
 jest.mock('@/hooks/use-user', () => ({ getUser: async () => ({ id: 'u', user_metadata: {} }) }))
 jest.mock('@/lib/workspace', () => ({
@@ -44,6 +51,8 @@ beforeEach(() => {
   jest.clearAllMocks()
   ;(prisma.coupangCredential.upsert as jest.Mock).mockResolvedValue({ id: 'c' })
   ;(canWorkspaceCollect as jest.Mock).mockResolvedValue(true)
+  ;(resolveSpaceContext as jest.Mock).mockResolvedValue({ role: 'ADMIN' })
+  ;(requireAal2 as jest.Mock).mockResolvedValue(null)
 })
 
 describe('PUT /api/collection/credentials — 비번 오류 후 재수집', () => {
@@ -140,4 +149,61 @@ it('세션 PUT 은 aal2 미충족이면 403, 저장 없음', async () => {
   )
   expect(res?.status).toBe(403)
   expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
+})
+
+describe('PUT /api/collection/credentials — 역할·MFA 게이트', () => {
+  const sessionPut = () =>
+    PUT(
+      new NextRequest('http://localhost/api/collection/credentials', {
+        method: 'PUT',
+        body: JSON.stringify({ loginId: 'id', password: 'pw' }),
+      })
+    )
+
+  it('MEMBER 는 aal1·aal2 모두 403 권한 거부, MFA 검사·저장 없음', async () => {
+    ;(resolveSpaceContext as jest.Mock).mockResolvedValue({ role: 'MEMBER' })
+    for (const aal of [Response.json({ code: 'MFA_REQUIRED' }, { status: 403 }), null]) {
+      ;(requireAal2 as jest.Mock).mockResolvedValue(aal)
+      const res = await sessionPut()
+      expect(res?.status).toBe(403)
+      expect((await res?.json()).code).toBeUndefined()
+    }
+    expect(requireAal2).not.toHaveBeenCalled()
+    expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
+  })
+
+  it('Space 멤버십이 없는 첫 사용자는 ensure 가 OWNER 로 만들므로 역할 거부 없이 MFA 로 간다', async () => {
+    ;(resolveSpaceContext as jest.Mock).mockResolvedValue({
+      error: Response.json({ message: '공간이 없습니다' }, { status: 404 }),
+    })
+    ;(requireAal2 as jest.Mock).mockResolvedValue(
+      Response.json({ code: 'MFA_REQUIRED' }, { status: 403 })
+    )
+    const res = await sessionPut()
+    expect((await res?.json()).code).toBe('MFA_REQUIRED')
+    expect(prisma.coupangCredential.upsert).not.toHaveBeenCalled()
+  })
+
+  it('워커 PUT(x-worker-api-key)은 MFA·역할 검사를 하지 않는다', async () => {
+    process.env.WORKER_API_KEY = 'wk'
+    process.env.ENCRYPTION_KEY_V1 = 'a'.repeat(64)
+    delete process.env.VERCEL_ENV
+    delete process.env.ENCRYPTION_WRITE_VERSION
+    ;(resolveWorkspace as jest.Mock).mockResolvedValue({ workspace: { id: 'ws' } })
+    const sealed = encryptField('collection-credential', 'pw')
+    const res = await PUT(
+      new NextRequest('http://localhost/api/collection/credentials', {
+        method: 'PUT',
+        headers: { 'x-worker-api-key': 'wk' },
+        body: JSON.stringify({
+          loginId: 'id',
+          loginPassword: sealed.encrypted,
+          encryptionIv: sealed.iv,
+        }),
+      })
+    )
+    expect(res?.status).toBe(200)
+    expect(requireAal2).not.toHaveBeenCalled()
+    expect(resolveSpaceContext).not.toHaveBeenCalled()
+  })
 })

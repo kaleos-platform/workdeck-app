@@ -8,10 +8,18 @@ import { encryptSecret } from '@/lib/collection/secret-crypto'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { DELETE, PUT } from '../route'
 
-jest.mock('@/lib/api-helpers', () => ({
-  errorResponse: (message: string, status: number) => NextResponse.json({ message }, { status }),
-  assertRole: () => null,
-}))
+jest.mock('@/lib/api-helpers', () => {
+  const { NextResponse } = jest.requireActual('next/server')
+  // 실제 역할 위계(OWNER > ADMIN > MEMBER)를 반영한 assertRole
+  const rank = { OWNER: 3, ADMIN: 2, MEMBER: 1 } as const
+  return {
+    errorResponse: (message: string, status: number) => NextResponse.json({ message }, { status }),
+    assertRole: (r: keyof typeof rank, req: keyof typeof rank) =>
+      rank[r] < rank[req]
+        ? NextResponse.json({ message: '권한이 없습니다' }, { status: 403 })
+        : null,
+  }
+})
 jest.mock('@/lib/collection/secret-crypto', () => ({
   encryptSecret: jest.fn(jest.requireActual('@/lib/collection/secret-crypto').encryptSecret),
 }))
@@ -136,4 +144,20 @@ test('워커 PUT 은 MFA 를 요구하지 않는다', async () => {
     encryptionIv: 'v1',
   })
   expect(requireAal2).not.toHaveBeenCalled()
+})
+
+test('세션 MEMBER 의 PUT·DELETE 는 403 권한 거부, MFA 검사·DB 접근 없음', async () => {
+  auth.mockResolvedValue({ kind: 'session', role: 'MEMBER', workspaceId: 'ws' })
+  ;(requireAal2 as jest.Mock).mockClear()
+  const res = await put({ ...base, secretKey: 'sk' })
+  expect(res.status).toBe(403)
+  expect((await res.json()).code).toBeUndefined()
+  const del = await DELETE(
+    new NextRequest('http://t/api/collection/api-credentials', { method: 'DELETE' })
+  )
+  expect(del.status).toBe(403)
+  expect(requireAal2).not.toHaveBeenCalled()
+  expect(cred.findUnique).not.toHaveBeenCalled()
+  expect(cred.upsert).not.toHaveBeenCalled()
+  expect(prisma.$transaction).not.toHaveBeenCalled()
 })

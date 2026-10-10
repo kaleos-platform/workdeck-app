@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveWorkspace, errorResponse } from '@/lib/api-helpers'
+import { resolveWorkspace, resolveSpaceContext, errorResponse, assertRole } from '@/lib/api-helpers'
 import { getUser } from '@/hooks/use-user'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { ensureWorkspaceForUser } from '@/lib/workspace'
@@ -85,6 +85,12 @@ export async function PUT(request: NextRequest) {
   } else {
     const user = await getUser()
     if (!user) return errorResponse('인증이 필요합니다', 401)
+    // 자격증명 쓰기는 Space ADMIN 이상. 멤버십이 아직 없으면 아래 ensure 가 OWNER 로 만든다.
+    const spaceCtx = await resolveSpaceContext()
+    if ('role' in spaceCtx && spaceCtx.role) {
+      const permError = assertRole(spaceCtx.role, 'ADMIN')
+      if (permError) return permError
+    }
     // 사람(세션)의 자격증명 저장만 aal2 를 요구한다. 워커 재전달은 토큰 인증이라 제외.
     const mfaError = await requireAal2()
     if (mfaError) return mfaError

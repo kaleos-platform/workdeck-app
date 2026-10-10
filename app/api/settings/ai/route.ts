@@ -94,16 +94,20 @@ export async function PUT(req: NextRequest) {
     return errorResponse('요청 본문이 올바르지 않습니다', 400, { issues: parsed.error.flatten() })
   }
   const { mode, provider, model, apiKey } = parsed.data
-  // 키를 저장할 때만 aal2 — 키 없이 모드만 바꾸는 요청은 통과.
-  if (apiKey) {
-    const mfaError = await requireAal2()
-    if (mfaError) return mfaError
-  }
 
   const existing = await prisma.spaceAiSetting.findUnique({
     where: { spaceId: ctx.spaceId },
-    select: { encryptedApiKey: true },
+    select: { mode: true, provider: true, encryptedApiKey: true },
   })
+
+  // 키 저장, 그리고 저장된 키를 새로 쓰기 시작하는 변경(BYOK 전환·공급자 변경)은 aal2.
+  // 같은 공급자에서 모델만 바꾸거나 워크덱 모드로 돌아가는 요청은 통과.
+  const keyUseChanged =
+    mode === 'BYOK' && (existing?.mode !== 'BYOK' || existing?.provider !== provider)
+  if (apiKey || keyUseChanged) {
+    const mfaError = await requireAal2()
+    if (mfaError) return mfaError
+  }
 
   if (mode === 'BYOK' && !apiKey && !existing?.encryptedApiKey) {
     return errorResponse('BYOK 모드로 전환하려면 API 키가 필요합니다', 400)
