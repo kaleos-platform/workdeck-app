@@ -14,7 +14,7 @@ import 'dotenv/config'
 import fs from 'node:fs'
 import path from 'node:path'
 import { getApiCredential, getApiVerifyBaseline } from '../api-client.js'
-import { decrypt } from '../encryption.js'
+import { decryptSecret } from '../encryption.js'
 import { CoupangApiClient, CoupangApiError } from './client.js'
 import {
   extractInventoryQuantities,
@@ -52,8 +52,7 @@ async function main(): Promise<void> {
     )
     process.exit(1)
   }
-  const secretKey =
-    cred.encryptionIv === 'none' ? cred.secretKey : decrypt(cred.secretKey, cred.encryptionIv)
+  const secretKey = decryptSecret('collection-credential', cred.secretKey, cred.encryptionIv)
   const client = new CoupangApiClient({
     vendorId: cred.vendorId,
     accessKey: cred.accessKey,
