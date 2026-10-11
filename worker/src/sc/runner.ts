@@ -6,6 +6,7 @@ import { getPublisher, type PublishContext } from './publishers/index.js'
 import { getCollector, type CollectContext } from './collectors/index.js'
 import { handleInsightSweep } from './insight-generator.js'
 import type { WorkerJobResponse } from './contracts.js'
+import { openCredential } from './credential.js'
 
 // 웹앱 /api/sc/jobs/worker 응답 contract — contracts.ts 에서 단일 진실 관리.
 // deployment 는 ContentDeployment + content(+assets) + channel (Prisma include 결과),
@@ -195,7 +196,7 @@ function buildPublishContext(c: ClaimedJob): PublishContext | null {
     channel: d.channel,
     content: d.content,
     assets: c.assets ?? [],
-    credential: c.credential ?? null,
+    credential: openCredential(c.credential),
     deploymentUrl: typeof c.deploymentUrl === 'string' ? c.deploymentUrl : '',
   }
 }
@@ -208,7 +209,7 @@ function buildCollectContext(c: ClaimedJob): CollectContext | null {
   return {
     deployment: d,
     channel: d.channel,
-    credential: c.credential ?? null,
+    credential: openCredential(c.credential),
   }
 }
 
