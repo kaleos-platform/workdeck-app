@@ -7,13 +7,19 @@ import { decryptSecret } from '../encryption.js'
 
 export type SealedCredential = { encryptedPayload: string; iv: string; expiresAt?: string | null }
 
+const isObject = (v: unknown): v is Record<string, unknown> =>
+  !!v && typeof v === 'object' && !Array.isArray(v)
+
 export function openCredential(raw: unknown): { payload: Record<string, unknown> } | null {
   if (!raw || typeof raw !== 'object') return null
   const c = raw as Partial<SealedCredential> & { payload?: Record<string, unknown> }
-  if (c.payload && typeof c.payload === 'object') return { payload: c.payload }
+  if (isObject(c.payload)) return { payload: c.payload }
   if (typeof c.encryptedPayload !== 'string' || typeof c.iv !== 'string') return null
   try {
-    return { payload: JSON.parse(decryptSecret('channel-credential', c.encryptedPayload, c.iv)) }
+    const payload: unknown = JSON.parse(
+      decryptSecret('channel-credential', c.encryptedPayload, c.iv)
+    )
+    return isObject(payload) ? { payload } : null
   } catch (err) {
     // 원문·키를 로그에 남기지 않는다 — 원인 메시지만.
     console.error('[sc-credential] 복호화 실패:', err instanceof Error ? err.message : String(err))
