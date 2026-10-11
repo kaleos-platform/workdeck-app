@@ -13,6 +13,8 @@
  *     --k1-unverified 없이는 중단한다(틀린 K1 로 덮어쓴 CBC 원본은 복구 불가).
  *   - --apply 는 .env.local 을 읽지 않는다(키는 명시적 셸 환경에서만). --apply 에서 복호화 실패 1건이면 즉시 중단.
  *   - 실패가 하나라도 있으면 종료 코드 1.
+ *   - --apply 는 용도별 키 env(ENCRYPTION_KEY_<PURPOSE>[_Kn])가 하나라도 있으면 거부한다(루트 K1 만 허용). 쓰기 전에 전체 행을 읽기 전용으로 K0 복호화해 본다.
+ *   - --k1-unverified 는 빈 DB / 로컬 리허설 전용이다. 운영에서는 쓰지 않는다.
  * K0(ENCRYPTION_KEY) 삭제 조건: --apply 뒤 dry-run 이 모든 모델에서 "대상 0행, 실패 0행"이어야 한다.
  */
 import { config } from 'dotenv'

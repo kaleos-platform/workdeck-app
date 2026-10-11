@@ -79,7 +79,9 @@ test('I2: --apply 는 첫 복호화 실패에서 중단, 이후 쓰기 없음', 
     { id: 'a', botToken: 'zz', botTokenIv: '00'.repeat(16) },
     { id: 'b', ...v0('x') },
   ])
-  await expect(runReencrypt({ db, targets, apply: true, ...quiet })).rejects.toThrow('중단')
+  await expect(runReencrypt({ db, targets, apply: true, ...quiet })).rejects.toThrow(
+    '사전 복호화 점검'
+  )
   expect(updates).toHaveLength(0)
 })
 
@@ -88,5 +90,28 @@ test('I2: dry-run 은 실패를 모두 세고 failed>0 을 돌려준다', async 
   const { db, updates } = fakeDb([appV1(), { id: 'a', ...bad }, { id: 'b', ...bad }])
   const r = await runReencrypt({ db, targets, apply: false, ...quiet })
   expect(r.failed).toBe(2)
+  expect(updates).toHaveLength(0)
+})
+
+test('--apply 는 용도별 키 env 가 있으면 거부(쓰기 없음), dry-run 은 허용', async () => {
+  const { db, updates } = fakeDb([appV1(), { id: 'old', ...v0('x') }])
+  process.env.ENCRYPTION_KEY_SLACK_TOKEN_K2 = hex()
+  try {
+    await expect(runReencrypt({ db, targets, apply: true, ...quiet })).rejects.toThrow(
+      'ENCRYPTION_KEY_SLACK_TOKEN_K2'
+    )
+    expect(updates).toHaveLength(0)
+    await runReencrypt({ db, targets, apply: false, ...quiet })
+  } finally {
+    delete process.env.ENCRYPTION_KEY_SLACK_TOKEN_K2
+  }
+})
+
+test('--apply 사전 점검: 여러 행 중 복호화 불가 1건이면 쓰기 0건', async () => {
+  const bad = { id: 'z', botToken: 'zz', botTokenIv: '00'.repeat(16) }
+  const { db, updates } = fakeDb([appV1(), { id: 'a', ...v0('1') }, { id: 'b', ...v0('2') }, bad])
+  await expect(runReencrypt({ db, targets, apply: true, ...quiet })).rejects.toThrow(
+    '아무것도 바꾸지 않았습니다'
+  )
   expect(updates).toHaveLength(0)
 })
