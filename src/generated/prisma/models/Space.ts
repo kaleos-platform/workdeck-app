@@ -234,6 +234,7 @@ export type SpaceWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   members?: Prisma.SpaceMemberListRelationFilter
   deckInstances?: Prisma.DeckInstanceListRelationFilter
+  workspace?: Prisma.XOR<Prisma.WorkspaceNullableScalarRelationFilter, Prisma.WorkspaceWhereInput> | null
   invProducts?: Prisma.InvProductListRelationFilter
   invLocations?: Prisma.InvStorageLocationListRelationFilter
   invMovements?: Prisma.InvMovementListRelationFilter
@@ -331,6 +332,7 @@ export type SpaceOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   members?: Prisma.SpaceMemberOrderByRelationAggregateInput
   deckInstances?: Prisma.DeckInstanceOrderByRelationAggregateInput
+  workspace?: Prisma.WorkspaceOrderByWithRelationInput
   invProducts?: Prisma.InvProductOrderByRelationAggregateInput
   invLocations?: Prisma.InvStorageLocationOrderByRelationAggregateInput
   invMovements?: Prisma.InvMovementOrderByRelationAggregateInput
@@ -431,6 +433,7 @@ export type SpaceWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Space"> | Date | string
   members?: Prisma.SpaceMemberListRelationFilter
   deckInstances?: Prisma.DeckInstanceListRelationFilter
+  workspace?: Prisma.XOR<Prisma.WorkspaceNullableScalarRelationFilter, Prisma.WorkspaceWhereInput> | null
   invProducts?: Prisma.InvProductListRelationFilter
   invLocations?: Prisma.InvStorageLocationListRelationFilter
   invMovements?: Prisma.InvMovementListRelationFilter
@@ -556,6 +559,7 @@ export type SpaceCreateInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -653,6 +657,7 @@ export type SpaceUncheckedCreateInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -750,6 +755,7 @@ export type SpaceUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -847,6 +853,7 @@ export type SpaceUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -964,6 +971,11 @@ export type SpaceUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type SpaceNullableScalarRelationFilter = {
+  is?: Prisma.SpaceWhereInput | null
+  isNot?: Prisma.SpaceWhereInput | null
+}
+
 export type SpaceCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
@@ -1007,9 +1019,20 @@ export type SpaceScalarRelationFilter = {
   isNot?: Prisma.SpaceWhereInput
 }
 
-export type SpaceNullableScalarRelationFilter = {
-  is?: Prisma.SpaceWhereInput | null
-  isNot?: Prisma.SpaceWhereInput | null
+export type SpaceCreateNestedOneWithoutWorkspaceInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutWorkspaceInput, Prisma.SpaceUncheckedCreateWithoutWorkspaceInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutWorkspaceInput
+  connect?: Prisma.SpaceWhereUniqueInput
+}
+
+export type SpaceUpdateOneWithoutWorkspaceNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceCreateWithoutWorkspaceInput, Prisma.SpaceUncheckedCreateWithoutWorkspaceInput>
+  connectOrCreate?: Prisma.SpaceCreateOrConnectWithoutWorkspaceInput
+  upsert?: Prisma.SpaceUpsertWithoutWorkspaceInput
+  disconnect?: Prisma.SpaceWhereInput | boolean
+  delete?: Prisma.SpaceWhereInput | boolean
+  connect?: Prisma.SpaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutWorkspaceInput, Prisma.SpaceUpdateWithoutWorkspaceInput>, Prisma.SpaceUncheckedUpdateWithoutWorkspaceInput>
 }
 
 export type EnumSpaceTypeFieldUpdateOperationsInput = {
@@ -2240,6 +2263,410 @@ export type SpaceUpdateOneRequiredWithoutWorkerTokensNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceUpdateToOneWithWhereWithoutWorkerTokensInput, Prisma.SpaceUpdateWithoutWorkerTokensInput>, Prisma.SpaceUncheckedUpdateWithoutWorkerTokensInput>
 }
 
+export type SpaceCreateWithoutWorkspaceInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentSettingCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageCreateNestedManyWithoutSpaceInput
+  agents?: Prisma.SpaceAgentCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceUncheckedCreateWithoutWorkspaceInput = {
+  id?: string
+  name: string
+  type?: $Enums.SpaceType
+  onboardingDismissedAt?: Date | string | null
+  approvalLimitKrw?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
+  invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
+  invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedCreateNestedManyWithoutSpaceInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  invSettings?: Prisma.InvSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  delBatches?: Prisma.DelBatchUncheckedCreateNestedManyWithoutSpaceInput
+  delOrders?: Prisma.DelOrderUncheckedCreateNestedManyWithoutSpaceInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedCreateNestedManyWithoutSpaceInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedCreateNestedManyWithoutSpaceInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedCreateNestedManyWithoutSpaceInput
+  channels?: Prisma.ChannelUncheckedCreateNestedManyWithoutSpaceInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedCreateNestedManyWithoutSpaceInput
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutSpaceInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedCreateNestedOneWithoutSpaceInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedCreateNestedManyWithoutSpaceInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedCreateNestedManyWithoutSpaceInput
+  productListings?: Prisma.ProductListingUncheckedCreateNestedManyWithoutSpaceInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedCreateNestedManyWithoutSpaceInput
+  channelProducts?: Prisma.ChannelProductUncheckedCreateNestedManyWithoutSpaceInput
+  productionRuns?: Prisma.ProductionRunUncheckedCreateNestedManyWithoutSpaceInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedCreateNestedManyWithoutSpaceInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedCreateNestedManyWithoutSpaceInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedCreateNestedManyWithoutSpaceInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedCreateNestedManyWithoutSpaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutSpaceInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedCreateNestedManyWithoutSpaceInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedCreateNestedManyWithoutSpaceInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedCreateNestedManyWithoutSpaceInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedCreateNestedManyWithoutSpaceInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedCreateNestedOneWithoutSpaceInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutSpaceInput
+  personas?: Prisma.PersonaUncheckedCreateNestedManyWithoutSpaceInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutSpaceInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedCreateNestedManyWithoutSpaceInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedCreateNestedManyWithoutSpaceInput
+  ideations?: Prisma.IdeationUncheckedCreateNestedManyWithoutSpaceInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedCreateNestedManyWithoutSpaceInput
+  contents?: Prisma.ContentUncheckedCreateNestedManyWithoutSpaceInput
+  contentAssets?: Prisma.ContentAssetUncheckedCreateNestedManyWithoutSpaceInput
+  contentVersions?: Prisma.ContentVersionUncheckedCreateNestedManyWithoutSpaceInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedCreateNestedManyWithoutSpaceInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedCreateNestedManyWithoutSpaceInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedCreateNestedManyWithoutSpaceInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedCreateNestedManyWithoutSpaceInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedCreateNestedManyWithoutSpaceInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedCreateNestedOneWithoutSpaceInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedCreateNestedManyWithoutSpaceInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedCreateNestedOneWithoutSpaceInput
+  finAccounts?: Prisma.FinAccountUncheckedCreateNestedManyWithoutSpaceInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedCreateNestedManyWithoutSpaceInput
+  finCategories?: Prisma.FinCategoryUncheckedCreateNestedManyWithoutSpaceInput
+  finClassRules?: Prisma.FinClassRuleUncheckedCreateNestedManyWithoutSpaceInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedCreateNestedManyWithoutSpaceInput
+  finImports?: Prisma.FinImportUncheckedCreateNestedManyWithoutSpaceInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedCreateNestedManyWithoutSpaceInput
+  finTransactions?: Prisma.FinTransactionUncheckedCreateNestedManyWithoutSpaceInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedCreateNestedManyWithoutSpaceInput
+  hiringStores?: Prisma.HiringStoreUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPositions?: Prisma.HiringPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostings?: Prisma.HiringPostingUncheckedCreateNestedManyWithoutSpaceInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringContents?: Prisma.HiringContentUncheckedCreateNestedManyWithoutSpaceInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedCreateNestedManyWithoutSpaceInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedCreateNestedManyWithoutSpaceInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedCreateNestedManyWithoutSpaceInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedCreateNestedManyWithoutSpaceInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedCreateNestedManyWithoutSpaceInput
+  agentToggle?: Prisma.SpaceAgentSettingUncheckedCreateNestedOneWithoutSpaceInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedCreateNestedManyWithoutSpaceInput
+  agents?: Prisma.SpaceAgentUncheckedCreateNestedManyWithoutSpaceInput
+  workerTokens?: Prisma.WorkerTokenUncheckedCreateNestedManyWithoutSpaceInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedCreateNestedOneWithoutSpaceInput
+  billingMethods?: Prisma.BillingMethodUncheckedCreateNestedManyWithoutSpaceInput
+  billingCharges?: Prisma.BillingChargeUncheckedCreateNestedManyWithoutSpaceInput
+}
+
+export type SpaceCreateOrConnectWithoutWorkspaceInput = {
+  where: Prisma.SpaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutWorkspaceInput, Prisma.SpaceUncheckedCreateWithoutWorkspaceInput>
+}
+
+export type SpaceUpsertWithoutWorkspaceInput = {
+  update: Prisma.XOR<Prisma.SpaceUpdateWithoutWorkspaceInput, Prisma.SpaceUncheckedUpdateWithoutWorkspaceInput>
+  create: Prisma.XOR<Prisma.SpaceCreateWithoutWorkspaceInput, Prisma.SpaceUncheckedCreateWithoutWorkspaceInput>
+  where?: Prisma.SpaceWhereInput
+}
+
+export type SpaceUpdateToOneWithWhereWithoutWorkspaceInput = {
+  where?: Prisma.SpaceWhereInput
+  data: Prisma.XOR<Prisma.SpaceUpdateWithoutWorkspaceInput, Prisma.SpaceUncheckedUpdateWithoutWorkspaceInput>
+}
+
+export type SpaceUpdateWithoutWorkspaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentSettingUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUpdateManyWithoutSpaceNestedInput
+  agents?: Prisma.SpaceAgentUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUpdateManyWithoutSpaceNestedInput
+}
+
+export type SpaceUncheckedUpdateWithoutWorkspaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumSpaceTypeFieldUpdateOperationsInput | $Enums.SpaceType
+  onboardingDismissedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approvalLimitKrw?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
+  invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
+  invImportHistories?: Prisma.InvImportHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  invReconciliations?: Prisma.InvReconciliationUncheckedUpdateManyWithoutSpaceNestedInput
+  invLocationMappings?: Prisma.InvLocationProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  invSettings?: Prisma.InvSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  invProductGroups?: Prisma.InvProductGroupUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethods?: Prisma.DelShippingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  delBatches?: Prisma.DelBatchUncheckedUpdateManyWithoutSpaceNestedInput
+  delOrders?: Prisma.DelOrderUncheckedUpdateManyWithoutSpaceNestedInput
+  delIntegrationHistories?: Prisma.DelIntegrationHistoryUncheckedUpdateManyWithoutSpaceNestedInput
+  delColumnMappingPresets?: Prisma.DelColumnMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProductAliases?: Prisma.ChannelProductAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  delShippingMethodLabels?: Prisma.DelShippingMethodLabelUncheckedUpdateManyWithoutSpaceNestedInput
+  channels?: Prisma.ChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  channelTypeDefs?: Prisma.ChannelTypeDefUncheckedUpdateManyWithoutSpaceNestedInput
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutSpaceNestedInput
+  productPricingSettings?: Prisma.ProductPricingSettingsUncheckedUpdateOneWithoutSpaceNestedInput
+  optionCodeAliases?: Prisma.SpaceOptionCodeAliasUncheckedUpdateManyWithoutSpaceNestedInput
+  atomicWords?: Prisma.SpaceAtomicWordUncheckedUpdateManyWithoutSpaceNestedInput
+  productListings?: Prisma.ProductListingUncheckedUpdateManyWithoutSpaceNestedInput
+  channelStockMovements?: Prisma.ChannelStockMovementUncheckedUpdateManyWithoutSpaceNestedInput
+  channelProducts?: Prisma.ChannelProductUncheckedUpdateManyWithoutSpaceNestedInput
+  productionRuns?: Prisma.ProductionRunUncheckedUpdateManyWithoutSpaceNestedInput
+  pricingScenarios?: Prisma.PricingScenarioUncheckedUpdateManyWithoutSpaceNestedInput
+  adCampaignProductMaps?: Prisma.AdCampaignProductMapUncheckedUpdateManyWithoutSpaceNestedInput
+  productExtractionJobs?: Prisma.ProductExtractionJobUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangProductItems?: Prisma.CoupangProductItemUncheckedUpdateManyWithoutSpaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutSpaceNestedInput
+  reorderPlans?: Prisma.ReorderPlanUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordMasters?: Prisma.KeywordMasterUncheckedUpdateManyWithoutSpaceNestedInput
+  channelKeywordRules?: Prisma.ChannelKeywordRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  keywordChangeLogs?: Prisma.KeywordChangeLogUncheckedUpdateManyWithoutSpaceNestedInput
+  slackInstallation?: Prisma.SlackInstallationUncheckedUpdateOneWithoutSpaceNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutSpaceNestedInput
+  personas?: Prisma.PersonaUncheckedUpdateManyWithoutSpaceNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutSpaceNestedInput
+  workspaceAiCredits?: Prisma.WorkspaceAiCreditUncheckedUpdateManyWithoutSpaceNestedInput
+  imageGenerationLogs?: Prisma.ImageGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  textGenerationLogs?: Prisma.TextGenerationLogUncheckedUpdateManyWithoutSpaceNestedInput
+  ideations?: Prisma.IdeationUncheckedUpdateManyWithoutSpaceNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentChannels?: Prisma.SalesContentChannelUncheckedUpdateManyWithoutSpaceNestedInput
+  contents?: Prisma.ContentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentAssets?: Prisma.ContentAssetUncheckedUpdateManyWithoutSpaceNestedInput
+  contentVersions?: Prisma.ContentVersionUncheckedUpdateManyWithoutSpaceNestedInput
+  contentDeployments?: Prisma.ContentDeploymentUncheckedUpdateManyWithoutSpaceNestedInput
+  contentClickEvents?: Prisma.ContentClickEventUncheckedUpdateManyWithoutSpaceNestedInput
+  channelCredentials?: Prisma.ChannelCredentialUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentJobs?: Prisma.SalesContentJobUncheckedUpdateManyWithoutSpaceNestedInput
+  deploymentMetrics?: Prisma.DeploymentMetricUncheckedUpdateManyWithoutSpaceNestedInput
+  improvementRules?: Prisma.ImprovementRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  salesContentOnboarding?: Prisma.SalesContentOnboardingUncheckedUpdateOneWithoutSpaceNestedInput
+  scOnboardingResources?: Prisma.ScOnboardingResourceUncheckedUpdateManyWithoutSpaceNestedInput
+  aiSetting?: Prisma.SpaceAiSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  finAccounts?: Prisma.FinAccountUncheckedUpdateManyWithoutSpaceNestedInput
+  finLiabilities?: Prisma.FinLiabilityUncheckedUpdateManyWithoutSpaceNestedInput
+  finCategories?: Prisma.FinCategoryUncheckedUpdateManyWithoutSpaceNestedInput
+  finClassRules?: Prisma.FinClassRuleUncheckedUpdateManyWithoutSpaceNestedInput
+  finMappingPresets?: Prisma.FinMappingPresetUncheckedUpdateManyWithoutSpaceNestedInput
+  finImports?: Prisma.FinImportUncheckedUpdateManyWithoutSpaceNestedInput
+  finStagedRows?: Prisma.FinStagedRowUncheckedUpdateManyWithoutSpaceNestedInput
+  finTransactions?: Prisma.FinTransactionUncheckedUpdateManyWithoutSpaceNestedInput
+  finBalanceSnapshots?: Prisma.FinBalanceSnapshotUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringStores?: Prisma.HiringStoreUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPositions?: Prisma.HiringPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostings?: Prisma.HiringPostingUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringPostingPositions?: Prisma.HiringPostingPositionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringContents?: Prisma.HiringContentUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringDetailTemplates?: Prisma.HiringDetailTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringApplications?: Prisma.HiringApplicationUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringUploadSessions?: Prisma.HiringUploadSessionUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMigrationRecords?: Prisma.HiringMigrationRecordUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringBlacklists?: Prisma.HiringBlacklistUncheckedUpdateManyWithoutSpaceNestedInput
+  hiringMessageTemplates?: Prisma.HiringMessageTemplateUncheckedUpdateManyWithoutSpaceNestedInput
+  agentPendingActions?: Prisma.AgentPendingActionUncheckedUpdateManyWithoutSpaceNestedInput
+  agentToggle?: Prisma.SpaceAgentSettingUncheckedUpdateOneWithoutSpaceNestedInput
+  agentLlmUsages?: Prisma.AgentLlmUsageUncheckedUpdateManyWithoutSpaceNestedInput
+  agents?: Prisma.SpaceAgentUncheckedUpdateManyWithoutSpaceNestedInput
+  workerTokens?: Prisma.WorkerTokenUncheckedUpdateManyWithoutSpaceNestedInput
+  subscription?: Prisma.SpaceSubscriptionUncheckedUpdateOneWithoutSpaceNestedInput
+  billingMethods?: Prisma.BillingMethodUncheckedUpdateManyWithoutSpaceNestedInput
+  billingCharges?: Prisma.BillingChargeUncheckedUpdateManyWithoutSpaceNestedInput
+}
+
 export type SpaceCreateWithoutMembersInput = {
   id?: string
   name: string
@@ -2249,6 +2676,7 @@ export type SpaceCreateWithoutMembersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -2345,6 +2773,7 @@ export type SpaceUncheckedCreateWithoutMembersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -2457,6 +2886,7 @@ export type SpaceUpdateWithoutMembersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -2553,6 +2983,7 @@ export type SpaceUncheckedUpdateWithoutMembersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -2650,6 +3081,7 @@ export type SpaceCreateWithoutAgentPendingActionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -2746,6 +3178,7 @@ export type SpaceUncheckedCreateWithoutAgentPendingActionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -2858,6 +3291,7 @@ export type SpaceUpdateWithoutAgentPendingActionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -2954,6 +3388,7 @@ export type SpaceUncheckedUpdateWithoutAgentPendingActionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3050,6 +3485,7 @@ export type SpaceCreateWithoutAgentToggleInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -3146,6 +3582,7 @@ export type SpaceUncheckedCreateWithoutAgentToggleInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -3258,6 +3695,7 @@ export type SpaceUpdateWithoutAgentToggleInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -3354,6 +3792,7 @@ export type SpaceUncheckedUpdateWithoutAgentToggleInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3450,6 +3889,7 @@ export type SpaceCreateWithoutAgentsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -3546,6 +3986,7 @@ export type SpaceUncheckedCreateWithoutAgentsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -3658,6 +4099,7 @@ export type SpaceUpdateWithoutAgentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -3754,6 +4196,7 @@ export type SpaceUncheckedUpdateWithoutAgentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -3850,6 +4293,7 @@ export type SpaceCreateWithoutAgentLlmUsagesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -3946,6 +4390,7 @@ export type SpaceUncheckedCreateWithoutAgentLlmUsagesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -4058,6 +4503,7 @@ export type SpaceUpdateWithoutAgentLlmUsagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -4154,6 +4600,7 @@ export type SpaceUncheckedUpdateWithoutAgentLlmUsagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4250,6 +4697,7 @@ export type SpaceCreateWithoutSlackInstallationInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -4346,6 +4794,7 @@ export type SpaceUncheckedCreateWithoutSlackInstallationInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -4458,6 +4907,7 @@ export type SpaceUpdateWithoutSlackInstallationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -4554,6 +5004,7 @@ export type SpaceUncheckedUpdateWithoutSlackInstallationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -4649,6 +5100,7 @@ export type SpaceCreateWithoutDeckInstancesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -4745,6 +5197,7 @@ export type SpaceUncheckedCreateWithoutDeckInstancesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -4857,6 +5310,7 @@ export type SpaceUpdateWithoutDeckInstancesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -4953,6 +5407,7 @@ export type SpaceUncheckedUpdateWithoutDeckInstancesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5050,6 +5505,7 @@ export type SpaceCreateWithoutCoupangProductItemsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -5146,6 +5602,7 @@ export type SpaceUncheckedCreateWithoutCoupangProductItemsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -5258,6 +5715,7 @@ export type SpaceUpdateWithoutCoupangProductItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -5354,6 +5812,7 @@ export type SpaceUncheckedUpdateWithoutCoupangProductItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5450,6 +5909,7 @@ export type SpaceCreateWithoutCoupangWriteJobsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -5546,6 +6006,7 @@ export type SpaceUncheckedCreateWithoutCoupangWriteJobsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -5658,6 +6119,7 @@ export type SpaceUpdateWithoutCoupangWriteJobsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -5754,6 +6216,7 @@ export type SpaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -5850,6 +6313,7 @@ export type SpaceCreateWithoutInvProductGroupsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -5946,6 +6410,7 @@ export type SpaceUncheckedCreateWithoutInvProductGroupsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -6058,6 +6523,7 @@ export type SpaceUpdateWithoutInvProductGroupsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -6154,6 +6620,7 @@ export type SpaceUncheckedUpdateWithoutInvProductGroupsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6250,6 +6717,7 @@ export type SpaceCreateWithoutInvProductsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
   invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
@@ -6346,6 +6814,7 @@ export type SpaceUncheckedCreateWithoutInvProductsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
   invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
@@ -6458,6 +6927,7 @@ export type SpaceUpdateWithoutInvProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
   invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
@@ -6554,6 +7024,7 @@ export type SpaceUncheckedUpdateWithoutInvProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
   invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
@@ -6650,6 +7121,7 @@ export type SpaceCreateWithoutAdCampaignProductMapsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -6746,6 +7218,7 @@ export type SpaceUncheckedCreateWithoutAdCampaignProductMapsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -6858,6 +7331,7 @@ export type SpaceUpdateWithoutAdCampaignProductMapsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -6954,6 +7428,7 @@ export type SpaceUncheckedUpdateWithoutAdCampaignProductMapsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7050,6 +7525,7 @@ export type SpaceCreateWithoutProductExtractionJobsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -7146,6 +7622,7 @@ export type SpaceUncheckedCreateWithoutProductExtractionJobsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -7258,6 +7735,7 @@ export type SpaceUpdateWithoutProductExtractionJobsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -7354,6 +7832,7 @@ export type SpaceUncheckedUpdateWithoutProductExtractionJobsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7450,6 +7929,7 @@ export type SpaceCreateWithoutInvLocationsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
   invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
@@ -7546,6 +8026,7 @@ export type SpaceUncheckedCreateWithoutInvLocationsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
   invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
@@ -7658,6 +8139,7 @@ export type SpaceUpdateWithoutInvLocationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
   invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
@@ -7754,6 +8236,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
   invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
@@ -7850,6 +8333,7 @@ export type SpaceCreateWithoutInvMovementsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invStockLevels?: Prisma.InvStockLevelCreateNestedManyWithoutSpaceInput
@@ -7946,6 +8430,7 @@ export type SpaceUncheckedCreateWithoutInvMovementsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invStockLevels?: Prisma.InvStockLevelUncheckedCreateNestedManyWithoutSpaceInput
@@ -8058,6 +8543,7 @@ export type SpaceUpdateWithoutInvMovementsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invStockLevels?: Prisma.InvStockLevelUpdateManyWithoutSpaceNestedInput
@@ -8154,6 +8640,7 @@ export type SpaceUncheckedUpdateWithoutInvMovementsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invStockLevels?: Prisma.InvStockLevelUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8250,6 +8737,7 @@ export type SpaceCreateWithoutInvStockLevelsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -8346,6 +8834,7 @@ export type SpaceUncheckedCreateWithoutInvStockLevelsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -8458,6 +8947,7 @@ export type SpaceUpdateWithoutInvStockLevelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -8554,6 +9044,7 @@ export type SpaceUncheckedUpdateWithoutInvStockLevelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -8650,6 +9141,7 @@ export type SpaceCreateWithoutInvImportHistoriesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -8746,6 +9238,7 @@ export type SpaceUncheckedCreateWithoutInvImportHistoriesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -8858,6 +9351,7 @@ export type SpaceUpdateWithoutInvImportHistoriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -8954,6 +9448,7 @@ export type SpaceUncheckedUpdateWithoutInvImportHistoriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9050,6 +9545,7 @@ export type SpaceCreateWithoutInvReconciliationsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -9146,6 +9642,7 @@ export type SpaceUncheckedCreateWithoutInvReconciliationsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -9258,6 +9755,7 @@ export type SpaceUpdateWithoutInvReconciliationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -9354,6 +9852,7 @@ export type SpaceUncheckedUpdateWithoutInvReconciliationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9450,6 +9949,7 @@ export type SpaceCreateWithoutInvLocationMappingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -9546,6 +10046,7 @@ export type SpaceUncheckedCreateWithoutInvLocationMappingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -9658,6 +10159,7 @@ export type SpaceUpdateWithoutInvLocationMappingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -9754,6 +10256,7 @@ export type SpaceUncheckedUpdateWithoutInvLocationMappingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -9850,6 +10353,7 @@ export type SpaceCreateWithoutInvSettingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -9946,6 +10450,7 @@ export type SpaceUncheckedCreateWithoutInvSettingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -10058,6 +10563,7 @@ export type SpaceUpdateWithoutInvSettingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -10154,6 +10660,7 @@ export type SpaceUncheckedUpdateWithoutInvSettingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10250,6 +10757,7 @@ export type SpaceCreateWithoutDelShippingMethodsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -10346,6 +10854,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -10458,6 +10967,7 @@ export type SpaceUpdateWithoutDelShippingMethodsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -10554,6 +11064,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -10650,6 +11161,7 @@ export type SpaceCreateWithoutDelShippingMethodLabelsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -10746,6 +11258,7 @@ export type SpaceUncheckedCreateWithoutDelShippingMethodLabelsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -10858,6 +11371,7 @@ export type SpaceUpdateWithoutDelShippingMethodLabelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -10954,6 +11468,7 @@ export type SpaceUncheckedUpdateWithoutDelShippingMethodLabelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11050,6 +11565,7 @@ export type SpaceCreateWithoutDelBatchesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -11146,6 +11662,7 @@ export type SpaceUncheckedCreateWithoutDelBatchesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -11258,6 +11775,7 @@ export type SpaceUpdateWithoutDelBatchesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -11354,6 +11872,7 @@ export type SpaceUncheckedUpdateWithoutDelBatchesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11450,6 +11969,7 @@ export type SpaceCreateWithoutDelOrdersInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -11546,6 +12066,7 @@ export type SpaceUncheckedCreateWithoutDelOrdersInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -11658,6 +12179,7 @@ export type SpaceUpdateWithoutDelOrdersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -11754,6 +12276,7 @@ export type SpaceUncheckedUpdateWithoutDelOrdersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -11850,6 +12373,7 @@ export type SpaceCreateWithoutChannelProductAliasesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -11946,6 +12470,7 @@ export type SpaceUncheckedCreateWithoutChannelProductAliasesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -12058,6 +12583,7 @@ export type SpaceUpdateWithoutChannelProductAliasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -12154,6 +12680,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductAliasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12250,6 +12777,7 @@ export type SpaceCreateWithoutDelColumnMappingPresetsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -12346,6 +12874,7 @@ export type SpaceUncheckedCreateWithoutDelColumnMappingPresetsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -12458,6 +12987,7 @@ export type SpaceUpdateWithoutDelColumnMappingPresetsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -12554,6 +13084,7 @@ export type SpaceUncheckedUpdateWithoutDelColumnMappingPresetsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -12650,6 +13181,7 @@ export type SpaceCreateWithoutDelIntegrationHistoriesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -12746,6 +13278,7 @@ export type SpaceUncheckedCreateWithoutDelIntegrationHistoriesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -12858,6 +13391,7 @@ export type SpaceUpdateWithoutDelIntegrationHistoriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -12954,6 +13488,7 @@ export type SpaceUncheckedUpdateWithoutDelIntegrationHistoriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13050,6 +13585,7 @@ export type SpaceCreateWithoutBrandsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -13146,6 +13682,7 @@ export type SpaceUncheckedCreateWithoutBrandsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -13258,6 +13795,7 @@ export type SpaceUpdateWithoutBrandsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -13354,6 +13892,7 @@ export type SpaceUncheckedUpdateWithoutBrandsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13450,6 +13989,7 @@ export type SpaceCreateWithoutChannelTypeDefsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -13546,6 +14086,7 @@ export type SpaceUncheckedCreateWithoutChannelTypeDefsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -13658,6 +14199,7 @@ export type SpaceUpdateWithoutChannelTypeDefsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -13754,6 +14296,7 @@ export type SpaceUncheckedUpdateWithoutChannelTypeDefsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -13850,6 +14393,7 @@ export type SpaceCreateWithoutChannelsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -13946,6 +14490,7 @@ export type SpaceUncheckedCreateWithoutChannelsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -14058,6 +14603,7 @@ export type SpaceUpdateWithoutChannelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -14154,6 +14700,7 @@ export type SpaceUncheckedUpdateWithoutChannelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14250,6 +14797,7 @@ export type SpaceCreateWithoutProductionRunsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -14346,6 +14894,7 @@ export type SpaceUncheckedCreateWithoutProductionRunsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -14458,6 +15007,7 @@ export type SpaceUpdateWithoutProductionRunsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -14554,6 +15104,7 @@ export type SpaceUncheckedUpdateWithoutProductionRunsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -14650,6 +15201,7 @@ export type SpaceCreateWithoutPricingScenariosInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -14746,6 +15298,7 @@ export type SpaceUncheckedCreateWithoutPricingScenariosInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -14858,6 +15411,7 @@ export type SpaceUpdateWithoutPricingScenariosInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -14954,6 +15508,7 @@ export type SpaceUncheckedUpdateWithoutPricingScenariosInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15050,6 +15605,7 @@ export type SpaceCreateWithoutProductPricingSettingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -15146,6 +15702,7 @@ export type SpaceUncheckedCreateWithoutProductPricingSettingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -15258,6 +15815,7 @@ export type SpaceUpdateWithoutProductPricingSettingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -15354,6 +15912,7 @@ export type SpaceUncheckedUpdateWithoutProductPricingSettingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15450,6 +16009,7 @@ export type SpaceCreateWithoutOptionCodeAliasesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -15546,6 +16106,7 @@ export type SpaceUncheckedCreateWithoutOptionCodeAliasesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -15658,6 +16219,7 @@ export type SpaceUpdateWithoutOptionCodeAliasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -15754,6 +16316,7 @@ export type SpaceUncheckedUpdateWithoutOptionCodeAliasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -15850,6 +16413,7 @@ export type SpaceCreateWithoutAtomicWordsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -15946,6 +16510,7 @@ export type SpaceUncheckedCreateWithoutAtomicWordsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -16058,6 +16623,7 @@ export type SpaceUpdateWithoutAtomicWordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -16154,6 +16720,7 @@ export type SpaceUncheckedUpdateWithoutAtomicWordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16250,6 +16817,7 @@ export type SpaceCreateWithoutProductListingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -16346,6 +16914,7 @@ export type SpaceUncheckedCreateWithoutProductListingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -16458,6 +17027,7 @@ export type SpaceUpdateWithoutProductListingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -16554,6 +17124,7 @@ export type SpaceUncheckedUpdateWithoutProductListingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -16650,6 +17221,7 @@ export type SpaceCreateWithoutChannelStockMovementsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -16746,6 +17318,7 @@ export type SpaceUncheckedCreateWithoutChannelStockMovementsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -16858,6 +17431,7 @@ export type SpaceUpdateWithoutChannelStockMovementsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -16954,6 +17528,7 @@ export type SpaceUncheckedUpdateWithoutChannelStockMovementsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17050,6 +17625,7 @@ export type SpaceCreateWithoutChannelProductsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -17146,6 +17722,7 @@ export type SpaceUncheckedCreateWithoutChannelProductsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -17258,6 +17835,7 @@ export type SpaceUpdateWithoutChannelProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -17354,6 +17932,7 @@ export type SpaceUncheckedUpdateWithoutChannelProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17450,6 +18029,7 @@ export type SpaceCreateWithoutKeywordMastersInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -17546,6 +18126,7 @@ export type SpaceUncheckedCreateWithoutKeywordMastersInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -17658,6 +18239,7 @@ export type SpaceUpdateWithoutKeywordMastersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -17754,6 +18336,7 @@ export type SpaceUncheckedUpdateWithoutKeywordMastersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -17850,6 +18433,7 @@ export type SpaceCreateWithoutChannelKeywordRulesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -17946,6 +18530,7 @@ export type SpaceUncheckedCreateWithoutChannelKeywordRulesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -18058,6 +18643,7 @@ export type SpaceUpdateWithoutChannelKeywordRulesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -18154,6 +18740,7 @@ export type SpaceUncheckedUpdateWithoutChannelKeywordRulesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18250,6 +18837,7 @@ export type SpaceCreateWithoutKeywordChangeLogsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -18346,6 +18934,7 @@ export type SpaceUncheckedCreateWithoutKeywordChangeLogsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -18458,6 +19047,7 @@ export type SpaceUpdateWithoutKeywordChangeLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -18554,6 +19144,7 @@ export type SpaceUncheckedUpdateWithoutKeywordChangeLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -18650,6 +19241,7 @@ export type SpaceCreateWithoutProductsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -18746,6 +19338,7 @@ export type SpaceUncheckedCreateWithoutProductsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -18858,6 +19451,7 @@ export type SpaceUpdateWithoutProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -18954,6 +19548,7 @@ export type SpaceUncheckedUpdateWithoutProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19050,6 +19645,7 @@ export type SpaceCreateWithoutPersonasInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -19146,6 +19742,7 @@ export type SpaceUncheckedCreateWithoutPersonasInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -19258,6 +19855,7 @@ export type SpaceUpdateWithoutPersonasInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -19354,6 +19952,7 @@ export type SpaceUncheckedUpdateWithoutPersonasInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19450,6 +20049,7 @@ export type SpaceCreateWithoutBrandProfileInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -19546,6 +20146,7 @@ export type SpaceUncheckedCreateWithoutBrandProfileInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -19658,6 +20259,7 @@ export type SpaceUpdateWithoutBrandProfileInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -19754,6 +20356,7 @@ export type SpaceUncheckedUpdateWithoutBrandProfileInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -19850,6 +20453,7 @@ export type SpaceCreateWithoutSalesContentOnboardingInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -19946,6 +20550,7 @@ export type SpaceUncheckedCreateWithoutSalesContentOnboardingInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -20058,6 +20663,7 @@ export type SpaceUpdateWithoutSalesContentOnboardingInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -20154,6 +20760,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentOnboardingInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20250,6 +20857,7 @@ export type SpaceCreateWithoutScOnboardingResourcesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -20346,6 +20954,7 @@ export type SpaceUncheckedCreateWithoutScOnboardingResourcesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -20458,6 +21067,7 @@ export type SpaceUpdateWithoutScOnboardingResourcesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -20554,6 +21164,7 @@ export type SpaceUncheckedUpdateWithoutScOnboardingResourcesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -20650,6 +21261,7 @@ export type SpaceCreateWithoutAiSettingInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -20746,6 +21358,7 @@ export type SpaceUncheckedCreateWithoutAiSettingInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -20858,6 +21471,7 @@ export type SpaceUpdateWithoutAiSettingInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -20954,6 +21568,7 @@ export type SpaceUncheckedUpdateWithoutAiSettingInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21050,6 +21665,7 @@ export type SpaceCreateWithoutWorkspaceAiCreditsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -21146,6 +21762,7 @@ export type SpaceUncheckedCreateWithoutWorkspaceAiCreditsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -21258,6 +21875,7 @@ export type SpaceUpdateWithoutWorkspaceAiCreditsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -21354,6 +21972,7 @@ export type SpaceUncheckedUpdateWithoutWorkspaceAiCreditsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21450,6 +22069,7 @@ export type SpaceCreateWithoutImageGenerationLogsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -21546,6 +22166,7 @@ export type SpaceUncheckedCreateWithoutImageGenerationLogsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -21658,6 +22279,7 @@ export type SpaceUpdateWithoutImageGenerationLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -21754,6 +22376,7 @@ export type SpaceUncheckedUpdateWithoutImageGenerationLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -21850,6 +22473,7 @@ export type SpaceCreateWithoutTextGenerationLogsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -21946,6 +22570,7 @@ export type SpaceUncheckedCreateWithoutTextGenerationLogsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -22058,6 +22683,7 @@ export type SpaceUpdateWithoutTextGenerationLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -22154,6 +22780,7 @@ export type SpaceUncheckedUpdateWithoutTextGenerationLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22250,6 +22877,7 @@ export type SpaceCreateWithoutTemplatesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -22346,6 +22974,7 @@ export type SpaceUncheckedCreateWithoutTemplatesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -22458,6 +23087,7 @@ export type SpaceUpdateWithoutTemplatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -22554,6 +23184,7 @@ export type SpaceUncheckedUpdateWithoutTemplatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -22650,6 +23281,7 @@ export type SpaceCreateWithoutSalesContentChannelsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -22746,6 +23378,7 @@ export type SpaceUncheckedCreateWithoutSalesContentChannelsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -22858,6 +23491,7 @@ export type SpaceUpdateWithoutSalesContentChannelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -22954,6 +23588,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentChannelsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23050,6 +23685,7 @@ export type SpaceCreateWithoutContentsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -23146,6 +23782,7 @@ export type SpaceUncheckedCreateWithoutContentsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -23258,6 +23895,7 @@ export type SpaceUpdateWithoutContentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -23354,6 +23992,7 @@ export type SpaceUncheckedUpdateWithoutContentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23450,6 +24089,7 @@ export type SpaceCreateWithoutContentDeploymentsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -23546,6 +24186,7 @@ export type SpaceUncheckedCreateWithoutContentDeploymentsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -23658,6 +24299,7 @@ export type SpaceUpdateWithoutContentDeploymentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -23754,6 +24396,7 @@ export type SpaceUncheckedUpdateWithoutContentDeploymentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -23850,6 +24493,7 @@ export type SpaceCreateWithoutContentClickEventsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -23946,6 +24590,7 @@ export type SpaceUncheckedCreateWithoutContentClickEventsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -24058,6 +24703,7 @@ export type SpaceUpdateWithoutContentClickEventsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -24154,6 +24800,7 @@ export type SpaceUncheckedUpdateWithoutContentClickEventsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24250,6 +24897,7 @@ export type SpaceCreateWithoutChannelCredentialsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -24346,6 +24994,7 @@ export type SpaceUncheckedCreateWithoutChannelCredentialsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -24458,6 +25107,7 @@ export type SpaceUpdateWithoutChannelCredentialsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -24554,6 +25204,7 @@ export type SpaceUncheckedUpdateWithoutChannelCredentialsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -24650,6 +25301,7 @@ export type SpaceCreateWithoutDeploymentMetricsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -24746,6 +25398,7 @@ export type SpaceUncheckedCreateWithoutDeploymentMetricsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -24858,6 +25511,7 @@ export type SpaceUpdateWithoutDeploymentMetricsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -24954,6 +25608,7 @@ export type SpaceUncheckedUpdateWithoutDeploymentMetricsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25050,6 +25705,7 @@ export type SpaceCreateWithoutSalesContentJobsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -25146,6 +25802,7 @@ export type SpaceUncheckedCreateWithoutSalesContentJobsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -25258,6 +25915,7 @@ export type SpaceUpdateWithoutSalesContentJobsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -25354,6 +26012,7 @@ export type SpaceUncheckedUpdateWithoutSalesContentJobsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25450,6 +26109,7 @@ export type SpaceCreateWithoutContentVersionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -25546,6 +26206,7 @@ export type SpaceUncheckedCreateWithoutContentVersionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -25658,6 +26319,7 @@ export type SpaceUpdateWithoutContentVersionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -25754,6 +26416,7 @@ export type SpaceUncheckedUpdateWithoutContentVersionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -25850,6 +26513,7 @@ export type SpaceCreateWithoutContentAssetsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -25946,6 +26610,7 @@ export type SpaceUncheckedCreateWithoutContentAssetsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -26058,6 +26723,7 @@ export type SpaceUpdateWithoutContentAssetsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -26154,6 +26820,7 @@ export type SpaceUncheckedUpdateWithoutContentAssetsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26250,6 +26917,7 @@ export type SpaceCreateWithoutIdeationsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -26346,6 +27014,7 @@ export type SpaceUncheckedCreateWithoutIdeationsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -26458,6 +27127,7 @@ export type SpaceUpdateWithoutIdeationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -26554,6 +27224,7 @@ export type SpaceUncheckedUpdateWithoutIdeationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -26650,6 +27321,7 @@ export type SpaceCreateWithoutImprovementRulesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -26746,6 +27418,7 @@ export type SpaceUncheckedCreateWithoutImprovementRulesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -26858,6 +27531,7 @@ export type SpaceUpdateWithoutImprovementRulesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -26954,6 +27628,7 @@ export type SpaceUncheckedUpdateWithoutImprovementRulesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27050,6 +27725,7 @@ export type SpaceCreateWithoutReorderPlansInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -27146,6 +27822,7 @@ export type SpaceUncheckedCreateWithoutReorderPlansInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -27258,6 +27935,7 @@ export type SpaceUpdateWithoutReorderPlansInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -27354,6 +28032,7 @@ export type SpaceUncheckedUpdateWithoutReorderPlansInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27450,6 +28129,7 @@ export type SpaceCreateWithoutFinAccountsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -27546,6 +28226,7 @@ export type SpaceUncheckedCreateWithoutFinAccountsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -27658,6 +28339,7 @@ export type SpaceUpdateWithoutFinAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -27754,6 +28436,7 @@ export type SpaceUncheckedUpdateWithoutFinAccountsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -27850,6 +28533,7 @@ export type SpaceCreateWithoutFinLiabilitiesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -27946,6 +28630,7 @@ export type SpaceUncheckedCreateWithoutFinLiabilitiesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -28058,6 +28743,7 @@ export type SpaceUpdateWithoutFinLiabilitiesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -28154,6 +28840,7 @@ export type SpaceUncheckedUpdateWithoutFinLiabilitiesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28250,6 +28937,7 @@ export type SpaceCreateWithoutFinCategoriesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -28346,6 +29034,7 @@ export type SpaceUncheckedCreateWithoutFinCategoriesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -28458,6 +29147,7 @@ export type SpaceUpdateWithoutFinCategoriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -28554,6 +29244,7 @@ export type SpaceUncheckedUpdateWithoutFinCategoriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -28650,6 +29341,7 @@ export type SpaceCreateWithoutFinClassRulesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -28746,6 +29438,7 @@ export type SpaceUncheckedCreateWithoutFinClassRulesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -28858,6 +29551,7 @@ export type SpaceUpdateWithoutFinClassRulesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -28954,6 +29648,7 @@ export type SpaceUncheckedUpdateWithoutFinClassRulesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29050,6 +29745,7 @@ export type SpaceCreateWithoutFinMappingPresetsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -29146,6 +29842,7 @@ export type SpaceUncheckedCreateWithoutFinMappingPresetsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -29258,6 +29955,7 @@ export type SpaceUpdateWithoutFinMappingPresetsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -29354,6 +30052,7 @@ export type SpaceUncheckedUpdateWithoutFinMappingPresetsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29450,6 +30149,7 @@ export type SpaceCreateWithoutFinImportsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -29546,6 +30246,7 @@ export type SpaceUncheckedCreateWithoutFinImportsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -29658,6 +30359,7 @@ export type SpaceUpdateWithoutFinImportsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -29754,6 +30456,7 @@ export type SpaceUncheckedUpdateWithoutFinImportsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -29850,6 +30553,7 @@ export type SpaceCreateWithoutFinStagedRowsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -29946,6 +30650,7 @@ export type SpaceUncheckedCreateWithoutFinStagedRowsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -30058,6 +30763,7 @@ export type SpaceUpdateWithoutFinStagedRowsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -30154,6 +30860,7 @@ export type SpaceUncheckedUpdateWithoutFinStagedRowsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30250,6 +30957,7 @@ export type SpaceCreateWithoutFinTransactionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -30346,6 +31054,7 @@ export type SpaceUncheckedCreateWithoutFinTransactionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -30458,6 +31167,7 @@ export type SpaceUpdateWithoutFinTransactionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -30554,6 +31264,7 @@ export type SpaceUncheckedUpdateWithoutFinTransactionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -30650,6 +31361,7 @@ export type SpaceCreateWithoutFinBalanceSnapshotsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -30746,6 +31458,7 @@ export type SpaceUncheckedCreateWithoutFinBalanceSnapshotsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -30858,6 +31571,7 @@ export type SpaceUpdateWithoutFinBalanceSnapshotsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -30954,6 +31668,7 @@ export type SpaceUncheckedUpdateWithoutFinBalanceSnapshotsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31050,6 +31765,7 @@ export type SpaceCreateWithoutHiringStoresInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -31146,6 +31862,7 @@ export type SpaceUncheckedCreateWithoutHiringStoresInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -31258,6 +31975,7 @@ export type SpaceUpdateWithoutHiringStoresInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -31354,6 +32072,7 @@ export type SpaceUncheckedUpdateWithoutHiringStoresInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31450,6 +32169,7 @@ export type SpaceCreateWithoutHiringPositionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -31546,6 +32266,7 @@ export type SpaceUncheckedCreateWithoutHiringPositionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -31658,6 +32379,7 @@ export type SpaceUpdateWithoutHiringPositionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -31754,6 +32476,7 @@ export type SpaceUncheckedUpdateWithoutHiringPositionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -31850,6 +32573,7 @@ export type SpaceCreateWithoutHiringPostingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -31946,6 +32670,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -32058,6 +32783,7 @@ export type SpaceUpdateWithoutHiringPostingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -32154,6 +32880,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32250,6 +32977,7 @@ export type SpaceCreateWithoutHiringPostingPositionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -32346,6 +33074,7 @@ export type SpaceUncheckedCreateWithoutHiringPostingPositionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -32458,6 +33187,7 @@ export type SpaceUpdateWithoutHiringPostingPositionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -32554,6 +33284,7 @@ export type SpaceUncheckedUpdateWithoutHiringPostingPositionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -32650,6 +33381,7 @@ export type SpaceCreateWithoutHiringContentsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -32746,6 +33478,7 @@ export type SpaceUncheckedCreateWithoutHiringContentsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -32858,6 +33591,7 @@ export type SpaceUpdateWithoutHiringContentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -32954,6 +33688,7 @@ export type SpaceUncheckedUpdateWithoutHiringContentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33050,6 +33785,7 @@ export type SpaceCreateWithoutHiringDetailTemplatesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -33146,6 +33882,7 @@ export type SpaceUncheckedCreateWithoutHiringDetailTemplatesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -33258,6 +33995,7 @@ export type SpaceUpdateWithoutHiringDetailTemplatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -33354,6 +34092,7 @@ export type SpaceUncheckedUpdateWithoutHiringDetailTemplatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33450,6 +34189,7 @@ export type SpaceCreateWithoutHiringApplicationsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -33546,6 +34286,7 @@ export type SpaceUncheckedCreateWithoutHiringApplicationsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -33658,6 +34399,7 @@ export type SpaceUpdateWithoutHiringApplicationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -33754,6 +34496,7 @@ export type SpaceUncheckedUpdateWithoutHiringApplicationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -33850,6 +34593,7 @@ export type SpaceCreateWithoutHiringUploadSessionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -33946,6 +34690,7 @@ export type SpaceUncheckedCreateWithoutHiringUploadSessionsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -34058,6 +34803,7 @@ export type SpaceUpdateWithoutHiringUploadSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -34154,6 +34900,7 @@ export type SpaceUncheckedUpdateWithoutHiringUploadSessionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34250,6 +34997,7 @@ export type SpaceCreateWithoutHiringMigrationRecordsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -34346,6 +35094,7 @@ export type SpaceUncheckedCreateWithoutHiringMigrationRecordsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -34458,6 +35207,7 @@ export type SpaceUpdateWithoutHiringMigrationRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -34554,6 +35304,7 @@ export type SpaceUncheckedUpdateWithoutHiringMigrationRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -34650,6 +35401,7 @@ export type SpaceCreateWithoutHiringBlacklistsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -34746,6 +35498,7 @@ export type SpaceUncheckedCreateWithoutHiringBlacklistsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -34858,6 +35611,7 @@ export type SpaceUpdateWithoutHiringBlacklistsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -34954,6 +35708,7 @@ export type SpaceUncheckedUpdateWithoutHiringBlacklistsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35050,6 +35805,7 @@ export type SpaceCreateWithoutHiringMessageTemplatesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -35146,6 +35902,7 @@ export type SpaceUncheckedCreateWithoutHiringMessageTemplatesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -35258,6 +36015,7 @@ export type SpaceUpdateWithoutHiringMessageTemplatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -35354,6 +36112,7 @@ export type SpaceUncheckedUpdateWithoutHiringMessageTemplatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35450,6 +36209,7 @@ export type SpaceCreateWithoutSubscriptionInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -35546,6 +36306,7 @@ export type SpaceUncheckedCreateWithoutSubscriptionInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -35658,6 +36419,7 @@ export type SpaceUpdateWithoutSubscriptionInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -35754,6 +36516,7 @@ export type SpaceUncheckedUpdateWithoutSubscriptionInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -35850,6 +36613,7 @@ export type SpaceCreateWithoutBillingMethodsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -35946,6 +36710,7 @@ export type SpaceUncheckedCreateWithoutBillingMethodsInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -36058,6 +36823,7 @@ export type SpaceUpdateWithoutBillingMethodsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -36154,6 +36920,7 @@ export type SpaceUncheckedUpdateWithoutBillingMethodsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -36250,6 +37017,7 @@ export type SpaceCreateWithoutBillingChargesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -36346,6 +37114,7 @@ export type SpaceUncheckedCreateWithoutBillingChargesInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -36458,6 +37227,7 @@ export type SpaceUpdateWithoutBillingChargesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -36554,6 +37324,7 @@ export type SpaceUncheckedUpdateWithoutBillingChargesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -36650,6 +37421,7 @@ export type SpaceCreateWithoutWorkerTokensInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementCreateNestedManyWithoutSpaceInput
@@ -36746,6 +37518,7 @@ export type SpaceUncheckedCreateWithoutWorkerTokensInput = {
   updatedAt?: Date | string
   members?: Prisma.SpaceMemberUncheckedCreateNestedManyWithoutSpaceInput
   deckInstances?: Prisma.DeckInstanceUncheckedCreateNestedManyWithoutSpaceInput
+  workspace?: Prisma.WorkspaceUncheckedCreateNestedOneWithoutSpaceInput
   invProducts?: Prisma.InvProductUncheckedCreateNestedManyWithoutSpaceInput
   invLocations?: Prisma.InvStorageLocationUncheckedCreateNestedManyWithoutSpaceInput
   invMovements?: Prisma.InvMovementUncheckedCreateNestedManyWithoutSpaceInput
@@ -36858,6 +37631,7 @@ export type SpaceUpdateWithoutWorkerTokensInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUpdateManyWithoutSpaceNestedInput
@@ -36954,6 +37728,7 @@ export type SpaceUncheckedUpdateWithoutWorkerTokensInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.SpaceMemberUncheckedUpdateManyWithoutSpaceNestedInput
   deckInstances?: Prisma.DeckInstanceUncheckedUpdateManyWithoutSpaceNestedInput
+  workspace?: Prisma.WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput
   invProducts?: Prisma.InvProductUncheckedUpdateManyWithoutSpaceNestedInput
   invLocations?: Prisma.InvStorageLocationUncheckedUpdateManyWithoutSpaceNestedInput
   invMovements?: Prisma.InvMovementUncheckedUpdateManyWithoutSpaceNestedInput
@@ -37783,6 +38558,7 @@ export type SpaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   updatedAt?: boolean
   members?: boolean | Prisma.Space$membersArgs<ExtArgs>
   deckInstances?: boolean | Prisma.Space$deckInstancesArgs<ExtArgs>
+  workspace?: boolean | Prisma.Space$workspaceArgs<ExtArgs>
   invProducts?: boolean | Prisma.Space$invProductsArgs<ExtArgs>
   invLocations?: boolean | Prisma.Space$invLocationsArgs<ExtArgs>
   invMovements?: boolean | Prisma.Space$invMovementsArgs<ExtArgs>
@@ -37905,6 +38681,7 @@ export type SpaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
 export type SpaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | Prisma.Space$membersArgs<ExtArgs>
   deckInstances?: boolean | Prisma.Space$deckInstancesArgs<ExtArgs>
+  workspace?: boolean | Prisma.Space$workspaceArgs<ExtArgs>
   invProducts?: boolean | Prisma.Space$invProductsArgs<ExtArgs>
   invLocations?: boolean | Prisma.Space$invLocationsArgs<ExtArgs>
   invMovements?: boolean | Prisma.Space$invMovementsArgs<ExtArgs>
@@ -38000,6 +38777,7 @@ export type $SpacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     members: Prisma.$SpaceMemberPayload<ExtArgs>[]
     deckInstances: Prisma.$DeckInstancePayload<ExtArgs>[]
+    workspace: Prisma.$WorkspacePayload<ExtArgs> | null
     invProducts: Prisma.$InvProductPayload<ExtArgs>[]
     invLocations: Prisma.$InvStorageLocationPayload<ExtArgs>[]
     invMovements: Prisma.$InvMovementPayload<ExtArgs>[]
@@ -38490,6 +39268,7 @@ export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   members<T extends Prisma.Space$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SpaceMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deckInstances<T extends Prisma.Space$deckInstancesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$deckInstancesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeckInstancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  workspace<T extends Prisma.Space$workspaceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$workspaceArgs<ExtArgs>>): Prisma.Prisma__WorkspaceClient<runtime.Types.Result.GetResult<Prisma.$WorkspacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   invProducts<T extends Prisma.Space$invProductsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invProductsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invLocations<T extends Prisma.Space$invLocationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invLocationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvStorageLocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invMovements<T extends Prisma.Space$invMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Space$invMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -39044,6 +39823,25 @@ export type Space$deckInstancesArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.DeckInstanceScalarFieldEnum | Prisma.DeckInstanceScalarFieldEnum[]
+}
+
+/**
+ * Space.workspace
+ */
+export type Space$workspaceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Workspace
+   */
+  select?: Prisma.WorkspaceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Workspace
+   */
+  omit?: Prisma.WorkspaceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkspaceInclude<ExtArgs> | null
+  where?: Prisma.WorkspaceWhereInput
 }
 
 /**

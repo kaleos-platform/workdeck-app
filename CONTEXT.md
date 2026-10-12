@@ -17,5 +17,5 @@
 ## 테넌시
 
 - **Space**: 멀티유저 테넌트이자 결제주체. deck 활성화(DeckInstance)·인가·신규 deck 데이터의 스코프.
-- **Workspace**: 레거시 테넌트(쿠팡 수집 데이터 스코프). User와 1:1이며, Space와는 `User.id`를 통한 1:1 암묵 규칙으로만 연결된다. → [ADR-0002](docs/adr/0002-entitlement-space-axis.md)
+- **Workspace**: 레거시 테넌트(쿠팡 수집 데이터 스코프). User와 1:1이며 `Workspace.spaceId` 외래키로 Space에 연결된다(Space당 최대 1개). FK가 비어 있는 Workspace는 수집하지 않으며 명시적 매핑이 필요하다. → [ADR-0002](docs/adr/0002-entitlement-space-axis.md)
 - **DeckApp / DeckInstance**: 전역 deck 카탈로그 / Space에서 활성화된 deck. 과금 카탈로그(BillingDeckProduct)의 키는 DeckApp.id와 동일하다.
