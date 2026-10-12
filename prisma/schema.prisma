@@ -189,6 +189,10 @@ model Workspace {
   ownerId String @unique
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
+  // 소속 Space (kaleos-ax ①: 레거시 Workspace를 Space에 명시적으로 연결). null = 아직 연결 안 됨(수집 거부, 명시적 매핑 필요).
+  spaceId String? @unique
+  space   Space?  @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+
   // 연관 데이터
   reportUploads   ReportUpload[]
   adRecords       AdRecord[]
@@ -409,6 +413,9 @@ model Space {
 
   members       SpaceMember[]
   deckInstances DeckInstance[]
+
+  // 연결된 레거시 쿠팡 Workspace (Workspace.spaceId 역방향)
+  workspace Workspace?
 
   // 통합 재고 관리 (Inv)
   invProducts         InvProduct[]
