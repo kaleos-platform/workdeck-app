@@ -765,16 +765,17 @@ model AgentConversation {
   @@index([updatedAt])
 }
 
-// Slack 워크스페이스 설치 (Space당 1개, Slack team당 1개).
-// bot 토큰은 AES-256-CBC로 암호화해 저장한다(ENCRYPTION_KEY).
+// Slack 워크스페이스 설치 (Space당 1행). 한 Slack team을 여러 Space가 공유할 수 있다(teamId 비고유).
+// 같은 team의 행들은 같은 bot 토큰을 각자 암호화해 갖는다('slack-token' 용도 키, OAuth 콜백이 함께 갱신).
+// 같은 team 안에서 채널 → Space 결정은 SpaceSlackChannel로 한다(src/lib/slack/tenant.ts).
 model SlackInstallation {
   id          String   @id @default(cuid())
   spaceId     String   @unique
-  teamId      String   @unique // Slack workspace ID (T...)
+  teamId      String // Slack workspace ID (T...) — 여러 Space가 같은 값을 가질 수 있다
   teamName    String?
   botUserId   String
-  botToken    String // AES-256-CBC hex 암호문 (xoxb-)
-  botTokenIv  String // hex IV
+  botToken    String // 암호문(v1 GCM 또는 v0 CBC) — decryptBotToken
+  botTokenIv  String
   scope       String?
   installedBy String // 설치한 User.id
   createdAt   DateTime @default(now())
@@ -782,6 +783,8 @@ model SlackInstallation {
 
   space    Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   channels SpaceSlackChannel[]
+
+  @@index([teamId])
 }
 
 // Space별 용도 채널 (M3: kind="approvals" 승인 알림 채널).

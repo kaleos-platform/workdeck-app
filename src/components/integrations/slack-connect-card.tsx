@@ -25,7 +25,13 @@ const SLACK_TOAST_MESSAGE: Record<string, { title: string; variant: 'default' | 
   denied: { title: 'Slack 연동을 취소했습니다', variant: 'destructive' },
   error: { title: 'Slack 연동에 실패했습니다. 다시 시도해주세요', variant: 'destructive' },
   team_conflict: {
-    title: '해당 Slack 워크스페이스는 이미 다른 스페이스에 연결되어 있습니다',
+    title:
+      '이 Slack 워크스페이스는 다른 스페이스가 쓰고 있습니다. 그 스페이스의 관리자만 추가로 연결할 수 있습니다',
+    variant: 'destructive',
+  },
+  team_changed: {
+    title:
+      '이미 다른 Slack 워크스페이스에 연결되어 있습니다. 바꾸려면 아래 "재연결"을 누르세요. 기존 채널 등록, 진행 중 Slack 승인 메시지 연결, 대화 기록, 구성원 Slack 연결이 정리됩니다',
     variant: 'destructive',
   },
 }
@@ -151,6 +157,11 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
               <CheckCircle2 className="h-4 w-4" />
             )}
             <AlertTitle>{toast.title}</AlertTitle>
+            {slackStatus === 'team_changed' && (
+              <Button asChild size="sm" variant="outline">
+                <Link href="/api/slack/oauth/install?reconnect=1">재연결</Link>
+              </Button>
+            )}
           </Alert>
         )}
 
