@@ -4,7 +4,7 @@
  *  POST — 액션 생성 (세션 또는 x-worker-api-key). createPendingAction 경유.
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { resolveSpaceContext, errorResponse } from '@/lib/api-helpers'
+import { resolveRequestedSpaceContext, errorResponse } from '@/lib/api-helpers'
 import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { prisma } from '@/lib/prisma'
 import { createPendingAction } from '@/lib/agent/actions/create'
@@ -23,7 +23,7 @@ const VALID_STATUS: AgentActionStatus[] = [
 ]
 
 export async function GET(req: NextRequest) {
-  const resolved = await resolveSpaceContext()
+  const resolved = await resolveRequestedSpaceContext(req.nextUrl.searchParams.get('spaceId'))
   if ('error' in resolved) return resolved.error
   const spaceId = resolved.space.id
 
@@ -48,7 +48,10 @@ export async function GET(req: NextRequest) {
 
   // 행위자·요청자는 사람이 읽는 이름으로 — id(cuid)를 UI에 그대로 보이지 않는다.
   const labels = await describeActors(rows)
-  return NextResponse.json({ actions: rows.map((r, i) => ({ ...r, actorLabel: labels[i] })) })
+  return NextResponse.json({
+    actions: rows.map((r, i) => ({ ...r, actorLabel: labels[i] })),
+    role: resolved.role, // 선택한 Space에서의 역할 — 승인 목록의 canDecide
+  })
 }
 
 export async function POST(req: NextRequest) {
@@ -80,12 +83,11 @@ export async function POST(req: NextRequest) {
     actor = { type: 'system', id: 'worker' }
     resolvedSource = source === 'WORKDECK_AGENT' || source === 'SYSTEM' ? source : 'SYSTEM'
   } else {
-    const resolved = await resolveSpaceContext()
+    // 세션 요청자는 자신이 속한 space에만 액션을 만들 수 있다(멤버십 검증, 아니면 403).
+    const resolved = await resolveRequestedSpaceContext(
+      req.nextUrl.searchParams.get('spaceId') ?? (typeof spaceId === 'string' ? spaceId : null)
+    )
     if ('error' in resolved) return resolved.error
-    // 세션 요청자는 자신이 속한 space에만 액션을 만들 수 있다.
-    if (spaceId && spaceId !== resolved.space.id) {
-      return errorResponse('다른 공간에 액션을 만들 수 없습니다', 403)
-    }
     resolvedSpaceId = resolved.space.id
     actor = { type: 'user', id: resolved.user.id }
     requesterUserId = resolved.user.id

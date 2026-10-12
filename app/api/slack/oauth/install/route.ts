@@ -4,7 +4,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
-import { errorResponse, assertRole, resolveSpaceContext } from '@/lib/api-helpers'
+import { errorResponse, assertRole, resolveRequestedSpaceContext } from '@/lib/api-helpers'
 import { buildAppUrl } from '@/lib/domain'
 import { signState } from '@/lib/slack/state'
 
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const user = await getUser()
   if (!user) return errorResponse('인증이 필요합니다', 401)
 
-  const ctx = await resolveSpaceContext()
+  const ctx = await resolveRequestedSpaceContext(req.nextUrl.searchParams.get('spaceId'))
   if ('error' in ctx) return ctx.error
 
   const roleError = assertRole(ctx.role, 'ADMIN')

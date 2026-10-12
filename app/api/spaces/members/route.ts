@@ -1,11 +1,11 @@
 // GET /api/spaces/members — 현재 Space 구성원과 Slack 연결 상태(ADMIN 이상). Slack 수동 연결에 쓸 memberId 조회용.
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { assertRole, resolveSpaceContext } from '@/lib/api-helpers'
+import { assertRole, resolveRequestedSpaceContext } from '@/lib/api-helpers'
 
-export async function GET() {
-  const ctx = await resolveSpaceContext()
-  if ('error' in ctx && ctx.error) return ctx.error
+export async function GET(req: NextRequest) {
+  const ctx = await resolveRequestedSpaceContext(req.nextUrl.searchParams.get('spaceId'))
+  if ('error' in ctx) return ctx.error
   const roleError = assertRole(ctx.role, 'ADMIN')
   if (roleError) return roleError
 

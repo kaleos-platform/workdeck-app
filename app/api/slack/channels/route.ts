@@ -8,7 +8,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
-import { errorResponse, assertRole, resolveSpaceContext } from '@/lib/api-helpers'
+import { errorResponse, assertRole, resolveRequestedSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { registerSpaceChannel } from '@/lib/slack/tenant'
 
@@ -22,18 +22,20 @@ function parseKind(raw: string | null): ChannelKind | null {
   return VALID_KINDS.includes(raw as ChannelKind) ? (raw as ChannelKind) : null
 }
 
-async function requireAdminSpace() {
+async function requireAdminSpace(
+  req: NextRequest
+): Promise<{ error: NextResponse } | { spaceId: string; space: { id: string; name: string } }> {
   const user = await getUser()
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
-  const ctx = await resolveSpaceContext()
+  const ctx = await resolveRequestedSpaceContext(req.nextUrl.searchParams.get('spaceId'))
   if ('error' in ctx) return { error: ctx.error }
   const roleError = assertRole(ctx.role, 'ADMIN')
   if (roleError) return { error: roleError }
-  return { spaceId: ctx.space.id }
+  return { spaceId: ctx.space.id, space: ctx.space }
 }
 
-export async function GET() {
-  const ctx = await requireAdminSpace()
+export async function GET(req: NextRequest) {
+  const ctx = await requireAdminSpace(req)
   if ('error' in ctx) return ctx.error
 
   const installation = await prisma.slackInstallation.findUnique({
@@ -46,11 +48,16 @@ export async function GET() {
     orderBy: { createdAt: 'asc' },
   })
 
-  return NextResponse.json({ installed: Boolean(installation), installation, channels })
+  return NextResponse.json({
+    installed: Boolean(installation),
+    installation,
+    channels,
+    space: ctx.space,
+  })
 }
 
 export async function POST(req: NextRequest) {
-  const ctx = await requireAdminSpace()
+  const ctx = await requireAdminSpace(req)
   if ('error' in ctx) return ctx.error
 
   const body = (await req.json().catch(() => ({}))) as {
@@ -81,7 +88,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const ctx = await requireAdminSpace()
+  const ctx = await requireAdminSpace(req)
   if ('error' in ctx) return ctx.error
 
   const url = new URL(req.url)

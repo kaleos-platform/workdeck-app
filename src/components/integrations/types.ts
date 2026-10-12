@@ -14,6 +14,7 @@ export type SlackChannelsResponse = {
   installed: boolean
   installation: { teamName: string | null; createdAt: string } | null
   channels: SlackChannelDTO[]
+  space?: { id: string; name: string }
 }
 
 export type AgentSettingsResponse = {
