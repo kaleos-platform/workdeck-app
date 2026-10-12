@@ -76,12 +76,13 @@ export function systemToolContext(spaceId: string): McpToolContext {
  * Slack 요청자 ID가 오면 그것이 이긴다 — 같은 Space 구성원이면 User.id, 아니면 null(원문 ID는 남긴다).
  * 요청자는 기록용이라 권한을 주지 않는다: 미확인·외부(Slack Connect) 발신자도 쓰기는 승인 큐만 거친다.
  * ID가 없으면 기존 requesterUserId(연동 계정 세션의 구성원)를 그대로 둔다.
+ * 구성원 본인 세션(actor=user)은 행위자가 곧 사람이라 요청자를 채우지 않는다.
  */
 export async function withRequester(
   ctx: McpToolContext,
   slackUserId: string | null | undefined
 ): Promise<McpToolContext> {
-  if (!slackUserId) return ctx
+  if (!slackUserId || ctx.actor.type === 'user') return ctx
   return { ...ctx, ...(await resolveRequester(ctx.spaceId, slackUserId)) }
 }
 

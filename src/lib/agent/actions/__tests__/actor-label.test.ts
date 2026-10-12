@@ -43,6 +43,12 @@ describe('describeActors', () => {
     ])
     expect(s).toBe('구성원(알 수 없음)')
   })
+  it('내장 에이전트가 OWNER User.id로 대신 기록한 system 행은 이름·id 대신 "시스템"', async () => {
+    const [s] = await describeActors([
+      { actorType: 'system', actorId: 'u1', requesterUserId: null, requesterSlackUserId: null },
+    ])
+    expect(s).toBe('시스템')
+  })
   it('구성원이 직접 만든 행(요청자 = 행위자)은 이름 한 번만', async () => {
     const [s] = await describeActors([
       { actorType: 'user', actorId: 'u1', requesterUserId: 'u1', requesterSlackUserId: null },

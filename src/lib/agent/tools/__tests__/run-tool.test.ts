@@ -116,6 +116,14 @@ describe('runTool', () => {
         expect.objectContaining({ where: { spaceId: 'sp1', slackUserId: 'U123' } })
       )
     })
+    it('구성원 본인 세션은 Slack ID를 넘겨도 요청자를 채우지 않는다', async () => {
+      const member = { ...ctx(ALL_SCOPES), actor: { type: 'user' as const, id: 'u1' } }
+      await expect(withRequester(member, 'U123')).resolves.toMatchObject({
+        requesterUserId: null,
+        requesterSlackUserId: null,
+      })
+      expect(findFirst).not.toHaveBeenCalled()
+    })
     it('확인되지 않는 Slack ID → null, 원문 ID는 남긴다', async () => {
       findFirst.mockResolvedValue(null)
       await expect(withRequester(integration(), 'U999')).resolves.toMatchObject({
