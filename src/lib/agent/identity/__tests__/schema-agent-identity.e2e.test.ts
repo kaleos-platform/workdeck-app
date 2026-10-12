@@ -19,6 +19,7 @@ d('SpaceAgent 신원 스키마', () => {
   })
   afterAll(async () => {
     await prisma.space.delete({ where: { id: SPACE_ID } }).catch(() => undefined)
+    await prisma.$disconnect()
   })
 
   it('토글(SpaceAgentSetting)과 신원(SpaceAgent)이 같은 Space에 공존한다', async () => {
