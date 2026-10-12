@@ -67,6 +67,16 @@ describe('audit', () => {
       '{"access_token": "[redacted]","id":"1"}'
     )
   })
+
+  it('긴 입력에서도 선형 시간에 끝난다(정규식 역추적 방지)', () => {
+    const t0 = Date.now()
+    maskSecrets('a'.repeat(200000))
+    maskSecrets('"'.concat('a'.repeat(200000)))
+    expect(Date.now() - t0).toBeLessThan(500)
+    expect(maskSecrets('https://x?access_token=SECRET&a=1')).toBe(
+      'https://x?access_token=[redacted]&a=1'
+    )
+  })
   it('감사 error 칸에도 같은 값 마스킹을 적용한다', async () => {
     ;(prisma.toolAuditLog.create as jest.Mock).mockResolvedValue({ id: 'aud1' })
     ;(prisma.toolAuditLog.update as jest.Mock).mockResolvedValue({})

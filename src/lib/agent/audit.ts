@@ -8,11 +8,14 @@ const MAX_SUMMARY = 1000
 
 /** 문자열 안의 비밀처럼 보이는 값(에이전트 토큰, Bearer 자격, URL·쿼리의 `*token=`·`*secret=`·`*key=`)을 가린다. */
 export function maskSecrets(text: string): string {
-  return text
-    .replace(/wdk_agt_[^\s"'&]*/g, '[redacted]')
-    .replace(/(Bearer\s+)[^\s"']+/gi, '$1[redacted]')
-    .replace(/(\w*(?:token|secret|password|key)=)[^&\s"']+/gi, '$1[redacted]')
-    .replace(/("\w*(?:token|secret|password|key)"\s*:\s*")[^"]*/gi, '$1[redacted]')
+  return (
+    text
+      .replace(/wdk_agt_[^\s"'&]*/g, '[redacted]')
+      .replace(/(Bearer\s+)[^\s"']+/gi, '$1[redacted]')
+      // 앞 접두를 \w* 로 두면 긴 단어 문자열에서 시간이 제곱으로 늘어난다 — 접두는 두지 않거나 길이를 제한한다.
+      .replace(/((?:token|secret|password|key)=)[^&\s"']+/gi, '$1[redacted]')
+      .replace(/("\w{0,64}(?:token|secret|password|key)"\s*:\s*")[^"]*/gi, '$1[redacted]')
+  )
 }
 
 /** 감사용 인자 요약 — 비밀로 보이는 키는 값 전체를, 문자열 값 안의 비밀은 부분 마스킹하고 길이를 제한한다. */
