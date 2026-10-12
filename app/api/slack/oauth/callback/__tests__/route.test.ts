@@ -19,9 +19,10 @@ jest.mock('@/lib/slack/client', () => ({
 jest.mock('@/lib/slack/token-crypto', () => ({
   encryptBotToken: () => ({ token: 'enc', iv: 'v1' }),
 }))
-jest.mock('@/lib/prisma', () => ({
-  prisma: {
-    $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
+jest.mock('@/lib/prisma', () => {
+  const p = {
+    // 인터랙티브 트랜잭션 — 콜백에 같은 mock을 tx로 넘긴다.
+    $transaction: jest.fn(),
     $executeRaw: jest.fn().mockResolvedValue(1),
     slackInstallation: {
       findUnique: jest.fn(),
@@ -33,8 +34,10 @@ jest.mock('@/lib/prisma', () => ({
     agentPendingAction: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
     agentConversation: { deleteMany: jest.fn().mockResolvedValue({ count: 3 }) },
     spaceMember: { findFirst: jest.fn(), updateMany: jest.fn().mockResolvedValue({ count: 2 }) },
-  },
-}))
+  }
+  p.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(p))
+  return { prisma: p }
+})
 
 import { prisma } from '@/lib/prisma'
 import { GET } from '../route'
@@ -91,11 +94,46 @@ test('재연결(state.reconnect) → 채널·Slack 승인 연결·대화 기록�
     where: { spaceId: 'sp-kaleos', slackUserId: { not: null } },
     data: { slackUserId: null },
   })
-  // 채널 등록과 같은 Space 설치 lock을 같은 트랜잭션에서 먼저 잡는다
-  expect(p.$executeRaw).toHaveBeenCalledTimes(1)
+  // 채널 등록과 같은 Space 설치 lock → (새) team lock 순서로 같은 트랜잭션에서 잡는다
+  expect(p.$executeRaw).toHaveBeenCalledTimes(2)
   expect(p.$executeRaw.mock.calls[0].slice(1)).toEqual(['slack-install:sp-kaleos'])
+  expect(p.$executeRaw.mock.calls[1].slice(1)).toEqual(['slack-team:T_SHARED'])
   expect(p.slackInstallation.upsert).toHaveBeenCalledWith(
     expect.objectContaining({ update: expect.objectContaining({ teamId: 'T_SHARED' }) })
+  )
+})
+
+test('판정은 lock 뒤에: Space lock → 설치 조회 → team lock → sibling 조회 → 저장', async () => {
+  p.spaceMember.findFirst.mockResolvedValue({ id: 'm1' })
+  await callback()
+  const [spaceLock, teamLock] = p.$executeRaw.mock.invocationCallOrder
+  const existingRead = p.slackInstallation.findUnique.mock.invocationCallOrder[0]
+  const siblingRead = p.slackInstallation.findMany.mock.invocationCallOrder[0]
+  expect(p.$executeRaw.mock.calls[0].slice(1)).toEqual(['slack-install:sp-kaleos'])
+  expect(p.$executeRaw.mock.calls[1].slice(1)).toEqual(['slack-team:T_SHARED'])
+  expect(spaceLock).toBeLessThan(existingRead)
+  expect(existingRead).toBeLessThan(teamLock)
+  expect(teamLock).toBeLessThan(siblingRead)
+  expect(siblingRead).toBeLessThan(p.slackInstallation.upsert.mock.invocationCallOrder[0])
+})
+
+test('같은 team 재설치는 sibling ADMIN이 아니어도 된다(이 Space의 관리자, 경계 변화 없음)', async () => {
+  p.slackInstallation.findUnique.mockResolvedValue({ teamId: 'T_SHARED' })
+  p.spaceMember.findFirst.mockResolvedValue(null)
+  const res = await callback()
+  expect(res.headers.get('location')).toBe(
+    'https://app.test/settings/integrations?slack=connected&spaceId=sp-kaleos'
+  )
+  expect(p.spaceMember.findFirst).not.toHaveBeenCalled()
+  expect(p.slackInstallation.upsert).toHaveBeenCalled()
+})
+
+test('team_changed 판정은 Space lock 뒤, team lock 전에 끝난다', async () => {
+  p.slackInstallation.findUnique.mockResolvedValue({ teamId: 'T_OLD' })
+  await callback()
+  expect(p.$executeRaw).toHaveBeenCalledTimes(1)
+  expect(p.$executeRaw.mock.invocationCallOrder[0]).toBeLessThan(
+    p.slackInstallation.findUnique.mock.invocationCallOrder[0]
   )
 })
 

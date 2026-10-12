@@ -39,13 +39,24 @@ describe('resolveEventSpace', () => {
     await expect(resolveEventSpace('T1', 'CX')).resolves.toEqual({ status: 'not_installed' })
   })
 
-  it('설치 1개 → 채널 등록과 무관하게 그 Space(기존 동작)', async () => {
+  it('설치 1개 + 미등록 채널 → unmapped(Space 없음)', async () => {
     p.slackInstallation.findMany.mockResolvedValue([inst('sp1')])
-    await expect(resolveEventSpace('T1', 'C_ANY')).resolves.toEqual({
+    p.spaceSlackChannel.findFirst.mockResolvedValue(null)
+    const r = await resolveEventSpace('T1', 'C_ANY')
+    expect(r).toEqual({ status: 'unmapped', botToken: 'enc-sp1', botTokenIv: 'v1' })
+    expect(r).not.toHaveProperty('installation')
+  })
+
+  it('설치 1개 + 등록 채널 → 그 Space', async () => {
+    p.slackInstallation.findMany.mockResolvedValue([inst('sp1')])
+    p.spaceSlackChannel.findFirst.mockResolvedValue({ spaceId: 'sp1' })
+    await expect(resolveEventSpace('T1', 'CX')).resolves.toEqual({
       status: 'routed',
       installation: inst('sp1'),
     })
-    expect(p.spaceSlackChannel.findFirst).not.toHaveBeenCalled()
+    expect(p.spaceSlackChannel.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { channelId: 'CX', spaceId: { in: ['sp1'] } } })
+    )
   })
 
   it('같은 team 두 Space: 채널 X → Space1, Y → Space2', async () => {

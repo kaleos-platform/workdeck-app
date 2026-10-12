@@ -3,6 +3,7 @@
  * - SlackInstallation은 Space당 1행이고 teamId는 비고유다.
  * - 같은 team 안에서 채널 하나는 Space 하나에만 등록된다(채널 API가 409로 막는다).
  * - 채널 → Space가 정해지지 않으면 어느 Space로도 떨어뜨리지 않는다(다른 Space 데이터 노출 방지).
+ *   설치가 하나여도 같다 — 2→1 전이(재연결·해제) 뒤 떠난 Space의 채널이 남은 Space로 가지 않게.
  */
 import { prisma } from '@/lib/prisma'
 
@@ -27,8 +28,7 @@ export async function resolveEventSpace(teamId: string, channelId: string): Prom
     orderBy: { createdAt: 'asc' },
   })
   if (installs.length === 0) return { status: 'not_installed' }
-  // 설치가 하나면 기존 동작(어느 채널이든 그 Space).
-  if (installs.length === 1) return { status: 'routed', installation: installs[0] }
+  // 설치 개수와 무관하게 등록된 채널에서만 응답한다(운영 결정).
 
   const mapped = await prisma.spaceSlackChannel.findFirst({
     where: { channelId, spaceId: { in: installs.map((i) => i.spaceId) } },

@@ -4,7 +4,9 @@
  *  - 승인 가드: team이 pending Space에 설치된 경우만 통과, 채널이 다르면 거부
  *  - 채널 소유: 다른 Space가 등록한 채널 판정
  *  - 한 Space 연결 해제(행 삭제)가 다른 Space의 설치·채널을 지우지 않는다
+ *  - 설치가 하나가 되어도 등록된 채널에서만 응답한다(떠난 Space의 채널 → 남은 Space 아님)
  *  - 재연결(team 변경)과 채널 등록이 동시에 와도 새 team의 다른 Space 채널을 가져가지 못한다(Space 설치 lock)
+ *  - 무관한 두 Space가 같은 team에 동시에 첫 설치해도 하나만 붙는다(team lock 안의 sibling 판정)
  */
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
@@ -19,21 +21,29 @@ import { GET as oauthCallback } from '../../../../app/api/slack/oauth/callback/r
 
 // 실제 콜백 핸들러를 실DB로 돌린다. Slack 교환·state 서명·암호화만 mock한다(로직 복제 없음).
 jest.mock('@/lib/domain', () => ({ buildAppUrl: (path: string) => `https://app.test${path}` }))
+// state 'sp6'/'sp7'은 첫 설치 경합용(재연결 아님), 그 밖('s')은 SP4 재연결.
 jest.mock('@/lib/slack/state', () => ({
-  verifyState: () => ({
-    spaceId: 'e2e00000-0000-4000-8000-0000000shrd4',
+  verifyState: (s: string) => ({
+    spaceId:
+      s === 'sp6'
+        ? 'e2e00000-0000-4000-8000-0000000shrd6'
+        : s === 'sp7'
+          ? 'e2e00000-0000-4000-8000-0000000shrd7'
+          : 'e2e00000-0000-4000-8000-0000000shrd4',
     userId: 'e2e00000-0000-4000-8000-0000000shrd9',
-    reconnect: true,
+    reconnect: s === 's',
   }),
 }))
+// code 'first' → 아직 아무 Space도 쓰지 않는 team, 그 밖 → RACE2.
 jest.mock('@/lib/slack/client', () => ({
-  oauthV2Access: jest.fn().mockResolvedValue({
+  oauthV2Access: jest.fn(async (code: string) => ({
     ok: true,
     access_token: 'xoxb-race',
     bot_user_id: 'UBOT',
     scope: 'chat:write',
-    team: { id: 'Te2eRACE2', name: 'Race2' },
-  }),
+    team:
+      code === 'first' ? { id: 'Te2eFIRST', name: 'First' } : { id: 'Te2eRACE2', name: 'Race2' },
+  })),
 }))
 jest.mock('@/lib/slack/token-crypto', () => ({
   encryptBotToken: () => ({ token: 'enc', iv: 'v1' }),
@@ -195,6 +205,11 @@ d('한 Slack team을 두 Space가 공유', () => {
   })
 
   test('Space1 연결 해제가 Space2의 설치·채널을 지우지 않는다', async () => {
+    // CH_X를 다시 Space1 채널로 만든다(앞 테스트에서 Space2로 넘어갔던 것을 되돌림).
+    await prisma.spaceSlackChannel.deleteMany({ where: { spaceId: SP2, channelId: CH_X } })
+    await expect(
+      registerSpaceChannel({ spaceId: SP1, channelId: CH_X, channelName: null, kind: 'approvals' })
+    ).resolves.toMatchObject({ ok: true })
     await prisma.slackInstallation.delete({ where: { spaceId: SP1 } })
     expect(await prisma.spaceSlackChannel.count({ where: { spaceId: SP1 } })).toBe(0) // Cascade
     expect(await prisma.slackInstallation.findUnique({ where: { spaceId: SP2 } })).not.toBeNull()
@@ -203,6 +218,26 @@ d('한 Slack team을 두 Space가 공유', () => {
     )
     const y = await resolveEventSpace(TEAM, CH_Y)
     expect(y.status === 'routed' && y.installation.spaceId).toBe(SP2)
+  })
+
+  test('2→1 전이 뒤 떠난 Space의 채널은 남은 Space로 가지 않는다(등록해야만 간다)', async () => {
+    // 앞 테스트로 TEAM 설치는 SP2 하나. CH_X는 떠난 SP1의 채널이었다.
+    expect(await prisma.slackInstallation.count({ where: { teamId: TEAM } })).toBe(1)
+    const before = await resolveEventSpace(TEAM, CH_X)
+    expect(before.status).toBe('unmapped')
+    expect(before).not.toHaveProperty('installation')
+    expect((await resolveEventSpace(TEAM, 'Ce2eNOPE')).status).toBe('unmapped')
+
+    await expect(
+      registerSpaceChannel({
+        spaceId: SP2,
+        channelId: CH_X,
+        channelName: null,
+        kind: 'notifications',
+      })
+    ).resolves.toMatchObject({ ok: true })
+    const after = await resolveEventSpace(TEAM, CH_X)
+    expect(after.status === 'routed' && after.installation.spaceId).toBe(SP2)
   })
 })
 
@@ -263,6 +298,42 @@ d('재연결과 채널 등록 경합(같은 Space 설치 lock)', () => {
       0
     )
     expect(await prisma.spaceSlackChannel.count({ where: { channelId: CH_R } })).toBe(1)
+  })
+})
+
+d('같은 team 동시 첫 설치(team lock)', () => {
+  // SP6, SP7은 서로 무관(설치자가 어느 쪽의 구성원도 아님). 둘이 동시에 Te2eFIRST를 처음 설치한다.
+  const SP6 = 'e2e00000-0000-4000-8000-0000000shrd6'
+  const SP7 = 'e2e00000-0000-4000-8000-0000000shrd7'
+
+  beforeAll(async () => {
+    for (const id of [SP6, SP7]) {
+      await prisma.space.upsert({
+        where: { id },
+        update: {},
+        create: { id, name: `E2E ${id}`, type: 'PERSONAL' },
+      })
+    }
+  })
+
+  afterAll(async () => {
+    await prisma.slackInstallation.deleteMany({ where: { spaceId: { in: [SP6, SP7] } } })
+    await prisma.space.deleteMany({ where: { id: { in: [SP6, SP7] } } })
+  })
+
+  test('하나만 connected, 다른 하나는 team_conflict — team 설치는 1행', async () => {
+    const results = await Promise.all(
+      ['sp6', 'sp7'].map((st) =>
+        oauthCallback(
+          new NextRequest(`https://app.test/api/slack/oauth/callback?code=first&state=${st}`)
+        )
+      )
+    )
+    const statuses = results.map((r) =>
+      new URL(r.headers.get('location')!).searchParams.get('slack')
+    )
+    expect(statuses.sort()).toEqual(['connected', 'team_conflict'])
+    expect(await prisma.slackInstallation.count({ where: { teamId: 'Te2eFIRST' } })).toBe(1)
   })
 })
 

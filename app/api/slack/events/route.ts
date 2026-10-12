@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 }
 
 const UNMAPPED_CHANNEL_HINT =
-  '이 채널은 워크덱 Space에 연결되어 있지 않습니다. 설정 → 연동에서 승인·알림 채널로 등록된 채널에서 불러 주세요.'
+  '이 채널은 워크덱에 등록되어 있지 않아 응답할 수 없습니다. 워크덱 설정 → 연동에서 이 채널을 승인·알림 채널로 등록한 뒤 불러 주세요.'
 
 /**
  * app_mention 본 처리(응답 후 실행). 모든 에러를 삼켜 로깅만 한다.
@@ -91,7 +91,7 @@ async function handleAppMention(
     const threadTs = event.thread_ts ?? event.ts
     if (!threadTs) return
 
-    // team + 채널 → Space. 한 team을 여러 Space가 공유하면 채널 등록으로 정한다.
+    // team + 채널 → Space. 등록된 채널에서만 응답한다(설치가 하나여도 같다).
     const route = await resolveEventSpace(teamId, channel)
     if (route.status === 'not_installed') return
     if (route.status === 'unmapped') {

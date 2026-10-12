@@ -76,7 +76,6 @@ describe('/api/slack/channels', () => {
   })
 
   test('POST — kind 미지정 시 approvals로 upsert(하위 호환)', async () => {
-    mockPrisma.slackInstallation.findUnique.mockResolvedValue({ spaceId: 'space-1', teamId: 'T1' })
     const res = await POST(postReq({ channelId: 'C1' }))
     expect(res!.status).toBe(200)
     expect(registerSpaceChannel).toHaveBeenCalledWith({
@@ -88,7 +87,6 @@ describe('/api/slack/channels', () => {
   })
 
   test('POST — kind=notifications 지정 시 해당 kind로 upsert', async () => {
-    mockPrisma.slackInstallation.findUnique.mockResolvedValue({ spaceId: 'space-1', teamId: 'T1' })
     const res = await POST(postReq({ channelId: 'C2', kind: 'notifications' }))
     expect(res!.status).toBe(200)
     expect(registerSpaceChannel).toHaveBeenCalledWith({
@@ -100,13 +98,18 @@ describe('/api/slack/channels', () => {
   })
 
   test('POST — 같은 team의 다른 Space가 등록한 채널은 409', async () => {
-    mockPrisma.slackInstallation.findUnique.mockResolvedValue({ spaceId: 'space-1', teamId: 'T1' })
     ;(registerSpaceChannel as jest.Mock).mockResolvedValue({ ok: false, reason: 'taken' })
     const res = await POST(postReq({ channelId: 'C_TAKEN', kind: 'approvals' }))
     expect(res!.status).toBe(409)
     expect(registerSpaceChannel).toHaveBeenCalledWith(
       expect.objectContaining({ channelId: 'C_TAKEN', spaceId: 'space-1' })
     )
+  })
+
+  test('POST — Slack 설치가 없으면 404(lock 안에서 확인)', async () => {
+    ;(registerSpaceChannel as jest.Mock).mockResolvedValue({ ok: false, reason: 'not_installed' })
+    const res = await POST(postReq({ channelId: 'C1' }))
+    expect(res!.status).toBe(404)
   })
 
   test('POST — 잘못된 kind는 400', async () => {

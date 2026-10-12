@@ -60,33 +60,8 @@ export async function GET(req: NextRequest) {
     return redirectTo('error', state.spaceId)
   }
 
-  // 이미 설치된 Space가 다른 team으로 OAuth를 마쳤으면 재연결 흐름으로만 바꾼다.
-  // 그냥 덮어쓰면 이전 team의 채널 등록·진행 중 Slack 승인·대화 기록이 새 team에 섞인다.
-  const existing = await prisma.slackInstallation.findUnique({
-    where: { spaceId: state.spaceId },
-    select: { teamId: true },
-  })
-  const teamChanged = existing !== null && existing.teamId !== team.id
-  if (teamChanged && !state.reconnect) return redirectTo('team_changed', state.spaceId)
-
-  // 이미 다른 Space가 쓰는 Slack team에 붙으려면 그 Space 중 하나의 OWNER·ADMIN이어야 한다
-  // (teamId @unique가 하던 테넌트 경계를 대신한다).
-  const siblings = await prisma.slackInstallation.findMany({
-    where: { teamId: team.id, spaceId: { not: state.spaceId } },
-    select: { spaceId: true },
-  })
-  if (siblings.length > 0) {
-    const adminOfSibling = await prisma.spaceMember.findFirst({
-      where: {
-        userId: state.userId,
-        spaceId: { in: siblings.map((s) => s.spaceId) },
-        role: { in: ['OWNER', 'ADMIN'] },
-      },
-      select: { id: true },
-    })
-    if (!adminOfSibling) return redirectTo('team_conflict', state.spaceId)
-  }
-
+  const teamId = team.id
+  let outcome: 'connected' | 'team_changed' | 'team_conflict'
   try {
     // 암호화도 try 안에서 수행 — 키 미설정(예: preview) 시 500 대신 error 리다이렉트.
     const enc = encryptBotToken(botToken)
@@ -97,42 +72,78 @@ export async function GET(req: NextRequest) {
       botTokenIv: enc.iv,
       scope: (exchange.scope as string | undefined) ?? null,
     }
-    await prisma.$transaction([
-      // 채널 등록(registerSpaceChannel)과 같은 Space 설치 lock. 배열 트랜잭션은 한 tx 안에서 순서대로 실행된다.
+    // 판정과 쓰기를 한 트랜잭션에서 lock 뒤에 한다. lock 순서는 항상 Space → team → (등록의) channel.
+    outcome = await prisma.$transaction(async (tx) => {
+      // 채널 등록(registerSpaceChannel)과 같은 Space 설치 lock.
       // 등록이 먼저 끝나면 아래 deleteMany가 그 채널을 지우고, 재연결이 먼저면 등록이 새 teamId로 다시 검사한다.
-      prisma.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`slack-install:${state.spaceId}`}))`,
-      // 재연결(team 변경): 이전 team에 묶인 이 Space의 상태를 먼저 정리한다.
-      ...(teamChanged
-        ? [
-            prisma.spaceSlackChannel.deleteMany({ where: { spaceId: state.spaceId } }),
-            // 구성원 Slack 연결도 이전 team의 사용자 ID다. 남기면 새 team에서 자동 연결(slackUserId null만 찾음)이 막힌다.
-            prisma.spaceMember.updateMany({
-              where: { spaceId: state.spaceId, slackUserId: { not: null } },
-              data: { slackUserId: null },
-            }),
-            // 진행 중 승인은 남기되 이전 team 메시지와의 연결을 끊는다(웹에서 승인, 이전 버튼은 테넌트 가드가 무시).
-            prisma.agentPendingAction.updateMany({
-              where: { spaceId: state.spaceId, status: 'PENDING', slackChannelId: { not: null } },
-              data: { slackChannelId: null, slackMessageTs: null },
-            }),
-            prisma.agentConversation.deleteMany({ where: { spaceId: state.spaceId } }),
-          ]
-        : []),
-      prisma.slackInstallation.upsert({
+      // 같은 Space로 동시에 온 콜백 두 개도 여기서 직렬화된다(둘 다 existing=null로 읽지 않게).
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`slack-install:${state.spaceId}`}))`
+
+      // 이미 설치된 Space가 다른 team으로 OAuth를 마쳤으면 재연결 흐름으로만 바꾼다.
+      // 그냥 덮어쓰면 이전 team의 채널 등록·진행 중 Slack 승인·대화 기록이 새 team에 섞인다.
+      const existing = await tx.slackInstallation.findUnique({
         where: { spaceId: state.spaceId },
-        create: { spaceId: state.spaceId, teamId: team.id, installedBy: state.userId, ...shared },
-        update: { teamId: team.id, installedBy: state.userId, ...shared },
-      }),
+        select: { teamId: true },
+      })
+      const teamChanged = existing !== null && existing.teamId !== teamId
+      if (teamChanged && !state.reconnect) return 'team_changed' as const
+
+      // 무관한 두 Space가 같은 team에 동시에 처음 붙어 둘 다 siblings=0으로 통과하지 않게 team lock.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`slack-team:${teamId}`}))`
+
+      // 이 team에 새로 붙는 경우(첫 설치·재연결)에만: 이미 다른 Space가 쓰는 team이면
+      // 그 Space 중 하나의 OWNER·ADMIN이어야 한다(teamId @unique가 하던 테넌트 경계를 대신한다).
+      // 같은 team 재설치(scope 추가)는 테넌트 경계를 바꾸지 않으므로 검사하지 않는다.
+      if (existing?.teamId !== teamId) {
+        const siblings = await tx.slackInstallation.findMany({
+          where: { teamId, spaceId: { not: state.spaceId } },
+          select: { spaceId: true },
+        })
+        if (siblings.length > 0) {
+          const adminOfSibling = await tx.spaceMember.findFirst({
+            where: {
+              userId: state.userId,
+              spaceId: { in: siblings.map((s) => s.spaceId) },
+              role: { in: ['OWNER', 'ADMIN'] },
+            },
+            select: { id: true },
+          })
+          if (!adminOfSibling) return 'team_conflict' as const
+        }
+      }
+
+      // 재연결(team 변경): 이전 team에 묶인 이 Space의 상태를 먼저 정리한다.
+      if (teamChanged) {
+        await tx.spaceSlackChannel.deleteMany({ where: { spaceId: state.spaceId } })
+        // 구성원 Slack 연결도 이전 team의 사용자 ID다. 남기면 새 team에서 자동 연결(slackUserId null만 찾음)이 막힌다.
+        await tx.spaceMember.updateMany({
+          where: { spaceId: state.spaceId, slackUserId: { not: null } },
+          data: { slackUserId: null },
+        })
+        // 진행 중 승인은 남기되 이전 team 메시지와의 연결을 끊는다(웹에서 승인, 이전 버튼은 테넌트 가드가 무시).
+        await tx.agentPendingAction.updateMany({
+          where: { spaceId: state.spaceId, status: 'PENDING', slackChannelId: { not: null } },
+          data: { slackChannelId: null, slackMessageTs: null },
+        })
+        await tx.agentConversation.deleteMany({ where: { spaceId: state.spaceId } })
+      }
+
+      await tx.slackInstallation.upsert({
+        where: { spaceId: state.spaceId },
+        create: { spaceId: state.spaceId, teamId, installedBy: state.userId, ...shared },
+        update: { teamId, installedBy: state.userId, ...shared },
+      })
       // 같은 team을 쓰는 다른 Space 행도 같은 bot 토큰·scope로 맞춘다(재설치로 scope가 늘어난 경우).
-      prisma.slackInstallation.updateMany({
-        where: { teamId: team.id, spaceId: { not: state.spaceId } },
+      await tx.slackInstallation.updateMany({
+        where: { teamId, spaceId: { not: state.spaceId } },
         data: shared,
-      }),
-    ])
+      })
+      return 'connected' as const
+    })
   } catch (err) {
     console.error('[slack] SlackInstallation upsert 실패:', err)
     return redirectTo('error', state.spaceId)
   }
 
-  return redirectTo('connected', state.spaceId)
+  return redirectTo(outcome, state.spaceId)
 }

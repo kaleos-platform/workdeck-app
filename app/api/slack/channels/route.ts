@@ -2,7 +2,7 @@
  * /api/slack/channels — Space의 Slack 설치·용도별 채널 현황 관리(전부 ADMIN).
  *   GET    — 설치 여부 + 등록된 채널 목록(전체 kind, 필터 없음).
  *   POST   — { channelId, channelName?, kind? } 용도 채널 upsert. kind는
- *            "approvals"(기본)|"notifications"만 허용. 설치 없으면 400.
+ *            "approvals"(기본)|"notifications"만 허용. 설치 없으면 404.
  *            같은 Slack team의 다른 Space가 등록한 채널이면 409(registerSpaceChannel).
  *   DELETE — ?kind=approvals|notifications 채널 제거(기본 approvals).
  */
@@ -64,15 +64,9 @@ export async function POST(req: NextRequest) {
   const kind = parseKind(body.kind ?? null)
   if (!kind) return errorResponse('kind는 approvals 또는 notifications만 허용됩니다', 400)
 
-  // 설치가 있어야 채널을 등록할 수 있다(FK: SpaceSlackChannel.spaceId → SlackInstallation.spaceId).
-  const installation = await prisma.slackInstallation.findUnique({
-    where: { spaceId: ctx.spaceId },
-    select: { spaceId: true },
-  })
-  if (!installation) return errorResponse('Slack 설치가 없습니다. 먼저 연동을 완료하세요', 400)
-
   // 같은 Slack team의 다른 Space가 이미 등록한 채널이면 거부 — 채널 → Space가 하나로 정해져야 한다.
   // 검사와 등록은 registerSpaceChannel이 Space 설치 lock + (team, channel) lock 안에서 한다(동시 등록·재연결 경합 차단).
+  // 설치 확인도 lock 안에서 한다(FK: SpaceSlackChannel.spaceId → SlackInstallation.spaceId).
   const registered = await registerSpaceChannel({
     spaceId: ctx.spaceId,
     channelId,
@@ -80,7 +74,7 @@ export async function POST(req: NextRequest) {
     kind,
   })
   if (!registered.ok && registered.reason === 'not_installed')
-    return errorResponse('Slack이 연결되어 있지 않습니다', 404)
+    return errorResponse('Slack 설치가 없습니다. 먼저 연동을 완료하세요', 404)
   if (!registered.ok)
     return errorResponse('같은 Slack 워크스페이스의 다른 Space가 이미 쓰는 채널입니다', 409)
   return NextResponse.json({ channel: registered.channel })
