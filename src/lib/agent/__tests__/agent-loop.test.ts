@@ -1,6 +1,7 @@
 // @jest-environment node
 import { runAgentLoop } from '../llm/agent-loop'
 import { toolDefinitions } from '@/lib/agent/tools'
+import { systemToolContext } from '@/lib/agent/tools/run-tool'
 
 // Anthropic SDK mock — new Anthropic() 인스턴스의 messages.create를 통제한다.
 // (실 API 호출 금지.)
@@ -49,7 +50,7 @@ function findToolResultMsg(msgs: AnyMsg[]): AnyMsg & { content: Array<Record<str
   return found as AnyMsg & { content: Array<Record<string, unknown>> }
 }
 
-const baseArgs = { requestedBy: 'user-1', userText: '광고 상태 알려줘', history: [] }
+const baseArgs = { ctx: systemToolContext('space-1'), userText: '광고 상태 알려줘', history: [] }
 
 describe('runAgentLoop', () => {
   beforeEach(() => {
@@ -73,6 +74,7 @@ describe('runAgentLoop', () => {
     const r = await runAgentLoop(baseArgs)
     expect(execOf('ads_get_kpi')).toHaveBeenCalledTimes(1)
     expect(r.text).toBe('광고비는 1000원입니다.')
+    expect(execOf('ads_get_kpi')).toHaveBeenCalledWith(baseArgs.ctx, {})
     // 누적 usage.
     expect(r.usage.inputTokens).toBe(250)
     expect(r.usage.outputTokens).toBe(50)

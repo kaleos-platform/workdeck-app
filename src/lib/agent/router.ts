@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { toolDefinitions } from '@/lib/agent/tools'
-import type { ToolDefinition } from '@/lib/agent/tools'
+import type { McpToolContext, ToolDefinition } from '@/lib/agent/tools'
+import { runTool, systemToolContext } from '@/lib/agent/tools/run-tool'
 import { buildAppUrl } from '@/lib/domain'
 import { checkAndIncrementUsage, recordTokens } from './llm/usage'
 import { runAgentLoop } from './llm/agent-loop'
@@ -41,7 +42,7 @@ function won(v: unknown): string {
 
 export interface RouteArgs {
   spaceId: string
-  requestedBy: string // tool ctx.userId (해석된 행위 사용자)
+  requesterSlackUserId: string | null // Slack 발신자 ID (요청자 변환은 Task 7)
   channelId: string
   threadTs: string
   text: string
@@ -71,9 +72,11 @@ const HELP_TEXT = [
  */
 export async function routeAgentMessage(args: RouteArgs): Promise<RouteResult> {
   const text = args.text.trim()
+  // 내장 에이전트(actor=system) 컨텍스트 — 도구는 이 spaceId로만 데이터를 찾는다.
+  const ctx = systemToolContext(args.spaceId, { requesterSlackUserId: args.requesterSlackUserId })
 
   // ── 1단계: 정형 명령 ────────────────────────────────────────────────────
-  const structured = await tryStructuredCommand(args, text)
+  const structured = await tryStructuredCommand(args, ctx, text)
   if (structured !== null) return { text: structured }
 
   // ── 2단계: LLM 폴백 ─────────────────────────────────────────────────────
@@ -101,7 +104,7 @@ export async function routeAgentMessage(args: RouteArgs): Promise<RouteResult> {
   let result
   try {
     result = await runAgentLoop({
-      requestedBy: args.requestedBy,
+      ctx,
       userText: text,
       history,
     })
@@ -126,11 +129,13 @@ export async function routeAgentMessage(args: RouteArgs): Promise<RouteResult> {
 
 /**
  * 정형 명령 매칭 + 직접 실행. 매칭되면 응답 텍스트, 아니면 null(LLM 폴백).
- * ctx.userId는 requestedBy(해석된 행위 사용자) — tool 내부에서 space/workspace 재해석에 사용됨.
+ * ctx는 내장 에이전트 컨텍스트(spaceId = 이 Slack 워크스페이스에 연결된 Space).
  */
-async function tryStructuredCommand(args: RouteArgs, text: string): Promise<string | null> {
-  const ctx = { userId: args.requestedBy }
-
+async function tryStructuredCommand(
+  args: RouteArgs,
+  ctx: McpToolContext,
+  text: string
+): Promise<string | null> {
   // 도움말 — 가장 먼저(다른 키워드보다 우선).
   if (/(^|\s)(도움|도움말|help|명령|명령어)(\s|$)/i.test(text)) {
     return HELP_TEXT
@@ -143,7 +148,7 @@ async function tryStructuredCommand(args: RouteArgs, text: string): Promise<stri
 
   // 상태 / KPI
   if (/상태|status|현황|kpi/i.test(text)) {
-    return runTool(
+    return runFormatted(
       ctx,
       'ads_get_kpi',
       { startDate: daysAgoYmd(7), endDate: todayYmd() },
@@ -154,7 +159,7 @@ async function tryStructuredCommand(args: RouteArgs, text: string): Promise<stri
 
   // 캠페인 목록 (캠페인 상세보다 먼저 검사)
   if (/캠페인\s*목록|campaigns/i.test(text)) {
-    return runTool(
+    return runFormatted(
       ctx,
       'ads_list_campaigns',
       { limit: 15 },
@@ -179,7 +184,7 @@ async function tryStructuredCommand(args: RouteArgs, text: string): Promise<stri
 
   // 분석 실행 (write — 승인 대기 안내)
   if (/분석|analyze/i.test(text)) {
-    return runTool(
+    return runFormatted(
       ctx,
       'ads_trigger_analysis',
       { from: daysAgoYmd(7), to: todayYmd() },
@@ -190,7 +195,7 @@ async function tryStructuredCommand(args: RouteArgs, text: string): Promise<stri
 
   // 리포트
   if (/리포트|report/i.test(text)) {
-    return runTool(
+    return runFormatted(
       ctx,
       'ads_get_latest_report',
       { limit: 1 },
@@ -209,8 +214,8 @@ async function tryStructuredCommand(args: RouteArgs, text: string): Promise<stri
 }
 
 // tool 실행 + 포맷 헬퍼. deck 비활성 등 tool 에러는 그대로 사용자에게 안내.
-async function runTool(
-  ctx: { userId: string },
+async function runFormatted(
+  ctx: McpToolContext,
   toolName: string,
   params: Record<string, unknown>,
   formatter: (data: unknown) => string,
@@ -219,7 +224,7 @@ async function runTool(
   const tool = getTool(toolName)
   if (!tool) return fallbackMsg
   try {
-    const data = await tool.execute(ctx, params)
+    const data = await runTool(tool, ctx, params)
     return formatter(data)
   } catch (err) {
     return err instanceof Error ? `⚠️ ${err.message}` : `⚠️ ${fallbackMsg}`
@@ -278,12 +283,12 @@ function formatPendingAction(data: unknown): string {
 }
 
 // 캠페인 상세 — 이름/ID로 검색 후 상세 조회.
-async function runCampaignDetail(ctx: { userId: string }, keyword: string): Promise<string> {
+async function runCampaignDetail(ctx: McpToolContext, keyword: string): Promise<string> {
   const listTool = getTool('ads_list_campaigns')
   const detailTool = getTool('ads_get_campaign')
   if (!listTool || !detailTool) return '캠페인 조회를 사용할 수 없습니다.'
   try {
-    const list = (await listTool.execute(ctx, { limit: 100 })) as { campaigns?: unknown[] }
+    const list = (await runTool(listTool, ctx, { limit: 100 })) as { campaigns?: unknown[] }
     const campaigns = Array.isArray(list.campaigns) ? list.campaigns : []
     // queryCampaigns 캠페인의 식별자는 id. ID 완전 일치 우선, 없으면 이름 부분 일치.
     const lower = keyword.toLowerCase()
@@ -296,7 +301,7 @@ async function runCampaignDetail(ctx: { userId: string }, keyword: string): Prom
       })
     if (!match) return `"${keyword}" 캠페인을 찾을 수 없습니다. \`캠페인 목록\`으로 확인해보세요.`
     const campaignId = String((match as Record<string, unknown>).id)
-    const detail = (await detailTool.execute(ctx, {
+    const detail = (await runTool(detailTool, ctx, {
       campaignId,
       from: daysAgoYmd(7),
       to: todayYmd(),
@@ -324,17 +329,17 @@ async function runCampaignDetail(ctx: { userId: string }, keyword: string): Prom
 }
 
 // 비효율 키워드 — 특정 캠페인 인자가 필요하므로 첫 캠페인 기준으로 조회.
-async function runInefficient(ctx: { userId: string }): Promise<string> {
+async function runInefficient(ctx: McpToolContext): Promise<string> {
   const listTool = getTool('ads_list_campaigns')
   const kwTool = getTool('ads_get_inefficient_keywords')
   if (!listTool || !kwTool) return '비효율 키워드 조회를 사용할 수 없습니다.'
   try {
-    const list = (await listTool.execute(ctx, { limit: 1 })) as { campaigns?: unknown[] }
+    const list = (await runTool(listTool, ctx, { limit: 1 })) as { campaigns?: unknown[] }
     const campaigns = Array.isArray(list.campaigns) ? list.campaigns : []
     if (campaigns.length === 0) return '캠페인이 없어 비효율 키워드를 조회할 수 없습니다.'
     // queryCampaigns 캠페인 식별자는 id.
     const campaignId = String((campaigns[0] as Record<string, unknown>).id)
-    const data = (await kwTool.execute(ctx, {
+    const data = (await runTool(kwTool, ctx, {
       campaignId,
       filter: 'zero',
       from: daysAgoYmd(7),

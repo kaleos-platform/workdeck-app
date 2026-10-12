@@ -14,7 +14,7 @@ import type { ToolDefinition } from './types'
 /**
  * coupang-ads Deck 조회(read) tool 6종.
  * coupang-ads는 Workspace 스코프(레거시)라 finance/seller-hub와 달리 resolveMcpWorkspace를 게이트로 쓴다.
- * resolveMcpWorkspace는 웹 resolveWorkspace()와 동일하게: Space 없음=관용, deck 비활성=throw.
+ * resolveMcpWorkspace(spaceId): deck 비활성이거나 Space에 Workspace가 연결되지 않았으면 throw.
  * route와 동일한 queries.ts 함수(또는 campaign-overview lib)를 공유한다.
  */
 
@@ -28,8 +28,9 @@ const adsGetKpiTool: ToolDefinition = {
     endDate: z.string(),
   },
   mode: 'read',
+  scope: 'ads:read',
   async execute(ctx, params) {
-    const { workspace } = await resolveMcpWorkspace(ctx.userId)
+    const workspace = await resolveMcpWorkspace(ctx.spaceId)
     return queryKpi(workspace.id, {
       startDate: params.startDate as string,
       endDate: params.endDate as string,
@@ -48,8 +49,9 @@ const adsListCampaignsTool: ToolDefinition = {
     limit: z.number().optional(),
   },
   mode: 'read',
+  scope: 'ads:read',
   async execute(ctx, params) {
-    const { workspace } = await resolveMcpWorkspace(ctx.userId)
+    const workspace = await resolveMcpWorkspace(ctx.spaceId)
     const all = await queryCampaigns(workspace.id, {
       startDate: params.startDate as string | undefined,
       endDate: params.endDate as string | undefined,
@@ -71,8 +73,9 @@ const adsGetCampaignTool: ToolDefinition = {
     adType: z.string().optional(),
   },
   mode: 'read',
+  scope: 'ads:read',
   async execute(ctx, params) {
-    const { workspace } = await resolveMcpWorkspace(ctx.userId)
+    const workspace = await resolveMcpWorkspace(ctx.spaceId)
     return getCachedCampaignOverview({
       workspaceId: workspace.id,
       campaignId: params.campaignId as string,
@@ -102,8 +105,9 @@ const adsGetInefficientKeywordsTool: ToolDefinition = {
     pageSize: z.number().optional(),
   },
   mode: 'read',
+  scope: 'ads:read',
   async execute(ctx, params) {
-    const { workspace } = await resolveMcpWorkspace(ctx.userId)
+    const workspace = await resolveMcpWorkspace(ctx.spaceId)
     // route는 parseKeywordQuery(URLSearchParams)로 파싱하지만, tool은 params를
     // URLSearchParams로 변환해 동일 파서를 재사용한다(기본값·클램프 규칙 공유).
     const sp = new URLSearchParams()
@@ -135,8 +139,9 @@ const adsGetCollectionStatusTool: ToolDefinition = {
     cursor: z.string().optional(),
   },
   mode: 'read',
+  scope: 'ads:read',
   async execute(ctx, params) {
-    const { workspace } = await resolveMcpWorkspace(ctx.userId)
+    const workspace = await resolveMcpWorkspace(ctx.spaceId)
     return queryCollectionRuns(workspace.id, {
       limit: params.limit as number | undefined,
       cursor: params.cursor as string | undefined,
@@ -153,8 +158,9 @@ const adsGetLatestReportTool: ToolDefinition = {
     limit: z.number().optional(),
   },
   mode: 'read',
+  scope: 'ads:read',
   async execute(ctx, params) {
-    const { workspace } = await resolveMcpWorkspace(ctx.userId)
+    const workspace = await resolveMcpWorkspace(ctx.spaceId)
     const { reports } = await queryReports(workspace.id)
     const limit = (params.limit as number | undefined) ?? 20
     return { reports: reports.slice(0, limit) }

@@ -16,7 +16,6 @@ import { verifySlackSignature } from '@/lib/slack/verify'
 import { decryptBotToken } from '@/lib/slack/token-crypto'
 import { postMessage } from '@/lib/slack/client'
 import { routeAgentMessage } from '@/lib/agent/router'
-import { resolveActingUserId } from '@/lib/agent/slack/acting-user'
 
 export const runtime = 'nodejs'
 
@@ -96,16 +95,12 @@ async function handleAppMention(
     const threadTs = event.thread_ts ?? event.ts
     if (!threadTs) return
 
-    // tool 실행 행위 사용자(Space OWNER의 User.id) 해석. 없으면 처리 불가.
-    const actingUserId = await resolveActingUserId(installation.spaceId)
-    if (!actingUserId) return
-
     // 멘션 텍스트에서 <@봇ID> 제거.
     const cleanText = stripMention(event.text ?? '', installation.botUserId)
 
     const { text } = await routeAgentMessage({
       spaceId: installation.spaceId,
-      requestedBy: actingUserId,
+      requesterSlackUserId: event.user ?? null,
       channelId: channel,
       threadTs,
       text: cleanText,

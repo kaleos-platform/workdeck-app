@@ -4,8 +4,10 @@ import type { SpaceMemberRole } from '@/lib/api-helpers'
 // 승인 큐 액션의 실행 컨텍스트 — 항상 spaceId 스코프.
 export interface ActionExecContext {
   spaceId: string
-  // 요청자 User.id (감사·규칙 학습 등에 필요할 수 있음)
+  // 제안한 행위자 id(구성원 User.id, 에이전트·연동 계정 SpaceAgent.id, 'workdeck-agent' 등). User FK로 쓰지 말 것.
   requestedBy: string
+  // 승인한 구성원 User.id — execute 시점에만 채워진다. User FK가 필요한 곳은 이 값을 쓴다.
+  deciderId?: string
   // AgentPendingAction.id — execute 시점에만 채워진다(validateCreate/snapshot 시점엔 아직 없음).
   // CoupangWriteJob.actionId 같은 멱등 FK에 쓴다.
   actionId?: string

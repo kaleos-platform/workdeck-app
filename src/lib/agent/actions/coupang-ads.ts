@@ -87,7 +87,7 @@ const executionApprove: ActionDefinition<z.infer<typeof executionApproveParams>>
       data: {
         status: 'APPROVED',
         approvedAt: new Date(),
-        approvedBy: ctx.requestedBy,
+        approvedBy: ctx.deciderId ?? ctx.requestedBy,
       },
     })
 
@@ -96,7 +96,4 @@ const executionApprove: ActionDefinition<z.infer<typeof executionApproveParams>>
 }
 
 // coupang-ads deck 승인 큐 액션.
-export const coupangAdsActions: ActionDefinition[] = [
-  def(analysisTrigger),
-  def(executionApprove),
-]
+export const coupangAdsActions: ActionDefinition[] = [def(analysisTrigger), def(executionApprove)]

@@ -81,4 +81,25 @@ d('seller-hub.reorder.plan.create execute', () => {
     // 정리 (다음 실행 대비)
     await prisma.reorderPlan.deleteMany({ where: { spaceId: SPACE_ID } })
   })
+
+  test('에이전트가 제안한 발주 계획은 승인자를 createdById로 기록한다', async () => {
+    const r = await createPendingAction({
+      spaceId: SPACE_ID,
+      actionType: 'seller-hub.reorder.plan.create',
+      params: { productId },
+      summary: 'e2e 에이전트 제안',
+      source: 'MCP',
+      requestedBy: 'ag-e2e', // User가 아님 — createdById(User FK)로 쓰면 깨진다
+    })
+    const out = await approveAndExecute(r.actionId, USER_ID)
+    expect(out.status).toBe('EXECUTED')
+    const planId = (out as { result: { planId: string } }).result.planId
+    const plan = await prisma.reorderPlan.findUnique({
+      where: { id: planId },
+      select: { createdById: true },
+    })
+    expect(plan?.createdById).toBe(USER_ID)
+
+    await prisma.reorderPlan.deleteMany({ where: { spaceId: SPACE_ID } })
+  })
 })

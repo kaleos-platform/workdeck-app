@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import { toolDefinitions } from '@/lib/agent/tools'
-import type { ToolDefinition } from '@/lib/agent/tools'
+import type { McpToolContext, ToolDefinition } from '@/lib/agent/tools'
+import { runTool } from '@/lib/agent/tools/run-tool'
 import type { ConversationTurn } from './conversation'
 
 /**
@@ -13,7 +14,7 @@ import type { ConversationTurn } from './conversation'
  *  - tool 스키마: zod 4의 z.toJSONSchema로 네이티브 변환(Anthropic tool = { name, description, input_schema }).
  *  - stop_reason === "tool_use"면 모든 tool_use 블록을 실행하고 tool_result 전부를 단일 user 메시지로 반환.
  *  - 최대 8 iteration. 초과 시 폴백 텍스트.
- *  - tool ctx는 MCP tool과 동일 { userId } (write tool은 createPendingAction만 호출하므로 안전).
+ *  - tool ctx는 MCP와 같은 McpToolContext(내장 에이전트 actor=system). write tool은 createPendingAction만 호출.
  */
 
 const DEFAULT_MODEL = 'claude-opus-4-8'
@@ -56,7 +57,7 @@ export interface AgentLoopResult {
 }
 
 export interface RunAgentLoopArgs {
-  requestedBy: string // tool ctx.userId (write tool의 requestedBy로 사용됨)
+  ctx: McpToolContext // 도구 실행 컨텍스트(spaceId·actor·scopes)
   userText: string
   history: ConversationTurn[]
 }
@@ -72,7 +73,6 @@ export async function runAgentLoop(args: RunAgentLoopArgs): Promise<AgentLoopRes
   const client = new Anthropic() // ANTHROPIC_API_KEY 환경변수 사용
   const model = resolveModel()
   const tools = buildAnthropicTools()
-  const ctx = { userId: args.requestedBy }
 
   const messages: Anthropic.MessageParam[] = [
     ...args.history.map((t) => ({ role: t.role, content: t.content })),
@@ -122,7 +122,7 @@ export async function runAgentLoop(args: RunAgentLoopArgs): Promise<AgentLoopRes
         continue
       }
       try {
-        const result = await def.execute(ctx, (tu.input ?? {}) as Record<string, unknown>)
+        const result = await runTool(def, args.ctx, (tu.input ?? {}) as Record<string, unknown>)
         toolResults.push({
           type: 'tool_result',
           tool_use_id: tu.id,
