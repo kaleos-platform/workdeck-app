@@ -465,6 +465,11 @@ model Space {
   // Slack 연동 (M3)
   slackInstallation SlackInstallation?
 
+  // 에이전트 감사·사용량·외부 자격증명
+  toolAuditLogs    ToolAuditLog[]
+  usageEvents      UsageEvent[]
+  spaceCredentials SpaceCredential[]
+
   // 온보딩 카드 닫힘 시각 (사용자가 명시적으로 X 클릭 시 기록)
   onboardingDismissedAt DateTime?
   // 승인 한도(원) — 이 금액을 넘는 지출 제안은 OWNER 만 승인. null = 0(금액이 있는 제안은 모두 OWNER).
@@ -633,6 +638,74 @@ model SpaceAgent {
 
   @@unique([spaceId, name])
   @@map("SpaceAgentIdentity")
+}
+
+// 도구 호출 감사 로그 — 모든 MCP·내장 에이전트 도구 호출과 승인 실행 1건당 1행. 자격증명 복호화도 여기 남긴다.
+// 실행 전에 outcome="started"로 만들고 실행 뒤 ok/error로 갱신한다. 오래 "started"인 행 = 결과 미확인(재실행하지 않는다).
+model ToolAuditLog {
+  id                     String   @id @default(cuid())
+  spaceId                String
+  workId                 String
+  actorType              String // "user" | "agent" | "integration" | "system" — 제안·호출한 원래 행위자
+  actorId                String
+  requesterUserId        String?
+  tool                   String // MCP 도구 이름 또는 "action:<actionType>"(승인 실행)
+  argsSummary            String // summarizeArgs — 비밀값 마스킹, 1000자 제한
+  outcome                String // "started" | "ok" | "error" | "denied"
+  error                  String?
+  durationMs             Int?
+  decryptedCredentialIds String[]
+  actionId               String? // 승인 실행이면 AgentPendingAction.id
+  deciderUserId          String? // 승인 실행이면 승인한 구성원 User.id(행위자와 별도)
+  createdAt              DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, createdAt])
+  @@index([workId])
+}
+
+// 출처별 LLM 사용량 이벤트(행 단위). 집계·대시보드는 ④·⑦.
+model UsageEvent {
+  id              String   @id @default(cuid())
+  spaceId         String
+  source          String // "hermes" | "workdeck" | "claude-code" | "codex" | "aside"
+  actorType       String
+  actorId         String
+  requesterUserId String?
+  model           String
+  provider        String
+  planClass       String // "sub" | "payg" | "local"
+  inputTokens     Int      @default(0)
+  outputTokens    Int      @default(0)
+  cachedTokens    Int      @default(0)
+  costUsd         Decimal? @db.Decimal(12, 6)
+  workId          String?
+  createdAt       DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, createdAt])
+  @@index([workId])
+}
+
+// Space 단위 외부 서비스 자격증명(메타·구글 등). encryptedPayload·iv는 공통 암호화 모듈 `encryptField('space-credential', …)`의 `StoredField`(encrypted, iv)에 그대로 대응한다.
+// config는 비밀이 아닌 설정(브랜드 → 광고 계정·속성 매핑 등).
+model SpaceCredential {
+  id               String    @id @default(cuid())
+  spaceId          String
+  provider         String // "meta-ads" | "google-marketing"
+  encryptedPayload String // StoredField.encrypted (형식은 field-crypto가 정한다. 여기서 해석하지 않는다)
+  iv               String // StoredField.iv
+  config           Json?
+  lastVerifiedAt   DateTime?
+  lastError        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, provider])
 }
 
 // 에이전트 토큰. 평문은 발급할 때 한 번만 보여 주고, DB에는 sha256(secret) hex만 둔다.

@@ -61,4 +61,5 @@ export const REENCRYPT_TARGETS: ReadonlyArray<{
     pairs: [['sourceSnapshotEnc', 'sourceSnapshotIv']],
   },
   { model: 'HiringBlacklist', purpose: 'pii', pairs: [['phoneEnc', 'phoneIv']] },
+  { model: 'SpaceCredential', purpose: 'space-credential', pairs: [['encryptedPayload', 'iv']] },
 ]

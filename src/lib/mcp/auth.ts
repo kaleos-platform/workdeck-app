@@ -75,6 +75,7 @@ export async function resolveUserPrincipal(
         spaceId: bound.spaceId,
         actor: { type: 'integration', id: bound.id },
         scopes: parseScopes(bound.scopes),
+        requesterUserId: userId,
       },
     }
   }

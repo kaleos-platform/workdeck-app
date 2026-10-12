@@ -65,6 +65,9 @@ export const ModelName = {
   AgentPendingAction: 'AgentPendingAction',
   SpaceAgentSetting: 'SpaceAgentSetting',
   SpaceAgent: 'SpaceAgent',
+  ToolAuditLog: 'ToolAuditLog',
+  UsageEvent: 'UsageEvent',
+  SpaceCredential: 'SpaceCredential',
   AgentToken: 'AgentToken',
   AgentLlmUsage: 'AgentLlmUsage',
   AgentConversation: 'AgentConversation',
@@ -440,6 +443,64 @@ export const SpaceAgentScalarFieldEnum = {
 } as const
 
 export type SpaceAgentScalarFieldEnum = (typeof SpaceAgentScalarFieldEnum)[keyof typeof SpaceAgentScalarFieldEnum]
+
+
+export const ToolAuditLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  workId: 'workId',
+  actorType: 'actorType',
+  actorId: 'actorId',
+  requesterUserId: 'requesterUserId',
+  tool: 'tool',
+  argsSummary: 'argsSummary',
+  outcome: 'outcome',
+  error: 'error',
+  durationMs: 'durationMs',
+  decryptedCredentialIds: 'decryptedCredentialIds',
+  actionId: 'actionId',
+  deciderUserId: 'deciderUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type ToolAuditLogScalarFieldEnum = (typeof ToolAuditLogScalarFieldEnum)[keyof typeof ToolAuditLogScalarFieldEnum]
+
+
+export const UsageEventScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  source: 'source',
+  actorType: 'actorType',
+  actorId: 'actorId',
+  requesterUserId: 'requesterUserId',
+  model: 'model',
+  provider: 'provider',
+  planClass: 'planClass',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  cachedTokens: 'cachedTokens',
+  costUsd: 'costUsd',
+  workId: 'workId',
+  createdAt: 'createdAt'
+} as const
+
+export type UsageEventScalarFieldEnum = (typeof UsageEventScalarFieldEnum)[keyof typeof UsageEventScalarFieldEnum]
+
+
+export const SpaceCredentialScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  provider: 'provider',
+  encryptedPayload: 'encryptedPayload',
+  iv: 'iv',
+  config: 'config',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceCredentialScalarFieldEnum = (typeof SpaceCredentialScalarFieldEnum)[keyof typeof SpaceCredentialScalarFieldEnum]
 
 
 export const AgentTokenScalarFieldEnum = {

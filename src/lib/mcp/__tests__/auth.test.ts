@@ -130,6 +130,7 @@ describe('verifyToken', () => {
       spaceId: 'sp2',
       actor: { type: 'integration', id: 'int1' },
       scopes: ['meta:read'],
+      requesterUserId: 'u1',
     })
   })
 

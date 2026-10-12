@@ -1,4 +1,11 @@
 // @jest-environment node
+// runTool의 감사 기록(ToolAuditLog)은 이 테스트의 관심 밖 — DB 없이 통과하도록 대체한다.
+jest.mock('@/lib/agent/audit', () => ({
+  AUDIT_UNAVAILABLE: '감사 기록을 남길 수 없어 실행하지 않았습니다',
+  startToolAudit: async () => 'aud_test',
+  finishToolAudit: async () => undefined,
+  maskSecrets: (s: string) => s,
+}))
 import { routeAgentMessage } from '../router'
 import { toolDefinitions } from '@/lib/agent/tools'
 import { checkAndIncrementUsage } from '../llm/usage'
