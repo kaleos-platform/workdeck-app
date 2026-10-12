@@ -124,6 +124,13 @@ describe('runTool', () => {
       })
       expect(findFirst).not.toHaveBeenCalled()
     })
+    it('형식이 틀린 Slack ID는 "제공되지 않음" — 연동 계정 세션의 요청자를 유지한다', async () => {
+      await expect(withRequester(integration(), 'not-slack')).resolves.toMatchObject({
+        requesterUserId: 'u-session',
+        requesterSlackUserId: null,
+      })
+      expect(findFirst).not.toHaveBeenCalled()
+    })
     it('확인되지 않는 Slack ID → null, 원문 ID는 남긴다', async () => {
       findFirst.mockResolvedValue(null)
       await expect(withRequester(integration(), 'U999')).resolves.toMatchObject({

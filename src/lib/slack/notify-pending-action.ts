@@ -70,7 +70,10 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
     if (!channel) return
 
     const token = decryptBotToken(installation.botToken, installation.botTokenIv)
-    const [who] = await describeActors([action])
+    // 표시 이름은 사용자 입력이라 mrkdwn 제어 문자(<!channel> 등)를 이스케이프한다.
+    const [who] = (await describeActors([action])).map((s) =>
+      s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    )
 
     const blocks = [
       { type: 'header', text: { type: 'plain_text', text: '🔔 에이전트 승인 요청', emoji: true } },

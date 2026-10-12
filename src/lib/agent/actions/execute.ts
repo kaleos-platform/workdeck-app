@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
-import { finishToolAudit, startToolAudit } from '@/lib/agent/audit'
+import { finishToolAudit, maskSecrets, startToolAudit } from '@/lib/agent/audit'
+import { isPrismaError } from '@/lib/agent/tools/run-tool'
 import type { ActorType } from '@/lib/agent/identity/principal'
 import type { ActionExecContext } from './types'
 import { getActionDefinition } from './registry'
@@ -33,6 +34,26 @@ export type DecisionOutcome =
  *   --(execute 성공)--> EXECUTED(+result) / --(execute throw)--> FAILED(+error).
  * execute가 throw해도 APPROVED에 머물지 않는다. 실행 감사(tool: 'action:<actionType>')는 여기서만 쓴다.
  */
+export const ACTION_INTERNAL_ERROR = '액션 실행 중 내부 오류가 발생했습니다'
+
+/**
+ * 실행 오류 문구 — AgentPendingAction.error(승인 UI·Slack 승인 채널에 게시)와 감사 행에 같이 쓴다.
+ * Prisma 오류는 메시지에 쿼리·인자가 섞이므로 일반 문구(로그·감사에는 종류·코드만).
+ * 그 밖(도메인·외부 API 오류)은 승인자가 맥락을 보도록 비밀 마스킹 후 1000자로 남긴다.
+ */
+function executionError(err: unknown): string {
+  if (isPrismaError(err)) {
+    const code = (err as { code?: unknown }).code
+    console.error(
+      '[agent] 액션 실행 중 DB 오류',
+      `${(err as Error).name}${typeof code === 'string' ? ` ${code}` : ''}`
+    )
+    return ACTION_INTERNAL_ERROR
+  }
+  const raw = err instanceof Error ? err.message : '실행 중 알 수 없는 오류'
+  return maskSecrets(raw).slice(0, 1000)
+}
+
 export async function approveAndExecute(
   actionId: string,
   deciderId: string
@@ -151,7 +172,7 @@ export async function approveAndExecute(
     const parsed = def.paramsSchema.parse(action.payload)
     result = await def.execute(ctx, parsed)
   } catch (err) {
-    const error = err instanceof Error ? err.message : '실행 중 알 수 없는 오류'
+    const error = executionError(err)
     await finishToolAudit(auditId, {
       outcome: 'error',
       error,
@@ -165,10 +186,15 @@ export async function approveAndExecute(
     durationMs: Date.now() - started,
     decryptedCredentialIds: ctx.decryptedCredentialIds,
   })
-  await prisma.agentPendingAction.update({
-    where: { id: actionId },
-    data: { status: 'EXECUTED', executedAt: new Date(), result: (result ?? null) as object },
-  })
+  try {
+    await prisma.agentPendingAction.update({
+      where: { id: actionId },
+      data: { status: 'EXECUTED', executedAt: new Date(), result: (result ?? null) as object },
+    })
+  } catch (err) {
+    console.error('[agent] EXECUTED 기록 실패 — APPROVED로 남음', actionId)
+    throw err
+  }
   return { ok: true, status: 'EXECUTED', result }
 }
 

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 
-const SLACK_USER_RE = /^[UW][A-Z0-9]{2,20}$/
+export const SLACK_USER_RE = /^[UW][A-Z0-9]{2,20}$/
 
 /**
  * 에이전트가 넘긴 Slack 사용자 ID를 같은 Space의 구성원으로 바꾼다.

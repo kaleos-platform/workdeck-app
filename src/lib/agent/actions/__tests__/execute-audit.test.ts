@@ -4,7 +4,8 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { finishToolAudit, startToolAudit } from '@/lib/agent/audit'
 import { getActionDefinition } from '../registry'
-import { approveAndExecute } from '../execute'
+import { ACTION_INTERNAL_ERROR, approveAndExecute } from '../execute'
+import { Prisma } from '@/generated/prisma/client'
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
@@ -16,7 +17,11 @@ jest.mock('@/lib/billing/entitlement', () => ({
 }))
 jest.mock('../decision-policy', () => ({ deciderDenial: jest.fn().mockResolvedValue(null) }))
 jest.mock('../registry', () => ({ getActionDefinition: jest.fn() }))
-jest.mock('@/lib/agent/audit', () => ({ startToolAudit: jest.fn(), finishToolAudit: jest.fn() }))
+jest.mock('@/lib/agent/audit', () => ({
+  startToolAudit: jest.fn(),
+  finishToolAudit: jest.fn(),
+  maskSecrets: jest.requireActual('@/lib/agent/audit').maskSecrets,
+}))
 
 const p = prisma.agentPendingAction as unknown as {
   findUnique: jest.Mock
@@ -39,6 +44,7 @@ beforeEach(() => {
     workId: 'wk_1',
   })
   p.updateMany.mockResolvedValue({ count: 1 })
+  p.update.mockReset().mockResolvedValue({})
   ;(getActionDefinition as jest.Mock).mockReturnValue({
     actionType: 'x',
     paramsSchema: z.object({}),
@@ -85,4 +91,46 @@ test('실행 후 EXECUTED 갱신 실패 → 한 번만 실행, FAILED로 덮지 
   expect(finishToolAudit).toHaveBeenCalledWith('aud1', expect.objectContaining({ outcome: 'ok' }))
   expect(p.update).toHaveBeenCalledTimes(1)
   expect(p.update.mock.calls[0][0].data.status).toBe('EXECUTED')
+})
+
+test('Prisma 오류 → 승인 UI·Slack에는 일반 문구, 쿼리·인자 원문은 남기지 않는다', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => undefined)
+  execute.mockRejectedValueOnce(
+    new Prisma.PrismaClientKnownRequestError('Invalid `prisma.x.update()` where {"secret":"s3"}', {
+      code: 'P2025',
+      clientVersion: 'test',
+    })
+  )
+  await expect(approveAndExecute('a1', 'u-decider')).resolves.toEqual({
+    ok: false,
+    status: 'FAILED',
+    error: ACTION_INTERNAL_ERROR,
+  })
+  expect(p.update.mock.calls[0][0].data.error).toBe(ACTION_INTERNAL_ERROR)
+  expect(finishToolAudit).toHaveBeenCalledWith(
+    'aud1',
+    expect.objectContaining({ outcome: 'error', error: ACTION_INTERNAL_ERROR })
+  )
+  expect(JSON.stringify((console.error as jest.Mock).mock.calls)).not.toContain('s3')
+})
+
+test('도메인·외부 API 오류 → 원문 유지하되 비밀은 가리고 1000자로 자른다', async () => {
+  execute.mockRejectedValueOnce(
+    new Error(`쿠팡 API 실패: https://api.x/y?access_token=abc123 ${'x'.repeat(2000)}`)
+  )
+  const out = await approveAndExecute('a1', 'u-decider')
+  expect(out).toMatchObject({ status: 'FAILED' })
+  const error = (out as { error: string }).error
+  expect(error).toContain('쿠팡 API 실패')
+  expect(error).toContain('access_token=[redacted]')
+  expect(error).not.toContain('abc123')
+  expect(error.length).toBe(1000)
+  expect(p.update.mock.calls[0][0].data.error).toBe(error)
+})
+
+test('EXECUTED 기록 실패는 actionId를 로그에 남기고 다시 던진다', async () => {
+  const log = jest.spyOn(console, 'error').mockImplementation(() => undefined)
+  p.update.mockRejectedValue(new Error('db down'))
+  await expect(approveAndExecute('a1', 'u-decider')).rejects.toThrow('db down')
+  expect(log).toHaveBeenCalledWith(expect.stringContaining('EXECUTED 기록 실패'), 'a1')
 })

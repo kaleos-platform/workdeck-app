@@ -90,6 +90,28 @@ describe('notifyPendingAction — 실패 흡수', () => {
     expect(body).not.toContain('user-1')
   })
 
+  test('표시 이름의 mrkdwn 제어 문자는 이스케이프한다(<!channel> 주입 방지)', async () => {
+    ;(
+      mockPrisma as unknown as { user: { findMany: jest.Mock } }
+    ).user.findMany.mockResolvedValueOnce([{ id: 'user-1', name: '<!channel> & co', email: 'b@x' }])
+    mockPrisma.agentPendingAction.findUnique.mockResolvedValue(baseAction)
+    mockPrisma.slackInstallation.findUnique.mockResolvedValue({
+      botToken: encryptForTest('xoxb-fake'),
+      botTokenIv: TEST_IV,
+    })
+    mockPrisma.spaceSlackChannel.findUnique.mockResolvedValue({ channelId: 'C123' })
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true, ts: '1.1', channel: 'C123' }),
+    })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await notifyPendingAction('act-1')
+    const body = String(fetchMock.mock.calls[0][1].body)
+    expect(body).toContain('요청자 &lt;!channel&gt; &amp; co')
+    expect(body).not.toContain('<!channel>')
+  })
+
   test('액션 없음 → 조용히 반환', async () => {
     mockPrisma.agentPendingAction.findUnique.mockResolvedValue(null)
     await expect(notifyPendingAction('missing')).resolves.toBeUndefined()

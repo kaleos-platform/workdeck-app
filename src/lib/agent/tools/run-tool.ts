@@ -9,7 +9,7 @@ import { Prisma } from '@/generated/prisma/client'
 import { finishToolAudit, maskSecrets, startToolAudit } from '@/lib/agent/audit'
 import { ToolUserError } from './errors'
 import { newWorkId, normalizeWorkId } from '@/lib/agent/work-id'
-import { resolveRequester } from '@/lib/agent/requester'
+import { resolveRequester, SLACK_USER_RE } from '@/lib/agent/requester'
 import type { McpToolContext, ToolDefinition } from './types'
 
 export class ToolScopeError extends ToolUserError {
@@ -82,7 +82,8 @@ export async function withRequester(
   ctx: McpToolContext,
   slackUserId: string | null | undefined
 ): Promise<McpToolContext> {
-  if (!slackUserId || ctx.actor.type === 'user') return ctx
+  // 형식이 틀린 값은 "제공되지 않음" — 쓰레기 값이 확인된 요청자(연동 계정 세션)를 지우지 않게 한다.
+  if (!slackUserId || !SLACK_USER_RE.test(slackUserId) || ctx.actor.type === 'user') return ctx
   return { ...ctx, ...(await resolveRequester(ctx.spaceId, slackUserId)) }
 }
 
@@ -131,9 +132,13 @@ const PRISMA_ERRORS = [
  * 감사 행에 남길 오류 요약. 도메인 오류(ToolUserError)는 메시지, 그 밖은 `종류: 메시지`(마스킹은 audit.ts).
  * Prisma 오류는 메시지에 쿼리·인자가 섞이므로 종류·코드만 남긴다.
  */
+export function isPrismaError(err: unknown): boolean {
+  return PRISMA_ERRORS.some((C) => err instanceof C)
+}
+
 function errorSummary(err: unknown): string {
   if (err instanceof ToolUserError) return err.message
-  if (PRISMA_ERRORS.some((C) => err instanceof C)) {
+  if (isPrismaError(err)) {
     const code = (err as { code?: unknown }).code
     return `${(err as Error).name}${typeof code === 'string' ? ` ${code}` : ''}`
   }
