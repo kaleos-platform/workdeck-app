@@ -44,7 +44,9 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
   requiredRole: 'ADMIN',
   execute: async (ctx, params) => {
     const spaceId = ctx.spaceId
-    const userId = ctx.requestedBy
+    // createdById는 User FK — 제안자가 에이전트일 수 있으므로 승인한 구성원으로 기록한다.
+    const userId = ctx.deciderId
+    if (!userId) throw new Error('승인자 정보가 없습니다')
 
     const selectedOptionIds =
       Array.isArray(params.optionIds) && params.optionIds.length > 0 ? params.optionIds : null
@@ -86,14 +88,19 @@ const reorderPlanCreate: ActionDefinition<z.infer<typeof reorderPlanParams>> = {
       where: { spaceId, status: 'ORDERED', items: { some: { optionId: { in: optionIds } } } },
       select: {
         status: true,
-        items: { where: { optionId: { in: optionIds } }, select: { optionId: true, quantity: true } },
+        items: {
+          where: { optionId: { in: optionIds } },
+          select: { optionId: true, quantity: true },
+        },
       },
     })
     const incomingByOption = sumIncomingProductionQtyByOption(pendingRuns)
 
     // ── 3) 주문수요 로드(활성 채널 전수) → 옵션별 일별 집계 ──
     const now = new Date()
-    const since = new Date(now.getTime() - Math.max(DEFAULT_WINDOW_DAYS, windowDays) * 24 * 60 * 60 * 1000)
+    const since = new Date(
+      now.getTime() - Math.max(DEFAULT_WINDOW_DAYS, windowDays) * 24 * 60 * 60 * 1000
+    )
     const activeChannels = await prisma.channel.findMany({
       where: { spaceId, isActive: true },
       select: { id: true, name: true, externalSource: true },

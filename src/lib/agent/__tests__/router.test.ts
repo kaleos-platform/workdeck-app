@@ -63,7 +63,7 @@ function toolExec(name: string): jest.Mock {
 
 const baseArgs = {
   spaceId: 'space-1',
-  requestedBy: 'user-1',
+  requesterSlackUserId: 'U1',
   channelId: 'C1',
   threadTs: 'T1',
 }
@@ -80,6 +80,15 @@ describe('routeAgentMessage — 정형 명령 매칭', () => {
   test('"상태" → ads_get_kpi 직접 실행, LLM 미호출', async () => {
     const r = await routeAgentMessage({ ...baseArgs, text: '상태' })
     expect(toolExec('ads_get_kpi')).toHaveBeenCalledTimes(1)
+    // 도구는 내장 에이전트 컨텍스트(이 Space, actor=system)로 실행된다.
+    expect(toolExec('ads_get_kpi')).toHaveBeenCalledWith(
+      expect.objectContaining({
+        spaceId: 'space-1',
+        actor: { type: 'system', id: 'workdeck-agent' },
+        requesterSlackUserId: 'U1',
+      }),
+      expect.anything()
+    )
     expect(mockLoop).not.toHaveBeenCalled()
     expect(r.text).toContain('KPI')
   })
@@ -167,6 +176,10 @@ describe('routeAgentMessage — LLM 폴백', () => {
   test('미매칭 자연어 → LLM 루프 진입 + 대화 저장', async () => {
     const r = await routeAgentMessage({ ...baseArgs, text: '이번 달 지출이 얼마야?' })
     expect(mockLoop).toHaveBeenCalledTimes(1)
+    expect(mockLoop.mock.calls[0][0].ctx).toMatchObject({
+      spaceId: 'space-1',
+      requesterSlackUserId: 'U1',
+    })
     expect(mockAppend).toHaveBeenCalled()
     expect(r.text).toBe('LLM 응답')
   })

@@ -9,6 +9,7 @@ import { prisma } from '@/lib/prisma'
 import { writeTools } from '../write-tools'
 import { toolDefinitions } from '../index'
 import { approveAndExecute } from '@/lib/agent/actions/execute'
+import type { McpToolContext } from '../types'
 
 const RUN = Boolean(process.env.DATABASE_URL)
 const d = RUN ? describe : describe.skip
@@ -16,6 +17,16 @@ const d = RUN ? describe : describe.skip
 const SPACE_ID = 'e2e00000-0000-4000-8000-0000000000d1'
 const USER_ID = 'e2e00000-0000-4000-8000-0000000000d2'
 const ACCT_ID = 'e2e00000-0000-4000-8000-0000000000d3'
+
+const CTX: McpToolContext = {
+  spaceId: SPACE_ID,
+  actor: { type: 'user', id: USER_ID },
+  scopes: ['finance:write', 'sellerhub:write', 'ads:write'],
+  workId: 'wk_e2e',
+  requesterUserId: null,
+  requesterSlackUserId: null,
+  decryptedCredentialIds: [],
+}
 
 const byName = (n: string) => {
   const t = writeTools.find((x) => x.name === n)
@@ -43,7 +54,7 @@ d('write tool 계약 (승인 큐 경유·직접 mutate 금지)', () => {
       update: {},
       create: { spaceId: SPACE_ID, userId: USER_ID, role: 'ADMIN' },
     })
-    // finance deck 활성 — resolveMcpDeckContext 게이트 통과용.
+    // finance deck 활성 — requireDeck 게이트 통과용.
     await prisma.deckInstance.upsert({
       where: { spaceId_deckAppId: { spaceId: SPACE_ID, deckAppId: 'finance' } },
       update: { isActive: true },
@@ -101,10 +112,11 @@ d('write tool 계약 (승인 큐 경유·직접 mutate 금지)', () => {
   })
 
   test('classify: pending_approval 반환 + PENDING 1건 + 거래 UNCLASSIFIED 유지(직접 mutate 안 함)', async () => {
-    const result = (await byName('finance_classify_transactions').execute(
-      { userId: USER_ID },
-      { transactionId: txnId, categoryId, learn: false }
-    )) as { status: string; actionId: string }
+    const result = (await byName('finance_classify_transactions').execute(CTX, {
+      transactionId: txnId,
+      categoryId,
+      learn: false,
+    })) as { status: string; actionId: string }
 
     // (a) 승인 대기 반환
     expect(result.status).toBe('pending_approval')
@@ -126,10 +138,11 @@ d('write tool 계약 (승인 큐 경유·직접 mutate 금지)', () => {
   })
 
   test('create_class_rule: PENDING 1건 + 규칙 미생성(승인 전)', async () => {
-    const result = (await byName('finance_create_class_rule').execute(
-      { userId: USER_ID },
-      { matchKey: '테스트가맹점', categoryId, matchType: 'KEYWORD' }
-    )) as { status: string; actionId: string }
+    const result = (await byName('finance_create_class_rule').execute(CTX, {
+      matchKey: '테스트가맹점',
+      categoryId,
+      matchType: 'KEYWORD',
+    })) as { status: string; actionId: string }
 
     expect(result.status).toBe('pending_approval')
     // 규칙은 아직 없어야 — 직접 mutate 금지.
@@ -143,10 +156,10 @@ d('write tool 계약 (승인 큐 경유·직접 mutate 금지)', () => {
 
   test('멱등: 동일 파라미터 재호출 → 같은 actionId(중복 큐 없음)', async () => {
     const p = { transactionId: txnId, categoryId, learn: false }
-    const a = (await byName('finance_classify_transactions').execute({ userId: USER_ID }, p)) as {
+    const a = (await byName('finance_classify_transactions').execute(CTX, p)) as {
       actionId: string
     }
-    const b = (await byName('finance_classify_transactions').execute({ userId: USER_ID }, p)) as {
+    const b = (await byName('finance_classify_transactions').execute(CTX, p)) as {
       actionId: string
     }
     expect(b.actionId).toBe(a.actionId)
@@ -162,10 +175,11 @@ d('write tool 계약 (승인 큐 경유·직접 mutate 금지)', () => {
       data: { isActive: false },
     })
     await expect(
-      byName('finance_classify_transactions').execute(
-        { userId: USER_ID },
-        { transactionId: txnId, categoryId, learn: false }
-      )
+      byName('finance_classify_transactions').execute(CTX, {
+        transactionId: txnId,
+        categoryId,
+        learn: false,
+      })
     ).rejects.toThrow()
     const count = await prisma.agentPendingAction.count({ where: { spaceId: SPACE_ID } })
     expect(count).toBe(0)
