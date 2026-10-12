@@ -1,7 +1,15 @@
 // @jest-environment node
+// runTool의 감사 기록(ToolAuditLog)은 이 테스트의 관심 밖 — DB 없이 통과하도록 대체한다.
+jest.mock('@/lib/agent/audit', () => ({
+  AUDIT_UNAVAILABLE: '감사 기록을 남길 수 없어 실행하지 않았습니다',
+  startToolAudit: async () => 'aud_test',
+  finishToolAudit: async () => undefined,
+  maskSecrets: (s: string) => s,
+}))
 import { routeAgentMessage } from '../router'
 import { toolDefinitions } from '@/lib/agent/tools'
 import { checkAndIncrementUsage } from '../llm/usage'
+import { recordTokens } from '../llm/usage'
 import { runAgentLoop } from '../llm/agent-loop'
 import { loadConversation, appendConversation } from '../llm/conversation'
 import { prisma } from '@/lib/prisma'
@@ -41,8 +49,9 @@ jest.mock('../llm/conversation', () => ({
 }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    spaceAgent: { findUnique: jest.fn() },
+    spaceAgentSetting: { findUnique: jest.fn() },
     agentPendingAction: { findMany: jest.fn() },
+    spaceMember: { findFirst: jest.fn() },
   },
 }))
 
@@ -51,8 +60,9 @@ const mockLoop = runAgentLoop as jest.Mock
 const mockLoad = loadConversation as jest.Mock
 const mockAppend = appendConversation as jest.Mock
 const mockPrisma = prisma as unknown as {
-  spaceAgent: { findUnique: jest.Mock }
+  spaceAgentSetting: { findUnique: jest.Mock }
   agentPendingAction: { findMany: jest.Mock }
+  spaceMember: { findFirst: jest.Mock }
 }
 
 // 특정 tool의 execute mock을 이름으로 꺼낸다.
@@ -63,7 +73,7 @@ function toolExec(name: string): jest.Mock {
 
 const baseArgs = {
   spaceId: 'space-1',
-  requestedBy: 'user-1',
+  requesterSlackUserId: 'U123',
   channelId: 'C1',
   threadTs: 'T1',
 }
@@ -71,15 +81,28 @@ const baseArgs = {
 describe('routeAgentMessage — 정형 명령 매칭', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockPrisma.spaceAgent.findUnique.mockResolvedValue(null)
+    mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue(null)
     mockPrisma.agentPendingAction.findMany.mockResolvedValue([])
     mockUsage.mockResolvedValue({ allowed: true })
-    mockLoop.mockResolvedValue({ text: 'LLM 응답', usage: { inputTokens: 10, outputTokens: 5 } })
+    mockLoop.mockResolvedValue({
+      text: 'LLM 응답',
+      usage: { inputTokens: 10, outputTokens: 5 },
+      model: 'claude-x',
+    })
   })
 
   test('"상태" → ads_get_kpi 직접 실행, LLM 미호출', async () => {
     const r = await routeAgentMessage({ ...baseArgs, text: '상태' })
     expect(toolExec('ads_get_kpi')).toHaveBeenCalledTimes(1)
+    // 도구는 내장 에이전트 컨텍스트(이 Space, actor=system)로 실행된다.
+    expect(toolExec('ads_get_kpi')).toHaveBeenCalledWith(
+      expect.objectContaining({
+        spaceId: 'space-1',
+        actor: { type: 'system', id: 'workdeck-agent' },
+        requesterSlackUserId: 'U123',
+      }),
+      expect.anything()
+    )
     expect(mockLoop).not.toHaveBeenCalled()
     expect(r.text).toContain('KPI')
   })
@@ -158,21 +181,62 @@ describe('routeAgentMessage — 정형 명령 매칭', () => {
 describe('routeAgentMessage — LLM 폴백', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockPrisma.spaceAgent.findUnique.mockResolvedValue(null)
+    mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue(null)
     mockUsage.mockResolvedValue({ allowed: true })
     mockLoad.mockResolvedValue([])
-    mockLoop.mockResolvedValue({ text: 'LLM 응답', usage: { inputTokens: 10, outputTokens: 5 } })
+    mockLoop.mockResolvedValue({
+      text: 'LLM 응답',
+      usage: { inputTokens: 10, outputTokens: 5 },
+      model: 'claude-x',
+    })
   })
 
   test('미매칭 자연어 → LLM 루프 진입 + 대화 저장', async () => {
     const r = await routeAgentMessage({ ...baseArgs, text: '이번 달 지출이 얼마야?' })
     expect(mockLoop).toHaveBeenCalledTimes(1)
+    expect(mockLoop.mock.calls[0][0].ctx).toMatchObject({
+      spaceId: 'space-1',
+      requesterSlackUserId: 'U123',
+    })
     expect(mockAppend).toHaveBeenCalled()
+    expect(recordTokens as jest.Mock).toHaveBeenCalledWith('space-1', 10, 5, {
+      model: 'claude-x',
+      actor: mockLoop.mock.calls[0][0].ctx.actor,
+      requesterUserId: mockLoop.mock.calls[0][0].ctx.requesterUserId,
+      workId: mockLoop.mock.calls[0][0].ctx.workId,
+    })
+    expect(mockLoop.mock.calls[0][0].ctx.workId).toBeTruthy()
     expect(r.text).toBe('LLM 응답')
   })
 
+  test('Slack 발신자가 이 Space 구성원이면 요청자 User.id로 기록한다', async () => {
+    mockPrisma.spaceMember.findFirst.mockResolvedValue({ userId: 'u-bit' })
+    await routeAgentMessage({ ...baseArgs, text: '이번 달 지출이 얼마야?' })
+    expect(mockPrisma.spaceMember.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { spaceId: 'space-1', slackUserId: 'U123' } })
+    )
+    expect(mockLoop.mock.calls[0][0].ctx).toMatchObject({
+      actor: { type: 'system', id: 'workdeck-agent' },
+      requesterUserId: 'u-bit',
+      requesterSlackUserId: 'U123',
+    })
+  })
+
+  test('구성원이 아닌 발신자(Slack Connect 외부 등) → 요청자 null, 원문 ID만, 권한 변화 없음', async () => {
+    mockPrisma.spaceMember.findFirst.mockResolvedValue(null)
+    await routeAgentMessage({
+      ...baseArgs,
+      requesterSlackUserId: 'UEXT9',
+      text: '이번 달 지출이 얼마야?',
+    })
+    const ctx = mockLoop.mock.calls[0][0].ctx
+    expect(ctx).toMatchObject({ requesterUserId: null, requesterSlackUserId: 'UEXT9' })
+    // 구성원 세션이 아니라 내장 에이전트(system)로 남는다 — 쓰기 도구는 승인 큐만 거친다.
+    expect(ctx.actor).toEqual({ type: 'system', id: 'workdeck-agent' })
+  })
+
   test('SpaceAgent 비활성 → LLM 미호출, 안내 텍스트', async () => {
-    mockPrisma.spaceAgent.findUnique.mockResolvedValue({ isActive: false })
+    mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue({ isActive: false })
     const r = await routeAgentMessage({ ...baseArgs, text: '아무 질문' })
     expect(mockLoop).not.toHaveBeenCalled()
     expect(r.text).toContain('비활성화')

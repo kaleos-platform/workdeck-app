@@ -100,10 +100,35 @@ export type SpaceMember = Prisma.SpaceMemberModel
  */
 export type AgentPendingAction = Prisma.AgentPendingActionModel
 /**
+ * Model SpaceAgentSetting
+ * 
+ */
+export type SpaceAgentSetting = Prisma.SpaceAgentSettingModel
+/**
  * Model SpaceAgent
  * 
  */
 export type SpaceAgent = Prisma.SpaceAgentModel
+/**
+ * Model ToolAuditLog
+ * 
+ */
+export type ToolAuditLog = Prisma.ToolAuditLogModel
+/**
+ * Model UsageEvent
+ * 
+ */
+export type UsageEvent = Prisma.UsageEventModel
+/**
+ * Model SpaceCredential
+ * 
+ */
+export type SpaceCredential = Prisma.SpaceCredentialModel
+/**
+ * Model AgentToken
+ * 
+ */
+export type AgentToken = Prisma.AgentTokenModel
 /**
  * Model AgentLlmUsage
  * 

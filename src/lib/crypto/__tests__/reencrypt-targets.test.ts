@@ -36,6 +36,15 @@ test('모델별 purpose 고정', () => {
     HiringApplication: 'pii',
     HiringMigrationRecord: 'pii',
     HiringBlacklist: 'pii',
+    SpaceCredential: 'space-credential',
+  })
+})
+
+test('SpaceCredential(space-credential)이 재암호화 대상에 있다', () => {
+  expect(REENCRYPT_TARGETS).toContainEqual({
+    model: 'SpaceCredential',
+    purpose: 'space-credential',
+    pairs: [['encryptedPayload', 'iv']],
   })
 })
 

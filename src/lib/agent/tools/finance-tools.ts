@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { resolveMcpDeckContext } from '@/lib/mcp/context'
+import { requireDeck } from '@/lib/mcp/context'
 import {
   queryCashflow,
   queryTransactions,
@@ -14,7 +14,7 @@ const DECK = 'finance'
 /**
  * finance Deck 조회(read) tool 4종.
  * route와 동일한 queries.ts 함수를 공유한다.
- * resolveMcpDeckContext가 비멤버/비활성 deck 시 throw → route.ts의 try/catch가 isError로 변환.
+ * requireDeck(ctx.spaceId)가 비활성 deck 시 throw → route.ts의 try/catch가 isError로 변환.
  */
 
 /** GET /api/finance/cashflow 대응 — 현금흐름 상세(기간별 수입/지출 리프 집계 + 합계). */
@@ -27,11 +27,12 @@ const financeGetCashflowTool: ToolDefinition = {
     periods: z.array(z.string()).optional(),
   },
   mode: 'read',
+  scope: 'finance:read',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
+    await requireDeck(ctx.spaceId, DECK)
     const grain = (params.grain as Grain | undefined) ?? 'month'
     const periods = params.periods as string[] | undefined
-    return queryCashflow(space.id, { grain, periods })
+    return queryCashflow(ctx.spaceId, { grain, periods })
   },
 }
 
@@ -53,9 +54,10 @@ const financeListTransactionsTool: ToolDefinition = {
     order: z.enum(['asc', 'desc']).optional(),
   },
   mode: 'read',
+  scope: 'finance:read',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
-    return queryTransactions(space.id, {
+    await requireDeck(ctx.spaceId, DECK)
+    return queryTransactions(ctx.spaceId, {
       from: params.from as string | undefined,
       to: params.to as string | undefined,
       direction: params.direction as string | undefined,
@@ -77,9 +79,10 @@ const financeListAccountsTool: ToolDefinition = {
     '등록된 계좌(FinAccount) 전체 목록을 반환합니다. 각 계좌의 종류(BANK/CARD)·금융기관·계좌번호·기초잔액·현재잔액을 포함합니다.',
   inputSchema: {},
   mode: 'read',
+  scope: 'finance:read',
   async execute(ctx) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
-    return queryAccounts(space.id)
+    await requireDeck(ctx.spaceId, DECK)
+    return queryAccounts(ctx.spaceId)
   },
 }
 
@@ -93,11 +96,12 @@ const financeGetDashboardTool: ToolDefinition = {
     anchor: z.string().optional(),
   },
   mode: 'read',
+  scope: 'finance:read',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
+    await requireDeck(ctx.spaceId, DECK)
     const period = (params.period as 'month' | 'year' | undefined) ?? 'month'
     const anchor = params.anchor as string | undefined
-    return queryDashboard(space.id, { period, anchor })
+    return queryDashboard(ctx.spaceId, { period, anchor })
   },
 }
 

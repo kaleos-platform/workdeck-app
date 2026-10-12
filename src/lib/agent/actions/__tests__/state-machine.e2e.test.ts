@@ -93,7 +93,7 @@ d('AgentPendingAction 상태머신', () => {
       params: { value: 21 },
       summary: '테스트',
       source: 'MCP',
-      requestedBy: USER_ID,
+      actor: { type: 'user', id: USER_ID },
       idempotencyKey,
     })
   }
@@ -165,7 +165,7 @@ d('AgentPendingAction 상태머신', () => {
       params: {},
       summary: '실패',
       source: 'MCP',
-      requestedBy: USER_ID,
+      actor: { type: 'user', id: USER_ID },
     })
     const out = await approveAndExecute(created.actionId, USER_ID)
     expect(out).toMatchObject({ ok: false, status: 'FAILED' })
@@ -193,7 +193,7 @@ d('AgentPendingAction 상태머신', () => {
         params: { value: 'not-a-number' },
         summary: '잘못된 파라미터',
         source: 'MCP',
-        requestedBy: USER_ID,
+        actor: { type: 'user', id: USER_ID },
       })
     ).rejects.toThrow(/파라미터/)
     const count = await prisma.agentPendingAction.count({ where: { spaceId: SPACE_ID } })

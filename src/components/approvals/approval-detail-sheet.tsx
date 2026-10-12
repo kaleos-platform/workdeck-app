@@ -168,7 +168,7 @@ export function ApprovalDetailSheet({
           </div>
           <SheetTitle>{action.summary}</SheetTitle>
           <SheetDescription>
-            요청자 {action.requestedBy} · {SOURCE_LABELS[action.source]}
+            {action.actorLabel} · {SOURCE_LABELS[action.source]}
             {isPending && (
               <>
                 {' · '}

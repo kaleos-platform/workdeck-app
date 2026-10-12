@@ -12,6 +12,8 @@ import { prisma } from '@/lib/prisma'
 import { buildAppUrl } from '@/lib/domain'
 import { decryptBotToken } from './token-crypto'
 import { postMessage } from './client'
+import { describeActors } from '@/lib/agent/actions/actor-label'
+import { escapeMrkdwn } from './mrkdwn'
 
 // 승인 UI에서도 쓰는 deck 라벨(한국어).
 const DECK_LABELS: Record<string, string> = {
@@ -46,7 +48,10 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
         deckKey: true,
         actionType: true,
         summary: true,
-        requestedBy: true,
+        actorType: true,
+        actorId: true,
+        requesterUserId: true,
+        requesterSlackUserId: true,
         expiresAt: true,
       },
     })
@@ -66,16 +71,20 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
     if (!channel) return
 
     const token = decryptBotToken(installation.botToken, installation.botTokenIv)
+    // 표시 이름과 요약은 사용자·에이전트 입력이라 mrkdwn 제어 문자(<!channel> 등)를 이스케이프한다.
+    const esc = escapeMrkdwn
+    const [who] = (await describeActors([action])).map(esc)
+    const summary = esc(action.summary)
 
     const blocks = [
       { type: 'header', text: { type: 'plain_text', text: '🔔 에이전트 승인 요청', emoji: true } },
-      { type: 'section', text: { type: 'mrkdwn', text: action.summary } },
+      { type: 'section', text: { type: 'mrkdwn', text: summary } },
       {
         type: 'section',
         fields: [
           { type: 'mrkdwn', text: `*Deck*\n${deckLabel(action.deckKey)}` },
           { type: 'mrkdwn', text: `*액션*\n${action.actionType}` },
-          { type: 'mrkdwn', text: `*요청자*\n${action.requestedBy}` },
+          { type: 'mrkdwn', text: `*요청*\n${who}` },
           { type: 'mrkdwn', text: `*만료*\n${formatKst(action.expiresAt)}` },
         ],
       },
@@ -109,7 +118,7 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
 
     const res = await postMessage(token, {
       channel: channel.channelId,
-      text: `에이전트 승인 요청: ${action.summary}`,
+      text: `에이전트 승인 요청: ${summary}`,
       blocks,
     })
 

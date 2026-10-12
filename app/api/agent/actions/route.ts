@@ -9,6 +9,8 @@ import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { prisma } from '@/lib/prisma'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { expirePendingActions } from '@/lib/agent/actions/execute'
+import { describeActors } from '@/lib/agent/actions/actor-label'
+import type { Actor } from '@/lib/agent/identity/principal'
 import type { AgentActionStatus } from '@/generated/prisma/enums'
 
 const VALID_STATUS: AgentActionStatus[] = [
@@ -44,7 +46,9 @@ export async function GET(req: NextRequest) {
     take: 200,
   })
 
-  return NextResponse.json({ actions: rows })
+  // 행위자·요청자는 사람이 읽는 이름으로 — id(cuid)를 UI에 그대로 보이지 않는다.
+  const labels = await describeActors(rows)
+  return NextResponse.json({ actions: rows.map((r, i) => ({ ...r, actorLabel: labels[i] })) })
 }
 
 export async function POST(req: NextRequest) {
@@ -58,7 +62,8 @@ export async function POST(req: NextRequest) {
     idempotencyKey?: string
   }
 
-  let requestedBy: string
+  let actor: Actor
+  let requesterUserId: string | null = null
   let resolvedSpaceId: string
   let resolvedSource: 'MCP' | 'WORKDECK_AGENT' | 'WEB' | 'SYSTEM'
 
@@ -72,7 +77,7 @@ export async function POST(req: NextRequest) {
     const space = await prisma.space.findUnique({ where: { id: spaceId }, select: { id: true } })
     if (!space) return errorResponse('공간을 찾을 수 없습니다', 404)
     resolvedSpaceId = spaceId
-    requestedBy = 'worker'
+    actor = { type: 'system', id: 'worker' }
     resolvedSource = source === 'WORKDECK_AGENT' || source === 'SYSTEM' ? source : 'SYSTEM'
   } else {
     const resolved = await resolveSpaceContext()
@@ -82,7 +87,8 @@ export async function POST(req: NextRequest) {
       return errorResponse('다른 공간에 액션을 만들 수 없습니다', 403)
     }
     resolvedSpaceId = resolved.space.id
-    requestedBy = resolved.user.id
+    actor = { type: 'user', id: resolved.user.id }
+    requesterUserId = resolved.user.id
     resolvedSource = source === 'WEB' ? 'WEB' : 'MCP'
   }
 
@@ -100,7 +106,8 @@ export async function POST(req: NextRequest) {
       params,
       summary,
       source: resolvedSource,
-      requestedBy,
+      actor,
+      requesterUserId,
       idempotencyKey,
     })
     return NextResponse.json(result, { status: 201 })

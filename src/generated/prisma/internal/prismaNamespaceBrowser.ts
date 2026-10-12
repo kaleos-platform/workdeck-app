@@ -63,7 +63,12 @@ export const ModelName = {
   Space: 'Space',
   SpaceMember: 'SpaceMember',
   AgentPendingAction: 'AgentPendingAction',
+  SpaceAgentSetting: 'SpaceAgentSetting',
   SpaceAgent: 'SpaceAgent',
+  ToolAuditLog: 'ToolAuditLog',
+  UsageEvent: 'UsageEvent',
+  SpaceCredential: 'SpaceCredential',
+  AgentToken: 'AgentToken',
   AgentLlmUsage: 'AgentLlmUsage',
   AgentConversation: 'AgentConversation',
   SlackInstallation: 'SlackInstallation',
@@ -233,6 +238,7 @@ export const WorkspaceScalarFieldEnum = {
   id: 'id',
   name: 'name',
   ownerId: 'ownerId',
+  spaceId: 'spaceId',
   createdAt: 'createdAt'
 } as const
 
@@ -395,7 +401,11 @@ export const AgentPendingActionScalarFieldEnum = {
   summary: 'summary',
   beforeState: 'beforeState',
   source: 'source',
-  requestedBy: 'requestedBy',
+  actorType: 'actorType',
+  actorId: 'actorId',
+  requesterUserId: 'requesterUserId',
+  requesterSlackUserId: 'requesterSlackUserId',
+  workId: 'workId',
   status: 'status',
   expiresAt: 'expiresAt',
   decidedBy: 'decidedBy',
@@ -413,7 +423,7 @@ export const AgentPendingActionScalarFieldEnum = {
 export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
 
 
-export const SpaceAgentScalarFieldEnum = {
+export const SpaceAgentSettingScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   isActive: 'isActive',
@@ -421,7 +431,93 @@ export const SpaceAgentScalarFieldEnum = {
   updatedAt: 'updatedAt'
 } as const
 
+export type SpaceAgentSettingScalarFieldEnum = (typeof SpaceAgentSettingScalarFieldEnum)[keyof typeof SpaceAgentSettingScalarFieldEnum]
+
+
+export const SpaceAgentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  kind: 'kind',
+  scopes: 'scopes',
+  status: 'status',
+  oauthClientId: 'oauthClientId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
 export type SpaceAgentScalarFieldEnum = (typeof SpaceAgentScalarFieldEnum)[keyof typeof SpaceAgentScalarFieldEnum]
+
+
+export const ToolAuditLogScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  workId: 'workId',
+  actorType: 'actorType',
+  actorId: 'actorId',
+  requesterUserId: 'requesterUserId',
+  tool: 'tool',
+  argsSummary: 'argsSummary',
+  outcome: 'outcome',
+  error: 'error',
+  durationMs: 'durationMs',
+  decryptedCredentialIds: 'decryptedCredentialIds',
+  actionId: 'actionId',
+  deciderUserId: 'deciderUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type ToolAuditLogScalarFieldEnum = (typeof ToolAuditLogScalarFieldEnum)[keyof typeof ToolAuditLogScalarFieldEnum]
+
+
+export const UsageEventScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  source: 'source',
+  actorType: 'actorType',
+  actorId: 'actorId',
+  requesterUserId: 'requesterUserId',
+  model: 'model',
+  provider: 'provider',
+  planClass: 'planClass',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  cachedTokens: 'cachedTokens',
+  costUsd: 'costUsd',
+  workId: 'workId',
+  createdAt: 'createdAt'
+} as const
+
+export type UsageEventScalarFieldEnum = (typeof UsageEventScalarFieldEnum)[keyof typeof UsageEventScalarFieldEnum]
+
+
+export const SpaceCredentialScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  provider: 'provider',
+  encryptedPayload: 'encryptedPayload',
+  iv: 'iv',
+  config: 'config',
+  lastVerifiedAt: 'lastVerifiedAt',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SpaceCredentialScalarFieldEnum = (typeof SpaceCredentialScalarFieldEnum)[keyof typeof SpaceCredentialScalarFieldEnum]
+
+
+export const AgentTokenScalarFieldEnum = {
+  id: 'id',
+  agentId: 'agentId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AgentTokenScalarFieldEnum = (typeof AgentTokenScalarFieldEnum)[keyof typeof AgentTokenScalarFieldEnum]
 
 
 export const AgentLlmUsageScalarFieldEnum = {

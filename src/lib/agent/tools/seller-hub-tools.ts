@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { resolveMcpDeckContext } from '@/lib/mcp/context'
+import { requireDeck } from '@/lib/mcp/context'
 import {
   querySalesSummary,
   queryStockStatus,
@@ -16,7 +16,7 @@ const DECK = 'seller-hub'
 /**
  * 브랜드 운영(seller-hub) Deck 조회(read) tool 4종.
  * route와 동일한 queries.ts 함수를 공유한다.
- * resolveMcpDeckContext가 비멤버/비활성 deck 시 throw → route.ts의 try/catch가 isError로 변환.
+ * requireDeck(ctx.spaceId)가 비활성 deck 시 throw → route.ts의 try/catch가 isError로 변환.
  */
 
 /** GET /api/sh/dashboard/sales-summary 대응 — 판매 요약(MTD vs 지난달 동기간 + 최근 30일 + 브랜드별). */
@@ -26,9 +26,10 @@ const sellerHubGetSalesSummaryTool: ToolDefinition = {
     '판매 요약을 반환합니다. 이번달 누적(MTD) vs 지난달 동기간의 총매출·총주문(증감% 포함)과 최근 30일 매출·주문, 브랜드별 주문수·판매량·주문 증감%를 포함합니다. 기간은 현재 시각(KST) 기준으로 자동 산정됩니다.',
   inputSchema: {},
   mode: 'read',
+  scope: 'sellerhub:read',
   async execute(ctx) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
-    return querySalesSummary(space.id)
+    await requireDeck(ctx.spaceId, DECK)
+    return querySalesSummary(ctx.spaceId)
   },
 }
 
@@ -45,9 +46,10 @@ const sellerHubGetStockStatusTool: ToolDefinition = {
     onlyLow: z.boolean().optional(),
   },
   mode: 'read',
+  scope: 'sellerhub:read',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
-    return queryStockStatus(space.id, {
+    await requireDeck(ctx.spaceId, DECK)
+    return queryStockStatus(ctx.spaceId, {
       brandId: params.brandId as string | undefined,
       groupId: params.groupId as string | undefined,
       productId: params.productId as string | undefined,
@@ -64,9 +66,10 @@ const sellerHubGetReorderStatusTool: ToolDefinition = {
     '발주 계획 현황을 반환합니다. 초안(DRAFT) 발주 계획 수와 샘플(최대 5건), 예측 검증 계획 수(ELIGIBLE=정산 대기, MEASURED=최근 결과)를 계획 단위로 집계해 포함합니다.',
   inputSchema: {},
   mode: 'read',
+  scope: 'sellerhub:read',
   async execute(ctx) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
-    return queryReorderStatus(space.id)
+    await requireDeck(ctx.spaceId, DECK)
+    return queryReorderStatus(ctx.spaceId)
   },
 }
 
@@ -77,9 +80,10 @@ const sellerHubGetProductRankingTool: ToolDefinition = {
     '최근 30일 주문건수 기준 상위 상품(top 5)과 부진 상품(bottom 5)을 반환합니다. 상위는 직접배송 채널 주문건수 desc, 부진은 활성 상품 카탈로그를 대상으로 주문건수 asc(0판매 포함, 로켓그로스 판매 상품은 제외)입니다. window(집계 기간)도 함께 반환합니다.',
   inputSchema: {},
   mode: 'read',
+  scope: 'sellerhub:read',
   async execute(ctx) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
-    return queryProductRanking(space.id)
+    await requireDeck(ctx.spaceId, DECK)
+    return queryProductRanking(ctx.spaceId)
   },
 }
 
@@ -98,9 +102,10 @@ const sellerHubGetProductOptionsTool: ToolDefinition = {
     includeInactive: z.boolean().optional(),
   },
   mode: 'read',
+  scope: 'sellerhub:read',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
-    return queryProductOptions(space.id, {
+    await requireDeck(ctx.spaceId, DECK)
+    return queryProductOptions(ctx.spaceId, {
       productId: params.productId as string | undefined,
       productIds: params.productIds as string[] | undefined,
       q: params.q as string | undefined,
@@ -128,9 +133,10 @@ const sellerHubGetProductMarginTool: ToolDefinition = {
     excludeProductGroupNames: z.array(z.string()).optional(),
   },
   mode: 'read',
+  scope: 'sellerhub:read',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
-    return queryProductMargin(space.id, {
+    await requireDeck(ctx.spaceId, DECK)
+    return queryProductMargin(ctx.spaceId, {
       from: params.from as string,
       to: params.to as string,
       productIds: params.productIds as string[] | undefined,
@@ -170,9 +176,10 @@ const sellerHubGetOptionSalesVelocityTool: ToolDefinition = {
     offset: z.number().optional(),
   },
   mode: 'read',
+  scope: 'sellerhub:read',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, DECK)
-    return queryOptionSalesVelocity(space.id, {
+    await requireDeck(ctx.spaceId, DECK)
+    return queryOptionSalesVelocity(ctx.spaceId, {
       periodDays: params.periodDays as number | undefined,
       productIds: params.productIds as string[] | undefined,
       optionIds: params.optionIds as string[] | undefined,

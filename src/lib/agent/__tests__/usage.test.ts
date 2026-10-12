@@ -1,5 +1,5 @@
 // @jest-environment node
-import { checkAndIncrementUsage } from '../llm/usage'
+import { checkAndIncrementUsage, recordTokens } from '../llm/usage'
 import { prisma } from '@/lib/prisma'
 
 jest.mock('@/lib/prisma', () => ({
@@ -10,6 +10,7 @@ jest.mock('@/lib/prisma', () => ({
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    usageEvent: { create: jest.fn() },
   },
 }))
 
@@ -20,6 +21,7 @@ const mockPrisma = prisma as unknown as {
     findUnique: jest.Mock
     update: jest.Mock
   }
+  usageEvent: { create: jest.Mock }
 }
 
 describe('checkAndIncrementUsage — 일일 한도', () => {
@@ -66,5 +68,45 @@ describe('checkAndIncrementUsage — 일일 한도', () => {
     mockPrisma.agentLlmUsage.findUnique.mockResolvedValue({ requestCount: 2 })
     const r = await checkAndIncrementUsage('space-1')
     expect(r.allowed).toBe(false)
+  })
+})
+
+describe('recordTokens', () => {
+  const meta = {
+    model: 'claude-x',
+    actor: { type: 'system' as const, id: 'workdeck-agent' },
+    requesterUserId: 'u1',
+    workId: 'wk_1',
+  }
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockPrisma.agentLlmUsage.upsert.mockResolvedValue({})
+  })
+
+  it('일 집계와 함께 UsageEvent 1행을 남긴다', async () => {
+    await recordTokens('space-1', 100, 20, meta)
+    expect(mockPrisma.usageEvent.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        spaceId: 'space-1',
+        source: 'workdeck',
+        provider: 'anthropic',
+        planClass: 'payg',
+        model: 'claude-x',
+        actorType: 'system',
+        actorId: 'workdeck-agent',
+        requesterUserId: 'u1',
+        inputTokens: 100,
+        outputTokens: 20,
+        workId: 'wk_1',
+      }),
+    })
+  })
+
+  it('UsageEvent 기록 실패는 던지지 않고 로그만 남긴다', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    mockPrisma.usageEvent.create.mockRejectedValueOnce(new Error('db'))
+    await expect(recordTokens('space-1', 1, 1, meta)).resolves.toBeUndefined()
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('space-1'), expect.any(Error))
+    spy.mockRestore()
   })
 })

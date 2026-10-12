@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { z } from 'zod'
-import { resolveMcpDeckContext, resolveMcpWorkspace } from '@/lib/mcp/context'
-// resolveMcpDeckContext: finance/seller-hub(Space 스코프) 게이트. resolveMcpWorkspace: coupang-ads.
+import { requireDeck, resolveMcpWorkspace } from '@/lib/mcp/context'
+// requireDeck: finance/seller-hub(Space 스코프) 게이트. resolveMcpWorkspace: coupang-ads(Space에 연결된 Workspace).
 import { createPendingAction } from '@/lib/agent/actions/create'
 import type { ToolDefinition } from './types'
 
@@ -22,15 +22,6 @@ function idempotencyKeyFor(actionType: string, spaceId: string, params: unknown)
   return `${actionType}:${h.digest('hex').slice(0, 32)}`
 }
 
-// coupang-ads write tool의 space 게이트 — Workspace 스코프지만 승인 큐는 Space 스코프라
-// 큐잉하려면 Space가 필요하다. 레거시(Space 없음)면 큐잉 불가로 throw.
-function requireSpace(space: { id: string } | null): { id: string } {
-  if (!space) {
-    throw new Error('승인 큐를 사용하려면 Space가 필요합니다')
-  }
-  return space
-}
-
 // ─── finance ─────────────────────────────────────────────────────────────────
 
 const financeClassifyTransactionsTool: ToolDefinition = {
@@ -43,8 +34,9 @@ const financeClassifyTransactionsTool: ToolDefinition = {
     learn: z.boolean().optional(),
   },
   mode: 'write',
+  scope: 'finance:write',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, 'finance')
+    await requireDeck(ctx.spaceId, 'finance')
     const actionParams = {
       transactionId: params.transactionId as string,
       categoryId: params.categoryId as string,
@@ -52,13 +44,20 @@ const financeClassifyTransactionsTool: ToolDefinition = {
     }
     const summary = `거래 ${actionParams.transactionId} 재분류 → 계정과목 ${actionParams.categoryId}`
     const r = await createPendingAction({
-      spaceId: space.id,
+      spaceId: ctx.spaceId,
       actionType: 'finance.transaction.reclassify',
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.userId,
-      idempotencyKey: idempotencyKeyFor('finance.transaction.reclassify', space.id, actionParams),
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
+      idempotencyKey: idempotencyKeyFor(
+        'finance.transaction.reclassify',
+        ctx.spaceId,
+        actionParams
+      ),
     })
     return r
   },
@@ -75,8 +74,9 @@ const financeCreateClassRuleTool: ToolDefinition = {
     memo: z.string().optional(),
   },
   mode: 'write',
+  scope: 'finance:write',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, 'finance')
+    await requireDeck(ctx.spaceId, 'finance')
     const actionParams = {
       matchKey: params.matchKey as string,
       categoryId: params.categoryId as string,
@@ -85,13 +85,16 @@ const financeCreateClassRuleTool: ToolDefinition = {
     }
     const summary = `분류 규칙 생성: "${actionParams.matchKey}" (${actionParams.matchType}) → 계정과목 ${actionParams.categoryId}`
     const r = await createPendingAction({
-      spaceId: space.id,
+      spaceId: ctx.spaceId,
       actionType: 'finance.classrule.create',
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.userId,
-      idempotencyKey: idempotencyKeyFor('finance.classrule.create', space.id, actionParams),
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
+      idempotencyKey: idempotencyKeyFor('finance.classrule.create', ctx.spaceId, actionParams),
     })
     return r
   },
@@ -109,8 +112,9 @@ const sellerhubCreateReorderPlanTool: ToolDefinition = {
     memo: z.string().optional(),
   },
   mode: 'write',
+  scope: 'sellerhub:write',
   async execute(ctx, params) {
-    const { space } = await resolveMcpDeckContext(ctx.userId, 'seller-hub')
+    await requireDeck(ctx.spaceId, 'seller-hub')
     const actionParams = {
       productId: params.productId as string,
       optionIds: params.optionIds as string[] | undefined,
@@ -118,13 +122,20 @@ const sellerhubCreateReorderPlanTool: ToolDefinition = {
     }
     const summary = `발주 계획 생성: 상품 ${actionParams.productId}`
     const r = await createPendingAction({
-      spaceId: space.id,
+      spaceId: ctx.spaceId,
       actionType: 'seller-hub.reorder.plan.create',
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.userId,
-      idempotencyKey: idempotencyKeyFor('seller-hub.reorder.plan.create', space.id, actionParams),
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
+      idempotencyKey: idempotencyKeyFor(
+        'seller-hub.reorder.plan.create',
+        ctx.spaceId,
+        actionParams
+      ),
     })
     return r
   },
@@ -144,10 +155,9 @@ const adsTriggerAnalysisTool: ToolDefinition = {
       .optional(),
   },
   mode: 'write',
+  scope: 'ads:write',
   async execute(ctx, params) {
-    // Workspace 스코프 게이트(coupang-ads 활성 검사 포함) + 큐잉용 Space를 한 번에 조회.
-    const { workspace, space: maybeSpace } = await resolveMcpWorkspace(ctx.userId)
-    const space = requireSpace(maybeSpace)
+    const workspace = await resolveMcpWorkspace(ctx.spaceId)
     const actionParams = {
       workspaceId: workspace.id,
       from: params.from as string,
@@ -156,13 +166,16 @@ const adsTriggerAnalysisTool: ToolDefinition = {
     }
     const summary = `AI 광고 분석 실행: ${actionParams.from}~${actionParams.to} (${actionParams.reportType ?? 'DAILY_REVIEW'})`
     const r = await createPendingAction({
-      spaceId: space.id,
+      spaceId: ctx.spaceId,
       actionType: 'coupang-ads.analysis.trigger',
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.userId,
-      idempotencyKey: idempotencyKeyFor('coupang-ads.analysis.trigger', space.id, actionParams),
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
+      idempotencyKey: idempotencyKeyFor('coupang-ads.analysis.trigger', ctx.spaceId, actionParams),
     })
     return r
   },
@@ -176,22 +189,25 @@ const adsApproveExecutionTaskTool: ToolDefinition = {
     taskId: z.string(),
   },
   mode: 'write',
+  scope: 'ads:write',
   async execute(ctx, params) {
-    const { workspace, space: maybeSpace } = await resolveMcpWorkspace(ctx.userId)
-    const space = requireSpace(maybeSpace)
+    const workspace = await resolveMcpWorkspace(ctx.spaceId)
     const actionParams = {
       taskId: params.taskId as string,
       workspaceId: workspace.id,
     }
     const summary = `광고 실행 태스크 승인: ${actionParams.taskId}`
     const r = await createPendingAction({
-      spaceId: space.id,
+      spaceId: ctx.spaceId,
       actionType: 'coupang-ads.execution.approve',
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.userId,
-      idempotencyKey: idempotencyKeyFor('coupang-ads.execution.approve', space.id, actionParams),
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
+      idempotencyKey: idempotencyKeyFor('coupang-ads.execution.approve', ctx.spaceId, actionParams),
     })
     return r
   },

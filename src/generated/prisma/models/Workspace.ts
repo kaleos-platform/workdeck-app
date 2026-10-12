@@ -28,6 +28,7 @@ export type WorkspaceMinAggregateOutputType = {
   id: string | null
   name: string | null
   ownerId: string | null
+  spaceId: string | null
   createdAt: Date | null
 }
 
@@ -35,6 +36,7 @@ export type WorkspaceMaxAggregateOutputType = {
   id: string | null
   name: string | null
   ownerId: string | null
+  spaceId: string | null
   createdAt: Date | null
 }
 
@@ -42,6 +44,7 @@ export type WorkspaceCountAggregateOutputType = {
   id: number
   name: number
   ownerId: number
+  spaceId: number
   createdAt: number
   _all: number
 }
@@ -51,6 +54,7 @@ export type WorkspaceMinAggregateInputType = {
   id?: true
   name?: true
   ownerId?: true
+  spaceId?: true
   createdAt?: true
 }
 
@@ -58,6 +62,7 @@ export type WorkspaceMaxAggregateInputType = {
   id?: true
   name?: true
   ownerId?: true
+  spaceId?: true
   createdAt?: true
 }
 
@@ -65,6 +70,7 @@ export type WorkspaceCountAggregateInputType = {
   id?: true
   name?: true
   ownerId?: true
+  spaceId?: true
   createdAt?: true
   _all?: true
 }
@@ -145,6 +151,7 @@ export type WorkspaceGroupByOutputType = {
   id: string
   name: string
   ownerId: string
+  spaceId: string | null
   createdAt: Date
   _count: WorkspaceCountAggregateOutputType | null
   _min: WorkspaceMinAggregateOutputType | null
@@ -173,8 +180,10 @@ export type WorkspaceWhereInput = {
   id?: Prisma.StringFilter<"Workspace"> | string
   name?: Prisma.StringFilter<"Workspace"> | string
   ownerId?: Prisma.StringFilter<"Workspace"> | string
+  spaceId?: Prisma.StringNullableFilter<"Workspace"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Workspace"> | Date | string
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  space?: Prisma.XOR<Prisma.SpaceNullableScalarRelationFilter, Prisma.SpaceWhereInput> | null
   reportUploads?: Prisma.ReportUploadListRelationFilter
   adRecords?: Prisma.AdRecordListRelationFilter
   dailyMemos?: Prisma.DailyMemoListRelationFilter
@@ -205,8 +214,10 @@ export type WorkspaceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  spaceId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   owner?: Prisma.UserOrderByWithRelationInput
+  space?: Prisma.SpaceOrderByWithRelationInput
   reportUploads?: Prisma.ReportUploadOrderByRelationAggregateInput
   adRecords?: Prisma.AdRecordOrderByRelationAggregateInput
   dailyMemos?: Prisma.DailyMemoOrderByRelationAggregateInput
@@ -236,12 +247,14 @@ export type WorkspaceOrderByWithRelationInput = {
 export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   ownerId?: string
+  spaceId?: string
   AND?: Prisma.WorkspaceWhereInput | Prisma.WorkspaceWhereInput[]
   OR?: Prisma.WorkspaceWhereInput[]
   NOT?: Prisma.WorkspaceWhereInput | Prisma.WorkspaceWhereInput[]
   name?: Prisma.StringFilter<"Workspace"> | string
   createdAt?: Prisma.DateTimeFilter<"Workspace"> | Date | string
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  space?: Prisma.XOR<Prisma.SpaceNullableScalarRelationFilter, Prisma.SpaceWhereInput> | null
   reportUploads?: Prisma.ReportUploadListRelationFilter
   adRecords?: Prisma.AdRecordListRelationFilter
   dailyMemos?: Prisma.DailyMemoListRelationFilter
@@ -266,12 +279,13 @@ export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
   inventoryRecords?: Prisma.InventoryRecordListRelationFilter
   inventoryExcludedProducts?: Prisma.InventoryExcludedProductListRelationFilter
   inventoryAnalyses?: Prisma.InventoryAnalysisListRelationFilter
-}, "id" | "ownerId">
+}, "id" | "ownerId" | "spaceId">
 
 export type WorkspaceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  spaceId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.WorkspaceCountOrderByAggregateInput
   _max?: Prisma.WorkspaceMaxOrderByAggregateInput
@@ -285,6 +299,7 @@ export type WorkspaceScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Workspace"> | string
   name?: Prisma.StringWithAggregatesFilter<"Workspace"> | string
   ownerId?: Prisma.StringWithAggregatesFilter<"Workspace"> | string
+  spaceId?: Prisma.StringNullableWithAggregatesFilter<"Workspace"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Workspace"> | Date | string
 }
 
@@ -293,6 +308,7 @@ export type WorkspaceCreateInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -323,6 +339,7 @@ export type WorkspaceUncheckedCreateInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -355,6 +372,7 @@ export type WorkspaceUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -385,6 +403,7 @@ export type WorkspaceUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -416,6 +435,7 @@ export type WorkspaceCreateManyInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
 }
 
@@ -429,6 +449,7 @@ export type WorkspaceUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -441,6 +462,7 @@ export type WorkspaceCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  spaceId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -448,6 +470,7 @@ export type WorkspaceMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  spaceId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -455,6 +478,7 @@ export type WorkspaceMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
+  spaceId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -591,6 +615,38 @@ export type WorkspaceUpdateOneRequiredWithoutDailyMemosNestedInput = {
   upsert?: Prisma.WorkspaceUpsertWithoutDailyMemosInput
   connect?: Prisma.WorkspaceWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.WorkspaceUpdateToOneWithWhereWithoutDailyMemosInput, Prisma.WorkspaceUpdateWithoutDailyMemosInput>, Prisma.WorkspaceUncheckedUpdateWithoutDailyMemosInput>
+}
+
+export type WorkspaceCreateNestedOneWithoutSpaceInput = {
+  create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutSpaceInput, Prisma.WorkspaceUncheckedCreateWithoutSpaceInput>
+  connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutSpaceInput
+  connect?: Prisma.WorkspaceWhereUniqueInput
+}
+
+export type WorkspaceUncheckedCreateNestedOneWithoutSpaceInput = {
+  create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutSpaceInput, Prisma.WorkspaceUncheckedCreateWithoutSpaceInput>
+  connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutSpaceInput
+  connect?: Prisma.WorkspaceWhereUniqueInput
+}
+
+export type WorkspaceUpdateOneWithoutSpaceNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutSpaceInput, Prisma.WorkspaceUncheckedCreateWithoutSpaceInput>
+  connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutSpaceInput
+  upsert?: Prisma.WorkspaceUpsertWithoutSpaceInput
+  disconnect?: Prisma.WorkspaceWhereInput | boolean
+  delete?: Prisma.WorkspaceWhereInput | boolean
+  connect?: Prisma.WorkspaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkspaceUpdateToOneWithWhereWithoutSpaceInput, Prisma.WorkspaceUpdateWithoutSpaceInput>, Prisma.WorkspaceUncheckedUpdateWithoutSpaceInput>
+}
+
+export type WorkspaceUncheckedUpdateOneWithoutSpaceNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutSpaceInput, Prisma.WorkspaceUncheckedCreateWithoutSpaceInput>
+  connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutSpaceInput
+  upsert?: Prisma.WorkspaceUpsertWithoutSpaceInput
+  disconnect?: Prisma.WorkspaceWhereInput | boolean
+  delete?: Prisma.WorkspaceWhereInput | boolean
+  connect?: Prisma.WorkspaceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkspaceUpdateToOneWithWhereWithoutSpaceInput, Prisma.WorkspaceUpdateWithoutSpaceInput>, Prisma.WorkspaceUncheckedUpdateWithoutSpaceInput>
 }
 
 export type WorkspaceCreateNestedOneWithoutCoupangCredentialInput = {
@@ -835,6 +891,7 @@ export type WorkspaceCreateWithoutOwnerInput = {
   id?: string
   name: string
   createdAt?: Date | string
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -864,6 +921,7 @@ export type WorkspaceCreateWithoutOwnerInput = {
 export type WorkspaceUncheckedCreateWithoutOwnerInput = {
   id?: string
   name: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -911,6 +969,7 @@ export type WorkspaceUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -940,6 +999,7 @@ export type WorkspaceUpdateWithoutOwnerInput = {
 export type WorkspaceUncheckedUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -972,6 +1032,7 @@ export type WorkspaceCreateWithoutReportUploadsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
   campaignMetas?: Prisma.CampaignMetaCreateNestedManyWithoutWorkspaceInput
@@ -1001,6 +1062,7 @@ export type WorkspaceUncheckedCreateWithoutReportUploadsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1048,6 +1110,7 @@ export type WorkspaceUpdateWithoutReportUploadsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
   campaignMetas?: Prisma.CampaignMetaUpdateManyWithoutWorkspaceNestedInput
@@ -1077,6 +1140,7 @@ export type WorkspaceUncheckedUpdateWithoutReportUploadsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1108,6 +1172,7 @@ export type WorkspaceCreateWithoutAdRecordsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
   campaignMetas?: Prisma.CampaignMetaCreateNestedManyWithoutWorkspaceInput
@@ -1137,6 +1202,7 @@ export type WorkspaceUncheckedCreateWithoutAdRecordsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1184,6 +1250,7 @@ export type WorkspaceUpdateWithoutAdRecordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
   campaignMetas?: Prisma.CampaignMetaUpdateManyWithoutWorkspaceNestedInput
@@ -1213,6 +1280,7 @@ export type WorkspaceUncheckedUpdateWithoutAdRecordsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1244,6 +1312,7 @@ export type WorkspaceCreateWithoutCampaignMetasInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -1273,6 +1342,7 @@ export type WorkspaceUncheckedCreateWithoutCampaignMetasInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1320,6 +1390,7 @@ export type WorkspaceUpdateWithoutCampaignMetasInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -1349,6 +1420,7 @@ export type WorkspaceUncheckedUpdateWithoutCampaignMetasInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1380,6 +1452,7 @@ export type WorkspaceCreateWithoutKeywordStatusesInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -1409,6 +1482,7 @@ export type WorkspaceUncheckedCreateWithoutKeywordStatusesInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1456,6 +1530,7 @@ export type WorkspaceUpdateWithoutKeywordStatusesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -1485,6 +1560,7 @@ export type WorkspaceUncheckedUpdateWithoutKeywordStatusesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1516,6 +1592,7 @@ export type WorkspaceCreateWithoutCampaignTargetsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -1545,6 +1622,7 @@ export type WorkspaceUncheckedCreateWithoutCampaignTargetsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1592,6 +1670,7 @@ export type WorkspaceUpdateWithoutCampaignTargetsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -1621,6 +1700,7 @@ export type WorkspaceUncheckedUpdateWithoutCampaignTargetsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1652,6 +1732,7 @@ export type WorkspaceCreateWithoutProductStatusesInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -1681,6 +1762,7 @@ export type WorkspaceUncheckedCreateWithoutProductStatusesInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1728,6 +1810,7 @@ export type WorkspaceUpdateWithoutProductStatusesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -1757,6 +1840,7 @@ export type WorkspaceUncheckedUpdateWithoutProductStatusesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1788,6 +1872,7 @@ export type WorkspaceCreateWithoutDailyMemosInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   campaignMetas?: Prisma.CampaignMetaCreateNestedManyWithoutWorkspaceInput
@@ -1817,6 +1902,7 @@ export type WorkspaceUncheckedCreateWithoutDailyMemosInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -1864,6 +1950,7 @@ export type WorkspaceUpdateWithoutDailyMemosInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   campaignMetas?: Prisma.CampaignMetaUpdateManyWithoutWorkspaceNestedInput
@@ -1893,9 +1980,150 @@ export type WorkspaceUncheckedUpdateWithoutDailyMemosInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  campaignMetas?: Prisma.CampaignMetaUncheckedUpdateManyWithoutWorkspaceNestedInput
+  keywordStatuses?: Prisma.KeywordStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
+  campaignTargets?: Prisma.CampaignTargetUncheckedUpdateManyWithoutWorkspaceNestedInput
+  productStatuses?: Prisma.ProductStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
+  analysisReports?: Prisma.AnalysisReportUncheckedUpdateManyWithoutWorkspaceNestedInput
+  executionTasks?: Prisma.ExecutionTaskUncheckedUpdateManyWithoutWorkspaceNestedInput
+  safetyLimits?: Prisma.SafetyLimitsUncheckedUpdateOneWithoutWorkspaceNestedInput
+  businessAgent?: Prisma.BusinessAgentUncheckedUpdateOneWithoutWorkspaceNestedInput
+  analysisRules?: Prisma.AnalysisRuleUncheckedUpdateManyWithoutWorkspaceNestedInput
+  analysisSchedule?: Prisma.AnalysisScheduleUncheckedUpdateOneWithoutWorkspaceNestedInput
+  coupangCredential?: Prisma.CoupangCredentialUncheckedUpdateOneWithoutWorkspaceNestedInput
+  coupangApiCredential?: Prisma.CoupangApiCredentialUncheckedUpdateOneWithoutWorkspaceNestedInput
+  coupangSourceSetting?: Prisma.CoupangSourceSettingUncheckedUpdateOneWithoutWorkspaceNestedInput
+  collectionSchedule?: Prisma.CollectionScheduleUncheckedUpdateOneWithoutWorkspaceNestedInput
+  collectionRuns?: Prisma.CollectionRunUncheckedUpdateManyWithoutWorkspaceNestedInput
+  coupangBackfillJobs?: Prisma.CoupangBackfillJobUncheckedUpdateManyWithoutWorkspaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryUploads?: Prisma.InventoryUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryRecords?: Prisma.InventoryRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedUpdateManyWithoutWorkspaceNestedInput
+  inventoryAnalyses?: Prisma.InventoryAnalysisUncheckedUpdateManyWithoutWorkspaceNestedInput
+}
+
+export type WorkspaceCreateWithoutSpaceInput = {
+  id?: string
+  name: string
+  createdAt?: Date | string
+  owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
+  adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
+  dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
+  campaignMetas?: Prisma.CampaignMetaCreateNestedManyWithoutWorkspaceInput
+  keywordStatuses?: Prisma.KeywordStatusCreateNestedManyWithoutWorkspaceInput
+  campaignTargets?: Prisma.CampaignTargetCreateNestedManyWithoutWorkspaceInput
+  productStatuses?: Prisma.ProductStatusCreateNestedManyWithoutWorkspaceInput
+  analysisReports?: Prisma.AnalysisReportCreateNestedManyWithoutWorkspaceInput
+  executionTasks?: Prisma.ExecutionTaskCreateNestedManyWithoutWorkspaceInput
+  safetyLimits?: Prisma.SafetyLimitsCreateNestedOneWithoutWorkspaceInput
+  businessAgent?: Prisma.BusinessAgentCreateNestedOneWithoutWorkspaceInput
+  analysisRules?: Prisma.AnalysisRuleCreateNestedManyWithoutWorkspaceInput
+  analysisSchedule?: Prisma.AnalysisScheduleCreateNestedOneWithoutWorkspaceInput
+  coupangCredential?: Prisma.CoupangCredentialCreateNestedOneWithoutWorkspaceInput
+  coupangApiCredential?: Prisma.CoupangApiCredentialCreateNestedOneWithoutWorkspaceInput
+  coupangSourceSetting?: Prisma.CoupangSourceSettingCreateNestedOneWithoutWorkspaceInput
+  collectionSchedule?: Prisma.CollectionScheduleCreateNestedOneWithoutWorkspaceInput
+  collectionRuns?: Prisma.CollectionRunCreateNestedManyWithoutWorkspaceInput
+  coupangBackfillJobs?: Prisma.CoupangBackfillJobCreateNestedManyWithoutWorkspaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobCreateNestedManyWithoutWorkspaceInput
+  inventoryUploads?: Prisma.InventoryUploadCreateNestedManyWithoutWorkspaceInput
+  inventoryRecords?: Prisma.InventoryRecordCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductCreateNestedManyWithoutWorkspaceInput
+  inventoryAnalyses?: Prisma.InventoryAnalysisCreateNestedManyWithoutWorkspaceInput
+}
+
+export type WorkspaceUncheckedCreateWithoutSpaceInput = {
+  id?: string
+  name: string
+  ownerId: string
+  createdAt?: Date | string
+  reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
+  adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  dailyMemos?: Prisma.DailyMemoUncheckedCreateNestedManyWithoutWorkspaceInput
+  campaignMetas?: Prisma.CampaignMetaUncheckedCreateNestedManyWithoutWorkspaceInput
+  keywordStatuses?: Prisma.KeywordStatusUncheckedCreateNestedManyWithoutWorkspaceInput
+  campaignTargets?: Prisma.CampaignTargetUncheckedCreateNestedManyWithoutWorkspaceInput
+  productStatuses?: Prisma.ProductStatusUncheckedCreateNestedManyWithoutWorkspaceInput
+  analysisReports?: Prisma.AnalysisReportUncheckedCreateNestedManyWithoutWorkspaceInput
+  executionTasks?: Prisma.ExecutionTaskUncheckedCreateNestedManyWithoutWorkspaceInput
+  safetyLimits?: Prisma.SafetyLimitsUncheckedCreateNestedOneWithoutWorkspaceInput
+  businessAgent?: Prisma.BusinessAgentUncheckedCreateNestedOneWithoutWorkspaceInput
+  analysisRules?: Prisma.AnalysisRuleUncheckedCreateNestedManyWithoutWorkspaceInput
+  analysisSchedule?: Prisma.AnalysisScheduleUncheckedCreateNestedOneWithoutWorkspaceInput
+  coupangCredential?: Prisma.CoupangCredentialUncheckedCreateNestedOneWithoutWorkspaceInput
+  coupangApiCredential?: Prisma.CoupangApiCredentialUncheckedCreateNestedOneWithoutWorkspaceInput
+  coupangSourceSetting?: Prisma.CoupangSourceSettingUncheckedCreateNestedOneWithoutWorkspaceInput
+  collectionSchedule?: Prisma.CollectionScheduleUncheckedCreateNestedOneWithoutWorkspaceInput
+  collectionRuns?: Prisma.CollectionRunUncheckedCreateNestedManyWithoutWorkspaceInput
+  coupangBackfillJobs?: Prisma.CoupangBackfillJobUncheckedCreateNestedManyWithoutWorkspaceInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryUploads?: Prisma.InventoryUploadUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryRecords?: Prisma.InventoryRecordUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUncheckedCreateNestedManyWithoutWorkspaceInput
+  inventoryAnalyses?: Prisma.InventoryAnalysisUncheckedCreateNestedManyWithoutWorkspaceInput
+}
+
+export type WorkspaceCreateOrConnectWithoutSpaceInput = {
+  where: Prisma.WorkspaceWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkspaceCreateWithoutSpaceInput, Prisma.WorkspaceUncheckedCreateWithoutSpaceInput>
+}
+
+export type WorkspaceUpsertWithoutSpaceInput = {
+  update: Prisma.XOR<Prisma.WorkspaceUpdateWithoutSpaceInput, Prisma.WorkspaceUncheckedUpdateWithoutSpaceInput>
+  create: Prisma.XOR<Prisma.WorkspaceCreateWithoutSpaceInput, Prisma.WorkspaceUncheckedCreateWithoutSpaceInput>
+  where?: Prisma.WorkspaceWhereInput
+}
+
+export type WorkspaceUpdateToOneWithWhereWithoutSpaceInput = {
+  where?: Prisma.WorkspaceWhereInput
+  data: Prisma.XOR<Prisma.WorkspaceUpdateWithoutSpaceInput, Prisma.WorkspaceUncheckedUpdateWithoutSpaceInput>
+}
+
+export type WorkspaceUpdateWithoutSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
+  adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
+  dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
+  campaignMetas?: Prisma.CampaignMetaUpdateManyWithoutWorkspaceNestedInput
+  keywordStatuses?: Prisma.KeywordStatusUpdateManyWithoutWorkspaceNestedInput
+  campaignTargets?: Prisma.CampaignTargetUpdateManyWithoutWorkspaceNestedInput
+  productStatuses?: Prisma.ProductStatusUpdateManyWithoutWorkspaceNestedInput
+  analysisReports?: Prisma.AnalysisReportUpdateManyWithoutWorkspaceNestedInput
+  executionTasks?: Prisma.ExecutionTaskUpdateManyWithoutWorkspaceNestedInput
+  safetyLimits?: Prisma.SafetyLimitsUpdateOneWithoutWorkspaceNestedInput
+  businessAgent?: Prisma.BusinessAgentUpdateOneWithoutWorkspaceNestedInput
+  analysisRules?: Prisma.AnalysisRuleUpdateManyWithoutWorkspaceNestedInput
+  analysisSchedule?: Prisma.AnalysisScheduleUpdateOneWithoutWorkspaceNestedInput
+  coupangCredential?: Prisma.CoupangCredentialUpdateOneWithoutWorkspaceNestedInput
+  coupangApiCredential?: Prisma.CoupangApiCredentialUpdateOneWithoutWorkspaceNestedInput
+  coupangSourceSetting?: Prisma.CoupangSourceSettingUpdateOneWithoutWorkspaceNestedInput
+  collectionSchedule?: Prisma.CollectionScheduleUpdateOneWithoutWorkspaceNestedInput
+  collectionRuns?: Prisma.CollectionRunUpdateManyWithoutWorkspaceNestedInput
+  coupangBackfillJobs?: Prisma.CoupangBackfillJobUpdateManyWithoutWorkspaceNestedInput
+  coupangWriteJobs?: Prisma.CoupangWriteJobUpdateManyWithoutWorkspaceNestedInput
+  inventoryUploads?: Prisma.InventoryUploadUpdateManyWithoutWorkspaceNestedInput
+  inventoryRecords?: Prisma.InventoryRecordUpdateManyWithoutWorkspaceNestedInput
+  inventoryExcludedProducts?: Prisma.InventoryExcludedProductUpdateManyWithoutWorkspaceNestedInput
+  inventoryAnalyses?: Prisma.InventoryAnalysisUpdateManyWithoutWorkspaceNestedInput
+}
+
+export type WorkspaceUncheckedUpdateWithoutSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
+  adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
+  dailyMemos?: Prisma.DailyMemoUncheckedUpdateManyWithoutWorkspaceNestedInput
   campaignMetas?: Prisma.CampaignMetaUncheckedUpdateManyWithoutWorkspaceNestedInput
   keywordStatuses?: Prisma.KeywordStatusUncheckedUpdateManyWithoutWorkspaceNestedInput
   campaignTargets?: Prisma.CampaignTargetUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -1924,6 +2152,7 @@ export type WorkspaceCreateWithoutCoupangCredentialInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -1953,6 +2182,7 @@ export type WorkspaceUncheckedCreateWithoutCoupangCredentialInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2000,6 +2230,7 @@ export type WorkspaceUpdateWithoutCoupangCredentialInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -2029,6 +2260,7 @@ export type WorkspaceUncheckedUpdateWithoutCoupangCredentialInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2060,6 +2292,7 @@ export type WorkspaceCreateWithoutCoupangApiCredentialInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -2089,6 +2322,7 @@ export type WorkspaceUncheckedCreateWithoutCoupangApiCredentialInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2136,6 +2370,7 @@ export type WorkspaceUpdateWithoutCoupangApiCredentialInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -2165,6 +2400,7 @@ export type WorkspaceUncheckedUpdateWithoutCoupangApiCredentialInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2196,6 +2432,7 @@ export type WorkspaceCreateWithoutCoupangSourceSettingInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -2225,6 +2462,7 @@ export type WorkspaceUncheckedCreateWithoutCoupangSourceSettingInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2272,6 +2510,7 @@ export type WorkspaceUpdateWithoutCoupangSourceSettingInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -2301,6 +2540,7 @@ export type WorkspaceUncheckedUpdateWithoutCoupangSourceSettingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2332,6 +2572,7 @@ export type WorkspaceCreateWithoutCoupangWriteJobsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -2361,6 +2602,7 @@ export type WorkspaceUncheckedCreateWithoutCoupangWriteJobsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2408,6 +2650,7 @@ export type WorkspaceUpdateWithoutCoupangWriteJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -2437,6 +2680,7 @@ export type WorkspaceUncheckedUpdateWithoutCoupangWriteJobsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2468,6 +2712,7 @@ export type WorkspaceCreateWithoutCollectionScheduleInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -2497,6 +2742,7 @@ export type WorkspaceUncheckedCreateWithoutCollectionScheduleInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2544,6 +2790,7 @@ export type WorkspaceUpdateWithoutCollectionScheduleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -2573,6 +2820,7 @@ export type WorkspaceUncheckedUpdateWithoutCollectionScheduleInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2604,6 +2852,7 @@ export type WorkspaceCreateWithoutCoupangBackfillJobsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -2633,6 +2882,7 @@ export type WorkspaceUncheckedCreateWithoutCoupangBackfillJobsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2680,6 +2930,7 @@ export type WorkspaceUpdateWithoutCoupangBackfillJobsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -2709,6 +2960,7 @@ export type WorkspaceUncheckedUpdateWithoutCoupangBackfillJobsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2740,6 +2992,7 @@ export type WorkspaceCreateWithoutCollectionRunsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -2769,6 +3022,7 @@ export type WorkspaceUncheckedCreateWithoutCollectionRunsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2816,6 +3070,7 @@ export type WorkspaceUpdateWithoutCollectionRunsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -2845,6 +3100,7 @@ export type WorkspaceUncheckedUpdateWithoutCollectionRunsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -2876,6 +3132,7 @@ export type WorkspaceCreateWithoutAnalysisReportsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -2905,6 +3162,7 @@ export type WorkspaceUncheckedCreateWithoutAnalysisReportsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -2952,6 +3210,7 @@ export type WorkspaceUpdateWithoutAnalysisReportsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -2981,6 +3240,7 @@ export type WorkspaceUncheckedUpdateWithoutAnalysisReportsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -3012,6 +3272,7 @@ export type WorkspaceCreateWithoutExecutionTasksInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -3041,6 +3302,7 @@ export type WorkspaceUncheckedCreateWithoutExecutionTasksInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -3088,6 +3350,7 @@ export type WorkspaceUpdateWithoutExecutionTasksInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -3117,6 +3380,7 @@ export type WorkspaceUncheckedUpdateWithoutExecutionTasksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -3148,6 +3412,7 @@ export type WorkspaceCreateWithoutSafetyLimitsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -3177,6 +3442,7 @@ export type WorkspaceUncheckedCreateWithoutSafetyLimitsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -3224,6 +3490,7 @@ export type WorkspaceUpdateWithoutSafetyLimitsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -3253,6 +3520,7 @@ export type WorkspaceUncheckedUpdateWithoutSafetyLimitsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -3284,6 +3552,7 @@ export type WorkspaceCreateWithoutAnalysisRulesInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -3313,6 +3582,7 @@ export type WorkspaceUncheckedCreateWithoutAnalysisRulesInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -3360,6 +3630,7 @@ export type WorkspaceUpdateWithoutAnalysisRulesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -3389,6 +3660,7 @@ export type WorkspaceUncheckedUpdateWithoutAnalysisRulesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -3420,6 +3692,7 @@ export type WorkspaceCreateWithoutAnalysisScheduleInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -3449,6 +3722,7 @@ export type WorkspaceUncheckedCreateWithoutAnalysisScheduleInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -3496,6 +3770,7 @@ export type WorkspaceUpdateWithoutAnalysisScheduleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -3525,6 +3800,7 @@ export type WorkspaceUncheckedUpdateWithoutAnalysisScheduleInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -3556,6 +3832,7 @@ export type WorkspaceCreateWithoutBusinessAgentInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -3585,6 +3862,7 @@ export type WorkspaceUncheckedCreateWithoutBusinessAgentInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -3632,6 +3910,7 @@ export type WorkspaceUpdateWithoutBusinessAgentInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -3661,6 +3940,7 @@ export type WorkspaceUncheckedUpdateWithoutBusinessAgentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -3692,6 +3972,7 @@ export type WorkspaceCreateWithoutInventoryUploadsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -3721,6 +4002,7 @@ export type WorkspaceUncheckedCreateWithoutInventoryUploadsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -3768,6 +4050,7 @@ export type WorkspaceUpdateWithoutInventoryUploadsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -3797,6 +4080,7 @@ export type WorkspaceUncheckedUpdateWithoutInventoryUploadsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -3828,6 +4112,7 @@ export type WorkspaceCreateWithoutInventoryRecordsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -3857,6 +4142,7 @@ export type WorkspaceUncheckedCreateWithoutInventoryRecordsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -3904,6 +4190,7 @@ export type WorkspaceUpdateWithoutInventoryRecordsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -3933,6 +4220,7 @@ export type WorkspaceUncheckedUpdateWithoutInventoryRecordsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -3964,6 +4252,7 @@ export type WorkspaceCreateWithoutInventoryExcludedProductsInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -3993,6 +4282,7 @@ export type WorkspaceUncheckedCreateWithoutInventoryExcludedProductsInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -4040,6 +4330,7 @@ export type WorkspaceUpdateWithoutInventoryExcludedProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -4069,6 +4360,7 @@ export type WorkspaceUncheckedUpdateWithoutInventoryExcludedProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -4100,6 +4392,7 @@ export type WorkspaceCreateWithoutInventoryAnalysesInput = {
   name: string
   createdAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutWorkspaceInput
+  space?: Prisma.SpaceCreateNestedOneWithoutWorkspaceInput
   reportUploads?: Prisma.ReportUploadCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordCreateNestedManyWithoutWorkspaceInput
   dailyMemos?: Prisma.DailyMemoCreateNestedManyWithoutWorkspaceInput
@@ -4129,6 +4422,7 @@ export type WorkspaceUncheckedCreateWithoutInventoryAnalysesInput = {
   id?: string
   name: string
   ownerId: string
+  spaceId?: string | null
   createdAt?: Date | string
   reportUploads?: Prisma.ReportUploadUncheckedCreateNestedManyWithoutWorkspaceInput
   adRecords?: Prisma.AdRecordUncheckedCreateNestedManyWithoutWorkspaceInput
@@ -4176,6 +4470,7 @@ export type WorkspaceUpdateWithoutInventoryAnalysesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutWorkspaceNestedInput
+  space?: Prisma.SpaceUpdateOneWithoutWorkspaceNestedInput
   reportUploads?: Prisma.ReportUploadUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUpdateManyWithoutWorkspaceNestedInput
   dailyMemos?: Prisma.DailyMemoUpdateManyWithoutWorkspaceNestedInput
@@ -4205,6 +4500,7 @@ export type WorkspaceUncheckedUpdateWithoutInventoryAnalysesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reportUploads?: Prisma.ReportUploadUncheckedUpdateManyWithoutWorkspaceNestedInput
   adRecords?: Prisma.AdRecordUncheckedUpdateManyWithoutWorkspaceNestedInput
@@ -4410,8 +4706,10 @@ export type WorkspaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   id?: boolean
   name?: boolean
   ownerId?: boolean
+  spaceId?: boolean
   createdAt?: boolean
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.Workspace$spaceArgs<ExtArgs>
   reportUploads?: boolean | Prisma.Workspace$reportUploadsArgs<ExtArgs>
   adRecords?: boolean | Prisma.Workspace$adRecordsArgs<ExtArgs>
   dailyMemos?: boolean | Prisma.Workspace$dailyMemosArgs<ExtArgs>
@@ -4443,28 +4741,34 @@ export type WorkspaceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   name?: boolean
   ownerId?: boolean
+  spaceId?: boolean
   createdAt?: boolean
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.Workspace$spaceArgs<ExtArgs>
 }, ExtArgs["result"]["workspace"]>
 
 export type WorkspaceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
   ownerId?: boolean
+  spaceId?: boolean
   createdAt?: boolean
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.Workspace$spaceArgs<ExtArgs>
 }, ExtArgs["result"]["workspace"]>
 
 export type WorkspaceSelectScalar = {
   id?: boolean
   name?: boolean
   ownerId?: boolean
+  spaceId?: boolean
   createdAt?: boolean
 }
 
-export type WorkspaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ownerId" | "createdAt", ExtArgs["result"]["workspace"]>
+export type WorkspaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "ownerId" | "spaceId" | "createdAt", ExtArgs["result"]["workspace"]>
 export type WorkspaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.Workspace$spaceArgs<ExtArgs>
   reportUploads?: boolean | Prisma.Workspace$reportUploadsArgs<ExtArgs>
   adRecords?: boolean | Prisma.Workspace$adRecordsArgs<ExtArgs>
   dailyMemos?: boolean | Prisma.Workspace$dailyMemosArgs<ExtArgs>
@@ -4493,15 +4797,18 @@ export type WorkspaceInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
 }
 export type WorkspaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.Workspace$spaceArgs<ExtArgs>
 }
 export type WorkspaceIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  space?: boolean | Prisma.Workspace$spaceArgs<ExtArgs>
 }
 
 export type $WorkspacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Workspace"
   objects: {
     owner: Prisma.$UserPayload<ExtArgs>
+    space: Prisma.$SpacePayload<ExtArgs> | null
     reportUploads: Prisma.$ReportUploadPayload<ExtArgs>[]
     adRecords: Prisma.$AdRecordPayload<ExtArgs>[]
     dailyMemos: Prisma.$DailyMemoPayload<ExtArgs>[]
@@ -4531,6 +4838,7 @@ export type $WorkspacePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     id: string
     name: string
     ownerId: string
+    spaceId: string | null
     createdAt: Date
   }, ExtArgs["result"]["workspace"]>
   composites: {}
@@ -4927,6 +5235,7 @@ readonly fields: WorkspaceFieldRefs;
 export interface Prisma__WorkspaceClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  space<T extends Prisma.Workspace$spaceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$spaceArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reportUploads<T extends Prisma.Workspace$reportUploadsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$reportUploadsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReportUploadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   adRecords<T extends Prisma.Workspace$adRecordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$adRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   dailyMemos<T extends Prisma.Workspace$dailyMemosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Workspace$dailyMemosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DailyMemoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4983,6 +5292,7 @@ export interface WorkspaceFieldRefs {
   readonly id: Prisma.FieldRef<"Workspace", 'String'>
   readonly name: Prisma.FieldRef<"Workspace", 'String'>
   readonly ownerId: Prisma.FieldRef<"Workspace", 'String'>
+  readonly spaceId: Prisma.FieldRef<"Workspace", 'String'>
   readonly createdAt: Prisma.FieldRef<"Workspace", 'DateTime'>
 }
     
@@ -5377,6 +5687,25 @@ export type WorkspaceDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Limit how many Workspaces to delete.
    */
   limit?: number
+}
+
+/**
+ * Workspace.space
+ */
+export type Workspace$spaceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Space
+   */
+  select?: Prisma.SpaceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Space
+   */
+  omit?: Prisma.SpaceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SpaceInclude<ExtArgs> | null
+  where?: Prisma.SpaceWhereInput
 }
 
 /**

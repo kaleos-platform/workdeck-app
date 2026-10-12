@@ -1,9 +1,10 @@
 import { prisma } from '@/lib/prisma'
+import { ToolUserError } from '@/lib/agent/tools/errors'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { buildAppUrl } from '@/lib/domain'
 import { notifyPendingAction } from '@/lib/slack/notify-pending-action'
 import { getActionDefinition } from './registry'
-import type { PendingActionDraft, PendingActionResult } from './types'
+import type { ActionExecContext, PendingActionDraft, PendingActionResult } from './types'
 
 // 승인 만료 기본 72시간.
 const DEFAULT_TTL_HOURS = 72
@@ -23,7 +24,7 @@ function toResultInSpace(
   spaceId: string
 ): PendingActionResult {
   if (action.spaceId !== spaceId) {
-    throw new Error('이미 다른 공간에서 사용한 idempotencyKey 입니다')
+    throw new ToolUserError('이미 다른 공간에서 사용한 idempotencyKey 입니다')
   }
   return toResult(action)
 }
@@ -39,11 +40,11 @@ function toResultInSpace(
  */
 export async function createPendingAction(draft: PendingActionDraft): Promise<PendingActionResult> {
   const def = getActionDefinition(draft.actionType)
-  if (!def) throw new Error(`알 수 없는 액션 유형: ${draft.actionType}`)
+  if (!def) throw new ToolUserError(`알 수 없는 액션 유형: ${draft.actionType}`)
 
   const parsed = def.paramsSchema.safeParse(draft.params)
   if (!parsed.success) {
-    throw new Error(
+    throw new ToolUserError(
       `액션 파라미터가 올바르지 않습니다: ${parsed.error.issues.map((i) => i.message).join(', ')}`
     )
   }
@@ -52,7 +53,7 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
   // 구독 만료 Space는 큐잉 자체를 막는다. 실행 경로(approveAndExecute)가 보안 경계이고
   // 여기는 UX — 승인해도 실행되지 않을 액션을 72시간 남기거나 Slack 알림을 쏘지 않기 위함.
   const blocked = await assertDeckWritable(draft.spaceId, def.deckKey)
-  if (blocked) throw new Error(blocked)
+  if (blocked) throw new ToolUserError(blocked)
 
   // 멱등: 동일 키 기존 액션이 있으면 새로 만들지 않고 그대로 반환.
   if (draft.idempotencyKey) {
@@ -63,7 +64,14 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
     if (existing) return toResultInSpace(existing, draft.spaceId)
   }
 
-  const ctx = { spaceId: draft.spaceId, requestedBy: draft.requestedBy }
+  // validateCreate·snapshot용. 생성 시점이라 deciderId·actionId는 없다.
+  const ctx: ActionExecContext = {
+    spaceId: draft.spaceId,
+    actor: draft.actor,
+    requesterUserId: draft.requesterUserId ?? null,
+    workId: draft.workId ?? '',
+    decryptedCredentialIds: [],
+  }
 
   // 생성 시점 가드 — throw하면 그대로 전파되어 생성이 거부된다(snapshot과 달리 관대하지 않음).
   if (def.validateCreate) {
@@ -93,7 +101,11 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
         summary: draft.summary,
         beforeState: beforeState === undefined ? undefined : (beforeState as object),
         source: draft.source,
-        requestedBy: draft.requestedBy,
+        actorType: draft.actor.type,
+        actorId: draft.actor.id,
+        requesterUserId: draft.requesterUserId ?? null,
+        requesterSlackUserId: draft.requesterSlackUserId ?? null,
+        workId: draft.workId ?? null,
         expiresAt,
         idempotencyKey: draft.idempotencyKey ?? null,
       },

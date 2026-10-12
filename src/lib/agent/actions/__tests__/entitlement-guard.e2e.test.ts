@@ -114,7 +114,7 @@ d('승인 큐 entitlement 가드', () => {
       params: { value: 21 },
       summary: '테스트',
       source: 'MCP' as const,
-      requestedBy: USER_ID,
+      actor: { type: 'user' as const, id: USER_ID },
     }
   }
 
@@ -134,7 +134,8 @@ d('승인 큐 entitlement 가드', () => {
         payload: { value: 21 },
         summary: '만료 전에 쌓인 액션',
         source: 'MCP',
-        requestedBy: USER_ID,
+        actorType: 'user',
+        actorId: USER_ID,
         expiresAt: new Date(Date.now() + 72 * 3_600_000),
       },
       select: { id: true },

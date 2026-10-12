@@ -197,7 +197,7 @@ export function ApprovalList() {
                 </div>
                 <p className="text-sm font-medium text-foreground">{action.summary}</p>
                 <p className="text-xs text-muted-foreground">
-                  요청자 {action.requestedBy} · {SOURCE_LABELS[action.source]}
+                  {action.actorLabel} · {SOURCE_LABELS[action.source]}
                 </p>
               </CardContent>
             </Card>

@@ -28,3 +28,4 @@
 ## 후속
 
 - 레거시 Workspace의 Space 통합 완료 시 이 역참조 제거
+- 2026-10: `Workspace.spaceId` FK 도입(kaleos-ax ① (c) Task 2). `canWorkspaceCollect`는 FK만 쓰고, null이면 수집을 거부한다(최고참 멤버십 역참조 폐기)

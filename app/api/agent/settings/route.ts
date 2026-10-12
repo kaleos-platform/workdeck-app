@@ -34,7 +34,7 @@ export async function GET() {
   if ('error' in ctx) return ctx.error
 
   const [agent, usage, installation] = await Promise.all([
-    prisma.spaceAgent.findUnique({
+    prisma.spaceAgentSetting.findUnique({
       where: { spaceId: ctx.spaceId },
       select: { isActive: true },
     }),
@@ -74,7 +74,7 @@ export async function PATCH(req: NextRequest) {
     return errorResponse('agentActive(boolean)는 필수입니다', 400)
   }
 
-  const agent = await prisma.spaceAgent.upsert({
+  const agent = await prisma.spaceAgentSetting.upsert({
     where: { spaceId: ctx.spaceId },
     create: { spaceId: ctx.spaceId, isActive: body.agentActive },
     update: { isActive: body.agentActive },
