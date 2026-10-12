@@ -128,6 +128,6 @@ export async function recordTokens(
       },
     })
   } catch (err) {
-    console.error('[agent] UsageEvent 기록 실패:', err)
+    console.error(`[agent] UsageEvent 기록 실패 (spaceId=${spaceId}):`, err)
   }
 }
