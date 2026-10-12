@@ -8,6 +8,7 @@
 import { prisma } from '@/lib/prisma'
 import { decryptBotToken } from './token-crypto'
 import { chatUpdate } from './client'
+import { escapeMrkdwn } from './mrkdwn'
 
 function formatKst(date: Date): string {
   return date.toLocaleString('ko-KR', {
@@ -70,16 +71,18 @@ export async function syncSlackDecision(actionId: string): Promise<void> {
         where: { id: action.decidedBy },
         select: { name: true, email: true },
       })
-      contextParts.push(`결정자 ${decider?.name ?? decider?.email ?? action.decidedBy}`)
+      contextParts.push(
+        `결정자 ${escapeMrkdwn(decider?.name ?? decider?.email ?? action.decidedBy)}`
+      )
     }
     if (action.decidedAt) contextParts.push(formatKst(action.decidedAt))
     if (action.status === 'FAILED' && action.error) {
-      contextParts.push(`오류: ${action.error.slice(0, 200)}`)
+      contextParts.push(`오류: ${escapeMrkdwn(action.error.slice(0, 200))}`)
     }
 
     const blocks = [
       { type: 'header', text: { type: 'plain_text', text: '🔔 에이전트 승인 요청', emoji: true } },
-      { type: 'section', text: { type: 'mrkdwn', text: action.summary } },
+      { type: 'section', text: { type: 'mrkdwn', text: escapeMrkdwn(action.summary) } },
       { type: 'context', elements: [{ type: 'mrkdwn', text: contextParts.join(' · ') }] },
     ]
 

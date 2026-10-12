@@ -13,6 +13,7 @@ import { buildAppUrl } from '@/lib/domain'
 import { decryptBotToken } from './token-crypto'
 import { postMessage } from './client'
 import { describeActors } from '@/lib/agent/actions/actor-label'
+import { escapeMrkdwn } from './mrkdwn'
 
 // 승인 UI에서도 쓰는 deck 라벨(한국어).
 const DECK_LABELS: Record<string, string> = {
@@ -71,7 +72,7 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
 
     const token = decryptBotToken(installation.botToken, installation.botTokenIv)
     // 표시 이름과 요약은 사용자·에이전트 입력이라 mrkdwn 제어 문자(<!channel> 등)를 이스케이프한다.
-    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const esc = escapeMrkdwn
     const [who] = (await describeActors([action])).map(esc)
     const summary = esc(action.summary)
 
