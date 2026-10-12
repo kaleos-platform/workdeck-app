@@ -8,7 +8,7 @@ import { errorResponse } from '@/lib/api-helpers'
 import { assertWorkerOwns, authenticateWorker } from '@/lib/worker-auth'
 import { claimJobs, enqueueJob, reapStaleClaims } from '@/lib/sc/jobs'
 import { prisma } from '@/lib/prisma'
-import { readChannelCredential } from '@/lib/sc/credentials'
+import { readChannelCredentialSealed } from '@/lib/sc/credentials'
 import { getAppOrigin } from '@/lib/domain'
 
 const KINDS = ['PUBLISH', 'COLLECT_METRIC', 'INSIGHT_SWEEP'] as const
@@ -69,7 +69,8 @@ export async function GET(req: NextRequest) {
       })
       if (!deployment) return { job }
 
-      const credential = await readChannelCredential(deployment.channelId, 'COOKIE').catch(
+      // 자격증명은 암호문 그대로 보낸다 — 워커가 channel-credential 용도 키로 복호화(서버 응답에 평문 금지).
+      const credential = await readChannelCredentialSealed(deployment.channelId, 'COOKIE').catch(
         () => null
       )
       const assets = deployment.content.assets.map((a) => ({
