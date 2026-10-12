@@ -1,16 +1,23 @@
 import type { z } from 'zod'
 import type { SpaceMemberRole } from '@/lib/api-helpers'
+import type { Actor } from '@/lib/agent/identity/principal'
 
 // 승인 큐 액션의 실행 컨텍스트 — 항상 spaceId 스코프.
 export interface ActionExecContext {
   spaceId: string
-  // 제안한 행위자 id(구성원 User.id, 에이전트·연동 계정 SpaceAgent.id, 'workdeck-agent' 등). User FK로 쓰지 말 것.
-  requestedBy: string
+  // 제안한 원래 행위자(구성원 User.id, 에이전트·연동 계정 SpaceAgent.id, 'workdeck-agent' 등). User FK로 쓰지 말 것.
+  actor: Actor
+  // 요청자(작업을 시킨 구성원 User.id). 미확인이면 null.
+  requesterUserId: string | null
+  // 제안의 workId. 레거시(null) 액션은 `act_<actionId>`.
+  workId: string
   // 승인한 구성원 User.id — execute 시점에만 채워진다. User FK가 필요한 곳은 이 값을 쓴다.
   deciderId?: string
   // AgentPendingAction.id — execute 시점에만 채워진다(validateCreate/snapshot 시점엔 아직 없음).
   // CoupangWriteJob.actionId 같은 멱등 FK에 쓴다.
   actionId?: string
+  // 실행 중 복호화한 자격증명 id를 push한다 → 실행 감사 행.
+  decryptedCredentialIds: string[]
 }
 
 /**
@@ -54,7 +61,10 @@ export interface PendingActionDraft {
   params: unknown // paramsSchema로 검증됨
   summary: string
   source: 'MCP' | 'WORKDECK_AGENT' | 'WEB' | 'SYSTEM'
-  requestedBy: string
+  actor: Actor
+  requesterUserId?: string | null
+  requesterSlackUserId?: string | null
+  workId?: string | null
   idempotencyKey?: string
 }
 

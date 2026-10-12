@@ -4,7 +4,7 @@ import { assertDeckWritable } from '@/lib/billing/entitlement'
 import { buildAppUrl } from '@/lib/domain'
 import { notifyPendingAction } from '@/lib/slack/notify-pending-action'
 import { getActionDefinition } from './registry'
-import type { PendingActionDraft, PendingActionResult } from './types'
+import type { ActionExecContext, PendingActionDraft, PendingActionResult } from './types'
 
 // 승인 만료 기본 72시간.
 const DEFAULT_TTL_HOURS = 72
@@ -64,7 +64,14 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
     if (existing) return toResultInSpace(existing, draft.spaceId)
   }
 
-  const ctx = { spaceId: draft.spaceId, requestedBy: draft.requestedBy }
+  // validateCreate·snapshot용. 생성 시점이라 deciderId·actionId는 없다.
+  const ctx: ActionExecContext = {
+    spaceId: draft.spaceId,
+    actor: draft.actor,
+    requesterUserId: draft.requesterUserId ?? null,
+    workId: draft.workId ?? '',
+    decryptedCredentialIds: [],
+  }
 
   // 생성 시점 가드 — throw하면 그대로 전파되어 생성이 거부된다(snapshot과 달리 관대하지 않음).
   if (def.validateCreate) {
@@ -94,7 +101,11 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
         summary: draft.summary,
         beforeState: beforeState === undefined ? undefined : (beforeState as object),
         source: draft.source,
-        requestedBy: draft.requestedBy,
+        actorType: draft.actor.type,
+        actorId: draft.actor.id,
+        requesterUserId: draft.requesterUserId ?? null,
+        requesterSlackUserId: draft.requesterSlackUserId ?? null,
+        workId: draft.workId ?? null,
         expiresAt,
         idempotencyKey: draft.idempotencyKey ?? null,
       },

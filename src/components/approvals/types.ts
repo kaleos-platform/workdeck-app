@@ -19,7 +19,10 @@ export type AgentPendingActionDTO = {
   summary: string
   beforeState: unknown
   source: AgentActionSourceValue
-  requestedBy: string
+  actorType: string
+  actorId: string
+  requesterUserId: string | null
+  actorLabel: string // 사람이 읽는 "행위자 · 요청자" (서버 describeActors)
   status: AgentActionStatusValue
   expiresAt: string
   decidedBy: string | null

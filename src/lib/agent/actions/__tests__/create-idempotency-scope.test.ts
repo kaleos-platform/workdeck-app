@@ -23,7 +23,7 @@ const draft = {
   params: {},
   summary: 's',
   source: 'SYSTEM' as const,
-  requestedBy: 'worker',
+  actor: { type: 'system' as const, id: 'worker' },
   idempotencyKey: 'k1',
 }
 const expiresAt = new Date('2026-10-13T00:00:00Z')

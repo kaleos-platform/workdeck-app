@@ -1,5 +1,5 @@
 /** @jest-environment node */
-jest.mock('@/lib/prisma', () => ({ prisma: {} }))
+jest.mock('@/lib/prisma', () => ({ prisma: { spaceMember: { findFirst: jest.fn() } } }))
 jest.mock('@/lib/agent/audit', () => ({
   AUDIT_UNAVAILABLE: '감사 기록을 남길 수 없어 실행하지 않았습니다',
   startToolAudit: jest.fn(),
@@ -21,6 +21,8 @@ import {
 } from '../run-tool'
 import type { McpToolContext, ToolDefinition } from '../types'
 import { ALL_SCOPES } from '@/lib/agent/identity/principal'
+import { prisma } from '@/lib/prisma'
+import { withRequester } from '../run-tool'
 
 const ctx = (scopes: McpToolContext['scopes']): McpToolContext => ({
   spaceId: 'sp1',
@@ -77,11 +79,65 @@ describe('runTool', () => {
     const extra = { spaceId: 'sp1', actor: { type: 'user', id: 'u1' }, scopes: [...ALL_SCOPES] }
     expect(readAuthExtra(extra)).toEqual({ ok: true, principal: extra })
   })
-  it('systemToolContext는 내장 에이전트 actor와 전체 scope', () => {
-    const c = systemToolContext('sp1', { requesterSlackUserId: 'U1' })
+  it('systemToolContext는 내장 에이전트 actor와 전체 scope, 요청자는 비어 있다', () => {
+    const c = systemToolContext('sp1')
     expect(c.actor).toEqual({ type: 'system', id: 'workdeck-agent' })
     expect(c.scopes).toContain('ads:write')
-    expect(c.requesterSlackUserId).toBe('U1')
+    expect(c).toMatchObject({ requesterUserId: null, requesterSlackUserId: null })
+  })
+  it('splitMetaArgs: requesterSlackUserId는 메타로 빼고 도구 인자에 넘기지 않는다', () => {
+    expect(splitMetaArgs({ requesterSlackUserId: 'U123', a: 1 })).toEqual({
+      meta: { requesterSlackUserId: 'U123' },
+      toolArgs: { a: 1 },
+    })
+  })
+  describe('withRequester', () => {
+    const findFirst = (prisma as unknown as { spaceMember: { findFirst: jest.Mock } }).spaceMember
+      .findFirst
+    const integration = (): McpToolContext => ({
+      ...ctx(ALL_SCOPES),
+      actor: { type: 'integration', id: 'ig1' },
+      requesterUserId: 'u-session',
+    })
+    it('Slack ID가 없으면 연동 계정 세션의 requesterUserId를 그대로 둔다', async () => {
+      await expect(withRequester(integration(), undefined)).resolves.toMatchObject({
+        requesterUserId: 'u-session',
+        requesterSlackUserId: null,
+      })
+      expect(findFirst).not.toHaveBeenCalled()
+    })
+    it('Slack ID가 있으면 Slack 요청자가 이긴다(같은 Space 구성원)', async () => {
+      findFirst.mockResolvedValue({ userId: 'u-slack' })
+      await expect(withRequester(integration(), 'U123')).resolves.toMatchObject({
+        requesterUserId: 'u-slack',
+        requesterSlackUserId: 'U123',
+      })
+      expect(findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { spaceId: 'sp1', slackUserId: 'U123' } })
+      )
+    })
+    it('구성원 본인 세션은 Slack ID를 넘겨도 요청자를 채우지 않는다', async () => {
+      const member = { ...ctx(ALL_SCOPES), actor: { type: 'user' as const, id: 'u1' } }
+      await expect(withRequester(member, 'U123')).resolves.toMatchObject({
+        requesterUserId: null,
+        requesterSlackUserId: null,
+      })
+      expect(findFirst).not.toHaveBeenCalled()
+    })
+    it('형식이 틀린 Slack ID는 "제공되지 않음" — 연동 계정 세션의 요청자를 유지한다', async () => {
+      await expect(withRequester(integration(), 'not-slack')).resolves.toMatchObject({
+        requesterUserId: 'u-session',
+        requesterSlackUserId: null,
+      })
+      expect(findFirst).not.toHaveBeenCalled()
+    })
+    it('확인되지 않는 Slack ID → null, 원문 ID는 남긴다', async () => {
+      findFirst.mockResolvedValue(null)
+      await expect(withRequester(integration(), 'U999')).resolves.toMatchObject({
+        requesterUserId: null,
+        requesterSlackUserId: 'U999',
+      })
+    })
   })
   it('scope 거부도 감사 로그(outcome=denied)에 남긴다', async () => {
     await expect(runTool(writeTool, ctx(['ads:read']), { from: 'a' })).rejects.toThrow()

@@ -1,7 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { toolDefinitions } from '@/lib/agent/tools'
 import type { McpToolContext, ToolDefinition } from '@/lib/agent/tools'
-import { runTool, systemToolContext, toolErrorMessage } from '@/lib/agent/tools/run-tool'
+import {
+  runTool,
+  systemToolContext,
+  toolErrorMessage,
+  withRequester,
+} from '@/lib/agent/tools/run-tool'
 import { buildAppUrl } from '@/lib/domain'
 import { checkAndIncrementUsage, recordTokens } from './llm/usage'
 import { runAgentLoop } from './llm/agent-loop'
@@ -42,7 +47,7 @@ function won(v: unknown): string {
 
 export interface RouteArgs {
   spaceId: string
-  requesterSlackUserId: string | null // Slack 발신자 ID (요청자 변환은 Task 7)
+  requesterSlackUserId: string | null // Slack 발신자 ID — 같은 Space 구성원이면 요청자로 변환
   channelId: string
   threadTs: string
   text: string
@@ -73,7 +78,7 @@ const HELP_TEXT = [
 export async function routeAgentMessage(args: RouteArgs): Promise<RouteResult> {
   const text = args.text.trim()
   // 내장 에이전트(actor=system) 컨텍스트 — 도구는 이 spaceId로만 데이터를 찾는다.
-  const ctx = systemToolContext(args.spaceId, { requesterSlackUserId: args.requesterSlackUserId })
+  const ctx = await withRequester(systemToolContext(args.spaceId), args.requesterSlackUserId)
 
   // ── 1단계: 정형 명령 ────────────────────────────────────────────────────
   const structured = await tryStructuredCommand(args, ctx, text)

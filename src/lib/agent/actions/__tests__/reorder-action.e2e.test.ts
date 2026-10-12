@@ -65,7 +65,7 @@ d('seller-hub.reorder.plan.create execute', () => {
       params: { productId },
       summary: '발주 계획: E2E 상품',
       source: 'MCP',
-      requestedBy: USER_ID,
+      actor: { type: 'user', id: USER_ID },
     })
     const out = await approveAndExecute(created.actionId, USER_ID)
     expect(out.status).toBe('EXECUTED')
@@ -89,7 +89,7 @@ d('seller-hub.reorder.plan.create execute', () => {
       params: { productId },
       summary: 'e2e 에이전트 제안',
       source: 'MCP',
-      requestedBy: 'ag-e2e', // User가 아님 — createdById(User FK)로 쓰면 깨진다
+      actor: { type: 'agent', id: 'ag-e2e' }, // User가 아님 — createdById(User FK)로 쓰면 깨진다
     })
     const out = await approveAndExecute(r.actionId, USER_ID)
     expect(out.status).toBe('EXECUTED')

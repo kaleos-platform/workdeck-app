@@ -569,15 +569,23 @@ model SpaceMember {
 // 에이전트 승인 큐 — MCP/워크덱 에이전트의 상태 변경(write) 요청을 승인부 실행한다.
 // 조회는 자유, 변경은 이 큐에 PENDING으로 쌓이고 ADMIN 승인 시 동기 실행된다.
 model AgentPendingAction {
-  id          String            @id @default(cuid())
-  spaceId     String
-  deckKey     String // "finance" | "seller-hub" | "coupang-ads"
-  actionType  String // ActionDefinition.actionType, 예: "finance.transaction.reclassify"
-  payload     Json // 액션 파라미터 (paramsSchema로 검증된 값)
-  summary     String // 사람이 읽는 한 줄 요약
-  beforeState Json? // 실행 전 스냅샷 (diff·롤백 참고용)
-  source      AgentActionSource
-  requestedBy String // 요청자 User.id (또는 워커/시스템 식별자)
+  id                   String            @id @default(cuid())
+  spaceId              String
+  deckKey              String // "finance" | "seller-hub" | "coupang-ads"
+  actionType           String // ActionDefinition.actionType, 예: "finance.transaction.reclassify"
+  payload              Json // 액션 파라미터 (paramsSchema로 검증된 값)
+  summary              String // 사람이 읽는 한 줄 요약
+  beforeState          Json? // 실행 전 스냅샷 (diff·롤백 참고용)
+  source               AgentActionSource
+  // 제안한 행위자. DB 컬럼명은 기존 "requestedBy" 유지(배포 중 구버전 호환) — 코드에서는 actorId.
+  // "user" | "agent" | "integration" | "system". 기본값 "legacy" = actorType 없이 INSERT한 구버전 함수의 행
+  // (rolling deploy 중). 새 코드는 항상 명시한다. legacy 행은 후속 마이그레이션이 다시 분류한다.
+  actorType            String            @default("legacy")
+  actorId              String            @map("requestedBy")
+  // 요청자(작업을 시킨 구성원). Slack 연결로 확인된 경우만 User.id. 미확인이면 null + Slack 원문 ID.
+  requesterUserId      String?
+  requesterSlackUserId String?
+  workId               String?
 
   status     AgentActionStatus @default(PENDING)
   expiresAt  DateTime // createPendingAction에서 now+72h로 설정 (앱 계산)
@@ -598,6 +606,7 @@ model AgentPendingAction {
 
   @@index([spaceId, status, createdAt])
   @@index([status, expiresAt])
+  @@index([workId])
 }
 
 // Space별 workdeck 내장 에이전트(Slack 멘션) 활성 토글. 레코드 없으면 앱에서 기본 활성으로 취급한다.
