@@ -99,21 +99,16 @@ export async function assertDeckWritable(
 }
 
 // 워커 수집 게이트: coupang-ads 데이터는 Workspace 스코프지만 entitlement는 Space 축.
-// Workspace.ownerId → User → 최고참 Space 멤버십(1:1 암묵 규칙, resolveSpaceContext와 동일 기준)으로
-// 역참조해 coupang-ads deck 사용 가능 여부를 판정한다.
+// Workspace.spaceId(명시 FK)의 Space로만 판정한다. FK가 비어 있으면 수집을 거부한다.
+// 예전 역참조(ownerId → 역할과 무관한 최고참 멤버십)는 OWNER가 아닌 Space나 이미 다른 Workspace가
+// 차지한 Space의 구독으로 수집 여부를 정하게 되므로 쓰지 않는다. 미연결 Workspace는 명시적 매핑이 필요하다.
 export async function canWorkspaceCollect(workspaceId: string): Promise<boolean> {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
-    select: { ownerId: true },
-  })
-  if (!workspace) return false
-  const membership = await prisma.spaceMember.findFirst({
-    where: { userId: workspace.ownerId },
-    orderBy: { createdAt: 'asc' },
     select: { spaceId: true },
   })
-  if (!membership) return false
-  return canUseDeck(membership.spaceId, 'coupang-ads')
+  if (!workspace?.spaceId) return false
+  return canUseDeck(workspace.spaceId, 'coupang-ads')
 }
 
 // Trial lazy-start: 유료 deck 첫 사용 시도 시 호출.
