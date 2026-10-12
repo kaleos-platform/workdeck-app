@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -11,6 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  SpaceRequiredPicker,
+  readSpaceRequired,
+  type SpaceChoice,
+} from '@/components/common/space-required-picker'
 import { ExpiryCountdown } from './expiry-countdown'
 import { ApprovalDetailSheet } from './approval-detail-sheet'
 import {
@@ -54,6 +60,7 @@ function statusBadgeVariant(status: AgentActionStatusValue) {
 }
 
 export function ApprovalList() {
+  const spaceId = useSearchParams().get('spaceId')
   const [tab, setTab] = useState<TabKey>('pending')
   const [deckFilter, setDeckFilter] = useState('all')
   const [sourceFilter, setSourceFilter] = useState('all')
@@ -62,20 +69,7 @@ export function ApprovalList() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [canDecide, setCanDecide] = useState(false)
-
-  // 사전 역할 조회 — /api/spaces가 반환하는 role은 액션 목록과 동일한
-  // resolveSpaceContext() 스코프이므로 ADMIN/OWNER 여부를 신뢰할 수 있다.
-  // 단, ActionDefinition.requiredRole이 개별 액션마다 ADMIN보다 엄격(OWNER)할
-  // 수 있어 이 값은 "기본 requiredRole=ADMIN" 가정이며, PATCH 403 응답이
-  // 최종 안전망 역할을 한다.
-  useEffect(() => {
-    fetch('/api/spaces')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: { role?: string } | null) => {
-        if (data?.role === 'ADMIN' || data?.role === 'OWNER') setCanDecide(true)
-      })
-      .catch(() => {})
-  }, [])
+  const [spaceChoices, setSpaceChoices] = useState<SpaceChoice[] | null>(null)
 
   const fetchActions = useCallback(async () => {
     setIsLoading(true)
@@ -85,20 +79,26 @@ export function ApprovalList() {
       // 처리됨 탭은 여러 상태를 포함하므로 status 필터는 서버에 단일값만 보내고
       // (PENDING만 서버 필터, 나머지는 클라이언트에서 걸러낸다)
       if (tab === 'pending') params.set('status', 'PENDING')
+      if (spaceId) params.set('spaceId', spaceId)
 
       const res = await fetch(`/api/agent/actions?${params.toString()}`)
+      setSpaceChoices(await readSpaceRequired(res))
       if (!res.ok) {
         setActions([])
+        setCanDecide(false)
         return
       }
-      const data: { actions: AgentPendingActionDTO[] } = await res.json()
+      const data: { actions: AgentPendingActionDTO[]; role?: string } = await res.json()
       setActions(data.actions ?? [])
+      // 선택한 Space에서의 역할 — "기본 requiredRole=ADMIN" 가정이며,
+      // 액션별로 더 엄격한(OWNER) 경우는 PATCH 403 응답이 최종 안전망이다.
+      setCanDecide(data.role === 'ADMIN' || data.role === 'OWNER')
     } catch {
       setActions([])
     } finally {
       setIsLoading(false)
     }
-  }, [deckFilter, tab])
+  }, [deckFilter, tab, spaceId])
 
   useEffect(() => {
     fetchActions()
@@ -172,6 +172,8 @@ export function ApprovalList() {
         <div className="rounded-md border border-dashed p-10 text-center text-sm text-muted-foreground">
           불러오는 중...
         </div>
+      ) : spaceChoices ? (
+        <SpaceRequiredPicker spaces={spaceChoices} />
       ) : filtered.length === 0 ? (
         <div className="rounded-md border border-dashed p-10 text-center text-sm text-muted-foreground">
           {tab === 'pending' ? '승인 대기 중인 액션이 없습니다' : '처리된 액션이 없습니다'}

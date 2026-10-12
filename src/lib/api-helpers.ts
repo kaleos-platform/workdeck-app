@@ -90,6 +90,46 @@ export const resolveSpaceContext = cache(async function resolveSpaceContext() {
   }
 })
 
+/**
+ * 인증 + 명시적 Space 선택 + 멤버십 검증(웹 세션용). Task 4의 MCP Space 결정 규칙과 같다.
+ * - requestedSpaceId가 있으면 그 Space의 구성원이어야 한다(아니면 403 — Space 존재 여부는 드러내지 않는다).
+ * - 없으면 멤버십이 1개일 때만 그 Space. 2개 이상이면 400 SPACE_REQUIRED + 선택지 —
+ *   최고참 멤버십으로 조용히 떨어지지 않는다(두 Space ADMIN이 다른 Space에 쓰는 사고 방지).
+ */
+export async function resolveRequestedSpaceContext(requestedSpaceId: string | null): Promise<
+  | {
+      user: NonNullable<Awaited<ReturnType<typeof getUser>>>
+      space: { id: string; name: string }
+      role: SpaceMemberRole
+    }
+  | { error: NextResponse }
+> {
+  const user = await getUser()
+  if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
+
+  const memberships = await prisma.spaceMember.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'asc' },
+    select: { role: true, space: { select: { id: true, name: true } } },
+  })
+  if (memberships.length === 0) return { error: errorResponse('공간이 없습니다', 404) }
+
+  if (requestedSpaceId) {
+    const m = memberships.find((x) => x.space.id === requestedSpaceId)
+    if (!m) return { error: errorResponse('이 Space의 구성원이 아닙니다', 403) }
+    return { user, space: m.space, role: m.role as SpaceMemberRole }
+  }
+  if (memberships.length === 1) {
+    return { user, space: memberships[0].space, role: memberships[0].role as SpaceMemberRole }
+  }
+  return {
+    error: errorResponse('여러 Space에 속해 있습니다. Space를 선택하세요', 400, {
+      code: 'SPACE_REQUIRED',
+      spaces: memberships.map((m) => ({ id: m.space.id, name: m.space.name, role: m.role })),
+    }),
+  }
+}
+
 // 인증 + Space 멤버십 + DeckInstance 활성화 여부 검증
 export async function resolveDeckContext(deckKey = 'coupang-ads', opts?: DeckContextOptions) {
   const resolved = await resolveSpaceContext()

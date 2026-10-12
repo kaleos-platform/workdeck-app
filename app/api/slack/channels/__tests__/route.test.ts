@@ -1,6 +1,6 @@
 /** @jest-environment node */
 // /api/slack/channels — kind 파라미터화(approvals|notifications) 회귀.
-// getUser · resolveSpaceContext · assertRole · prisma 모두 mock.
+// getUser · resolveRequestedSpaceContext · assertRole · prisma 모두 mock.
 
 import { NextRequest } from 'next/server'
 
@@ -12,7 +12,7 @@ jest.mock('@/lib/api-helpers', () => ({
   errorResponse: (msg: string, status: number) =>
     new Response(JSON.stringify({ message: msg }), { status }),
   assertRole: jest.fn(() => null),
-  resolveSpaceContext: jest.fn(),
+  resolveRequestedSpaceContext: jest.fn(),
 }))
 
 jest.mock('@/lib/prisma', () => ({
@@ -25,13 +25,13 @@ jest.mock('@/lib/prisma', () => ({
 jest.mock('@/lib/slack/tenant', () => ({ registerSpaceChannel: jest.fn() }))
 
 import { getUser } from '@/hooks/use-user'
-import { resolveSpaceContext } from '@/lib/api-helpers'
+import { resolveRequestedSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { registerSpaceChannel } from '@/lib/slack/tenant'
 import { GET, POST, DELETE } from '../route'
 
 const mockGetUser = getUser as jest.Mock
-const mockResolveSpaceContext = resolveSpaceContext as jest.Mock
+const mockResolveSpaceContext = resolveRequestedSpaceContext as jest.Mock
 const mockPrisma = prisma as unknown as {
   slackInstallation: { findUnique: jest.Mock }
   spaceSlackChannel: { findMany: jest.Mock; upsert: jest.Mock; deleteMany: jest.Mock }
@@ -69,7 +69,7 @@ describe('/api/slack/channels', () => {
       { id: '1', channelId: 'C1', channelName: null, kind: 'approvals', createdAt: new Date() },
       { id: '2', channelId: 'C2', channelName: null, kind: 'notifications', createdAt: new Date() },
     ])
-    const res = await GET()
+    const res = await GET(new NextRequest('http://localhost/api/slack/channels'))
     const json = await res!.json()
     expect(json.installed).toBe(true)
     expect(json.channels).toHaveLength(2)

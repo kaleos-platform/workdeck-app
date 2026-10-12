@@ -4,9 +4,17 @@ import { NextRequest } from 'next/server'
 jest.mock('@/lib/domain', () => ({ buildAppUrl: (p: string) => `https://app.test${p}` }))
 // jest.mock 팩토리는 mock 접두사 변수만 참조할 수 있다.
 let mockReconnect = false
+// signState가 만든 payload를 verifyState가 그대로 돌려준다(없으면 기존 기본값).
+let mockSigned: { spaceId: string; userId: string; reconnect: boolean } | null = null
 jest.mock('@/lib/slack/state', () => ({
-  verifyState: () => ({ spaceId: 'sp-kaleos', userId: 'u-admin', reconnect: mockReconnect }),
+  signState: jest.fn((s: { spaceId: string; userId: string; reconnect?: boolean }) => {
+    mockSigned = { spaceId: s.spaceId, userId: s.userId, reconnect: s.reconnect === true }
+    return 'signed-state'
+  }),
+  verifyState: () =>
+    mockSigned ?? { spaceId: 'sp-kaleos', userId: 'u-admin', reconnect: mockReconnect },
 }))
+jest.mock('@/hooks/use-user', () => ({ getUser: jest.fn(async () => ({ id: 'u-admin' })) }))
 jest.mock('@/lib/slack/client', () => ({
   oauthV2Access: jest.fn().mockResolvedValue({
     ok: true,
@@ -33,14 +41,20 @@ jest.mock('@/lib/prisma', () => {
     spaceSlackChannel: { deleteMany: jest.fn().mockResolvedValue({ count: 2 }) },
     agentPendingAction: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
     agentConversation: { deleteMany: jest.fn().mockResolvedValue({ count: 3 }) },
-    spaceMember: { findFirst: jest.fn(), updateMany: jest.fn().mockResolvedValue({ count: 2 }) },
+    spaceMember: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 2 }),
+    },
   }
   p.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(p))
   return { prisma: p }
 })
 
 import { prisma } from '@/lib/prisma'
+import { signState } from '@/lib/slack/state'
 import { GET } from '../route'
+import { GET as install } from '../../install/route'
 
 const p = prisma as unknown as {
   slackInstallation: {
@@ -52,7 +66,7 @@ const p = prisma as unknown as {
   spaceSlackChannel: { deleteMany: jest.Mock }
   agentPendingAction: { updateMany: jest.Mock }
   agentConversation: { deleteMany: jest.Mock }
-  spaceMember: { findFirst: jest.Mock; updateMany: jest.Mock }
+  spaceMember: { findFirst: jest.Mock; findMany: jest.Mock; updateMany: jest.Mock }
   $executeRaw: jest.Mock
 }
 const callback = () =>
@@ -61,6 +75,8 @@ const callback = () =>
 beforeEach(() => {
   jest.clearAllMocks()
   mockReconnect = false
+  mockSigned = null
+  process.env.SLACK_CLIENT_ID = 'cid'
   p.slackInstallation.findUnique.mockResolvedValue(null) // 이 Space는 아직 설치 없음
   p.slackInstallation.findMany.mockResolvedValue([{ spaceId: 'sp-aml' }]) // 같은 team을 의식주의가 이미 씀
 })
@@ -188,4 +204,41 @@ test('기존 Space의 ADMIN이면 같은 team에 연결된다 + 같은 team 행 
       scope: 'chat:write',
     },
   })
+})
+
+test('두 Space 사용자: team_changed → 재연결 버튼 → 같은 Space로 재연결 완료(spaceId 유지)', async () => {
+  p.slackInstallation.findUnique.mockResolvedValue({ teamId: 'T_OLD' })
+  p.spaceMember.findFirst.mockResolvedValue({ id: 'm1' })
+  p.spaceMember.findMany.mockResolvedValue([
+    { role: 'ADMIN', space: { id: 'sp-aml', name: '의식주의' } },
+    { role: 'ADMIN', space: { id: 'sp-kaleos', name: 'Kaleos' } },
+  ])
+  const first = new URL((await callback()).headers.get('location')!)
+  expect(first.searchParams.get('slack')).toBe('team_changed')
+  const spaceId = first.searchParams.get('spaceId')
+  expect(spaceId).toBe('sp-kaleos') // 없으면 install이 400 SPACE_REQUIRED
+  expect(p.slackInstallation.upsert).not.toHaveBeenCalled()
+
+  // 카드의 재연결 링크: /api/slack/oauth/install?reconnect=1&spaceId=<선택>
+  const inst = await install(
+    new NextRequest(`https://app.test/api/slack/oauth/install?reconnect=1&spaceId=${spaceId}`)
+  )
+  expect(inst.status).toBe(307)
+  expect(signState).toHaveBeenCalledWith({
+    spaceId: 'sp-kaleos',
+    userId: 'u-admin',
+    reconnect: true,
+  })
+
+  const done = await callback()
+  expect(done.headers.get('location')).toBe(
+    'https://app.test/settings/integrations?slack=connected&spaceId=sp-kaleos'
+  )
+  expect(p.spaceSlackChannel.deleteMany).toHaveBeenCalledWith({ where: { spaceId: 'sp-kaleos' } })
+  expect(p.spaceMember.updateMany).toHaveBeenCalledWith(
+    expect.objectContaining({ where: expect.objectContaining({ spaceId: 'sp-kaleos' }) })
+  )
+  expect(p.slackInstallation.upsert).toHaveBeenCalledWith(
+    expect.objectContaining({ where: { spaceId: 'sp-kaleos' } })
+  )
 })
