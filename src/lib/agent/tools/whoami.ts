@@ -26,8 +26,8 @@ export const whoamiTool: ToolDefinition = {
       })
       actorName = u?.email ?? null
     } else if (ctx.actor.type === 'agent' || ctx.actor.type === 'integration') {
-      const a = await prisma.spaceAgent.findUnique({
-        where: { id: ctx.actor.id },
+      const a = await prisma.spaceAgent.findFirst({
+        where: { id: ctx.actor.id, spaceId: ctx.spaceId },
         select: { name: true },
       })
       actorName = a?.name ?? null
