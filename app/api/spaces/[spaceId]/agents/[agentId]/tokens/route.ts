@@ -16,9 +16,12 @@ export async function POST(req: NextRequest, { params }: Ctx) {
 
   const agent = await prisma.spaceAgent.findFirst({
     where: { id: agentId, spaceId },
-    select: { id: true },
+    select: { id: true, status: true },
   })
   if (!agent) return errorResponse('에이전트를 찾을 수 없습니다', 404)
+  // 비활성 에이전트에 토큰을 미리 발급해 두면 다시 켤 때 함께 살아난다 — 활성 에이전트에만 발급한다.
+  if (agent.status !== 'ACTIVE')
+    return errorResponse('비활성 에이전트에는 토큰을 발급할 수 없습니다', 409)
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})))
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)

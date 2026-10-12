@@ -99,7 +99,7 @@ describe('/api/spaces/[spaceId]/agents', () => {
 
   it('폐기는 경로 에이전트 범위로 위임한다(다른 에이전트의 토큰이면 404)', async () => {
     admin.mockResolvedValue({ userId: 'u1' })
-    p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1' })
+    p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', status: 'ACTIVE' })
     ;(revokeAgentToken as jest.Mock).mockResolvedValue(false)
     const res = await revokeToken(
       new NextRequest('http://x/api', { method: 'DELETE' }),
@@ -109,9 +109,17 @@ describe('/api/spaces/[spaceId]/agents', () => {
     expect(revokeAgentToken).toHaveBeenCalledWith('ag1', 't-other')
   })
 
+  it('비활성 에이전트에는 토큰을 발급하지 않는다(409)', async () => {
+    admin.mockResolvedValue({ userId: 'u1' })
+    p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', status: 'DISABLED' })
+    const res = await issueToken(json({}), params({ spaceId: 'sp1', agentId: 'ag1' }))
+    expect(res.status).toBe(409)
+    expect(issueAgentToken).not.toHaveBeenCalled()
+  })
+
   it('토큰은 한 번만 응답하고 no-store', async () => {
     admin.mockResolvedValue({ userId: 'u1' })
-    p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1' })
+    p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', status: 'ACTIVE' })
     ;(issueAgentToken as jest.Mock).mockResolvedValue({
       tokenId: 't1',
       token: 'wdk_agt_t1.s',
@@ -131,7 +139,7 @@ describe('/api/spaces/[spaceId]/agents', () => {
 
   it.each([0, 366, 1.5, 'x'])('expiresInDays=%p 이면 400', async (days) => {
     admin.mockResolvedValue({ userId: 'u1' })
-    p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1' })
+    p.spaceAgent.findFirst.mockResolvedValue({ id: 'ag1', status: 'ACTIVE' })
     const res = await issueToken(
       json({ expiresInDays: days }),
       params({ spaceId: 'sp1', agentId: 'ag1' })
