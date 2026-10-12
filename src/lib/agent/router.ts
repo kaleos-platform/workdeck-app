@@ -105,7 +105,7 @@ export async function routeAgentMessage(args: RouteArgs): Promise<RouteResult> {
   }
 
   // 대화 세션 로드 → LLM 실행 → 세션 저장 + 토큰 반영.
-  const history = await loadConversation(args.channelId, args.threadTs)
+  const history = await loadConversation(args.spaceId, args.channelId, args.threadTs)
   let result
   try {
     result = await runAgentLoop({

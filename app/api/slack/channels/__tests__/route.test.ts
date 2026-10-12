@@ -22,9 +22,12 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 
+jest.mock('@/lib/slack/tenant', () => ({ registerSpaceChannel: jest.fn() }))
+
 import { getUser } from '@/hooks/use-user'
 import { resolveSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
+import { registerSpaceChannel } from '@/lib/slack/tenant'
 import { GET, POST, DELETE } from '../route'
 
 const mockGetUser = getUser as jest.Mock
@@ -54,6 +57,10 @@ describe('/api/slack/channels', () => {
       space: { id: 'space-1' },
       role: 'ADMIN',
     })
+    ;(registerSpaceChannel as jest.Mock).mockResolvedValue({
+      ok: true,
+      channel: { id: 'ch1', channelId: 'C1', channelName: null, kind: 'approvals' },
+    })
   })
 
   test('GET — 필터 없이 전체 kind 채널을 반환(변경 없음)', async () => {
@@ -69,45 +76,43 @@ describe('/api/slack/channels', () => {
   })
 
   test('POST — kind 미지정 시 approvals로 upsert(하위 호환)', async () => {
-    mockPrisma.slackInstallation.findUnique.mockResolvedValue({ spaceId: 'space-1' })
-    mockPrisma.spaceSlackChannel.upsert.mockResolvedValue({
-      id: '1',
+    mockPrisma.slackInstallation.findUnique.mockResolvedValue({ spaceId: 'space-1', teamId: 'T1' })
+    const res = await POST(postReq({ channelId: 'C1' }))
+    expect(res!.status).toBe(200)
+    expect(registerSpaceChannel).toHaveBeenCalledWith({
+      spaceId: 'space-1',
       channelId: 'C1',
       channelName: null,
       kind: 'approvals',
     })
-
-    const res = await POST(postReq({ channelId: 'C1' }))
-    expect(res!.status).toBe(200)
-    expect(mockPrisma.spaceSlackChannel.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { spaceId_kind: { spaceId: 'space-1', kind: 'approvals' } },
-      })
-    )
   })
 
   test('POST — kind=notifications 지정 시 해당 kind로 upsert', async () => {
-    mockPrisma.slackInstallation.findUnique.mockResolvedValue({ spaceId: 'space-1' })
-    mockPrisma.spaceSlackChannel.upsert.mockResolvedValue({
-      id: '2',
+    mockPrisma.slackInstallation.findUnique.mockResolvedValue({ spaceId: 'space-1', teamId: 'T1' })
+    const res = await POST(postReq({ channelId: 'C2', kind: 'notifications' }))
+    expect(res!.status).toBe(200)
+    expect(registerSpaceChannel).toHaveBeenCalledWith({
+      spaceId: 'space-1',
       channelId: 'C2',
       channelName: null,
       kind: 'notifications',
     })
+  })
 
-    const res = await POST(postReq({ channelId: 'C2', kind: 'notifications' }))
-    expect(res!.status).toBe(200)
-    expect(mockPrisma.spaceSlackChannel.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { spaceId_kind: { spaceId: 'space-1', kind: 'notifications' } },
-      })
+  test('POST — 같은 team의 다른 Space가 등록한 채널은 409', async () => {
+    mockPrisma.slackInstallation.findUnique.mockResolvedValue({ spaceId: 'space-1', teamId: 'T1' })
+    ;(registerSpaceChannel as jest.Mock).mockResolvedValue({ ok: false, reason: 'taken' })
+    const res = await POST(postReq({ channelId: 'C_TAKEN', kind: 'approvals' }))
+    expect(res!.status).toBe(409)
+    expect(registerSpaceChannel).toHaveBeenCalledWith(
+      expect.objectContaining({ channelId: 'C_TAKEN', spaceId: 'space-1' })
     )
   })
 
   test('POST — 잘못된 kind는 400', async () => {
     const res = await POST(postReq({ channelId: 'C1', kind: 'bogus' }))
     expect(res!.status).toBe(400)
-    expect(mockPrisma.spaceSlackChannel.upsert).not.toHaveBeenCalled()
+    expect(registerSpaceChannel).not.toHaveBeenCalled()
   })
 
   test('DELETE — kind 미지정 시 approvals만 제거(하위 호환)', async () => {

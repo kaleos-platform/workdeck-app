@@ -3,8 +3,9 @@
  * Slack Block Kit 버튼(승인/거부) 콜백. 3초 내 200을 반환해야 한다(전부 DB 작업이라 충분).
  *
  * 보안(핵심): 이 채널은 Space 신뢰 경계다. 반드시 두 가지를 확인한다.
- *   1) payload.team.id로 조회한 SlackInstallation.spaceId === action.spaceId
- *      (cross-team 위조 차단 — 다른 Slack workspace가 남의 액션을 결정할 수 없다).
+ *   1) action.spaceId 의 SlackInstallation.teamId === payload.team.id
+ *      (한 team을 여러 Space가 공유할 수 있으므로 "이 team이 액션 Space에 설치됨"을 본다.
+ *       다른 Slack workspace가 남의 액션을 결정할 수 없다).
  *   2) payload.channel.id === action.slackChannelId (원본 알림 채널에서만 결정).
  *   3) 누른 사람이 Slack 연결된 구성원이고 역할이 충분해야 한다(ADMIN 이상, 지출 제안은 OWNER).
  *      승인자는 구성원 User.id 로 기록한다.
@@ -17,6 +18,7 @@ import { approveAndExecute, rejectAction } from '@/lib/agent/actions/execute'
 import { syncSlackDecision } from '@/lib/slack/sync-decision'
 import { decryptBotToken } from '@/lib/slack/token-crypto'
 import { resolveSlackMember } from '@/lib/slack/member-link'
+import { findTeamInstallationForSpace } from '@/lib/slack/tenant'
 
 export const runtime = 'nodejs'
 
@@ -87,12 +89,9 @@ export async function POST(req: NextRequest) {
   const teamId = payload.team?.id
   if (!teamId) return NextResponse.json({ ok: true })
 
-  const installation = await prisma.slackInstallation.findUnique({
-    where: { teamId },
-    select: { spaceId: true, botToken: true, botTokenIv: true },
-  })
-  if (!installation || installation.spaceId !== pending.spaceId) {
-    // cross-team 위조 — 조용히 무시(공격자에게 정보 노출 안 함).
+  const installation = await findTeamInstallationForSpace(pending.spaceId, teamId)
+  if (!installation) {
+    // 이 team이 액션 Space에 설치되어 있지 않음(cross-team 위조) — 조용히 무시.
     return NextResponse.json({ ok: true })
   }
 

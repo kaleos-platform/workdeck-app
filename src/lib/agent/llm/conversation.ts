@@ -15,16 +15,20 @@ export interface ConversationTurn {
 
 const MAX_TURNS = 20
 
-/** 스레드의 저장된 대화 턴을 반환한다(없으면 빈 배열). */
+/**
+ * 스레드의 저장된 대화 턴을 반환한다(없으면 빈 배열).
+ * 다른 Space가 쓰던 스레드(채널 소유가 바뀐 경우)의 기록은 읽지 않는다.
+ */
 export async function loadConversation(
+  spaceId: string,
   channelId: string,
   threadTs: string
 ): Promise<ConversationTurn[]> {
   const row = await prisma.agentConversation.findUnique({
     where: { channelId_threadTs: { channelId, threadTs } },
-    select: { messages: true },
+    select: { spaceId: true, messages: true },
   })
-  if (!row) return []
+  if (!row || row.spaceId !== spaceId) return []
   const raw = row.messages as unknown
   if (!Array.isArray(raw)) return []
   // 저장 형태를 신뢰하되, 방어적으로 role/content만 추린다.
@@ -43,7 +47,7 @@ export async function loadConversation(
 
 /**
  * 이번 사용자 발화 + 어시스턴트 응답을 스레드에 이어붙인다(최근 20턴 유지).
- * upsert로 스레드 최초 발화면 생성한다.
+ * upsert로 스레드 최초 발화면 생성한다. 다른 Space의 행이면 그 기록 없이 새 기록으로 덮어쓴다.
  */
 export async function appendConversation(args: {
   spaceId: string
@@ -52,7 +56,7 @@ export async function appendConversation(args: {
   userText: string
   assistantText: string
 }): Promise<void> {
-  const prev = await loadConversation(args.channelId, args.threadTs)
+  const prev = await loadConversation(args.spaceId, args.channelId, args.threadTs)
   const appended: ConversationTurn[] = [
     ...prev,
     { role: 'user', content: args.userText },
@@ -69,6 +73,7 @@ export async function appendConversation(args: {
       messages: next as unknown as Prisma.InputJsonValue,
     },
     update: {
+      spaceId: args.spaceId,
       messages: next as unknown as Prisma.InputJsonValue,
     },
   })

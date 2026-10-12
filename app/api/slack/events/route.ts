@@ -11,11 +11,11 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { after } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { verifySlackSignature } from '@/lib/slack/verify'
 import { decryptBotToken } from '@/lib/slack/token-crypto'
 import { postMessage } from '@/lib/slack/client'
 import { routeAgentMessage } from '@/lib/agent/router'
+import { resolveEventSpace } from '@/lib/slack/tenant'
 
 export const runtime = 'nodejs'
 
@@ -75,6 +75,9 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true })
 }
 
+const UNMAPPED_CHANNEL_HINT =
+  '이 채널은 워크덱 Space에 연결되어 있지 않습니다. 설정 → 연동에서 승인·알림 채널로 등록된 채널에서 불러 주세요.'
+
 /**
  * app_mention 본 처리(응답 후 실행). 모든 에러를 삼켜 로깅만 한다.
  */
@@ -83,17 +86,20 @@ async function handleAppMention(
   event: NonNullable<SlackEventCallback['event']>
 ): Promise<void> {
   try {
-    // team → SlackInstallation → spaceId. 미설치면 무시.
-    const installation = await prisma.slackInstallation.findUnique({
-      where: { teamId },
-      select: { spaceId: true, botToken: true, botTokenIv: true, botUserId: true },
-    })
-    if (!installation) return
-
     const channel = event.channel
     if (!channel) return
     const threadTs = event.thread_ts ?? event.ts
     if (!threadTs) return
+
+    // team + 채널 → Space. 한 team을 여러 Space가 공유하면 채널 등록으로 정한다.
+    const route = await resolveEventSpace(teamId, channel)
+    if (route.status === 'not_installed') return
+    if (route.status === 'unmapped') {
+      const hintToken = decryptBotToken(route.botToken, route.botTokenIv)
+      await postMessage(hintToken, { channel, text: UNMAPPED_CHANNEL_HINT, thread_ts: threadTs })
+      return
+    }
+    const installation = route.installation
 
     // 멘션 텍스트에서 <@봇ID> 제거.
     const cleanText = stripMention(event.text ?? '', installation.botUserId)

@@ -2,7 +2,7 @@
  * GET /api/slack/oauth/install
  * Space ADMIN이 Slack 설치를 시작한다. 서명된 state와 함께 Slack authorize로 리다이렉트.
  */
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
 import { errorResponse, assertRole, resolveSpaceContext } from '@/lib/api-helpers'
 import { buildAppUrl } from '@/lib/domain'
@@ -14,7 +14,7 @@ export const runtime = 'nodejs'
 // OAuth 설치 시 실제 부여되는 scope는 이 목록이다(manifest는 앱 설정일 뿐).
 const SLACK_SCOPES = 'chat:write,channels:read,app_mentions:read,users:read,users:read.email'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const user = await getUser()
   if (!user) return errorResponse('인증이 필요합니다', 401)
 
@@ -29,7 +29,11 @@ export async function GET() {
     return errorResponse('Slack 연동이 설정되지 않았습니다(SLACK_CLIENT_ID 미설정)', 503)
   }
 
-  const state = signState({ spaceId: ctx.space.id, userId: user.id })
+  const state = signState({
+    spaceId: ctx.space.id,
+    userId: user.id,
+    reconnect: req.nextUrl.searchParams.get('reconnect') === '1',
+  })
   const redirectUri = buildAppUrl('/api/slack/oauth/callback')
 
   const authorize = new URL('https://slack.com/oauth/v2/authorize')

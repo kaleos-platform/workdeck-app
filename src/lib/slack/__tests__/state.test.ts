@@ -14,7 +14,12 @@ describe('OAuth install state 서명', () => {
   test('라운드트립 — sign 후 verify로 spaceId/userId 복원', () => {
     const state = signState({ spaceId: 'space-1', userId: 'user-1' })
     const parsed = verifyState(state)
-    expect(parsed).toEqual({ spaceId: 'space-1', userId: 'user-1' })
+    expect(parsed).toEqual({ spaceId: 'space-1', userId: 'user-1', reconnect: false })
+  })
+
+  test('reconnect 플래그는 서명 안에 담겨 복원된다', () => {
+    const state = signState({ spaceId: 'space-1', userId: 'user-1', reconnect: true })
+    expect(verifyState(state)).toEqual({ spaceId: 'space-1', userId: 'user-1', reconnect: true })
   })
 
   test('페이로드 변조 → null', () => {
