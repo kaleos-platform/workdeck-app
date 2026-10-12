@@ -12,6 +12,7 @@ import { prisma } from '@/lib/prisma'
 import { buildAppUrl } from '@/lib/domain'
 import { decryptBotToken } from './token-crypto'
 import { postMessage } from './client'
+import { describeActors } from '@/lib/agent/actions/actor-label'
 
 // 승인 UI에서도 쓰는 deck 라벨(한국어).
 const DECK_LABELS: Record<string, string> = {
@@ -46,7 +47,10 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
         deckKey: true,
         actionType: true,
         summary: true,
-        requestedBy: true,
+        actorType: true,
+        actorId: true,
+        requesterUserId: true,
+        requesterSlackUserId: true,
         expiresAt: true,
       },
     })
@@ -66,6 +70,7 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
     if (!channel) return
 
     const token = decryptBotToken(installation.botToken, installation.botTokenIv)
+    const [who] = await describeActors([action])
 
     const blocks = [
       { type: 'header', text: { type: 'plain_text', text: '🔔 에이전트 승인 요청', emoji: true } },
@@ -75,7 +80,7 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
         fields: [
           { type: 'mrkdwn', text: `*Deck*\n${deckLabel(action.deckKey)}` },
           { type: 'mrkdwn', text: `*액션*\n${action.actionType}` },
-          { type: 'mrkdwn', text: `*요청자*\n${action.requestedBy}` },
+          { type: 'mrkdwn', text: `*요청*\n${who}` },
           { type: 'mrkdwn', text: `*만료*\n${formatKst(action.expiresAt)}` },
         ],
       },

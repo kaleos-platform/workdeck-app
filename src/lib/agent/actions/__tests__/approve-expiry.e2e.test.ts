@@ -54,7 +54,8 @@ d('승인 만료 게이트', () => {
         payload: { transactionId: 'x', categoryId: 'y' },
         summary: '테스트',
         source: 'WEB',
-        requestedBy: USER_ID,
+        actorType: 'user',
+        actorId: USER_ID,
         expiresAt: new Date(Date.now() - 60_000), // 1분 전 만료
       },
     })

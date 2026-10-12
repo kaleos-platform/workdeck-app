@@ -128,7 +128,7 @@ d('Slack interactive 테넌트 가드', () => {
       params: {},
       summary: 'Slack 가드',
       source: 'MCP',
-      requestedBy: USER_ID,
+      actor: { type: 'user', id: USER_ID },
     })
     // 알림 채널 좌표를 수동 세팅(발송 없이 채널 매칭 검증용).
     await prisma.agentPendingAction.update({

@@ -7,6 +7,10 @@ jest.mock('@/lib/prisma', () => ({
     agentPendingAction: { findUnique: jest.fn(), update: jest.fn() },
     slackInstallation: { findUnique: jest.fn() },
     spaceSlackChannel: { findUnique: jest.fn() },
+    user: { findMany: jest.fn(async () => [{ id: 'user-1', name: '빛그림', email: 'b@x' }]) },
+    spaceAgent: {
+      findMany: jest.fn(async () => [{ id: 'cm-agent-1', name: '에밀리', kind: 'agent' }]),
+    },
   },
 }))
 
@@ -22,7 +26,10 @@ const baseAction = {
   deckKey: 'finance',
   actionType: 'finance.transaction.reclassify',
   summary: '거래 재분류',
-  requestedBy: 'user-1',
+  actorType: 'agent',
+  actorId: 'cm-agent-1',
+  requesterUserId: 'user-1',
+  requesterSlackUserId: 'U123',
   expiresAt: new Date(Date.now() + 72 * 3600 * 1000),
 }
 
@@ -61,6 +68,26 @@ describe('notifyPendingAction — 실패 흡수', () => {
 
     await expect(notifyPendingAction('act-1')).resolves.toBeUndefined()
     expect(mockPrisma.agentPendingAction.update).not.toHaveBeenCalled()
+  })
+
+  test('요청 칸에는 id 대신 사람이 읽는 행위자·요청자 이름', async () => {
+    mockPrisma.agentPendingAction.findUnique.mockResolvedValue(baseAction)
+    mockPrisma.slackInstallation.findUnique.mockResolvedValue({
+      botToken: encryptForTest('xoxb-fake'),
+      botTokenIv: TEST_IV,
+    })
+    mockPrisma.spaceSlackChannel.findUnique.mockResolvedValue({ channelId: 'C123' })
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true, ts: '1.1', channel: 'C123' }),
+    })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await notifyPendingAction('act-1')
+    const body = String(fetchMock.mock.calls[0][1].body)
+    expect(body).toContain('에이전트 에밀리 · 요청자 빛그림')
+    expect(body).not.toContain('cm-agent-1')
+    expect(body).not.toContain('user-1')
   })
 
   test('액션 없음 → 조용히 반환', async () => {

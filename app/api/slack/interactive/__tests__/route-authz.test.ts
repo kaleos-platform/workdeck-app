@@ -23,6 +23,8 @@ jest.mock('@/lib/prisma', () => ({
     spaceMember: { findUnique: jest.fn() },
     space: { findUnique: jest.fn() },
     billingDeckProduct: { findUnique: jest.fn() },
+    // 승인 실행 감사 — 실행 전 행 생성이 성공해야 액션이 실행된다.
+    toolAuditLog: { create: jest.fn(async () => ({ id: 'aud-1' })), update: jest.fn() },
   },
 }))
 jest.mock('@/lib/slack/verify', () => ({ verifySlackSignature: () => true }))
@@ -85,7 +87,10 @@ function seed(actionType: string, payload: unknown) {
     slackChannelId: 'C1',
     actionType,
     payload,
-    requestedBy: 'agent',
+    actorType: 'agent',
+    actorId: 'ag-1',
+    requesterUserId: null,
+    workId: null,
     expiresAt: new Date(Date.now() + 3600_000),
     decidedBy: null,
   }

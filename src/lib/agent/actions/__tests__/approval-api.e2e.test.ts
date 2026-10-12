@@ -49,14 +49,14 @@ function patchReq(action: 'approve' | 'reject') {
   })
 }
 
-async function makeActionInSpace(spaceId: string, requestedBy: string) {
+async function makeActionInSpace(spaceId: string, actorUserId: string) {
   return createPendingAction({
     spaceId,
     actionType: TEST_TYPE,
     params: {},
     summary: '테스트',
     source: 'MCP',
-    requestedBy,
+    actor: { type: 'user', id: actorUserId },
   })
 }
 

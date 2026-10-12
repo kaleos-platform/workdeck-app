@@ -87,7 +87,7 @@ const executionApprove: ActionDefinition<z.infer<typeof executionApproveParams>>
       data: {
         status: 'APPROVED',
         approvedAt: new Date(),
-        approvedBy: ctx.deciderId ?? ctx.requestedBy,
+        approvedBy: ctx.deciderId ?? ctx.actor.id,
       },
     })
 

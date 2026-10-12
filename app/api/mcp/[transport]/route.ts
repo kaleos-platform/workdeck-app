@@ -8,6 +8,7 @@ import {
   runTool,
   splitMetaArgs,
   toolErrorMessage,
+  withRequester,
 } from '@/lib/agent/tools/run-tool'
 
 // MCP 핸들러 — toolDefinitions 배열을 순회하며 각 tool을 등록한다.
@@ -28,7 +29,10 @@ const handler = createMcpHandler(
             return { content: [{ type: 'text', text: auth.reason }], isError: true }
           }
           const { meta, toolArgs } = splitMetaArgs((args ?? {}) as Record<string, unknown>)
-          const ctx = buildToolContext(auth.principal, meta)
+          const ctx = await withRequester(
+            buildToolContext(auth.principal, meta),
+            meta.requesterSlackUserId
+          )
           try {
             const result = await runTool(def, ctx, toolArgs)
             const structuredContent: Record<string, unknown> =

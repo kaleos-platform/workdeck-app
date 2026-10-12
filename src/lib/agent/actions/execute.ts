@@ -1,5 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { assertDeckWritable } from '@/lib/billing/entitlement'
+import { finishToolAudit, startToolAudit } from '@/lib/agent/audit'
+import type { ActorType } from '@/lib/agent/identity/principal'
+import type { ActionExecContext } from './types'
 import { getActionDefinition } from './registry'
 import { deciderDenial } from './decision-policy'
 
@@ -26,8 +29,9 @@ export type DecisionOutcome =
  * DB의 WHERE status='PENDING'이 하나만 통과시키므로 execute는 정확히 1회 실행된다.
  *
  * 상태 전이: PENDING --(승인 게이트 count=1)--> APPROVED
+ *   --(실행 감사 행 생성 실패)--> FAILED(실행하지 않음)
  *   --(execute 성공)--> EXECUTED(+result) / --(execute throw)--> FAILED(+error).
- * execute가 throw해도 APPROVED에 머물지 않는다.
+ * execute가 throw해도 APPROVED에 머물지 않는다. 실행 감사(tool: 'action:<actionType>')는 여기서만 쓴다.
  */
 export async function approveAndExecute(
   actionId: string,
@@ -83,15 +87,21 @@ export async function approveAndExecute(
   // 게이트 통과 후 payload/actionType 로드 (승자만 도달).
   const action = await prisma.agentPendingAction.findUnique({
     where: { id: actionId },
-    select: { actionType: true, spaceId: true, requestedBy: true, payload: true },
+    select: {
+      actionType: true,
+      spaceId: true,
+      actorType: true,
+      actorId: true,
+      requesterUserId: true,
+      workId: true,
+      payload: true,
+    },
   })
   if (!action) {
     return { ok: false, status: 'CONFLICT', message: '액션을 찾을 수 없습니다' }
   }
 
-  const def = getActionDefinition(action.actionType)
-  if (!def) {
-    const error = `알 수 없는 액션 유형: ${action.actionType}`
+  const fail = async (error: string): Promise<DecisionOutcome> => {
     await prisma.agentPendingAction.update({
       where: { id: actionId },
       data: { status: 'FAILED', error, executedAt: new Date() },
@@ -99,26 +109,67 @@ export async function approveAndExecute(
     return { ok: false, status: 'FAILED', error }
   }
 
-  // 실행 — 성공 EXECUTED, 실패 FAILED. APPROVED에 머무르지 않는다.
+  const def = getActionDefinition(action.actionType)
+  if (!def) return fail(`알 수 없는 액션 유형: ${action.actionType}`)
+
+  // 실행 컨텍스트: 제안한 원래 행위자·요청자·workId와 승인자를 따로 싣는다.
+  // workId가 없는 레거시 액션은 act_<id>로 묶는다(같은 액션의 감사 행끼리는 이어진다).
+  const ctx: ActionExecContext = {
+    spaceId: action.spaceId,
+    actor: { type: action.actorType as ActorType, id: action.actorId },
+    requesterUserId: action.requesterUserId,
+    workId: action.workId ?? `act_${actionId}`,
+    deciderId,
+    actionId,
+    decryptedCredentialIds: [],
+  }
+
+  // 실행 의도를 먼저 남긴다. 못 남기면 실행하지 않는다(외부 쓰기가 감사 없이 일어나지 않게).
+  let auditId: string
+  try {
+    auditId = await startToolAudit({
+      spaceId: ctx.spaceId,
+      workId: ctx.workId,
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      tool: `action:${action.actionType}`,
+      args: (action.payload ?? {}) as Record<string, unknown>,
+      actionId,
+      deciderUserId: deciderId,
+    })
+  } catch (err) {
+    return fail(err instanceof Error ? err.message : '감사 기록 실패')
+  }
+
+  // 실행 — 성공 EXECUTED, 실패 FAILED. try는 execute만 감싼다:
+  // 결과 기록(감사 갱신·상태 갱신)이 실패해도 FAILED로 바꾸거나 다시 실행하지 않는다.
+  // (EXECUTED 갱신이 실패하면 예외가 호출자에게 올라가고 상태는 APPROVED로 남는다 — 게이트가 PENDING만
+  // 통과시키므로 재실행되지 않는다. 감사 행에는 ok가 남는다.)
+  const started = Date.now()
+  let result: unknown
   try {
     const parsed = def.paramsSchema.parse(action.payload)
-    const result = await def.execute(
-      { spaceId: action.spaceId, requestedBy: action.requestedBy, deciderId, actionId },
-      parsed
-    )
-    await prisma.agentPendingAction.update({
-      where: { id: actionId },
-      data: { status: 'EXECUTED', executedAt: new Date(), result: (result ?? null) as object },
-    })
-    return { ok: true, status: 'EXECUTED', result }
+    result = await def.execute(ctx, parsed)
   } catch (err) {
     const error = err instanceof Error ? err.message : '실행 중 알 수 없는 오류'
-    await prisma.agentPendingAction.update({
-      where: { id: actionId },
-      data: { status: 'FAILED', error, executedAt: new Date() },
+    await finishToolAudit(auditId, {
+      outcome: 'error',
+      error,
+      durationMs: Date.now() - started,
+      decryptedCredentialIds: ctx.decryptedCredentialIds,
     })
-    return { ok: false, status: 'FAILED', error }
+    return fail(error)
   }
+  await finishToolAudit(auditId, {
+    outcome: 'ok',
+    durationMs: Date.now() - started,
+    decryptedCredentialIds: ctx.decryptedCredentialIds,
+  })
+  await prisma.agentPendingAction.update({
+    where: { id: actionId },
+    data: { status: 'EXECUTED', executedAt: new Date(), result: (result ?? null) as object },
+  })
+  return { ok: true, status: 'EXECUTED', result }
 }
 
 /**

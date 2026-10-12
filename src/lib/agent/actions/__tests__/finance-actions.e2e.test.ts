@@ -91,7 +91,7 @@ d('finance 액션 실행', () => {
       params: { transactionId: txnId, categoryId, learn: false },
       summary: '스타벅스 → 식비',
       source: 'MCP',
-      requestedBy: USER_ID,
+      actor: { type: 'user', id: USER_ID },
     })
     const out = await approveAndExecute(created.actionId, USER_ID)
     expect(out.status).toBe('EXECUTED')
@@ -107,7 +107,7 @@ d('finance 액션 실행', () => {
       params: { transactionId: txnId, categoryId, learn: false },
       summary: 's',
       source: 'MCP',
-      requestedBy: USER_ID,
+      actor: { type: 'user', id: USER_ID },
     })
     const row = await prisma.agentPendingAction.findUnique({ where: { id: created.actionId } })
     // 실행 전 = UNCLASSIFIED, categoryId null
@@ -121,7 +121,7 @@ d('finance 액션 실행', () => {
       params: { matchKey: '스타벅스', categoryId, matchType: 'KEYWORD', memo: '  카페 지출  ' },
       summary: '규칙: 스타벅스 → 식비',
       source: 'MCP',
-      requestedBy: USER_ID,
+      actor: { type: 'user', id: USER_ID },
     })
     const out = await approveAndExecute(created.actionId, USER_ID)
     expect(out.status).toBe('EXECUTED')
@@ -140,7 +140,7 @@ d('finance 액션 실행', () => {
       params: { matchKey: '이마트', categoryId, matchType: 'EXACT' },
       summary: '규칙',
       source: 'MCP',
-      requestedBy: USER_ID,
+      actor: { type: 'user', id: USER_ID },
     })
     await approveAndExecute(created.actionId, USER_ID)
     const rule = await prisma.finClassRule.findFirst({
@@ -156,7 +156,7 @@ d('finance 액션 실행', () => {
       params: { transactionId: 'nonexistent', categoryId, learn: false },
       summary: 's',
       source: 'MCP',
-      requestedBy: USER_ID,
+      actor: { type: 'user', id: USER_ID },
     })
     const out = await approveAndExecute(created.actionId, USER_ID)
     expect(out.status).toBe('FAILED')

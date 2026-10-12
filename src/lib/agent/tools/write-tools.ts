@@ -49,7 +49,10 @@ const financeClassifyTransactionsTool: ToolDefinition = {
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.actor.id,
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
       idempotencyKey: idempotencyKeyFor(
         'finance.transaction.reclassify',
         ctx.spaceId,
@@ -87,7 +90,10 @@ const financeCreateClassRuleTool: ToolDefinition = {
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.actor.id,
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
       idempotencyKey: idempotencyKeyFor('finance.classrule.create', ctx.spaceId, actionParams),
     })
     return r
@@ -121,7 +127,10 @@ const sellerhubCreateReorderPlanTool: ToolDefinition = {
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.actor.id,
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
       idempotencyKey: idempotencyKeyFor(
         'seller-hub.reorder.plan.create',
         ctx.spaceId,
@@ -162,7 +171,10 @@ const adsTriggerAnalysisTool: ToolDefinition = {
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.actor.id,
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
       idempotencyKey: idempotencyKeyFor('coupang-ads.analysis.trigger', ctx.spaceId, actionParams),
     })
     return r
@@ -191,7 +203,10 @@ const adsApproveExecutionTaskTool: ToolDefinition = {
       params: actionParams,
       summary,
       source: 'MCP',
-      requestedBy: ctx.actor.id,
+      actor: ctx.actor,
+      requesterUserId: ctx.requesterUserId,
+      requesterSlackUserId: ctx.requesterSlackUserId,
+      workId: ctx.workId,
       idempotencyKey: idempotencyKeyFor('coupang-ads.execution.approve', ctx.spaceId, actionParams),
     })
     return r
