@@ -54,6 +54,7 @@ function buildSystemPrompt(): string {
 export interface AgentLoopResult {
   text: string
   usage: { inputTokens: number; outputTokens: number }
+  model: string
 }
 
 export interface RunAgentLoopArgs {
@@ -102,6 +103,7 @@ export async function runAgentLoop(args: RunAgentLoopArgs): Promise<AgentLoopRes
       return {
         text: text || '죄송합니다. 답변을 생성하지 못했습니다.',
         usage: { inputTokens, outputTokens },
+        model,
       }
     }
 
@@ -144,6 +146,7 @@ export async function runAgentLoop(args: RunAgentLoopArgs): Promise<AgentLoopRes
   return {
     text: '작업이 너무 복잡합니다. 질문을 나눠서 다시 시도해주세요.',
     usage: { inputTokens, outputTokens },
+    model,
   }
 }
 
