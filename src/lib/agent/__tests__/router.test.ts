@@ -41,7 +41,7 @@ jest.mock('../llm/conversation', () => ({
 }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    spaceAgent: { findUnique: jest.fn() },
+    spaceAgentSetting: { findUnique: jest.fn() },
     agentPendingAction: { findMany: jest.fn() },
   },
 }))
@@ -51,7 +51,7 @@ const mockLoop = runAgentLoop as jest.Mock
 const mockLoad = loadConversation as jest.Mock
 const mockAppend = appendConversation as jest.Mock
 const mockPrisma = prisma as unknown as {
-  spaceAgent: { findUnique: jest.Mock }
+  spaceAgentSetting: { findUnique: jest.Mock }
   agentPendingAction: { findMany: jest.Mock }
 }
 
@@ -71,7 +71,7 @@ const baseArgs = {
 describe('routeAgentMessage — 정형 명령 매칭', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockPrisma.spaceAgent.findUnique.mockResolvedValue(null)
+    mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue(null)
     mockPrisma.agentPendingAction.findMany.mockResolvedValue([])
     mockUsage.mockResolvedValue({ allowed: true })
     mockLoop.mockResolvedValue({ text: 'LLM 응답', usage: { inputTokens: 10, outputTokens: 5 } })
@@ -158,7 +158,7 @@ describe('routeAgentMessage — 정형 명령 매칭', () => {
 describe('routeAgentMessage — LLM 폴백', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockPrisma.spaceAgent.findUnique.mockResolvedValue(null)
+    mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue(null)
     mockUsage.mockResolvedValue({ allowed: true })
     mockLoad.mockResolvedValue([])
     mockLoop.mockResolvedValue({ text: 'LLM 응답', usage: { inputTokens: 10, outputTokens: 5 } })
@@ -172,7 +172,7 @@ describe('routeAgentMessage — LLM 폴백', () => {
   })
 
   test('SpaceAgent 비활성 → LLM 미호출, 안내 텍스트', async () => {
-    mockPrisma.spaceAgent.findUnique.mockResolvedValue({ isActive: false })
+    mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue({ isActive: false })
     const r = await routeAgentMessage({ ...baseArgs, text: '아무 질문' })
     expect(mockLoop).not.toHaveBeenCalled()
     expect(r.text).toContain('비활성화')

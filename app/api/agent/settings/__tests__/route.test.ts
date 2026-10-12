@@ -21,7 +21,7 @@ jest.mock('@/lib/agent/llm/usage', () => ({
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    spaceAgent: { findUnique: jest.fn(), upsert: jest.fn() },
+    spaceAgentSetting: { findUnique: jest.fn(), upsert: jest.fn() },
     agentLlmUsage: { findUnique: jest.fn() },
     slackInstallation: { findUnique: jest.fn() },
   },
@@ -36,7 +36,7 @@ const mockGetUser = getUser as jest.Mock
 const mockResolveSpaceContext = resolveSpaceContext as jest.Mock
 const mockAssertRole = assertRole as jest.Mock
 const mockPrisma = prisma as unknown as {
-  spaceAgent: { findUnique: jest.Mock; upsert: jest.Mock }
+  spaceAgentSetting: { findUnique: jest.Mock; upsert: jest.Mock }
   agentLlmUsage: { findUnique: jest.Mock }
   slackInstallation: { findUnique: jest.Mock }
 }
@@ -68,7 +68,7 @@ describe('/api/agent/settings', () => {
   })
 
   test('GET — SpaceAgent 행이 없으면 agentActive 기본값 true', async () => {
-    mockPrisma.spaceAgent.findUnique.mockResolvedValue(null)
+    mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue(null)
     mockPrisma.agentLlmUsage.findUnique.mockResolvedValue(null)
     mockPrisma.slackInstallation.findUnique.mockResolvedValue(null)
 
@@ -85,7 +85,7 @@ describe('/api/agent/settings', () => {
   })
 
   test('GET — 오늘(KST) 사용량 조회 시 todayKst() 날짜 키를 그대로 사용', async () => {
-    mockPrisma.spaceAgent.findUnique.mockResolvedValue({ isActive: false })
+    mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue({ isActive: false })
     mockPrisma.agentLlmUsage.findUnique.mockResolvedValue({
       requestCount: 3,
       inputTokens: 100,
@@ -122,7 +122,7 @@ describe('/api/agent/settings', () => {
   })
 
   test('PATCH — agentActive:false upsert 후 반영값 반환', async () => {
-    mockPrisma.spaceAgent.upsert.mockResolvedValue({ isActive: false })
+    mockPrisma.spaceAgentSetting.upsert.mockResolvedValue({ isActive: false })
     const req = new NextRequest('http://localhost/api/agent/settings', {
       method: 'PATCH',
       body: JSON.stringify({ agentActive: false }),
@@ -130,7 +130,7 @@ describe('/api/agent/settings', () => {
     const res = await PATCH(req)
     const json = await res!.json()
 
-    expect(mockPrisma.spaceAgent.upsert).toHaveBeenCalledWith({
+    expect(mockPrisma.spaceAgentSetting.upsert).toHaveBeenCalledWith({
       where: { spaceId: 'space-1' },
       create: { spaceId: 'space-1', isActive: false },
       update: { isActive: false },

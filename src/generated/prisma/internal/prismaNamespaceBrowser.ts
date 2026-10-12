@@ -63,7 +63,9 @@ export const ModelName = {
   Space: 'Space',
   SpaceMember: 'SpaceMember',
   AgentPendingAction: 'AgentPendingAction',
+  SpaceAgentSetting: 'SpaceAgentSetting',
   SpaceAgent: 'SpaceAgent',
+  AgentToken: 'AgentToken',
   AgentLlmUsage: 'AgentLlmUsage',
   AgentConversation: 'AgentConversation',
   SlackInstallation: 'SlackInstallation',
@@ -413,7 +415,7 @@ export const AgentPendingActionScalarFieldEnum = {
 export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
 
 
-export const SpaceAgentScalarFieldEnum = {
+export const SpaceAgentSettingScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   isActive: 'isActive',
@@ -421,7 +423,35 @@ export const SpaceAgentScalarFieldEnum = {
   updatedAt: 'updatedAt'
 } as const
 
+export type SpaceAgentSettingScalarFieldEnum = (typeof SpaceAgentSettingScalarFieldEnum)[keyof typeof SpaceAgentSettingScalarFieldEnum]
+
+
+export const SpaceAgentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  kind: 'kind',
+  scopes: 'scopes',
+  status: 'status',
+  oauthClientId: 'oauthClientId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
 export type SpaceAgentScalarFieldEnum = (typeof SpaceAgentScalarFieldEnum)[keyof typeof SpaceAgentScalarFieldEnum]
+
+
+export const AgentTokenScalarFieldEnum = {
+  id: 'id',
+  agentId: 'agentId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AgentTokenScalarFieldEnum = (typeof AgentTokenScalarFieldEnum)[keyof typeof AgentTokenScalarFieldEnum]
 
 
 export const AgentLlmUsageScalarFieldEnum = {

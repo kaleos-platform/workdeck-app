@@ -78,7 +78,7 @@ export async function routeAgentMessage(args: RouteArgs): Promise<RouteResult> {
 
   // ── 2단계: LLM 폴백 ─────────────────────────────────────────────────────
   // Space 에이전트 활성 여부(레코드 없으면 기본 활성).
-  const toggle = await prisma.spaceAgent.findUnique({
+  const toggle = await prisma.spaceAgentSetting.findUnique({
     where: { spaceId: args.spaceId },
     select: { isActive: true },
   })
