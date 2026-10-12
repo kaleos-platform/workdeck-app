@@ -113,7 +113,7 @@ export async function resolveUserPrincipal(
  * Space 결정 규칙:
  *  1. `wdk_agt_` 토큰: 토큰의 에이전트가 속한 Space로 고정.
  *  2. Supabase JWT: getClaims(JWKS 서명 검증) 뒤 aud === 'authenticated',
- *     iss === `${NEXT_PUBLIC_SUPABASE_URL}/auth/v1`, client_id 필수(브라우저 세션 JWT 거부).
+ *     iss === `${NEXT_PUBLIC_SUPABASE_URL(끝 슬래시 제거)}/auth/v1`, client_id 필수(브라우저 세션 JWT 거부).
  *  3. client_id가 연동 계정(SpaceAgent.oauthClientId)에 묶여 있으면 actor = 연동 계정, Space = 그 Space.
  *     사용자는 그 Space 구성원이어야 한다.
  *  4. 묶여 있지 않으면 actor = user. `x-workdeck-space-id` 헤더(구성원이어야 함) → 멤버십 1개면 그 Space →
@@ -147,7 +147,7 @@ export async function verifyToken(
     const sub = typeof claims.sub === 'string' ? claims.sub : null
     const clientId =
       typeof claims.client_id === 'string' && claims.client_id ? claims.client_id : null
-    const expectedIss = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1`
+    const expectedIss = `${(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '')}/auth/v1`
     if (!sub || !clientId) return undefined
     if (!audIncludes(claims.aud, 'authenticated') || claims.iss !== expectedIss) return undefined
 

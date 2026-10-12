@@ -158,4 +158,76 @@ describe('verifyToken', () => {
     getClaims.mockResolvedValue(claims())
     await expect(verifyToken(req(), 'jwt')).resolves.toBeUndefined()
   })
+
+  it('NEXT_PUBLIC_SUPABASE_URL 끝 슬래시는 iss 비교에서 정규화된다', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = `${URL_}/`
+    getClaims.mockResolvedValue(claims())
+    p.spaceMember.findMany.mockResolvedValue([{ spaceId: 'sp1' }])
+    const info = await verifyToken(req(), 'jwt')
+    expect(info?.extra).toMatchObject({ spaceId: 'sp1' })
+  })
+
+  it('iss에 끝 슬래시가 붙은 JWT는 거부(정확 일치)', async () => {
+    getClaims.mockResolvedValue(claims({ iss: `${URL_}/auth/v1/` }))
+    await expect(verifyToken(req(), 'jwt')).resolves.toBeUndefined()
+  })
+
+  it('aud가 배열이고 authenticated를 포함하면 허용', async () => {
+    getClaims.mockResolvedValue(claims({ aud: ['x', 'authenticated'] }))
+    p.spaceMember.findMany.mockResolvedValue([{ spaceId: 'sp1' }])
+    const info = await verifyToken(req(), 'jwt')
+    expect(info?.extra).toMatchObject({ spaceId: 'sp1' })
+  })
+
+  it('aud 배열에 authenticated가 없으면 거부', async () => {
+    getClaims.mockResolvedValue(claims({ aud: ['x'] }))
+    await expect(verifyToken(req(), 'jwt')).resolves.toBeUndefined()
+  })
+
+  it('사용자를 찾을 수 없으면 undefined(401)', async () => {
+    getClaims.mockResolvedValue(claims())
+    p.user.findUnique.mockResolvedValue(null)
+    await expect(verifyToken(req(), 'jwt')).resolves.toBeUndefined()
+  })
+
+  it('소속 Space가 0개면 authError', async () => {
+    getClaims.mockResolvedValue(claims())
+    p.spaceMember.findMany.mockResolvedValue([])
+    const info = await verifyToken(req(), 'jwt')
+    expect(info?.extra).toEqual({ authError: expect.any(String) })
+  })
+
+  it.each([
+    ['integration이 아닌 신원', { kind: 'agent', status: 'ACTIVE' }],
+    ['비활성 연동 계정', { kind: 'integration', status: 'DISABLED' }],
+  ])('바인딩된 client_id가 %s이면 authError (멤버십 경로로 폴백하지 않음)', async (_l, over) => {
+    getClaims.mockResolvedValue(claims())
+    p.spaceAgent.findUnique.mockResolvedValue({ id: 'int1', spaceId: 'sp2', scopes: [], ...over })
+    const info = await verifyToken(req(), 'jwt')
+    expect(info?.extra).toEqual({ authError: expect.any(String) })
+    expect(p.spaceMember.findMany).not.toHaveBeenCalled()
+  })
+
+  it('허용 목록 안의 미바인딩 client_id → 허용', async () => {
+    process.env.MCP_ALLOWED_CLIENT_IDS = 'a, cid-1'
+    getClaims.mockResolvedValue(claims())
+    p.spaceMember.findMany.mockResolvedValue([{ spaceId: 'sp1' }])
+    const info = await verifyToken(req(), 'jwt')
+    expect(info?.extra).toMatchObject({ spaceId: 'sp1' })
+  })
+
+  it('바인딩된 client_id는 허용 목록과 무관하게 바인딩 경로(구성원 확인 필수)', async () => {
+    process.env.MCP_ALLOWED_CLIENT_IDS = 'cid-ok'
+    getClaims.mockResolvedValue(claims())
+    p.spaceAgent.findUnique.mockResolvedValue({
+      id: 'int1',
+      spaceId: 'sp2',
+      kind: 'integration',
+      scopes: [],
+      status: 'ACTIVE',
+    })
+    p.spaceMember.findUnique.mockResolvedValue(null)
+    const info = await verifyToken(req(), 'jwt')
+    expect(info?.extra).toHaveProperty('authError')
+  })
 })
