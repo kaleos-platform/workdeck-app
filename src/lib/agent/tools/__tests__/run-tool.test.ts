@@ -2,6 +2,7 @@
 jest.mock('@/lib/prisma', () => ({ prisma: {} }))
 import { runTool, ToolScopeError, readAuthExtra, systemToolContext } from '../run-tool'
 import type { McpToolContext, ToolDefinition } from '../types'
+import { ALL_SCOPES } from '@/lib/agent/identity/principal'
 
 const ctx = (scopes: McpToolContext['scopes']): McpToolContext => ({
   spaceId: 'sp1',
@@ -47,6 +48,10 @@ describe('runTool', () => {
       ok: false,
       reason: '인증 정보가 없습니다',
     })
+  })
+  it('readAuthExtra: verifyToken 구성원 토큰 모양(전체 scope)을 받아들인다', () => {
+    const extra = { spaceId: 'sp1', actor: { type: 'user', id: 'u1' }, scopes: [...ALL_SCOPES] }
+    expect(readAuthExtra(extra)).toEqual({ ok: true, principal: extra })
   })
   it('systemToolContext는 내장 에이전트 actor와 전체 scope', () => {
     const c = systemToolContext('sp1', { requesterSlackUserId: 'U1' })
