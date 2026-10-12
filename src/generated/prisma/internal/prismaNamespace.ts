@@ -396,7 +396,9 @@ export const ModelName = {
   Space: 'Space',
   SpaceMember: 'SpaceMember',
   AgentPendingAction: 'AgentPendingAction',
+  SpaceAgentSetting: 'SpaceAgentSetting',
   SpaceAgent: 'SpaceAgent',
+  AgentToken: 'AgentToken',
   AgentLlmUsage: 'AgentLlmUsage',
   AgentConversation: 'AgentConversation',
   SlackInstallation: 'SlackInstallation',
@@ -546,7 +548,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgent" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1438,6 +1440,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SpaceAgentSetting: {
+      payload: Prisma.$SpaceAgentSettingPayload<ExtArgs>
+      fields: Prisma.SpaceAgentSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SpaceAgentSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SpaceAgentSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.SpaceAgentSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SpaceAgentSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload>
+        }
+        findMany: {
+          args: Prisma.SpaceAgentSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload>[]
+        }
+        create: {
+          args: Prisma.SpaceAgentSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload>
+        }
+        createMany: {
+          args: Prisma.SpaceAgentSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SpaceAgentSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.SpaceAgentSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload>
+        }
+        update: {
+          args: Prisma.SpaceAgentSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.SpaceAgentSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SpaceAgentSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SpaceAgentSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.SpaceAgentSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceAgentSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.SpaceAgentSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpaceAgentSetting>
+        }
+        groupBy: {
+          args: Prisma.SpaceAgentSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceAgentSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SpaceAgentSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceAgentSettingCountAggregateOutputType> | number
+        }
+      }
+    }
     SpaceAgent: {
       payload: Prisma.$SpaceAgentPayload<ExtArgs>
       fields: Prisma.SpaceAgentFieldRefs
@@ -1509,6 +1585,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SpaceAgentCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SpaceAgentCountAggregateOutputType> | number
+        }
+      }
+    }
+    AgentToken: {
+      payload: Prisma.$AgentTokenPayload<ExtArgs>
+      fields: Prisma.AgentTokenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AgentTokenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AgentTokenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload>
+        }
+        findFirst: {
+          args: Prisma.AgentTokenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AgentTokenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload>
+        }
+        findMany: {
+          args: Prisma.AgentTokenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload>[]
+        }
+        create: {
+          args: Prisma.AgentTokenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload>
+        }
+        createMany: {
+          args: Prisma.AgentTokenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AgentTokenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload>[]
+        }
+        delete: {
+          args: Prisma.AgentTokenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload>
+        }
+        update: {
+          args: Prisma.AgentTokenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload>
+        }
+        deleteMany: {
+          args: Prisma.AgentTokenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AgentTokenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AgentTokenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload>[]
+        }
+        upsert: {
+          args: Prisma.AgentTokenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentTokenPayload>
+        }
+        aggregate: {
+          args: Prisma.AgentTokenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAgentToken>
+        }
+        groupBy: {
+          args: Prisma.AgentTokenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentTokenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AgentTokenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentTokenCountAggregateOutputType> | number
         }
       }
     }
@@ -11664,7 +11814,7 @@ export const AgentPendingActionScalarFieldEnum = {
 export type AgentPendingActionScalarFieldEnum = (typeof AgentPendingActionScalarFieldEnum)[keyof typeof AgentPendingActionScalarFieldEnum]
 
 
-export const SpaceAgentScalarFieldEnum = {
+export const SpaceAgentSettingScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
   isActive: 'isActive',
@@ -11672,7 +11822,35 @@ export const SpaceAgentScalarFieldEnum = {
   updatedAt: 'updatedAt'
 } as const
 
+export type SpaceAgentSettingScalarFieldEnum = (typeof SpaceAgentSettingScalarFieldEnum)[keyof typeof SpaceAgentSettingScalarFieldEnum]
+
+
+export const SpaceAgentScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  name: 'name',
+  kind: 'kind',
+  scopes: 'scopes',
+  status: 'status',
+  oauthClientId: 'oauthClientId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
 export type SpaceAgentScalarFieldEnum = (typeof SpaceAgentScalarFieldEnum)[keyof typeof SpaceAgentScalarFieldEnum]
+
+
+export const AgentTokenScalarFieldEnum = {
+  id: 'id',
+  agentId: 'agentId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AgentTokenScalarFieldEnum = (typeof AgentTokenScalarFieldEnum)[keyof typeof AgentTokenScalarFieldEnum]
 
 
 export const AgentLlmUsageScalarFieldEnum = {
@@ -15333,7 +15511,9 @@ export type GlobalOmitConfig = {
   space?: Prisma.SpaceOmit
   spaceMember?: Prisma.SpaceMemberOmit
   agentPendingAction?: Prisma.AgentPendingActionOmit
+  spaceAgentSetting?: Prisma.SpaceAgentSettingOmit
   spaceAgent?: Prisma.SpaceAgentOmit
+  agentToken?: Prisma.AgentTokenOmit
   agentLlmUsage?: Prisma.AgentLlmUsageOmit
   agentConversation?: Prisma.AgentConversationOmit
   slackInstallation?: Prisma.SlackInstallationOmit

@@ -27,7 +27,10 @@ export type AggregateSpaceAgent = {
 export type SpaceAgentMinAggregateOutputType = {
   id: string | null
   spaceId: string | null
-  isActive: boolean | null
+  name: string | null
+  kind: string | null
+  status: string | null
+  oauthClientId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -35,7 +38,10 @@ export type SpaceAgentMinAggregateOutputType = {
 export type SpaceAgentMaxAggregateOutputType = {
   id: string | null
   spaceId: string | null
-  isActive: boolean | null
+  name: string | null
+  kind: string | null
+  status: string | null
+  oauthClientId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -43,7 +49,11 @@ export type SpaceAgentMaxAggregateOutputType = {
 export type SpaceAgentCountAggregateOutputType = {
   id: number
   spaceId: number
-  isActive: number
+  name: number
+  kind: number
+  scopes: number
+  status: number
+  oauthClientId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -53,7 +63,10 @@ export type SpaceAgentCountAggregateOutputType = {
 export type SpaceAgentMinAggregateInputType = {
   id?: true
   spaceId?: true
-  isActive?: true
+  name?: true
+  kind?: true
+  status?: true
+  oauthClientId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -61,7 +74,10 @@ export type SpaceAgentMinAggregateInputType = {
 export type SpaceAgentMaxAggregateInputType = {
   id?: true
   spaceId?: true
-  isActive?: true
+  name?: true
+  kind?: true
+  status?: true
+  oauthClientId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -69,7 +85,11 @@ export type SpaceAgentMaxAggregateInputType = {
 export type SpaceAgentCountAggregateInputType = {
   id?: true
   spaceId?: true
-  isActive?: true
+  name?: true
+  kind?: true
+  scopes?: true
+  status?: true
+  oauthClientId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -150,7 +170,11 @@ export type SpaceAgentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 export type SpaceAgentGroupByOutputType = {
   id: string
   spaceId: string
-  isActive: boolean
+  name: string
+  kind: string
+  scopes: string[]
+  status: string
+  oauthClientId: string | null
   createdAt: Date
   updatedAt: Date
   _count: SpaceAgentCountAggregateOutputType | null
@@ -179,37 +203,57 @@ export type SpaceAgentWhereInput = {
   NOT?: Prisma.SpaceAgentWhereInput | Prisma.SpaceAgentWhereInput[]
   id?: Prisma.StringFilter<"SpaceAgent"> | string
   spaceId?: Prisma.StringFilter<"SpaceAgent"> | string
-  isActive?: Prisma.BoolFilter<"SpaceAgent"> | boolean
+  name?: Prisma.StringFilter<"SpaceAgent"> | string
+  kind?: Prisma.StringFilter<"SpaceAgent"> | string
+  scopes?: Prisma.StringNullableListFilter<"SpaceAgent">
+  status?: Prisma.StringFilter<"SpaceAgent"> | string
+  oauthClientId?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
   createdAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
+  tokens?: Prisma.AgentTokenListRelationFilter
 }
 
 export type SpaceAgentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  kind?: Prisma.SortOrder
+  scopes?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  oauthClientId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   space?: Prisma.SpaceOrderByWithRelationInput
+  tokens?: Prisma.AgentTokenOrderByRelationAggregateInput
 }
 
 export type SpaceAgentWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  spaceId?: string
+  oauthClientId?: string
+  spaceId_name?: Prisma.SpaceAgentSpaceIdNameCompoundUniqueInput
   AND?: Prisma.SpaceAgentWhereInput | Prisma.SpaceAgentWhereInput[]
   OR?: Prisma.SpaceAgentWhereInput[]
   NOT?: Prisma.SpaceAgentWhereInput | Prisma.SpaceAgentWhereInput[]
-  isActive?: Prisma.BoolFilter<"SpaceAgent"> | boolean
+  spaceId?: Prisma.StringFilter<"SpaceAgent"> | string
+  name?: Prisma.StringFilter<"SpaceAgent"> | string
+  kind?: Prisma.StringFilter<"SpaceAgent"> | string
+  scopes?: Prisma.StringNullableListFilter<"SpaceAgent">
+  status?: Prisma.StringFilter<"SpaceAgent"> | string
   createdAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
-}, "id" | "spaceId">
+  tokens?: Prisma.AgentTokenListRelationFilter
+}, "id" | "oauthClientId" | "spaceId_name">
 
 export type SpaceAgentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  kind?: Prisma.SortOrder
+  scopes?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  oauthClientId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SpaceAgentCountOrderByAggregateInput
@@ -223,54 +267,86 @@ export type SpaceAgentScalarWhereWithAggregatesInput = {
   NOT?: Prisma.SpaceAgentScalarWhereWithAggregatesInput | Prisma.SpaceAgentScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"SpaceAgent"> | string
   spaceId?: Prisma.StringWithAggregatesFilter<"SpaceAgent"> | string
-  isActive?: Prisma.BoolWithAggregatesFilter<"SpaceAgent"> | boolean
+  name?: Prisma.StringWithAggregatesFilter<"SpaceAgent"> | string
+  kind?: Prisma.StringWithAggregatesFilter<"SpaceAgent"> | string
+  scopes?: Prisma.StringNullableListFilter<"SpaceAgent">
+  status?: Prisma.StringWithAggregatesFilter<"SpaceAgent"> | string
+  oauthClientId?: Prisma.StringNullableWithAggregatesFilter<"SpaceAgent"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceAgent"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"SpaceAgent"> | Date | string
 }
 
 export type SpaceAgentCreateInput = {
   id?: string
-  isActive?: boolean
+  name: string
+  kind: string
+  scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
+  status?: string
+  oauthClientId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  space: Prisma.SpaceCreateNestedOneWithoutAgentToggleInput
+  space: Prisma.SpaceCreateNestedOneWithoutAgentsInput
+  tokens?: Prisma.AgentTokenCreateNestedManyWithoutAgentInput
 }
 
 export type SpaceAgentUncheckedCreateInput = {
   id?: string
   spaceId: string
-  isActive?: boolean
+  name: string
+  kind: string
+  scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
+  status?: string
+  oauthClientId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  tokens?: Prisma.AgentTokenUncheckedCreateNestedManyWithoutAgentInput
 }
 
 export type SpaceAgentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.StringFieldUpdateOperationsInput | string
+  scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  space?: Prisma.SpaceUpdateOneRequiredWithoutAgentToggleNestedInput
+  space?: Prisma.SpaceUpdateOneRequiredWithoutAgentsNestedInput
+  tokens?: Prisma.AgentTokenUpdateManyWithoutAgentNestedInput
 }
 
 export type SpaceAgentUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.StringFieldUpdateOperationsInput | string
+  scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tokens?: Prisma.AgentTokenUncheckedUpdateManyWithoutAgentNestedInput
 }
 
 export type SpaceAgentCreateManyInput = {
   id?: string
   spaceId: string
-  isActive?: boolean
+  name: string
+  kind: string
+  scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
+  status?: string
+  oauthClientId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SpaceAgentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.StringFieldUpdateOperationsInput | string
+  scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -278,20 +354,46 @@ export type SpaceAgentUpdateManyMutationInput = {
 export type SpaceAgentUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   spaceId?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.StringFieldUpdateOperationsInput | string
+  scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type SpaceAgentNullableScalarRelationFilter = {
-  is?: Prisma.SpaceAgentWhereInput | null
-  isNot?: Prisma.SpaceAgentWhereInput | null
+export type SpaceAgentListRelationFilter = {
+  every?: Prisma.SpaceAgentWhereInput
+  some?: Prisma.SpaceAgentWhereInput
+  none?: Prisma.SpaceAgentWhereInput
+}
+
+export type SpaceAgentOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
+}
+
+export type SpaceAgentSpaceIdNameCompoundUniqueInput = {
+  spaceId: string
+  name: string
 }
 
 export type SpaceAgentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  kind?: Prisma.SortOrder
+  scopes?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  oauthClientId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -299,7 +401,10 @@ export type SpaceAgentCountOrderByAggregateInput = {
 export type SpaceAgentMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  kind?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  oauthClientId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -307,55 +412,106 @@ export type SpaceAgentMaxOrderByAggregateInput = {
 export type SpaceAgentMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   spaceId?: Prisma.SortOrder
-  isActive?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  kind?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  oauthClientId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
-export type SpaceAgentCreateNestedOneWithoutSpaceInput = {
-  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput>
-  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput
+export type SpaceAgentScalarRelationFilter = {
+  is?: Prisma.SpaceAgentWhereInput
+  isNot?: Prisma.SpaceAgentWhereInput
+}
+
+export type SpaceAgentCreateNestedManyWithoutSpaceInput = {
+  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput> | Prisma.SpaceAgentCreateWithoutSpaceInput[] | Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput[]
+  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput | Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput[]
+  createMany?: Prisma.SpaceAgentCreateManySpaceInputEnvelope
+  connect?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+}
+
+export type SpaceAgentUncheckedCreateNestedManyWithoutSpaceInput = {
+  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput> | Prisma.SpaceAgentCreateWithoutSpaceInput[] | Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput[]
+  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput | Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput[]
+  createMany?: Prisma.SpaceAgentCreateManySpaceInputEnvelope
+  connect?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+}
+
+export type SpaceAgentUpdateManyWithoutSpaceNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput> | Prisma.SpaceAgentCreateWithoutSpaceInput[] | Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput[]
+  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput | Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput[]
+  upsert?: Prisma.SpaceAgentUpsertWithWhereUniqueWithoutSpaceInput | Prisma.SpaceAgentUpsertWithWhereUniqueWithoutSpaceInput[]
+  createMany?: Prisma.SpaceAgentCreateManySpaceInputEnvelope
+  set?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+  disconnect?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+  delete?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+  connect?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+  update?: Prisma.SpaceAgentUpdateWithWhereUniqueWithoutSpaceInput | Prisma.SpaceAgentUpdateWithWhereUniqueWithoutSpaceInput[]
+  updateMany?: Prisma.SpaceAgentUpdateManyWithWhereWithoutSpaceInput | Prisma.SpaceAgentUpdateManyWithWhereWithoutSpaceInput[]
+  deleteMany?: Prisma.SpaceAgentScalarWhereInput | Prisma.SpaceAgentScalarWhereInput[]
+}
+
+export type SpaceAgentUncheckedUpdateManyWithoutSpaceNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput> | Prisma.SpaceAgentCreateWithoutSpaceInput[] | Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput[]
+  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput | Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput[]
+  upsert?: Prisma.SpaceAgentUpsertWithWhereUniqueWithoutSpaceInput | Prisma.SpaceAgentUpsertWithWhereUniqueWithoutSpaceInput[]
+  createMany?: Prisma.SpaceAgentCreateManySpaceInputEnvelope
+  set?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+  disconnect?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+  delete?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+  connect?: Prisma.SpaceAgentWhereUniqueInput | Prisma.SpaceAgentWhereUniqueInput[]
+  update?: Prisma.SpaceAgentUpdateWithWhereUniqueWithoutSpaceInput | Prisma.SpaceAgentUpdateWithWhereUniqueWithoutSpaceInput[]
+  updateMany?: Prisma.SpaceAgentUpdateManyWithWhereWithoutSpaceInput | Prisma.SpaceAgentUpdateManyWithWhereWithoutSpaceInput[]
+  deleteMany?: Prisma.SpaceAgentScalarWhereInput | Prisma.SpaceAgentScalarWhereInput[]
+}
+
+export type SpaceAgentCreatescopesInput = {
+  set: string[]
+}
+
+export type SpaceAgentUpdatescopesInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type SpaceAgentCreateNestedOneWithoutTokensInput = {
+  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutTokensInput, Prisma.SpaceAgentUncheckedCreateWithoutTokensInput>
+  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutTokensInput
   connect?: Prisma.SpaceAgentWhereUniqueInput
 }
 
-export type SpaceAgentUncheckedCreateNestedOneWithoutSpaceInput = {
-  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput>
-  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput
+export type SpaceAgentUpdateOneRequiredWithoutTokensNestedInput = {
+  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutTokensInput, Prisma.SpaceAgentUncheckedCreateWithoutTokensInput>
+  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutTokensInput
+  upsert?: Prisma.SpaceAgentUpsertWithoutTokensInput
   connect?: Prisma.SpaceAgentWhereUniqueInput
-}
-
-export type SpaceAgentUpdateOneWithoutSpaceNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput>
-  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput
-  upsert?: Prisma.SpaceAgentUpsertWithoutSpaceInput
-  disconnect?: Prisma.SpaceAgentWhereInput | boolean
-  delete?: Prisma.SpaceAgentWhereInput | boolean
-  connect?: Prisma.SpaceAgentWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceAgentUpdateToOneWithWhereWithoutSpaceInput, Prisma.SpaceAgentUpdateWithoutSpaceInput>, Prisma.SpaceAgentUncheckedUpdateWithoutSpaceInput>
-}
-
-export type SpaceAgentUncheckedUpdateOneWithoutSpaceNestedInput = {
-  create?: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput>
-  connectOrCreate?: Prisma.SpaceAgentCreateOrConnectWithoutSpaceInput
-  upsert?: Prisma.SpaceAgentUpsertWithoutSpaceInput
-  disconnect?: Prisma.SpaceAgentWhereInput | boolean
-  delete?: Prisma.SpaceAgentWhereInput | boolean
-  connect?: Prisma.SpaceAgentWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceAgentUpdateToOneWithWhereWithoutSpaceInput, Prisma.SpaceAgentUpdateWithoutSpaceInput>, Prisma.SpaceAgentUncheckedUpdateWithoutSpaceInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SpaceAgentUpdateToOneWithWhereWithoutTokensInput, Prisma.SpaceAgentUpdateWithoutTokensInput>, Prisma.SpaceAgentUncheckedUpdateWithoutTokensInput>
 }
 
 export type SpaceAgentCreateWithoutSpaceInput = {
   id?: string
-  isActive?: boolean
+  name: string
+  kind: string
+  scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
+  status?: string
+  oauthClientId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  tokens?: Prisma.AgentTokenCreateNestedManyWithoutAgentInput
 }
 
 export type SpaceAgentUncheckedCreateWithoutSpaceInput = {
   id?: string
-  isActive?: boolean
+  name: string
+  kind: string
+  scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
+  status?: string
+  oauthClientId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  tokens?: Prisma.AgentTokenUncheckedCreateNestedManyWithoutAgentInput
 }
 
 export type SpaceAgentCreateOrConnectWithoutSpaceInput = {
@@ -363,46 +519,206 @@ export type SpaceAgentCreateOrConnectWithoutSpaceInput = {
   create: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput>
 }
 
-export type SpaceAgentUpsertWithoutSpaceInput = {
+export type SpaceAgentCreateManySpaceInputEnvelope = {
+  data: Prisma.SpaceAgentCreateManySpaceInput | Prisma.SpaceAgentCreateManySpaceInput[]
+  skipDuplicates?: boolean
+}
+
+export type SpaceAgentUpsertWithWhereUniqueWithoutSpaceInput = {
+  where: Prisma.SpaceAgentWhereUniqueInput
   update: Prisma.XOR<Prisma.SpaceAgentUpdateWithoutSpaceInput, Prisma.SpaceAgentUncheckedUpdateWithoutSpaceInput>
   create: Prisma.XOR<Prisma.SpaceAgentCreateWithoutSpaceInput, Prisma.SpaceAgentUncheckedCreateWithoutSpaceInput>
+}
+
+export type SpaceAgentUpdateWithWhereUniqueWithoutSpaceInput = {
+  where: Prisma.SpaceAgentWhereUniqueInput
+  data: Prisma.XOR<Prisma.SpaceAgentUpdateWithoutSpaceInput, Prisma.SpaceAgentUncheckedUpdateWithoutSpaceInput>
+}
+
+export type SpaceAgentUpdateManyWithWhereWithoutSpaceInput = {
+  where: Prisma.SpaceAgentScalarWhereInput
+  data: Prisma.XOR<Prisma.SpaceAgentUpdateManyMutationInput, Prisma.SpaceAgentUncheckedUpdateManyWithoutSpaceInput>
+}
+
+export type SpaceAgentScalarWhereInput = {
+  AND?: Prisma.SpaceAgentScalarWhereInput | Prisma.SpaceAgentScalarWhereInput[]
+  OR?: Prisma.SpaceAgentScalarWhereInput[]
+  NOT?: Prisma.SpaceAgentScalarWhereInput | Prisma.SpaceAgentScalarWhereInput[]
+  id?: Prisma.StringFilter<"SpaceAgent"> | string
+  spaceId?: Prisma.StringFilter<"SpaceAgent"> | string
+  name?: Prisma.StringFilter<"SpaceAgent"> | string
+  kind?: Prisma.StringFilter<"SpaceAgent"> | string
+  scopes?: Prisma.StringNullableListFilter<"SpaceAgent">
+  status?: Prisma.StringFilter<"SpaceAgent"> | string
+  oauthClientId?: Prisma.StringNullableFilter<"SpaceAgent"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"SpaceAgent"> | Date | string
+}
+
+export type SpaceAgentCreateWithoutTokensInput = {
+  id?: string
+  name: string
+  kind: string
+  scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
+  status?: string
+  oauthClientId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  space: Prisma.SpaceCreateNestedOneWithoutAgentsInput
+}
+
+export type SpaceAgentUncheckedCreateWithoutTokensInput = {
+  id?: string
+  spaceId: string
+  name: string
+  kind: string
+  scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
+  status?: string
+  oauthClientId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type SpaceAgentCreateOrConnectWithoutTokensInput = {
+  where: Prisma.SpaceAgentWhereUniqueInput
+  create: Prisma.XOR<Prisma.SpaceAgentCreateWithoutTokensInput, Prisma.SpaceAgentUncheckedCreateWithoutTokensInput>
+}
+
+export type SpaceAgentUpsertWithoutTokensInput = {
+  update: Prisma.XOR<Prisma.SpaceAgentUpdateWithoutTokensInput, Prisma.SpaceAgentUncheckedUpdateWithoutTokensInput>
+  create: Prisma.XOR<Prisma.SpaceAgentCreateWithoutTokensInput, Prisma.SpaceAgentUncheckedCreateWithoutTokensInput>
   where?: Prisma.SpaceAgentWhereInput
 }
 
-export type SpaceAgentUpdateToOneWithWhereWithoutSpaceInput = {
+export type SpaceAgentUpdateToOneWithWhereWithoutTokensInput = {
   where?: Prisma.SpaceAgentWhereInput
-  data: Prisma.XOR<Prisma.SpaceAgentUpdateWithoutSpaceInput, Prisma.SpaceAgentUncheckedUpdateWithoutSpaceInput>
+  data: Prisma.XOR<Prisma.SpaceAgentUpdateWithoutTokensInput, Prisma.SpaceAgentUncheckedUpdateWithoutTokensInput>
+}
+
+export type SpaceAgentUpdateWithoutTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.StringFieldUpdateOperationsInput | string
+  scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  space?: Prisma.SpaceUpdateOneRequiredWithoutAgentsNestedInput
+}
+
+export type SpaceAgentUncheckedUpdateWithoutTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  spaceId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.StringFieldUpdateOperationsInput | string
+  scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SpaceAgentCreateManySpaceInput = {
+  id?: string
+  name: string
+  kind: string
+  scopes?: Prisma.SpaceAgentCreatescopesInput | string[]
+  status?: string
+  oauthClientId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type SpaceAgentUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.StringFieldUpdateOperationsInput | string
+  scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tokens?: Prisma.AgentTokenUpdateManyWithoutAgentNestedInput
 }
 
 export type SpaceAgentUncheckedUpdateWithoutSpaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.StringFieldUpdateOperationsInput | string
+  scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tokens?: Prisma.AgentTokenUncheckedUpdateManyWithoutAgentNestedInput
+}
+
+export type SpaceAgentUncheckedUpdateManyWithoutSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  kind?: Prisma.StringFieldUpdateOperationsInput | string
+  scopes?: Prisma.SpaceAgentUpdatescopesInput | string[]
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  oauthClientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type SpaceAgentCountOutputType
+ */
+
+export type SpaceAgentCountOutputType = {
+  tokens: number
+}
+
+export type SpaceAgentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  tokens?: boolean | SpaceAgentCountOutputTypeCountTokensArgs
+}
+
+/**
+ * SpaceAgentCountOutputType without action
+ */
+export type SpaceAgentCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SpaceAgentCountOutputType
+   */
+  select?: Prisma.SpaceAgentCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * SpaceAgentCountOutputType without action
+ */
+export type SpaceAgentCountOutputTypeCountTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AgentTokenWhereInput
+}
 
 
 export type SpaceAgentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
-  isActive?: boolean
+  name?: boolean
+  kind?: boolean
+  scopes?: boolean
+  status?: boolean
+  oauthClientId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  tokens?: boolean | Prisma.SpaceAgent$tokensArgs<ExtArgs>
+  _count?: boolean | Prisma.SpaceAgentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["spaceAgent"]>
 
 export type SpaceAgentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
-  isActive?: boolean
+  name?: boolean
+  kind?: boolean
+  scopes?: boolean
+  status?: boolean
+  oauthClientId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -411,7 +727,11 @@ export type SpaceAgentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type SpaceAgentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   spaceId?: boolean
-  isActive?: boolean
+  name?: boolean
+  kind?: boolean
+  scopes?: boolean
+  status?: boolean
+  oauthClientId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -420,14 +740,20 @@ export type SpaceAgentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type SpaceAgentSelectScalar = {
   id?: boolean
   spaceId?: boolean
-  isActive?: boolean
+  name?: boolean
+  kind?: boolean
+  scopes?: boolean
+  status?: boolean
+  oauthClientId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SpaceAgentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceAgent"]>
+export type SpaceAgentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "spaceId" | "name" | "kind" | "scopes" | "status" | "oauthClientId" | "createdAt" | "updatedAt", ExtArgs["result"]["spaceAgent"]>
 export type SpaceAgentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
+  tokens?: boolean | Prisma.SpaceAgent$tokensArgs<ExtArgs>
+  _count?: boolean | Prisma.SpaceAgentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SpaceAgentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   space?: boolean | Prisma.SpaceDefaultArgs<ExtArgs>
@@ -440,11 +766,16 @@ export type $SpaceAgentPayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "SpaceAgent"
   objects: {
     space: Prisma.$SpacePayload<ExtArgs>
+    tokens: Prisma.$AgentTokenPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     spaceId: string
-    isActive: boolean
+    name: string
+    kind: string
+    scopes: string[]
+    status: string
+    oauthClientId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["spaceAgent"]>
@@ -842,6 +1173,7 @@ readonly fields: SpaceAgentFieldRefs;
 export interface Prisma__SpaceAgentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   space<T extends Prisma.SpaceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceDefaultArgs<ExtArgs>>): Prisma.Prisma__SpaceClient<runtime.Types.Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  tokens<T extends Prisma.SpaceAgent$tokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SpaceAgent$tokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -873,7 +1205,11 @@ export interface Prisma__SpaceAgentClient<T, Null = never, ExtArgs extends runti
 export interface SpaceAgentFieldRefs {
   readonly id: Prisma.FieldRef<"SpaceAgent", 'String'>
   readonly spaceId: Prisma.FieldRef<"SpaceAgent", 'String'>
-  readonly isActive: Prisma.FieldRef<"SpaceAgent", 'Boolean'>
+  readonly name: Prisma.FieldRef<"SpaceAgent", 'String'>
+  readonly kind: Prisma.FieldRef<"SpaceAgent", 'String'>
+  readonly scopes: Prisma.FieldRef<"SpaceAgent", 'String[]'>
+  readonly status: Prisma.FieldRef<"SpaceAgent", 'String'>
+  readonly oauthClientId: Prisma.FieldRef<"SpaceAgent", 'String'>
   readonly createdAt: Prisma.FieldRef<"SpaceAgent", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"SpaceAgent", 'DateTime'>
 }
@@ -1269,6 +1605,30 @@ export type SpaceAgentDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many SpaceAgents to delete.
    */
   limit?: number
+}
+
+/**
+ * SpaceAgent.tokens
+ */
+export type SpaceAgent$tokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AgentToken
+   */
+  select?: Prisma.AgentTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AgentToken
+   */
+  omit?: Prisma.AgentTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AgentTokenInclude<ExtArgs> | null
+  where?: Prisma.AgentTokenWhereInput
+  orderBy?: Prisma.AgentTokenOrderByWithRelationInput | Prisma.AgentTokenOrderByWithRelationInput[]
+  cursor?: Prisma.AgentTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AgentTokenScalarFieldEnum | Prisma.AgentTokenScalarFieldEnum[]
 }
 
 /**
