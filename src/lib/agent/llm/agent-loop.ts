@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import { toolDefinitions } from '@/lib/agent/tools'
 import type { McpToolContext, ToolDefinition } from '@/lib/agent/tools'
-import { runTool } from '@/lib/agent/tools/run-tool'
+import { runTool, toolErrorMessage } from '@/lib/agent/tools/run-tool'
 import type { ConversationTurn } from './conversation'
 
 /**
@@ -132,7 +132,7 @@ export async function runAgentLoop(args: RunAgentLoopArgs): Promise<AgentLoopRes
         toolResults.push({
           type: 'tool_result',
           tool_use_id: tu.id,
-          content: err instanceof Error ? err.message : '도구 실행 중 오류가 발생했습니다.',
+          content: toolErrorMessage(err),
           is_error: true,
         })
       }

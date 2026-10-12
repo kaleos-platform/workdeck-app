@@ -7,6 +7,7 @@ import {
   readAuthExtra,
   runTool,
   splitMetaArgs,
+  toolErrorMessage,
 } from '@/lib/agent/tools/run-tool'
 
 // MCP 핸들러 — toolDefinitions 배열을 순회하며 각 tool을 등록한다.
@@ -47,8 +48,8 @@ const handler = createMcpHandler(
             }
           } catch (err) {
             // execute의 throw(한국어 Error)와 scope 거부를 MCP 에러 규약으로 변환한다.
-            // DB 오류는 runTool이 일반 문구로 바꿔 던지고, 원인은 감사 행에 남는다.
-            const message = err instanceof Error ? err.message : '알 수 없는 오류'
+            // 도메인 오류(ToolUserError)만 원문, 나머지는 일반 문구 — 원인은 감사 행·서버 로그에 남는다.
+            const message = toolErrorMessage(err)
             return {
               content: [{ type: 'text', text: message }],
               isError: true,

@@ -1,3 +1,4 @@
+import { ToolUserError } from '@/lib/agent/tools/errors'
 import { prisma } from '@/lib/prisma'
 
 /**
@@ -8,7 +9,7 @@ import { prisma } from '@/lib/prisma'
 /** Space 이름 (whoami용). */
 export async function getSpaceName(spaceId: string): Promise<string> {
   const space = await prisma.space.findUnique({ where: { id: spaceId }, select: { name: true } })
-  if (!space) throw new Error('공간이 없습니다')
+  if (!space) throw new ToolUserError('공간이 없습니다')
   return space.name
 }
 
@@ -18,15 +19,15 @@ export async function requireDeck(spaceId: string, deckKey: string): Promise<voi
     where: { spaceId_deckAppId: { spaceId, deckAppId: deckKey } },
     select: { isActive: true },
   })
-  if (!deckInstance?.isActive) throw new Error(`${deckKey} 카드가 활성화되지 않았습니다`)
+  if (!deckInstance?.isActive) throw new ToolUserError(`${deckKey} 카드가 활성화되지 않았습니다`)
 }
 
 /** coupang-ads(레거시 Workspace 스코프) — Workspace.spaceId FK로만 찾는다. */
 export async function resolveMcpWorkspace(spaceId: string): Promise<{ id: string }> {
   await requireDeck(spaceId, 'coupang-ads').catch(() => {
-    throw new Error('쿠팡 광고 카드가 활성화되지 않았습니다')
+    throw new ToolUserError('쿠팡 광고 카드가 활성화되지 않았습니다')
   })
   const workspace = await prisma.workspace.findUnique({ where: { spaceId }, select: { id: true } })
-  if (!workspace) throw new Error('쿠팡 워크스페이스가 이 Space에 연결되어 있지 않습니다')
+  if (!workspace) throw new ToolUserError('쿠팡 워크스페이스가 이 Space에 연결되어 있지 않습니다')
   return workspace
 }

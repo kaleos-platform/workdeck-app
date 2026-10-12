@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { toolDefinitions } from '@/lib/agent/tools'
 import type { McpToolContext, ToolDefinition } from '@/lib/agent/tools'
-import { runTool, systemToolContext } from '@/lib/agent/tools/run-tool'
+import { runTool, systemToolContext, toolErrorMessage } from '@/lib/agent/tools/run-tool'
 import { buildAppUrl } from '@/lib/domain'
 import { checkAndIncrementUsage, recordTokens } from './llm/usage'
 import { runAgentLoop } from './llm/agent-loop'
@@ -227,7 +227,7 @@ async function runFormatted(
     const data = await runTool(tool, ctx, params)
     return formatter(data)
   } catch (err) {
-    return err instanceof Error ? `⚠️ ${err.message}` : `⚠️ ${fallbackMsg}`
+    return `⚠️ ${toolErrorMessage(err)}`
   }
 }
 
@@ -324,7 +324,7 @@ async function runCampaignDetail(ctx: McpToolContext, keyword: string): Promise<
     if (adCost > 0) lines.push(`• ROAS: ${((revenue / adCost) * 100).toFixed(1)}%`)
     return lines.join('\n')
   } catch (err) {
-    return err instanceof Error ? `⚠️ ${err.message}` : `"${keyword}" 캠페인 조회에 실패했습니다.`
+    return `⚠️ ${toolErrorMessage(err)}`
   }
 }
 
@@ -357,7 +357,7 @@ async function runInefficient(ctx: McpToolContext): Promise<string> {
     }
     return lines.join('\n')
   } catch (err) {
-    return err instanceof Error ? `⚠️ ${err.message}` : '비효율 키워드를 가져올 수 없습니다.'
+    return `⚠️ ${toolErrorMessage(err)}`
   }
 }
 

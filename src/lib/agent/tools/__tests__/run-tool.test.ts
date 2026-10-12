@@ -4,8 +4,10 @@ jest.mock('@/lib/agent/audit', () => ({
   AUDIT_UNAVAILABLE: '감사 기록을 남길 수 없어 실행하지 않았습니다',
   startToolAudit: jest.fn(),
   finishToolAudit: jest.fn(),
+  maskSecrets: (s: string) => s,
 }))
 import { Prisma } from '@/generated/prisma/client'
+import { ToolUserError } from '../errors'
 import { finishToolAudit, startToolAudit } from '@/lib/agent/audit'
 import {
   buildToolContext,
@@ -13,6 +15,7 @@ import {
   splitMetaArgs,
   ToolScopeError,
   TOOL_INTERNAL_ERROR,
+  toolErrorMessage,
   readAuthExtra,
   systemToolContext,
 } from '../run-tool'
@@ -99,7 +102,7 @@ describe('runTool', () => {
     const failing = {
       ...writeTool,
       execute: jest.fn(async () => {
-        throw new Error('boom')
+        throw new ToolUserError('boom')
       }),
     }
     await expect(runTool(failing, ctx(['ads:write']), {})).rejects.toThrow('boom')
@@ -107,6 +110,34 @@ describe('runTool', () => {
       'aud1',
       expect.objectContaining({ outcome: 'error', error: 'boom' })
     )
+  })
+  it.each([
+    ['TypeError', new TypeError("Cannot read properties of null (reading 'id')")],
+    ['일반 Error(라이브러리)', new Error('socket hang up at 10.0.0.1')],
+  ])('%s → 사용자에게 일반 문구, 감사 행에는 종류·원문', async (_label, thrown) => {
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    const failing = {
+      ...writeTool,
+      execute: jest.fn(async () => {
+        throw thrown
+      }),
+    }
+    const p = runTool(failing, ctx(['ads:write']), {})
+    await expect(p).rejects.toThrow(TOOL_INTERNAL_ERROR)
+    await expect(p.catch(toolErrorMessage)).resolves.toBe(TOOL_INTERNAL_ERROR)
+    expect((finishToolAudit as jest.Mock).mock.calls[0][1].error).toBe(
+      `${thrown.name}: ${thrown.message}`
+    )
+  })
+  it('toolErrorMessage: 도메인 오류는 원문, 그 밖은 일반 문구', () => {
+    jest.spyOn(console, 'error').mockImplementation(() => undefined)
+    expect(toolErrorMessage(new ToolScopeError('ads:write'))).toBe(
+      '권한(scope)이 없습니다: ads:write'
+    )
+    expect(toolErrorMessage(new ToolUserError('쿠팡 광고 카드가 활성화되지 않았습니다'))).toBe(
+      '쿠팡 광고 카드가 활성화되지 않았습니다'
+    )
+    expect(toolErrorMessage(new RangeError('Invalid array length'))).toBe(TOOL_INTERNAL_ERROR)
   })
   it('begin failure → execute not called', async () => {
     const exec = jest.fn(async () => ({ ok: true }))

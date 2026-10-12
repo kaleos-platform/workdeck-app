@@ -1,17 +1,33 @@
 import { prisma } from '@/lib/prisma'
 import type { Actor } from '@/lib/agent/identity/principal'
+import { ToolUserError } from '@/lib/agent/tools/errors'
 
-const SECRET_KEY_RE = /token|secret|password|passwd|api[_-]?key|authorization|cookie|refresh/i
+const SECRET_KEY_RE =
+  /token|secret|password|passwd|api[_-]?key|authorization|cookie|refresh|credential|private[_-]?key|access[_-]?key|session|^auth$/i
 const MAX_SUMMARY = 1000
 
-/** 감사용 인자 요약 — 비밀로 보이는 키와 에이전트 토큰 값은 마스킹하고 길이를 제한한다. */
+/** 문자열 안의 비밀처럼 보이는 값(에이전트 토큰, Bearer 자격, URL·쿼리의 `*token=`·`*secret=`·`*key=`)을 가린다. */
+export function maskSecrets(text: string): string {
+  return text
+    .replace(/wdk_agt_[^\s"'&]*/g, '[redacted]')
+    .replace(/(Bearer\s+)[^\s"']+/gi, '$1[redacted]')
+    .replace(/(\w*(?:token|secret|password|key)=)[^&\s"']+/gi, '$1[redacted]')
+    .replace(/("\w*(?:token|secret|password|key)"\s*:\s*")[^"]*/gi, '$1[redacted]')
+}
+
+/** 감사용 인자 요약 — 비밀로 보이는 키는 값 전체를, 문자열 값 안의 비밀은 부분 마스킹하고 길이를 제한한다. */
 export function summarizeArgs(args: Record<string, unknown>): string {
   const json = JSON.stringify(args, (key, value) => {
     if (key && SECRET_KEY_RE.test(key)) return '[redacted]'
-    if (typeof value === 'string' && value.includes('wdk_agt_')) return '[redacted]'
+    if (typeof value === 'string') return maskSecrets(value)
     return value
   })
   return (json ?? '{}').slice(0, MAX_SUMMARY)
+}
+
+/** 감사 행 error 칸 — 값 마스킹 뒤 1000자 제한. */
+function auditError(error: string | undefined): string | undefined {
+  return error === undefined ? undefined : maskSecrets(error).slice(0, MAX_SUMMARY)
 }
 
 export const AUDIT_UNAVAILABLE = '감사 기록을 남길 수 없어 실행하지 않았습니다'
@@ -52,7 +68,7 @@ export async function startToolAudit(e: ToolAuditStart): Promise<string> {
         tool: e.tool,
         argsSummary: summarizeArgs(e.args),
         outcome: e.outcome ?? 'started',
-        error: e.error?.slice(0, 1000),
+        error: auditError(e.error),
         durationMs: null,
         decryptedCredentialIds: [],
         actionId: e.actionId ?? null,
@@ -63,7 +79,7 @@ export async function startToolAudit(e: ToolAuditStart): Promise<string> {
     return row.id
   } catch (err) {
     console.error('[audit] ToolAuditLog 시작 기록 실패', err)
-    throw new Error(AUDIT_UNAVAILABLE)
+    throw new ToolUserError(AUDIT_UNAVAILABLE)
   }
 }
 
@@ -77,7 +93,7 @@ export async function finishToolAudit(id: string, r: ToolAuditFinish): Promise<v
       where: { id },
       data: {
         outcome: r.outcome,
-        error: r.error?.slice(0, 1000),
+        error: auditError(r.error),
         durationMs: r.durationMs,
         decryptedCredentialIds: r.decryptedCredentialIds,
       },

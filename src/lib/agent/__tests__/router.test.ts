@@ -4,6 +4,7 @@ jest.mock('@/lib/agent/audit', () => ({
   AUDIT_UNAVAILABLE: '감사 기록을 남길 수 없어 실행하지 않았습니다',
   startToolAudit: async () => 'aud_test',
   finishToolAudit: async () => undefined,
+  maskSecrets: (s: string) => s,
 }))
 import { routeAgentMessage } from '../router'
 import { toolDefinitions } from '@/lib/agent/tools'

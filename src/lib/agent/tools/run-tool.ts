@@ -6,11 +6,12 @@ import {
 } from '@/lib/agent/identity/principal'
 import { z } from 'zod'
 import { Prisma } from '@/generated/prisma/client'
-import { finishToolAudit, startToolAudit } from '@/lib/agent/audit'
+import { finishToolAudit, maskSecrets, startToolAudit } from '@/lib/agent/audit'
+import { ToolUserError } from './errors'
 import { newWorkId, normalizeWorkId } from '@/lib/agent/work-id'
 import type { McpToolContext, ToolDefinition } from './types'
 
-export class ToolScopeError extends Error {
+export class ToolScopeError extends ToolUserError {
   constructor(scope: string) {
     super(`권한(scope)이 없습니다: ${scope}`)
     this.name = 'ToolScopeError'
@@ -102,18 +103,24 @@ const PRISMA_ERRORS = [
 ]
 
 /**
- * DB 오류는 메시지에 쿼리·인자가 섞일 수 있다 — 감사 행에는 종류·코드만, 사용자에게는 일반 문구를 준다.
- * 그 밖의 오류(도구의 한국어 Error·ToolScopeError 등 도메인 오류)는 그대로 둔다.
+ * 감사 행에 남길 오류 요약. 도메인 오류(ToolUserError)는 메시지, 그 밖은 `종류: 메시지`(마스킹은 audit.ts).
+ * Prisma 오류는 메시지에 쿼리·인자가 섞이므로 종류·코드만 남긴다.
  */
-function auditableError(err: unknown): { internal: boolean; summary: string } {
+function errorSummary(err: unknown): string {
+  if (err instanceof ToolUserError) return err.message
   if (PRISMA_ERRORS.some((C) => err instanceof C)) {
     const code = (err as { code?: unknown }).code
-    return {
-      internal: true,
-      summary: `${(err as Error).name}${typeof code === 'string' ? ` ${code}` : ''}`,
-    }
+    return `${(err as Error).name}${typeof code === 'string' ? ` ${code}` : ''}`
   }
-  return { internal: false, summary: err instanceof Error ? err.message : String(err) }
+  return err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+}
+
+/** 도구 호출 경로(MCP route·Slack router·agent-loop)의 사용자 노출 문구 — 도메인 오류만 원문, 나머지는 일반 문구. */
+export function toolErrorMessage(err: unknown): string {
+  if (err instanceof ToolUserError) return err.message
+  // runTool 밖(결과 포맷 등)에서 난 오류 — runTool 안의 오류는 이미 로그를 남기고 ToolUserError로 바뀌어 온다.
+  console.error('[tool] 내부 오류', maskSecrets(errorSummary(err)))
+  return TOOL_INTERNAL_ERROR
 }
 
 /** 모든 도구 호출의 단일 관문: scope 검사 → 감사 행 생성 → 실행 → 결과 기록. */
@@ -153,10 +160,10 @@ export async function runTool(
   try {
     result = await def.execute(ctx, args)
   } catch (err) {
-    const { internal, summary } = auditableError(err)
-    await finish('error', summary)
-    if (internal) throw new Error(TOOL_INTERNAL_ERROR)
-    throw err
+    await finish('error', errorSummary(err))
+    if (err instanceof ToolUserError) throw err
+    console.error(`[runTool] ${def.name} 내부 오류`, maskSecrets(errorSummary(err)))
+    throw new ToolUserError(TOOL_INTERNAL_ERROR)
   }
   await finish('ok')
   return result
