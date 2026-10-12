@@ -9,6 +9,7 @@ jest.mock('@/lib/agent/audit', () => ({
 import { routeAgentMessage } from '../router'
 import { toolDefinitions } from '@/lib/agent/tools'
 import { checkAndIncrementUsage } from '../llm/usage'
+import { recordTokens } from '../llm/usage'
 import { runAgentLoop } from '../llm/agent-loop'
 import { loadConversation, appendConversation } from '../llm/conversation'
 import { prisma } from '@/lib/prisma'
@@ -83,7 +84,11 @@ describe('routeAgentMessage — 정형 명령 매칭', () => {
     mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue(null)
     mockPrisma.agentPendingAction.findMany.mockResolvedValue([])
     mockUsage.mockResolvedValue({ allowed: true })
-    mockLoop.mockResolvedValue({ text: 'LLM 응답', usage: { inputTokens: 10, outputTokens: 5 } })
+    mockLoop.mockResolvedValue({
+      text: 'LLM 응답',
+      usage: { inputTokens: 10, outputTokens: 5 },
+      model: 'claude-x',
+    })
   })
 
   test('"상태" → ads_get_kpi 직접 실행, LLM 미호출', async () => {
@@ -179,7 +184,11 @@ describe('routeAgentMessage — LLM 폴백', () => {
     mockPrisma.spaceAgentSetting.findUnique.mockResolvedValue(null)
     mockUsage.mockResolvedValue({ allowed: true })
     mockLoad.mockResolvedValue([])
-    mockLoop.mockResolvedValue({ text: 'LLM 응답', usage: { inputTokens: 10, outputTokens: 5 } })
+    mockLoop.mockResolvedValue({
+      text: 'LLM 응답',
+      usage: { inputTokens: 10, outputTokens: 5 },
+      model: 'claude-x',
+    })
   })
 
   test('미매칭 자연어 → LLM 루프 진입 + 대화 저장', async () => {
@@ -190,6 +199,13 @@ describe('routeAgentMessage — LLM 폴백', () => {
       requesterSlackUserId: 'U123',
     })
     expect(mockAppend).toHaveBeenCalled()
+    expect(recordTokens as jest.Mock).toHaveBeenCalledWith('space-1', 10, 5, {
+      model: 'claude-x',
+      actor: mockLoop.mock.calls[0][0].ctx.actor,
+      requesterUserId: mockLoop.mock.calls[0][0].ctx.requesterUserId,
+      workId: mockLoop.mock.calls[0][0].ctx.workId,
+    })
+    expect(mockLoop.mock.calls[0][0].ctx.workId).toBeTruthy()
     expect(r.text).toBe('LLM 응답')
   })
 

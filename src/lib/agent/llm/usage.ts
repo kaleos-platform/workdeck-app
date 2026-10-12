@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import type { Actor } from '@/lib/agent/identity/principal'
 
 /**
  * LLM 사용량 rate limit — Space별 일일 요청 수 + 전역 일일 요청 수 상한.
@@ -86,11 +87,19 @@ export async function checkAndIncrementUsage(spaceId: string): Promise<UsageChec
   return { allowed: true }
 }
 
-/** 응답의 실제 토큰 사용량을 오늘 집계에 반영한다(요청 수는 이미 증가됨). */
+export interface UsageMeta {
+  model: string
+  actor: Actor
+  requesterUserId: string | null
+  workId: string
+}
+
+/** 응답의 실제 토큰 사용량을 오늘 집계(rate limit용)와 UsageEvent(행위자별 기록)에 반영한다. */
 export async function recordTokens(
   spaceId: string,
   inputTokens: number,
-  outputTokens: number
+  outputTokens: number,
+  meta: UsageMeta
 ): Promise<void> {
   const date = todayKst()
   await prisma.agentLlmUsage.upsert({
@@ -101,4 +110,24 @@ export async function recordTokens(
       outputTokens: { increment: outputTokens },
     },
   })
+  // 행위자별 기록 실패가 LLM 응답을 막지 않도록 로그만 남긴다.
+  try {
+    await prisma.usageEvent.create({
+      data: {
+        spaceId,
+        source: 'workdeck',
+        provider: 'anthropic',
+        planClass: 'payg',
+        model: meta.model,
+        actorType: meta.actor.type,
+        actorId: meta.actor.id,
+        requesterUserId: meta.requesterUserId,
+        inputTokens,
+        outputTokens,
+        workId: meta.workId,
+      },
+    })
+  } catch (err) {
+    console.error(`[agent] UsageEvent 기록 실패 (spaceId=${spaceId}):`, err)
+  }
 }

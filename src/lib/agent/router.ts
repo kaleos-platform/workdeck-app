@@ -120,7 +120,12 @@ export async function routeAgentMessage(args: RouteArgs): Promise<RouteResult> {
     }
   }
 
-  await recordTokens(args.spaceId, result.usage.inputTokens, result.usage.outputTokens)
+  await recordTokens(args.spaceId, result.usage.inputTokens, result.usage.outputTokens, {
+    model: result.model,
+    actor: ctx.actor,
+    requesterUserId: ctx.requesterUserId,
+    workId: ctx.workId,
+  })
   await appendConversation({
     spaceId: args.spaceId,
     channelId: args.channelId,
