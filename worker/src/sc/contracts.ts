@@ -7,6 +7,7 @@
 
 import type { PublishContext } from './publishers/index.js'
 import type { CollectContext } from './collectors/index.js'
+import type { SealedCredential } from './credential.js'
 
 export type WorkerJobKind = 'PUBLISH' | 'COLLECT_METRIC' | 'INSIGHT_SWEEP'
 
@@ -30,7 +31,7 @@ export type DeploymentEnvelope = PublishContext['deployment'] &
 export type WorkerJobResponse = {
   job: WorkerJobMeta
   deployment?: DeploymentEnvelope
-  credential?: PublishContext['credential']
+  credential?: SealedCredential | null
   assets?: PublishContext['assets']
   deploymentUrl?: string
 }
