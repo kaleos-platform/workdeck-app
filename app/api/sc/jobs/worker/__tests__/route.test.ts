@@ -29,6 +29,7 @@ jest.mock('@/lib/sc/jobs', () => ({
 
 jest.mock('@/lib/sc/credentials', () => ({
   readChannelCredential: jest.fn(),
+  readChannelCredentialSealed: jest.fn(),
 }))
 
 jest.mock('@/lib/domain', () => ({
@@ -38,12 +39,13 @@ jest.mock('@/lib/domain', () => ({
 import { GET } from '../route'
 import { prisma } from '@/lib/prisma'
 import { claimJobs, reapStaleClaims } from '@/lib/sc/jobs'
-import { readChannelCredential } from '@/lib/sc/credentials'
+import { readChannelCredential, readChannelCredentialSealed } from '@/lib/sc/credentials'
 
 const findFirst = prisma.contentDeployment.findFirst as jest.Mock
 const mockClaim = claimJobs as jest.Mock
 const mockReap = reapStaleClaims as jest.Mock
 const mockReadCred = readChannelCredential as jest.Mock
+const mockReadSealed = readChannelCredentialSealed as jest.Mock
 
 const baseDeployment = {
   id: 'd1',
@@ -71,6 +73,11 @@ beforeEach(() => {
   jest.clearAllMocks()
   mockReap.mockResolvedValue(0)
   mockReadCred.mockResolvedValue({ payload: { storageState: '...' } })
+  mockReadSealed.mockResolvedValue({
+    encryptedPayload: 'v1:k1:aa:bb:cc',
+    iv: 'v1',
+    expiresAt: null,
+  })
 })
 
 describe('GET /api/sc/jobs/worker', () => {
@@ -100,7 +107,11 @@ describe('GET /api/sc/jobs/worker', () => {
     expect(body.jobs).toHaveLength(1)
     const expanded = body.jobs[0]
     expect(expanded.deployment).toMatchObject({ id: 'd1' })
-    expect(expanded.credential).toMatchObject({ payload: expect.any(Object) })
+    expect(expanded.credential).toEqual({
+      encryptedPayload: 'v1:k1:aa:bb:cc',
+      iv: 'v1',
+      expiresAt: null,
+    })
     expect(expanded.assets).toEqual([
       { slotKey: 'thumb', url: 'https://x/y.png', alt: 'thumb' },
       { slotKey: null, url: 'https://x/z.png', alt: null },
@@ -133,17 +144,30 @@ describe('GET /api/sc/jobs/worker', () => {
     expect(mockReadCred).not.toHaveBeenCalled()
   })
 
-  it('readChannelCredential 실패해도 credential=null 로 진행', async () => {
+  it('readChannelCredentialSealed 실패해도 credential=null 로 진행', async () => {
     mockClaim.mockResolvedValue([
       { id: 'j4', kind: 'PUBLISH', targetId: 'd1', payload: {}, attempts: 1 },
     ])
     findFirst.mockResolvedValue(baseDeployment)
-    mockReadCred.mockRejectedValue(new Error('decrypt fail'))
+    mockReadSealed.mockRejectedValue(new Error('decrypt fail'))
 
     const res = (await GET(makeReq()))!
     const body = (await res.json()) as { jobs: Array<Record<string, unknown>> }
     expect(body.jobs[0].credential).toBeNull()
     // deployment 는 그대로 — publisher 가 ManualPublisher 등으로 fallback 가능.
     expect(body.jobs[0].deployment).toMatchObject({ id: 'd1' })
+  })
+
+  it('응답에 평문 자격증명이 없다 — 평문 복호화 경로를 쓰지 않는다', async () => {
+    mockClaim.mockResolvedValue([{ id: 'j1', spaceId: 's1', kind: 'PUBLISH', targetId: 'd1' }])
+    findFirst.mockResolvedValue(baseDeployment)
+    const body = await (await GET(makeReq())).json()
+    expect(body.jobs[0].credential).toEqual({
+      encryptedPayload: 'v1:k1:aa:bb:cc',
+      iv: 'v1',
+      expiresAt: null,
+    })
+    expect(mockReadCred).not.toHaveBeenCalled()
+    expect(JSON.stringify(body)).not.toContain('storageState')
   })
 })
