@@ -1,7 +1,13 @@
 import { createMcpHandler, withMcpAuth } from 'mcp-handler'
 import { verifyToken } from '@/lib/mcp/auth'
 import { toolDefinitions } from '@/lib/agent/tools'
-import { buildToolContext, readAuthExtra, runTool } from '@/lib/agent/tools/run-tool'
+import {
+  buildToolContext,
+  META_ARG_SHAPE,
+  readAuthExtra,
+  runTool,
+  splitMetaArgs,
+} from '@/lib/agent/tools/run-tool'
 
 // MCP 핸들러 — toolDefinitions 배열을 순회하며 각 tool을 등록한다.
 const handler = createMcpHandler(
@@ -12,7 +18,7 @@ const handler = createMcpHandler(
         {
           title: def.name,
           description: def.description,
-          inputSchema: def.inputSchema,
+          inputSchema: { ...def.inputSchema, ...META_ARG_SHAPE },
         },
         async (args, extra) => {
           // verifyToken(Task 4)이 넣은 extra = { spaceId, actor, scopes } | { authError }.
@@ -20,9 +26,10 @@ const handler = createMcpHandler(
           if (!auth.ok) {
             return { content: [{ type: 'text', text: auth.reason }], isError: true }
           }
-          const ctx = buildToolContext(auth.principal, {})
+          const { meta, toolArgs } = splitMetaArgs((args ?? {}) as Record<string, unknown>)
+          const ctx = buildToolContext(auth.principal, meta)
           try {
-            const result = await runTool(def, ctx, (args ?? {}) as Record<string, unknown>)
+            const result = await runTool(def, ctx, toolArgs)
             const structuredContent: Record<string, unknown> =
               result && typeof result === 'object' && !Array.isArray(result)
                 ? { ...(result as Record<string, unknown>), workId: ctx.workId }
@@ -40,6 +47,7 @@ const handler = createMcpHandler(
             }
           } catch (err) {
             // execute의 throw(한국어 Error)와 scope 거부를 MCP 에러 규약으로 변환한다.
+            // DB 오류는 runTool이 일반 문구로 바꿔 던지고, 원인은 감사 행에 남는다.
             const message = err instanceof Error ? err.message : '알 수 없는 오류'
             return {
               content: [{ type: 'text', text: message }],

@@ -4,7 +4,10 @@ import {
   type Actor,
   type McpPrincipal,
 } from '@/lib/agent/identity/principal'
-import { newWorkId } from '@/lib/agent/work-id'
+import { z } from 'zod'
+import { Prisma } from '@/generated/prisma/client'
+import { finishToolAudit, startToolAudit } from '@/lib/agent/audit'
+import { newWorkId, normalizeWorkId } from '@/lib/agent/work-id'
 import type { McpToolContext, ToolDefinition } from './types'
 
 export class ToolScopeError extends Error {
@@ -30,7 +33,9 @@ export function readAuthExtra(
     return { ok: false, reason: '인증 정보가 없습니다' }
   }
   try {
-    return { ok: true, principal: { spaceId: e.spaceId, actor, scopes: parseScopes(e.scopes) } }
+    const principal: McpPrincipal = { spaceId: e.spaceId, actor, scopes: parseScopes(e.scopes) }
+    if (typeof e.requesterUserId === 'string') principal.requesterUserId = e.requesterUserId
+    return { ok: true, principal }
   } catch {
     return { ok: false, reason: '인증 정보가 없습니다' }
   }
@@ -45,7 +50,7 @@ export function buildToolContext(
     actor: principal.actor,
     scopes: principal.scopes,
     workId: meta.workId ?? newWorkId(),
-    requesterUserId: null,
+    requesterUserId: principal.requesterUserId ?? null,
     requesterSlackUserId: null,
     decryptedCredentialIds: [],
   }
@@ -67,12 +72,92 @@ export function systemToolContext(
   }
 }
 
-/** 모든 도구 호출의 단일 관문: scope 검사 → 실행. (Task 6에서 감사 기록이 여기 붙는다) */
+/** 모든 도구에 공통으로 붙는 메타 인자. 도구 execute에는 전달하지 않는다. */
+export const META_ARG_SHAPE = {
+  workId: z
+    .string()
+    .optional()
+    .describe(
+      '작업 상관 ID. Slack 요청·이전 호출에서 받은 값을 그대로 넘기면 같은 작업으로 묶인다. 없으면 서버가 발급한다.'
+    ),
+}
+
+export function splitMetaArgs(args: Record<string, unknown>): {
+  meta: { workId?: string }
+  toolArgs: Record<string, unknown>
+} {
+  const { workId, ...toolArgs } = args
+  const normalized = normalizeWorkId(workId)
+  return { meta: normalized ? { workId: normalized } : {}, toolArgs }
+}
+
+export const TOOL_INTERNAL_ERROR = '도구 실행 중 내부 오류가 발생했습니다'
+
+const PRISMA_ERRORS = [
+  Prisma.PrismaClientKnownRequestError,
+  Prisma.PrismaClientUnknownRequestError,
+  Prisma.PrismaClientValidationError,
+  Prisma.PrismaClientInitializationError,
+  Prisma.PrismaClientRustPanicError,
+]
+
+/**
+ * DB 오류는 메시지에 쿼리·인자가 섞일 수 있다 — 감사 행에는 종류·코드만, 사용자에게는 일반 문구를 준다.
+ * 그 밖의 오류(도구의 한국어 Error·ToolScopeError 등 도메인 오류)는 그대로 둔다.
+ */
+function auditableError(err: unknown): { internal: boolean; summary: string } {
+  if (PRISMA_ERRORS.some((C) => err instanceof C)) {
+    const code = (err as { code?: unknown }).code
+    return {
+      internal: true,
+      summary: `${(err as Error).name}${typeof code === 'string' ? ` ${code}` : ''}`,
+    }
+  }
+  return { internal: false, summary: err instanceof Error ? err.message : String(err) }
+}
+
+/** 모든 도구 호출의 단일 관문: scope 검사 → 감사 행 생성 → 실행 → 결과 기록. */
 export async function runTool(
   def: ToolDefinition,
   ctx: McpToolContext,
   args: Record<string, unknown>
 ): Promise<unknown> {
-  if (def.scope && !ctx.scopes.includes(def.scope)) throw new ToolScopeError(def.scope)
-  return def.execute(ctx, args)
+  const base = {
+    spaceId: ctx.spaceId,
+    workId: ctx.workId,
+    actor: ctx.actor,
+    requesterUserId: ctx.requesterUserId,
+    tool: def.name,
+    args,
+  }
+
+  if (def.scope && !ctx.scopes.includes(def.scope)) {
+    const err = new ToolScopeError(def.scope)
+    // 거부는 실행이 없으므로 기록 실패가 거부 결과를 바꾸지 않는다.
+    await startToolAudit({ ...base, outcome: 'denied', error: err.message }).catch(() => undefined)
+    throw err
+  }
+
+  // 감사 행을 먼저 만든다. 못 만들면 AUDIT_UNAVAILABLE로 throw — 도구를 실행하지 않는다.
+  const auditId = await startToolAudit(base)
+  const started = Date.now()
+  const finish = (outcome: 'ok' | 'error', error?: string) =>
+    finishToolAudit(auditId, {
+      outcome,
+      error,
+      durationMs: Date.now() - started,
+      decryptedCredentialIds: ctx.decryptedCredentialIds,
+    }).catch(() => undefined) // 계약상 throw하지 않지만, 결과 기록 실패가 실행 결과를 바꾸지 않게 한 번 더 막는다
+
+  let result: unknown
+  try {
+    result = await def.execute(ctx, args)
+  } catch (err) {
+    const { internal, summary } = auditableError(err)
+    await finish('error', summary)
+    if (internal) throw new Error(TOOL_INTERNAL_ERROR)
+    throw err
+  }
+  await finish('ok')
+  return result
 }

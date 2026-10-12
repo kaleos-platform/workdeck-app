@@ -88,6 +88,21 @@ export type SpaceAgentSetting = Prisma.SpaceAgentSettingModel
  */
 export type SpaceAgent = Prisma.SpaceAgentModel
 /**
+ * Model ToolAuditLog
+ * 
+ */
+export type ToolAuditLog = Prisma.ToolAuditLogModel
+/**
+ * Model UsageEvent
+ * 
+ */
+export type UsageEvent = Prisma.UsageEventModel
+/**
+ * Model SpaceCredential
+ * 
+ */
+export type SpaceCredential = Prisma.SpaceCredentialModel
+/**
  * Model AgentToken
  * 
  */
