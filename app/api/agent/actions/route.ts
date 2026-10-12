@@ -84,8 +84,13 @@ export async function POST(req: NextRequest) {
     resolvedSource = source === 'WORKDECK_AGENT' || source === 'SYSTEM' ? source : 'SYSTEM'
   } else {
     // 세션 요청자는 자신이 속한 space에만 액션을 만들 수 있다(멤버십 검증, 아니면 403).
+    // query 와 body 의 spaceId 가 다르면 어느 쪽이 의도인지 알 수 없으므로 거부한다.
+    const querySpaceId = req.nextUrl.searchParams.get('spaceId')
+    if (querySpaceId && typeof spaceId === 'string' && spaceId !== querySpaceId) {
+      return errorResponse('spaceId가 일치하지 않습니다', 400)
+    }
     const resolved = await resolveRequestedSpaceContext(
-      req.nextUrl.searchParams.get('spaceId') ?? (typeof spaceId === 'string' ? spaceId : null)
+      querySpaceId ?? (typeof spaceId === 'string' ? spaceId : null)
     )
     if ('error' in resolved) return resolved.error
     resolvedSpaceId = resolved.space.id
