@@ -23,6 +23,7 @@ import type { McpToolContext, ToolDefinition } from '../types'
 import { ALL_SCOPES } from '@/lib/agent/identity/principal'
 import { prisma } from '@/lib/prisma'
 import { withRequester } from '../run-tool'
+import { slackPostTool } from '../slack-tools'
 
 const ctx = (scopes: McpToolContext['scopes']): McpToolContext => ({
   spaceId: 'sp1',
@@ -83,7 +84,13 @@ describe('runTool', () => {
     const c = systemToolContext('sp1')
     expect(c.actor).toEqual({ type: 'system', id: 'workdeck-agent' })
     expect(c.scopes).toContain('ads:write')
+    expect(c.scopes).not.toContain('slack:write')
     expect(c).toMatchObject({ requesterUserId: null, requesterSlackUserId: null })
+  })
+  it('내장 에이전트(systemToolContext)는 slack_post를 scope로 거부당한다', async () => {
+    await expect(runTool(slackPostTool, systemToolContext('sp1'), {})).rejects.toThrow(
+      new ToolScopeError('slack:write')
+    )
   })
   it('splitMetaArgs: requesterSlackUserId는 메타로 빼고 도구 인자에 넘기지 않는다', () => {
     expect(splitMetaArgs({ requesterSlackUserId: 'U123', a: 1 })).toEqual({

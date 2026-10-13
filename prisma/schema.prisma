@@ -793,12 +793,12 @@ model SpaceSlackChannel {
   spaceId     String
   channelId   String // C...
   channelName String?
-  kind        String   @default("approvals")
+  kind        String   @default("approvals") // approvals·notifications는 Space당 1개(registerSpaceChannel), agent는 여러 개
   createdAt   DateTime @default(now())
 
   installation SlackInstallation @relation(fields: [spaceId], references: [spaceId], onDelete: Cascade)
 
-  @@unique([spaceId, kind])
+  @@unique([spaceId, kind, channelId])
   @@index([channelId])
 }
 

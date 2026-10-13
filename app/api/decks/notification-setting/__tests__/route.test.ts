@@ -26,7 +26,7 @@ jest.mock('@/lib/prisma', () => ({
       findUnique: (...a: unknown[]) => findUniqueDeckInstance(...a),
       update: (...a: unknown[]) => updateDeckInstance(...a),
     },
-    spaceSlackChannel: { findUnique: (...a: unknown[]) => findUniqueChannel(...a) },
+    spaceSlackChannel: { findFirst: (...a: unknown[]) => findUniqueChannel(...a) },
   },
 }))
 

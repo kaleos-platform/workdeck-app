@@ -13,7 +13,7 @@ jest.mock('@/lib/prisma', () => ({
     workspace: { findUnique: (...args: unknown[]) => findUniqueWorkspace(...args) },
     spaceMember: { findMany: (...args: unknown[]) => findManySpaceMember(...args) },
     spaceSlackChannel: {
-      findUnique: (...args: unknown[]) => findUniqueSpaceSlackChannel(...args),
+      findFirst: (...args: unknown[]) => findUniqueSpaceSlackChannel(...args),
     },
     deckInstance: { findUnique: (...args: unknown[]) => findUniqueDeckInstance(...args) },
   },
@@ -52,7 +52,8 @@ describe('resolveSlackNotificationTarget', () => {
 
     expect(result).toBeNull()
     expect(findUniqueSpaceSlackChannel).toHaveBeenCalledWith({
-      where: { spaceId_kind: { spaceId: 'space1', kind: 'notifications' } },
+      where: { spaceId: 'space1', kind: 'notifications' },
+      orderBy: { createdAt: 'desc' },
       select: expect.anything(),
     })
   })
@@ -71,7 +72,8 @@ describe('resolveSlackNotificationTarget', () => {
     const result = await resolveSlackNotificationTarget('ws1')
 
     expect(findUniqueSpaceSlackChannel).toHaveBeenCalledWith({
-      where: { spaceId_kind: { spaceId: 'space-owner', kind: 'notifications' } },
+      where: { spaceId: 'space-owner', kind: 'notifications' },
+      orderBy: { createdAt: 'desc' },
       select: expect.anything(),
     })
     expect(result).toEqual({
