@@ -58,12 +58,18 @@ export function buildToolContext(
   }
 }
 
-/** Slack 멘션으로 동작하는 workdeck 내장 에이전트의 컨텍스트. 쓰기는 여전히 승인 큐만 거친다. */
+const SYSTEM_SCOPES = ALL_SCOPES.filter((s) => s !== 'slack:write')
+
+/**
+ * Slack 멘션으로 동작하는 workdeck 내장 에이전트의 컨텍스트. 쓰기는 여전히 승인 큐만 거친다.
+ * slack:write는 뺀다 — slack_post는 승인 큐를 거치지 않는 예외라, 멘션한 누구나(미확인·외부 발신자 포함)
+ * 내장 LLM을 시켜 봇 이름으로 게시하게 할 수 있기 때문이다. slack_post는 SpaceAgent(MCP)만 쓴다.
+ */
 export function systemToolContext(spaceId: string): McpToolContext {
   return {
     spaceId,
     actor: { type: 'system', id: 'workdeck-agent' },
-    scopes: ALL_SCOPES,
+    scopes: SYSTEM_SCOPES,
     workId: newWorkId(),
     requesterUserId: null,
     requesterSlackUserId: null,

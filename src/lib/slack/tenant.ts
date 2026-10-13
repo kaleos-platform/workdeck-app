@@ -7,6 +7,9 @@
  */
 import { prisma } from '@/lib/prisma'
 
+/** 에이전트가 slack_post로 보낼 수 있는 채널 용도 — Space당 여러 개 등록 가능. */
+export const AGENT_CHANNEL_KIND = 'agent'
+
 export type TeamInstallation = {
   spaceId: string
   botToken: string
@@ -69,6 +72,27 @@ export async function findChannelOwnedByOtherSpace(input: {
 }
 
 /**
+ * 행위자 Space가 (현재 설치 team으로) agent 용도로 등록한 채널인지(slack_post 허용 조건).
+ * 미등록·다른 Space 채널, 같은 Space라도 approvals·notifications 채널은 false(승인·알림 위장 방지).
+ */
+export async function isAgentChannelOfSpace(input: {
+  teamId: string
+  channelId: string
+  spaceId: string
+}): Promise<boolean> {
+  const own = await prisma.spaceSlackChannel.findFirst({
+    where: {
+      channelId: input.channelId,
+      spaceId: input.spaceId,
+      kind: AGENT_CHANNEL_KIND,
+      installation: { teamId: input.teamId },
+    },
+    select: { id: true },
+  })
+  return own !== null
+}
+
+/**
  * 채널 등록의 유일한 경로. 두 경합을 막는다(채널 → Space 단일 소유 = 테넌트 경계).
  *  - 두 ADMIN이 같은 순간 같은 채널을 등록: (teamId, channelId) lock.
  *  - 등록 중 재연결로 team이 바뀜: OAuth 콜백과 같은 Space 설치 lock을 먼저 잡고, teamId를 트랜잭션 안에서 다시 읽는다.
@@ -104,15 +128,28 @@ export async function registerSpaceChannel(input: {
       select: { id: true },
     })
     if (taken) return { ok: false as const, reason: 'taken' as const }
+    // agent 채널은 Space당 여러 개, 그 밖의 용도(approvals·notifications)는 Space당 1개 — 이전 행을 바꾼다.
+    // Space 설치 lock 안이라 같은 Space의 동시 등록도 직렬화된다.
+    if (input.kind !== AGENT_CHANNEL_KIND) {
+      await tx.spaceSlackChannel.deleteMany({
+        where: { spaceId: input.spaceId, kind: input.kind, channelId: { not: input.channelId } },
+      })
+    }
     const channel = await tx.spaceSlackChannel.upsert({
-      where: { spaceId_kind: { spaceId: input.spaceId, kind: input.kind } },
+      where: {
+        spaceId_kind_channelId: {
+          spaceId: input.spaceId,
+          kind: input.kind,
+          channelId: input.channelId,
+        },
+      },
       create: {
         spaceId: input.spaceId,
         channelId: input.channelId,
         channelName: input.channelName,
         kind: input.kind,
       },
-      update: { channelId: input.channelId, channelName: input.channelName },
+      update: { channelName: input.channelName },
       select: { id: true, channelId: true, channelName: true, kind: true },
     })
     return { ok: true as const, channel }

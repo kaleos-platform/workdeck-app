@@ -205,7 +205,7 @@ export type SpaceSlackChannelOrderByWithRelationInput = {
 
 export type SpaceSlackChannelWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  spaceId_kind?: Prisma.SpaceSlackChannelSpaceIdKindCompoundUniqueInput
+  spaceId_kind_channelId?: Prisma.SpaceSlackChannelSpaceIdKindChannelIdCompoundUniqueInput
   AND?: Prisma.SpaceSlackChannelWhereInput | Prisma.SpaceSlackChannelWhereInput[]
   OR?: Prisma.SpaceSlackChannelWhereInput[]
   NOT?: Prisma.SpaceSlackChannelWhereInput | Prisma.SpaceSlackChannelWhereInput[]
@@ -215,7 +215,7 @@ export type SpaceSlackChannelWhereUniqueInput = Prisma.AtLeast<{
   kind?: Prisma.StringFilter<"SpaceSlackChannel"> | string
   createdAt?: Prisma.DateTimeFilter<"SpaceSlackChannel"> | Date | string
   installation?: Prisma.XOR<Prisma.SlackInstallationScalarRelationFilter, Prisma.SlackInstallationWhereInput>
-}, "id" | "spaceId_kind">
+}, "id" | "spaceId_kind_channelId">
 
 export type SpaceSlackChannelOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -313,9 +313,10 @@ export type SpaceSlackChannelOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type SpaceSlackChannelSpaceIdKindCompoundUniqueInput = {
+export type SpaceSlackChannelSpaceIdKindChannelIdCompoundUniqueInput = {
   spaceId: string
   kind: string
+  channelId: string
 }
 
 export type SpaceSlackChannelCountOrderByAggregateInput = {
