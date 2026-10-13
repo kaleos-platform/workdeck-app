@@ -137,7 +137,7 @@ function ChannelRow({
   )
 }
 
-// 에이전트가 slack_post로 보낼 수 있는 채널(여러 개). 등록된 채널에만 보낼 수 있다.
+// 에이전트가 slack_post로 글을 올릴 수 있는 채널(여러 개). 승인·알림 채널에는 보내지 않는다.
 function AgentChannels({
   channels,
   spaceQuery,
@@ -231,7 +231,8 @@ function AgentChannels({
         </p>
       )}
       <p className="text-xs text-muted-foreground">
-        에이전트가 메시지를 보낼 수 있는 채널입니다. 여러 개 등록할 수 있습니다.
+        에이전트가 글을 올릴 수 있는 채널입니다. 승인·알림 채널과 별개이며 여러 개 등록할 수
+        있습니다.
       </p>
     </div>
   )

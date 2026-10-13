@@ -53,6 +53,7 @@ describe('resolveSlackNotificationTarget', () => {
     expect(result).toBeNull()
     expect(findUniqueSpaceSlackChannel).toHaveBeenCalledWith({
       where: { spaceId: 'space1', kind: 'notifications' },
+      orderBy: { createdAt: 'desc' },
       select: expect.anything(),
     })
   })
@@ -72,6 +73,7 @@ describe('resolveSlackNotificationTarget', () => {
 
     expect(findUniqueSpaceSlackChannel).toHaveBeenCalledWith({
       where: { spaceId: 'space-owner', kind: 'notifications' },
+      orderBy: { createdAt: 'desc' },
       select: expect.anything(),
     })
     expect(result).toEqual({

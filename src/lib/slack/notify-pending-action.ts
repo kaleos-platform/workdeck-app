@@ -66,6 +66,7 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
 
     const channel = await prisma.spaceSlackChannel.findFirst({
       where: { spaceId: action.spaceId, kind: 'approvals' },
+      orderBy: { createdAt: 'desc' }, // Space당 1개는 앱(registerSpaceChannel)이 지킨다 — 어긋나도 최신 행
       select: { channelId: true },
     })
     if (!channel) return

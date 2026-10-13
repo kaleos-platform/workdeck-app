@@ -15,7 +15,7 @@ import { prisma } from '@/lib/prisma'
 import {
   findChannelOwnedByOtherSpace,
   findTeamInstallationForSpace,
-  isChannelRegisteredToSpace,
+  isAgentChannelOfSpace,
   registerSpaceChannel,
   resolveEventSpace,
 } from '../tenant'
@@ -147,20 +147,20 @@ describe('findChannelOwnedByOtherSpace', () => {
   })
 })
 
-describe('isChannelRegisteredToSpace', () => {
-  it('자기 Space가 현재 team으로 등록한 채널만 true', async () => {
+describe('isAgentChannelOfSpace', () => {
+  it('자기 Space가 현재 team으로 agent 용도로 등록한 채널만 true', async () => {
     p.spaceSlackChannel.findFirst.mockResolvedValue({ id: 'ch1' })
     await expect(
-      isChannelRegisteredToSpace({ teamId: 'T1', channelId: 'CX', spaceId: 'sp1' })
+      isAgentChannelOfSpace({ teamId: 'T1', channelId: 'CX', spaceId: 'sp1' })
     ).resolves.toBe(true)
     expect(p.spaceSlackChannel.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { channelId: 'CX', spaceId: 'sp1', installation: { teamId: 'T1' } },
+        where: { channelId: 'CX', spaceId: 'sp1', kind: 'agent', installation: { teamId: 'T1' } },
       })
     )
     p.spaceSlackChannel.findFirst.mockResolvedValue(null)
     await expect(
-      isChannelRegisteredToSpace({ teamId: 'T1', channelId: 'CX', spaceId: 'sp1' })
+      isAgentChannelOfSpace({ teamId: 'T1', channelId: 'CX', spaceId: 'sp1' })
     ).resolves.toBe(false)
   })
 })

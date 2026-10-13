@@ -14,7 +14,7 @@ import { appendConversation, loadConversation } from '@/lib/agent/llm/conversati
 import {
   findChannelOwnedByOtherSpace,
   findTeamInstallationForSpace,
-  isChannelRegisteredToSpace,
+  isAgentChannelOfSpace,
   registerSpaceChannel,
   resolveEventSpace,
 } from '../tenant'
@@ -196,7 +196,15 @@ d('한 Slack team을 두 Space가 공유', () => {
     const r = await resolveEventSpace(TEAM_OTHER, 'Ce2eAGT2')
     expect(r.status === 'routed' && r.installation.spaceId).toBe(SP3)
     expect(
-      await isChannelRegisteredToSpace({ teamId: TEAM_OTHER, channelId: 'Ce2eAGT2', spaceId: SP3 })
+      await isAgentChannelOfSpace({ teamId: TEAM_OTHER, channelId: 'Ce2eAGT2', spaceId: SP3 })
+    ).toBe(true)
+    // 같은 Space라도 approvals 채널에는 slack_post 불가 — 같은 채널을 agent로도 등록하면 가능
+    expect(
+      await isAgentChannelOfSpace({ teamId: TEAM_OTHER, channelId: 'Ce2eAPRV', spaceId: SP3 })
+    ).toBe(false)
+    expect((await reg('Ce2eAPRV', 'agent')).ok).toBe(true)
+    expect(
+      await isAgentChannelOfSpace({ teamId: TEAM_OTHER, channelId: 'Ce2eAPRV', spaceId: SP3 })
     ).toBe(true)
   })
 
@@ -204,9 +212,7 @@ d('한 Slack team을 두 Space가 공유', () => {
     await expect(
       registerSpaceChannel({ spaceId: SP2, channelId: CH_X, channelName: null, kind: 'agent' })
     ).resolves.toEqual({ ok: false, reason: 'taken' })
-    expect(await isChannelRegisteredToSpace({ teamId: TEAM, channelId: CH_X, spaceId: SP2 })).toBe(
-      false
-    )
+    expect(await isAgentChannelOfSpace({ teamId: TEAM, channelId: CH_X, spaceId: SP2 })).toBe(false)
   })
 
   test('채널 소유 변경 후 기존 스레드 재사용: 이전 Space의 대화 기록이 새 Space로 넘어가지 않는다', async () => {

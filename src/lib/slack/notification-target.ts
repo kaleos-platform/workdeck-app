@@ -54,6 +54,7 @@ export async function resolveSlackNotificationTarget(
 
   const channel = await prisma.spaceSlackChannel.findFirst({
     where: { spaceId, kind: NOTIFICATION_CHANNEL_KIND },
+    orderBy: { createdAt: 'desc' }, // Space당 1개는 앱(registerSpaceChannel)이 지킨다 — 어긋나도 최신 행
     select: {
       channelId: true,
       installation: { select: { botToken: true, botTokenIv: true } },
