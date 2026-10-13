@@ -162,6 +162,10 @@ export const META_BUDGET_ACTIONS: ReadonlySet<MetaActionName> = new Set<MetaActi
  * 승인 한도 판정용 지출 금액(원). 지출 키(예산·지출 상한·입찰가) 중 있는 값의 최댓값, 하나도 없으면 null.
  * KRW 계정 전제: 값이 그대로 원이다(assertMetaTarget이 제안·생성·실행 시점에 KRW로 확인된 계정만 통과시킨다).
  * 값은 변경 후 상한이지 증가분이 아니다. 해석할 수 없는 값(NaN·음수)은 한도를 통과하지 못하도록 MAX_SAFE_INTEGER.
+ *
+ * 운영 정책(2026-10-14, 재리뷰 Minor 2): 일 예산(daily_budget)과 총액(lifetime_budget·spend_cap 등)을 같은 승인 한도로
+ * 비교한다. 일 예산 객체의 end_time·stop_time 연장으로 늘어나는 총지출은 세지 않는다 — ACTIVE 재개와 같이
+ * 이미 승인된 일 예산 범위 안의 변경으로 보고 ADMIN 승인에 둔다.
  */
 export function metaSpendKrw(params: Params): number | null {
   const vals = META_MONEY_KEYS.map((k) => params[k])
@@ -261,11 +265,15 @@ export function validateMetaAction(input: { action: unknown; params: unknown }):
       throw new ToolUserError(`${action}에 허용하지 않는 파라미터입니다: ${key}`)
     }
   }
-  if (params.status !== undefined && !STATUSES.has(String(params.status))) {
+  if (
+    params.status !== undefined &&
+    (typeof params.status !== 'string' || !STATUSES.has(params.status))
+  ) {
     throw new ToolUserError('status는 ACTIVE·PAUSED·ARCHIVED만 허용합니다')
   }
   for (const key of [...(spec.objectKey ? [spec.objectKey] : []), ...(spec.pathParams ?? [])]) {
-    if (!NUMERIC_ID.test(String(params[key] ?? ''))) {
+    const id = params[key]
+    if (typeof id !== 'string' || !NUMERIC_ID.test(id)) {
       throw new ToolUserError(`params.${key}는 숫자 id여야 합니다`)
     }
   }
@@ -407,11 +415,31 @@ function graphList(v: unknown): unknown[] | undefined {
   return undefined
 }
 
-/** cells(입력 또는 기존 study)의 광고세트·캠페인이 모두 Space 광고 계정 소속인지 확인한다. */
+/**
+ * cells(입력 또는 기존 study)의 광고세트·캠페인·광고 계정이 모두 Space 광고 계정 소속인지 확인한다.
+ * adaccounts(계정 단위 split test)는 이 액션의 광고 계정과 같아야 한다. 대상이 하나도 없는 셀은 확인할 수 없으므로 거부한다.
+ */
 async function assertCellsInAccount(cred: MetaCred, cells: unknown[], adAccountId: string) {
   for (const cell of cells) {
     if (!cell || typeof cell !== 'object') {
       throw new ToolUserError('cells 형식이 올바르지 않습니다')
+    }
+    let targets = 0
+    const accounts = (cell as Record<string, unknown>).adaccounts
+    if (accounts !== undefined) {
+      const ids = graphList(accounts)
+      if (!ids) throw new ToolUserError('cells.adaccounts를 확인할 수 없어 실행하지 않았습니다')
+      for (const item of ids) {
+        const id = item && typeof item === 'object' ? (item as { id?: unknown }).id : item
+        if (
+          typeof id !== 'string' ||
+          !/^(act_)?\d+$/.test(id) ||
+          normalizeAdAccountId(id) !== adAccountId
+        ) {
+          throw new ToolUserError('이 Space의 광고 계정에 속하지 않는 객체입니다')
+        }
+        targets++
+      }
     }
     for (const key of ['adsets', 'campaigns'] as const) {
       const raw = (cell as Record<string, unknown>)[key]
@@ -424,7 +452,13 @@ async function assertCellsInAccount(cred: MetaCred, cells: unknown[], adAccountI
           throw new ToolUserError(`cells.${key}의 id는 숫자여야 합니다`)
         }
         await assertObjectInAccount(cred, String(id), adAccountId)
+        targets++
       }
+    }
+    if (targets === 0) {
+      throw new ToolUserError(
+        '대상(광고세트·캠페인·광고 계정)이 없는 셀은 확인할 수 없어 실행하지 않았습니다'
+      )
     }
   }
 }
@@ -458,7 +492,7 @@ export async function assertActionInAccount(
     const study = await graphGet<{ business?: { id?: string }; cells?: unknown }>(
       cred,
       String(params.study_id),
-      'business,cells.limit(100){adsets.limit(500){id},campaigns.limit(500){id}}'
+      'business,cells.limit(100){adsets.limit(500){id},campaigns.limit(500){id},adaccounts.limit(500){id}}'
     )
     if (!study.business?.id) throw new ToolUserError(BUSINESS_UNVERIFIED)
     if (study.business.id !== accountBusiness) {

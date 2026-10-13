@@ -139,6 +139,14 @@ describe('meta-ads (포팅)', () => {
       ).toThrow(`예약된 파라미터는 보낼 수 없습니다: ${key}`)
     }
     expect(v('campaign.update_status', { campaign_id: '1', status: 'DELETED' })).toThrow('status는')
+    expect(v('campaign.update_status', { campaign_id: '1', status: ['ACTIVE'] })).toThrow(
+      'status는'
+    )
+    expect(v('campaign.update_status', { campaign_id: ['123'], status: 'PAUSED' })).toThrow(
+      '숫자 id'
+    )
+    expect(v('campaign.update_status', { campaign_id: 123, status: 'PAUSED' })).toThrow('숫자 id')
+    expect(v('adstudy.update', { study_id: { id: '9' } })).toThrow('숫자 id')
     expect(v('campaign.update', { campaign_id: '1', name: 'n', spend_cap: '1' })).not.toThrow()
   })
 
@@ -536,6 +544,46 @@ describe('meta-ads (포팅)', () => {
         /^business,cells/
       )
       expect(posts()).toHaveLength(0)
+    })
+
+    it.each([
+      [
+        '다른 계정의 adaccounts 셀',
+        { id: 'c1', adaccounts: { data: [{ id: 'act_222' }] } },
+        '속하지 않는 객체',
+      ],
+      ['대상이 없는 셀', { id: 'c1' }, '대상(광고세트·캠페인·광고 계정)이 없는 셀'],
+      [
+        '빈 목록뿐인 셀',
+        { id: 'c1', adsets: { data: [] } },
+        '대상(광고세트·캠페인·광고 계정)이 없는 셀',
+      ],
+    ])('adstudy.update: 기존 study에 %s → 거부, POST 없음', async (_l, cell, msg) => {
+      fetchMock
+        .mockResolvedValueOnce(ok({ business: { id: '680' } }))
+        .mockResolvedValueOnce(ok({ business: { id: '680' }, cells: { data: [cell] } }))
+      await expect(run({ study_id: '9', name: 'x' }, 'meta-ads.adstudy.update')).rejects.toThrow(
+        msg
+      )
+      expect(new URL(fetchMock.mock.calls[1][0]).searchParams.get('fields')).toContain(
+        'adaccounts.limit(500){id}'
+      )
+      expect(posts()).toHaveLength(0)
+    })
+
+    it('adstudy.update: 같은 계정 adaccounts 셀은 통과', async () => {
+      fetchMock
+        .mockResolvedValueOnce(ok({ business: { id: '680' } }))
+        .mockResolvedValueOnce(
+          ok({
+            business: { id: '680' },
+            cells: { data: [{ id: 'c1', adaccounts: { data: [{ id: 'act_111' }] } }] },
+          })
+        )
+        .mockResolvedValueOnce(ok({ success: true }))
+      await expect(run({ study_id: '9', name: 'x' }, 'meta-ads.adstudy.update')).resolves.toEqual({
+        success: true,
+      })
     })
 
     it('adstudy.update: 기존 cells를 확인할 수 없으면(없음·다음 페이지) 거부', async () => {
