@@ -280,7 +280,7 @@ describe('google-marketing (포팅)', () => {
     fetchMock.mockImplementation(async (url: string | URL) =>
       String(url).includes('oauth2')
         ? { ok: true, json: async () => ({ access_token: 'at' }) }
-        : { ok: true, json: async () => ({ name: 'v' }) }
+        : { ok: true, json: async () => ({ name: 'v', type: 'c' }) }
     )
     const c = execCtx()
     await action('gtm.variable.update').execute(c, {
@@ -291,13 +291,98 @@ describe('google-marketing (포팅)', () => {
         type: 'c',
       },
     })
-    const [url, init] = fetchMock.mock.calls[1]
+    // 기존 type 조회(GET) 뒤 PUT
+    expect(fetchMock.mock.calls[1][1].method).toBe('GET')
+    const [url, init] = fetchMock.mock.calls[3]
     expect(String(url)).toBe(
       'https://www.googleapis.com/tagmanager/v2/accounts/222/containers/333/workspaces/1/variables/9'
     )
     expect(init.method).toBe('PUT')
     expect(JSON.parse(init.body)).toEqual({ name: 'v', type: 'c' })
     expect(c.decryptedCredentialIds).toEqual(['gcred'])
+  })
+  describe('GTM 맞춤 HTML·JS·이미지 금지(운영 결정)', () => {
+    const WSP = 'accounts/222/containers/333/workspaces/1'
+    const BLOCKED: Array<[string, object]> = [
+      ['gtm.tag.create', { parent: WSP, name: 't', type: 'html' }],
+      ['gtm.tag.create', { parent: WSP, name: 't', type: 'HTML' }],
+      ['gtm.tag.create', { parent: WSP, name: 't', type: 'img' }],
+      ['gtm.tag.update', { path: `${WSP}/tags/1`, name: 't', type: 'Html' }],
+      ['gtm.tag.update', { path: `${WSP}/tags/1`, name: 't', type: 'img' }],
+      ['gtm.variable.create', { parent: WSP, name: 'v', type: 'jsm' }],
+      ['gtm.variable.update', { path: `${WSP}/variables/1`, name: 'v', type: 'JSM' }],
+      ['gtm.tag.create', { parent: WSP, name: 't', type: ['html'] }],
+    ]
+    it.each(BLOCKED)(
+      '%s %j → 제안·paramsSchema·validateCreate·execute 모두 거부',
+      async (a, params) => {
+        expect(() => validateGoogleAction({ action: a, params })).toThrow()
+        await expect(
+          tool('google_marketing_propose_action').execute(ctx(), {
+            action: a,
+            params,
+            summary: 'x',
+          })
+        ).rejects.toThrow()
+        expect(action(a).paramsSchema.safeParse({ target: TARGET, params }).success).toBe(false)
+        await expect(
+          action(a).validateCreate!(execCtx(), { target: TARGET, params })
+        ).rejects.toThrow()
+        await expect(action(a).execute(execCtx(), { target: TARGET, params })).rejects.toThrow()
+        expect(createPendingAction).not.toHaveBeenCalled()
+        expect(fetchMock).not.toHaveBeenCalled()
+      }
+    )
+    it('거부 문구', () => {
+      expect(() =>
+        validateGoogleAction({ action: 'gtm.tag.create', params: { parent: WSP, type: 'html' } })
+      ).toThrow('맞춤 HTML·JavaScript·이미지 태그는 에이전트가 만들 수 없습니다')
+    })
+    it.each(['gaawe', 'googtag'])('GA4 이벤트 태그(%s)는 허용', async (type) => {
+      await tool('google_marketing_propose_action').execute(ctx(), {
+        action: 'gtm.tag.create',
+        params: { parent: WSP, name: 't', type },
+        summary: 'x',
+      })
+      expect(createPendingAction).toHaveBeenCalled()
+    })
+    it.each([
+      ['gtm.tag.update', `${WSP}/tags/1`, 'html'],
+      ['gtm.tag.update', `${WSP}/tags/1`, 'img'],
+      ['gtm.variable.update', `${WSP}/variables/1`, 'jsm'],
+      ['gtm.tag.update', `${WSP}/tags/1`, undefined],
+    ])('기존 리소스가 %s(%s→%s)이면 실행 거부, PUT 미호출', async (a, path, existingType) => {
+      fetchMock.mockImplementation(async (url: string | URL) =>
+        String(url).includes('oauth2')
+          ? { ok: true, json: async () => ({ access_token: 'at' }) }
+          : { ok: true, json: async () => ({ type: existingType, firingTriggerId: ['1'] }) }
+      )
+      // 에이전트는 type을 gaawe로 보내며 발동 트리거만 바꾸려 한다
+      await expect(
+        action(a).execute(execCtx(), {
+          target: TARGET,
+          params: { path, name: 'x', type: 'gaawe', firingTriggerId: ['2'] },
+        })
+      ).rejects.toThrow()
+      expect(fetchMock.mock.calls.every(([, init]) => init?.method !== 'PUT')).toBe(true)
+    })
+    it('기존 GA4 이벤트 태그 update는 GET 확인 후 PUT', async () => {
+      fetchMock.mockImplementation(async (url: string | URL) =>
+        String(url).includes('oauth2')
+          ? { ok: true, json: async () => ({ access_token: 'at' }) }
+          : { ok: true, json: async () => ({ type: 'gaawe' }) }
+      )
+      await action('gtm.tag.update').execute(execCtx(), {
+        target: TARGET,
+        params: { path: `${WSP}/tags/1`, name: 't', type: 'gaawe' },
+      })
+      expect(fetchMock.mock.calls.map(([, init]) => init.method)).toEqual([
+        'POST',
+        'GET',
+        'POST',
+        'PUT',
+      ])
+    })
   })
   it('GA4 patch는 updateMask를 쿼리로, name은 본문에서 뺀다', async () => {
     await action('ga4.key_event.patch').execute(execCtx(), {

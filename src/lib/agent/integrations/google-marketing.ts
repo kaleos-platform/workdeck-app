@@ -267,6 +267,8 @@ export function resolveBrand(config: GoogleConfig, brand?: string): GoogleTarget
 // GA4·GTM 리소스 경로 문자만. %(인코딩), .(dot segment), ?, #, \ 를 모두 거부한다.
 const SAFE_PATH_RE = /^[A-Za-z0-9_:/-]+$/
 
+// 경로 정규식에 id를 escape 없이 넣는다 — resolveBrand가 숫자 id(^\d+$)만 통과시키는 것에 의존한다
+// (actions의 target도 paramsSchema가 숫자만 받고 assertGoogleTarget이 resolveBrand 결과와 비교한다).
 const targetPrefix = (t: GoogleTarget, api: Api) =>
   api === 'ga4-admin'
     ? `properties/${t.ga4_property_id}`
@@ -378,6 +380,21 @@ export function assertQueryKeys(query: Record<string, string>): Record<string, s
   return query
 }
 
+// 운영 결정(2026-10-14, Task 11 리뷰 Important #1): 임의 스크립트·임의 URL 전송이 되는 GTM 맞춤 HTML 태그(html)·
+// 맞춤 JavaScript 변수(jsm)·맞춤 이미지 태그(img)는 에이전트가 만들거나 고칠 수 없다. 승인 화면에 내용이 보이지 않기 때문이다.
+// GA4 이벤트 태그(gaawe)·Google 태그(googtag) 등은 허용한다.
+const AGENT_BLOCKED_GTM_TYPES = new Set(['html', 'jsm', 'img'])
+
+/** GTM 태그·변수 type 확인(제안 params와 실행 시점의 기존 리소스 모두). 문자열이 아니면 거부한다(닫힌 쪽 실패). */
+export function assertAgentGtmType(type: unknown): void {
+  if (typeof type !== 'string') throw new ToolUserError('GTM type은 문자열이어야 합니다')
+  if (AGENT_BLOCKED_GTM_TYPES.has(type.toLowerCase())) {
+    throw new ToolUserError(
+      '맞춤 HTML·JavaScript·이미지 태그는 에이전트가 만들 수 없습니다. GTM 화면에서 직접 만들어 주세요'
+    )
+  }
+}
+
 const UPDATE_MASK_RE = /^[A-Za-z_.]+(,[A-Za-z_.]+)*$/
 
 /**
@@ -403,6 +420,7 @@ export function validateGoogleAction(input: { action: unknown; params: unknown }
       throw new ToolUserError(`${action}에 허용하지 않는 파라미터입니다: ${key}`)
     }
   }
+  if (action.startsWith('gtm.') && params.type !== undefined) assertAgentGtmType(params.type)
   if (spec.pathKey && typeof params[spec.pathKey] !== 'string') {
     throw new ToolUserError(`params.${spec.pathKey}는 리소스 경로 문자열이어야 합니다`)
   }

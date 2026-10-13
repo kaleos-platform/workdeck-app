@@ -4,6 +4,7 @@ import {
   GOOGLE_ACTIONS,
   PROVIDER,
   actionUrl,
+  assertAgentGtmType,
   assertGoogleTarget,
   cleanBodyParams,
   googleRequest,
@@ -58,6 +59,11 @@ function define(action: string): ActionDefinition<Params> {
       validateGoogleAction({ action, params: p.params })
       const cred = await loadGoogleCred(ctx.spaceId, ctx.decryptedCredentialIds)
       const url = actionUrl(action, p.params, assertGoogleTarget(cred.config, p.target))
+      if (action === 'gtm.tag.update' || action === 'gtm.variable.update') {
+        // 기존 맞춤 HTML 태그·JS 변수의 다른 필드(발동 트리거 등)를 고쳐 되살리는 것을 막는다 — 기존 type을 조회해 확인한다.
+        const existing = (await googleRequest(cred, 'GET', url)) as { type?: unknown }
+        assertAgentGtmType(existing?.type)
+      }
       return googleRequest(cred, spec.method, url, cleanBodyParams(p.params, action))
     },
   }
