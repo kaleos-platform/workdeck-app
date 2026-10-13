@@ -412,7 +412,13 @@ export function validateGoogleAction(input: { action: unknown; params: unknown }
     if (
       typeof params.updateMask !== 'string' ||
       !UPDATE_MASK_RE.test(params.updateMask) ||
-      params.updateMask.split(',').some((f) => !body.includes(f.split('.')[0]))
+      params.updateMask
+        .split(',')
+        // GA4 문서는 snake_case(counting_method)로 쓴다 — 비교만 camelCase로 하고 원문은 그대로 보낸다.
+        .some(
+          (f) =>
+            !body.includes(f.split('.')[0].replace(/_([a-z])/g, (_m, c: string) => c.toUpperCase()))
+        )
     ) {
       throw new ToolUserError(`updateMask는 ${body.join(', ')} 필드만 가리킬 수 있습니다`)
     }

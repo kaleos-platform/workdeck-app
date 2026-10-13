@@ -127,7 +127,10 @@ describe('google-marketing (포팅)', () => {
     expect(v('ga4.key_event.patch', { name: 'x', updateMask: 'countingMethod' })).not.toThrow()
     expect(v('ga4.key_event.patch', { name: 'x', updateMask: 'displayName' })).toThrow('updateMask')
     expect(
-      v('ga4.data_stream.patch', { name: 'x', updateMask: 'webStreamData.defaultUri' })
+      v('ga4.data_stream.patch', {
+        name: 'x',
+        updateMask: 'web_stream_data.default_uri,display_name',
+      })
     ).not.toThrow()
   })
   it('validateGa4RunReportRequest rejects common invalid report fields', () => {

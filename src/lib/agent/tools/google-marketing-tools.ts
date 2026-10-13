@@ -91,7 +91,7 @@ const gtmGet: ToolDefinition = {
 
 const propose: ToolDefinition = {
   name: 'google_marketing_propose_action',
-  description: `GA4·GTM 변경을 제안합니다(${Object.keys(GOOGLE_ACTIONS).join(', ')}). 즉시 실행되지 않고 승인 대기 큐에 등록되며, 구성원이 승인한 뒤에만 Google API를 호출합니다. params는 액션별 허용 키만 받고, name/parent/path는 이 브랜드 속성·컨테이너의 리소스 경로여야 합니다. gtm.version.publish는 OWNER 승인이 필요합니다.`,
+  description: `GA4·GTM 변경을 제안합니다(${Object.keys(GOOGLE_ACTIONS).join(', ')}). 즉시 실행되지 않고 승인 대기 큐에 등록되며, 구성원이 승인한 뒤에만 Google API를 호출합니다. params는 액션별 허용 키만 받고, name/parent/path는 이 브랜드 속성·컨테이너의 리소스 경로여야 합니다. gtm.*.update는 PUT(전체 교체)이라 리소스 전체 본문을 보내야 합니다 — gtm_get 결과에서 accountId·containerId·workspaceId·tagId/triggerId/variableId·fingerprint·tagManagerUrl은 빼세요. GA4 patch는 updateMask를 함께 보내세요. gtm.version.publish는 OWNER 승인이 필요합니다.`,
   inputSchema: {
     brand,
     action: z.enum(Object.keys(GOOGLE_ACTIONS) as [string, ...string[]]),
