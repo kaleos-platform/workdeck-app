@@ -1006,8 +1006,9 @@ async function downloadSalesAnalysisVendor(
 
   // 2026-07 Wing 개편으로 메뉴 항목이 "상품별 엑셀 다운로드" → "상품별 판매 리포트"로
   // 변경됨(2026-07-19 계측 덤프 실증: 드롭다운 _active 안에 기간별/상품별 판매 리포트).
-  // 신규 텍스트 우선, 구 텍스트는 폴백 체인에 유지.
-  let vendorMenuBtn = page.locator('text=상품별 판매 리포트').first()
+  // 2026-10-13 다시 "상품별 판매"로 축약됨(계측 덤프: 기간별 판매/상품별 판매).
+  // 신규 텍스트 우선, 구 텍스트는 폴백 체인에 유지. 앵커 정규식이라 부모 컨테이너는 안 잡힘.
+  let vendorMenuBtn = page.getByText(/^상품별 판매( 리포트)?$/).first()
   if (!(await vendorMenuBtn.isVisible().catch(() => false))) {
     vendorMenuBtn = page.locator('text=상품별 엑셀 다운로드').first()
   }
@@ -1072,7 +1073,7 @@ async function downloadSalesAnalysisVendor(
   if (!(await vendorMenuBtn.isVisible().catch(() => false))) {
     await saveScreenshot(page, 'sales-analysis-no-vendor-menu')
     throw new Error(
-      '[inventory] 판매분석의 "상품별 엑셀 다운로드" 메뉴를 찾을 수 없습니다 — TODO: 실제 DOM 확인 필요'
+      '[inventory] 판매분석의 "상품별 판매" 메뉴를 찾을 수 없습니다 — 메뉴명 변경 여부는 "엑셀 후보 덤프" 로그 확인'
     )
   }
 
