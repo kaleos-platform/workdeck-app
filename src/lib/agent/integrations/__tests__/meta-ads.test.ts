@@ -389,6 +389,14 @@ describe('meta-ads (포팅)', () => {
       expect(posts()).toHaveLength(0)
     })
 
+    it('cells에 허용하지 않는 키(adaccounts 등)가 있으면 거부, POST 없음', async () => {
+      fetchMock.mockResolvedValueOnce(ok({ business: { id: '680' } }))
+      await expect(
+        run({ business_id: '680', cells: [{ name: 'A', adaccounts: ['222'] }] })
+      ).rejects.toThrow('cells에 허용하지 않는 키입니다: adaccounts')
+      expect(posts()).toHaveLength(0)
+    })
+
     it('adstudy.update: 스터디의 비즈니스가 다르면 거부', async () => {
       fetchMock
         .mockResolvedValueOnce(ok({ business: { id: '680' } }))

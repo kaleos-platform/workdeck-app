@@ -13,7 +13,7 @@ export function maskSecrets(text: string): string {
       .replace(/wdk_agt_[^\s"'&]*/g, '[redacted]')
       .replace(/(Bearer\s+)[^\s"']+/gi, '$1[redacted]')
       // 앞 접두를 \w* 로 두면 긴 단어 문자열에서 시간이 제곱으로 늘어난다 — 접두는 두지 않거나 길이를 제한한다.
-      .replace(/((?:token|secret|password|key)=)[^&\s"']+/gi, '$1[redacted]')
+      .replace(/((?:token|secret|password|key|proof)=)[^&\s"']+/gi, '$1[redacted]')
       .replace(/("\w{0,64}(?:token|secret|password|key)"\s*:\s*")[^"]*/gi, '$1[redacted]')
   )
 }

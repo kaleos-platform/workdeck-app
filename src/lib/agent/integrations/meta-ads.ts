@@ -125,6 +125,7 @@ export function assertMetaTarget(
 }
 
 const NUMERIC_ID = /^\d+$/
+const CELL_KEYS = new Set(['name', 'description', 'treatment_percentage', 'adsets', 'campaigns'])
 
 /**
  * 액션 이름·params 형태 확인. 경로에 들어가는 id(objectKey·pathParams)는 숫자만 허용한다 —
@@ -283,6 +284,10 @@ export async function assertActionInAccount(
   const cells = typeof params.cells === 'string' ? safeJson(params.cells) : params.cells
   if (!Array.isArray(cells)) throw new ToolUserError('params.cells는 배열이어야 합니다')
   for (const cell of cells) {
+    // 허용 목록 — 다른 객체 참조 키(예: adaccounts)로 Space 밖 계정을 끌어오지 못하게 모르는 키는 거부한다.
+    const unknownKey =
+      cell && typeof cell === 'object' && Object.keys(cell).find((k) => !CELL_KEYS.has(k))
+    if (unknownKey) throw new ToolUserError(`cells에 허용하지 않는 키입니다: ${unknownKey}`)
     if (!cell || typeof cell !== 'object')
       throw new ToolUserError('params.cells 형식이 올바르지 않습니다')
     for (const key of ['adsets', 'campaigns'] as const) {
