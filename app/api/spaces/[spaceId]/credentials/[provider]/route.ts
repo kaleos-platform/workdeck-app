@@ -2,6 +2,10 @@
  * PUT — Space 자격증명 등록·교체(ADMIN 이상 + MFA aal2). 평문은 요청 본문으로만 받고 응답에 돌려주지 않는다.
  * 비밀값이 서버 밖으로 나가지 않도록 암호화는 서버에서 한다.
  * 메타: 매핑된 광고 계정의 통화를 Graph API로 확인해 config.accountCurrencies에 저장한다(확인 실패 시 저장하지 않음).
+ * 구글 마케팅: refresh token은 필요한 최소 scope로 발급한다(코드가 scope를 줄일 수 없다 — 발급 scope가 그대로 쓰인다).
+ *   권장: analytics.readonly, analytics.edit, tagmanager.readonly, tagmanager.edit.containers,
+ *   tagmanager.edit.containerversions. tagmanager.publish는 GTM 게시(OWNER 승인 흐름)를 쓸 때만 넣는다.
+ *   계정도 이 Space 브랜드의 GA4 속성·GTM 컨테이너에만 권한이 있는 계정을 쓴다.
  * 삭제(DELETE) 라우트는 두지 않는다. 만들 때도 같은 requireAal2 관문을 둔다.
  */
 import { NextRequest, NextResponse } from 'next/server'
