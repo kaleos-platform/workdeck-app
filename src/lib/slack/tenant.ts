@@ -68,6 +68,23 @@ export async function findChannelOwnedByOtherSpace(input: {
   return taken !== null
 }
 
+/** 행위자 Space가 (현재 설치 team으로) 등록한 채널인지(slack_post 허용 조건). 미등록·다른 Space 채널은 false. */
+export async function isChannelRegisteredToSpace(input: {
+  teamId: string
+  channelId: string
+  spaceId: string
+}): Promise<boolean> {
+  const own = await prisma.spaceSlackChannel.findFirst({
+    where: {
+      channelId: input.channelId,
+      spaceId: input.spaceId,
+      installation: { teamId: input.teamId },
+    },
+    select: { id: true },
+  })
+  return own !== null
+}
+
 /**
  * 채널 등록의 유일한 경로. 두 경합을 막는다(채널 → Space 단일 소유 = 테넌트 경계).
  *  - 두 ADMIN이 같은 순간 같은 채널을 등록: (teamId, channelId) lock.
