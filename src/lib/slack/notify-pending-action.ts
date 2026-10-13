@@ -64,8 +64,8 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
     })
     if (!installation) return
 
-    const channel = await prisma.spaceSlackChannel.findUnique({
-      where: { spaceId_kind: { spaceId: action.spaceId, kind: 'approvals' } },
+    const channel = await prisma.spaceSlackChannel.findFirst({
+      where: { spaceId: action.spaceId, kind: 'approvals' },
       select: { channelId: true },
     })
     if (!channel) return

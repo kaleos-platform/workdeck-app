@@ -30,7 +30,7 @@ async function actorPrefix(ctx: McpToolContext): Promise<string> {
 export const slackPostTool: ToolDefinition = {
   name: 'slack_post',
   description:
-    '이 Space에 등록된 Slack 채널(또는 그 스레드)에 메시지를 보냅니다. channel은 채널 ID(C…), threadTs를 주면 스레드 답글입니다. 워크덱 설정에서 이 Space에 등록한 채널만 가능하며, @channel/@here/@everyone 전체 멘션은 허용하지 않습니다.',
+    '이 Space에 등록된 Slack 채널(에이전트 채널 등, 또는 그 스레드)에 메시지를 보냅니다. channel은 채널 ID(C…), threadTs를 주면 스레드 답글입니다. 워크덱 설정에서 이 Space에 등록한 채널만 가능하며, @channel/@here/@everyone 전체 멘션은 허용하지 않습니다.',
   inputSchema: {
     channel: z.string().regex(/^[CG][A-Z0-9]{2,20}$/),
     text: z.string().min(1).max(4000),
@@ -62,7 +62,7 @@ export const slackPostTool: ToolDefinition = {
       }))
     ) {
       throw new ToolUserError(
-        '이 Space에 등록된 채널이 아닙니다. 워크덱 설정에서 이 Space의 Slack 채널로 등록한 뒤 다시 시도하세요'
+        '이 Space에 등록된 채널이 아닙니다. 워크덱 설정에서 이 Space의 에이전트 채널로 등록한 뒤 다시 시도하세요'
       )
     }
 

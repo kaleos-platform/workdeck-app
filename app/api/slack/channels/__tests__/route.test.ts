@@ -22,10 +22,13 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 
-jest.mock('@/lib/slack/tenant', () => ({ registerSpaceChannel: jest.fn() }))
+jest.mock('@/lib/slack/tenant', () => ({
+  AGENT_CHANNEL_KIND: 'agent',
+  registerSpaceChannel: jest.fn(),
+}))
 
 import { getUser } from '@/hooks/use-user'
-import { resolveRequestedSpaceContext } from '@/lib/api-helpers'
+import { assertRole, resolveRequestedSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { registerSpaceChannel } from '@/lib/slack/tenant'
 import { GET, POST, DELETE } from '../route'
@@ -134,6 +137,37 @@ describe('/api/slack/channels', () => {
     expect(mockPrisma.spaceSlackChannel.deleteMany).toHaveBeenCalledWith({
       where: { spaceId: 'space-1', kind: 'notifications' },
     })
+  })
+
+  test('POST — kind=agent로 에이전트 채널 추가, 다른 Space 채널이면 409', async () => {
+    expect((await POST(postReq({ channelId: 'CA1', kind: 'agent' })))!.status).toBe(200)
+    expect(registerSpaceChannel).toHaveBeenCalledWith(
+      expect.objectContaining({ spaceId: 'space-1', channelId: 'CA1', kind: 'agent' })
+    )
+    ;(registerSpaceChannel as jest.Mock).mockResolvedValue({ ok: false, reason: 'taken' })
+    expect((await POST(postReq({ channelId: 'C_TAKEN', kind: 'agent' })))!.status).toBe(409)
+  })
+
+  test('DELETE — kind=agent는 channelId 하나만 제거', async () => {
+    mockPrisma.spaceSlackChannel.deleteMany.mockResolvedValue({ count: 1 })
+    const res = await DELETE(deleteReq('?kind=agent&channelId=CA1&spaceId=space-1'))
+    expect(res!.status).toBe(200)
+    expect(mockPrisma.spaceSlackChannel.deleteMany).toHaveBeenCalledWith({
+      where: { spaceId: 'space-1', kind: 'agent', channelId: 'CA1' },
+    })
+  })
+
+  test('DELETE — kind=agent에 channelId가 없으면 400, 등록되지 않은 채널이면 404', async () => {
+    expect((await DELETE(deleteReq('?kind=agent')))!.status).toBe(400)
+    expect(mockPrisma.spaceSlackChannel.deleteMany).not.toHaveBeenCalled()
+    mockPrisma.spaceSlackChannel.deleteMany.mockResolvedValue({ count: 0 })
+    expect((await DELETE(deleteReq('?kind=agent&channelId=CX')))!.status).toBe(404)
+  })
+
+  test('DELETE — ADMIN이 아니면 에이전트 채널을 지우지 못한다', async () => {
+    ;(assertRole as jest.Mock).mockReturnValueOnce(new Response('{}', { status: 403 }))
+    expect((await DELETE(deleteReq('?kind=agent&channelId=CA1')))!.status).toBe(403)
+    expect(mockPrisma.spaceSlackChannel.deleteMany).not.toHaveBeenCalled()
   })
 
   test('DELETE — 잘못된 kind는 400', async () => {

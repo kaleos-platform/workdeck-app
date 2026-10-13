@@ -6,7 +6,7 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     agentPendingAction: { findUnique: jest.fn(), update: jest.fn() },
     slackInstallation: { findUnique: jest.fn() },
-    spaceSlackChannel: { findUnique: jest.fn() },
+    spaceSlackChannel: { findFirst: jest.fn() },
     user: { findMany: jest.fn(async () => [{ id: 'user-1', name: '빛그림', email: 'b@x' }]) },
     spaceAgent: {
       findMany: jest.fn(async () => [{ id: 'cm-agent-1', name: '에밀리', kind: 'agent' }]),
@@ -17,7 +17,7 @@ jest.mock('@/lib/prisma', () => ({
 const mockPrisma = prisma as unknown as {
   agentPendingAction: { findUnique: jest.Mock; update: jest.Mock }
   slackInstallation: { findUnique: jest.Mock }
-  spaceSlackChannel: { findUnique: jest.Mock }
+  spaceSlackChannel: { findFirst: jest.Mock }
 }
 
 const baseAction = {
@@ -62,7 +62,7 @@ describe('notifyPendingAction — 실패 흡수', () => {
       botToken: encryptForTest('xoxb-fake'),
       botTokenIv: TEST_IV,
     })
-    mockPrisma.spaceSlackChannel.findUnique.mockResolvedValue({ channelId: 'C123' })
+    mockPrisma.spaceSlackChannel.findFirst.mockResolvedValue({ channelId: 'C123' })
 
     global.fetch = jest.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch
 
@@ -76,7 +76,7 @@ describe('notifyPendingAction — 실패 흡수', () => {
       botToken: encryptForTest('xoxb-fake'),
       botTokenIv: TEST_IV,
     })
-    mockPrisma.spaceSlackChannel.findUnique.mockResolvedValue({ channelId: 'C123' })
+    mockPrisma.spaceSlackChannel.findFirst.mockResolvedValue({ channelId: 'C123' })
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ ok: true, ts: '1.1', channel: 'C123' }),
@@ -99,7 +99,7 @@ describe('notifyPendingAction — 실패 흡수', () => {
       botToken: encryptForTest('xoxb-fake'),
       botTokenIv: TEST_IV,
     })
-    mockPrisma.spaceSlackChannel.findUnique.mockResolvedValue({ channelId: 'C123' })
+    mockPrisma.spaceSlackChannel.findFirst.mockResolvedValue({ channelId: 'C123' })
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ ok: true, ts: '1.1', channel: 'C123' }),
@@ -121,7 +121,7 @@ describe('notifyPendingAction — 실패 흡수', () => {
       botToken: encryptForTest('xoxb-fake'),
       botTokenIv: TEST_IV,
     })
-    mockPrisma.spaceSlackChannel.findUnique.mockResolvedValue({ channelId: 'C123' })
+    mockPrisma.spaceSlackChannel.findFirst.mockResolvedValue({ channelId: 'C123' })
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ ok: true, ts: '1.1', channel: 'C123' }),

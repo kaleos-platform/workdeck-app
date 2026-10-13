@@ -52,8 +52,8 @@ export async function resolveSlackNotificationTarget(
   const spaceId = await resolveNotificationSpaceId(workspaceId)
   if (!spaceId) return null
 
-  const channel = await prisma.spaceSlackChannel.findUnique({
-    where: { spaceId_kind: { spaceId, kind: NOTIFICATION_CHANNEL_KIND } },
+  const channel = await prisma.spaceSlackChannel.findFirst({
+    where: { spaceId, kind: NOTIFICATION_CHANNEL_KIND },
     select: {
       channelId: true,
       installation: { select: { botToken: true, botTokenIv: true } },

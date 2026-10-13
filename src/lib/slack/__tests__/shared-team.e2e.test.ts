@@ -14,6 +14,7 @@ import { appendConversation, loadConversation } from '@/lib/agent/llm/conversati
 import {
   findChannelOwnedByOtherSpace,
   findTeamInstallationForSpace,
+  isChannelRegisteredToSpace,
   registerSpaceChannel,
   resolveEventSpace,
 } from '../tenant'
@@ -169,6 +170,43 @@ d('한 Slack team을 두 Space가 공유', () => {
       kind: 'notifications',
     })
     expect(r.ok && r2.ok).toBe(true)
+  })
+
+  test('agent 채널은 Space당 여러 개, approvals는 1개로 교체, 같은 행 중복은 DB unique가 막는다', async () => {
+    const reg = (channelId: string, kind: string) =>
+      registerSpaceChannel({ spaceId: SP3, channelId, channelName: null, kind })
+    expect((await reg('Ce2eAGT1', 'agent')).ok).toBe(true)
+    expect((await reg('Ce2eAGT2', 'agent')).ok).toBe(true)
+    expect((await reg('Ce2eAGT1', 'agent')).ok).toBe(true) // 재등록은 같은 행
+    expect(await prisma.spaceSlackChannel.count({ where: { spaceId: SP3, kind: 'agent' } })).toBe(2)
+
+    expect((await reg('Ce2eAPRV', 'approvals')).ok).toBe(true) // 앞 테스트의 W를 교체
+    const approvals = await prisma.spaceSlackChannel.findMany({
+      where: { spaceId: SP3, kind: 'approvals' },
+    })
+    expect(approvals.map((c) => c.channelId)).toEqual(['Ce2eAPRV'])
+
+    await expect(
+      prisma.spaceSlackChannel.create({
+        data: { spaceId: SP3, channelId: 'Ce2eAGT1', kind: 'agent' },
+      })
+    ).rejects.toMatchObject({ code: 'P2002' })
+
+    // agent 채널도 inbound 라우팅·slack_post 허용 대상이다
+    const r = await resolveEventSpace(TEAM_OTHER, 'Ce2eAGT2')
+    expect(r.status === 'routed' && r.installation.spaceId).toBe(SP3)
+    expect(
+      await isChannelRegisteredToSpace({ teamId: TEAM_OTHER, channelId: 'Ce2eAGT2', spaceId: SP3 })
+    ).toBe(true)
+  })
+
+  test('다른 Space가 등록한 채널은 agent 용도로도 등록할 수 없다', async () => {
+    await expect(
+      registerSpaceChannel({ spaceId: SP2, channelId: CH_X, channelName: null, kind: 'agent' })
+    ).resolves.toEqual({ ok: false, reason: 'taken' })
+    expect(await isChannelRegisteredToSpace({ teamId: TEAM, channelId: CH_X, spaceId: SP2 })).toBe(
+      false
+    )
   })
 
   test('채널 소유 변경 후 기존 스레드 재사용: 이전 Space의 대화 기록이 새 Space로 넘어가지 않는다', async () => {

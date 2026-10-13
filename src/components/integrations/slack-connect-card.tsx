@@ -137,6 +137,106 @@ function ChannelRow({
   )
 }
 
+// 에이전트가 slack_post로 보낼 수 있는 채널(여러 개). 등록된 채널에만 보낼 수 있다.
+function AgentChannels({
+  channels,
+  spaceQuery,
+  onSaved,
+}: {
+  channels: SlackChannelsResponse['channels']
+  spaceQuery: string
+  onSaved: () => void
+}) {
+  const [channelId, setChannelId] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const run = useCallback(
+    async (url: string, init: RequestInit, fallback: string) => {
+      setSaving(true)
+      setError(null)
+      try {
+        const res = await fetch(url, init)
+        if (!res.ok) return setError(await errorMessage(res, fallback))
+        setChannelId('')
+        onSaved()
+      } catch {
+        setError(fallback)
+      } finally {
+        setSaving(false)
+      }
+    },
+    [onSaved]
+  )
+
+  const sq = spaceQuery ? `&${spaceQuery}` : ''
+  const handleAdd = () =>
+    run(
+      `/api/slack/channels${spaceQuery ? `?${spaceQuery}` : ''}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channelId: channelId.trim(), kind: 'agent' }),
+      },
+      '채널을 추가하지 못했습니다'
+    )
+  const handleRemove = (id: string) =>
+    run(
+      `/api/slack/channels?kind=agent&channelId=${encodeURIComponent(id)}${sq}`,
+      { method: 'DELETE' },
+      '채널을 해제하지 못했습니다'
+    )
+
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor="slack-channel-agent">에이전트 채널</Label>
+      {channels.length > 0 && (
+        <ul className="space-y-1">
+          {channels.map((c) => (
+            <li key={c.id} className="flex items-center gap-2 text-sm">
+              <span className="font-mono">{c.channelName ?? c.channelId}</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleRemove(c.channelId)}
+                disabled={saving}
+                aria-label={`${c.channelId} 해제`}
+              >
+                해제
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-2">
+        <Input
+          id="slack-channel-agent"
+          placeholder="C0123456789"
+          value={channelId}
+          onChange={(e) => setChannelId(e.target.value)}
+          className="max-w-64"
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleAdd}
+          disabled={saving || !channelId.trim()}
+        >
+          추가
+        </Button>
+      </div>
+      {error && (
+        <p role="alert" className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground">
+        에이전트가 메시지를 보낼 수 있는 채널입니다. 여러 개 등록할 수 있습니다.
+      </p>
+    </div>
+  )
+}
+
 // 서버의 사용자용 message(409 다른 Space 사용 채널, 404 미설치 등)를 그대로 보여준다.
 async function errorMessage(res: Response, fallback: string): Promise<string> {
   const body = (await res.json().catch(() => null)) as { message?: unknown } | null
@@ -246,6 +346,11 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
                 onSaved={load}
               />
             </div>
+            <AgentChannels
+              channels={data.channels.filter((c) => c.kind === 'agent')}
+              spaceQuery={q}
+              onSaved={load}
+            />
           </div>
         )}
       </CardContent>

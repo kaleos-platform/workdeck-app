@@ -2,7 +2,7 @@
 jest.mock('@/lib/prisma', () => {
   const p = {
     slackInstallation: { findMany: jest.fn(), findUnique: jest.fn() },
-    spaceSlackChannel: { findFirst: jest.fn(), upsert: jest.fn() },
+    spaceSlackChannel: { findFirst: jest.fn(), upsert: jest.fn(), deleteMany: jest.fn() },
     $executeRaw: jest.fn(),
     $transaction: jest.fn(),
   }
@@ -22,7 +22,7 @@ import {
 
 const p = prisma as unknown as {
   slackInstallation: { findMany: jest.Mock; findUnique: jest.Mock }
-  spaceSlackChannel: { findFirst: jest.Mock; upsert: jest.Mock }
+  spaceSlackChannel: { findFirst: jest.Mock; upsert: jest.Mock; deleteMany: jest.Mock }
   $executeRaw: jest.Mock
 }
 const inst = (spaceId: string) => ({
@@ -58,6 +58,16 @@ describe('resolveEventSpace', () => {
     expect(p.spaceSlackChannel.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { channelId: 'CX', spaceId: { in: ['sp1'] } } })
     )
+  })
+
+  it('kind와 무관 — agent 채널 행도 그 Space로 라우팅한다(where에 kind 조건 없음)', async () => {
+    p.slackInstallation.findMany.mockResolvedValue([inst('sp1')])
+    p.spaceSlackChannel.findFirst.mockResolvedValue({ spaceId: 'sp1' })
+    await expect(resolveEventSpace('T1', 'C_AGENT')).resolves.toEqual({
+      status: 'routed',
+      installation: inst('sp1'),
+    })
+    expect(p.spaceSlackChannel.findFirst.mock.calls[0][0].where).not.toHaveProperty('kind')
   })
 
   it('같은 team 두 Space: 채널 X → Space1, Y → Space2', async () => {
@@ -188,7 +198,7 @@ describe('registerSpaceChannel', () => {
     expect(p.spaceSlackChannel.upsert).not.toHaveBeenCalled()
   })
 
-  it('비어 있으면 이 Space의 kind 행으로 upsert', async () => {
+  it('approvals는 Space당 1개 — 다른 채널의 이전 행을 지우고 (Space, kind, 채널)로 upsert', async () => {
     p.spaceSlackChannel.findFirst.mockResolvedValue(null)
     p.spaceSlackChannel.upsert.mockResolvedValue({
       id: 'ch1',
@@ -200,8 +210,34 @@ describe('registerSpaceChannel', () => {
       ok: true,
       channel: { id: 'ch1', channelId: 'CX', channelName: null, kind: 'approvals' },
     })
+    expect(p.spaceSlackChannel.deleteMany).toHaveBeenCalledWith({
+      where: { spaceId: 'sp2', kind: 'approvals', channelId: { not: 'CX' } },
+    })
     expect(p.spaceSlackChannel.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { spaceId_kind: { spaceId: 'sp2', kind: 'approvals' } } })
+      expect.objectContaining({
+        where: { spaceId_kind_channelId: { spaceId: 'sp2', kind: 'approvals', channelId: 'CX' } },
+      })
     )
+  })
+
+  it('agent 채널은 여러 개 — 기존 agent 행을 지우지 않는다', async () => {
+    p.spaceSlackChannel.findFirst.mockResolvedValue(null)
+    p.spaceSlackChannel.upsert.mockResolvedValue({ id: 'a1' })
+    await registerSpaceChannel({ ...input, kind: 'agent' })
+    expect(p.spaceSlackChannel.deleteMany).not.toHaveBeenCalled()
+    expect(p.spaceSlackChannel.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { spaceId_kind_channelId: { spaceId: 'sp2', kind: 'agent', channelId: 'CX' } },
+      })
+    )
+  })
+
+  it('agent 채널도 다른 Space가 등록한 채널이면 taken', async () => {
+    p.spaceSlackChannel.findFirst.mockResolvedValue({ id: 'other' })
+    await expect(registerSpaceChannel({ ...input, kind: 'agent' })).resolves.toEqual({
+      ok: false,
+      reason: 'taken',
+    })
+    expect(p.spaceSlackChannel.upsert).not.toHaveBeenCalled()
   })
 })

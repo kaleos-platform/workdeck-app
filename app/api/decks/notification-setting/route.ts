@@ -44,8 +44,8 @@ function buildEventsArray(deckKey: string, stored: StoredEvents) {
 }
 
 async function channelRegistered(spaceId: string): Promise<boolean> {
-  const channel = await prisma.spaceSlackChannel.findUnique({
-    where: { spaceId_kind: { spaceId, kind: NOTIFICATION_CHANNEL_KIND } },
+  const channel = await prisma.spaceSlackChannel.findFirst({
+    where: { spaceId, kind: NOTIFICATION_CHANNEL_KIND },
     select: { id: true },
   })
   return channel !== null
