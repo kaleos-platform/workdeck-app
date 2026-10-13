@@ -76,6 +76,9 @@ describe('audit', () => {
     expect(maskSecrets('https://x?access_token=SECRET&a=1')).toBe(
       'https://x?access_token=[redacted]&a=1'
     )
+    expect(maskSecrets('https://x?appsecret_proof=abc123&a=1')).toBe(
+      'https://x?appsecret_proof=[redacted]&a=1'
+    )
   })
   it('감사 error 칸에도 같은 값 마스킹을 적용한다', async () => {
     ;(prisma.toolAuditLog.create as jest.Mock).mockResolvedValue({ id: 'aud1' })

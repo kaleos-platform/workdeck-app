@@ -21,6 +21,8 @@ const DECK_LABELS: Record<string, string> = {
   'seller-ops': '브랜드 운영',
   'seller-hub': '브랜드 운영',
   'coupang-ads': '쿠팡 광고 관리',
+  'meta-ads': '메타 광고',
+  'google-marketing': '구글 마케팅',
 }
 
 function deckLabel(deckKey: string): string {
