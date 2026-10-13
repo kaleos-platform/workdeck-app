@@ -14,6 +14,7 @@ import { createPendingAction } from '@/lib/agent/actions/create'
 import { approveAndExecute } from '@/lib/agent/actions/execute'
 import { __registerActionForTest } from '@/lib/agent/actions/registry'
 import type { ActionDefinition } from '@/lib/agent/actions/types'
+import { findTeamInstallationForSpace } from '@/lib/slack/tenant'
 
 const RUN = Boolean(process.env.DATABASE_URL)
 const d = RUN ? describe : describe.skip
@@ -42,17 +43,14 @@ const testAction: ActionDefinition = {
 
 let unregister: Array<() => void> = []
 
-// interactive route의 테넌트 가드를 재현한 순수 판정 함수.
+// interactive route의 테넌트 가드(findTeamInstallationForSpace + 채널 검사)와 같은 판정.
 async function isDecisionAllowed(input: {
   teamId: string
   channelId: string | undefined
   action: { spaceId: string; slackChannelId: string | null }
 }): Promise<boolean> {
-  const installation = await prisma.slackInstallation.findUnique({
-    where: { teamId: input.teamId },
-    select: { spaceId: true },
-  })
-  if (!installation || installation.spaceId !== input.action.spaceId) return false
+  const installation = await findTeamInstallationForSpace(input.action.spaceId, input.teamId)
+  if (!installation) return false
   if (input.action.slackChannelId && input.channelId !== input.action.slackChannelId) return false
   return true
 }

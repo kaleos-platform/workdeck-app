@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
-import { assertRole, errorResponse, resolveSpaceContext } from '@/lib/api-helpers'
+import { assertRole, errorResponse, resolveRequestedSpaceContext } from '@/lib/api-helpers'
 
 const bodySchema = z.object({
   slackUserId: z
@@ -14,8 +14,8 @@ const bodySchema = z.object({
 })
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ memberId: string }> }) {
-  const ctx = await resolveSpaceContext()
-  if ('error' in ctx && ctx.error) return ctx.error
+  const ctx = await resolveRequestedSpaceContext(req.nextUrl.searchParams.get('spaceId'))
+  if ('error' in ctx) return ctx.error
   const roleError = assertRole(ctx.role, 'ADMIN')
   if (roleError) return roleError
 

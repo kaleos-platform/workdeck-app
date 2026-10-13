@@ -253,10 +253,10 @@ export type SlackInstallationOrderByWithRelationInput = {
 export type SlackInstallationWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   spaceId?: string
-  teamId?: string
   AND?: Prisma.SlackInstallationWhereInput | Prisma.SlackInstallationWhereInput[]
   OR?: Prisma.SlackInstallationWhereInput[]
   NOT?: Prisma.SlackInstallationWhereInput | Prisma.SlackInstallationWhereInput[]
+  teamId?: Prisma.StringFilter<"SlackInstallation"> | string
   teamName?: Prisma.StringNullableFilter<"SlackInstallation"> | string | null
   botUserId?: Prisma.StringFilter<"SlackInstallation"> | string
   botToken?: Prisma.StringFilter<"SlackInstallation"> | string
@@ -267,7 +267,7 @@ export type SlackInstallationWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"SlackInstallation"> | Date | string
   space?: Prisma.XOR<Prisma.SpaceScalarRelationFilter, Prisma.SpaceWhereInput>
   channels?: Prisma.SpaceSlackChannelListRelationFilter
-}, "id" | "spaceId" | "teamId">
+}, "id" | "spaceId">
 
 export type SlackInstallationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

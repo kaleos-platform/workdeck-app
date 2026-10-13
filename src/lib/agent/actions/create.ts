@@ -9,11 +9,12 @@ import type { ActionExecContext, PendingActionDraft, PendingActionResult } from 
 // 승인 만료 기본 72시간.
 const DEFAULT_TTL_HOURS = 72
 
-function toResult(action: { id: string; expiresAt: Date }): PendingActionResult {
+function toResult(action: { id: string; spaceId: string; expiresAt: Date }): PendingActionResult {
   return {
     status: 'pending_approval',
     actionId: action.id,
-    approvalUrl: buildAppUrl(`/approvals?action=${action.id}`),
+    // 두 Space 이상 구성원도 선택 화면 없이 바로 열리도록 Space를 링크에 싣는다.
+    approvalUrl: buildAppUrl(`/approvals?spaceId=${action.spaceId}&action=${action.id}`),
     expiresAt: action.expiresAt.toISOString(),
   }
 }
@@ -109,7 +110,7 @@ export async function createPendingAction(draft: PendingActionDraft): Promise<Pe
         expiresAt,
         idempotencyKey: draft.idempotencyKey ?? null,
       },
-      select: { id: true, expiresAt: true },
+      select: { id: true, spaceId: true, expiresAt: true },
     })
     // 신규 생성 경로에서만 Slack 알림(멱등·경합 패자 경로는 제외 — 중복 알림 방지).
     // notify 내부가 전부 try/catch + 타임아웃이라 await해도 액션 생성을 막지 않는다.

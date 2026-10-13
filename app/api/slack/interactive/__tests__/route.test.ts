@@ -65,7 +65,7 @@ beforeEach(() => {
     payload: {},
   })
   p.slackInstallation.findUnique.mockResolvedValue({
-    spaceId: 'space-1',
+    teamId: 'T1',
     botToken: 'enc',
     botTokenIv: 'v1',
   })
@@ -122,11 +122,33 @@ test('거부 → rejectAction(User.id)', async () => {
 
 test('다른 team 의 설치 → 조용히 무시(기존 테넌트 가드 유지)', async () => {
   p.slackInstallation.findUnique.mockResolvedValue({
-    spaceId: 'space-2',
+    teamId: 'T2',
     botToken: 'e',
     botTokenIv: 'v1',
   })
   await POST(click())
+  expect(member).not.toHaveBeenCalled()
+  expect(approve).not.toHaveBeenCalled()
+})
+
+test('가드는 액션 Space의 설치를 spaceId로 찾는다(같은 team을 여러 Space가 공유)', async () => {
+  member.mockResolvedValue({ userId: 'u-admin', role: 'ADMIN' })
+  await POST(click())
+  expect(p.slackInstallation.findUnique).toHaveBeenCalledWith(
+    expect.objectContaining({ where: { spaceId: 'space-1' } })
+  )
+  expect(approve).toHaveBeenCalledWith('act-1', 'u-admin')
+})
+
+test('같은 team이라도 다른 Space 채널에서 누르면 무시', async () => {
+  p.agentPendingAction.findUnique.mockResolvedValue({
+    id: 'act-1',
+    spaceId: 'space-1',
+    slackChannelId: 'C_SPACE1',
+    actionType: 'x',
+    payload: {},
+  })
+  await POST(click()) // payload.channel.id = 'C1'
   expect(member).not.toHaveBeenCalled()
   expect(approve).not.toHaveBeenCalled()
 })

@@ -1,6 +1,6 @@
 /**
  * OAuth install 흐름의 state 서명.
- * state = base64url(JSON{spaceId,userId,exp}) + "." + base64url(HMAC-SHA256).
+ * state = base64url(JSON{spaceId,userId,reconnect,exp}) + "." + base64url(HMAC-SHA256).
  * SLACK_SIGNING_SECRET으로 서명하고, verify 시 서명·만료를 검증한다(실패 null).
  */
 import crypto from 'node:crypto'
@@ -10,6 +10,7 @@ const TTL_MS = 10 * 60 * 1000 // 10분
 interface StatePayload {
   spaceId: string
   userId: string
+  reconnect?: boolean // team 변경 재연결(서명 안의 값만 믿는다)
   exp: number // epoch ms
 }
 
@@ -28,20 +29,23 @@ function safeEqual(a: string, b: string): boolean {
   return crypto.timingSafeEqual(aBuf, bBuf)
 }
 
-export function signState(input: { spaceId: string; userId: string }): string {
+export function signState(input: { spaceId: string; userId: string; reconnect?: boolean }): string {
   const secret = process.env.SLACK_SIGNING_SECRET
   if (!secret) throw new Error('SLACK_SIGNING_SECRET 환경변수가 설정되지 않았습니다')
 
   const payload: StatePayload = {
     spaceId: input.spaceId,
     userId: input.userId,
+    reconnect: input.reconnect === true,
     exp: Date.now() + TTL_MS,
   }
   const payloadB64 = b64url(Buffer.from(JSON.stringify(payload), 'utf8'))
   return `${payloadB64}.${sign(payloadB64, secret)}`
 }
 
-export function verifyState(state: string): { spaceId: string; userId: string } | null {
+export function verifyState(
+  state: string
+): { spaceId: string; userId: string; reconnect: boolean } | null {
   const secret = process.env.SLACK_SIGNING_SECRET
   if (!secret) return null
 
@@ -58,7 +62,11 @@ export function verifyState(state: string): { spaceId: string; userId: string } 
     ) as StatePayload
     if (typeof payload.exp !== 'number' || Date.now() > payload.exp) return null
     if (!payload.spaceId || !payload.userId) return null
-    return { spaceId: payload.spaceId, userId: payload.userId }
+    return {
+      spaceId: payload.spaceId,
+      userId: payload.userId,
+      reconnect: payload.reconnect === true,
+    }
   } catch {
     return null
   }

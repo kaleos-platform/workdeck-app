@@ -1,6 +1,6 @@
 /** @jest-environment node */
 // /api/agent/settings — ADMIN 게이트 + isActive 기본값(true) + KST 사용량 조회 회귀.
-// getUser · resolveSpaceContext · assertRole · prisma 모두 mock.
+// getUser · resolveRequestedSpaceContext · assertRole · prisma 모두 mock.
 
 import { NextRequest } from 'next/server'
 
@@ -12,7 +12,7 @@ jest.mock('@/lib/api-helpers', () => ({
   errorResponse: (msg: string, status: number) =>
     new Response(JSON.stringify({ message: msg }), { status }),
   assertRole: jest.fn(() => null),
-  resolveSpaceContext: jest.fn(),
+  resolveRequestedSpaceContext: jest.fn(),
 }))
 
 jest.mock('@/lib/agent/llm/usage', () => ({
@@ -28,12 +28,12 @@ jest.mock('@/lib/prisma', () => ({
 }))
 
 import { getUser } from '@/hooks/use-user'
-import { assertRole, resolveSpaceContext } from '@/lib/api-helpers'
+import { assertRole, resolveRequestedSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { GET, PATCH } from '../route'
 
 const mockGetUser = getUser as jest.Mock
-const mockResolveSpaceContext = resolveSpaceContext as jest.Mock
+const mockResolveSpaceContext = resolveRequestedSpaceContext as jest.Mock
 const mockAssertRole = assertRole as jest.Mock
 const mockPrisma = prisma as unknown as {
   spaceAgentSetting: { findUnique: jest.Mock; upsert: jest.Mock }
@@ -55,7 +55,7 @@ describe('/api/agent/settings', () => {
 
   test('GET — 인증 없으면 401', async () => {
     mockGetUser.mockResolvedValue(null)
-    const res = await GET()
+    const res = await GET(new NextRequest('http://localhost/api/agent/settings'))
     expect(res!.status).toBe(401)
   })
 
@@ -63,7 +63,7 @@ describe('/api/agent/settings', () => {
     mockAssertRole.mockReturnValue(
       new Response(JSON.stringify({ message: '권한이 없습니다' }), { status: 403 })
     )
-    const res = await GET()
+    const res = await GET(new NextRequest('http://localhost/api/agent/settings'))
     expect(res!.status).toBe(403)
   })
 
@@ -72,7 +72,7 @@ describe('/api/agent/settings', () => {
     mockPrisma.agentLlmUsage.findUnique.mockResolvedValue(null)
     mockPrisma.slackInstallation.findUnique.mockResolvedValue(null)
 
-    const res = await GET()
+    const res = await GET(new NextRequest('http://localhost/api/agent/settings'))
     const json = await res!.json()
 
     expect(json.agentActive).toBe(true)
@@ -96,7 +96,7 @@ describe('/api/agent/settings', () => {
       createdAt: new Date('2026-01-01'),
     })
 
-    const res = await GET()
+    const res = await GET(new NextRequest('http://localhost/api/agent/settings'))
     const json = await res!.json()
 
     expect(mockPrisma.agentLlmUsage.findUnique).toHaveBeenCalledWith({

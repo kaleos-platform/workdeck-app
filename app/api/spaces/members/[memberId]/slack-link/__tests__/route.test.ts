@@ -1,14 +1,14 @@
 /** @jest-environment node */
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { resolveSpaceContext } from '@/lib/api-helpers'
+import { resolveRequestedSpaceContext } from '@/lib/api-helpers'
 import { PUT } from '../route'
 
 jest.mock('@/lib/api-helpers', () => {
   const { NextResponse } = jest.requireActual('next/server')
   const rank = { OWNER: 3, ADMIN: 2, MEMBER: 1 } as const
   return {
-    resolveSpaceContext: jest.fn(),
+    resolveRequestedSpaceContext: jest.fn(),
     errorResponse: (message: string, status: number) => NextResponse.json({ message }, { status }),
     assertRole: (r: keyof typeof rank, req: keyof typeof rank) =>
       rank[r] < rank[req]
@@ -20,10 +20,10 @@ jest.mock('@/lib/prisma', () => ({
   prisma: { spaceMember: { findFirst: jest.fn(), update: jest.fn() } },
 }))
 
-const ctx = resolveSpaceContext as jest.Mock
+const ctx = resolveRequestedSpaceContext as jest.Mock
 const m = prisma.spaceMember as unknown as { findFirst: jest.Mock; update: jest.Mock }
-const req = (body: unknown) =>
-  new NextRequest('http://t/api/spaces/members/m1/slack-link', {
+const req = (body: unknown, spaceId = 's1') =>
+  new NextRequest(`http://t/api/spaces/members/m1/slack-link?spaceId=${spaceId}`, {
     method: 'PUT',
     body: JSON.stringify(body),
   })
@@ -93,4 +93,27 @@ test('ADMIN 은 자기 기록에 Slack ID 를 연결할 수 있다', async () =>
   m.findFirst.mockResolvedValue({ id: 'm1', role: 'ADMIN', userId: 'u' })
   m.update.mockResolvedValue({ id: 'm1', slackUserId: 'U12345' })
   expect((await PUT(req({ slackUserId: 'U12345' }), params)).status).toBe(200)
+})
+
+test('OWNER 보호는 선택한 Space의 역할로 본다: s1 OWNER라도 s2(ADMIN)를 골랐으면 s2 OWNER 연결 변경 403', async () => {
+  ctx.mockImplementation(async (id: string | null) =>
+    id === 's2'
+      ? { user: { id: 'u' }, space: { id: 's2' }, role: 'ADMIN' }
+      : { user: { id: 'u' }, space: { id: 's1' }, role: 'OWNER' }
+  )
+  m.findFirst.mockResolvedValue({ id: 'm1', role: 'OWNER' })
+  expect((await PUT(req({ slackUserId: 'UADMIN1' }, 's2'), params)).status).toBe(403)
+  expect(ctx).toHaveBeenCalledWith('s2')
+  expect(m.findFirst.mock.calls[0][0].where).toEqual({ id: 'm1', spaceId: 's2' })
+  expect(m.update).not.toHaveBeenCalled()
+})
+
+test('선택한 Space가 아닌 다른 Space 구성원은 바꿀 수 없다 → 404, 갱신 없음', async () => {
+  // m1은 s2 구성원. 호출자는 s1을 골랐다.
+  m.findFirst.mockImplementation(async ({ where }: { where: { spaceId: string } }) =>
+    where.spaceId === 's2' ? { id: 'm1', role: 'MEMBER' } : null
+  )
+  expect((await PUT(req({ slackUserId: 'U12345' }, 's1'), params)).status).toBe(404)
+  expect(ctx).toHaveBeenCalledWith('s1')
+  expect(m.update).not.toHaveBeenCalled()
 })

@@ -107,8 +107,9 @@ beforeEach(() => {
     return { count: 1 }
   })
   db.agentPendingAction.update.mockImplementation(async ({ data }) => Object.assign(row, data))
+  // 테넌트 가드: 액션 Space(space-1)의 설치가 버튼을 누른 team(T1)이어야 한다.
   db.slackInstallation.findUnique.mockResolvedValue({
-    spaceId: 'space-1',
+    teamId: 'T1',
     botToken: 'enc',
     botTokenIv: 'v1',
   })

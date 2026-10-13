@@ -110,7 +110,7 @@ export async function notifyPendingAction(actionId: string): Promise<void> {
             type: 'button',
             text: { type: 'plain_text', text: '웹에서 보기', emoji: true },
             action_id: 'agent_action_open_web',
-            url: buildAppUrl(`/approvals?action=${action.id}`),
+            url: buildAppUrl(`/approvals?spaceId=${action.spaceId}&action=${action.id}`),
           },
         ],
       },

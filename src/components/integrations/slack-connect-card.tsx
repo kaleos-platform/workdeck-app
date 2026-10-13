@@ -2,12 +2,18 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { CheckCircle2, Slack, XCircle } from 'lucide-react'
+import {
+  SpaceRequiredPicker,
+  readSpaceRequired,
+  type SpaceChoice,
+} from '@/components/common/space-required-picker'
 import type { SlackChannelKind, SlackChannelsResponse } from './types'
 
 const KIND_LABEL: Record<SlackChannelKind, string> = {
@@ -25,7 +31,13 @@ const SLACK_TOAST_MESSAGE: Record<string, { title: string; variant: 'default' | 
   denied: { title: 'Slack 연동을 취소했습니다', variant: 'destructive' },
   error: { title: 'Slack 연동에 실패했습니다. 다시 시도해주세요', variant: 'destructive' },
   team_conflict: {
-    title: '해당 Slack 워크스페이스는 이미 다른 스페이스에 연결되어 있습니다',
+    title:
+      '이 Slack 워크스페이스는 다른 스페이스가 쓰고 있습니다. 그 스페이스의 관리자만 추가로 연결할 수 있습니다',
+    variant: 'destructive',
+  },
+  team_changed: {
+    title:
+      '이미 다른 Slack 워크스페이스에 연결되어 있습니다. 바꾸려면 아래 "재연결"을 누르세요. 기존 채널 등록, 진행 중 Slack 승인 메시지 연결, 대화 기록, 구성원 Slack 연결이 정리됩니다',
     variant: 'destructive',
   },
 }
@@ -33,14 +45,17 @@ const SLACK_TOAST_MESSAGE: Record<string, { title: string; variant: 'default' | 
 function ChannelRow({
   kind,
   channel,
+  spaceQuery,
   onSaved,
 }: {
   kind: SlackChannelKind
   channel: SlackChannelsResponse['channels'][number] | undefined
+  spaceQuery: string
   onSaved: () => void
 }) {
   const [channelId, setChannelId] = useState(channel?.channelId ?? '')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setChannelId(channel?.channelId ?? '')
@@ -50,30 +65,42 @@ function ChannelRow({
     const trimmed = channelId.trim()
     if (!trimmed) return
     setSaving(true)
+    setError(null)
     try {
-      const res = await fetch('/api/slack/channels', {
+      const res = await fetch(`/api/slack/channels${spaceQuery ? `?${spaceQuery}` : ''}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ channelId: trimmed, kind }),
       })
       if (res.ok) onSaved()
+      else setError(await errorMessage(res, '채널을 저장하지 못했습니다'))
+    } catch {
+      setError('채널을 저장하지 못했습니다')
     } finally {
       setSaving(false)
     }
-  }, [channelId, kind, onSaved])
+  }, [channelId, kind, spaceQuery, onSaved])
 
   const handleRemove = useCallback(async () => {
     setSaving(true)
+    setError(null)
     try {
-      const res = await fetch(`/api/slack/channels?kind=${kind}`, { method: 'DELETE' })
+      const res = await fetch(
+        `/api/slack/channels?kind=${kind}${spaceQuery ? `&${spaceQuery}` : ''}`,
+        {
+          method: 'DELETE',
+        }
+      )
       if (res.ok) {
         setChannelId('')
         onSaved()
-      }
+      } else setError(await errorMessage(res, '채널을 해제하지 못했습니다'))
+    } catch {
+      setError('채널을 해제하지 못했습니다')
     } finally {
       setSaving(false)
     }
-  }, [kind, onSaved])
+  }, [kind, spaceQuery, onSaved])
 
   return (
     <div className="space-y-1.5">
@@ -100,19 +127,34 @@ function ChannelRow({
           </Button>
         )}
       </div>
+      {error && (
+        <p role="alert" className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
       <p className="text-xs text-muted-foreground">{KIND_HINT[kind]}</p>
     </div>
   )
 }
 
+// 서버의 사용자용 message(409 다른 Space 사용 채널, 404 미설치 등)를 그대로 보여준다.
+async function errorMessage(res: Response, fallback: string): Promise<string> {
+  const body = (await res.json().catch(() => null)) as { message?: unknown } | null
+  return typeof body?.message === 'string' ? body.message : fallback
+}
+
 export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }) {
+  const spaceId = useSearchParams().get('spaceId')
+  const q = spaceId ? `spaceId=${encodeURIComponent(spaceId)}` : ''
   const [data, setData] = useState<SlackChannelsResponse | null>(null)
+  const [spaceChoices, setSpaceChoices] = useState<SpaceChoice[] | null>(null)
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/slack/channels')
+      const res = await fetch(`/api/slack/channels${q ? `?${q}` : ''}`)
+      setSpaceChoices(await readSpaceRequired(res))
       const json: SlackChannelsResponse | null = res.ok ? await res.json() : null
       setData(json)
     } catch {
@@ -120,7 +162,7 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [q])
 
   useEffect(() => {
     load()
@@ -151,11 +193,18 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
               <CheckCircle2 className="h-4 w-4" />
             )}
             <AlertTitle>{toast.title}</AlertTitle>
+            {slackStatus === 'team_changed' && (
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/api/slack/oauth/install?reconnect=1${q ? `&${q}` : ''}`}>재연결</Link>
+              </Button>
+            )}
           </Alert>
         )}
 
         {loading ? (
           <p className="text-sm text-muted-foreground">불러오는 중...</p>
+        ) : spaceChoices ? (
+          <SpaceRequiredPicker spaces={spaceChoices} />
         ) : !data?.installed ? (
           <div className="flex flex-col items-start gap-3 rounded-md border border-dashed p-4">
             <p className="text-sm text-muted-foreground">
@@ -163,11 +212,14 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
               있습니다.
             </p>
             <Button asChild size="sm">
-              <Link href="/api/slack/oauth/install">Slack 연결</Link>
+              <Link href={`/api/slack/oauth/install${q ? `?${q}` : ''}`}>Slack 연결</Link>
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
+            {data.space && (
+              <p className="text-xs text-muted-foreground">Space: {data.space.name}</p>
+            )}
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <span className="font-medium">
@@ -181,8 +233,18 @@ export function SlackConnectCard({ slackStatus }: { slackStatus: string | null }
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <ChannelRow kind="approvals" channel={approvalsChannel} onSaved={load} />
-              <ChannelRow kind="notifications" channel={notificationsChannel} onSaved={load} />
+              <ChannelRow
+                kind="approvals"
+                channel={approvalsChannel}
+                spaceQuery={q}
+                onSaved={load}
+              />
+              <ChannelRow
+                kind="notifications"
+                channel={notificationsChannel}
+                spaceQuery={q}
+                onSaved={load}
+              />
             </div>
           </div>
         )}

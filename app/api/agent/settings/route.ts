@@ -7,7 +7,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/hooks/use-user'
-import { errorResponse, assertRole, resolveSpaceContext } from '@/lib/api-helpers'
+import { errorResponse, assertRole, resolveRequestedSpaceContext } from '@/lib/api-helpers'
 import { prisma } from '@/lib/prisma'
 import { todayKst } from '@/lib/agent/llm/usage'
 
@@ -19,18 +19,20 @@ function spaceDailyLimit(): number {
   return Number.isFinite(raw) && raw > 0 ? raw : 50
 }
 
-async function requireAdminSpace() {
+async function requireAdminSpace(
+  req: NextRequest
+): Promise<{ error: NextResponse } | { spaceId: string }> {
   const user = await getUser()
   if (!user) return { error: errorResponse('인증이 필요합니다', 401) }
-  const ctx = await resolveSpaceContext()
+  const ctx = await resolveRequestedSpaceContext(req.nextUrl.searchParams.get('spaceId'))
   if ('error' in ctx) return { error: ctx.error }
   const roleError = assertRole(ctx.role, 'ADMIN')
   if (roleError) return { error: roleError }
   return { spaceId: ctx.space.id }
 }
 
-export async function GET() {
-  const ctx = await requireAdminSpace()
+export async function GET(req: NextRequest) {
+  const ctx = await requireAdminSpace(req)
   if ('error' in ctx) return ctx.error
 
   const [agent, usage, installation] = await Promise.all([
@@ -66,7 +68,7 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const ctx = await requireAdminSpace()
+  const ctx = await requireAdminSpace(req)
   if ('error' in ctx) return ctx.error
 
   const body = (await req.json().catch(() => ({}))) as { agentActive?: unknown }
