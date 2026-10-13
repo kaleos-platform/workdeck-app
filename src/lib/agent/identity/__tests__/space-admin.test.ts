@@ -4,7 +4,7 @@ jest.mock('@/lib/prisma', () => ({ prisma: { spaceMember: { findUnique: jest.fn(
 
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
-import { requireSpaceAdmin } from '../space-admin'
+import { requireSpaceAdmin, requireSpaceOwner } from '../space-admin'
 
 const user = getUser as jest.Mock
 const findMember = (prisma as unknown as { spaceMember: { findUnique: jest.Mock } }).spaceMember
@@ -36,5 +36,25 @@ describe('requireSpaceAdmin', () => {
     expect(findMember.mock.calls[0][0].where).toEqual({
       spaceId_userId: { spaceId: 'sp2', userId: 'u1' },
     })
+  })
+})
+
+describe('requireSpaceOwner', () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it.each([
+    ['ADMIN', 403],
+    ['MEMBER', 403],
+  ])('role=%p 이면 %p', async (role, status) => {
+    user.mockResolvedValue({ id: 'u1' })
+    findMember.mockResolvedValue({ role })
+    const r = await requireSpaceOwner('sp1')
+    expect('error' in r && r.error.status).toBe(status)
+  })
+
+  it('OWNER는 통과한다', async () => {
+    user.mockResolvedValue({ id: 'u1' })
+    findMember.mockResolvedValue({ role: 'OWNER' })
+    await expect(requireSpaceOwner('sp1')).resolves.toEqual({ userId: 'u1' })
   })
 })

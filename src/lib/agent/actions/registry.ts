@@ -2,6 +2,7 @@ import type { ActionDefinition } from './types'
 import { financeActions } from './finance'
 import { sellerHubActions } from './seller-hub'
 import { coupangAdsActions } from './coupang-ads'
+import { metaAdsActions } from './meta-ads'
 
 /**
  * 전체 액션 정의 단일 소스.
@@ -11,6 +12,7 @@ const allActions: ActionDefinition[] = [
   ...financeActions,
   ...sellerHubActions,
   ...coupangAdsActions,
+  ...metaAdsActions,
 ]
 
 const byType = new Map<string, ActionDefinition>(allActions.map((a) => [a.actionType, a]))

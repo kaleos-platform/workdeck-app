@@ -1,0 +1,68 @@
+import { z } from 'zod'
+import { loadSpaceCredentialConfig } from '@/lib/agent/integrations/space-credential'
+import {
+  META_ACTIONS,
+  META_BUDGET_ACTIONS,
+  PROVIDER,
+  assertActionInAccount,
+  assertMetaTarget,
+  graphRequest,
+  loadMetaCred,
+  metaActionRequest,
+  metaSpendKrw,
+  recordMetaError,
+  validateMetaAction,
+  type MetaActionName,
+  type MetaConfig,
+} from '@/lib/agent/integrations/meta-ads'
+import type { ActionDefinition } from './types'
+
+const paramsSchema = z.object({
+  brand: z.string().min(1), // 대상은 brand → 현재 config로 다시 해석한다. adAccountId는 비교용
+  adAccountId: z.string().regex(/^act_\d+$/),
+  params: z.record(z.string(), z.unknown()),
+})
+type Params = z.infer<typeof paramsSchema>
+
+function defineMetaAction(name: MetaActionName): ActionDefinition<Params> {
+  return {
+    actionType: `meta-ads.${name}`,
+    deckKey: 'meta-ads',
+    title: `메타 광고: ${name}`,
+    paramsSchema,
+    requiredRole: 'ADMIN',
+    // 예산 파라미터가 Space.approvalLimitKrw(null=0)를 넘으면 OWNER만 승인한다(requiredDecisionRole).
+    spendKrw: (p) => (META_BUDGET_ACTIONS.has(name) ? metaSpendKrw(p.params) : null),
+    expiryHours: 24,
+    // 생성 시점(MCP 제안·세션 POST 모두): params 형태, payload 계정이 현재 Space 매핑과 같은지, 예산이면 KRW 확인 계정인지.
+    // Graph는 부르지 않는다(config만 본다).
+    validateCreate: async (ctx, p) => {
+      validateMetaAction({ action: name, params: p.params })
+      const config = await loadSpaceCredentialConfig<MetaConfig>(ctx.spaceId, PROVIDER)
+      assertMetaTarget(config, { brand: p.brand, action: name, adAccountId: p.adAccountId })
+    },
+    // 승인 뒤에만 호출된다(approveAndExecute 게이트). 실행 시점에 대상을 다시 해석하고 계정 소속을 확인한다.
+    // 감사 행은 approveAndExecute가 남긴다. 여기서는 복호화한 자격증명 id만 ctx에 넣는다.
+    execute: async (ctx, p) => {
+      validateMetaAction({ action: name, params: p.params })
+      const cred = await loadMetaCred(ctx.spaceId, ctx.decryptedCredentialIds)
+      const adAccountId = assertMetaTarget(cred.config, {
+        brand: p.brand,
+        action: name,
+        adAccountId: p.adAccountId,
+      })
+      await assertActionInAccount(cred, name, p.params, adAccountId)
+      const { endpoint, body } = metaActionRequest(name, adAccountId, p.params)
+      try {
+        return await graphRequest(cred, 'POST', endpoint, body)
+      } catch (err) {
+        await recordMetaError(cred.id, err)
+        throw err
+      }
+    },
+  }
+}
+
+export const metaAdsActions: ActionDefinition[] = (
+  Object.keys(META_ACTIONS) as MetaActionName[]
+).map((n) => defineMetaAction(n) as unknown as ActionDefinition)
