@@ -36,32 +36,121 @@ interface MetaActionSpec {
   objectKey?: string
   // 경로에만 쓰고 본문에서는 빼는 키(원본 actionRequest의 pathParams).
   pathParams?: readonly string[]
+  // Graph로 보낼 수 있는 params 키(허용 목록, objectKey·pathParams 포함). 그 밖의 키는 제안·생성·실행에서 모두 거부한다.
+  keys: readonly string[]
 }
 
-// 원본 ACTIONS를 그대로 옮긴다(2026-10-12 원본에서 A/B 테스트 adstudy.* 추가).
+// 지출 금액 키 — 예산 액션(META_BUDGET_ACTIONS)에서만 허용하고, metaSpendKrw가 모두 센다.
+export const META_MONEY_KEYS = [
+  'daily_budget',
+  'lifetime_budget',
+  'spend_cap',
+  'daily_spend_cap',
+  'lifetime_spend_cap',
+  'bid_amount',
+] as const
+
+const CAMPAIGN_FIELDS = [
+  'name',
+  'status',
+  'bid_strategy',
+  'start_time',
+  'stop_time',
+  'special_ad_categories',
+  'special_ad_category_country',
+]
+const ADSET_FIELDS = [
+  'name',
+  'status',
+  'optimization_goal',
+  'billing_event',
+  'bid_strategy',
+  'targeting',
+  'start_time',
+  'end_time',
+]
+const AD_FIELDS = ['name', 'status', 'creative', 'tracking_specs', 'conversion_domain']
+const STUDY_FIELDS = ['name', 'description', 'start_time', 'end_time', 'cells']
+
+// 원본 ACTIONS를 옮긴다(2026-10-12 원본에서 A/B 테스트 adstudy.* 추가). 키 허용 목록은 workdeck 규칙이다.
+// *_status 액션은 id와 status만 받는다. status=ACTIVE(지출 재개)는 금액이 없으므로 ADMIN이 승인할 수 있다 —
+// 이미 승인된 예산 범위 안의 재개라 지출 승인으로 보지 않는다는 운영 결정(2026-10-14, 리뷰 I2).
 export const META_ACTIONS = {
-  'campaign.create': { endpoint: (a) => `/${a}/campaigns` },
-  'campaign.update': { endpoint: (_a, p) => `/${p.campaign_id}`, objectKey: 'campaign_id' },
-  'campaign.update_status': { endpoint: (_a, p) => `/${p.campaign_id}`, objectKey: 'campaign_id' },
-  'adset.create': { endpoint: (a) => `/${a}/adsets` },
-  'adset.update': { endpoint: (_a, p) => `/${p.adset_id}`, objectKey: 'adset_id' },
-  'adset.update_status': { endpoint: (_a, p) => `/${p.adset_id}`, objectKey: 'adset_id' },
-  'creative.create': { endpoint: (a) => `/${a}/adcreatives` },
-  'ad.create': { endpoint: (a) => `/${a}/ads` },
-  'ad.update': { endpoint: (_a, p) => `/${p.ad_id}`, objectKey: 'ad_id' },
-  'ad.update_status': { endpoint: (_a, p) => `/${p.ad_id}`, objectKey: 'ad_id' },
+  'campaign.create': {
+    endpoint: (a) => `/${a}/campaigns`,
+    keys: [...CAMPAIGN_FIELDS, 'objective', 'buying_type', 'promoted_object', ...META_MONEY_KEYS],
+  },
+  'campaign.update': {
+    endpoint: (_a, p) => `/${p.campaign_id}`,
+    objectKey: 'campaign_id',
+    keys: ['campaign_id', ...CAMPAIGN_FIELDS, ...META_MONEY_KEYS],
+  },
+  'campaign.update_status': {
+    endpoint: (_a, p) => `/${p.campaign_id}`,
+    objectKey: 'campaign_id',
+    keys: ['campaign_id', 'status'],
+  },
+  'adset.create': {
+    endpoint: (a) => `/${a}/adsets`,
+    keys: [
+      'campaign_id',
+      ...ADSET_FIELDS,
+      'promoted_object',
+      'destination_type',
+      'attribution_spec',
+      ...META_MONEY_KEYS,
+    ],
+  },
+  'adset.update': {
+    endpoint: (_a, p) => `/${p.adset_id}`,
+    objectKey: 'adset_id',
+    keys: ['adset_id', ...ADSET_FIELDS, ...META_MONEY_KEYS],
+  },
+  'adset.update_status': {
+    endpoint: (_a, p) => `/${p.adset_id}`,
+    objectKey: 'adset_id',
+    keys: ['adset_id', 'status'],
+  },
+  'creative.create': {
+    endpoint: (a) => `/${a}/adcreatives`,
+    keys: [
+      'name',
+      'object_story_spec',
+      'object_story_id',
+      'asset_feed_spec',
+      'url_tags',
+      'degrees_of_freedom_spec',
+    ],
+  },
+  'ad.create': { endpoint: (a) => `/${a}/ads`, keys: ['adset_id', ...AD_FIELDS] },
+  'ad.update': {
+    endpoint: (_a, p) => `/${p.ad_id}`,
+    objectKey: 'ad_id',
+    keys: ['ad_id', ...AD_FIELDS],
+  },
+  'ad.update_status': {
+    endpoint: (_a, p) => `/${p.ad_id}`,
+    objectKey: 'ad_id',
+    keys: ['ad_id', 'status'],
+  },
   // A/B 테스트(split test). business_id·study_id는 경로에만 쓰고 본문으로 보내지 않는다.
-  // 소속 확인은 account_id가 아니라 business로 한다(assertActionInAccount).
+  // 소속 확인은 business와 cells로 한다(assertActionInAccount).
   'adstudy.create': {
     endpoint: (_a, p) => `/${p.business_id}/ad_studies`,
     pathParams: ['business_id'],
+    keys: ['business_id', ...STUDY_FIELDS, 'type', 'objectives', 'confidence_level'],
   },
-  'adstudy.update': { endpoint: (_a, p) => `/${p.study_id}`, pathParams: ['study_id'] },
+  'adstudy.update': {
+    endpoint: (_a, p) => `/${p.study_id}`,
+    pathParams: ['study_id'],
+    keys: ['study_id', ...STUDY_FIELDS],
+  },
 } as const satisfies Record<string, MetaActionSpec>
 
 export type MetaActionName = keyof typeof META_ACTIONS
 
 // 예산 파라미터를 실을 수 있는 액션 — metaSpendKrw로 지출 금액을 알려 승인 한도 판정(requiredDecisionRole)에 쓴다.
+// 지출 키(META_MONEY_KEYS)는 이 액션들의 허용 목록에만 있다(테스트가 강제).
 export const META_BUDGET_ACTIONS: ReadonlySet<MetaActionName> = new Set<MetaActionName>([
   'campaign.create',
   'campaign.update',
@@ -70,13 +159,12 @@ export const META_BUDGET_ACTIONS: ReadonlySet<MetaActionName> = new Set<MetaActi
 ])
 
 /**
- * 승인 한도 판정용 지출 금액(원). daily_budget·lifetime_budget 중 있는 값의 최댓값, 둘 다 없으면 null.
+ * 승인 한도 판정용 지출 금액(원). 지출 키(예산·지출 상한·입찰가) 중 있는 값의 최댓값, 하나도 없으면 null.
  * KRW 계정 전제: 값이 그대로 원이다(assertMetaTarget이 제안·생성·실행 시점에 KRW로 확인된 계정만 통과시킨다).
- * 값은 변경 후 예산 상한이지 증가분이 아니다. 해석할 수 없는 값(NaN·음수)은 한도를 통과하지 못하도록 MAX_SAFE_INTEGER.
+ * 값은 변경 후 상한이지 증가분이 아니다. 해석할 수 없는 값(NaN·음수)은 한도를 통과하지 못하도록 MAX_SAFE_INTEGER.
  */
 export function metaSpendKrw(params: Params): number | null {
-  const vals = ['daily_budget', 'lifetime_budget']
-    .map((k) => params[k])
+  const vals = META_MONEY_KEYS.map((k) => params[k])
     .filter((v) => v !== undefined && v !== null)
     .map((v) => Number(v))
   if (vals.length === 0) return null
@@ -125,11 +213,32 @@ export function assertMetaTarget(
 }
 
 const NUMERIC_ID = /^\d+$/
+// Graph가 요청 해석에 쓰는 예약 파라미터 — 어떤 액션에서도 보내지 않는다(method=delete 같은 메서드 바꿔치기, 인증 덮어쓰기 차단).
+const RESERVED_KEYS = new Set([
+  'method',
+  'access_token',
+  'appsecret_proof',
+  'batch',
+  'debug',
+  'fields',
+  'suppress_http_code',
+  'include_headers',
+  'pretty',
+  'format',
+  'callback',
+  'locale',
+  'transport',
+  'redirect',
+  'migrations',
+])
+// DELETED는 삭제와 같아서 받지 않는다(삭제 액션은 지원하지 않는다).
+const STATUSES = new Set(['ACTIVE', 'PAUSED', 'ARCHIVED'])
 const CELL_KEYS = new Set(['name', 'description', 'treatment_percentage', 'adsets', 'campaigns'])
 
 /**
- * 액션 이름·params 형태 확인. 경로에 들어가는 id(objectKey·pathParams)는 숫자만 허용한다 —
- * `act_…`나 `/`가 섞이면 다른 객체(광고 계정 자체 등)로 POST가 가기 때문이다.
+ * 액션 이름·params 확인(제안·validateCreate·execute·paramsSchema 공통). 승인한 것만 실행되도록
+ * params 키는 액션별 허용 목록만 받고, Graph 예약 파라미터는 따로 거부한다. 경로에 들어가는 id(objectKey·pathParams)는
+ * 숫자만 허용한다 — `act_…`나 `/`가 섞이면 다른 객체(광고 계정 자체 등)로 POST가 가기 때문이다.
  */
 export function validateMetaAction(input: { action: unknown; params: unknown }): {
   action: MetaActionName
@@ -144,6 +253,17 @@ export function validateMetaAction(input: { action: unknown; params: unknown }):
   const action = input.action as MetaActionName
   const params = input.params as Params
   const spec: MetaActionSpec = META_ACTIONS[action]
+  for (const key of Object.keys(params)) {
+    if (RESERVED_KEYS.has(key.toLowerCase()) || key.startsWith('_')) {
+      throw new ToolUserError(`예약된 파라미터는 보낼 수 없습니다: ${key}`)
+    }
+    if (!spec.keys.includes(key)) {
+      throw new ToolUserError(`${action}에 허용하지 않는 파라미터입니다: ${key}`)
+    }
+  }
+  if (params.status !== undefined && !STATUSES.has(String(params.status))) {
+    throw new ToolUserError('status는 ACTIVE·PAUSED·ARCHIVED만 허용합니다')
+  }
   for (const key of [...(spec.objectKey ? [spec.objectKey] : []), ...(spec.pathParams ?? [])]) {
     if (!NUMERIC_ID.test(String(params[key] ?? ''))) {
       throw new ToolUserError(`params.${key}는 숫자 id여야 합니다`)
@@ -186,6 +306,16 @@ function appSecretProof(s: MetaSecret): string {
   return crypto.createHmac('sha256', s.appSecret).update(s.accessToken).digest('hex')
 }
 
+/** Graph API가 거부·실패한 오류 — 실행 경로는 이 오류만 자격증명 lastError에 기록한다. */
+export class MetaApiError extends ToolUserError {
+  constructor(message: string) {
+    super(message)
+    this.name = 'MetaApiError'
+  }
+}
+
+const GRAPH_TIMEOUT_MS = 15_000
+
 /** Graph API 호출. 토큰은 서버 안에서만 쓰고, 응답의 토큰 포함 URL은 지우고, 오류 문구는 마스킹한다. */
 export async function graphRequest(
   cred: Pick<MetaCred, 'secret' | 'config'>,
@@ -202,16 +332,26 @@ export async function graphRequest(
   const entries = Object.entries(params).filter(
     ([, v]) => v !== undefined && v !== null && v !== ''
   )
-  const init: RequestInit = { method }
+  const init: RequestInit = { method, signal: AbortSignal.timeout(GRAPH_TIMEOUT_MS) }
   if (method === 'GET') {
     for (const [k, v] of entries) url.searchParams.set(k, encode(v))
   } else {
     init.body = new URLSearchParams(entries.map(([k, v]) => [k, encode(v)]))
   }
-  const res = await fetch(url, init)
+  let res: Response
+  try {
+    res = await fetch(url, init)
+  } catch (err) {
+    // 오류 객체에 요청 URL(토큰 포함)이 섞일 수 있어 원문을 쓰지 않는다.
+    throw new MetaApiError(
+      err instanceof Error && err.name === 'TimeoutError'
+        ? 'Meta API 응답이 없습니다(시간 초과)'
+        : 'Meta API에 연결하지 못했습니다'
+    )
+  }
   const body = (await res.json().catch(() => ({}))) as { error?: { message?: string } }
   if (!res.ok) {
-    throw new ToolUserError(
+    throw new MetaApiError(
       maskSecrets(body?.error?.message || `Meta API 요청 실패 (${res.status})`)
     )
   }
@@ -250,17 +390,50 @@ export async function assertObjectInAccount(
   }
 }
 
-async function businessOf(cred: MetaCred, objectId: string): Promise<string | undefined> {
-  const r = (await graphRequest(cred, 'GET', `/${encodeURIComponent(objectId)}`, {
-    fields: 'business',
-  })) as { business?: { id?: string } }
-  return r.business?.id
+const BUSINESS_UNVERIFIED = '광고 계정의 비즈니스를 확인할 수 없어 실행하지 않았습니다'
+
+async function graphGet<T>(cred: MetaCred, objectId: string, fields: string): Promise<T> {
+  return (await graphRequest(cred, 'GET', `/${encodeURIComponent(objectId)}`, { fields })) as T
+}
+
+// Graph 목록은 배열이거나 { data: [...] }(필드 확장 edge)다. 다음 페이지가 있으면 전부 확인할 수 없으므로 undefined.
+function graphList(v: unknown): unknown[] | undefined {
+  if (Array.isArray(v)) return v
+  if (v && typeof v === 'object' && Array.isArray((v as { data?: unknown }).data)) {
+    return (v as { paging?: { next?: unknown } }).paging?.next
+      ? undefined
+      : (v as { data: unknown[] }).data
+  }
+  return undefined
+}
+
+/** cells(입력 또는 기존 study)의 광고세트·캠페인이 모두 Space 광고 계정 소속인지 확인한다. */
+async function assertCellsInAccount(cred: MetaCred, cells: unknown[], adAccountId: string) {
+  for (const cell of cells) {
+    if (!cell || typeof cell !== 'object') {
+      throw new ToolUserError('cells 형식이 올바르지 않습니다')
+    }
+    for (const key of ['adsets', 'campaigns'] as const) {
+      const raw = (cell as Record<string, unknown>)[key]
+      if (raw === undefined) continue
+      const ids = graphList(raw)
+      if (!ids) throw new ToolUserError(`cells.${key}를 확인할 수 없어 실행하지 않았습니다`)
+      for (const item of ids) {
+        const id = item && typeof item === 'object' ? (item as { id?: unknown }).id : item
+        if (!NUMERIC_ID.test(String(id))) {
+          throw new ToolUserError(`cells.${key}의 id는 숫자여야 합니다`)
+        }
+        await assertObjectInAccount(cred, String(id), adAccountId)
+      }
+    }
+  }
 }
 
 /**
  * 실행 직전 Space 경계 확인(Graph 조회). 원본에는 없는 workdeck 규칙이다.
  * - 기존 객체 수정: 객체의 account_id가 Space 광고 계정이어야 한다.
- * - adstudy: 대상 비즈니스가 광고 계정을 소유한 비즈니스여야 하고, cells의 캠페인·광고세트가 모두 Space 광고 계정 소속이어야 한다.
+ * - adstudy: 대상 비즈니스가 광고 계정을 소유한 비즈니스여야 하고, cells(입력과, update면 기존 study의 cells)의
+ *   캠페인·광고세트가 모두 Space 광고 계정 소속이어야 한다. 같은 비즈니스의 다른 계정 study 수정을 막는다.
  */
 export async function assertActionInAccount(
   cred: MetaCred,
@@ -272,14 +445,31 @@ export async function assertActionInAccount(
   if (spec.objectKey) await assertObjectInAccount(cred, String(params[spec.objectKey]), adAccountId)
   if (action !== 'adstudy.create' && action !== 'adstudy.update') return
 
-  const accountBusiness = await businessOf(cred, adAccountId)
-  const targetBusiness =
-    action === 'adstudy.create'
-      ? String(params.business_id)
-      : await businessOf(cred, String(params.study_id))
-  if (!accountBusiness || targetBusiness !== accountBusiness) {
-    throw new ToolUserError('이 Space 광고 계정의 비즈니스가 아닙니다')
+  const account = await graphGet<{ business?: { id?: string } }>(cred, adAccountId, 'business')
+  const accountBusiness = account.business?.id
+  if (!accountBusiness) throw new ToolUserError(BUSINESS_UNVERIFIED)
+
+  if (action === 'adstudy.create') {
+    if (String(params.business_id) !== accountBusiness) {
+      throw new ToolUserError('이 Space 광고 계정의 비즈니스가 아닙니다')
+    }
+  } else {
+    // ponytail: cells·cells 안 목록 모두 한 페이지(limit 100·500)만 본다. 다음 페이지가 있으면 거부(닫힌 쪽 실패).
+    const study = await graphGet<{ business?: { id?: string }; cells?: unknown }>(
+      cred,
+      String(params.study_id),
+      'business,cells.limit(100){adsets.limit(500){id},campaigns.limit(500){id}}'
+    )
+    if (!study.business?.id) throw new ToolUserError(BUSINESS_UNVERIFIED)
+    if (study.business.id !== accountBusiness) {
+      throw new ToolUserError('이 Space 광고 계정의 비즈니스가 아닙니다')
+    }
+    const existing = graphList(study.cells)
+    if (!existing)
+      throw new ToolUserError('기존 A/B 테스트의 cells를 확인할 수 없어 실행하지 않았습니다')
+    await assertCellsInAccount(cred, existing, adAccountId)
   }
+
   if (params.cells === undefined) return
   const cells = typeof params.cells === 'string' ? safeJson(params.cells) : params.cells
   if (!Array.isArray(cells)) throw new ToolUserError('params.cells는 배열이어야 합니다')
@@ -288,19 +478,8 @@ export async function assertActionInAccount(
     const unknownKey =
       cell && typeof cell === 'object' && Object.keys(cell).find((k) => !CELL_KEYS.has(k))
     if (unknownKey) throw new ToolUserError(`cells에 허용하지 않는 키입니다: ${unknownKey}`)
-    if (!cell || typeof cell !== 'object')
-      throw new ToolUserError('params.cells 형식이 올바르지 않습니다')
-    for (const key of ['adsets', 'campaigns'] as const) {
-      const ids = (cell as Record<string, unknown>)[key]
-      if (ids === undefined) continue
-      if (!Array.isArray(ids)) throw new ToolUserError(`cells.${key}는 배열이어야 합니다`)
-      for (const id of ids) {
-        if (!NUMERIC_ID.test(String(id)))
-          throw new ToolUserError(`cells.${key}의 id는 숫자여야 합니다`)
-        await assertObjectInAccount(cred, String(id), adAccountId)
-      }
-    }
   }
+  await assertCellsInAccount(cred, cells, adAccountId)
 }
 
 function safeJson(s: string): unknown {

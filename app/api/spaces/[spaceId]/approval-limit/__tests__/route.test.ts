@@ -1,9 +1,11 @@
 /** @jest-environment node */
 jest.mock('@/lib/prisma', () => ({ prisma: { space: { update: jest.fn() } } }))
 jest.mock('@/lib/agent/identity/space-admin', () => ({ requireSpaceOwner: jest.fn() }))
+jest.mock('@/lib/auth/mfa', () => ({ requireAal2: jest.fn() }))
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireSpaceOwner } from '@/lib/agent/identity/space-admin'
+import { requireAal2 } from '@/lib/auth/mfa'
 import { PUT } from '../route'
 
 const call = (body: unknown) =>
@@ -15,7 +17,10 @@ const call = (body: unknown) =>
     { params: Promise.resolve({ spaceId: 'sp1' }) }
   )
 
-beforeEach(() => jest.clearAllMocks())
+beforeEach(() => {
+  jest.clearAllMocks()
+  ;(requireAal2 as jest.Mock).mockResolvedValue(null)
+})
 
 it('OWNER가 아니면 403이고 DB를 쓰지 않는다', async () => {
   ;(requireSpaceOwner as jest.Mock).mockResolvedValue({
@@ -23,6 +28,25 @@ it('OWNER가 아니면 403이고 DB를 쓰지 않는다', async () => {
   })
   expect((await call({ approvalLimitKrw: 100000 })).status).toBe(403)
   expect(prisma.space.update).not.toHaveBeenCalled()
+})
+
+it('OWNER라도 MFA(aal2) 미충족이면 403 MFA_REQUIRED, DB를 쓰지 않는다', async () => {
+  ;(requireSpaceOwner as jest.Mock).mockResolvedValue({ userId: 'u1' })
+  ;(requireAal2 as jest.Mock).mockResolvedValue(
+    NextResponse.json({ code: 'MFA_REQUIRED' }, { status: 403 })
+  )
+  const res = await call({ approvalLimitKrw: 100000 })
+  expect(res.status).toBe(403)
+  await expect(res.json()).resolves.toMatchObject({ code: 'MFA_REQUIRED' })
+  expect(prisma.space.update).not.toHaveBeenCalled()
+})
+
+it('OWNER가 아니면 MFA 검사 전에 거부한다', async () => {
+  ;(requireSpaceOwner as jest.Mock).mockResolvedValue({
+    error: NextResponse.json({}, { status: 403 }),
+  })
+  await call({ approvalLimitKrw: 1 })
+  expect(requireAal2).not.toHaveBeenCalled()
 })
 
 it('OWNER는 한도를 저장한다(null 허용)', async () => {

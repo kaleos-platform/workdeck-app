@@ -1,11 +1,12 @@
 /**
  * PUT — 승인 한도(원). 이 금액을 넘는 지출 제안은 OWNER만 승인한다. null = 한도 없음(= 0원, 지출 제안은 모두 OWNER).
- * OWNER 전용이고 MCP 도구는 두지 않는다(승인 정책을 에이전트가 바꾸지 못하게 한다).
+ * OWNER + MFA(aal2) 전용이고 MCP 도구는 두지 않는다(승인 정책을 에이전트가 바꾸지 못하게 한다).
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { errorResponse } from '@/lib/api-helpers'
+import { requireAal2 } from '@/lib/auth/mfa'
 import { requireSpaceOwner } from '@/lib/agent/identity/space-admin'
 
 type Ctx = { params: Promise<{ spaceId: string }> }
@@ -17,6 +18,9 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   const { spaceId } = await params
   const auth = await requireSpaceOwner(spaceId)
   if ('error' in auth) return auth.error
+  // 승인 정책 변경은 자격증명 저장과 같은 MFA(aal2) 관문을 둔다(컨트롤러 결정). 본문을 읽기 전에 막는다.
+  const mfaError = await requireAal2()
+  if (mfaError) return mfaError
   const parsed = bodySchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) return errorResponse('입력값이 올바르지 않습니다', 400)
   const space = await prisma.space.update({

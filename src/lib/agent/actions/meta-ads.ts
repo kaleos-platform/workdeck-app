@@ -9,6 +9,7 @@ import {
   graphRequest,
   loadMetaCred,
   metaActionRequest,
+  MetaApiError,
   metaSpendKrw,
   recordMetaError,
   validateMetaAction,
@@ -17,14 +18,22 @@ import {
 } from '@/lib/agent/integrations/meta-ads'
 import type { ActionDefinition } from './types'
 
-const paramsSchema = z.object({
+const baseSchema = z.object({
   brand: z.string().min(1), // 대상은 brand → 현재 config로 다시 해석한다. adAccountId는 비교용
   adAccountId: z.string().regex(/^act_\d+$/),
   params: z.record(z.string(), z.unknown()),
 })
-type Params = z.infer<typeof paramsSchema>
+type Params = z.infer<typeof baseSchema>
 
 function defineMetaAction(name: MetaActionName): ActionDefinition<Params> {
+  // 저장된 payload도 허용 목록을 통과해야 한다 — 실패하면 requiredDecisionRole이 OWNER로 판정하고 생성도 거부된다.
+  const paramsSchema = baseSchema.superRefine((p, issue) => {
+    try {
+      validateMetaAction({ action: name, params: p.params })
+    } catch (err) {
+      issue.addIssue({ code: 'custom', message: err instanceof Error ? err.message : String(err) })
+    }
+  })
   return {
     actionType: `meta-ads.${name}`,
     deckKey: 'meta-ads',
@@ -51,12 +60,13 @@ function defineMetaAction(name: MetaActionName): ActionDefinition<Params> {
         action: name,
         adAccountId: p.adAccountId,
       })
-      await assertActionInAccount(cred, name, p.params, adAccountId)
       const { endpoint, body } = metaActionRequest(name, adAccountId, p.params)
       try {
+        await assertActionInAccount(cred, name, p.params, adAccountId)
         return await graphRequest(cred, 'POST', endpoint, body)
       } catch (err) {
-        await recordMetaError(cred.id, err)
+        // 소속 확인 GET·실행 POST의 Graph 오류(토큰 만료 등)만 기록한다. 경계 거부는 자격증명 문제가 아니다.
+        if (err instanceof MetaApiError) await recordMetaError(cred.id, err)
         throw err
       }
     },
