@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { loadSpaceCredentialConfig } from '@/lib/agent/integrations/space-credential'
 import {
+  AGENT_GTM_TAG_TYPES,
+  AGENT_GTM_VARIABLE_TYPES,
   GA4_ADMIN_BASE,
   GA4_DATA_BASE,
   GOOGLE_ACTIONS,
@@ -91,7 +93,7 @@ const gtmGet: ToolDefinition = {
 
 const propose: ToolDefinition = {
   name: 'google_marketing_propose_action',
-  description: `GA4·GTM 변경을 제안합니다(${Object.keys(GOOGLE_ACTIONS).join(', ')}). 즉시 실행되지 않고 승인 대기 큐에 등록되며, 구성원이 승인한 뒤에만 Google API를 호출합니다. params는 액션별 허용 키만 받고, name/parent/path는 이 브랜드 속성·컨테이너의 리소스 경로여야 합니다. gtm.*.update는 PUT(전체 교체)이라 리소스 전체 본문을 보내야 합니다 — gtm_get 결과에서 accountId·containerId·workspaceId·tagId/triggerId/variableId·fingerprint·tagManagerUrl은 빼세요. GA4 patch는 updateMask를 함께 보내세요. GTM 맞춤 HTML 태그(html)·맞춤 JavaScript 변수(jsm)·맞춤 이미지 태그(img)는 만들거나 고칠 수 없습니다. ga4.measurement_protocol_secret.create로 만든 비밀값은 결과에서 가려지므로 GA4 화면에서 확인해야 합니다. gtm.version.publish는 OWNER 승인이 필요합니다.`,
+  description: `GA4·GTM 변경을 제안합니다(${Object.keys(GOOGLE_ACTIONS).join(', ')}). 즉시 실행되지 않고 승인 대기 큐에 등록되며, 구성원이 승인한 뒤에만 Google API를 호출합니다. params는 액션별 허용 키만 받고, name/parent/path는 이 브랜드 속성·컨테이너의 리소스 경로여야 합니다. gtm.*.update는 PUT(전체 교체)이라 리소스 전체 본문을 보내야 합니다 — gtm_get 결과에서 accountId·containerId·workspaceId·tagId/triggerId/variableId·fingerprint·tagManagerUrl은 빼세요. GA4 patch는 updateMask를 함께 보내세요. GTM 태그·변수는 표준 타입만 다룰 수 있습니다(태그 ${[...AGENT_GTM_TAG_TYPES].join('·')}, 변수 ${[...AGENT_GTM_VARIABLE_TYPES].join('·')}; create는 type 필수). 맞춤 HTML·JavaScript·이미지·커스텀 템플릿은 GTM 화면에서 사람이 만듭니다. ga4.measurement_protocol_secret.create로 만든 비밀값은 결과에서 가려지므로 GA4 화면에서 확인해야 합니다. gtm.version.publish는 OWNER 승인이 필요합니다.`,
   inputSchema: {
     brand,
     action: z.enum(Object.keys(GOOGLE_ACTIONS) as [string, ...string[]]),

@@ -18,6 +18,8 @@ import { prisma } from '@/lib/prisma'
 import { createPendingAction } from '@/lib/agent/actions/create'
 import { maskSecrets } from '@/lib/agent/audit'
 import {
+  AGENT_GTM_TAG_TYPES,
+  AGENT_GTM_VARIABLE_TYPES,
   GOOGLE_ACTIONS,
   GTM_BASE,
   assertPathInTarget,
@@ -301,17 +303,37 @@ describe('google-marketing (포팅)', () => {
     expect(JSON.parse(init.body)).toEqual({ name: 'v', type: 'c' })
     expect(c.decryptedCredentialIds).toEqual(['gcred'])
   })
-  describe('GTM 맞춤 HTML·JS·이미지 금지(운영 결정)', () => {
+  describe('GTM 태그·변수 타입 허용 목록(운영 결정)', () => {
     const WSP = 'accounts/222/containers/333/workspaces/1'
+    const tagC = (type?: unknown) =>
+      ['gtm.tag.create', { parent: WSP, name: 't', ...(type === undefined ? {} : { type }) }] as [
+        string,
+        object,
+      ]
+    const varC = (type?: unknown) =>
+      [
+        'gtm.variable.create',
+        { parent: WSP, name: 'v', ...(type === undefined ? {} : { type }) },
+      ] as [string, object]
     const BLOCKED: Array<[string, object]> = [
-      ['gtm.tag.create', { parent: WSP, name: 't', type: 'html' }],
-      ['gtm.tag.create', { parent: WSP, name: 't', type: 'HTML' }],
-      ['gtm.tag.create', { parent: WSP, name: 't', type: 'img' }],
+      tagC('html'),
+      tagC('HTML'),
+      tagC('img'),
+      tagC('cvt_x'),
+      tagC('ua'),
+      tagC('unknown'),
+      tagC(),
+      tagC(['gaawe']),
+      tagC(null),
       ['gtm.tag.update', { path: `${WSP}/tags/1`, name: 't', type: 'Html' }],
-      ['gtm.tag.update', { path: `${WSP}/tags/1`, name: 't', type: 'img' }],
-      ['gtm.variable.create', { parent: WSP, name: 'v', type: 'jsm' }],
+      ['gtm.tag.update', { path: `${WSP}/tags/1`, name: 't', type: 'cvt_abc' }],
+      varC('jsm'),
+      varC('j'),
+      varC('cvt_x'),
+      varC('unknown'),
+      varC(),
+      varC('gaawe'),
       ['gtm.variable.update', { path: `${WSP}/variables/1`, name: 'v', type: 'JSM' }],
-      ['gtm.tag.create', { parent: WSP, name: 't', type: ['html'] }],
     ]
     it.each(BLOCKED)(
       '%s %j → 제안·paramsSchema·validateCreate·execute 모두 거부',
@@ -336,37 +358,63 @@ describe('google-marketing (포팅)', () => {
     it('거부 문구', () => {
       expect(() =>
         validateGoogleAction({ action: 'gtm.tag.create', params: { parent: WSP, type: 'html' } })
-      ).toThrow('맞춤 HTML·JavaScript·이미지 태그는 에이전트가 만들 수 없습니다')
+      ).toThrow('표준 GTM 태그 타입')
+      expect(() =>
+        validateGoogleAction({ action: 'gtm.tag.create', params: { parent: WSP, type: 'html' } })
+      ).toThrow('GTM 화면에서 직접 만들어 주세요')
+      expect(() =>
+        validateGoogleAction({ action: 'gtm.tag.create', params: { parent: WSP } })
+      ).toThrow('type이 필요합니다')
     })
-    it.each(['gaawe', 'googtag'])('GA4 이벤트 태그(%s)는 허용', async (type) => {
+    it.each(
+      [...AGENT_GTM_TAG_TYPES, 'GAAWE']
+        .map((t) => tagC(t))
+        .concat([...AGENT_GTM_VARIABLE_TYPES].map((t) => varC(t)))
+    )('허용 타입 %s %j → 제안 통과', async (a, params) => {
       await tool('google_marketing_propose_action').execute(ctx(), {
-        action: 'gtm.tag.create',
-        params: { parent: WSP, name: 't', type },
+        action: a,
+        params,
+        summary: 'x',
+      })
+      expect(createPendingAction).toHaveBeenCalled()
+    })
+    it('허용 목록 내용', () => {
+      expect([...AGENT_GTM_TAG_TYPES].sort()).toEqual(['awct', 'gaawe', 'gclidw', 'googtag', 'sp'])
+      expect(AGENT_GTM_VARIABLE_TYPES.has('jsm')).toBe(false)
+      expect(AGENT_GTM_VARIABLE_TYPES.has('j')).toBe(false)
+    })
+    it('update에서 type 생략은 허용(기존 type 유지) — 기존 type은 실행 시 확인', async () => {
+      await tool('google_marketing_propose_action').execute(ctx(), {
+        action: 'gtm.tag.update',
+        params: { path: `${WSP}/tags/1`, name: 't' },
         summary: 'x',
       })
       expect(createPendingAction).toHaveBeenCalled()
     })
     it.each([
-      ['gtm.tag.update', `${WSP}/tags/1`, 'html'],
-      ['gtm.tag.update', `${WSP}/tags/1`, 'img'],
-      ['gtm.variable.update', `${WSP}/variables/1`, 'jsm'],
-      ['gtm.tag.update', `${WSP}/tags/1`, undefined],
-    ])('기존 리소스가 %s(%s→%s)이면 실행 거부, PUT 미호출', async (a, path, existingType) => {
-      fetchMock.mockImplementation(async (url: string | URL) =>
-        String(url).includes('oauth2')
-          ? { ok: true, json: async () => ({ access_token: 'at' }) }
-          : { ok: true, json: async () => ({ type: existingType, firingTriggerId: ['1'] }) }
-      )
-      // 에이전트는 type을 gaawe로 보내며 발동 트리거만 바꾸려 한다
-      await expect(
-        action(a).execute(execCtx(), {
-          target: TARGET,
-          params: { path, name: 'x', type: 'gaawe', firingTriggerId: ['2'] },
-        })
-      ).rejects.toThrow()
-      expect(fetchMock.mock.calls.every(([, init]) => init?.method !== 'PUT')).toBe(true)
-    })
-    it('기존 GA4 이벤트 태그 update는 GET 확인 후 PUT', async () => {
+      ['gtm.tag.update', `${WSP}/tags/1`, 'html', 'gaawe'],
+      ['gtm.tag.update', `${WSP}/tags/1`, 'img', 'gaawe'],
+      ['gtm.tag.update', `${WSP}/tags/1`, 'cvt_123', 'gaawe'],
+      ['gtm.tag.update', `${WSP}/tags/1`, 'cvt_123', undefined],
+      ['gtm.tag.update', `${WSP}/tags/1`, undefined, 'gaawe'],
+      ['gtm.variable.update', `${WSP}/variables/1`, 'jsm', 'c'],
+      ['gtm.variable.update', `${WSP}/variables/1`, 'cvt_9', undefined],
+    ])(
+      '기존 %s(%s)가 %s이면 새 type %s여도 실행 거부, PUT 미호출',
+      async (a, path, existingType, newType) => {
+        fetchMock.mockImplementation(async (url: string | URL) =>
+          String(url).includes('oauth2')
+            ? { ok: true, json: async () => ({ access_token: 'at' }) }
+            : { ok: true, json: async () => ({ type: existingType, firingTriggerId: ['1'] }) }
+        )
+        const params = { path, name: 'x', ...(newType ? { type: newType } : {}) }
+        await expect(action(a).execute(execCtx(), { target: TARGET, params })).rejects.toThrow(
+          '표준 GTM'
+        )
+        expect(fetchMock.mock.calls.every(([, init]) => init?.method !== 'PUT')).toBe(true)
+      }
+    )
+    it('기존 GA4 이벤트 태그 update(type 생략)는 GET 확인 후 PUT', async () => {
       fetchMock.mockImplementation(async (url: string | URL) =>
         String(url).includes('oauth2')
           ? { ok: true, json: async () => ({ access_token: 'at' }) }
@@ -374,7 +422,7 @@ describe('google-marketing (포팅)', () => {
       )
       await action('gtm.tag.update').execute(execCtx(), {
         target: TARGET,
-        params: { path: `${WSP}/tags/1`, name: 't', type: 'gaawe' },
+        params: { path: `${WSP}/tags/1`, name: 't' },
       })
       expect(fetchMock.mock.calls.map(([, init]) => init.method)).toEqual([
         'POST',

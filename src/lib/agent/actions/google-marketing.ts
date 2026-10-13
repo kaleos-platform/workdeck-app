@@ -60,9 +60,10 @@ function define(action: string): ActionDefinition<Params> {
       const cred = await loadGoogleCred(ctx.spaceId, ctx.decryptedCredentialIds)
       const url = actionUrl(action, p.params, assertGoogleTarget(cred.config, p.target))
       if (action === 'gtm.tag.update' || action === 'gtm.variable.update') {
-        // 기존 맞춤 HTML 태그·JS 변수의 다른 필드(발동 트리거 등)를 고쳐 되살리는 것을 막는다 — 기존 type을 조회해 확인한다.
+        // 허용 목록 밖의 기존 태그·변수(맞춤 HTML·커스텀 템플릿 등)의 다른 필드(발동 트리거 등)를 고쳐 되살리는 것을 막는다.
+        // 새 type(있으면)은 validateGoogleAction이 이미 확인했다. 기존 type도 허용 목록이어야 한다.
         const existing = (await googleRequest(cred, 'GET', url)) as { type?: unknown }
-        assertAgentGtmType(existing?.type)
+        assertAgentGtmType(existing?.type ?? null, action === 'gtm.tag.update' ? 'tag' : 'variable')
       }
       return googleRequest(cred, spec.method, url, cleanBodyParams(p.params, action))
     },

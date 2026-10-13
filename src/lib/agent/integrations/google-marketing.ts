@@ -380,17 +380,44 @@ export function assertQueryKeys(query: Record<string, string>): Record<string, s
   return query
 }
 
-// 운영 결정(2026-10-14, Task 11 리뷰 Important #1): 임의 스크립트·임의 URL 전송이 되는 GTM 맞춤 HTML 태그(html)·
-// 맞춤 JavaScript 변수(jsm)·맞춤 이미지 태그(img)는 에이전트가 만들거나 고칠 수 없다. 승인 화면에 내용이 보이지 않기 때문이다.
-// GA4 이벤트 태그(gaawe)·Google 태그(googtag) 등은 허용한다.
-const AGENT_BLOCKED_GTM_TYPES = new Set(['html', 'jsm', 'img'])
+// 운영 결정(2026-10-14, Task 11 리뷰·재리뷰): 에이전트는 코드 없는 표준 GTM 타입만 만들거나 고칠 수 있다(허용 목록).
+// 맞춤 HTML(html)·맞춤 JS 변수(jsm)·맞춤 이미지(img)·커스텀 템플릿(cvt_*)·레거시 UA·서드파티 픽셀·알 수 없는 타입은
+// 임의 코드 실행이나 임의 URL 전송이 될 수 있는데 승인 화면에 내용이 보이지 않으므로 모두 거부한다.
+// 여기에 타입을 추가할 때는 그 타입이 임의 코드를 실행할 수 없는 경우에만 추가한다(add a type here only if it cannot run custom code).
+export const AGENT_GTM_TAG_TYPES: ReadonlySet<string> = new Set([
+  'gaawe', // GA4 이벤트
+  'googtag', // Google 태그
+  'awct', // Google Ads 전환 추적
+  'sp', // Google Ads 리마케팅
+  'gclidw', // 전환 링커
+])
+export const AGENT_GTM_VARIABLE_TYPES: ReadonlySet<string> = new Set([
+  'v', // 데이터 영역
+  'c', // 상수
+  'u', // URL
+  'k', // 1st-party 쿠키
+  'e', // 맞춤 이벤트
+  'aev', // 자동 이벤트
+  'd', // DOM 요소
+  'f', // 리퍼러
+  'smm', // 조회 테이블
+  'remm', // 정규식 테이블
+  'gas', // Google 애널리틱스 설정
+  'gtes', // Google 태그: 이벤트 설정
+  // 'j'(JavaScript 전역 변수 읽기)는 보수적으로 제외한다.
+])
 
-/** GTM 태그·변수 type 확인(제안 params와 실행 시점의 기존 리소스 모두). 문자열이 아니면 거부한다(닫힌 쪽 실패). */
-export function assertAgentGtmType(type: unknown): void {
-  if (typeof type !== 'string') throw new ToolUserError('GTM type은 문자열이어야 합니다')
-  if (AGENT_BLOCKED_GTM_TYPES.has(type.toLowerCase())) {
+/**
+ * GTM 태그·변수 type 확인(제안 params와 실행 시점의 기존 리소스 모두). 허용 목록에 없거나 문자열이 아니면 거부한다
+ * (닫힌 쪽 실패). 대소문자는 무시한다.
+ */
+export function assertAgentGtmType(type: unknown, kind: 'tag' | 'variable'): void {
+  if (type === undefined)
+    throw new ToolUserError(`GTM ${kind === 'tag' ? '태그' : '변수'} type이 필요합니다`)
+  const allowed = kind === 'tag' ? AGENT_GTM_TAG_TYPES : AGENT_GTM_VARIABLE_TYPES
+  if (typeof type !== 'string' || !allowed.has(type.toLowerCase())) {
     throw new ToolUserError(
-      '맞춤 HTML·JavaScript·이미지 태그는 에이전트가 만들 수 없습니다. GTM 화면에서 직접 만들어 주세요'
+      `에이전트는 표준 GTM ${kind === 'tag' ? '태그' : '변수'} 타입(${[...allowed].join(', ')})만 만들거나 고칠 수 있습니다. 맞춤 HTML·JavaScript·이미지·커스텀 템플릿 등은 GTM 화면에서 직접 만들어 주세요`
     )
   }
 }
@@ -420,7 +447,15 @@ export function validateGoogleAction(input: { action: unknown; params: unknown }
       throw new ToolUserError(`${action}에 허용하지 않는 파라미터입니다: ${key}`)
     }
   }
-  if (action.startsWith('gtm.') && params.type !== undefined) assertAgentGtmType(params.type)
+  const gtmKind = /^gtm\.(tag|variable)\.(create|update)$/.exec(action)
+  if (gtmKind) {
+    // create는 type 필수. update에서 생략하면 기존 type을 유지한다 — 기존 type은 execute가 조회해 확인한다.
+    if (gtmKind[2] === 'create' || params.type !== undefined) {
+      assertAgentGtmType(params.type, gtmKind[1] as 'tag' | 'variable')
+    }
+  } else if (params.type !== undefined && typeof params.type !== 'string') {
+    throw new ToolUserError('type은 문자열이어야 합니다')
+  }
   if (spec.pathKey && typeof params[spec.pathKey] !== 'string') {
     throw new ToolUserError(`params.${spec.pathKey}는 리소스 경로 문자열이어야 합니다`)
   }
