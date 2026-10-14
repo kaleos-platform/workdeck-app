@@ -4,6 +4,7 @@ import { requireSpaceOwner } from '@/lib/agent/identity/space-admin'
 import { requireAal2 } from '@/lib/auth/mfa'
 import { writeAuditLog } from '@/lib/admin/auth'
 import { errorResponse } from '@/lib/api-helpers'
+import { getAppOrigin } from '@/lib/domain'
 import { sendInviteEmail } from '@/lib/spaces/invite-email'
 import {
   InvitationError,
@@ -47,14 +48,16 @@ export async function POST(request: Request, { params }: Ctx) {
       role: parsed.data.role,
       invitedById: g.userId,
     })
-    const origin = new URL(request.url).origin
-    const invitePath = `/invite/${token}`
-    const mail = await sendInviteEmail({ email, invitePath, origin })
+    // 감사 로그를 메일보다 먼저 — 로그 실패가 '메일은 갔는데 500·링크 없음'을 만들지 않게.
     await writeAuditLog(g.userId, 'space.invitation.create', 'space_invitation', invitation.id, {
       spaceId,
       email,
       role: parsed.data.role,
     })
+    // 요청 Host가 아니라 설정된 앱 origin — Host 헤더로 링크·redirectTo를 조작하지 못하게.
+    const origin = getAppOrigin()
+    const invitePath = `/invite/${token}`
+    const mail = await sendInviteEmail({ email, invitePath, origin })
     return NextResponse.json(
       {
         invitationId: invitation.id,
