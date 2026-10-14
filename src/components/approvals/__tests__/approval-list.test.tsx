@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { toast } from 'sonner'
 import { ApprovalList } from '../approval-list'
 
 jest.mock('next/navigation', () => ({
@@ -32,9 +33,21 @@ const action = {
   updatedAt: '2026-10-14T00:00:00Z',
 }
 
+const res = (status: number, body: unknown) => {
+  const r = { status, ok: status < 300, json: async () => body }
+  return { ...r, clone: () => r }
+}
+function mockList(role: string, overrides: Partial<typeof action> = {}) {
+  global.fetch = jest
+    .fn()
+    .mockResolvedValue(
+      res(200, { actions: [{ ...action, ...overrides }], role })
+    ) as unknown as typeof fetch
+}
+
 beforeEach(() => {
-  const r = { status: 200, ok: true, json: async () => ({ actions: [action], role: 'OWNER' }) }
-  global.fetch = jest.fn().mockResolvedValue({ ...r, clone: () => r }) as unknown as typeof fetch
+  jest.clearAllMocks()
+  mockList('OWNER')
 })
 
 it('상세 시트에 실제 파라미터를 텍스트로 보여준다(HTML로 해석하지 않음)', async () => {
@@ -45,4 +58,27 @@ it('상세 시트에 실제 파라미터를 텍스트로 보여준다(HTML로 �
   expect(document.querySelector('script')).toBeNull()
   expect(screen.getByText('50,000원')).toBeInTheDocument()
   expect(screen.getByText('OWNER')).toBeInTheDocument()
+})
+
+it('OWNER가 필요한 액션은 ADMIN에게 승인 버튼을 막고 "OWNER 승인 필요"를 보여준다(거부는 가능)', async () => {
+  mockList('ADMIN')
+  render(<ApprovalList />)
+  fireEvent.click(await screen.findByText('캠페인 예산 변경'))
+
+  expect(await screen.findByText(/OWNER 승인 필요/)).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '승인' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: '거부' })).toBeEnabled()
+})
+
+it('PATCH 403이면 서버가 준 사유를 그대로 보여준다', async () => {
+  mockList('ADMIN', { requiredRole: 'ADMIN' })
+  render(<ApprovalList />)
+  fireEvent.click(await screen.findByText('캠페인 예산 변경'))
+  const message = '지출 제안은 OWNER(회사 대표 계정)만 승인할 수 있습니다.'
+  ;(global.fetch as jest.Mock).mockResolvedValueOnce(
+    res(403, { outcome: { ok: false, status: 'FORBIDDEN', message } })
+  )
+  fireEvent.click(await screen.findByRole('button', { name: '승인' }))
+
+  await waitFor(() => expect(toast.error).toHaveBeenCalledWith(message))
 })

@@ -8,7 +8,12 @@ jest.mock('@/lib/worker-auth', () => ({
   assertWorkerOwns: jest.fn(),
   authenticateWorker: jest.fn(),
 }))
-jest.mock('@/lib/prisma', () => ({ prisma: { agentPendingAction: { findMany: jest.fn() } } }))
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    agentPendingAction: { findMany: jest.fn() },
+    space: { findUnique: jest.fn(async () => ({ approvalLimitKrw: 0 })) },
+  },
+}))
 jest.mock('@/lib/agent/actions/create', () => ({ createPendingAction: jest.fn() }))
 jest.mock('@/lib/agent/actions/execute', () => ({ expirePendingActions: jest.fn() }))
 jest.mock('@/lib/agent/actions/actor-label', () => ({

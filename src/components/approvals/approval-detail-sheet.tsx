@@ -23,6 +23,8 @@ type ApprovalDetailSheetProps = {
   onOpenChange: (open: boolean) => void
   /** 사전 조회된 사용자의 space 역할 — ADMIN/OWNER만 승인·거부 가능(기본 requiredRole 가정) */
   canDecide: boolean
+  /** 선택한 Space에서 보는 사람의 역할 — requiredRole=OWNER 액션은 OWNER만 승인 버튼 활성 */
+  viewerRole: string | null
   onDecided: () => void
 }
 
@@ -96,6 +98,7 @@ export function ApprovalDetailSheet({
   open,
   onOpenChange,
   canDecide,
+  viewerRole,
   onDecided,
 }: ApprovalDetailSheetProps) {
   const [isDeciding, setIsDeciding] = useState(false)
@@ -108,6 +111,8 @@ export function ApprovalDetailSheet({
 
   const beforeEntries = toEntries(action.beforeState)
   const isPending = action.status === 'PENDING'
+  // 지출 한도 초과 등 OWNER가 필요한 액션 — 거부는 기본 역할로 가능하므로 승인 버튼만 막는다.
+  const needsOwner = action.requiredRole === 'OWNER' && viewerRole !== 'OWNER'
 
   // 목록 갱신 + 사이드바 배지 갱신(별도 컴포넌트 트리라 커스텀 이벤트로 신호).
   function notifyDecided() {
@@ -129,13 +134,13 @@ export function ApprovalDetailSheet({
         body: JSON.stringify({ action: decision }),
       })
 
-      if (res.status === 403) {
-        toast.error('권한이 없습니다. 승인하려면 ADMIN 권한이 필요합니다.')
-        return
-      }
-
       const data = await res.json().catch(() => null)
       const outcome = data?.outcome
+
+      if (res.status === 403) {
+        toast.error(outcome?.message ?? data?.error ?? '권한이 없습니다.')
+        return
+      }
 
       if (outcome?.status === 'EXPIRED') {
         setOutcomeNote({
@@ -203,7 +208,7 @@ export function ApprovalDetailSheet({
       </Button>
       <Button
         className="flex-1"
-        disabled={!canDecide || isDeciding || !isPending}
+        disabled={!canDecide || needsOwner || isDeciding || !isPending}
         onClick={() => decide('approve')}
       >
         승인
@@ -293,6 +298,11 @@ export function ApprovalDetailSheet({
         </div>
 
         <Separator />
+        {canDecide && needsOwner && isPending && (
+          <p className="px-4 text-sm text-amber-700">
+            OWNER 승인 필요 — 지출 한도를 넘는 액션은 회사 대표 계정(OWNER)만 승인할 수 있습니다.
+          </p>
+        )}
         <SheetFooter className="flex-row">
           {canDecide ? (
             decideButtons

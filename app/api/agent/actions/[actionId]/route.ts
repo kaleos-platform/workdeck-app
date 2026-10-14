@@ -79,14 +79,15 @@ export async function PATCH(
       ? await approveAndExecute(actionId, user.id)
       : await rejectAction(actionId, user.id)
 
+  // 응답의 실행 결과·오류 메시지도 GET과 같은 규칙으로 비밀 값을 가린다(maskParams가 문자열에 maskSecrets 적용).
   // 역할 부족(지출 제안은 OWNER) — 상태 변화 없음.
   if (outcome.status === 'FORBIDDEN') {
-    return NextResponse.json({ outcome }, { status: 403 })
+    return NextResponse.json({ outcome: maskParams(outcome) }, { status: 403 })
   }
 
   // 구독 만료로 차단 — 아무 상태도 바뀌지 않았으므로 Slack 동기화도 하지 않는다.
   if (outcome.status === 'BLOCKED') {
-    return NextResponse.json({ outcome }, { status: 402 })
+    return NextResponse.json({ outcome: maskParams(outcome) }, { status: 402 })
   }
 
   // 결정 후 Slack 원본 메시지를 최종 상태로 동기화(sync 내부가 무해 — no-op·실패 흡수).
@@ -94,5 +95,5 @@ export async function PATCH(
 
   // CONFLICT(이미 처리) 또는 EXPIRED(승인 유효기간 만료)면 409, 그 외는 결과 그대로 200.
   const httpStatus = outcome.status === 'CONFLICT' || outcome.status === 'EXPIRED' ? 409 : 200
-  return NextResponse.json({ outcome }, { status: httpStatus })
+  return NextResponse.json({ outcome: maskParams(outcome) }, { status: httpStatus })
 }

@@ -51,6 +51,11 @@ export async function GET(req: NextRequest) {
   // 행위자·요청자는 사람이 읽는 이름으로 — id(cuid)를 UI에 그대로 보이지 않는다.
   const labels = await describeActors(rows)
   // 승인자가 실제로 실행될 파라미터를 보도록 payload를 내려주되, 비밀로 보이는 값은 서버에서 가린다.
+  // Space 승인 한도는 행마다 같다 — 한 번만 조회한다.
+  const space = await prisma.space.findUnique({
+    where: { id: spaceId },
+    select: { approvalLimitKrw: true },
+  })
   const actions = await Promise.all(
     rows.map(async (r, i) => ({
       ...r,
@@ -59,7 +64,10 @@ export async function GET(req: NextRequest) {
       result: maskParams(r.result),
       actorLabel: labels[i],
       spendKrw: spendKrwOf(r) ?? null,
-      requiredRole: r.status === 'PENDING' ? await requiredDecisionRole(r, 'approve') : null,
+      requiredRole:
+        r.status === 'PENDING'
+          ? await requiredDecisionRole(r, 'approve', space?.approvalLimitKrw ?? null)
+          : null,
     }))
   )
   return NextResponse.json({
