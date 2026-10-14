@@ -4,6 +4,8 @@ const pending = { state: 'pending' as const, inviteEmail: 'invitee@example.com' 
 
 it('무효 초대', () => {
   expect(inviteView({ state: 'expired', inviteEmail: 'a@b.com', user: null })).toBe('invalid')
+  expect(inviteView({ state: 'revoked', inviteEmail: 'a@b.com', user: null })).toBe('invalid')
+  expect(inviteView({ state: 'accepted', inviteEmail: 'a@b.com', user: null })).toBe('invalid')
   expect(inviteView({ state: 'not_found', inviteEmail: null, user: null })).toBe('invalid')
 })
 it('비로그인', () => {
@@ -19,4 +21,9 @@ it('초대 메일로 들어와 비밀번호 미설정이면 needs_password, 설�
   expect(inviteView({ ...pending, user: { ...u, user_metadata: { password_set: true } } })).toBe(
     'ready'
   )
+})
+it('invited_at도 password_set도 없으면 ready', () => {
+  expect(
+    inviteView({ ...pending, user: { email: 'invitee@example.com', user_metadata: {} } })
+  ).toBe('ready')
 })

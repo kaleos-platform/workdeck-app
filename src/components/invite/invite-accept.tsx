@@ -25,6 +25,8 @@ export function InviteAccept({
   const [password, setPassword] = useState('')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [alreadyUsed, setAlreadyUsed] = useState(false)
+  const [passwordDone, setPasswordDone] = useState(false)
   const next = encodeURIComponent(invitePath)
 
   async function accept() {
@@ -35,7 +37,10 @@ export function InviteAccept({
     })
     const body = await res.json().catch(() => null)
     setPending(false)
-    if (!res.ok) return setError(body?.message ?? '초대를 수락하지 못했습니다')
+    if (!res.ok) {
+      setAlreadyUsed(body?.reason === 'accepted')
+      return setError(body?.message ?? '초대를 수락하지 못했습니다')
+    }
     router.replace(`/my-deck?spaceId=${encodeURIComponent(body.spaceId)}`)
   }
 
@@ -46,8 +51,14 @@ export function InviteAccept({
     setPending(true)
     setError(null)
     const { error: e } = await supabase.auth.updateUser({ password, data: { password_set: true } })
-    setPending(false)
-    if (e) return setError('비밀번호를 설정하지 못했습니다. 다시 시도하세요')
+    if (e?.code === 'same_password') {
+      // 이미 같은 비밀번호가 설정돼 있다 — 설정된 것으로 보고 표시만 남긴다.
+      await supabase.auth.updateUser({ data: { password_set: true } })
+    } else if (e) {
+      setPending(false)
+      return setError('비밀번호를 설정하지 못했습니다. 다시 시도하세요')
+    }
+    setPasswordDone(true)
     await accept()
   }
 
@@ -92,7 +103,7 @@ export function InviteAccept({
   }
   return (
     <div className="space-y-3">
-      {view === 'needs_password' && (
+      {view === 'needs_password' && !passwordDone && (
         <Input
           type="password"
           autoComplete="new-password"
@@ -102,9 +113,14 @@ export function InviteAccept({
         />
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
+      {alreadyUsed && (
+        <Link className="text-sm underline" href="/my-deck">
+          내 업무로 이동
+        </Link>
+      )}
       <Button
         disabled={pending}
-        onClick={view === 'needs_password' ? setPasswordAndAccept : accept}
+        onClick={view === 'needs_password' && !passwordDone ? setPasswordAndAccept : accept}
       >
         {view === 'needs_password' ? '비밀번호 정하고 참여하기' : '참여하기'}
       </Button>

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getUser } from '@/hooks/use-user'
 import { findInvitationByToken, invitationState, maskEmail } from '@/lib/spaces/invitations'
 import { inviteView } from '@/lib/spaces/invite-page-state'
@@ -24,6 +25,14 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
       {view === 'invalid' || !inv ? (
         <p className="text-sm text-muted-foreground">
           {INVALID_TEXT[state as keyof typeof INVALID_TEXT]}
+          {state === 'accepted' && (
+            <>
+              {' '}
+              <Link className="underline" href="/my-deck">
+                내 업무로 이동
+              </Link>
+            </>
+          )}
         </p>
       ) : (
         <>

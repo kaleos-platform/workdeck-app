@@ -31,7 +31,10 @@ export function AccountSettingsForm() {
     }
 
     setSaving(true)
-    const { error } = await createClient().auth.updateUser({ password })
+    const { error } = await createClient().auth.updateUser({
+      password,
+      data: { password_set: true },
+    })
     setSaving(false)
 
     if (error) {
