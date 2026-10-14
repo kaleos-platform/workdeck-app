@@ -395,6 +395,7 @@ export const ModelName = {
   DailyMemo: 'DailyMemo',
   Space: 'Space',
   SpaceMember: 'SpaceMember',
+  SpaceInvitation: 'SpaceInvitation',
   AgentPendingAction: 'AgentPendingAction',
   SpaceAgentSetting: 'SpaceAgentSetting',
   SpaceAgent: 'SpaceAgent',
@@ -551,7 +552,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken"
+    modelProps: "user" | "workspace" | "reportUpload" | "adRecord" | "campaignMeta" | "keywordStatus" | "campaignTarget" | "productStatus" | "dailyMemo" | "space" | "spaceMember" | "spaceInvitation" | "agentPendingAction" | "spaceAgentSetting" | "spaceAgent" | "toolAuditLog" | "usageEvent" | "spaceCredential" | "agentToken" | "agentLlmUsage" | "agentConversation" | "slackInstallation" | "spaceSlackChannel" | "deckApp" | "deckInstance" | "coupangCredential" | "coupangApiCredential" | "coupangSourceSetting" | "coupangProductItem" | "coupangWriteJob" | "collectionSchedule" | "coupangBackfillJob" | "collectionRun" | "analysisReport" | "executionTask" | "safetyLimits" | "analysisRule" | "analysisSchedule" | "businessAgent" | "agentLog" | "workerHeartbeat" | "cronRun" | "inventoryUpload" | "inventoryRecord" | "inventoryExcludedProduct" | "inventoryAnalysis" | "invProductGroup" | "invProduct" | "adCampaignProductMap" | "productExtractionJob" | "productExtractionSource" | "invProductOption" | "invStorageLocation" | "invMovement" | "invStockLevel" | "invReorderConfig" | "invImportHistory" | "invReconciliation" | "invLocationProductMap" | "invLocationProductMapItem" | "invSettings" | "delShippingMethod" | "delShippingMethodLabel" | "delBatch" | "delOrder" | "delOrderItem" | "channelProductAlias" | "channelProductAliasFulfillment" | "delColumnMappingPreset" | "delIntegrationHistory" | "brand" | "channelTypeDef" | "channel" | "channelFeeRate" | "productionRun" | "productionRunItem" | "productionRunSet" | "productionRunCost" | "pricingScenario" | "pricingScenarioChannel" | "pricingScenarioItem" | "productPricingSettings" | "spaceOptionCodeAlias" | "spaceAtomicWord" | "productListing" | "productListingItem" | "channelStockMovement" | "delOrderItemFulfillment" | "channelProduct" | "keywordMaster" | "keywordMasterLink" | "channelKeywordRule" | "keywordChangeLog" | "product" | "productPersona" | "persona" | "brandProfile" | "salesContentOnboarding" | "scOnboardingResource" | "spaceAiSetting" | "workspaceAiCredit" | "imageGenerationLog" | "textGenerationLog" | "template" | "salesContentChannel" | "content" | "contentDeployment" | "contentClickEvent" | "channelCredential" | "deploymentMetric" | "salesContentJob" | "contentVersion" | "contentAsset" | "ideation" | "ideationProduct" | "improvementRule" | "reorderPlan" | "reorderPlanSet" | "reorderPlanItem" | "reorderPlanAccuracy" | "finAccount" | "finLiability" | "finCategory" | "finClassRule" | "finMappingPreset" | "finImport" | "finStagedRow" | "finTransaction" | "finBalanceSnapshot" | "hiringStore" | "hiringPosition" | "hiringPosting" | "hiringPostingPosition" | "hiringPostingStore" | "hiringPostingManager" | "hiringContent" | "hiringDetailTemplate" | "hiringApplication" | "hiringApplicationStore" | "hiringUploadSession" | "hiringMigrationRecord" | "hiringApplicationFile" | "hiringComment" | "hiringApplicationNotification" | "hiringBlacklist" | "hiringMessageTemplate" | "billingDeckProduct" | "spaceSubscription" | "subscriptionItem" | "billingMethod" | "billingCharge" | "adminAuditLog" | "workerToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1366,6 +1367,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SpaceMemberCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SpaceMemberCountAggregateOutputType> | number
+        }
+      }
+    }
+    SpaceInvitation: {
+      payload: Prisma.$SpaceInvitationPayload<ExtArgs>
+      fields: Prisma.SpaceInvitationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SpaceInvitationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SpaceInvitationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload>
+        }
+        findFirst: {
+          args: Prisma.SpaceInvitationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SpaceInvitationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload>
+        }
+        findMany: {
+          args: Prisma.SpaceInvitationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload>[]
+        }
+        create: {
+          args: Prisma.SpaceInvitationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload>
+        }
+        createMany: {
+          args: Prisma.SpaceInvitationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SpaceInvitationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload>[]
+        }
+        delete: {
+          args: Prisma.SpaceInvitationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload>
+        }
+        update: {
+          args: Prisma.SpaceInvitationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload>
+        }
+        deleteMany: {
+          args: Prisma.SpaceInvitationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SpaceInvitationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SpaceInvitationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload>[]
+        }
+        upsert: {
+          args: Prisma.SpaceInvitationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SpaceInvitationPayload>
+        }
+        aggregate: {
+          args: Prisma.SpaceInvitationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSpaceInvitation>
+        }
+        groupBy: {
+          args: Prisma.SpaceInvitationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceInvitationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SpaceInvitationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SpaceInvitationCountAggregateOutputType> | number
         }
       }
     }
@@ -12013,6 +12088,23 @@ export const SpaceMemberScalarFieldEnum = {
 export type SpaceMemberScalarFieldEnum = (typeof SpaceMemberScalarFieldEnum)[keyof typeof SpaceMemberScalarFieldEnum]
 
 
+export const SpaceInvitationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  email: 'email',
+  role: 'role',
+  tokenHash: 'tokenHash',
+  invitedById: 'invitedById',
+  expiresAt: 'expiresAt',
+  acceptedAt: 'acceptedAt',
+  acceptedUserId: 'acceptedUserId',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type SpaceInvitationScalarFieldEnum = (typeof SpaceInvitationScalarFieldEnum)[keyof typeof SpaceInvitationScalarFieldEnum]
+
+
 export const AgentPendingActionScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -15798,6 +15890,7 @@ export type GlobalOmitConfig = {
   dailyMemo?: Prisma.DailyMemoOmit
   space?: Prisma.SpaceOmit
   spaceMember?: Prisma.SpaceMemberOmit
+  spaceInvitation?: Prisma.SpaceInvitationOmit
   agentPendingAction?: Prisma.AgentPendingActionOmit
   spaceAgentSetting?: Prisma.SpaceAgentSettingOmit
   spaceAgent?: Prisma.SpaceAgentOmit

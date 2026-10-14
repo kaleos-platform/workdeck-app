@@ -4,12 +4,9 @@ import { prisma } from '@/lib/prisma'
 import { MyDeckClient } from '@/components/my-deck/my-deck-client'
 import { resolveEntitlement } from '@/lib/billing/entitlement'
 
-export default async function MyDeckPage() {
-  const user = await getUser()
-  if (!user) redirect('/login')
-
-  const membership = await prisma.spaceMember.findFirst({
-    where: { userId: user.id },
+function findMembership(where: { userId: string; spaceId?: string }) {
+  return prisma.spaceMember.findFirst({
+    where,
     select: {
       role: true,
       space: {
@@ -32,6 +29,23 @@ export default async function MyDeckPage() {
       },
     },
   })
+}
+
+export default async function MyDeckPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ spaceId?: string | string[] }>
+}) {
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  // 초대 수락 후 /my-deck?spaceId=… 로 들어온다 — 그 Space 구성원이면 그 Space를 보여준다.
+  // 구성원이 아니면 기존처럼 첫 멤버십. (여러 Space 선택 UI는 후속)
+  const { spaceId } = await searchParams
+  const requested = typeof spaceId === 'string' && spaceId ? spaceId : undefined
+  const membership =
+    (requested && (await findMembership({ userId: user.id, spaceId: requested }))) ||
+    (await findMembership({ userId: user.id }))
 
   if (!membership) redirect('/workspace-setup')
 

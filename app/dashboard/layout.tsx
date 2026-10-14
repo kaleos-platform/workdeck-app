@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getUser } from '@/hooks/use-user'
 import { prisma } from '@/lib/prisma'
+import { hasSpaceAccess } from '@/lib/workspace-shell'
 import { DeckShell } from '@/components/layout/deck-shell'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +17,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   })
 
   if (!workspace) {
-    redirect('/workspace-setup')
+    redirect((await hasSpaceAccess(user.id)) ? '/my-deck' : '/workspace-setup')
   }
 
   return (

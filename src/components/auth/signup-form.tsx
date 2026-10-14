@@ -22,9 +22,10 @@ import {
 
 interface SignupFormProps {
   redirectTo?: string | null
+  email?: string
 }
 
-export function SignupForm({ redirectTo }: SignupFormProps) {
+export function SignupForm({ redirectTo, email }: SignupFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const router = useRouter()
@@ -34,7 +35,7 @@ export function SignupForm({ redirectTo }: SignupFormProps) {
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: '',
+      email: email ?? '',
       password: '',
       confirmPassword: '',
       name: '',

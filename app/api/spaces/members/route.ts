@@ -19,5 +19,5 @@ export async function GET(req: NextRequest) {
     },
     orderBy: { createdAt: 'asc' },
   })
-  return NextResponse.json({ members })
+  return NextResponse.json({ spaceId: ctx.space.id, myRole: ctx.role, members })
 }

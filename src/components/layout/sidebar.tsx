@@ -109,6 +109,7 @@ import {
   SETTINGS_AI_PATH,
   SETTINGS_BILLING_PATH,
   SETTINGS_PAYMENTS_PATH,
+  SETTINGS_MEMBERS_PATH,
 } from '@/lib/deck-routes'
 import { SidebarSection, type SidebarItem } from './sidebar-section'
 import { DECK_META, type DeckVariant } from '@/lib/deck-meta'
@@ -504,6 +505,16 @@ export function Sidebar({
                 label="AI 설정"
                 isActive={
                   pathname === SETTINGS_AI_PATH || pathname.startsWith(`${SETTINGS_AI_PATH}/`)
+                }
+                collapsed={collapsed}
+              />
+              <RailLink
+                href={SETTINGS_MEMBERS_PATH}
+                icon={Users}
+                label="구성원"
+                isActive={
+                  pathname === SETTINGS_MEMBERS_PATH ||
+                  pathname.startsWith(`${SETTINGS_MEMBERS_PATH}/`)
                 }
                 collapsed={collapsed}
               />

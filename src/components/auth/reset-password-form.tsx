@@ -37,6 +37,7 @@ export function ResetPasswordForm() {
 
     const { error: updateError } = await supabase.auth.updateUser({
       password: data.password,
+      data: { password_set: true },
     })
 
     if (updateError) {
@@ -60,12 +61,7 @@ export function ResetPasswordForm() {
             <FormItem>
               <FormLabel>새 비밀번호</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="••••••••"
-                  type="password"
-                  disabled={isLoading}
-                  {...field}
-                />
+                <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -79,12 +75,7 @@ export function ResetPasswordForm() {
             <FormItem>
               <FormLabel>비밀번호 확인</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="••••••••"
-                  type="password"
-                  disabled={isLoading}
-                  {...field}
-                />
+                <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

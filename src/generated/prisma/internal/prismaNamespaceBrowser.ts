@@ -62,6 +62,7 @@ export const ModelName = {
   DailyMemo: 'DailyMemo',
   Space: 'Space',
   SpaceMember: 'SpaceMember',
+  SpaceInvitation: 'SpaceInvitation',
   AgentPendingAction: 'AgentPendingAction',
   SpaceAgentSetting: 'SpaceAgentSetting',
   SpaceAgent: 'SpaceAgent',
@@ -390,6 +391,23 @@ export const SpaceMemberScalarFieldEnum = {
 } as const
 
 export type SpaceMemberScalarFieldEnum = (typeof SpaceMemberScalarFieldEnum)[keyof typeof SpaceMemberScalarFieldEnum]
+
+
+export const SpaceInvitationScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  email: 'email',
+  role: 'role',
+  tokenHash: 'tokenHash',
+  invitedById: 'invitedById',
+  expiresAt: 'expiresAt',
+  acceptedAt: 'acceptedAt',
+  acceptedUserId: 'acceptedUserId',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type SpaceInvitationScalarFieldEnum = (typeof SpaceInvitationScalarFieldEnum)[keyof typeof SpaceInvitationScalarFieldEnum]
 
 
 export const AgentPendingActionScalarFieldEnum = {
