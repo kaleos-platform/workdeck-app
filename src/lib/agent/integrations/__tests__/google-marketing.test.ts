@@ -163,14 +163,15 @@ describe('google-marketing (포팅)', () => {
     expect(s).not.toMatch(/ya29|1\/\/0e|GOCSPX|MIIabc/)
     expect(s).toContain(' e')
   })
-  it('MCP 도구는 조회 3 + 제안 1, 전체 목록·레지스트리에 등록', () => {
+  it('MCP 도구는 조회 3 + 제안 1 + 제안 목록 1, 전체 목록·레지스트리에 등록', () => {
     expect(googleMarketingTools.map((t) => t.name)).toEqual([
       'google_marketing_ga4_run_report',
       'google_marketing_ga4_admin_get',
       'google_marketing_gtm_get',
       'google_marketing_propose_action',
+      'google_marketing_list_actions',
     ])
-    expect(toolDefinitions.filter((t) => t.name.startsWith('google_marketing_'))).toHaveLength(4)
+    expect(toolDefinitions.filter((t) => t.name.startsWith('google_marketing_'))).toHaveLength(5)
     expect(getActionDefinition('google-marketing.gtm.version.publish')?.requiredRole).toBe('OWNER')
     expect(getActionDefinition('google-marketing.gtm.tag.update')?.requiredRole).toBe('ADMIN')
     expect(googleMarketingActions.every((a) => a.spendKrw === undefined)).toBe(true)

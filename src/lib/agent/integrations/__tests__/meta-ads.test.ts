@@ -298,12 +298,13 @@ describe('meta-ads (포팅)', () => {
     expect(s).not.toMatch(/tok-x|proof-y|"z"/)
   })
 
-  it('MCP 도구는 조회 3 + 제안 1 — 승인·실행 도구는 노출하지 않는다', () => {
+  it('MCP 도구는 조회 4 + 제안 1 — 승인·실행 도구는 노출하지 않는다', () => {
     expect(metaAdsTools.map((t) => t.name)).toEqual([
       'meta_ads_list_campaigns',
       'meta_ads_list_ads',
       'meta_ads_get_insights',
       'meta_ads_propose_action',
+      'meta_ads_list_actions',
     ])
     expect(toolDefinitions.some((t) => /^meta_ads_(approve|execute)/.test(t.name))).toBe(false)
   })

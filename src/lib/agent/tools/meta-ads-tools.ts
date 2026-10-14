@@ -9,6 +9,7 @@ import {
   resolveAdAccount,
   validateMetaAction,
 } from '@/lib/agent/integrations/meta-ads'
+import { makeListActionsTool } from './action-list-tools'
 import type { ToolDefinition } from './types'
 
 /**
@@ -129,4 +130,15 @@ const proposeAction: ToolDefinition = {
   },
 }
 
-export const metaAdsTools: ToolDefinition[] = [listCampaigns, listAds, getInsights, proposeAction]
+export const metaAdsTools: ToolDefinition[] = [
+  listCampaigns,
+  listAds,
+  getInsights,
+  proposeAction,
+  makeListActionsTool({
+    name: 'meta_ads_list_actions',
+    deckKey: 'meta-ads',
+    scope: 'meta:read',
+    label: '메타 광고',
+  }),
+]
